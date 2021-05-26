@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -257,7 +257,7 @@ namespace Rock.Model
                 return this.Activities
                     .Where( a => a.IsActive )
                     .ToList()
-                    .OrderBy( a => a.ActivityTypeCache.Order );
+                    /*.OrderBy( a => a.ActivityTypeCache.Order )*/;
             }
         }
 
@@ -272,7 +272,7 @@ namespace Rock.Model
         {
             get
             {
-                return ActiveActivities.Select( a => a.ActivityTypeCache.Name ).ToList().AsDelimited( "<br/>" );
+                return ""/*ActiveActivities.Select( a => a.ActivityTypeCache.Name ).ToList().AsDelimited( "<br/>" )*/;
             }
         }
 
@@ -297,14 +297,14 @@ namespace Rock.Model
         /// <value>
         /// The parent authority for this Workflow instance.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                var workflowTypeCache = this.WorkflowTypeCache;
-                return workflowTypeCache != null ? workflowTypeCache : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        var workflowTypeCache = this.WorkflowTypeCache;
+        //        return workflowTypeCache != null ? workflowTypeCache : base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is persisted.
@@ -339,11 +339,11 @@ namespace Rock.Model
         {
             get
             {
-                string propertyKey = key.ToStringSafe();
-                if ( propertyKey == "WorkflowType" )
-                {
-                    return WorkflowTypeCache;
-                }
+                //string propertyKey = key.ToStringSafe();
+                //if ( propertyKey == "WorkflowType" )
+                //{
+                //    return WorkflowTypeCache;
+                //}
                 return base[key];
             }
         }
@@ -365,10 +365,10 @@ namespace Rock.Model
 
             DateTime processStartTime = RockDateTime.Now;
 
-            if ( Attributes == null )
-            {
-                this.LoadAttributes( rockContext );
-            }
+            //if ( Attributes == null )
+            //{
+            //    this.LoadAttributes( rockContext );
+            //}
 
             SetInitiator();
 
@@ -393,16 +393,16 @@ namespace Rock.Model
         /// </summary>
         internal void SetInitiator()
         {
-            if ( !InitiatorPersonAliasId.HasValue &&
-                HttpContext.Current != null &&
-                HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-                if ( currentPerson != null )
-                {
-                    InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
-                }
-            }
+            //if ( !InitiatorPersonAliasId.HasValue &&
+            //    HttpContext.Current != null &&
+            //    HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            //{
+            //    var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+            //    if ( currentPerson != null )
+            //    {
+            //        InitiatorPersonAliasId = currentPerson.PrimaryAliasId;
+            //    }
+            //}
         }
 
         /// <summary>
@@ -441,35 +441,35 @@ namespace Rock.Model
         {
             if ( IsActive )
             {
-                var canEdit = IsAuthorized( Authorization.EDIT, person );
+                //var canEdit = IsAuthorized( Authorization.EDIT, person );
 
-                // Find first active action form
-                int personId = person != null ? person.Id : 0;
-                foreach ( var activity in Activities
-                    .Where( a =>
-                        a.IsActive &&
-                        (
-                            ( canEdit ) ||
-                            ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
-                            ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
-                            ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
-                        )
-                    )
-                    .ToList()
-                    .OrderBy( a => a.ActivityTypeCache.Order ) )
-                {
-                    if ( canEdit || ( activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, person ) ) )
-                    {
-                        foreach ( var action in activity.ActiveActions )
-                        {
-                            var actionType = action.ActionTypeCache;
-                            if ( actionType != null && actionType.WorkflowForm != null && action.IsCriteriaValid )
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
+                //// Find first active action form
+                //int personId = person != null ? person.Id : 0;
+                //foreach ( var activity in Activities
+                //    .Where( a =>
+                //        a.IsActive &&
+                //        (
+                //            ( canEdit ) ||
+                //            ( !a.AssignedGroupId.HasValue && !a.AssignedPersonAliasId.HasValue ) ||
+                //            ( a.AssignedPersonAlias != null && a.AssignedPersonAlias.PersonId == personId ) ||
+                //            ( a.AssignedGroup != null && a.AssignedGroup.Members.Any( m => m.PersonId == personId ) )
+                //        )
+                //    )
+                //    .ToList()
+                //    .OrderBy( a => a.ActivityTypeCache.Order ) )
+                //{
+                //    if ( canEdit || ( activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, person ) ) )
+                //    {
+                //        foreach ( var action in activity.ActiveActions )
+                //        {
+                //            var actionType = action.ActionTypeCache;
+                //            if ( actionType != null && actionType.WorkflowForm != null && action.IsCriteriaValid )
+                //            {
+                //                return true;
+                //            }
+                //        }
+                //    }
+                //}
             }
 
             return false;
@@ -529,24 +529,24 @@ namespace Rock.Model
         /// <param name="force">if set to <c>true</c> will ignore logging level and always add the entry.</param>
         public virtual void AddLogEntry( string logText, bool force = false )
         {
-            var workflowType = this.WorkflowTypeCache;
-            if ( force || (
-                workflowType != null && (
-                workflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
-                workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
-            {
-                LogEntry logEntry = new LogEntry();
-                logEntry.LogDateTime = RockDateTime.Now;
-                logEntry.LogText = logText;
+            //var workflowType = this.WorkflowTypeCache;
+            //if ( force || (
+            //    workflowType != null && (
+            //    workflowType.LoggingLevel == WorkflowLoggingLevel.Workflow ||
+            //    workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+            //    workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
+            //{
+            //    LogEntry logEntry = new LogEntry();
+            //    logEntry.LogDateTime = RockDateTime.Now;
+            //    logEntry.LogText = logText;
 
                 if ( _logEntries == null )
                 {
                     _logEntries = new List<LogEntry>();
                 }
 
-                this._logEntries.Add( logEntry );
-            }
+            //    this._logEntries.Add( logEntry );
+            //}
         }
 
         /// <summary>
@@ -615,10 +615,10 @@ namespace Rock.Model
                     if ( !activity.LastProcessedDateTime.HasValue ||
                         activity.LastProcessedDateTime.Value.CompareTo( processStartTime ) < 0 )
                     {
-                        if ( activity.Attributes == null )
-                        {
-                            activity.LoadAttributes( rockContext );
-                        }
+                        //if ( activity.Attributes == null )
+                        //{
+                        //    activity.LoadAttributes( rockContext );
+                        //}
 
                         return activity.Process( rockContext, entity, out errorMessages );
                     }
@@ -654,13 +654,13 @@ namespace Rock.Model
         /// <param name="workflowTypeCache">The workflow type cache.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return Activate( workflowTypeCache, name, rockContext );
-            }
-        }
+        //public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
+        //{
+        //    using ( var rockContext = new RockContext() )
+        //    {
+        //        return Activate( workflowTypeCache, name, rockContext );
+        //    }
+        //}
 
         /// <summary>
         /// Activates the specified workflow type cache.
@@ -669,37 +669,37 @@ namespace Rock.Model
         /// <param name="name">The name.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
-        {
-            var workflow = new Workflow();
-            workflow.WorkflowTypeId = workflowTypeCache.Id;
+        //public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
+        //{
+        //    var workflow = new Workflow();
+        //    workflow.WorkflowTypeId = workflowTypeCache.Id;
 
-            if ( !string.IsNullOrWhiteSpace( name ) )
-            {
-                workflow.Name = name;
-            }
-            else
-            {
-                workflow.Name = workflowTypeCache.Name;
-            }
+        //    if ( !string.IsNullOrWhiteSpace( name ) )
+        //    {
+        //        workflow.Name = name;
+        //    }
+        //    else
+        //    {
+        //        workflow.Name = workflowTypeCache.Name;
+        //    }
 
-            workflow.Status = "Active";
-            workflow.IsProcessing = false;
-            workflow.ActivatedDateTime = RockDateTime.Now;
-            workflow.LoadAttributes( rockContext );
+        //    workflow.Status = "Active";
+        //    workflow.IsProcessing = false;
+        //    workflow.ActivatedDateTime = RockDateTime.Now;
+        //    workflow.LoadAttributes( rockContext );
 
-            workflow.AddLogEntry( "Activated" );
+        //    workflow.AddLogEntry( "Activated" );
 
-            foreach ( var activityType in workflowTypeCache.ActivityTypes.OrderBy( a => a.Order ) )
-            {
-                if ( activityType.IsActivatedWithWorkflow )
-                {
-                    WorkflowActivity.Activate( activityType, workflow, rockContext );
-                }
-            }
+        //    foreach ( var activityType in workflowTypeCache.ActivityTypes.OrderBy( a => a.Order ) )
+        //    {
+        //        if ( activityType.IsActivatedWithWorkflow )
+        //        {
+        //            WorkflowActivity.Activate( activityType, workflow, rockContext );
+        //        }
+        //    }
 
-            return workflow;
-        }
+        //    return workflow;
+        //}
 
         #endregion
 

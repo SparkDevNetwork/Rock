@@ -16,14 +16,14 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Utility;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
-    public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
+    public partial class BinaryFileType : Model<BinaryFileType>/*, ICacheable*/
     {
 
         #region Entity Properties
@@ -194,33 +194,33 @@ namespace Rock.Model
             get => _cacheControlHeaderSettings;
             set
             {
-                if ( _cacheControlHeaderSettings != value )
-                {
-                    _cacheControlHeader = null;
-                }
+                //if ( _cacheControlHeaderSettings != value )
+                //{
+                //    _cacheControlHeader = null;
+                //}
                 _cacheControlHeaderSettings = value;
             }
         }
 
-        private RockCacheability _cacheControlHeader;
+        //private RockCacheability _cacheControlHeader;
         /// <summary>
         /// Gets the cache control header.
         /// </summary>
         /// <value>
         /// The cache control header.
         /// </value>
-        [NotMapped]
-        public RockCacheability CacheControlHeader
-        {
-            get
-            {
-                if ( _cacheControlHeader == null )
-                {
-                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-                }
-                return _cacheControlHeader;
-            }
-        }
+        //[NotMapped]
+        //public RockCacheability CacheControlHeader
+        //{
+        //    get
+        //    {
+        //        if ( _cacheControlHeader == null )
+        //        {
+        //            _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+        //        }
+        //        return _cacheControlHeader;
+        //    }
+        //}
         #endregion
 
         #region Constructors
@@ -260,6 +260,7 @@ namespace Rock.Model
         /// <value>
         /// A queryable collection of <see cref="Rock.Model.BinaryFile"/> entities that are children of this<see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
+        [NotMapped]
         public virtual IQueryable<BinaryFile> FileQuery
         {
             get
@@ -302,19 +303,19 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            BinaryFileTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        //{
+        //    BinaryFileTypeCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         /// <summary>
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BinaryFileTypeCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return BinaryFileTypeCache.Get( this.Id );
+        //}
 
         #endregion
     }

@@ -25,6 +25,7 @@ namespace Rock.Model
     /// <summary>
     /// This class represents all of the verification codes that can be used by the phone verification system.
     /// </summary>
+    [Table( "IdentityVerificationCode" )]
     public partial class IdentityVerificationCode : Model<IdentityVerificationCode>
     {
         /// <summary>
@@ -36,7 +37,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [MaxLength( 6 )]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         public string Code { get; set; }
 
         /// <summary>

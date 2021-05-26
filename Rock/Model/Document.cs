@@ -18,16 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
+//using Rock.UniversalSearch;
+//using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.Model
 {
@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Document" )]
     [DataContract]
-    public partial class Document : Model<Document>, IRockIndexable
+    public partial class Document : Model<Document>/*, IRockIndexable*/
     {
         #region Entity Properties
 
@@ -132,6 +132,8 @@ namespace Rock.Model
             //    }
             //}
         */
+        [DataMember]
+        public int BinaryFileId { get; set; }
 
         #endregion
 
@@ -286,82 +288,82 @@ namespace Rock.Model
         /// <summary>
         /// Bulks the index documents.
         /// </summary>
-        public void BulkIndexDocuments()
-        {
-            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+        //public void BulkIndexDocuments()
+        //{
+        //    List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            RockContext rockContext = new RockContext();
+        //    RockContext rockContext = new RockContext();
 
-            // return people
-            var documents = new DocumentService( rockContext ).Queryable().AsNoTracking();
+        //    // return people
+        //    var documents = new DocumentService( rockContext ).Queryable().AsNoTracking();
 
-            int recordCounter = 0;
+        //    int recordCounter = 0;
 
-            foreach ( var document in documents )
-            {
-                var indexableDocument = DocumentIndex.LoadByModel( document );
-                indexableItems.Add( indexableDocument );
+        //    foreach ( var document in documents )
+        //    {
+        //        var indexableDocument = DocumentIndex.LoadByModel( document );
+        //        indexableItems.Add( indexableDocument );
 
-                recordCounter++;
+        //        recordCounter++;
 
-                if ( recordCounter > 100 )
-                {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
-                    recordCounter = 0;
-                }
-            }
+        //        if ( recordCounter > 100 )
+        //        {
+        //            IndexContainer.IndexDocuments( indexableItems );
+        //            indexableItems = new List<IndexModelBase>();
+        //            recordCounter = 0;
+        //        }
+        //    }
 
-            IndexContainer.IndexDocuments( indexableItems );
-        }
+        //    IndexContainer.IndexDocuments( indexableItems );
+        //}
 
         /// <summary>
         /// Deletes the indexed documents.
         /// </summary>
-        public void DeleteIndexedDocuments()
-        {
-            IndexContainer.DeleteDocumentsByType<DocumentIndex>();
-        }
+        //public void DeleteIndexedDocuments()
+        //{
+        //    IndexContainer.DeleteDocumentsByType<DocumentIndex>();
+        //}
 
         /// <summary>
         /// Indexes the name of the model.
         /// </summary>
         /// <returns></returns>
-        public Type IndexModelType()
-        {
-            return typeof( DocumentIndex );
-        }
+        //public Type IndexModelType()
+        //{
+        //    return typeof( DocumentIndex );
+        //}
 
         /// <summary>
         /// Indexes the document.
         /// </summary>
         /// <param name="id"></param>
-        public void IndexDocument( int id )
-        {
-            var documentEntity = new DocumentService( new RockContext() ).Get( id );
+        //public void IndexDocument( int id )
+        //{
+        //    var documentEntity = new DocumentService( new RockContext() ).Get( id );
 
-            var indexItem = DocumentIndex.LoadByModel( documentEntity );
-            IndexContainer.IndexDocument( indexItem );
-        }
+        //    var indexItem = DocumentIndex.LoadByModel( documentEntity );
+        //    IndexContainer.IndexDocument( indexItem );
+        //}
 
         /// <summary>
         /// Deletes the indexed document.
         /// </summary>
         /// <param name="id"></param>
-        public void DeleteIndexedDocument( int id )
-        {
-            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.DocumentIndex" );
-            IndexContainer.DeleteDocumentById( indexType, id );
-        }
+        //public void DeleteIndexedDocument( int id )
+        //{
+        //    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.DocumentIndex" );
+        //    IndexContainer.DeleteDocumentById( indexType, id );
+        //}
 
         /// <summary>
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public ModelFieldFilterConfig GetIndexFilterConfig()
-        {
-            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
-        }
+        //public ModelFieldFilterConfig GetIndexFilterConfig()
+        //{
+        //    return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+        //}
 
         /// <summary>
         /// Gets the index filter field.
@@ -425,7 +427,12 @@ namespace Rock.Model
 
             // This is a 1:1 relationship and is not very common in Rock. We cannot add BinaryFileId to the model because of the EF limitation
             // discussed here: https://stackoverflow.com/a/41847251
+#if NET5_0_OR_GREATER
+            // EFCORE: Not sure if this is correct? Test.
+            Builder.HasOne( f => f.BinaryFile ).WithOne( a => a.Document ).HasForeignKey<Document>( f => f.BinaryFileId );
+#else
             this.HasRequired( f => f.BinaryFile ).WithOptional( a => a.Document ).Map( x => x.MapKey( "BinaryFileId" ) ).WillCascadeOnDelete();
+#endif
         }
     }
 

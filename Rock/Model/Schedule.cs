@@ -18,11 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Linq;
-using System.Runtime.Caching;
+//using System.Runtime.Caching;
 using System.Runtime.Serialization;
 
 using Ical.Net;
@@ -41,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered, ICacheable
+    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, IOrdered/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -293,7 +293,7 @@ namespace Rock.Model
 
                 var calEvent = GetICalEvent();
 
-                Ical.Net.Interfaces.DataTypes.IRecurrencePattern rrule = null;
+                Ical.Net.DataTypes.RecurrencePattern rrule = null;
 
                 if ( calEvent != null )
                 {
@@ -423,6 +423,8 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
+        public virtual ICollection<GroupLocation> GroupLocations { get; set; } = new System.Collections.ObjectModel.Collection<GroupLocation>();
+
         /// <summary>
         /// Gets the friendly schedule text.
         /// </summary>
@@ -468,25 +470,25 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            if ( this.Name.IsNotNullOrWhiteSpace() )
-            {
-                return NamedScheduleCache.Get( this.Id );
-            }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    if ( this.Name.IsNotNullOrWhiteSpace() )
+        //    {
+        //        return NamedScheduleCache.Get( this.Id );
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            NamedScheduleCache.FlushItem( this.Id );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    NamedScheduleCache.FlushItem( this.Id );
+        //}
 
         #endregion ICacheable
 
@@ -611,12 +613,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetICalEvent() instead " )]
-        public virtual DDay.iCal.Event GetCalenderEvent()
-        {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-        }
+        //[RockObsolete( "1.9" )]
+        //[Obsolete( "Use GetICalEvent() instead " )]
+        //public virtual DDay.iCal.Event GetCalenderEvent()
+        //{
+        //    return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
+        //}
 
         /// <summary>
         /// Gets the Schedule's iCalender Event.
@@ -624,12 +626,12 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalEvent() instead " )]
-        public virtual DDay.iCal.Event GetCalendarEvent()
-        {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetICalEvent() instead " )]
+        //public virtual DDay.iCal.Event GetCalendarEvent()
+        //{
+        //    return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
+        //}
 
         /// <summary>
         /// Gets the Schedule's iCalender Event.
@@ -637,7 +639,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Ical.Net.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual Ical.Net.Event GetICalEvent()
+        public virtual Ical.Net.CalendarEvent GetICalEvent()
         {
             if ( _getICalEvent == null )
             {
@@ -647,7 +649,7 @@ namespace Rock.Model
             return _getICalEvent;
         }
 
-        private Ical.Net.Event _getICalEvent = null;
+        private Ical.Net.CalendarEvent _getICalEvent = null;
 
         /// <summary>
         /// Gets the occurrences.
@@ -655,12 +657,12 @@ namespace Rock.Model
         /// <param name="beginDateTime">The begin date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalOccurrences() instead." )]
-        public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime = null )
-        {
-            return this.GetOccurrences( beginDateTime, endDateTime, null );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetICalOccurrences() instead." )]
+        //public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime = null )
+        //{
+        //    return this.GetOccurrences( beginDateTime, endDateTime, null );
+        //}
 
         /// <summary>
         /// Gets the occurrences with option to override the ICal.Event.DTStart
@@ -669,62 +671,62 @@ namespace Rock.Model
         /// <param name="endDateTime">The end date time.</param>
         /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalOccurrences() instead." )]
-        public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
-        {
-            var occurrences = new List<DDay.iCal.Occurrence>();
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetICalOccurrences() instead." )]
+        //public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        //{
+        //    var occurrences = new List<DDay.iCal.Occurrence>();
 
-            DDay.iCal.Event calEvent = GetCalendarEvent();
-            if ( calEvent == null )
-            {
-                return occurrences;
-            }
+        //    DDay.iCal.Event calEvent = GetCalendarEvent();
+        //    if ( calEvent == null )
+        //    {
+        //        return occurrences;
+        //    }
 
-            if ( scheduleStartDateTimeOverride.HasValue )
-            {
-                calEvent.DTStart = new DDay.iCal.iCalDateTime( scheduleStartDateTimeOverride.Value );
-            }
+        //    if ( scheduleStartDateTimeOverride.HasValue )
+        //    {
+        //        calEvent.DTStart = new DDay.iCal.iCalDateTime( scheduleStartDateTimeOverride.Value );
+        //    }
 
-            if ( calEvent.DTStart != null )
-            {
-                var exclusionDates = new List<DateRange>();
-                if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
-                {
-                    var category = CategoryCache.Get( this.CategoryId.Value );
-                    if ( category != null )
-                    {
-                        exclusionDates = category.ScheduleExclusions
-                            .Where( e => e.Start.HasValue && e.End.HasValue )
-                            .ToList();
-                    }
-                }
+        //    if ( calEvent.DTStart != null )
+        //    {
+        //        var exclusionDates = new List<DateRange>();
+        //        if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
+        //        {
+        //            var category = CategoryCache.Get( this.CategoryId.Value );
+        //            if ( category != null )
+        //            {
+        //                exclusionDates = category.ScheduleExclusions
+        //                    .Where( e => e.Start.HasValue && e.End.HasValue )
+        //                    .ToList();
+        //            }
+        //        }
 
-                foreach ( var occurrence in endDateTime.HasValue ?
-                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
-                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime ) )
-                {
-                    bool exclude = false;
-                    if ( exclusionDates.Any() && occurrence.Period.StartTime != null )
-                    {
-                        var occurrenceStart = occurrence.Period.StartTime.Value;
-                        if ( exclusionDates.Any( d =>
-                            d.Start.Value <= occurrenceStart &&
-                            d.End.Value >= occurrenceStart ) )
-                        {
-                            exclude = true;
-                        }
-                    }
+        //        foreach ( var occurrence in endDateTime.HasValue ?
+        //            ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
+        //            ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime ) )
+        //        {
+        //            bool exclude = false;
+        //            if ( exclusionDates.Any() && occurrence.Period.StartTime != null )
+        //            {
+        //                var occurrenceStart = occurrence.Period.StartTime.Value;
+        //                if ( exclusionDates.Any( d =>
+        //                    d.Start.Value <= occurrenceStart &&
+        //                    d.End.Value >= occurrenceStart ) )
+        //                {
+        //                    exclude = true;
+        //                }
+        //            }
 
-                    if ( !exclude )
-                    {
-                        occurrences.Add( occurrence );
-                    }
-                }
-            }
+        //            if ( !exclude )
+        //            {
+        //                occurrences.Add( occurrence );
+        //            }
+        //        }
+        //    }
 
-            return occurrences;
-        }
+        //    return occurrences;
+        //}
 
         /// <summary>
         /// Gets the occurrences.
@@ -756,7 +758,7 @@ namespace Rock.Model
             }
             else
             {
-                Event calEvent = GetICalEvent();
+                var calEvent = GetICalEvent();
                 if ( calEvent == null )
                 {
                     return occurrences;
@@ -770,13 +772,13 @@ namespace Rock.Model
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
                 {
-                    var category = CategoryCache.Get( this.CategoryId.Value );
-                    if ( category != null )
-                    {
-                        exclusionDates = category.ScheduleExclusions
-                            .Where( e => e.Start.HasValue && e.End.HasValue )
-                            .ToList();
-                    }
+                    //var category = CategoryCache.Get( this.CategoryId.Value );
+                    //if ( category != null )
+                    //{
+                    //    exclusionDates = category.ScheduleExclusions
+                    //        .Where( e => e.Start.HasValue && e.End.HasValue )
+                    //        .ToList();
+                    //}
                 }
 
                 foreach ( var occurrence in InetCalendarHelper.GetOccurrences( iCalendarContent, beginDateTime, endDateTime, scheduleStartDateTimeOverride ) )
@@ -1011,7 +1013,7 @@ namespace Rock.Model
 
                         case FrequencyType.Weekly:
 
-                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString().Pluralize() ).ToList().AsDelimited( "," );
+                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString()/*.Pluralize()*/ ).ToList().AsDelimited( "," );
                             if ( string.IsNullOrEmpty( result ) )
                             {
                                 // no day selected, so it has an incomplete schedule
@@ -1617,10 +1619,10 @@ namespace Rock.Model
     public static class InetCalendarHelper
     {
         // using MemoryCache instead RockCacheManager, since Occurrences isn't serializable.
-        private static MemoryCache _iCalOccurrencesCache = new MemoryCache( "Rock.InetCalendarHelper._iCalOccurrences" );
+        //private static MemoryCache _iCalOccurrencesCache = new MemoryCache( "Rock.InetCalendarHelper._iCalOccurrences" );
 
         // only keep in memory if unused for 10 minutes. This reduces the chances of this getting too big.
-        private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
+        //private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
         /// <summary>
         /// Gets the calendar event.
@@ -1629,7 +1631,7 @@ namespace Rock.Model
         /// <returns></returns>
         [RockObsolete( "12.4" )]
         [Obsolete( "Use CreateCalendarEvent instead" )]
-        public static Ical.Net.Event GetCalendarEvent( string iCalendarContent )
+        public static Ical.Net.CalendarEvent GetCalendarEvent( string iCalendarContent )
         {
             // changed to obsolete because this used to return a shared object that could be altered or create thread-safety issues
             return CreateCalendarEvent( iCalendarContent );
@@ -1640,11 +1642,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
         /// <returns></returns>
-        public static Event CreateCalendarEvent( string iCalendarContent )
+        public static CalendarEvent CreateCalendarEvent( string iCalendarContent )
         {
             StringReader stringReader = new StringReader( iCalendarContent );
             var calendarList = Calendar.LoadFromStream( stringReader );
-            Event calendarEvent = null;
+            CalendarEvent calendarEvent = null;
 
             //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
             //// We just need one Calendar and one Event
@@ -1653,7 +1655,7 @@ namespace Rock.Model
                 var calendar = calendarList[0] as Calendar;
                 if ( calendar != null )
                 {
-                    calendarEvent = calendar.Events[0] as Event;
+                    calendarEvent = calendar.Events[0] as CalendarEvent;
                 }
             }
 
@@ -1722,12 +1724,12 @@ namespace Rock.Model
         {
             string occurrenceLookupKey = $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__{scheduleStartDateTimeOverride?.ToShortDateTimeString()}__{iCalendarContent.Trim()}".XxHash();
 
-            Occurrence[] occurrenceList = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
+            Occurrence[] occurrenceList = null;/* _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];*/
 
             if ( occurrenceList == null )
             {
                 occurrenceList = LoadOccurrences( iCalendarContent, startDateTime, endDateTime, scheduleStartDateTimeOverride );
-                _iCalOccurrencesCache.AddOrGetExisting( occurrenceLookupKey, occurrenceList, cacheItemPolicy10Minutes );
+                //_iCalOccurrencesCache.AddOrGetExisting( occurrenceLookupKey, occurrenceList, cacheItemPolicy10Minutes );
             }
 
             return occurrenceList;
@@ -1770,101 +1772,101 @@ namespace Rock.Model
     /// <summary>
     /// DDay.ical LoadFromStream is not threadsafe, so use locking
     /// </summary>
-    [RockObsolete( "v1.12" )]
-    [Obsolete( "Use InetCalendarHelper instead." )]
-    public static class ScheduleICalHelper
-    {
-        private static object _initLock;
-        private static Dictionary<string, DDay.iCal.Event> _iCalSchedules = new Dictionary<string, DDay.iCal.Event>();
+    //[RockObsolete( "v1.12" )]
+    //[Obsolete( "Use InetCalendarHelper instead." )]
+    //public static class ScheduleICalHelper
+    //{
+    //    private static object _initLock;
+    //    private static Dictionary<string, DDay.iCal.Event> _iCalSchedules = new Dictionary<string, DDay.iCal.Event>();
 
-        static ScheduleICalHelper()
-        {
-            ScheduleICalHelper._initLock = new object();
-        }
+    //    static ScheduleICalHelper()
+    //    {
+    //        ScheduleICalHelper._initLock = new object();
+    //    }
 
-        /// <summary>
-        /// Gets the calendar event.
-        /// </summary>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
-        public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
-        {
-            return GetCalendarEvent( iCalendarContent );
-        }
+    //    /// <summary>
+    //    /// Gets the calendar event.
+    //    /// </summary>
+    //    /// <param name="iCalendarContent">Content of the i calendar.</param>
+    //    /// <returns></returns>
+    //    [RockObsolete( "1.9" )]
+    //    [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
+    //    public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+    //    {
+    //        return GetCalendarEvent( iCalendarContent );
+    //    }
 
-        /// <summary>
-        /// Gets the calendar event.
-        /// </summary>
-        /// <param name="iCalendarContent">Content of the i calendar.</param>
-        /// <returns></returns>
-        public static DDay.iCal.Event GetCalendarEvent( string iCalendarContent )
-        {
-            string trimmedContent = iCalendarContent.Trim();
+    //    /// <summary>
+    //    /// Gets the calendar event.
+    //    /// </summary>
+    //    /// <param name="iCalendarContent">Content of the i calendar.</param>
+    //    /// <returns></returns>
+    //    public static DDay.iCal.Event GetCalendarEvent( string iCalendarContent )
+    //    {
+    //        string trimmedContent = iCalendarContent.Trim();
 
-            if ( string.IsNullOrWhiteSpace( trimmedContent ) )
-            {
-                return null;
-            }
+    //        if ( string.IsNullOrWhiteSpace( trimmedContent ) )
+    //        {
+    //            return null;
+    //        }
 
-            DDay.iCal.Event calendarEvent = null;
+    //        DDay.iCal.Event calendarEvent = null;
 
-            lock ( ScheduleICalHelper._initLock )
-            {
-                if ( _iCalSchedules.ContainsKey( trimmedContent ) )
-                {
-                    return _iCalSchedules[trimmedContent];
-                }
+    //        lock ( ScheduleICalHelper._initLock )
+    //        {
+    //            if ( _iCalSchedules.ContainsKey( trimmedContent ) )
+    //            {
+    //                return _iCalSchedules[trimmedContent];
+    //            }
 
-                StringReader stringReader = new StringReader( trimmedContent );
-                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+    //            StringReader stringReader = new StringReader( trimmedContent );
+    //            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-                //// We just need one Calendar and one Event
-                if ( calendarList.Count > 0 )
-                {
-                    var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                    if ( calendar != null )
-                    {
-                        calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                        _iCalSchedules.AddOrReplace( trimmedContent, calendarEvent );
-                    }
-                }
-            }
+    //            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+    //            //// We just need one Calendar and one Event
+    //            if ( calendarList.Count > 0 )
+    //            {
+    //                var calendar = calendarList[0] as DDay.iCal.iCalendar;
+    //                if ( calendar != null )
+    //                {
+    //                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+    //                    _iCalSchedules.AddOrReplace( trimmedContent, calendarEvent );
+    //                }
+    //            }
+    //        }
 
-            return calendarEvent;
-        }
+    //        return calendarEvent;
+    //    }
 
-        /// <summary>
-        /// Gets the occurrences.
-        /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <returns></returns>
-        public static IList<DDay.iCal.Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime )
-        {
-            lock ( ScheduleICalHelper._initLock )
-            {
-                return icalEvent.GetOccurrences( startTime );
-            }
-        }
+    //    /// <summary>
+    //    /// Gets the occurrences.
+    //    /// </summary>
+    //    /// <param name="icalEvent">The ical event.</param>
+    //    /// <param name="startTime">The start time.</param>
+    //    /// <returns></returns>
+    //    public static IList<DDay.iCal.Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime )
+    //    {
+    //        lock ( ScheduleICalHelper._initLock )
+    //        {
+    //            return icalEvent.GetOccurrences( startTime );
+    //        }
+    //    }
 
-        /// <summary>
-        /// Gets the occurrences.
-        /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="endTime">The end time.</param>
-        /// <returns></returns>
-        public static IList<DDay.iCal.Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime, DateTime endTime )
-        {
-            lock ( ScheduleICalHelper._initLock )
-            {
-                return icalEvent.GetOccurrences( startTime, endTime );
-            }
-        }
-    }
+    //    /// <summary>
+    //    /// Gets the occurrences.
+    //    /// </summary>
+    //    /// <param name="icalEvent">The ical event.</param>
+    //    /// <param name="startTime">The start time.</param>
+    //    /// <param name="endTime">The end time.</param>
+    //    /// <returns></returns>
+    //    public static IList<DDay.iCal.Occurrence> GetOccurrences( DDay.iCal.Event icalEvent, DateTime startTime, DateTime endTime )
+    //    {
+    //        lock ( ScheduleICalHelper._initLock )
+    //        {
+    //            return icalEvent.GetOccurrences( startTime, endTime );
+    //        }
+    //    }
+    //}
 
     #endregion
 

@@ -20,19 +20,19 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.SqlServer;
+//using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Security;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
-using Rock.Web.Cache;
+//using Rock.Security;
+//using Rock.UniversalSearch;
+//using Rock.UniversalSearch.IndexModels;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {

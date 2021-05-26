@@ -23,7 +23,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepType" )]
     [DataContract]
-    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
+    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag/*, ICacheable*/
     {
         #region Constants
 
@@ -212,20 +212,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return StepTypeCache.Get( Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return StepTypeCache.Get( Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            StepTypeCache.UpdateCachedEntity( Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    StepTypeCache.UpdateCachedEntity( Id, entityState );
+        //}
 
         #endregion ICacheable
 

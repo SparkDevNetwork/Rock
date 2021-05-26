@@ -44,7 +44,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
+        //[Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 0 )]
         [IgnoreCanDelete]
         public int? GroupId { get; set; }
 
@@ -55,7 +55,7 @@ namespace Rock.Model
         /// The group type identifier.
         /// </value>
         [DataMember]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
+        //[Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 1 )]
         [IgnoreCanDelete]
         public int? GroupTypeId { get; set; }
 
@@ -67,7 +67,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
+        //[Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 2 )]
         public int GroupRequirementTypeId { get; set; }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Rock.Model
         /// The group role identifier.
         /// </value>
         [DataMember]
-        [Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 3 )]
+        //[Index( "IDX_GroupRequirementTypeGroup", IsUnique = true, Order = 3 )]
         public int? GroupRoleId { get; set; }
 
         /// <summary>
@@ -188,55 +188,55 @@ namespace Rock.Model
                 List<int> warningDataViewPersonIdList = null;
                 if ( this.GroupRequirementType.WarningDataViewId.HasValue )
                 {
-                    var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression );
-                    warningDataViewPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( a => personQry.Any( p => p.Id == a.Id ) ).Select( a => a.Id ).ToList();
+                    //var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression );
+                    //warningDataViewPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( a => personQry.Any( p => p.Id == a.Id ) ).Select( a => a.Id ).ToList();
                 }
 
                 if ( this.GroupRequirementType.DataViewId.HasValue )
                 {
-                    var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression );
-                    var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
-                    if ( dataViewQry != null )
-                    {
-                        var personWithRequirementsQuery = from p in personQry
-                                                          join d in dataViewQry on p.Id equals d.Id into oj
-                                                          from d in oj.DefaultIfEmpty()
-                                                          select new { PersonId = p.Id, Included = d != null };
+                    //var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression );
+                    //var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
+                    //if ( dataViewQry != null )
+                    //{
+                    //    var personWithRequirementsQuery = from p in personQry
+                    //                                      join d in dataViewQry on p.Id equals d.Id into oj
+                    //                                      from d in oj.DefaultIfEmpty()
+                    //                                      select new { PersonId = p.Id, Included = d != null };
 
-                        var personWithRequirementsList = personWithRequirementsQuery.Select( p => new { PersonId = p.PersonId, Included = p.Included } ).ToList();
+                    //    var personWithRequirementsList = personWithRequirementsQuery.Select( p => new { PersonId = p.PersonId, Included = p.Included } ).ToList();
 
-                        var result = personWithRequirementsList.Select( a =>
-                        {
-                            var personGroupRequirementStatus = new PersonGroupRequirementStatus
-                            {
-                                PersonId = a.PersonId,
-                                GroupRequirement = this
-                            };
+                    //    var result = personWithRequirementsList.Select( a =>
+                    //    {
+                    //        var personGroupRequirementStatus = new PersonGroupRequirementStatus
+                    //        {
+                    //            PersonId = a.PersonId,
+                    //            GroupRequirement = this
+                    //        };
 
-                            var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
+                    //        var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
 
-                            if ( a.Included )
-                            {
-                                if ( hasWarning )
-                                {
-                                    personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
-                                }
-                                else
-                                {
-                                    personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
-                                }
-                            }
-                            else
-                            {
-                                personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
-                            }
+                    //        if ( a.Included )
+                    //        {
+                    //            if ( hasWarning )
+                    //            {
+                    //                personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
+                    //            }
+                    //            else
+                    //            {
+                    //                personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
+                    //            }
+                    //        }
+                    //        else
+                    //        {
+                    //            personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                    //        }
 
-                            return personGroupRequirementStatus;
-                        }
-                        );
+                    //        return personGroupRequirementStatus;
+                    //    }
+                    //    );
 
-                        return result;
-                    }
+                    //    return result;
+                    //}
                 }
                 else
                 {
@@ -254,69 +254,69 @@ namespace Rock.Model
 
                 }
             }
-            else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
-            {
-                // if requirement set on GroupType, this.Group is null
-                var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
-                var personQryIdList = personQry.Select( a => a.Id ).ToList();
-                Person personMergeField = null;
-                if ( personQryIdList.Count == 1 )
-                {
-                    var personId = personQryIdList[0];
-                    personMergeField = new PersonService( rockContext ).GetNoTracking( personId );
-                }
+            //else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
+            //{
+            //    // if requirement set on GroupType, this.Group is null
+            //    var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
+            //    var personQryIdList = personQry.Select( a => a.Id ).ToList();
+            //    Person personMergeField = null;
+            //    if ( personQryIdList.Count == 1 )
+            //    {
+            //        var personId = personQryIdList[0];
+            //        personMergeField = new PersonService( rockContext ).GetNoTracking( personId );
+            //    }
 
-                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
-                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
-                try
-                {
-                    var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
-                    if ( tableResult.Columns.Count > 0 )
-                    {
-                        IEnumerable<int> personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
-                        IEnumerable<int> warningPersonIds = null;
+            //    string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
+            //    string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
+            //    try
+            //    {
+            //        var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
+            //        if ( tableResult.Columns.Count > 0 )
+            //        {
+            //            IEnumerable<int> personIds = tableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+            //            IEnumerable<int> warningPersonIds = null;
 
-                        // if a Warning SQL was specified, get a list of PersonIds that should have a warning with their status
-                        if ( !string.IsNullOrWhiteSpace( warningFormattedSql ) )
-                        {
-                            var warningTableResult = DbService.GetDataTable( warningFormattedSql, System.Data.CommandType.Text, null );
-                            if ( warningTableResult.Columns.Count > 0 )
-                            {
-                                warningPersonIds = warningTableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
-                            }
-                        }
+            //            // if a Warning SQL was specified, get a list of PersonIds that should have a warning with their status
+            //            if ( !string.IsNullOrWhiteSpace( warningFormattedSql ) )
+            //            {
+            //                var warningTableResult = DbService.GetDataTable( warningFormattedSql, System.Data.CommandType.Text, null );
+            //                if ( warningTableResult.Columns.Count > 0 )
+            //                {
+            //                    warningPersonIds = warningTableResult.Rows.OfType<System.Data.DataRow>().Select( r => Convert.ToInt32( r[0] ) );
+            //                }
+            //            }
 
-                        var result = personQryIdList.Select( a => new PersonGroupRequirementStatus
-                        {
-                            PersonId = a,
-                            GroupRequirement = this,
-                            MeetsGroupRequirement = personIds.Contains( a )
-                                    ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
-                                        ? MeetsGroupRequirement.MeetsWithWarning
-                                        : MeetsGroupRequirement.Meets
-                                        )
-                                    : MeetsGroupRequirement.NotMet,
-                        } );
+            //            var result = personQryIdList.Select( a => new PersonGroupRequirementStatus
+            //            {
+            //                PersonId = a,
+            //                GroupRequirement = this,
+            //                MeetsGroupRequirement = personIds.Contains( a )
+            //                        ? ( ( warningPersonIds != null && warningPersonIds.Contains( a ) )
+            //                            ? MeetsGroupRequirement.MeetsWithWarning
+            //                            : MeetsGroupRequirement.Meets
+            //                            )
+            //                        : MeetsGroupRequirement.NotMet,
+            //            } );
 
-                        return result;
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    // Exception occurred (probably due to bad SQL)
-                    ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+            //            return result;
+            //        }
+            //    }
+            //    catch ( Exception ex )
+            //    {
+            //        // Exception occurred (probably due to bad SQL)
+            //        ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
 
-                    var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
-                    {
-                        PersonId = a,
-                        GroupRequirement = this,
-                        MeetsGroupRequirement = MeetsGroupRequirement.Error,
-                        CalculationException = ex
-                    } );
+            //        var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
+            //        {
+            //            PersonId = a,
+            //            GroupRequirement = this,
+            //            MeetsGroupRequirement = MeetsGroupRequirement.Error,
+            //            CalculationException = ex
+            //        } );
 
-                    return result;
-                }
-            }
+            //        return result;
+            //    }
+            //}
             else
             {
                 // manual

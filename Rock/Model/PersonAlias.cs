@@ -46,7 +46,7 @@ namespace Rock.Model
         /// The name.
         /// </value>
         [DataMember]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         [MaxLength(200)]
         public string Name { get; set; }
 
@@ -67,7 +67,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         public int? AliasPersonId { get; set; }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Rock.Model
                 if ( this.AliasPersonId.HasValue && this.AliasPersonGuid.HasValue )
                 {
                     string identifier = this.AliasPersonId.ToString() + ">" + this.AliasPersonGuid.ToString();
-                    return Rock.Security.Encryption.EncryptString( identifier );
+                    //return Rock.Security.Encryption.EncryptString( identifier );
                 }
 
                 return null;

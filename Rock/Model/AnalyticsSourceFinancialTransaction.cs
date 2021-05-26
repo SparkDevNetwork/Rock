@@ -58,7 +58,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [MaxLength( 40 )]
-        [Index( "IX_TransactionKey", IsUnique = true )]
+        //[Index( "IX_TransactionKey", IsUnique = true )]
         public string TransactionKey { get; set; }
 
         /// <summary>
@@ -344,7 +344,7 @@ namespace Rock.Model
         /// The amount.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        //[BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal Amount { get; set; }
 
         /// <summary>

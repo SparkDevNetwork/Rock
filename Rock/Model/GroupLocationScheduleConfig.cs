@@ -39,7 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The group location identifier.
         /// </value>
-        [Key]
+        //[Key]
         [Column( Order = 1 )]
         [DataMember]
         public int GroupLocationId { get; set; }
@@ -50,7 +50,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule identifier.
         /// </value>
-        [Key]
+        //[Key]
         [Column( Order = 2 )]
         [DataMember]
         public int ScheduleId { get; set; }
@@ -117,6 +117,7 @@ namespace Rock.Model
         /// </summary>
         public GroupLocationScheduleConfiguration()
         {
+            this.HasKey( k => new { k.GroupLocationId, k.ScheduleId } );
             this.HasRequired( a => a.GroupLocation ).WithMany( a => a.GroupLocationScheduleConfigs ).HasForeignKey( a => a.GroupLocationId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Schedule ).WithMany().HasForeignKey( a => a.ScheduleId ).WillCascadeOnDelete( true );
         }

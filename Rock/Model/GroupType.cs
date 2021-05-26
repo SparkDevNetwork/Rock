@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -41,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
-    public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
+    public partial class GroupType : Model<GroupType>, IOrdered/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -863,10 +863,10 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers
         {
-            get { return _triggers ?? ( _triggers = new Collection<GroupMemberWorkflowTrigger>() ); }
-            set { _triggers = value; }
+            get { return _groupMemberWorkflowTriggers ?? ( _groupMemberWorkflowTriggers = new Collection<GroupMemberWorkflowTrigger>() ); }
+            set { _groupMemberWorkflowTriggers = value; }
         }
-        private ICollection<GroupMemberWorkflowTrigger> _triggers;
+        private ICollection<GroupMemberWorkflowTrigger> _groupMemberWorkflowTriggers;
         
         /// <summary>
         /// Gets or sets the group schedule exclusions.
@@ -986,6 +986,7 @@ namespace Rock.Model
         /// <value>
         /// A queryable collection of <see cref="Rock.Model.Group">Groups</see> that belong to this GroupType.
         /// </value>
+        [NotMapped]
         public virtual IQueryable<Group> GroupQuery
         {
             get
@@ -1013,10 +1014,10 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<GroupRequirement> GroupRequirements
         {
-            get { return _groupsRequirements ?? ( _groupsRequirements = new Collection<GroupRequirement>() ); }
-            set { _groupsRequirements = value; }
+            get { return _groupRequirements ?? ( _groupRequirements = new Collection<GroupRequirement>() ); }
+            set { _groupRequirements = value; }
         }
-        private ICollection<GroupRequirement> _groupsRequirements;
+        private ICollection<GroupRequirement> _groupRequirements;
 
         /// <summary>
         /// Gets or sets the DefinedType that Groups of this type will use for the Group.StatusValue
@@ -1034,11 +1035,11 @@ namespace Rock.Model
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
+                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    //_supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    //_supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
                 }
                 return _supportedActions;
             }
@@ -1115,7 +1116,7 @@ namespace Rock.Model
             // clean up the index
             if ( state == EntityState.Deleted && IsIndexEnabled )
             {
-                this.DeleteIndexedDocumentsByGroupType( this.Id );
+                //this.DeleteIndexedDocumentsByGroupType( this.Id );
             }
             else if ( state == EntityState.Modified )
             {
@@ -1123,18 +1124,18 @@ namespace Rock.Model
                 var changeEntry = dbContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == this ).FirstOrDefault();
                 if ( changeEntry != null )
                 {
-                    var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
+                    //var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
 
-                    if ( originalIndexState == true && IsIndexEnabled == false )
-                    {
-                        // clear out index items
-                        this.DeleteIndexedDocumentsByGroupType( Id );
-                    }
-                    else if ( IsIndexEnabled == true )
-                    {
-                        // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
-                        BulkIndexDocumentsByGroupType( Id );
-                    }
+                    //if ( originalIndexState == true && IsIndexEnabled == false )
+                    //{
+                    //    // clear out index items
+                    //    this.DeleteIndexedDocumentsByGroupType( Id );
+                    //}
+                    //else if ( IsIndexEnabled == true )
+                    //{
+                    //    // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
+                    //    BulkIndexDocumentsByGroupType( Id );
+                    //}
                 }
             }
 
@@ -1232,56 +1233,56 @@ namespace Rock.Model
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritance tree.</returns>
-        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
-        {
-            var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
+        //public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
+        //{
+        //    var groupTypeIds = GetInheritedGroupTypeIds( rockContext );
 
-            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
-            groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
+        //    var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+        //    groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
 
-            //
-            // Walk each group type and generate a list of matching attributes.
-            //
-            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
-            {
-                // group type ids exist and qualifier is for a group type id
-                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
-                {
-                    int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
-                    {
-                        foreach ( int attributeId in entityAttributes.AttributeIds )
-                        {
-                            inheritedAttributes[groupTypeIdValue].Add( AttributeCache.Get( attributeId ) );
-                        }
-                    }
-                }
-            }
+        //    //
+        //    // Walk each group type and generate a list of matching attributes.
+        //    //
+        //    foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
+        //    {
+        //        // group type ids exist and qualifier is for a group type id
+        //        if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+        //        {
+        //            int groupTypeIdValue = int.MinValue;
+        //            if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+        //            {
+        //                foreach ( int attributeId in entityAttributes.AttributeIds )
+        //                {
+        //                    inheritedAttributes[groupTypeIdValue].Add( AttributeCache.Get( attributeId ) );
+        //                }
+        //            }
+        //        }
+        //    }
 
-            //
-            // Walk the generated list of attribute groups and put them, ordered, into a list
-            // of inherited attributes.
-            //
-            var attributes = new List<AttributeCache>();
-            foreach ( var attributeGroup in inheritedAttributes )
-            {
-                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
-                {
-                    attributes.Add( attribute );
-                }
-            }
+        //    //
+        //    // Walk the generated list of attribute groups and put them, ordered, into a list
+        //    // of inherited attributes.
+        //    //
+        //    var attributes = new List<AttributeCache>();
+        //    foreach ( var attributeGroup in inheritedAttributes )
+        //    {
+        //        foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
+        //        {
+        //            attributes.Add( attribute );
+        //        }
+        //    }
 
-            return attributes;
-        }
+        //    return attributes;
+        //}
 
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
-        }
+        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        //{
+        //    return GetInheritedAttributesForQualifier( rockContext, TypeId, "Id" );
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the GroupType that represents this instance.
@@ -1302,6 +1303,14 @@ namespace Rock.Model
         /// Queues groups of this type to have their indexes deleted
         /// </summary>
         /// <param name="groupTypeId">The group type identifier.</param>
+        //public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
+        //{
+        //    var groupIds = new GroupService( new RockContext() ).Queryable()
+        //        .Where( i => i.GroupTypeId == groupTypeId )
+        //        .Select( a => a.Id ).ToList();
+
+        //    int groupEntityTypeId = EntityTypeCache.GetId<Rock.Model.Group>().Value;
+
         public void DeleteIndexedDocumentsByGroupType( int groupTypeId )
         {
             var groupIds = new GroupService( new RockContext() ).Queryable()
@@ -1353,29 +1362,29 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return GroupTypeCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return GroupTypeCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
-            if ( parentGroupTypeIds?.Any() == true )
-            {
-                foreach ( var parentGroupTypeId in parentGroupTypeIds )
-                {
-                    GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
-                }
-            }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    var parentGroupTypeIds = new GroupTypeService( dbContext as RockContext ).GetParentGroupTypes( this.Id ).Select( a => a.Id ).ToList();
+        //    if ( parentGroupTypeIds?.Any() == true )
+        //    {
+        //        foreach ( var parentGroupTypeId in parentGroupTypeIds )
+        //        {
+        //            GroupTypeCache.UpdateCachedEntity( parentGroupTypeId, EntityState.Detached );
+        //        }
+        //    }
 
-            GroupTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //    GroupTypeCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         #endregion
     }
@@ -1392,7 +1401,18 @@ namespace Rock.Model
         /// </summary>
         public GroupTypeConfiguration()
         {
+#if NET5_0_OR_GREATER
+            Builder.HasMany( p => p.ChildGroupTypes )
+                .WithMany( c => c.ParentGroupTypes )
+                .UsingEntity( j =>
+                {
+                    j.ToTable( "GroupTypeAssociation" );
+                    j.HasOne( typeof( GroupType ) ).WithMany().HasForeignKey( "GroupTypeId" );
+                    j.HasOne( typeof( GroupType ) ).WithMany().HasForeignKey( "ChildGroupTypeId" );
+                } );
+#else
             this.HasMany( p => p.ChildGroupTypes ).WithMany( c => c.ParentGroupTypes ).Map( m => { m.MapLeftKey( "GroupTypeId" ); m.MapRightKey( "ChildGroupTypeId" ); m.ToTable( "GroupTypeAssociation" ); } );
+#endif
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.GroupStatusDefinedType ).WithMany().HasForeignKey( p => p.GroupStatusDefinedTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );

@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// The authorized person identifier.
         /// </value>
         [DataMember]
-        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
+        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
         /// </value>
         [DataMember]
-        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
+        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
-        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
+        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
         public int TransactionTypeValueId { get; set; }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 128 )]
-        [Index]
+        //[Index]
         [HideFromReporting]
         public string CheckMicrHash { get; set; }
 
@@ -288,7 +288,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        [Index( "IX_SundayDate" )]
+        //[Index( "IX_SundayDate" )]
         public DateTime? SundayDate
         {
             get
@@ -690,7 +690,7 @@ namespace Rock.Model
                         if ( batchId.HasValue )
                         {
                             var batchChanges = new History.HistoryChangeList();
-                            batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                            //batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
 
@@ -735,11 +735,11 @@ namespace Rock.Model
 
                             if ( origBatchId.HasValue )
                             {
-                                batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                                //batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
                             if ( batchId.HasValue )
                             {
-                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                                //batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
 
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
@@ -766,7 +766,7 @@ namespace Rock.Model
                             string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
                             string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
                             var batchChanges = new History.HistoryChangeList();
-                            batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                            //batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
 
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
@@ -779,8 +779,8 @@ namespace Rock.Model
                         }
 
                         // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
-                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+                        //var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        //financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
 
                         break;
                     }
@@ -835,7 +835,11 @@ namespace Rock.Model
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+#if NET5_0_OR_GREATER
+            // EFCore: Moved to FinancialTransactionRefund
+#else
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
+#endif
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
@@ -953,18 +957,20 @@ namespace Rock.Model
         /// <returns></returns>
         public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var service = new FinancialTransactionService( rockContext );
-                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
+            errorMessage = "Not supported";
+            return null;
+            //using ( var rockContext = new RockContext() )
+            //{
+            //    var service = new FinancialTransactionService( rockContext );
+            //    var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
 
-                if ( refundTransaction != null )
-                {
-                    rockContext.SaveChanges();
-                }
+            //    if ( refundTransaction != null )
+            //    {
+            //        rockContext.SaveChanges();
+            //    }
 
-                return refundTransaction;
-            }
+            //    return refundTransaction;
+            //}
         }
 
         /// <summary>

@@ -234,7 +234,7 @@ namespace Rock.Model
         public BenevolenceRequest()
             : base()
         {
-            _results = new Collection<BenevolenceResult>();
+            _benevolenceResults = new Collection<BenevolenceResult>();
             _documents = new Collection<BenevolenceRequestDocument>();
         }
 
@@ -356,10 +356,10 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<BenevolenceResult> BenevolenceResults
         {
-            get { return _results; }
-            set { _results = value; }
+            get { return _benevolenceResults; }
+            set { _benevolenceResults = value; }
         }
-        private ICollection<BenevolenceResult> _results;
+        private ICollection<BenevolenceResult> _benevolenceResults;
 
 
         /// <summary>

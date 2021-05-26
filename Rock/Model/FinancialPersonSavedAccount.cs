@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -232,7 +232,7 @@ namespace Rock.Model
                     {
                         // If a FinancialPaymentDetail was linked to this FinancialPersonSavedAccount and is now orphaned, delete it.
                         var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+                        //financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
 
                         break;
                     }
@@ -245,55 +245,55 @@ namespace Rock.Model
         /// Gets a reference payment info record.
         /// </summary>
         /// <returns></returns>
-        public ReferencePaymentInfo GetReferencePayment()
-        {
-            var reference = new ReferencePaymentInfo();
-            reference.TransactionCode = this.TransactionCode;
-            reference.ReferenceNumber = this.ReferenceNumber;
-            if ( this.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
-            {
-                reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
-            }
-            else
-            {
-                // if GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber
-                reference.GatewayPersonIdentifier = this.ReferenceNumber;
-            }
+        //public ReferencePaymentInfo GetReferencePayment()
+        //{
+        //    var reference = new ReferencePaymentInfo();
+        //    reference.TransactionCode = this.TransactionCode;
+        //    reference.ReferenceNumber = this.ReferenceNumber;
+        //    if ( this.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+        //    {
+        //        reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+        //    }
+        //    else
+        //    {
+        //        // if GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber
+        //        reference.GatewayPersonIdentifier = this.ReferenceNumber;
+        //    }
 
-            if ( this.Id > 0 )
-            {
-                reference.FinancialPersonSavedAccountId = this.Id;
-            }
+        //    if ( this.Id > 0 )
+        //    {
+        //        reference.FinancialPersonSavedAccountId = this.Id;
+        //    }
 
-            if ( this.FinancialPaymentDetail != null )
-            {
-                reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
+        //    if ( this.FinancialPaymentDetail != null )
+        //    {
+        //        reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
 
-                // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
-                if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
-                {
-                    if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )
-                    {
-                        reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
-                    }
-                }
+        //        // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
+        //        if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
+        //        {
+        //            if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )
+        //            {
+        //                reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
+        //            }
+        //        }
 
-                if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
-                {
-                    reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
-                    if ( reference.InitialCurrencyTypeValue != null &&
-                        reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
-                        this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-                    {
-                        reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
-                    }
-                }
-            }
+        //        if ( this.FinancialPaymentDetail.CurrencyTypeValueId.HasValue )
+        //        {
+        //            reference.InitialCurrencyTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CurrencyTypeValueId.Value );
+        //            if ( reference.InitialCurrencyTypeValue != null &&
+        //                reference.InitialCurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) &&
+        //                this.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
+        //            {
+        //                reference.InitialCreditCardTypeValue = DefinedValueCache.Get( this.FinancialPaymentDetail.CreditCardTypeValueId.Value );
+        //            }
+        //        }
+        //    }
 
-            reference.AmountCurrencyCodeValueId = this.PreferredForeignCurrencyCodeValueId;
+        //    reference.AmountCurrencyCodeValueId = this.PreferredForeignCurrencyCodeValueId;
 
-            return reference;
-        }
+        //    return reference;
+        //}
 
         #endregion Public Methods
 

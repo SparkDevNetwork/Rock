@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -359,6 +359,7 @@ namespace Rock
         /// <returns></returns>
         public static IOrderedQueryable<T> Sort<T>( this IQueryable<T> source, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
+#if !NET5_0_OR_GREATER
             if ( sortProperty.Property.StartsWith( "attribute:" ) && source.Any() )
             {
                 var itemType = typeof( T );
@@ -448,6 +449,7 @@ namespace Rock
                     return result.AsQueryable().OrderBy( r => 0 );
                 }
             }
+#endif
 
             string[] columns = sortProperty.Property.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -492,6 +494,9 @@ namespace Rock
         ///   </example>
         public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, string attributeKey, string attributeValue ) where T : Entity<T>, new()
         {
+#if NET5_0_OR_GREATER
+            return source.Where( a => false );
+#else
             int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var avs = new AttributeValueService( rockContext ).Queryable()
@@ -502,6 +507,7 @@ namespace Rock
 
             var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
             return result;
+#endif
         }
 
         /// <summary>
@@ -515,6 +521,9 @@ namespace Rock
         /// <returns></returns>
         public static IQueryable<T> WhereAttributeValue<T>( this IQueryable<T> source, RockContext rockContext, Expression<Func<AttributeValue, bool>> predicate ) where T : Entity<T>, new()
         {
+#if NET5_0_OR_GREATER
+            return source.Where( a => false );
+#else
             /*
               Example: 
               var qryPerson = new PersonService( rockContext ).Queryable().Where( a => a.FirstName == "Bob" )
@@ -530,6 +539,7 @@ namespace Rock
 
             var result = source.Where( a => avs.Contains( ( a as T ).Id ) );
             return result;
+#endif
         }
 
         /// <summary>
@@ -542,6 +552,9 @@ namespace Rock
         /// <returns></returns>
         public static IQueryable<T> WhereCampus<T>( this IQueryable<T> source, RockContext rockContext, int campusId ) where T : Entity<T>, new()
         {
+#if NET5_0_OR_GREATER
+            return source.Where( a => false );
+#else
             int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
 
             var entityCampusFilterService = new EntityCampusFilterService( rockContext )
@@ -552,6 +565,7 @@ namespace Rock
 
             var result = source.Where( s => entityCampusFilterService.Contains( ( s as T ).Id ) );
             return result;
+#endif
         }
 
         /// <summary>

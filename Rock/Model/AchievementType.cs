@@ -18,12 +18,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "AchievementType" )]
     [DataContract]
-    public partial class AchievementType : Model<AchievementType>, IHasActiveFlag, ICacheable
+    public partial class AchievementType : Model<AchievementType>, IHasActiveFlag/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -177,20 +177,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return AchievementTypeCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return AchievementTypeCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            AchievementTypeCache.UpdateCachedEntity( Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    AchievementTypeCache.UpdateCachedEntity( Id, entityState );
+        //}
 
         #endregion ICacheable
 

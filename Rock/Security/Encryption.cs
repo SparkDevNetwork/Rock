@@ -21,7 +21,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-using Microsoft.IdentityModel.Tokens;
+//using Microsoft.IdentityModel.Tokens;
 
 namespace Rock.Security
 {
@@ -81,21 +81,21 @@ namespace Rock.Security
         {
             get
             {
-                if ( HttpContext.Current != null )
-                {
-                    return HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] as byte[];
-                }
+                //if ( HttpContext.Current != null )
+                //{
+                //    return HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] as byte[];
+                //}
 
                 return _nonHttpContext_keyBytes;
             }
 
             set
             {
-                if ( HttpContext.Current != null )
-                {
-                    HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] = value;
-                }
-                else
+                //if ( HttpContext.Current != null )
+                //{
+                //    HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] = value;
+                //}
+                //else
                 {
                     _nonHttpContext_keyBytes = value;
                 }

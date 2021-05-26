@@ -39,7 +39,7 @@ namespace Rock.Model
         /// The group member identifier.
         /// </value>
         [DataMember]
-        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
+        //[Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
         public int GroupMemberId { get; set; }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.Model
         /// The location identifier.
         /// </value>
         [DataMember]
-        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 1 )]
+        //[Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 1 )]
         public int? LocationId { get; set; }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Rock.Model
         /// The schedule identifier.
         /// </value>
         [DataMember]
-        [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
+        //[Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 2 )]
         public int? ScheduleId { get; set; }
 
         #endregion Entity Properties

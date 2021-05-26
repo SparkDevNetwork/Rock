@@ -297,6 +297,7 @@ namespace Rock.Model
         /// The merge fields.
         /// </value>
         [DataMember]
+        [NotMapped]
         public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();
 
         #endregion

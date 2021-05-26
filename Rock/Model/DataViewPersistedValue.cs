@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The data view identifier.
         /// </value>
         [DataMember]
-        [Key]
+        //[Key]
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int DataViewId { get; set; }
 
@@ -52,7 +52,7 @@ namespace Rock.Model
         /// The entity identifier.
         /// </value>
         [DataMember]
-        [Key]
+        //[Key]
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int EntityId { get; set; }
 

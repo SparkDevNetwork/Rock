@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -31,5 +32,21 @@ namespace Rock.Model
     public class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimPersonBase<AnalyticsDimFamilyHeadOfHousehold>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
+    }
+
+    public partial class AnalyticsDimFamilyHeadOfHouseholdConfiguration : EntityTypeConfiguration<AnalyticsDimFamilyHeadOfHousehold>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimFamilyHeadOfHouseholdConfiguration"/> class.
+        /// </summary>
+        public AnalyticsDimFamilyHeadOfHouseholdConfiguration()
+        {
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            Builder.HasOne( t => t.BirthDateDim )
+                .WithMany()
+                .HasForeignKey( t => t.BirthDateKey )
+                .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Restrict );
+        }
     }
 }

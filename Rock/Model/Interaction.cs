@@ -17,8 +17,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -198,7 +198,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
-        [Index( "IX_ChannelCustomIndexed1" )]
+        //[Index( "IX_ChannelCustomIndexed1" )]
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
@@ -369,10 +369,10 @@ namespace Rock.Model
         /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
         /// </summary>
         /// <param name="interactionData">The interaction data.</param>
-        public void SetInteractionData( string interactionData )
-        {
-            this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
-        }
+        //public void SetInteractionData( string interactionData )
+        //{
+        //    this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+        //}
 
         /// <summary>
         /// Gets or sets the interaction source date.
@@ -409,7 +409,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
+                //Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

@@ -196,7 +196,7 @@ namespace Rock.Model
         /// <value>
         /// The order.
         /// </value>
-        [Index]
+        //[Index]
         [DataMember]
         public int Order { get; set; }
 

@@ -15,12 +15,12 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using System.Linq.Dynamic;
+//using System.Linq.Dynamic;
 using System.Threading.Tasks;
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -77,35 +77,35 @@ namespace Rock.Model
         /// <param name="streakId">The streak identifier.</param>
         public static void RefreshStreakDenormalizedProperties( int streakId )
         {
-            var rockContext = new RockContext();
-            var streakService = new StreakService( rockContext );
-            var streakTypeService = new StreakTypeService( rockContext );
+            //var rockContext = new RockContext();
+            //var streakService = new StreakService( rockContext );
+            //var streakTypeService = new StreakTypeService( rockContext );
 
             // Get the streak data and validate it
-            var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
+            //var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
 
-            if ( !errorMessage.IsNullOrWhiteSpace() )
-            {
-                ExceptionLogService.LogException( errorMessage );
-                return;
-            }
+            //if ( !errorMessage.IsNullOrWhiteSpace() )
+            //{
+            //    ExceptionLogService.LogException( errorMessage );
+            //    return;
+            //}
 
-            if ( streakData == null )
+            //if ( streakData == null )
             {
                 ExceptionLogService.LogException( "Streak Data was null, but no error was specified" );
                 return;
             }
 
             // Get the streak and apply updated information to it
-            var streak = streakService.Get( streakId );
-            if ( streak == null )
-            {
-                ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
-                return;
-            }
+            //var streak = streakService.Get( streakId );
+            //if ( streak == null )
+            //{
+            //    ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
+            //    return;
+            //}
 
-            CopyStreakDataToStreakModel( streakData, streak );
-            rockContext.SaveChanges( true );
+            //CopyStreakDataToStreakModel( streakData, streak );
+            //rockContext.SaveChanges( true );
         }
 
         /// <summary>
@@ -113,21 +113,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
-        private static void CopyStreakDataToStreakModel( StreakData source, Streak target )
-        {
-            if ( source == null || target == null )
-            {
-                return;
-            }
+        //private static void CopyStreakDataToStreakModel( StreakData source, Streak target )
+        //{
+        //    if ( source == null || target == null )
+        //    {
+        //        return;
+        //    }
 
-            target.EngagementCount = source.EngagementCount;
+        //    target.EngagementCount = source.EngagementCount;
 
-            target.LongestStreakCount = source.LongestStreakCount;
-            target.LongestStreakStartDate = source.LongestStreakStartDate;
-            target.LongestStreakEndDate = source.LongestStreakEndDate;
+        //    target.LongestStreakCount = source.LongestStreakCount;
+        //    target.LongestStreakStartDate = source.LongestStreakStartDate;
+        //    target.LongestStreakEndDate = source.LongestStreakEndDate;
 
-            target.CurrentStreakCount = source.CurrentStreakCount;
-            target.CurrentStreakStartDate = source.CurrentStreakStartDate;
-        }
+        //    target.CurrentStreakCount = source.CurrentStreakCount;
+        //    target.CurrentStreakStartDate = source.CurrentStreakStartDate;
+        //}
     }
 }

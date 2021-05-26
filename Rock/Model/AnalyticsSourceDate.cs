@@ -22,7 +22,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-using EntityFramework.Utilities;
+using Z.EntityFramework.Extensions;
+
+using Microsoft.EntityFrameworkCore;
 
 using Rock.Data;
 
@@ -58,7 +60,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         public DateTime Date { get; set; }
 
         /// <summary>
@@ -468,13 +470,13 @@ namespace Rock.Model
                 try
                 {
                     // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
-                    rockContext.Database.CommandTimeout = 5;
-                    rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+                    rockContext.Database.SetCommandTimeout( 5 );
+                    rockContext.Database.ExecuteSqlRaw( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
                 catch
                 {
-                    rockContext.Database.CommandTimeout = null;
-                    rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+                    rockContext.Database.SetCommandTimeout( null );
+                    rockContext.Database.ExecuteSqlRaw( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
             }
 
@@ -640,7 +642,8 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
-                EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+                rockContext.AnalyticsSourceDates.BulkInsert( generatedDates );
+                //EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
             }
         }
     }

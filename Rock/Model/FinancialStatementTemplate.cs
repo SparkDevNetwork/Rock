@@ -98,7 +98,7 @@ namespace Rock.Model
 
             set
             {
-                FooterSettings = value.FromJsonOrNull<FinancialStatementTemplateHeaderFooterSettings>() ?? new FinancialStatementTemplateHeaderFooterSettings();
+                //FooterSettings = value.FromJsonOrNull<FinancialStatementTemplateHeaderFooterSettings>() ?? new FinancialStatementTemplateHeaderFooterSettings();
             }
         }
 

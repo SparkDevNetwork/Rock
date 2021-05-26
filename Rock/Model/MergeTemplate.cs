@@ -20,7 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.MergeTemplates;
+//using Rock.MergeTemplates;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -181,22 +181,22 @@ namespace Rock.Model
         /// <returns>
         /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            if ( action == Security.Authorization.VIEW && PersonAlias != null )
-            {
-                if ( PersonAlias.PersonId == person.Id )
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
+        //public override bool IsAuthorized( string action, Person person )
+        //{
+        //    if ( action == Security.Authorization.VIEW && PersonAlias != null )
+        //    {
+        //        if ( PersonAlias.PersonId == person.Id )
+        //        {
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            return false;
+        //        }
+        //    }
 
-            return base.IsAuthorized( action, person );
-        }
+        //    return base.IsAuthorized( action, person );
+        //}
         #endregion
 
         #region Private Methods
@@ -209,16 +209,16 @@ namespace Rock.Model
         /// Gets the MergeTemplateType MEF Component for the specified MergeTemplate
         /// </summary>
         /// <returns></returns>
-        public MergeTemplateType GetMergeTemplateType()
-        {
-            var mergeTemplateTypeEntityType = EntityTypeCache.Get( this.MergeTemplateTypeEntityTypeId );
-            if ( mergeTemplateTypeEntityType == null )
-            {
-                return null;
-            }
+        //public MergeTemplateType GetMergeTemplateType()
+        //{
+        //    var mergeTemplateTypeEntityType = EntityTypeCache.Get( this.MergeTemplateTypeEntityTypeId );
+        //    if ( mergeTemplateTypeEntityType == null )
+        //    {
+        //        return null;
+        //    }
 
-            return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
-        }
+        //    return MergeTemplateTypeContainer.GetComponent( mergeTemplateTypeEntityType.Name );
+        //}
 
         #endregion
     }

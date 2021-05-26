@@ -124,8 +124,9 @@ namespace Rock.Data
         {
             get
             {
+                throw new NotSupportedException();
                 // Read should never return null since it will create entity type if it doesn't exist
-                return EntityTypeCache.Get( typeof( T ) ).Id;
+                //return EntityTypeCache.Get( typeof( T ) ).Id;
             }
         }
 
@@ -156,11 +157,12 @@ namespace Rock.Data
         {
             get
             {
-                string identifier =
-                    TypeName + "|" +
-                    this.Id.ToString() + ">" +
-                    this.Guid.ToString();
-                return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
+                throw new NotSupportedException();
+                //string identifier =
+                //    TypeName + "|" +
+                //    this.Id.ToString() + ">" +
+                //    this.Guid.ToString();
+                //return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
             }
         }
 
@@ -209,11 +211,11 @@ namespace Rock.Data
                 //// Non-web apps might not have the dataencryptionkey
                 //// so just return empty string if we can't encrypt
 
-                if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
-                {
-                    return result;
-                }
-                else
+                //if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
+                //{
+                //    return result;
+                //}
+                //else
                 {
                     return string.Empty; ;
                 }
@@ -447,6 +449,7 @@ namespace Rock.Data
         /// </value>
         //[LavaIgnore]
         [LavaHidden]
+        [NotMapped]
         public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>
@@ -492,7 +495,8 @@ namespace Rock.Data
         /// <returns></returns>
         private bool LiquidizableProperty( PropertyInfo propInfo )
         {
-            return Rock.Lava.LavaHelper.IsLavaProperty( propInfo );
+            return false;
+            //return Rock.Lava.LavaHelper.IsLavaProperty( propInfo );
         }
 
         /// <summary>
@@ -571,7 +575,8 @@ namespace Rock.Data
         /// </value>
         public static string GetIndexResultTemplate()
         {
-            return EntityTypeCache.Get( typeof( T ) ).IndexResultTemplate;
+            return string.Empty;
+            //return EntityTypeCache.Get( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

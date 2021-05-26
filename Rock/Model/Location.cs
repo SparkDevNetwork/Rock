@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.Spatial;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -40,7 +40,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Location" )]
     [DataContract]
-    public partial class Location : Model<Location>, IHasActiveFlag, ICacheable
+    public partial class Location : Model<Location>, IHasActiveFlag/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -96,7 +96,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-        public DbGeography GeoPoint { get; set; }
+        public NetTopologySuite.Geometries.Point GeoPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the geographic parameter around the a Location's GeoPoint. This can also be used to define a large area
@@ -111,7 +111,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
-        public DbGeography GeoFence { get; set; }
+        public NetTopologySuite.Geometries.Polygon GeoFence { get; set; }
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -406,6 +406,13 @@ namespace Rock.Model
         }
         private ICollection<GroupLocation> _groupLocations;
 
+        public virtual ICollection<Device> Devices
+        {
+            get { return _devices ?? ( _devices = new Collection<Device>() ); }
+            set { _devices = value; }
+        }
+        private ICollection<Device> _devices;
+
         /// <summary>
         /// Gets or sets the Attendance Printer <see cref="Rock.Model.Device"/> that is used at this Location.
         /// </summary>
@@ -459,7 +466,11 @@ namespace Rock.Model
         {
             get
             {
+#if NET5_0_OR_GREATER
+                return GeoPoint?.Coordinate?.Y;
+#else
                 return GeoPoint != null ? GeoPoint.Latitude : null;
+#endif
             }
         }
 
@@ -474,7 +485,11 @@ namespace Rock.Model
         {
             get
             {
+#if NET5_0_OR_GREATER
+                return GeoPoint?.Coordinate?.X;
+#else
                 return GeoPoint != null ? GeoPoint.Longitude : null;
+#endif
             }
         }
 
@@ -491,10 +506,17 @@ namespace Rock.Model
             {
                 if ( GeoFence != null )
                 {
+#if NET5_0_OR_GREATER
+                    // EFCORE: Not sure this is correct, need testing.
+                    return GeoFence.Coordinates
+                        .Select( c => new double[] { c.Y, c.X } )
+                        .ToList();
+#else
                     return GeoFence.Coordinates()
                         .Where( c => c.Latitude.HasValue && c.Longitude.HasValue )
                         .Select( c => new Double[] { c.Latitude.Value, c.Longitude.Value } )
                         .ToList();
+#endif
                 }
 
                 return null;
@@ -526,23 +548,23 @@ namespace Rock.Model
         /// <returns></returns>
         private int? GetCampusId( RockContext rockContext )
         {
-            var campuses = CampusCache.All( rockContext );
+            //var campuses = CampusCache.All( rockContext );
 
             int? campusId = null;
-            Location loc = this;
+            //Location loc = this;
 
-            while ( !campusId.HasValue && loc != null )
-            {
-                var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
-                if ( campus != null )
-                {
-                    campusId = campus.Id;
-                }
-                else
-                {
-                    loc = loc.ParentLocation;
-                }
-            }
+            //while ( !campusId.HasValue && loc != null )
+            //{
+            //    var campus = campuses.Where( c => c.LocationId != null && c.LocationId == loc.Id ).FirstOrDefault();
+            //    if ( campus != null )
+            //    {
+            //        campusId = campus.Id;
+            //    }
+            //    else
+            //    {
+            //        loc = loc.ParentLocation;
+            //    }
+            //}
 
             return campusId;
         }
@@ -624,18 +646,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="latitude">A <see cref="System.Double"/> representing the latitude for this location.</param>
         /// <param name="longitude">A <see cref="System.Double"/>representing the longitude for this location.</param>
-        public bool SetLocationPointFromLatLong( double latitude, double longitude )
-        {
-            try
-            {
-                this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        //public bool SetLocationPointFromLatLong( double latitude, double longitude )
+        //{
+        //    try
+        //    {
+        //        this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+        //        return true;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
 
         /// <summary>
         /// Returns a Google Maps link to use for this Location
@@ -724,12 +746,16 @@ namespace Rock.Model
 
             if ( this.GeoPoint != null )
             {
-                return string.Format( "A point at {0}, {1}", this.GeoPoint.Latitude, this.GeoPoint.Longitude );
+                return string.Format( "A point at {0}, {1}", this.GeoPoint.Y, this.GeoPoint.X );
             }
 
             if ( this.GeoFence != null )
             {
+#if NET5_0_OR_GREATER
+                int pointCount = this.GeoFence.Coordinates?.Length ?? 0;
+#else
                 int pointCount = this.GeoFence.PointCount ?? 0;
+#endif
                 return string.Format( "An area with {0} points", ( pointCount > 0 ? pointCount - 1 : 0 ) );
             }
 
@@ -761,10 +787,10 @@ namespace Rock.Model
         /// <param name="latitude">The latitude.</param>
         /// <param name="longitude">The longitude.</param>
         /// <returns></returns>
-        public static DbGeography GetGeoPoint( double latitude, double longitude )
-        {
-            return DbGeography.FromText( $"POINT({longitude} {latitude})" );
-        }
+        //public static DbGeography GetGeoPoint( double latitude, double longitude )
+        //{
+        //    return DbGeography.FromText( $"POINT({longitude} {latitude})" );
+        //}
 
         /// <summary>
         /// Gets the full street address.
@@ -779,18 +805,18 @@ namespace Rock.Model
 
             string result = string.Format( "{0} {1} {2}, {3} {4}",
                 this.Street1, this.Street2, this.City, this.State, this.PostalCode ).ReplaceWhileExists( "  ", " " );
-            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
+            //var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
 
-            if ( countryValue != null )
-            {
-                string format = countryValue.GetAttributeValue( "AddressFormat" );
-                if ( !string.IsNullOrWhiteSpace( format ) )
-                {
-                    var dict = this.ToDictionary();
-                    dict["Country"] = countryValue.Description;
-                    result = format.ResolveMergeFields( dict );
-                }
-            }
+            //if ( countryValue != null )
+            //{
+            //    string format = countryValue.GetAttributeValue( "AddressFormat" );
+            //    if ( !string.IsNullOrWhiteSpace( format ) )
+            //    {
+            //        var dict = this.ToDictionary();
+            //        dict["Country"] = countryValue.Description;
+            //        result = format.ResolveMergeFields( dict );
+            //    }
+            //}
 
             // Remove blank lines
             while ( result.Contains( Environment.NewLine + Environment.NewLine ) )
@@ -819,38 +845,38 @@ namespace Rock.Model
         {
             var str = new StringBuilder();
 
-            if ( this.GeoFence != null )
-            {
-                var encodeDiff = ( Action<int> ) ( diff =>
-                   {
-                       int shifted = diff << 1;
-                       if ( diff < 0 )
-                           shifted = ~shifted;
-                       int rem = shifted;
-                       while ( rem >= 0x20 )
-                       {
-                           str.Append( ( char ) ( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
-                           rem >>= 5;
-                       }
-                       str.Append( ( char ) ( rem + 63 ) );
-                   } );
+            //if ( this.GeoFence != null )
+            //{
+            //    var encodeDiff = ( Action<int> ) ( diff =>
+            //       {
+            //           int shifted = diff << 1;
+            //           if ( diff < 0 )
+            //               shifted = ~shifted;
+            //           int rem = shifted;
+            //           while ( rem >= 0x20 )
+            //           {
+            //               str.Append( ( char ) ( ( 0x20 | ( rem & 0x1f ) ) + 63 ) );
+            //               rem >>= 5;
+            //           }
+            //           str.Append( ( char ) ( rem + 63 ) );
+            //       } );
 
-                int lastLat = 0;
-                int lastLng = 0;
+            //    int lastLat = 0;
+            //    int lastLng = 0;
 
-                foreach ( var coordinate in this.GeoFence.Coordinates() )
-                {
-                    if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
-                    {
-                        int lat = ( int ) Math.Round( coordinate.Latitude.Value * 1E5 );
-                        int lng = ( int ) Math.Round( coordinate.Longitude.Value * 1E5 );
-                        encodeDiff( lat - lastLat );
-                        encodeDiff( lng - lastLng );
-                        lastLat = lat;
-                        lastLng = lng;
-                    }
-                }
-            }
+            //    foreach ( var coordinate in this.GeoFence.Coordinates() )
+            //    {
+            //        if ( coordinate.Longitude.HasValue && coordinate.Latitude.HasValue )
+            //        {
+            //            int lat = ( int ) Math.Round( coordinate.Latitude.Value * 1E5 );
+            //            int lng = ( int ) Math.Round( coordinate.Longitude.Value * 1E5 );
+            //            encodeDiff( lat - lastLat );
+            //            encodeDiff( lng - lastLng );
+            //            lastLat = lat;
+            //            lastLng = lng;
+            //        }
+            //    }
+            //}
 
             return str.ToString();
         }
@@ -873,40 +899,40 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            if (this.Name.IsNotNullOrWhiteSpace())
-            {
-                return NamedLocationCache.Get( this.Id );
-            }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    if ( this.Name.IsNotNullOrWhiteSpace() )
+        //    {
+        //        return NamedLocationCache.Get( this.Id );
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
-            var campusId = this.GetCampusId( dbContext as RockContext );
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
+        //    var campusId = this.GetCampusId( dbContext as RockContext );
 
-            NamedLocationCache.FlushItem( this.Id );
+        //    NamedLocationCache.FlushItem( this.Id );
 
-            // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
-            if ( this.CampusId.HasValue )
-            {
-                CampusCache.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
-            }
+        //    // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
+        //    if ( this.CampusId.HasValue )
+        //    {
+        //        CampusCache.UpdateCachedEntity( this.CampusId.Value, EntityState.Detached );
+        //    }
 
-            // and also refresh the CampusCache for any Campus that uses this location
-            foreach ( var campus in CampusCache.All( dbContext as RockContext ).Where( c => c.LocationId == this.Id ) )
-            {
-                CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
-            }
-        }
+        //    // and also refresh the CampusCache for any Campus that uses this location
+        //    foreach ( var campus in CampusCache.All( dbContext as RockContext ).Where( c => c.LocationId == this.Id ) )
+        //    {
+        //        CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
+        //    }
+        //}
 
         #endregion ICacheable
 
@@ -927,32 +953,32 @@ namespace Rock.Model
                 string keyName = key.ToStringSafe();
                 switch ( keyName )
                 {
-                    case "GeoPoint":
-                        {
-                            if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
-                            {
-                                return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
-                            }
-                            break;
-                        }
-                    case "GeoFence":
-                        {
-                            if ( GeoFence != null )
-                            {
-                                return GeoFence.Coordinates()
-                                    .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
-                                    .ToList()
-                                    .AsDelimited( "|" );
-                            }
-                            break;
-                        }
+                    //case "GeoPoint":
+                    //    {
+                    //        if ( GeoPoint != null && GeoPoint.Latitude.HasValue && GeoPoint.Longitude.HasValue )
+                    //        {
+                    //            return string.Format( "{0},{1}", GeoPoint.Latitude.Value, GeoPoint.Longitude.Value );
+                    //        }
+                    //        break;
+                    //    }
+                    //case "GeoFence":
+                    //    {
+                    //        if ( GeoFence != null )
+                    //        {
+                    //            return GeoFence.Coordinates()
+                    //                .Select( c => c.Latitude.ToString() + "," + c.Longitude.ToString() )
+                    //                .ToList()
+                    //                .AsDelimited( "|" );
+                    //        }
+                    //        break;
+                    //    }
                     default:
                         {
                             return base[key];
                         }
                 }
 
-                return string.Empty;
+                //return string.Empty;
             }
         }
 
@@ -1111,15 +1137,15 @@ namespace Rock.Model
             if ( location != null )
             {
                 LocationId = location.Id;
-                if ( location.GeoPoint != null )
-                {
-                    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
-                }
+                //if ( location.GeoPoint != null )
+                //{
+                //    Point = new MapCoordinate( location.GeoPoint.Latitude, location.GeoPoint.Longitude );
+                //}
 
-                if ( location.GeoFence != null )
-                {
-                    PolygonPoints = location.GeoFence.Coordinates();
-                }
+                //if ( location.GeoFence != null )
+                //{
+                //    PolygonPoints = location.GeoFence.Coordinates();
+                //}
             }
         }
     }

@@ -16,6 +16,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -25,6 +26,7 @@ namespace Rock.Model
     /// <summary>
     /// Used to verify individuals by phone number.
     /// </summary>
+    [Table( "IdentityVerification" )]
     public partial class IdentityVerification : Model<IdentityVerification>
     {
         /// <summary>

@@ -20,7 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Expressions;
 
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 namespace Rock.Data
@@ -87,7 +87,7 @@ namespace Rock.Data
         {
             _context = dbContext;
             _objectSet = _context.Set<T>();
-            RelatedEntities = new RelatedEntityHelper<T>( this );
+            //RelatedEntities = new RelatedEntityHelper<T>( this );
         }
 
         #endregion
@@ -458,8 +458,12 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual T GetByEncryptedKey( string encryptedKey )
         {
+#if NET5_0_OR_GREATER
+            throw new NotSupportedException();
+#else
             string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
             return GetByPublicKey( publicKey );
+#endif
         }
 
         /// <summary>
@@ -639,12 +643,13 @@ namespace Rock.Data
         /// <value>
         /// The related entities.
         /// </value>
-        public RelatedEntityHelper<T> RelatedEntities { get; private set; }
+        //public RelatedEntityHelper<T> RelatedEntities { get; private set; }
 
         #endregion Related Entities
 
         #region Following
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets a quety of the followers of a particular item
         /// </summary>
@@ -691,6 +696,7 @@ namespace Rock.Data
             var query = new Rock.Model.FollowingService( rockContext ).GetFollowedItems( entityTypeId.Value, personId ).Cast<T>();
             return query;
         }
+#endif
 
         #endregion
 

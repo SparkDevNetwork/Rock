@@ -115,13 +115,13 @@ namespace Rock.Model
         /// <value>
         /// An entity that implements the <see cref="Rock.Security.ISecured"/> interface that this TagItem inherits security authority from.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get 
-            {
-                return this.Tag != null ? this.Tag : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get 
+        //    {
+        //        return this.Tag != null ? this.Tag : base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.

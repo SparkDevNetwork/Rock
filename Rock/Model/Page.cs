@@ -20,12 +20,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web.Routing;
+//using System.Web.Routing;
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -48,7 +48,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
-    public partial class Page : Model<Page>, IOrdered, ICacheable
+    public partial class Page : Model<Page>, IOrdered/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -280,25 +280,25 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> represents the length of time (in seconds) that output is cached. 0 = no caching.
         /// </value>
-        [Obsolete( "You should use the new cache control header property." )]
-        [RockObsolete( "1.12" )]
-        [DataMember]
-        public int OutputCacheDuration
-        {
-            get
-            {
-                if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
-                {
-                    return 0;
-                }
+        //[Obsolete( "You should use the new cache control header property." )]
+        //[RockObsolete( "1.12" )]
+        //[DataMember]
+        //public int OutputCacheDuration
+        //{
+        //    get
+        //    {
+        //        if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
+        //        {
+        //            return 0;
+        //        }
 
-                return this.CacheControlHeader.MaxAge.ToSeconds();
-            }
+        //        return this.CacheControlHeader.MaxAge.ToSeconds();
+        //    }
 
-            private set
-            {
-            }
-        }
+        //    private set
+        //    {
+        //    }
+        //}
 
         /// <summary>
         /// Gets or sets a user defined description of the page.  This will be added as a meta tag for the page 
@@ -423,14 +423,14 @@ namespace Rock.Model
             {
                 if ( _cacheControlHeaderSettings != value )
                 {
-                    _cacheControlHeader = null;
+                    //_cacheControlHeader = null;
                 }
 
                 _cacheControlHeaderSettings = value;
             }
         }
 
-        private RockCacheability _cacheControlHeader;
+        //private RockCacheability _cacheControlHeader;
 
         /// <summary>
         /// Gets the cache control header. This shouldn't be used to set the properties directly but the json version should be used to set the CacheControlHeaderSettings property.
@@ -439,18 +439,18 @@ namespace Rock.Model
         /// The cache control header.
         /// </value>
         [NotMapped]
-        public RockCacheability CacheControlHeader
-        {
-            get
-            {
-                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
-                {
-                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-                }
+        //public RockCacheability CacheControlHeader
+        //{
+        //    get
+        //    {
+        //        if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
+        //        {
+        //            _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+        //        }
 
-                return _cacheControlHeader;
-            }
-        }
+        //        return _cacheControlHeader;
+        //    }
+        //}
         #endregion
 
         #region Virtual Properties
@@ -484,9 +484,9 @@ namespace Rock.Model
             get
             {
                 var actions = new Dictionary<string, string>();
-                actions.Add( Authorization.VIEW, "The roles and/or users that have access to view the page." );
-                actions.Add( Authorization.EDIT, "The roles and/or users that have access to edit blocks on this page or any child page, when those block or pages don't specifically define security for the current user (i.e. when this page is used as a 'parent authority')." );
-                actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the page.  This includes setting properties of the page, setting security for the page, managing the zones and blocks on the page, and editing the child pages." );
+                //actions.Add( Authorization.VIEW, "The roles and/or users that have access to view the page." );
+                //actions.Add( Authorization.EDIT, "The roles and/or users that have access to edit blocks on this page or any child page, when those block or pages don't specifically define security for the current user (i.e. when this page is used as a 'parent authority')." );
+                //actions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the page.  This includes setting properties of the page, setting security for the page, managing the zones and blocks on the page, and editing the child pages." );
                 return actions;
             }
         }
@@ -507,14 +507,14 @@ namespace Rock.Model
         /// <value>
         /// The site identifier.
         /// </value>
-        public virtual int SiteId
-        {
-            get
-            {
-                var layout = LayoutCache.Get( this.LayoutId );
-                return layout != null ? layout.SiteId : 0;
-            }
-        }
+        //public virtual int SiteId
+        //{
+        //    get
+        //    {
+        //        var layout = LayoutCache.Get( this.LayoutId );
+        //        return layout != null ? layout.SiteId : 0;
+        //    }
+        //}
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
@@ -583,24 +583,24 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.ParentPage != null )
-                {
-                    return this.ParentPage;
-                }
-                else if ( this.Layout != null && this.Layout.Site != null )
-                {
-                    return this.Layout.Site;
-                }
-                else
-                {
-                    return base.ParentAuthority;
-                }
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        if ( this.ParentPage != null )
+        //        {
+        //            return this.ParentPage;
+        //        }
+        //        else if ( this.Layout != null && this.Layout.Site != null )
+        //        {
+        //            return this.Layout.Site;
+        //        }
+        //        else
+        //        {
+        //            return base.ParentAuthority;
+        //        }
+        //    }
+        //}
 
         #endregion
 
@@ -625,30 +625,30 @@ namespace Rock.Model
                 parameters.Add( "PageId", this.Id );
 
                 // since routes have a cascade delete relationship (their presave won't get called), delete routes from route table
-                var routes = RouteTable.Routes;
-                if ( routes != null )
-                {
-                    var routesToRemove = new List<Route>();
+                //var routes = RouteTable.Routes;
+                //if ( routes != null )
+                //{
+                //    var routesToRemove = new List<Route>();
 
-                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
-                    {
-                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
-                        if ( pageAndRouteIds.Any() )
-                        {
-                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                        }
-                        else
-                        {
-                            routesToRemove.Add( existingRoute );
-                        }
-                    }
+                //    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                //    {
+                //        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                //        pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
+                //        if ( pageAndRouteIds.Any() )
+                //        {
+                //            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                //        }
+                //        else
+                //        {
+                //            routesToRemove.Add( existingRoute );
+                //        }
+                //    }
 
-                    foreach ( var existingRoute in routesToRemove )
-                    {
-                        RouteTable.Routes.Remove( existingRoute );
-                    }
-                }
+                //    foreach ( var existingRoute in routesToRemove )
+                //    {
+                //        RouteTable.Routes.Remove( existingRoute );
+                //    }
+                //}
             }
             else if ( state == EntityState.Modified )
             {
@@ -698,30 +698,30 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return PageCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return PageCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            PageCache.UpdateCachedEntity( this.Id, entityState );
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    PageCache.UpdateCachedEntity( this.Id, entityState );
 
-            if ( this.ParentPageId.HasValue )
-            {
-                PageCache.UpdateCachedEntity( this.ParentPageId.Value, EntityState.Detached );
-            }
+        //    if ( this.ParentPageId.HasValue )
+        //    {
+        //        PageCache.UpdateCachedEntity( this.ParentPageId.Value, EntityState.Detached );
+        //    }
 
-            if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
-            {
-                PageCache.UpdateCachedEntity( _originalParentPageId.Value, EntityState.Detached );
-            }
-        }
+        //    if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
+        //    {
+        //        PageCache.UpdateCachedEntity( _originalParentPageId.Value, EntityState.Detached );
+        //    }
+        //}
 
         #endregion
     }

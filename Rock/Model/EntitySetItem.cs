@@ -96,6 +96,7 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary&lt;String,String&gt;"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.EntitySetItem"/>
         /// </value>
         [DataMember]
+        [NotMapped]
         public virtual Dictionary<string, object> AdditionalMergeValues
         {
             get { return _additionalMergeValues; }
@@ -119,13 +120,13 @@ namespace Rock.Model
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get 
-            {
-                return this.EntitySet != null ? this.EntitySet : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get 
+        //    {
+        //        return this.EntitySet != null ? this.EntitySet : base.ParentAuthority;
+        //    }
+        //}
 
         #endregion
     }

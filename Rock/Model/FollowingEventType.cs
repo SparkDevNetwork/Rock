@@ -21,8 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Follow;
-using Rock.Web.Cache;
+//using Rock.Follow;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -175,19 +175,19 @@ namespace Rock.Model
         /// Gets the event component.
         /// </summary>
         /// <returns></returns>
-        public virtual EventComponent GetEventComponent()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return EventContainer.GetComponent( entityType.Name );
-                }
-            }
+        //public virtual EventComponent GetEventComponent()
+        //{
+        //    if ( EntityTypeId.HasValue )
+        //    {
+        //        var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+        //        if ( entityType != null )
+        //        {
+        //            return EventContainer.GetComponent( entityType.Name );
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this FollowingEvent.

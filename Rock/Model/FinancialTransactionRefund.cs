@@ -113,6 +113,13 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionRefundConfiguration()
         {
+#if NET5_0_OR_GREATER
+            Builder.HasOne( r => r.FinancialTransaction )
+                .WithOne( t => t.RefundDetails )
+                .HasForeignKey<FinancialTransactionRefund>( r => r.Id )
+                .IsRequired()
+                .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Cascade );
+#endif        
             this.HasOptional( r => r.OriginalTransaction ).WithMany( t => t.Refunds ).HasForeignKey( r => r.OriginalTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.RefundReasonValue ).WithMany().HasForeignKey( r => r.RefundReasonValueId ).WillCascadeOnDelete( false );
         }

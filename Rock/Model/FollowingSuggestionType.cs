@@ -20,8 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Follow;
-using Rock.Web.Cache;
+//using Rock.Follow;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -149,19 +149,19 @@ namespace Rock.Model
         /// Gets the suggestion component.
         /// </summary>
         /// <returns></returns>
-        public virtual SuggestionComponent GetSuggestionComponent()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return SuggestionContainer.GetComponent( entityType.Name );
-                }
-            }
+        //public virtual SuggestionComponent GetSuggestionComponent()
+        //{
+        //    if ( EntityTypeId.HasValue )
+        //    {
+        //        var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+        //        if ( entityType != null )
+        //        {
+        //            return SuggestionContainer.GetComponent( entityType.Name );
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this FollowingSuggestion.

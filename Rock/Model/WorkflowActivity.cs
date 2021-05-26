@@ -239,13 +239,13 @@ namespace Rock.Model
         /// <value>
         /// The parent security authority for this Workflow action.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Workflow != null ? this.Workflow : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.Workflow != null ? this.Workflow : base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -259,11 +259,11 @@ namespace Rock.Model
         {
             get
             {
-                string propertyKey = key.ToStringSafe();
-                if ( propertyKey == "ActivityType" )
-                {
-                    return ActivityTypeCache;
-                }
+                //string propertyKey = key.ToStringSafe();
+                //if ( propertyKey == "ActivityType" )
+                //{
+                //    return ActivityTypeCache;
+                //}
                 return base[key];
             }
         }
@@ -289,40 +289,40 @@ namespace Rock.Model
 
             errorMessages = new List<string>();
 
-            foreach ( var action in this.ActiveActions )
-            {
-                List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
-                if ( actionErrorMessages.Any() )
-                {
-                    errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
-                    errorMessages.AddRange( actionErrorMessages );
-                }
+            //foreach ( var action in this.ActiveActions )
+            //{
+            //    List<string> actionErrorMessages;
+            //    bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
+            //    if ( actionErrorMessages.Any() )
+            //    {
+            //        errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
+            //        errorMessages.AddRange( actionErrorMessages );
+            //    }
 
-                // If action was not successful, exit
-                if ( !actionSuccess )
-                {
-                    break;
-                }
+            //    // If action was not successful, exit
+            //    if ( !actionSuccess )
+            //    {
+            //        break;
+            //    }
 
-                // If action completed this activity, exit
-                if ( !this.IsActive )
-                {
-                    break;
-                }
+            //    // If action completed this activity, exit
+            //    if ( !this.IsActive )
+            //    {
+            //        break;
+            //    }
 
-                // If action completed this workflow, exit
-                if ( this.Workflow == null || !this.Workflow.IsActive )
-                {
-                    break;
-                }
-            }
+            //    // If action completed this workflow, exit
+            //    if ( this.Workflow == null || !this.Workflow.IsActive )
+            //    {
+            //        break;
+            //    }
+            //}
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
             AddLogEntry( "Processing Complete" );
 
-            if ( !this.ActiveActions.Any() )
+            //if ( !this.ActiveActions.Any() )
             {
                 MarkComplete();
             }
@@ -340,15 +340,15 @@ namespace Rock.Model
 
             if ( this.Workflow != null )
             {
-                var workflowType = this.Workflow.WorkflowTypeCache;
-                if ( force || (
-                    workflowType != null && (
-                    workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                    workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
-                {
-                    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
-                    this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
-                }
+                //var workflowType = this.Workflow.WorkflowTypeCache;
+                //if ( force || (
+                //    workflowType != null && (
+                //    workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                //    workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
+                //{
+                //    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                //    this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
+                //}
             }
         }
 
@@ -369,11 +369,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            var activityType = this.ActivityTypeCache;
-            if ( activityType != null )
-            {
-                return activityType.ToStringSafe();
-            }
+            //var activityType = this.ActivityTypeCache;
+            //if ( activityType != null )
+            //{
+            //    return activityType.ToStringSafe();
+            //}
             return base.ToString();
         }
 
@@ -389,13 +389,13 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return Activate( activityTypeCache, workflow, rockContext );
-            }
-        }
+        //public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
+        //{
+        //    using ( var rockContext = new RockContext() )
+        //    {
+        //        return Activate( activityTypeCache, workflow, rockContext );
+        //    }
+        //}
 
         /// <summary>
         /// Activates the specified WorkflowActivity
@@ -406,25 +406,25 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
-        {
-            var activity = new WorkflowActivity();
-            activity.Workflow = workflow;
-            activity.ActivityTypeId = activityTypeCache.Id;
-            activity.ActivatedDateTime = RockDateTime.Now;
-            activity.LoadAttributes( rockContext );
+        //public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
+        //{
+        //    var activity = new WorkflowActivity();
+        //    activity.Workflow = workflow;
+        //    activity.ActivityTypeId = activityTypeCache.Id;
+        //    activity.ActivatedDateTime = RockDateTime.Now;
+        //    activity.LoadAttributes( rockContext );
 
-            activity.AddLogEntry( "Activated" );
+        //    activity.AddLogEntry( "Activated" );
 
-            foreach ( var actionType in activityTypeCache.ActionTypes )
-            {
-                activity.Actions.Add( WorkflowAction.Activate( actionType, activity, rockContext ) );
-            }
+        //    foreach ( var actionType in activityTypeCache.ActionTypes )
+        //    {
+        //        activity.Actions.Add( WorkflowAction.Activate( actionType, activity, rockContext ) );
+        //    }
 
-            workflow.Activities.Add( activity );
+        //    workflow.Activities.Add( activity );
 
-            return activity;
-        }
+        //    return activity;
+        //}
 
         #endregion
 

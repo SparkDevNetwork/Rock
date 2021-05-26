@@ -37,9 +37,10 @@ namespace Rock
         /// <returns></returns>
         public static string XxHash( this string str )
         {
-            var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );
+            return str;
+            //var hash = xxHashSharp.xxHash.CalculateHash( Encoding.UTF8.GetBytes( str ) );
 
-            return hash.ToString();
+            //return hash.ToString();
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Security;
+//using Rock.Security;
 
 namespace Rock.Model
 {
@@ -30,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendarContentChannel" )]
     [DataContract]
-    public partial class EventCalendarContentChannel : Model<EventCalendarContentChannel>, ISecured
+    public partial class EventCalendarContentChannel : Model<EventCalendarContentChannel>/*, ISecured*/
     {
 
         /// <summary>
@@ -85,13 +85,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
-            }
-        }
+        //public override ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
+        //    }
+        //}
         #endregion
 
     }

@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -92,7 +92,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 23 )]
         [DataMember( IsRequired = true )]
-        [Index( "IX_FullNumber" )]
+        //[Index( "IX_FullNumber" )]
         public string FullNumber
         {
             get
@@ -265,15 +265,15 @@ namespace Rock.Model
                     if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
                     {
                         // Ensure that we preserve the PhoneNumber with the highest preference phone type
-                        var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
-                        if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
-                        {
-                            entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
-                        }
-                        else
-                        {
-                            phoneNumberService.DeleteRange( duplicates );
-                        }
+                        //var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+                        //if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+                        //{
+                        //    entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
+                        //}
+                        //else
+                        //{
+                        //    phoneNumberService.DeleteRange( duplicates );
+                        //}
                     }
                 }
             }
@@ -286,28 +286,28 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
 
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
                         break;
                     }
 
                 case EntityState.Modified:
                     {
-                        string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
-                        int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
-                        if ( ( oldPhoneNumberTypeId ?? 0 ) == ( NumberTypeValueId ?? 0 ) )
-                        {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), NumberFormatted );
-                        }
-                        else
-                        {
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
-                            History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, NumberFormatted );
-                        }
+                        //string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
+                        //int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                        //if ( ( oldPhoneNumberTypeId ?? 0 ) == ( NumberTypeValueId ?? 0 ) )
+                        //{
+                        //    History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), NumberFormatted );
+                        //}
+                        //else
+                        //{
+                        //    History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                        //    History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", numberTypeName ), string.Empty, NumberFormatted );
+                        //}
 
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), entry.OriginalValues["IsUnlisted"].ToStringSafe().AsBooleanOrNull(), IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), entry.OriginalValues["IsMessagingEnabled"].ToStringSafe().AsBooleanOrNull(), IsMessagingEnabled );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", numberTypeName ), entry.OriginalValues["IsUnlisted"].ToStringSafe().AsBooleanOrNull(), IsUnlisted );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", numberTypeName ), entry.OriginalValues["IsMessagingEnabled"].ToStringSafe().AsBooleanOrNull(), IsMessagingEnabled );
 
                         break;
                     }
@@ -317,7 +317,7 @@ namespace Rock.Model
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
                         PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
+                        //History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( oldPhoneNumberTypeId ) ), entry.OriginalValues["NumberFormatted"].ToStringSafe(), string.Empty );
 
                         return;
                     }
@@ -388,15 +388,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static string DefaultCountryCode()
         {
-            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
-            if ( definedType != null )
-            {
-                string countryCode = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).FirstOrDefault();
-                if ( !string.IsNullOrWhiteSpace( countryCode ) )
-                {
-                    return countryCode;
-                }
-            }
+            //var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            //if ( definedType != null )
+            //{
+            //    string countryCode = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).FirstOrDefault();
+            //    if ( !string.IsNullOrWhiteSpace( countryCode ) )
+            //    {
+            //        return countryCode;
+            //    }
+            //}
 
             return "1";
         }
@@ -420,28 +420,28 @@ namespace Rock.Model
 
             number = CleanNumber( number );
 
-            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
-            if ( definedType != null )
-            {
-                var definedValues = definedType.DefinedValues.OrderBy( v => v.Order );
-                if ( definedValues != null && definedValues.Any() )
-                {
-                    if ( string.IsNullOrWhiteSpace( countryCode ) )
-                    {
-                        countryCode = definedValues.Select( v => v.Value ).FirstOrDefault();
-                    }
+            //var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            //if ( definedType != null )
+            //{
+            //    var definedValues = definedType.DefinedValues.OrderBy( v => v.Order );
+            //    if ( definedValues != null && definedValues.Any() )
+            //    {
+            //        if ( string.IsNullOrWhiteSpace( countryCode ) )
+            //        {
+            //            countryCode = definedValues.Select( v => v.Value ).FirstOrDefault();
+            //        }
 
-                    foreach ( var phoneFormat in definedValues.Where( v => v.Value.Equals( countryCode ) ).OrderBy( v => v.Order ) )
-                    {
-                        string match = phoneFormat.GetAttributeValue( "MatchRegEx" );
-                        string replace = phoneFormat.GetAttributeValue( "FormatRegEx" );
-                        if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
-                        {
-                            number = Regex.Replace( number, match, replace, RegexOptions.None );
-                        }
-                    }
-                }
-            }
+            //        foreach ( var phoneFormat in definedValues.Where( v => v.Value.Equals( countryCode ) ).OrderBy( v => v.Order ) )
+            //        {
+            //            string match = phoneFormat.GetAttributeValue( "MatchRegEx" );
+            //            string replace = phoneFormat.GetAttributeValue( "FormatRegEx" );
+            //            if ( !string.IsNullOrWhiteSpace( match ) && !string.IsNullOrWhiteSpace( replace ) )
+            //            {
+            //                number = Regex.Replace( number, match, replace, RegexOptions.None );
+            //            }
+            //        }
+            //    }
+            //}
 
             if ( includeCountryCode )
             {

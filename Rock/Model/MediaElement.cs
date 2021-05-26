@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -271,7 +271,7 @@ namespace Rock.Model
             if ( _saveOperationIsAdd )
             {
                 // We don't need to wait for this to complete.
-                Task.Run( () => MediaElementService.TriggerPostSaveTasks( this.Id ) );
+                //Task.Run( () => MediaElementService.TriggerPostSaveTasks( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

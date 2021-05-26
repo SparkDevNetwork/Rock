@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.Spatial;
+#endif
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -25,6 +27,9 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
+#if NET5_0_OR_GREATER
+    public class DbGeographyConverter : NetTopologySuite.IO.Converters.GeometryConverter { }
+#else
     public class DbGeographyConverter : JsonConverter
     {
         /// <summary>
@@ -76,4 +81,5 @@ namespace Rock.Model
             serializer.Serialize( writer, value );
         }
     }
+#endif
 }

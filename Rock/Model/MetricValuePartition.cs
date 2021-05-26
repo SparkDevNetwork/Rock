@@ -58,7 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The entity identifier.
         /// </value>
-        [Index]
+        //[Index]
         [DataMember]
         public int? EntityId { get; set; }
 

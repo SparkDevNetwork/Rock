@@ -23,7 +23,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,7 +54,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 32 )]
         [HideFromReporting]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         public string Token { get; private set; }
 
         // NOTE: Intentionally do not include [DataMember] on Token so that is isn't accessible to REST api or Lava
@@ -162,49 +162,49 @@ namespace Rock.Model
         /// <returns></returns>
         public static string CreateNew( PersonAlias personAlias, DateTime? expireDateTime, int? usageLimit, int? pageId )
         {
-            if ( personAlias == null )
+            //if ( personAlias == null )
             {
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                var token = Rock.Security.Encryption.GenerateUniqueToken();
+            //using ( var rockContext = new RockContext() )
+            //{
+            //    var token = Rock.Security.Encryption.GenerateUniqueToken();
 
-                PersonToken personToken = new PersonToken();
-                personToken.PersonAliasId = personAlias.Id;
-                personToken.Token = token;
-                if ( expireDateTime != null )
-                {
-                    personToken.ExpireDateTime = expireDateTime;
-                }
-                else
-                {
-                    int? tokenExpireMinutes = GlobalAttributesCache.Get().GetValue( "core.PersonTokenExpireMinutes" ).AsIntegerOrNull();
-                    if ( tokenExpireMinutes.HasValue )
-                    {
-                        personToken.ExpireDateTime = RockDateTime.Now.AddMinutes( tokenExpireMinutes.Value );
-                    }
-                    else
-                    {
-                        personToken.ExpireDateTime = null;
-                    }
-                }
+            //    PersonToken personToken = new PersonToken();
+            //    personToken.PersonAliasId = personAlias.Id;
+            //    personToken.Token = token;
+            //    if ( expireDateTime != null )
+            //    {
+            //        personToken.ExpireDateTime = expireDateTime;
+            //    }
+            //    else
+            //    {
+            //        int? tokenExpireMinutes = GlobalAttributesCache.Get().GetValue( "core.PersonTokenExpireMinutes" ).AsIntegerOrNull();
+            //        if ( tokenExpireMinutes.HasValue )
+            //        {
+            //            personToken.ExpireDateTime = RockDateTime.Now.AddMinutes( tokenExpireMinutes.Value );
+            //        }
+            //        else
+            //        {
+            //            personToken.ExpireDateTime = null;
+            //        }
+            //    }
 
-                personToken.TimesUsed = 0;
-                personToken.UsageLimit = usageLimit ?? GlobalAttributesCache.Get().GetValue( "core.PersonTokenUsageLimit" ).AsIntegerOrNull();
+            //    personToken.TimesUsed = 0;
+            //    personToken.UsageLimit = usageLimit ?? GlobalAttributesCache.Get().GetValue( "core.PersonTokenUsageLimit" ).AsIntegerOrNull();
 
-                personToken.PageId = pageId;
+            //    personToken.PageId = pageId;
 
-                var personTokenService = new PersonTokenService( rockContext );
-                personTokenService.Add( personToken );
-                rockContext.SaveChanges( true );
+            //    var personTokenService = new PersonTokenService( rockContext );
+            //    personTokenService.Add( personToken );
+            //    rockContext.SaveChanges( true );
 
-                var encryptedToken = Rock.Security.Encryption.EncryptString( token );
+            //    var encryptedToken = Rock.Security.Encryption.EncryptString( token );
 
-                // do a Replace('%', '!') after we UrlEncode it (to make it more safely embeddable in HTML and cross browser compatible)
-                return System.Web.HttpUtility.UrlEncode( encryptedToken ).Replace( '%', '!' );
-            }
+            //    // do a Replace('%', '!') after we UrlEncode it (to make it more safely embeddable in HTML and cross browser compatible)
+            //    return System.Web.HttpUtility.UrlEncode( encryptedToken ).Replace( '%', '!' );
+            //}
         }
 
         /// <summary>
@@ -217,11 +217,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
-        public static string ObfuscateRockMagicToken( string url )
-        {
-            // obfuscate rock magic token
-            return ObfuscateRockMagicToken( url, null );
-        }
+        //public static string ObfuscateRockMagicToken( string url )
+        //{
+        //    // obfuscate rock magic token
+        //    return ObfuscateRockMagicToken( url, null );
+        //}
 
         /// <summary>
         /// Obfuscates the rock magic token.
@@ -229,38 +229,38 @@ namespace Rock.Model
         /// <param name="url">The URL.</param>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        public static string ObfuscateRockMagicToken( string url, System.Web.UI.Page page )
-        {
-            if ( string.IsNullOrWhiteSpace( url ) )
-            {
-                return url;
-            }
+        //public static string ObfuscateRockMagicToken( string url, System.Web.UI.Page page )
+        //{
+        //    if ( string.IsNullOrWhiteSpace( url ) )
+        //    {
+        //        return url;
+        //    }
 
-            var match = rckipidRegEx.Match( url );
-            if ( match.Success )
-            {
-                return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-            }
+        //    var match = rckipidRegEx.Match( url );
+        //    if ( match.Success )
+        //    {
+        //        return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+        //    }
 
-            var routeData = page?.RouteData;
-            if ( routeData == null )
-            {
-                Uri uri;
+        //    var routeData = page?.RouteData;
+        //    if ( routeData == null )
+        //    {
+        //        Uri uri;
 
-                // if this is a valid full url, lookup the route so we can obfuscate any {rckipid} keys in it 
-                if ( Uri.TryCreate( url, UriKind.Absolute, out uri ) )
-                {
-                    routeData = Rock.Web.UI.RouteUtils.GetRouteDataByUri( uri, HttpContext.Current?.Request?.ApplicationPath );
-                }
-            }
+        //        // if this is a valid full url, lookup the route so we can obfuscate any {rckipid} keys in it 
+        //        if ( Uri.TryCreate( url, UriKind.Absolute, out uri ) )
+        //        {
+        //            routeData = Rock.Web.UI.RouteUtils.GetRouteDataByUri( uri, HttpContext.Current?.Request?.ApplicationPath );
+        //        }
+        //    }
 
-            if ( routeData != null && routeData.Values.ContainsKey( "rckipid" ) )
-            {
-                return url.Replace( ( string ) routeData.Values["rckipid"], "XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-            }
+        //    if ( routeData != null && routeData.Values.ContainsKey( "rckipid" ) )
+        //    {
+        //        return url.Replace( ( string ) routeData.Values["rckipid"], "XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+        //    }
 
-            return url;
-        }
+        //    return url;
+        //}
 
         /// <summary>
         /// Removes any instances of a rckipid parameter within the specified url so that isn't included.

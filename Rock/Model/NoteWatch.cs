@@ -21,7 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -273,13 +273,13 @@ namespace Rock.Model
                 return noteWatchesWithOverrideNotAllowedQuery.Where( a => false );
             }
 
-            NoteTypeCache noteType = null;
-            if ( this.NoteTypeId.HasValue )
-            {
-                noteType = NoteTypeCache.Get( this.NoteTypeId.Value );
-            }
+            //NoteTypeCache noteType = null;
+            //if ( this.NoteTypeId.HasValue )
+            //{
+            //    noteType = NoteTypeCache.Get( this.NoteTypeId.Value );
+            //}
 
-            var noteWatchEntityTypeId = this.EntityTypeId ?? noteType?.EntityTypeId;
+            var noteWatchEntityTypeId = this.EntityTypeId/* ?? noteType?.EntityTypeId*/;
 
             //// Find NoteWatches that could override this note watch
             //// We are mostly looking for NoteWatches that are the same or less specific than this watch

@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -131,5 +132,15 @@ namespace Rock.Model
         public int Count { get; set; }
 
         #endregion
+    }
+
+    public partial class AnalyticsDimFinancialBatchConfiguration : EntityTypeConfiguration<AnalyticsDimFinancialBatch>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimFinancialBatchConfiguration"/> class.
+        /// </summary>
+        public AnalyticsDimFinancialBatchConfiguration()
+        {
+        }
     }
 }

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table("Device")]
     [DataContract]
-    public partial class Device : Model<Device>, ICacheable
+    public partial class Device : Model<Device>/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -46,7 +46,7 @@ namespace Rock.Model
         /// A <see cref="System.String" /> representing the Name of the device.
         /// </value>
         [Required]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
@@ -227,20 +227,20 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            Rock.CheckIn.KioskDevice.FlushItem( this.Id );
-        }
+        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        //{
+        //    Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+        //}
 
         /// <summary>
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    // doesn't apply
+        //    return null;
+        //}
 
         #endregion ICacheable
 
@@ -259,7 +259,18 @@ namespace Rock.Model
         public DeviceConfiguration()
         {
             this.HasOptional( d => d.Location ).WithMany().HasForeignKey( d => d.LocationId ).WillCascadeOnDelete( false );
+#if NET5_0_OR_GREATER
+            Builder.HasMany( a => a.Locations )
+                .WithMany( b => b.Devices )
+                .UsingEntity( j =>
+                {
+                    j.ToTable( "DeviceLocation" );
+                    j.HasOne( typeof( Device ) ).WithMany().HasForeignKey( "DeviceId" );
+                    j.HasOne( typeof( Location ) ).WithMany().HasForeignKey( "LocationId" );
+                } );
+#else
             this.HasMany( d => d.Locations ).WithMany().Map( d => { d.MapLeftKey( "DeviceId" ); d.MapRightKey( "LocationId" ); d.ToTable( "DeviceLocation" ); } );
+#endif
             this.HasOptional( d => d.PrinterDevice ).WithMany().HasForeignKey( d => d.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );
         }

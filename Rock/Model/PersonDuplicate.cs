@@ -42,7 +42,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IX_PersonAliasId_DuplicatePersonAliasId", 0, IsUnique = true )]
+        //[Index( "IX_PersonAliasId_DuplicatePersonAliasId", 0, IsUnique = true )]
         public int PersonAliasId { get; set; }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IX_PersonAliasId_DuplicatePersonAliasId", 1, IsUnique = true )]
+        //[Index( "IX_PersonAliasId_DuplicatePersonAliasId", 1, IsUnique = true )]
         public int DuplicatePersonAliasId { get; set; }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Rock.Model
         /// The match score.
         /// </value>
         [DataMember]
-        [Index]
+        //[Index]
         public double? ConfidenceScore { get; private set; }
 
         #endregion

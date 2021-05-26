@@ -18,13 +18,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Security;
-using Rock.Web.Cache;
+//using Rock.Security;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendar" )]
     [DataContract]
-    public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable, ICampusFilterable
+    public partial class EventCalendar : Model<EventCalendar>, /*ISecured,*/ IHasActiveFlag, /*ICacheable, */ICampusFilterable
     {
         /// <summary>
         /// Gets or sets the Name of the EventCalendar. This property is required.
@@ -90,10 +90,10 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
-            get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
-            set { _eventCalenderItems = value; }
+            get { return _eventCalendarItems ?? ( _eventCalendarItems = new Collection<EventCalendarItem>() ); }
+            set { _eventCalendarItems = value; }
         }
-        private ICollection<EventCalendarItem> _eventCalenderItems;
+        private ICollection<EventCalendarItem> _eventCalendarItems;
 
         /// <summary>
         /// Gets or sets the content channels.
@@ -133,7 +133,7 @@ namespace Rock.Model
             get
             {
                 var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
+                //supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
                 return supportedActions;
             }
         }
@@ -146,20 +146,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return EventCalendarCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return EventCalendarCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         #endregion
     }

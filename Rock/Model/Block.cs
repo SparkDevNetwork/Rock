@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -45,7 +45,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Block" )]
     [DataContract]
-    public partial class Block : Model<Block>, IOrdered, ICacheable
+    public partial class Block : Model<Block>, IOrdered/*, ICacheable*/
     {
 
         #region Entity Properties
@@ -285,23 +285,23 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                switch ( this.BlockLocation )
-                {
-                    case BlockLocation.Page:
-                        return this.Page != null ? this.Page : base.ParentAuthority;
-                    case BlockLocation.Layout:
-                        return this.Layout != null ? this.Layout : base.ParentAuthority;
-                    case BlockLocation.Site:
-                        return this.Site != null ? this.Site : base.ParentAuthority;
-                    default:
-                        return base.ParentAuthority;
-                }
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        switch ( this.BlockLocation )
+        //        {
+        //            case BlockLocation.Page:
+        //                return this.Page != null ? this.Page : base.ParentAuthority;
+        //            case BlockLocation.Layout:
+        //                return this.Layout != null ? this.Layout : base.ParentAuthority;
+        //            case BlockLocation.Site:
+        //                return this.Site != null ? this.Site : base.ParentAuthority;
+        //            default:
+        //                return base.ParentAuthority;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Gets the supported actions.
@@ -309,21 +309,21 @@ namespace Rock.Model
         /// <value>
         /// The supported actions.
         /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
-                }
-                return _supportedActions;
-            }
-        }
-        private Dictionary<string, string> _supportedActions;
+        //public override Dictionary<string, string> SupportedActions
+        //{
+        //    get
+        //    {
+        //        if ( _supportedActions == null )
+        //        {
+        //            _supportedActions = new Dictionary<string, string>();
+        //            _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view the block." );
+        //            _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit content on the block." );
+        //            _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate the block.  This includes setting properties of the block, setting security for the block, moving the block, and deleting block from the zone." );
+        //        }
+        //        return _supportedActions;
+        //    }
+        //}
+        //private Dictionary<string, string> _supportedActions;
 
         #endregion
 
@@ -372,44 +372,44 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return BlockCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return BlockCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            BlockCache.UpdateCachedEntity( this.Id, entityState );
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    BlockCache.UpdateCachedEntity( this.Id, entityState );
 
-            var model = this;
+        //    var model = this;
 
-            if ( model.SiteId.HasValue && model.SiteId != originalSiteId )
-            {
-                PageCache.FlushPagesForSite( model.SiteId.Value );
-            }
-            else if ( model.LayoutId.HasValue && model.LayoutId != originalLayoutId )
-            {
-                PageCache.FlushPagesForLayout( model.LayoutId.Value );
-            }
+        //    if ( model.SiteId.HasValue && model.SiteId != originalSiteId )
+        //    {
+        //        PageCache.FlushPagesForSite( model.SiteId.Value );
+        //    }
+        //    else if ( model.LayoutId.HasValue && model.LayoutId != originalLayoutId )
+        //    {
+        //        PageCache.FlushPagesForLayout( model.LayoutId.Value );
+        //    }
 
-            if ( originalSiteId.HasValue )
-            {
-                PageCache.FlushPagesForSite( originalSiteId.Value );
-            }
-            else if ( originalLayoutId.HasValue )
-            {
-                PageCache.FlushPagesForLayout( originalLayoutId.Value );
-            }
-            else if ( originalPageId.HasValue )
-            {
-                PageCache.FlushItem( originalPageId.Value );
-            }
-        }
+        //    if ( originalSiteId.HasValue )
+        //    {
+        //        PageCache.FlushPagesForSite( originalSiteId.Value );
+        //    }
+        //    else if ( originalLayoutId.HasValue )
+        //    {
+        //        PageCache.FlushPagesForLayout( originalLayoutId.Value );
+        //    }
+        //    else if ( originalPageId.HasValue )
+        //    {
+        //        PageCache.FlushItem( originalPageId.Value );
+        //    }
+        //}
 
         #endregion
 

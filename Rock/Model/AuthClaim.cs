@@ -60,7 +60,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        [Index( IsUnique = true )]
+        //[Index( IsUnique = true )]
         [MaxLength( 50 )]
         public string Name { get; set; }
 

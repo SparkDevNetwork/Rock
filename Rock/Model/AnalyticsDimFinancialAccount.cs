@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -221,4 +222,15 @@ namespace Rock.Model
 
         #endregion
     }
+
+    public partial class AnalyticsDimFinancialAccountConfiguration : EntityTypeConfiguration<AnalyticsDimFinancialAccount>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsDimFinancialAccountConfiguration"/> class.
+        /// </summary>
+        public AnalyticsDimFinancialAccountConfiguration()
+        {
+        }
+    }
+
 }

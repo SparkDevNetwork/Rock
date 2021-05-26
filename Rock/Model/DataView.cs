@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics;
 using System.Linq;
@@ -28,9 +28,11 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+
 using Rock.Data;
 using Rock.Logging;
-using Rock.Reporting;
+//using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -239,18 +241,18 @@ namespace Rock.Model
         /// <value>
         /// The parent authority of the DataView.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.Category != null )
-                {
-                    return this.Category;
-                }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        if ( this.Category != null )
+        //        {
+        //            return this.Category;
+        //        }
 
-                return base.ParentAuthority;
-            }
-        }
+        //        return base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// Determines whether [is authorized for all data view components] [the specified data view].
@@ -265,40 +267,41 @@ namespace Rock.Model
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            // can't edit an existing DataView if not authorized for that DataView
-            if ( this.Id != 0 && !this.IsAuthorized( dataViewAction, person ) )
-            {
-                isAuthorized = false;
-                authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
-            }
-
-            if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person ) )
-            {
-                isAuthorized = false;
-                authorizationMessage = "INFO: Data view uses an entity type that you do not have access to view.";
-            }
-
-            if ( this.DataViewFilter != null && !this.DataViewFilter.IsAuthorized( Authorization.VIEW, person ) )
-            {
-                isAuthorized = false;
-                authorizationMessage = "INFO: Data view contains a filter that you do not have access to view.";
-            }
-
-            if ( this.TransformEntityTypeId != null )
-            {
-                string dataTransformationComponentTypeName = EntityTypeCache.Get( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
-                var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
-                if ( dataTransformationComponent != null )
-                {
-                    if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, person ) )
-                    {
-                        isAuthorized = false;
-                        authorizationMessage = "INFO: Data view contains a data transformation that you do not have access to view.";
-                    }
-                }
-            }
-
             return isAuthorized;
+            //// can't edit an existing DataView if not authorized for that DataView
+            //if ( this.Id != 0 && !this.IsAuthorized( dataViewAction, person ) )
+            //{
+            //    isAuthorized = false;
+            //    authorizationMessage = Rock.Constants.EditModeMessage.ReadOnlyEditActionNotAllowed( DataView.FriendlyTypeName );
+            //}
+
+            //if ( this.EntityType != null && !this.EntityType.IsAuthorized( Authorization.VIEW, person ) )
+            //{
+            //    isAuthorized = false;
+            //    authorizationMessage = "INFO: Data view uses an entity type that you do not have access to view.";
+            //}
+
+            //if ( this.DataViewFilter != null && !this.DataViewFilter.IsAuthorized( Authorization.VIEW, person ) )
+            //{
+            //    isAuthorized = false;
+            //    authorizationMessage = "INFO: Data view contains a filter that you do not have access to view.";
+            //}
+
+            //if ( this.TransformEntityTypeId != null )
+            //{
+            //    string dataTransformationComponentTypeName = EntityTypeCache.Get( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
+            //    var dataTransformationComponent = Rock.Reporting.DataTransformContainer.GetComponent( dataTransformationComponentTypeName );
+            //    if ( dataTransformationComponent != null )
+            //    {
+            //        if ( !dataTransformationComponent.IsAuthorized( Authorization.VIEW, person ) )
+            //        {
+            //            isAuthorized = false;
+            //            authorizationMessage = "INFO: Data view contains a data transformation that you do not have access to view.";
+            //        }
+            //    }
+            //}
+
+            //return isAuthorized;
         }
 
         #endregion
@@ -312,12 +315,12 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            return GetQuery( sortProperty, null, null, databaseTimeoutSeconds, out errorMessages );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
+        //public IQueryable<IEntity> GetQuery( SortProperty sortProperty, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        //{
+        //    return GetQuery( sortProperty, null, null, databaseTimeoutSeconds, out errorMessages );
+        //}
 
         /// <summary>
         /// Gets the query using the specified dbContext
@@ -327,62 +330,62 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            return GetQuery( sortProperty, dbContext, null, databaseTimeoutSeconds, out errorMessages );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
+        //public IQueryable<IEntity> GetQuery( SortProperty sortProperty, EFDbContext dbContext, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        //{
+        //    return GetQuery( sortProperty, dbContext, null, databaseTimeoutSeconds, out errorMessages );
+        //}
 
         /// <summary>
         /// Gets the most appropriate database context for this DataView's EntityType
         /// </summary>
         /// <returns></returns>
-        public System.Data.Entity.DbContext GetDbContext()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
+        //public EFDbContext GetDbContext()
+        //{
+        //    if ( EntityTypeId.HasValue )
+        //    {
+        //        var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
+        //        if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+        //        {
+        //            Type entityType = cachedEntityType.GetEntityType();
 
-                    if ( entityType != null )
-                    {
-                        return Reflection.GetDbContextForEntityType( entityType );
-                    }
-                }
-            }
+        //            if ( entityType != null )
+        //            {
+        //                return Reflection.GetDbContextForEntityType( entityType );
+        //            }
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Gets the most appropriate service instance for this DataView's EntityType
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <returns></returns>
-        public IService GetServiceInstance( System.Data.Entity.DbContext dbContext )
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
+        //public IService GetServiceInstance( EFDbContext dbContext )
+        //{
+        //    if ( EntityTypeId.HasValue )
+        //    {
+        //        var cachedEntityType = EntityTypeCache.Get( EntityTypeId.Value );
+        //        if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
+        //        {
+        //            Type entityType = cachedEntityType.GetEntityType();
 
-                    if ( entityType != null )
-                    {
-                        if ( dbContext != null )
-                        {
-                            return Reflection.GetServiceForEntityType( entityType, dbContext );
-                        }
-                    }
-                }
-            }
+        //            if ( entityType != null )
+        //            {
+        //                if ( dbContext != null )
+        //                {
+        //                    return Reflection.GetServiceForEntityType( entityType, dbContext );
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Gets the query.
@@ -393,19 +396,19 @@ namespace Rock.Model
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
-        public IQueryable<IEntity> GetQuery( SortProperty sortProperty, System.Data.Entity.DbContext dbContext, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, out List<string> errorMessages )
-        {
-            errorMessages = new List<string>();
-            return GetQuery( new DataViewGetQueryArgs
-            {
-                DbContext = dbContext,
-                DataViewFilterOverrides = dataViewFilterOverrides,
-                DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                SortProperty = sortProperty
-            } );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs ) instead" )]
+        //public IQueryable<IEntity> GetQuery( SortProperty sortProperty, EFDbContext dbContext, DataViewFilterOverrides dataViewFilterOverrides, int? databaseTimeoutSeconds, out List<string> errorMessages )
+        //{
+        //    errorMessages = new List<string>();
+        //    return GetQuery( new DataViewGetQueryArgs
+        //    {
+        //        DbContext = dbContext,
+        //        DataViewFilterOverrides = dataViewFilterOverrides,
+        //        DatabaseTimeoutSeconds = databaseTimeoutSeconds,
+        //        SortProperty = sortProperty
+        //    } );
+        //}
 
         /// <summary>
         /// Gets the query.
@@ -419,56 +422,56 @@ namespace Rock.Model
         /// or
         /// Unable to determine IService.Get for {this}
         /// </exception>
-        public IQueryable<IEntity> GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs )
-        {
-            var dbContext = dataViewGetQueryArgs.DbContext;
-            if ( dbContext == null )
-            {
-                dbContext = this.GetDbContext();
-                if ( dbContext == null )
-                {
-                    // this could happen if the EntityTypeId id refers to an assembly/type that doesn't exist anymore
-                    // we'll just default to new RockContext(), but it'll likely fail when we try to get a ServiceInstance below if the entityType doesn't exist in an assembly
-                    dbContext = new RockContext();
-                }
-            }
+        //public IQueryable<IEntity> GetQuery( DataViewGetQueryArgs dataViewGetQueryArgs )
+        //{
+        //    var dbContext = dataViewGetQueryArgs.DbContext;
+        //    if ( dbContext == null )
+        //    {
+        //        dbContext = this.GetDbContext();
+        //        if ( dbContext == null )
+        //        {
+        //            // this could happen if the EntityTypeId id refers to an assembly/type that doesn't exist anymore
+        //            // we'll just default to new RockContext(), but it'll likely fail when we try to get a ServiceInstance below if the entityType doesn't exist in an assembly
+        //            dbContext = new RockContext();
+        //        }
+        //    }
 
-            IService serviceInstance = this.GetServiceInstance( dbContext );
-            if ( serviceInstance == null )
-            {
-                var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine ServiceInstance from DataView EntityType {entityTypeCache} for {this}" );
-            }
+        //    IService serviceInstance = this.GetServiceInstance( dbContext );
+        //    if ( serviceInstance == null )
+        //    {
+        //        var entityTypeCache = ( object ) null;/*EntityTypeCache.Get( this.EntityTypeId ?? 0 );*/
+        //        throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine ServiceInstance from DataView EntityType {entityTypeCache} for {this}" );
+        //    }
 
-            var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
-            if ( databaseTimeoutSeconds.HasValue )
-            {
-                dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
-            }
+        //    var databaseTimeoutSeconds = dataViewGetQueryArgs.DatabaseTimeoutSeconds;
+        //    if ( databaseTimeoutSeconds.HasValue )
+        //    {
+        //        dbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+        //    }
 
-            var dataViewFilterOverrides = dataViewGetQueryArgs.DataViewFilterOverrides;
-            ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-            Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
+        //    var dataViewFilterOverrides = dataViewGetQueryArgs.DataViewFilterOverrides;
+        //    ParameterExpression paramExpression = serviceInstance.ParameterExpression;
+        //    Expression whereExpression = GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
 
-            MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
-            if ( getMethod == null )
-            {
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
-            }
+        //    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( SortProperty ) } );
+        //    if ( getMethod == null )
+        //    {
+        //        throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine IService.Get for Report: {this}" );
+        //    }
 
-            var sortProperty = dataViewGetQueryArgs.SortProperty;
+        //    var sortProperty = dataViewGetQueryArgs.SortProperty;
 
-            if ( sortProperty == null )
-            {
-                // if no sorting is specified, just sort by Id
-                sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
-            }
+        //    if ( sortProperty == null )
+        //    {
+        //        // if no sorting is specified, just sort by Id
+        //        sortProperty = new SortProperty { Direction = SortDirection.Ascending, Property = "Id" };
+        //    }
 
-            var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
-            var qry = getResult as IQueryable<IEntity>;
+        //    var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression, sortProperty } );
+        //    var qry = getResult as IQueryable<IEntity>;
 
-            return qry;
-        }
+        //    return qry;
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -488,12 +491,12 @@ namespace Rock.Model
         /// <param name="paramExpression">The parameter expression.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
-        {
-            return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
+        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
+        //{
+        //    return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
+        //}
 
         /// <summary>
         /// Gets the expression.
@@ -503,13 +506,13 @@ namespace Rock.Model
         /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
-        {
-            errorMessages = new List<string>();
-            return GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
+        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
+        //{
+        //    errorMessages = new List<string>();
+        //    return GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
+        //}
 
         /// <summary>
         /// Gets the expression.
@@ -517,10 +520,10 @@ namespace Rock.Model
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="paramExpression">The parameter expression.</param>
         /// <returns></returns>
-        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
-        {
-            return this.GetExpression( serviceInstance, paramExpression, null );
-        }
+        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
+        //{
+        //    return this.GetExpression( serviceInstance, paramExpression, null );
+        //}
 
         /// <summary>
         /// Gets the expression.
@@ -635,75 +638,75 @@ namespace Rock.Model
         /// Persists the DataView to the database by updating the DataViewPersistedValues for this DataView. Returns true if successful
         /// </summary>
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
-        public void PersistResult( int? databaseTimeoutSeconds = null )
-        {
-            using ( var dbContext = this.GetDbContext() )
-            {
-                var persistStopwatch = Stopwatch.StartNew();
-                var dataViewFilterOverrides = new DataViewFilterOverrides();
+        //public void PersistResult( int? databaseTimeoutSeconds = null )
+        //{
+        //    using ( var dbContext = this.GetDbContext() )
+        //    {
+        //        var persistStopwatch = Stopwatch.StartNew();
+        //        var dataViewFilterOverrides = new DataViewFilterOverrides();
 
-                dataViewFilterOverrides.ShouldUpdateStatics = false;
+        //        dataViewFilterOverrides.ShouldUpdateStatics = false;
 
-                // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs
-                {
-                    DbContext = dbContext,
-                    DataViewFilterOverrides = dataViewFilterOverrides,
-                    DatabaseTimeoutSeconds = databaseTimeoutSeconds,
-                };
+        //        // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
+        //        dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
+        //        var dataViewGetQueryArgs = new DataViewGetQueryArgs
+        //        {
+        //            DbContext = dbContext,
+        //            DataViewFilterOverrides = dataViewFilterOverrides,
+        //            DatabaseTimeoutSeconds = databaseTimeoutSeconds,
+        //        };
 
-                var qry = this.GetQuery( dataViewGetQueryArgs );
+        //        var qry = this.GetQuery( dataViewGetQueryArgs );
 
-                RockContext rockContext = dbContext as RockContext;
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                }
+        //        RockContext rockContext = dbContext as RockContext;
+        //        if ( rockContext == null )
+        //        {
+        //            rockContext = new RockContext();
+        //        }
 
-                rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
-                var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+        //        rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
+        //        var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
 
-                var updatedEntityIdsQry = qry.Select( a => a.Id );
+        //        var updatedEntityIdsQry = qry.Select( a => a.Id );
 
-                if ( !( rockContext is RockContext ) )
-                {
-                    // if this DataView doesn't use a RockContext get the EntityIds into memory as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
-                    updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
-                }
+        //        if ( !( rockContext is RockContext ) )
+        //        {
+        //            // if this DataView doesn't use a RockContext get the EntityIds into memory as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+        //            updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
+        //        }
 
-                var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
-                var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
+        //        var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
+        //        var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
-                var removeCount = persistedValuesToRemove.Count();
-                if ( removeCount > 0 )
-                {
-                    // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
-                    int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
+        //        var removeCount = persistedValuesToRemove.Count();
+        //        if ( removeCount > 0 )
+        //        {
+        //            // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
+        //            int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
 
-                    int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
-                }
+        //            int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
+        //        }
 
-                if ( persistedEntityIdsToInsert.Any() )
-                {
-                    List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
-                        .Select( a =>
-                        new DataViewPersistedValue
-                        {
-                            DataViewId = this.Id,
-                            EntityId = a
-                        } ).ToList();
+        //        if ( persistedEntityIdsToInsert.Any() )
+        //        {
+        //            List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
+        //                .Select( a =>
+        //                new DataViewPersistedValue
+        //                {
+        //                    DataViewId = this.Id,
+        //                    EntityId = a
+        //                } ).ToList();
 
-                    rockContext.BulkInsert( persistedValuesToInsert );
-                }
+        //            rockContext.BulkInsert( persistedValuesToInsert );
+        //        }
 
-                persistStopwatch.Stop();
+        //        persistStopwatch.Stop();
 
-                // Update the Persisted Refresh information.
-                PersistedLastRefreshDateTime = RockDateTime.Now;
-                PersistedLastRunDurationMilliseconds = Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds );
-            }
-        }
+        //        // Update the Persisted Refresh information.
+        //        PersistedLastRefreshDateTime = RockDateTime.Now;
+        //        PersistedLastRunDurationMilliseconds = Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds );
+        //    }
+        //}
 
         /// <summary>
         /// Gets the transform expression.
@@ -713,26 +716,26 @@ namespace Rock.Model
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
-        private Expression GetTransformExpression( int transformEntityTypeId, IService service, ParameterExpression parameterExpression, Expression whereExpression )
-        {
-            var entityType = EntityTypeCache.Get( transformEntityTypeId );
+        //private Expression GetTransformExpression( int transformEntityTypeId, IService service, ParameterExpression parameterExpression, Expression whereExpression )
+        //{
+        //    var entityType = EntityTypeCache.Get( transformEntityTypeId );
 
-            if ( entityType == null )
-            {
-                // if we can't determine EntityType, throw an exception so we don't return incorrect results
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine TransformEntityType {entityType.Name}" );
-            }
+        //    if ( entityType == null )
+        //    {
+        //        // if we can't determine EntityType, throw an exception so we don't return incorrect results
+        //        throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine TransformEntityType {entityType.Name}" );
+        //    }
 
 
-            var component = Rock.Reporting.DataTransformContainer.GetComponent( entityType.Name );
-            if ( component == null )
-            {
-                // if we can't determine component, throw an exception so we don't return incorrect results
-                throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform component for {entityType.Name}" );
-            }
+        //    var component = Rock.Reporting.DataTransformContainer.GetComponent( entityType.Name );
+        //    if ( component == null )
+        //    {
+        //        // if we can't determine component, throw an exception so we don't return incorrect results
+        //        throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform component for {entityType.Name}" );
+        //    }
 
-            return component.GetExpression( service, parameterExpression, whereExpression );
-        }
+        //    return component.GetExpression( service, parameterExpression, whereExpression );
+        //}
 
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
@@ -807,7 +810,7 @@ namespace Rock.Model
         /// <value>
         /// The database context.
         /// </value>
-        public System.Data.Entity.DbContext DbContext { get; set; }
+        public EFDbContext DbContext { get; set; }
 
         /// <summary>
         /// Gets or sets the sort property.

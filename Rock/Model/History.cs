@@ -255,13 +255,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Category != null ? this.Category : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.Category != null ? this.Category : base.ParentAuthority;
+        //    }
+        //}
 
         #endregion
 
@@ -1609,11 +1609,11 @@ namespace Rock.Model
 
             if ( definedValueId.HasValue )
             {
-                var dv = DefinedValueCache.Get( definedValueId.Value );
-                if ( dv != null )
-                {
-                    return dv.Value;
-                }
+                //var dv = DefinedValueCache.Get( definedValueId.Value );
+                //if ( dv != null )
+                //{
+                //    return dv.Value;
+                //}
             }
 
             return blankValue;
@@ -1648,7 +1648,7 @@ namespace Rock.Model
             }
             else if ( personAliasId.HasValue )
             {
-                person = new PersonAliasService( rockContext ).GetPersonNoTracking( personAliasId.Value );
+                //person = new PersonAliasService( rockContext ).GetPersonNoTracking( personAliasId.Value );
             }
 
             return person != null ? string.Format( "{0} [{1}]", person.FullName, person.Id ) : blankValue;
@@ -1681,11 +1681,11 @@ namespace Rock.Model
 
             if ( groupTypeId.HasValue )
             {
-                var dv = GroupTypeCache.Get( groupTypeId.Value );
-                if ( dv != null )
-                {
-                    return dv.Name;
-                }
+                //var dv = GroupTypeCache.Get( groupTypeId.Value );
+                //if ( dv != null )
+                //{
+                //    return dv.Name;
+                //}
             }
 
             return blankValue;
@@ -1718,11 +1718,11 @@ namespace Rock.Model
 
             if ( campusId.HasValue )
             {
-                var dv = CampusCache.Get( campusId.Value );
-                if ( dv != null )
-                {
-                    return dv.Name;
-                }
+                //var dv = CampusCache.Get( campusId.Value );
+                //if ( dv != null )
+                //{
+                //    return dv.Name;
+                //}
             }
 
             return blankValue;

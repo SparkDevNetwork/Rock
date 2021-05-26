@@ -2106,6 +2106,27 @@ namespace Rock.Data
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
         {
+#if NET5_0_OR_GREATER
+            // Fix for datetime2 => datetime issues. Default all DateTime property
+            // types to be datetime.
+            var dtList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
+                .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<System.Runtime.Serialization.DataContractAttribute>() != null ) )
+                .OrderBy( a => a.Key ).Select( a => a.Value );
+            foreach ( var entityType in dtList )
+            {
+                var model = modelBuilder.Entity( entityType );
+                var dateTimeProperties = model.Metadata.GetProperties().Where( p => p.ClrType == typeof( DateTime ) || p.ClrType == typeof( DateTime? ) );
+                foreach ( var p in dateTimeProperties )
+                {
+                    model.Property( p.Name ).HasColumnType( "datetime" );
+                }
+            }
+
+            modelBuilder.HasDbFunction( typeof( Rock.ExtensionMethods ).GetMethod( "Left", BindingFlags.Static | BindingFlags.Public ) );
+
+            ContextHelper.ModelBuilder = modelBuilder;
+#endif
+
             ContextHelper.AddConfigurations( modelBuilder );
 
             try
@@ -2113,6 +2134,7 @@ namespace Rock.Data
                 //// dynamically add plugin entities so that queryables can use a mixture of entities from different plugins and core
                 //// from http://romiller.com/2012/03/26/dynamically-building-a-model-with-code-first/, but using the new RegisterEntityType in 6.1.3
 
+#if !NET5_0_OR_GREATER
                 // look for IRockStoreModelConvention classes
                 var modelConventionList = Reflection.FindTypes( typeof( Rock.Data.IRockStoreModelConvention<System.Data.Entity.Core.Metadata.Edm.EdmModel> ) )
                     .Where( a => !a.Value.IsAbstract )
@@ -2123,6 +2145,7 @@ namespace Rock.Data
                     var convention = ( IConvention ) Activator.CreateInstance( modelConventionType );
                     modelBuilder.Conventions.Add( convention );
                 }
+#endif
 
                 // look for IRockEntity classes
                 var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IRockEntity ) )
@@ -2133,7 +2156,11 @@ namespace Rock.Data
                 {
                     try
                     {
+#if NET5_0_OR_GREATER
+                        modelBuilder.Entity( entityType );
+#else
                         modelBuilder.RegisterEntityType( entityType );
+#endif
                     }
                     catch ( Exception ex )
                     {
@@ -2146,7 +2173,11 @@ namespace Rock.Data
                 {
                     try
                     {
+#if NET5_0_OR_GREATER
+                        ContextHelper.AddConfigurationsFromAssembly( modelBuilder, assembly );
+#else
                         modelBuilder.Configurations.AddFromAssembly( assembly );
+#endif
                     }
                     catch ( Exception ex )
                     {
@@ -2158,6 +2189,11 @@ namespace Rock.Data
             {
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
+
+#if NET5_0_OR_GREATER
+            ContextHelper.FinalizeConfigurations( modelBuilder );
+            ContextHelper.ModelBuilder = null;
+#endif
         }
     }
 
@@ -2187,7 +2223,9 @@ namespace Rock.Data
             // Add legacy configurations
             var types = assembly.GetTypes()
                 .Where( t => !t.IsAbstract && t.BaseType != null )
-                .Where( t => t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof( System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<> ) );
+                .Where( t => t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof( System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<> ) )
+                .OrderBy( t => t.FullName )
+                .ToList();
 
             foreach ( var type in types )
             {

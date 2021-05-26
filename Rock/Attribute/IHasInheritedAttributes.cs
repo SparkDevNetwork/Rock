@@ -27,7 +27,7 @@ namespace Rock.Attribute
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        List<Rock.Web.Cache.AttributeCache> GetInheritedAttributes( Data.RockContext rockContext );
+        //List<Rock.Web.Cache.AttributeCache> GetInheritedAttributes( Data.RockContext rockContext );
 
         /// <summary>
         /// Get any alternate Ids that should be used when loading attribute value for this entity.

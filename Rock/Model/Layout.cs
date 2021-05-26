@@ -38,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Layout" )]
     [DataContract]
-    public partial class Layout : Model<Layout>, ICacheable
+    public partial class Layout : Model<Layout>/*, ICacheable*/
     {
 
         #region Entity Properties
@@ -171,13 +171,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Site != null ? this.Site : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.Site != null ? this.Site : base.ParentAuthority;
+        //    }
+        //}
 
         #endregion
 
@@ -203,20 +203,20 @@ namespace Rock.Model
         /// </summary>
         /// 
         /// 
-        public IEntityCache GetCacheObject()
-        {
-            return LayoutCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return LayoutCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            LayoutCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    LayoutCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         #endregion
     }

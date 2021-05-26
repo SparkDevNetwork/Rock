@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -434,7 +434,7 @@ namespace Rock.Model
 
                         // If a FinancialPaymentDetail was linked to this FinancialScheduledTransaction and is now orphaned, delete it.
                         var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+                        //financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
 
                         break;
                     }

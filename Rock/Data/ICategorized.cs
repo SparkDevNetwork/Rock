@@ -15,14 +15,14 @@
 // </copyright>
 //
 using Rock.Model;
-using Rock.Security;
+//using Rock.Security;
 
 namespace Rock.Data
 {
     /// <summary>
     /// Represents a model that is categorized (has a foreign key to the Category model)
     /// </summary>
-    public interface ICategorized : ISecured
+    public interface ICategorized// : ISecured
     {
 
         /// <summary>

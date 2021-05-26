@@ -15,14 +15,14 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -124,81 +124,81 @@ namespace Rock.Model
                 return;
             }
 
-            var rockContext = new RockContext();
-            var matrixId = AttributeMatrixId != default ?
-                AttributeMatrixId :
-                entry.OriginalValues["AttributeMatrixId"].ToStringSafe().AsIntegerOrNull();
+            //var rockContext = new RockContext();
+            //var matrixId = AttributeMatrixId != default ?
+            //    AttributeMatrixId :
+            //    entry.OriginalValues["AttributeMatrixId"].ToStringSafe().AsIntegerOrNull();
 
-            var matrix = AttributeMatrix;
+            //var matrix = AttributeMatrix;
 
-            if ( matrix == null && matrixId.HasValue )
-            {
-                var matrixService = new AttributeMatrixService( rockContext );
-                matrix = matrixService.Queryable().AsNoTracking().FirstOrDefault( am => am.Id == matrixId );
-            }
+            //if ( matrix == null && matrixId.HasValue )
+            //{
+            //    var matrixService = new AttributeMatrixService( rockContext );
+            //    matrix = matrixService.Queryable().AsNoTracking().FirstOrDefault( am => am.Id == matrixId );
+            //}
 
-            if ( matrix == null )
-            {
-                return;
-            }
+            //if ( matrix == null )
+            //{
+            //    return;
+            //}
 
-            // The root attribute matrix attribute value is linked to the matrix by the guid as the attribute value
-            var matrixGuidString = matrix.Guid.ToString();
-            var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
-            var attributeValueService = new AttributeValueService( rockContext );
-            var rootAttributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                av.Value.Equals( matrixGuidString, System.StringComparison.OrdinalIgnoreCase )
-                && av.Attribute.EntityTypeId == personEntityTypeId
-            );
+            //// The root attribute matrix attribute value is linked to the matrix by the guid as the attribute value
+            //var matrixGuidString = matrix.Guid.ToString();
+            //var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+            //var attributeValueService = new AttributeValueService( rockContext );
+            //var rootAttributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
+            //    av.Value.Equals( matrixGuidString, System.StringComparison.OrdinalIgnoreCase )
+            //    && av.Attribute.EntityTypeId == personEntityTypeId
+            //);
 
-            if ( rootAttributeValue?.EntityId == null )
-            {
-                return;
-            }
+            //if ( rootAttributeValue?.EntityId == null )
+            //{
+            //    return;
+            //}
 
-            var rootAttributeCache = AttributeCache.Get( rootAttributeValue.AttributeId );
+            //var rootAttributeCache = AttributeCache.Get( rootAttributeValue.AttributeId );
 
-            if ( rootAttributeCache == null )
-            {
-                return;
-            }
+            //if ( rootAttributeCache == null )
+            //{
+            //    return;
+            //}
 
-            // Evaluate the history changes
-            var historyChangeList = new History.HistoryChangeList();
+            //// Evaluate the history changes
+            //var historyChangeList = new History.HistoryChangeList();
 
-            if ( AttributeValues == null || !AttributeValues.Any() )
-            {
-                this.LoadAttributes();
-            }
+            //if ( AttributeValues == null || !AttributeValues.Any() )
+            //{
+            //    this.LoadAttributes();
+            //}
 
-            var isDelete = state == EntityState.Deleted;
+            //var isDelete = state == EntityState.Deleted;
 
-            foreach ( var attributeValue in AttributeValues.Values )
-            {
-                var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
-                var formattedOldValue = isDelete ? GetHistoryFormattedValue( attributeValue.Value, attributeCache ) : string.Empty;
-                var formattedNewValue = isDelete ? string.Empty : GetHistoryFormattedValue( attributeValue.Value, attributeCache );
-                History.EvaluateChange( historyChangeList, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
-            }
+            //foreach ( var attributeValue in AttributeValues.Values )
+            //{
+            //    var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
+            //    var formattedOldValue = isDelete ? GetHistoryFormattedValue( attributeValue.Value, attributeCache ) : string.Empty;
+            //    var formattedNewValue = isDelete ? string.Empty : GetHistoryFormattedValue( attributeValue.Value, attributeCache );
+            //    History.EvaluateChange( historyChangeList, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
+            //}
 
-            if ( !historyChangeList.Any() )
-            {
-                historyChangeList.AddChange(
-                    isDelete ? History.HistoryVerb.Delete : History.HistoryVerb.Add,
-                    History.HistoryChangeType.Record,
-                    $"{rootAttributeCache.Name} Item" );
-            }
+            //if ( !historyChangeList.Any() )
+            //{
+            //    historyChangeList.AddChange(
+            //        isDelete ? History.HistoryVerb.Delete : History.HistoryVerb.Add,
+            //        History.HistoryChangeType.Record,
+            //        $"{rootAttributeCache.Name} Item" );
+            //}
 
-            HistoryItems = HistoryService.GetChanges(
-                typeof( Person ),
-                SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
-                rootAttributeValue.EntityId.Value,
-                historyChangeList,
-                rootAttributeCache.Name,
-                typeof( Attribute ),
-                rootAttributeCache.Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
-                dbContext.SourceOfChange );
+            //HistoryItems = HistoryService.GetChanges(
+            //    typeof( Person ),
+            //    SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+            //    rootAttributeValue.EntityId.Value,
+            //    historyChangeList,
+            //    rootAttributeCache.Name,
+            //    typeof( Attribute ),
+            //    rootAttributeCache.Id,
+            //    dbContext.GetCurrentPersonAlias()?.Id,
+            //    dbContext.SourceOfChange );
         }
 
         /// <summary>
@@ -207,12 +207,12 @@ namespace Rock.Model
         /// <param name="value"></param>
         /// <param name="attributeCache"></param>
         /// <returns></returns>
-        private static string GetHistoryFormattedValue( string value, AttributeCache attributeCache )
-        {
-            return value.IsNotNullOrWhiteSpace() ?
-                attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, true ) :
-                string.Empty;
-        }
+        //private static string GetHistoryFormattedValue( string value, AttributeCache attributeCache )
+        //{
+        //    return value.IsNotNullOrWhiteSpace() ?
+        //        attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, true ) :
+        //        string.Empty;
+        //}
 
         #endregion History
     }

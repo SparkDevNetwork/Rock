@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+//using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -145,7 +147,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that person checked in
         /// </value>
         [DataMember]
-        [Index( "IX_StartDateTime" )]
+        //[Index( "IX_StartDateTime" )]
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -481,11 +483,11 @@ namespace Rock.Model
             var currentDateTime = RockDateTime.Now;
             if ( campusId.HasValue )
             {
-                var campus = CampusCache.Get( campusId.Value );
-                if ( campus != null )
-                {
-                    currentDateTime = campus.CurrentDateTime;
-                }
+                //var campus = CampusCache.Get( campusId.Value );
+                //if ( campus != null )
+                //{
+                //    currentDateTime = campus.CurrentDateTime;
+                //}
             }
 
             // Now that we know the correct time, make sure that the attendance is for today and previous to current time.
@@ -758,7 +760,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
+                //Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );
@@ -968,7 +970,14 @@ namespace Rock.Model
             this.HasOptional( a => a.ScheduledByPersonAlias ).WithMany().HasForeignKey( p => p.ScheduledByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.CheckedOutByPersonAlias ).WithMany().HasForeignKey( p => p.CheckedOutByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PresentByPersonAlias ).WithMany().HasForeignKey( p => p.PresentByPersonAliasId ).WillCascadeOnDelete( false );
+#if !NET5_0_OR_GREATER
+            // EFCORE: Moved to AttendanceData with reverse relationship setup.
             this.HasOptional( a => a.AttendanceData ).WithRequired().WillCascadeOnDelete();
+#endif
+
+#if NET5_0_OR_GREATER
+            this.HasOptional( a => a.AttendanceCheckInSession ).WithMany( s => s.Attendances ).HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
+#endif
         }
     }
 

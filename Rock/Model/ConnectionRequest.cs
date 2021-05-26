@@ -18,8 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -300,13 +300,13 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ConnectionOpportunity ?? base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.ConnectionOpportunity ?? base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// Determines whether the specified action is authorized.
@@ -543,28 +543,28 @@ namespace Rock.Model
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var connectionOpportunity = this.ConnectionOpportunity;
-            if ( connectionOpportunity == null && this.ConnectionOpportunityId > 0 )
-            {
-                connectionOpportunity = new ConnectionOpportunityService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.ConnectionOpportunityId );
-            }
+        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        //{
+        //    var connectionOpportunity = this.ConnectionOpportunity;
+        //    if ( connectionOpportunity == null && this.ConnectionOpportunityId > 0 )
+        //    {
+        //        connectionOpportunity = new ConnectionOpportunityService( rockContext )
+        //            .Queryable().AsNoTracking()
+        //            .FirstOrDefault( g => g.Id == this.ConnectionOpportunityId );
+        //    }
 
-            if ( connectionOpportunity != null )
-            {
-                var connectionType = connectionOpportunity.ConnectionType;
+        //    if ( connectionOpportunity != null )
+        //    {
+        //        var connectionType = connectionOpportunity.ConnectionType;
 
-                if ( connectionType != null )
-                {
-                    return connectionType.GetInheritedAttributesForQualifier( rockContext, TypeId, "ConnectionTypeId" );
-                }
-            }
+        //        if ( connectionType != null )
+        //        {
+        //            return connectionType.GetInheritedAttributesForQualifier( rockContext, TypeId, "ConnectionTypeId" );
+        //        }
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         #endregion
     }

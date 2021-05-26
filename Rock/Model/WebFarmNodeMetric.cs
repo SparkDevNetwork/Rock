@@ -45,7 +45,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
-        [Index( IndexName, Order = 1 )]
+        //[Index( IndexName, Order = 1 )]
         public int WebFarmNodeId { get; set; }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [Required]
-        [Index( IndexName, Order = 2 )]
+        //[Index( IndexName, Order = 2 )]
         public TypeOfMetric MetricType { get; set; }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Rock.Model
         /// The metric value date time.
         /// </value>
         [DataMember]
-        [Index( IndexName, Order = 3 )]
+        //[Index( IndexName, Order = 3 )]
         public DateTime MetricValueDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>

@@ -16,14 +16,14 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -57,7 +57,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SEARCH_KEYS )]
-        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 1 )]
+        //[Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 1 )]
         public int SearchTypeValueId { get; set; }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
-        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
+        //[Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
         public string SearchValue { get; set; }
 
         /// <summary>
@@ -166,9 +166,9 @@ namespace Rock.Model
                     return;
             }
 
-            var caption = verb == History.HistoryVerb.Modify ?
-                "Person Search Key" :
-                GetCaptionForHistory( originalModel?.SearchValue ?? SearchValue, originalModel?.SearchTypeValueId ?? SearchTypeValueId );
+            //var caption = verb == History.HistoryVerb.Modify ?
+            //    "Person Search Key" :
+            //    GetCaptionForHistory( originalModel?.SearchValue ?? SearchValue, originalModel?.SearchTypeValueId ?? SearchTypeValueId );
 
             var historyChangeList = new History.HistoryChangeList();
 
@@ -180,21 +180,21 @@ namespace Rock.Model
             {
                 History.EvaluateChange( historyChangeList, $"SearchValue", entry.OriginalValues["SearchValue"].ToStringSafe(), SearchValue, false );
 
-                var originalSearchType = DefinedValueCache.Get( entry.OriginalValues["SearchTypeValueId"].ToStringSafe().AsInteger() );
-                var currentSearchType = DefinedValueCache.Get( SearchTypeValueId );
-                History.EvaluateChange( historyChangeList, $"SearchType", originalSearchType?.Value, currentSearchType?.Value, false );
+                //var originalSearchType = DefinedValueCache.Get( entry.OriginalValues["SearchTypeValueId"].ToStringSafe().AsInteger() );
+                //var currentSearchType = DefinedValueCache.Get( SearchTypeValueId );
+                //History.EvaluateChange( historyChangeList, $"SearchType", originalSearchType?.Value, currentSearchType?.Value, false );
             }
 
-            HistoryItems = HistoryService.GetChanges(
-                typeof( Person ),
-                Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
-                personId.Value,
-                historyChangeList,
-                caption,
-                typeof( PersonSearchKey ),
-                Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
-                dbContext.SourceOfChange );
+            //HistoryItems = HistoryService.GetChanges(
+            //    typeof( Person ),
+            //    Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+            //    personId.Value,
+            //    historyChangeList,
+            //    caption,
+            //    typeof( PersonSearchKey ),
+            //    Id,
+            //    dbContext.GetCurrentPersonAlias()?.Id,
+            //    dbContext.SourceOfChange );
         }
 
         /// <summary>
@@ -203,11 +203,11 @@ namespace Rock.Model
         /// <param name="searchKeyValue">The search key value.</param>
         /// <param name="definedValueId">The defined value identifier.</param>
         /// <returns></returns>
-        private string GetCaptionForHistory( string searchKeyValue, int definedValueId )
-        {
-            var definedValue = DefinedValueCache.Get( definedValueId );
-            return $"{ definedValue?.Value ?? "<Unknown Key Type>" }: '{ searchKeyValue ?? "<No key value>" }'";
-        }
+        //private string GetCaptionForHistory( string searchKeyValue, int definedValueId )
+        //{
+        //    var definedValue = DefinedValueCache.Get( definedValueId );
+        //    return $"{ definedValue?.Value ?? "<Unknown Key Type>" }: '{ searchKeyValue ?? "<No key value>" }'";
+        //}
 
         #endregion History
 

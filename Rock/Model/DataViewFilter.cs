@@ -167,10 +167,10 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<DataViewFilter> ChildFilters
         {
-            get { return _filters ?? ( _filters = new Collection<DataViewFilter>() ); }
-            set { _filters = value; }
+            get { return _childFilters ?? ( _childFilters = new Collection<DataViewFilter>() ); }
+            set { _childFilters = value; }
         }
-        private ICollection<DataViewFilter> _filters;
+        private ICollection<DataViewFilter> _childFilters;
 
         #endregion
 
@@ -191,28 +191,28 @@ namespace Rock.Model
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
-            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
-            {
-                if ( EntityType != null )
-                {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
-                    if ( filterComponent != null )
-                    {
-                        authorized = filterComponent.IsAuthorized( action, person );
-                    }
-                }
+            //if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
+            //{
+            //    if ( EntityType != null )
+            //    {
+            //        var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
+            //        if ( filterComponent != null )
+            //        {
+            //            authorized = filterComponent.IsAuthorized( action, person );
+            //        }
+            //    }
 
-                if ( authorized )
-                {
-                    foreach ( var childFilter in ChildFilters )
-                    {
-                        if ( !childFilter.IsAuthorized( action, person ) )
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
+            //    if ( authorized )
+            //    {
+            //        foreach ( var childFilter in ChildFilters )
+            //        {
+            //            if ( !childFilter.IsAuthorized( action, person ) )
+            //            {
+            //                return false;
+            //            }
+            //        }
+            //    }
+            //}
 
             return authorized;
         }
@@ -233,28 +233,28 @@ namespace Rock.Model
 
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
-            if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
-            {
-                if ( EntityTypeId.HasValue )
-                {
-                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
-                    if ( filterComponent != null )
-                    {
-                        authorized = filterComponent.IsAuthorized( action, person );
-                    }
-                }
+            //if ( authorized && string.Compare( action, Authorization.VIEW, true ) == 0 )
+            //{
+            //    if ( EntityTypeId.HasValue )
+            //    {
+            //        var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityTypeCache.Get( this.EntityTypeId.Value )?.Name );
+            //        if ( filterComponent != null )
+            //        {
+            //            authorized = filterComponent.IsAuthorized( action, person );
+            //        }
+            //    }
 
-                if ( authorized )
-                {
-                    foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
-                    {
-                        if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
+            //    if ( authorized )
+            //    {
+            //        foreach ( var childFilter in allEntityFilters.Where( f => f.ParentId == Id ) )
+            //        {
+            //            if ( !childFilter.IsAuthorized( action, person, allEntityFilters ) )
+            //            {
+            //                return false;
+            //            }
+            //        }
+            //    }
+            //}
 
             return authorized;
         }
@@ -267,12 +267,12 @@ namespace Rock.Model
         /// <param name="parameter">A <see cref="System.Linq.Expressions.ParameterExpression"/> containing the parameter for the expression.</param>
         /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error/exception messages that are returned.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
-        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, List<string> errorMessages )
-        {
-            return GetExpression( filteredEntityType, serviceInstance, parameter, null, errorMessages );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
+        //public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, List<string> errorMessages )
+        //{
+        //    return GetExpression( filteredEntityType, serviceInstance, parameter, null, errorMessages );
+        //}
 
         /// <summary>
         /// Gets the Linq expression for the DataViewFilter.
@@ -283,12 +283,12 @@ namespace Rock.Model
         /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
-        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides, List<string> errorMessages )
-        {
-            return GetExpression( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
+        //public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides, List<string> errorMessages )
+        //{
+        //    return GetExpression( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides );
+        //}
 
         /// <summary>
         /// Gets the expression.
@@ -297,10 +297,10 @@ namespace Rock.Model
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter )
-        {
-            return GetExpression( dataViewEntityTypeType, serviceInstance, parameter, new DataViewFilterOverrides() );
-        }
+        //public virtual Expression GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter )
+        //{
+        //    return GetExpression( dataViewEntityTypeType, serviceInstance, parameter, new DataViewFilterOverrides() );
+        //}
 
         /// <summary>
         /// Gets the expression.
@@ -504,12 +504,12 @@ namespace Rock.Model
             {
                 if ( EntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                    if ( component != null )
-                    {
-                        return component.FormatSelection( filteredEntityType, this.Selection );
-                    }
+                    //var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+                    //var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                    //if ( component != null )
+                    //{
+                    //    return component.FormatSelection( filteredEntityType, this.Selection );
+                    //}
                 }
             }
             else
@@ -565,14 +565,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
-            {
-                return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
-            }
-            else
-            {
+            //if ( this.ExpressionType == FilterExpressionType.Filter && this.EntityTypeId.HasValue )
+            //{
+            //    return this.ToString( EntityTypeCache.Get( this.EntityTypeId.Value ).GetEntityType() );
+            //}
+            //else
+            //{
                 return this.ExpressionType.ConvertToString();
-            }
+            //}
         }
 
         #endregion

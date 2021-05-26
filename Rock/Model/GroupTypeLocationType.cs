@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Lava;
 
@@ -34,7 +35,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/>.
         /// </value>
-        [Key]
+        //[Key]
         [Column(Order=0)]
         [DataMember]
         public int GroupTypeId { get; set; }
@@ -47,7 +48,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue"/>  that is supported by a <see cref="Rock.Model.GroupType"/>.
         /// </value>
-        [Key]
+        //[Key]
         [Column( Order = 1 )]
         [DataMember]
         public int LocationTypeValueId { get; set; }
@@ -82,6 +83,20 @@ namespace Rock.Model
         public object ToLiquid()
         {
             return LocationTypeValue;
+        }
+    }
+
+    /// <summary>
+    /// GroupTypeLocationTypeType EntityTypeConfiguration
+    /// </summary>
+    public class GroupTypeLocationTypeConfiguration : EntityTypeConfiguration<GroupTypeLocationType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeLocationTypeConfiguration"/> class.
+        /// </summary>
+        public GroupTypeLocationTypeConfiguration()
+        {
+            this.HasKey( k => new { k.GroupTypeId, k.LocationTypeValueId } );
         }
     }
 }

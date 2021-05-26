@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeQualifier" )]
     [DataContract]
-    public partial class AttributeQualifier : Entity<AttributeQualifier>, ICacheable
+    public partial class AttributeQualifier : Entity<AttributeQualifier>/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -57,7 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index("IX_AttributeIdKey", 0, IsUnique=true)]
+        //[Index("IX_AttributeIdKey", 0, IsUnique=true)]
         public int AttributeId { get; set; }
         
         /// <summary>
@@ -69,7 +69,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        [Index( "IX_AttributeIdKey", 1, IsUnique = true )]
+        //[Index( "IX_AttributeIdKey", 1, IsUnique = true )]
         public string Key { get; set; }
         
         /// <summary>
@@ -102,22 +102,22 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    // doesn't apply
+        //    return null;
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // AttributeCache has QualifierValues that could get stale if AttributeQualifier is modified
-            AttributeCache.UpdateCachedEntity( this.AttributeId, EntityState.Modified );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    // AttributeCache has QualifierValues that could get stale if AttributeQualifier is modified
+        //    AttributeCache.UpdateCachedEntity( this.AttributeId, EntityState.Modified );
+        //}
 
         #endregion
 

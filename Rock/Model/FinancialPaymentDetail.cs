@@ -18,17 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.Financial;
-using Rock.Security;
-using Rock.Web.Cache;
+//using Rock.Financial;
+//using Rock.Security;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -333,28 +333,28 @@ namespace Rock.Model
         /// <value>
         /// The expiration date.
         /// </value>
-        [NotMapped]
-        public string ExpirationDate
-        {
-            get
-            {
-                int? expMonth = ExpirationMonth;
-                int? expYear = ExpirationYear;
-                if ( expMonth.HasValue && expYear.HasValue )
-                {
-                    // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
-                    string expireYY = expYear.Value.ToString();
-                    if ( expireYY.Length == 4 )
-                    {
-                        expireYY = expireYY.Substring( 2 );
-                    }
+        //[NotMapped]
+        //public string ExpirationDate
+        //{
+        //    get
+        //    {
+        //        int? expMonth = ExpirationMonth;
+        //        int? expYear = ExpirationYear;
+        //        if ( expMonth.HasValue && expYear.HasValue )
+        //        {
+        //            // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
+        //            string expireYY = expYear.Value.ToString();
+        //            if ( expireYY.Length == 4 )
+        //            {
+        //                expireYY = expireYY.Substring( 2 );
+        //            }
 
-                    return $"{expMonth.Value:00}/{expireYY:00}";
-                }
+        //            return $"{expMonth.Value:00}/{expireYY:00}";
+        //        }
 
-                return null;
-            }
-        }
+        //        return null;
+        //    }
+        //}
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
@@ -622,7 +622,7 @@ namespace Rock.Model
                 // Ensure that CurrencyTypeValueId is set. The UI tries to prevent it, but just in case, if it isn't, set it to Unknown
                 if ( !this.CurrencyTypeValueId.HasValue )
                 {
-                    this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+                    //this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
                 }
             }
 

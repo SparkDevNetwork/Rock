@@ -20,10 +20,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.SqlServer;
+//using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -49,7 +49,7 @@ namespace Rock.Model
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
-    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag, IRockIndexable, ICacheable
+    public partial class Group : Model<Group>, IOrdered, IHasActiveFlag/*, IRockIndexable, ICacheable*/
     {
         #region Entity Properties
 
@@ -511,33 +511,33 @@ namespace Rock.Model
         /// The parent authority. If the block is located on the page, security will be
         /// inherited from the page, otherwise it will be inherited from the site.
         /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
-            }
-        }
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.ParentGroup != null ? this.ParentGroup : base.ParentAuthority;
+        //    }
+        //}
 
         /// <summary>
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        public override Security.ISecured ParentAuthorityPre
-        {
-            get
-            {
-                if ( this.GroupTypeId > 0 )
-                {
-                    GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
-                    return groupType;
-                }
-                else
-                {
-                    return base.ParentAuthorityPre;
-                }
-            }
-        }
+        //public override Security.ISecured ParentAuthorityPre
+        //{
+        //    get
+        //    {
+        //        if ( this.GroupTypeId > 0 )
+        //        {
+        //            GroupTypeCache groupType = GroupTypeCache.Get( this.GroupTypeId );
+        //            return groupType;
+        //        }
+        //        else
+        //        {
+        //            return base.ParentAuthorityPre;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Gets a value indicating whether [allows interactive bulk indexing].
@@ -559,11 +559,11 @@ namespace Rock.Model
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                    _supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
+                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    //_supportedActions.Add( Authorization.MANAGE_MEMBERS, "The roles and/or users that have access to manage the group members." );
+                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    //_supportedActions.Add( Authorization.SCHEDULE, "The roles and/or users that may perform scheduling." );
                 }
 
                 return _supportedActions;
@@ -630,27 +630,27 @@ namespace Rock.Model
         {
             var roleLimitWarnings = new StringBuilder();
             var group = this;
-            var groupType = GroupTypeCache.Get( group.GroupTypeId );
-            if ( groupType?.Roles != null && groupType.Roles.Any() )
-            {
-                var groupMemberService = new GroupMemberService( new RockContext() );
-                foreach ( var role in groupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
-                {
-                    int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
+            //var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            //if ( groupType?.Roles != null && groupType.Roles.Any() )
+            //{
+            //    var groupMemberService = new GroupMemberService( new RockContext() );
+            //    foreach ( var role in groupType.Roles.Where( a => a.MinCount.HasValue || a.MaxCount.HasValue ) )
+            //    {
+            //        int curCount = groupMemberService.Queryable().Where( m => m.GroupId == group.Id && m.GroupRoleId == role.Id && m.GroupMemberStatus == GroupMemberStatus.Active ).Count();
 
-                    if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MinCount, role.MinCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
-                    }
+            //        if ( role.MinCount.HasValue && role.MinCount.Value > curCount )
+            //        {
+            //            string format = "The <strong>{1}</strong> role is currently below its minimum requirement of {2:N0} active {3}.<br/>";
+            //            roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MinCount, role.MinCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+            //        }
 
-                    if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
-                    {
-                        string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
-                        roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MaxCount, role.MaxCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
-                    }
-                }
-            }
+            //        if ( role.MaxCount.HasValue && role.MaxCount.Value < curCount )
+            //        {
+            //            string format = "The <strong>{1}</strong> role is currently above its maximum limit of {2:N0} active {3}.<br/>";
+            //            roleLimitWarnings.AppendFormat( format, role.Name.Pluralize().ToLower(), role.Name.ToLower(), role.MaxCount, role.MaxCount == 1 ? groupType.GroupMemberTerm.ToLower() : groupType.GroupMemberTerm.Pluralize().ToLower() );
+            //        }
+            //    }
+            //}
 
             warningMessageHtml = roleLimitWarnings.ToString();
             return !string.IsNullOrEmpty( warningMessageHtml );
@@ -684,68 +684,68 @@ namespace Rock.Model
                 return authorized;
             }
 
-            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+            //var groupType = GroupTypeCache.Get( this.GroupTypeId );
 
-            if ( groupType == null )
+            //if ( groupType == null )
             {
                 return authorized;
             }
 
             // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
             // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
-            List<int> checkMemberRoleIds = new List<int>();
-            if ( action == Authorization.VIEW )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
-            }
-            else if ( action == Authorization.MANAGE_MEMBERS )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
-            }
-            else if ( action == Authorization.EDIT )
-            {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
-            }
+            //List<int> checkMemberRoleIds = new List<int>();
+            //if ( action == Authorization.VIEW )
+            //{
+            //    checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
+            //}
+            //else if ( action == Authorization.MANAGE_MEMBERS )
+            //{
+            //    checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
+            //}
+            //else if ( action == Authorization.EDIT )
+            //{
+            //    checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            //}
 
-            if ( !checkMemberRoleIds.Any() )
-            {
-                return authorized;
-            }
+            //if ( !checkMemberRoleIds.Any() )
+            //{
+            //    return authorized;
+            //}
 
-            // For each occurrence of this person in this group for the roles that might grant them auth,
-            // check to see if their role is valid for the group type and if the role grants them authorization
-            using ( var rockContext = new RockContext() )
-            {
-                foreach ( int roleId in new GroupMemberService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( m =>
-                        m.PersonId == person.Id &&
-                        m.GroupId == this.Id &&
-                        m.GroupMemberStatus == GroupMemberStatus.Active )
-                    .Select( m => m.GroupRoleId ) )
-                {
-                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                    if ( role != null )
-                    {
-                        if ( action == Authorization.VIEW && role.CanView )
-                        {
-                            return true;
-                        }
+            //// For each occurrence of this person in this group for the roles that might grant them auth,
+            //// check to see if their role is valid for the group type and if the role grants them authorization
+            //using ( var rockContext = new RockContext() )
+            //{
+            //    foreach ( int roleId in new GroupMemberService( rockContext )
+            //        .Queryable().AsNoTracking()
+            //        .Where( m =>
+            //            m.PersonId == person.Id &&
+            //            m.GroupId == this.Id &&
+            //            m.GroupMemberStatus == GroupMemberStatus.Active )
+            //        .Select( m => m.GroupRoleId ) )
+            //    {
+            //        var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+            //        if ( role != null )
+            //        {
+            //            if ( action == Authorization.VIEW && role.CanView )
+            //            {
+            //                return true;
+            //            }
 
-                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
-                        {
-                            return true;
-                        }
+            //            if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+            //            {
+            //                return true;
+            //            }
 
-                        if ( action == Authorization.EDIT && role.CanEdit )
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
+            //            if ( action == Authorization.EDIT && role.CanEdit )
+            //            {
+            //                return true;
+            //            }
+            //        }
+            //    }
+            //}
 
-            return authorized;
+            //return authorized;
         }
 
         /// <summary>
@@ -851,7 +851,7 @@ namespace Rock.Model
 
                             DateTime? newInactiveDateTime = this.InactiveDateTime;
 
-                            UpdateGroupMembersActiveStatusFromGroupStatus( rockContext, originalIsActive, originalInactiveDateTime, this.IsActive, newInactiveDateTime );
+                            //UpdateGroupMembersActiveStatusFromGroupStatus( rockContext, originalIsActive, originalInactiveDateTime, this.IsActive, newInactiveDateTime );
                         }
 
 
@@ -870,16 +870,16 @@ namespace Rock.Model
 
                             DateTime? newArchivedDateTime = this.ArchivedDateTime;
 
-                            UpdateGroupMembersArchivedValueFromGroupArchivedValue( rockContext, originalIsArchived, originalArchivedDateTime, this.IsArchived, newArchivedDateTime );
+                            //UpdateGroupMembersArchivedValueFromGroupArchivedValue( rockContext, originalIsArchived, originalArchivedDateTime, this.IsArchived, newArchivedDateTime );
                         }
 
                         // If Campus is modified for an existing Family Group, set a flag to trigger updates for calculated field Person.PrimaryCampusId.
                         var group = entry.Entity as Group;
 
-                        var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+                        //var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
 
-                        _FamilyCampusIsChanged = ( group.GroupTypeId == familyGroupTypeId
-                                                   && group.CampusId.GetValueOrDefault( 0 ) != entry.OriginalValues["CampusId"].ToStringSafe().AsInteger() );
+                        //_FamilyCampusIsChanged = ( group.GroupTypeId == familyGroupTypeId
+                        //                           && group.CampusId.GetValueOrDefault( 0 ) != entry.OriginalValues["CampusId"].ToStringSafe().AsInteger() );
 
                         break;
                     }
@@ -930,35 +930,35 @@ namespace Rock.Model
         /// <param name="originalInactiveDateTime">The old inactive date time.</param>
         /// <param name="newActiveStatus">if set to <c>true</c> [new active status].</param>
         /// <param name="newInactiveDateTime">The new inactive date time.</param>
-        private void UpdateGroupMembersActiveStatusFromGroupStatus( RockContext rockContext, bool originalIsActive, DateTime? originalInactiveDateTime, bool newActiveStatus, DateTime? newInactiveDateTime )
-        {
-            if ( originalIsActive == newActiveStatus || this.Id == 0 )
-            {
-                // only change GroupMember status if the Group's status was changed 
-                return;
-            }
+        //private void UpdateGroupMembersActiveStatusFromGroupStatus( RockContext rockContext, bool originalIsActive, DateTime? originalInactiveDateTime, bool newActiveStatus, DateTime? newInactiveDateTime )
+        //{
+        //    if ( originalIsActive == newActiveStatus || this.Id == 0 )
+        //    {
+        //        // only change GroupMember status if the Group's status was changed 
+        //        return;
+        //    }
 
-            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+        //    var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
 
-            if ( newActiveStatus == false )
-            {
-                // group was changed to from Active to Inactive, so change all Active/Pending GroupMembers to Inactive and stamp their inactivate DateTime to be the same as the group's inactive DateTime.
-                foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive ).ToList() )
-                {
-                    groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-                    groupMember.InactiveDateTime = newInactiveDateTime;
-                }
-            }
-            else if ( originalInactiveDateTime.HasValue )
-            {
-                // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
-                foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
-                {
-                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                    groupMember.InactiveDateTime = newInactiveDateTime;
-                }
-            }
-        }
+        //    if ( newActiveStatus == false )
+        //    {
+        //        // group was changed to from Active to Inactive, so change all Active/Pending GroupMembers to Inactive and stamp their inactivate DateTime to be the same as the group's inactive DateTime.
+        //        foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive ).ToList() )
+        //        {
+        //            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+        //            groupMember.InactiveDateTime = newInactiveDateTime;
+        //        }
+        //    }
+        //    else if ( originalInactiveDateTime.HasValue )
+        //    {
+        //        // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
+        //        foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
+        //        {
+        //            groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+        //            groupMember.InactiveDateTime = newInactiveDateTime;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Updates the group members IsArchived value from the group's IsArchived value.
@@ -968,38 +968,38 @@ namespace Rock.Model
         /// <param name="originalArchivedDateTime">The original archived date time.</param>
         /// <param name="newIsArchived">if set to <c>true</c> [new is archived].</param>
         /// <param name="newArchivedDateTime">The new archived date time.</param>
-        private void UpdateGroupMembersArchivedValueFromGroupArchivedValue( RockContext rockContext, bool originalIsArchived, DateTime? originalArchivedDateTime, bool newIsArchived, DateTime? newArchivedDateTime )
-        {
-            if ( originalIsArchived == newIsArchived || this.Id == 0 )
-            {
-                // only change GroupMember archived value if the Group's archived value was changed 
-                return;
-            }
+        //private void UpdateGroupMembersArchivedValueFromGroupArchivedValue( RockContext rockContext, bool originalIsArchived, DateTime? originalArchivedDateTime, bool newIsArchived, DateTime? newArchivedDateTime )
+        //{
+        //    if ( originalIsArchived == newIsArchived || this.Id == 0 )
+        //    {
+        //        // only change GroupMember archived value if the Group's archived value was changed 
+        //        return;
+        //    }
 
-            // IMPORTANT: When dealing with Archived Groups or GroupMembers, we always need to get
-            // a query without the "filter" (AsNoFilter) that comes from the GroupConfiguration and/or
-            // GroupMemberConfiguration because otherwise the query will not include archived items.
-            var groupMemberQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.GroupId == this.Id );
+        //    // IMPORTANT: When dealing with Archived Groups or GroupMembers, we always need to get
+        //    // a query without the "filter" (AsNoFilter) that comes from the GroupConfiguration and/or
+        //    // GroupMemberConfiguration because otherwise the query will not include archived items.
+        //    var groupMemberQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.GroupId == this.Id );
 
-            if ( newIsArchived )
-            {
-                // group IsArchived was changed from false to true, so change all archived GroupMember's IsArchived to true and stamp their IsArchivedDateTime to be the same as the group's IsArchivedDateTime.
-                foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == false ).ToList() )
-                {
-                    groupMember.IsArchived = true;
-                    groupMember.ArchivedDateTime = newArchivedDateTime;
-                }
-            }
-            else if ( originalArchivedDateTime.HasValue )
-            {
-                // group IsArchived was changed from true to false, so change all archived GroupMember's IsArchived if their ArchivedDateTime is within 24 hours of the Group's ArchivedDateTime
-                foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 ).ToList() )
-                {
-                    groupMember.IsArchived = false;
-                    groupMember.ArchivedDateTime = newArchivedDateTime;
-                }
-            }
-        }
+        //    if ( newIsArchived )
+        //    {
+        //        // group IsArchived was changed from false to true, so change all archived GroupMember's IsArchived to true and stamp their IsArchivedDateTime to be the same as the group's IsArchivedDateTime.
+        //        foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == false ).ToList() )
+        //        {
+        //            groupMember.IsArchived = true;
+        //            groupMember.ArchivedDateTime = newArchivedDateTime;
+        //        }
+        //    }
+        //    else if ( originalArchivedDateTime.HasValue )
+        //    {
+        //        // group IsArchived was changed from true to false, so change all archived GroupMember's IsArchived if their ArchivedDateTime is within 24 hours of the Group's ArchivedDateTime
+        //        foreach ( var groupMember in groupMemberQuery.Where( a => a.IsArchived == true && a.ArchivedDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.ArchivedDateTime.Value, originalArchivedDateTime.Value ).Value ) < 24 ).ToList() )
+        //        {
+        //            groupMember.IsArchived = false;
+        //            groupMember.ArchivedDateTime = newArchivedDateTime;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Posts the save changes.
@@ -1061,23 +1061,23 @@ namespace Rock.Model
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var groupType = this.GroupType;
-            if ( groupType == null && this.GroupTypeId > 0 )
-            {
-                groupType = new GroupTypeService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( t => t.Id == this.GroupTypeId );
-            }
+        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        //{
+        //    var groupType = this.GroupType;
+        //    if ( groupType == null && this.GroupTypeId > 0 )
+        //    {
+        //        groupType = new GroupTypeService( rockContext )
+        //            .Queryable().AsNoTracking()
+        //            .FirstOrDefault( t => t.Id == this.GroupTypeId );
+        //    }
 
-            if ( groupType != null )
-            {
-                return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
-            }
+        //    if ( groupType != null )
+        //    {
+        //        return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+        //    }
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
@@ -1097,103 +1097,103 @@ namespace Rock.Model
         /// <summary>
         /// Bulks the index documents.
         /// </summary>
-        public void BulkIndexDocuments()
-        {
-            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+        //public void BulkIndexDocuments()
+        //{
+        //    List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-            RockContext rockContext = new RockContext();
+        //    RockContext rockContext = new RockContext();
 
-            // return people
-            var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
-                                .Where( g =>
-                                     g.IsActive == true
-                                     && g.GroupType.IsIndexEnabled == true );
+        //    // return people
+        //    var groups = new GroupService( rockContext ).Queryable().AsNoTracking()
+        //                        .Where( g =>
+        //                             g.IsActive == true
+        //                             && g.GroupType.IsIndexEnabled == true );
 
-            int recordCounter = 0;
+        //    int recordCounter = 0;
 
-            foreach ( var group in groups )
-            {
-                var indexableGroup = GroupIndex.LoadByModel( group );
-                indexableItems.Add( indexableGroup );
+        //    foreach ( var group in groups )
+        //    {
+        //        var indexableGroup = GroupIndex.LoadByModel( group );
+        //        indexableItems.Add( indexableGroup );
 
-                recordCounter++;
+        //        recordCounter++;
 
-                if ( recordCounter > 100 )
-                {
-                    IndexContainer.IndexDocuments( indexableItems );
-                    indexableItems = new List<IndexModelBase>();
-                    recordCounter = 0;
-                }
-            }
+        //        if ( recordCounter > 100 )
+        //        {
+        //            IndexContainer.IndexDocuments( indexableItems );
+        //            indexableItems = new List<IndexModelBase>();
+        //            recordCounter = 0;
+        //        }
+        //    }
 
-            IndexContainer.IndexDocuments( indexableItems );
-        }
+        //    IndexContainer.IndexDocuments( indexableItems );
+        //}
 
         /// <summary>
         /// Indexes the document.
         /// </summary>
         /// <param name="id"></param>
-        public void IndexDocument( int id )
-        {
-            var groupEntity = new GroupService( new RockContext() ).Get( id );
+        //public void IndexDocument( int id )
+        //{
+        //    var groupEntity = new GroupService( new RockContext() ).Get( id );
 
-            // check that this group type is set to be indexed.
-            if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )
-            {
-                var indexItem = GroupIndex.LoadByModel( groupEntity );
-                IndexContainer.IndexDocument( indexItem );
-            }
-        }
+        //    // check that this group type is set to be indexed.
+        //    if ( groupEntity.GroupType.IsIndexEnabled && groupEntity.IsActive )
+        //    {
+        //        var indexItem = GroupIndex.LoadByModel( groupEntity );
+        //        IndexContainer.IndexDocument( indexItem );
+        //    }
+        //}
 
         /// <summary>
         /// Deletes the indexed document.
         /// </summary>
         /// <param name="id"></param>
-        public void DeleteIndexedDocument( int id )
-        {
-            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.GroupIndex" );
-            IndexContainer.DeleteDocumentById( indexType, id );
-        }
+        //public void DeleteIndexedDocument( int id )
+        //{
+        //    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.GroupIndex" );
+        //    IndexContainer.DeleteDocumentById( indexType, id );
+        //}
 
         /// <summary>
         /// Deletes the indexed documents.
         /// </summary>
-        public void DeleteIndexedDocuments()
-        {
-            IndexContainer.DeleteDocumentsByType<GroupIndex>();
-        }
+        //public void DeleteIndexedDocuments()
+        //{
+        //    IndexContainer.DeleteDocumentsByType<GroupIndex>();
+        //}
 
         /// <summary>
         /// Indexes the name of the model.
         /// </summary>
         /// <returns></returns>
-        public Type IndexModelType()
-        {
-            return typeof( GroupIndex );
-        }
+        //public Type IndexModelType()
+        //{
+        //    return typeof( GroupIndex );
+        //}
 
         /// <summary>
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public ModelFieldFilterConfig GetIndexFilterConfig()
-        {
-            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
-            filterConfig.FilterLabel = "Group Types";
-            filterConfig.FilterField = "groupTypeName";
+        //public ModelFieldFilterConfig GetIndexFilterConfig()
+        //{
+        //    ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+        //    filterConfig.FilterValues = new GroupTypeService( new RockContext() ).Queryable().AsNoTracking().Where( t => t.IsIndexEnabled ).Select( t => t.Name ).ToList();
+        //    filterConfig.FilterLabel = "Group Types";
+        //    filterConfig.FilterField = "groupTypeName";
 
-            return filterConfig;
-        }
+        //    return filterConfig;
+        //}
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public bool SupportsIndexFieldFiltering()
-        {
-            return true;
-        }
+        //public bool SupportsIndexFieldFiltering()
+        //{
+        //    return true;
+        //}
         #endregion
 
         #region ICacheable
@@ -1222,33 +1222,33 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    // doesn't apply
+        //    return null;
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            // If the group changed, and it was a security group, flush the security for the group
-            Guid? originalGroupTypeGuid = null;
-            Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
-            if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
-            {
-                originalGroupTypeGuid = GroupTypeCache.Get( _originalGroupTypeId.Value, ( RockContext ) dbContext )?.Guid;
-            }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    // If the group changed, and it was a security group, flush the security for the group
+        //    Guid? originalGroupTypeGuid = null;
+        //    Guid groupTypeScheduleRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+        //    if ( _originalGroupTypeId.HasValue && _originalGroupTypeId != this.GroupTypeId )
+        //    {
+        //        originalGroupTypeGuid = GroupTypeCache.Get( _originalGroupTypeId.Value, ( RockContext ) dbContext )?.Guid;
+        //    }
 
-            var groupTypeGuid = GroupTypeCache.Get( this.GroupTypeId, ( RockContext ) dbContext )?.Guid;
-            if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
-            {
-                RoleCache.FlushItem( this.Id );
-            }
-        }
+        //    var groupTypeGuid = GroupTypeCache.Get( this.GroupTypeId, ( RockContext ) dbContext )?.Guid;
+        //    if ( this.IsSecurityRole || ( _originalIsSecurityRole == true ) || ( groupTypeGuid == groupTypeScheduleRole ) || ( originalGroupTypeGuid == groupTypeScheduleRole ) )
+        //    {
+        //        RoleCache.FlushItem( this.Id );
+        //    }
+        //}
 
         #endregion
     }
@@ -1284,7 +1284,7 @@ namespace Rock.Model
 
             // In the case of Group as a property (not a collection), we DO want to fetch the group record even if it is archived, so ensure that AllowPropertyFilter = false;
             // NOTE: This is not specific to Group, it is for any Filtered Model (currently just Group and GroupMember)
-            Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
+            //Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
         }
     }
 

@@ -19,14 +19,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Infrastructure;
+using EntityState = Microsoft.EntityFrameworkCore.EntityState;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rock.Data;
-using Rock.Transactions;
-using Rock.Web.Cache;
+//using Rock.Transactions;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -45,8 +46,8 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IX_StreakTypeId", IsUnique = false )]
-        [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
+        //[Index( "IX_StreakTypeId", IsUnique = false )]
+        //[Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
         public int StreakTypeId { get; set; }
 
         /// <summary>
@@ -54,8 +55,8 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        [Index( "IX_PersonAliasId", IsUnique = false )]
-        [Index( "IX_StreakTypeId_PersonAliasId", 1, IsUnique = true )]
+        //[Index( "IX_PersonAliasId", IsUnique = false )]
+        //[Index( "IX_StreakTypeId_PersonAliasId", 1, IsUnique = true )]
         public int PersonAliasId { get; set; }
 
         /// <summary>
@@ -201,7 +202,7 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
         {
-            _isDeleted = entry.State == System.Data.Entity.EntityState.Deleted;
+            _isDeleted = entry.State == EntityState.Deleted;
             base.PreSaveChanges( dbContext, entry );
         }
         private bool _isDeleted = false;
@@ -235,13 +236,13 @@ namespace Rock.Model
             get
             {
                 var isValid = base.IsValid;
-                var streakTypeCache = StreakTypeCache.Get( StreakTypeId );
+                //var streakTypeCache = StreakTypeCache.Get( StreakTypeId );
 
-                if ( streakTypeCache != null && EnrollmentDate < streakTypeCache.StartDate )
-                {
-                    ValidationResults.Add( new ValidationResult( $"The enrollment date cannot be before the streak type start date, {streakTypeCache.StartDate.ToShortDateString()}." ) );
-                    isValid = false;
-                }
+                //if ( streakTypeCache != null && EnrollmentDate < streakTypeCache.StartDate )
+                //{
+                //    ValidationResults.Add( new ValidationResult( $"The enrollment date cannot be before the streak type start date, {streakTypeCache.StartDate.ToShortDateString()}." ) );
+                //    isValid = false;
+                //}
 
                 return isValid;
             }

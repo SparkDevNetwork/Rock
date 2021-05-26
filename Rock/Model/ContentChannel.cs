@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
-    public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
+    public partial class ContentChannel : Model<ContentChannel>/*, ICacheable*/, ICampusFilterable
     {
         #region Entity Properties
 
@@ -309,17 +309,17 @@ namespace Rock.Model
         /// <value>
         /// The supported actions.
         /// </value>
-        [NotMapped]
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
-                return supportedActions;
-            }
-        }
+        //[NotMapped]
+        //public override Dictionary<string, string> SupportedActions
+        //{
+        //    get
+        //    {
+        //        var supportedActions = base.SupportedActions;
+        //        supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
+        //        supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+        //        return supportedActions;
+        //    }
+        //}
 
         /// <summary>
         /// Gets the parent authority.
@@ -327,14 +327,14 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        [NotMapped]
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
-            }
-        }
+        //[NotMapped]
+        //public override Security.ISecured ParentAuthority
+        //{
+        //    get
+        //    {
+        //        return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
+        //    }
+        //}
 
         #endregion
 
@@ -421,7 +421,7 @@ namespace Rock.Model
             // clean up the index
             if ( state == EntityState.Deleted && IsIndexEnabled )
             {
-                this.DeleteIndexedDocumentsByContentChannel( Id );
+                //this.DeleteIndexedDocumentsByContentChannel( Id );
             }
             else if ( state == EntityState.Modified )
             {
@@ -434,12 +434,12 @@ namespace Rock.Model
                     if ( originalIndexState == true && IsIndexEnabled == false )
                     {
                         // clear out index items
-                        this.DeleteIndexedDocumentsByContentChannel( Id );
+                        //this.DeleteIndexedDocumentsByContentChannel( Id );
                     }
                     else if ( IsIndexEnabled == true )
                     {
                         // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
-                        BulkIndexDocumentsByContentChannel( Id );
+                        //BulkIndexDocumentsByContentChannel( Id );
                     }
                 }
             }
@@ -465,20 +465,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return ContentChannelCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return ContentChannelCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         #endregion
     }
@@ -495,11 +495,30 @@ namespace Rock.Model
         /// </summary>
         public ContentChannelConfiguration()
         {
+#if NET5_0_OR_GREATER
+            Builder.HasMany( p => p.ChildContentChannels )
+                .WithMany( c => c.ParentContentChannels )
+                .UsingEntity( j =>
+                {
+                    j.ToTable( "AttributeCategory" );
+                    j.HasOne( typeof( ContentChannel ) ).WithMany().HasForeignKey( "ContentChannelId" );
+                    j.HasOne( typeof( ContentChannel ) ).WithMany().HasForeignKey( "ChildContentChannelId" );
+                } );
+            Builder.HasMany( p => p.Categories )
+                .WithMany( c => c.ContentChannels )
+                .UsingEntity( j =>
+                {
+                    j.ToTable( "AttributeCategory" );
+                    j.HasOne( typeof( ContentChannel ) ).WithMany().HasForeignKey( "ContentChannelId" );
+                    j.HasOne( typeof( ContentChannel ) ).WithMany().HasForeignKey( "ChildContentChannelId" );
+                } );
+#else
             this.HasMany( p => p.ChildContentChannels ).WithMany( c => c.ParentContentChannels ).Map( m => { m.MapLeftKey( "ContentChannelId" ); m.MapRightKey( "ChildContentChannelId" ); m.ToTable( "ContentChannelAssociation" ); } );
+            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "ContentChannelId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "ContentChannelCategory" ); } );
+#endif
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StructuredContentToolValue ).WithMany().HasForeignKey( p => p.StructuredContentToolValueId ).WillCascadeOnDelete( false );
-            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "ContentChannelId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "ContentChannelCategory" ); } );
         }
     }
 

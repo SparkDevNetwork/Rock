@@ -17,15 +17,15 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Principal;
 using System.Threading;
 using System.Web;
-using System.Web.Hosting;
+//using System.Web.Hosting;
 
 using Rock.Data;
 using Rock.Web.Cache;
@@ -243,15 +243,15 @@ namespace Rock.Model
         {
             get
             {
-                System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
-                if ( identity == null )
+                //System.Web.Security.FormsIdentity identity = HttpContext.Current.User?.Identity as System.Web.Security.FormsIdentity;
+                //if ( identity == null )
                     return false;
 
-                if ( identity.Ticket != null &&
-                    identity.Ticket.UserData.ToLower() == "true" )
-                    return false;
+                //if ( identity.Ticket != null &&
+                //    identity.Ticket.UserData.ToLower() == "true" )
+                //    return false;
 
-                return true;
+                //return true;
             }
         }
 
@@ -267,13 +267,13 @@ namespace Rock.Model
         {
             get
             {
-                string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, RockDateTime.Now.Ticks );
-                string encryptedCode;
-                if (Rock.Security.Encryption.TryEncryptString(identifier, out encryptedCode))
-                {
-                    return encryptedCode;
-                }
-                else
+                //string identifier = string.Format( "ROCK|{0}|{1}|{2}", this.EncryptedKey.ToString(), this.UserName, RockDateTime.Now.Ticks );
+                //string encryptedCode;
+                //if (Rock.Security.Encryption.TryEncryptString(identifier, out encryptedCode))
+                //{
+                //    return encryptedCode;
+                //}
+                //else
                 {
                     return null;
                 }
@@ -339,18 +339,18 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
                         // Get the authentication provider entity type
-                        var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
-                        var change = HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Authentication Provider" ).SetNewValue( entityType?.FriendlyName );
+                        //var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
+                        //var change = HistoryChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Authentication Provider" ).SetNewValue( entityType?.FriendlyName );
 
-                        // Don't log Pin Authentication user names.
-                        var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+                        //// Don't log Pin Authentication user names.
+                        //var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
-                        if ( isUserNameSensitive )
-                        {
-                            change.SetCaption( "User Account" );
-                        }
+                        //if ( isUserNameSensitive )
+                        //{
+                        //    change.SetCaption( "User Account" );
+                        //}
 
-                        History.EvaluateChange( HistoryChanges, "User Login", string.Empty, UserName, isUserNameSensitive );
+                        //History.EvaluateChange( HistoryChanges, "User Login", string.Empty, UserName, isUserNameSensitive );
                         History.EvaluateChange( HistoryChanges, "Is Confirmed", null, IsConfirmed );
                         History.EvaluateChange( HistoryChanges, "Is Password Change Required", null, IsPasswordChangeRequired );
                         History.EvaluateChange( HistoryChanges, "Is Locked Out", null, IsLockedOut );
@@ -360,12 +360,12 @@ namespace Rock.Model
 
                 case EntityState.Modified:
                     {
-                        var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
+                        //var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
 
-                        // Don't log Pin Authentication user names.
-                        var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+                        //// Don't log Pin Authentication user names.
+                        //var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
-                        History.EvaluateChange( HistoryChanges, "User Login", entry.OriginalValues["UserName"].ToStringSafe(), UserName, isUserNameSensitive );
+                        //History.EvaluateChange( HistoryChanges, "User Login", entry.OriginalValues["UserName"].ToStringSafe(), UserName, isUserNameSensitive );
                         History.EvaluateChange( HistoryChanges, "Is Confirmed", entry.OriginalValues["IsConfirmed"].ToStringSafe().AsBooleanOrNull(), IsConfirmed );
                         History.EvaluateChange( HistoryChanges, "Is Password Change Required", entry.OriginalValues["IsPasswordChangeRequired"].ToStringSafe().AsBooleanOrNull(), IsPasswordChangeRequired );
                         History.EvaluateChange( HistoryChanges, "Is Locked Out", entry.OriginalValues["IsLockedOut"].ToStringSafe().AsBooleanOrNull(), IsLockedOut );
@@ -376,17 +376,17 @@ namespace Rock.Model
                         int? entityTypeId = EntityType != null ? EntityType.Id : EntityTypeId;
                         if ( !entityTypeId.Equals( origEntityTypeId ) )
                         {
-                            var origProviderType = EntityTypeCache.Get( origEntityTypeId ?? 0 )?.FriendlyName;
-                            var providerType = EntityTypeCache.Get( this.EntityTypeId ?? 0 )?.FriendlyName;
-                            History.EvaluateChange( HistoryChanges, "User Login", origProviderType, providerType );
+                            //var origProviderType = EntityTypeCache.Get( origEntityTypeId ?? 0 )?.FriendlyName;
+                            //var providerType = EntityTypeCache.Get( this.EntityTypeId ?? 0 )?.FriendlyName;
+                            //History.EvaluateChange( HistoryChanges, "User Login", origProviderType, providerType );
                         }
 
                         // Change the caption if this is a sensitive user account
-                        if ( HistoryChanges.Count > 0 && isUserNameSensitive )
-                        {
-                                var change = HistoryChanges.FirstOrDefault();
-                                change.SetCaption( "User Account" );
-                        }
+                        //if ( HistoryChanges.Count > 0 && isUserNameSensitive )
+                        //{
+                        //        var change = HistoryChanges.FirstOrDefault();
+                        //        change.SetCaption( "User Account" );
+                        //}
 
                         break;
                     }
@@ -401,19 +401,19 @@ namespace Rock.Model
                         {
                             try
                             {
-                                var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
-                                var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
+                                //var entityType = EntityTypeCache.Get( userLogin.EntityTypeId ?? 0 );
+                                //var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
-                                if ( ! isUserNameSensitive )
+                                //if ( ! isUserNameSensitive )
                                 {
                                     HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "User Login" ).SetOldValue( userLogin.UserName );
                                     HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, UserName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
                                 }
-                                else
-                                {
-                                    HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
-                                    HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
-                                }
+                                //else
+                                //{
+                                //    HistoryChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Authentication Provider" ).SetOldValue( entityType?.FriendlyName ).SetCaption( "User Account" );
+                                //    HistoryService.SaveChanges( newRockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), userLogin.PersonId.Value, HistoryChanges, entityType?.FriendlyName, typeof( UserLogin ), this.Id, true, userLogin.ModifiedByPersonAliasId, null );
+                                //}
                             }
                             catch ( Exception ex )
                             {
@@ -465,12 +465,12 @@ namespace Rock.Model
         /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
         public static string GetCurrentUserName()
         {
-            if ( HostingEnvironment.IsHosted )
-            {
-                HttpContext current = HttpContext.Current;
-                if ( current != null && current.User != null )
-                    return current.User.Identity.Name;
-            }
+            //if ( HostingEnvironment.IsHosted )
+            //{
+            //    HttpContext current = HttpContext.Current;
+            //    if ( current != null && current.User != null )
+            //        return current.User.Identity.Name;
+            //}
             IPrincipal currentPrincipal = Thread.CurrentPrincipal;
             if ( currentPrincipal == null || currentPrincipal.Identity == null )
                 return string.Empty;

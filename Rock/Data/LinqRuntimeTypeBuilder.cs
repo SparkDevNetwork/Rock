@@ -51,7 +51,7 @@ namespace Rock.Data
         /// </summary>
         static LinqRuntimeTypeBuilder()
         {
-            moduleBuilder = Thread.GetDomain().DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run ).DefineDynamicModule( assemblyName.Name );
+            //moduleBuilder = Thread.GetDomain().DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run ).DefineDynamicModule( assemblyName.Name );
         }
 
         /// <summary>

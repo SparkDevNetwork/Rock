@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -692,11 +692,11 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ICollection<RegistrationInstance> Instances
         {
-            get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }
-            set { _registrationInstances = value; }
+            get { return _instances ?? ( _instances = new Collection<RegistrationInstance>() ); }
+            set { _instances = value; }
         }
 
-        private ICollection<RegistrationInstance> _registrationInstances;
+        private ICollection<RegistrationInstance> _instances;
 
         /// <summary>
         /// Gets or sets the forms.
@@ -707,11 +707,11 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<RegistrationTemplateForm> Forms
         {
-            get { return _registrationTemplateForms ?? ( _registrationTemplateForms = new Collection<RegistrationTemplateForm>() ); }
-            set { _registrationTemplateForms = value; }
+            get { return _forms ?? ( _forms = new Collection<RegistrationTemplateForm>() ); }
+            set { _forms = value; }
         }
 
-        private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
+        private ICollection<RegistrationTemplateForm> _forms;
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -723,10 +723,10 @@ namespace Rock.Model
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    //_supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
+                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
 
                 return _supportedActions;
@@ -749,7 +749,7 @@ namespace Rock.Model
         {
             if ( state == EntityState.Deleted )
             {
-                new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
+                //new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
             }
 
             base.PreSaveChanges( dbContext, entry, state );

@@ -24,7 +24,13 @@ using System.Reflection;
 
 using Rock.Data;
 using Rock.Utility.ExtensionMethods;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
+
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbcontext = System.Data.Entity.DbContext;
+#endif
 
 namespace Rock
 {
@@ -157,12 +163,12 @@ namespace Rock
         /// </summary>
         /// <param name="entityType">Type of the Entity.</param>
         /// <returns></returns>
-        public static System.Data.Entity.DbContext GetDbContextForEntityType( Type entityType )
+        public static EFDbContext GetDbContextForEntityType( Type entityType )
         {
             Type contextType = typeof( Rock.Data.RockContext );
             if ( entityType.Assembly != contextType.Assembly )
             {
-                var contextTypeLookup = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                var contextTypeLookup = Reflection.SearchAssembly( entityType.Assembly, typeof( EFDbContext ) );
 
                 if ( contextTypeLookup.Any() )
                 {
@@ -175,7 +181,7 @@ namespace Rock
             }
             else
             {
-                System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+                EFDbContext dbContext = Activator.CreateInstance( contextType ) as EFDbContext;
                 return dbContext;
             }
         }
@@ -227,17 +233,17 @@ namespace Rock
         /// <returns></returns>
         public static IEntity GetIEntityForEntityType( int entityTypeId, Guid entityGuid, Data.DbContext dbContext = null )
         {
-            var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+            //var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
 
-            if ( type == null )
+            //if ( type == null )
             {
                 return null;
             }
 
-            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
-            var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
-            var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
-            return entity;
+            //var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            //var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+            //var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
+            //return entity;
         }
 
         /// <summary>
@@ -246,7 +252,7 @@ namespace Rock
         /// <param name="entityType">Type of the Entity.</param>
         /// <param name="dbContext">The database context.</param>
         /// <returns></returns>
-        public static Rock.Data.IService GetServiceForEntityType( Type entityType, System.Data.Entity.DbContext dbContext )
+        public static Rock.Data.IService GetServiceForEntityType( Type entityType, EFDbContext dbContext )
         {
             Type serviceType = typeof( Rock.Data.Service<> );
             if ( entityType.Assembly != serviceType.Assembly )
@@ -347,7 +353,7 @@ namespace Rock
             }
 
             // Add executing assembly's directory
-            string codeBase = System.Reflection.Assembly.GetExecutingAssembly().CodeBase;
+            string codeBase = System.Reflection.Assembly.GetExecutingAssembly().Location;
             UriBuilder uri = new UriBuilder( codeBase );
             string path = Uri.UnescapeDataString( uri.Path );
             string binDirectory = Path.GetDirectoryName( path );
@@ -370,9 +376,9 @@ namespace Rock
                                         && !ignoredFileStart.Any( i => Path.GetFileName( a ).StartsWith( i, StringComparison.OrdinalIgnoreCase ) ) ).ToList();
 
             // get a lookup of already loaded assemblies so that we don't have to load it unnecessarily
-            var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic && !a.GlobalAssemblyCache && !string.IsNullOrWhiteSpace( a.Location ) )
-                .DistinctBy( k => new Uri( k.CodeBase ).LocalPath )
-                .ToDictionary( k => new Uri( k.CodeBase ).LocalPath, v => v, StringComparer.OrdinalIgnoreCase );
+            var loadedAssembliesDictionary = AppDomain.CurrentDomain.GetAssemblies().Where( a => !a.IsDynamic /*&& !a.GlobalAssemblyCache*/ && !string.IsNullOrWhiteSpace( a.Location ) )
+                .DistinctBy( k => new Uri( k.Location ).LocalPath )
+                .ToDictionary( k => new Uri( k.Location ).LocalPath, v => v, StringComparer.OrdinalIgnoreCase );
 
             List<Assembly> pluginAssemblies = new List<Assembly>();
             if ( _appCodeAssembly != null )

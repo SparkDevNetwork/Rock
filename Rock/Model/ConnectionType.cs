@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionType" )]
     [DataContract]
-    public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
+    public partial class ConnectionType : Model<ConnectionType>, IOrdered/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -295,20 +295,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return ConnectionTypeCache.Get( Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return ConnectionTypeCache.Get( Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            ConnectionTypeCache.UpdateCachedEntity( Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    ConnectionTypeCache.UpdateCachedEntity( Id, entityState );
+        //}
 
         #endregion ICacheable
 
@@ -322,30 +322,30 @@ namespace Rock.Model
         /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
         /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
         /// <returns>A list of attributes defined in the inheritance tree.</returns>
-        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
-        {
-            var attributes = new List<AttributeCache>();
-            //
-            // Walk each group type and generate a list of matching attributes.
-            //
-            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
-            {
-                // group type ids exist and qualifier is for a group type id
-                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
-                {
-                    int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && this.Id == groupTypeIdValue )
-                    {
-                        foreach ( int attributeId in entityAttributes.AttributeIds )
-                        {
-                            attributes.Add( AttributeCache.Get( attributeId ) );
-                        }
-                    }
-                }
-            }
+        //public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
+        //{
+        //    var attributes = new List<AttributeCache>();
+        //    //
+        //    // Walk each group type and generate a list of matching attributes.
+        //    //
+        //    foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
+        //    {
+        //        // group type ids exist and qualifier is for a group type id
+        //        if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+        //        {
+        //            int groupTypeIdValue = int.MinValue;
+        //            if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && this.Id == groupTypeIdValue )
+        //            {
+        //                foreach ( int attributeId in entityAttributes.AttributeIds )
+        //                {
+        //                    attributes.Add( AttributeCache.Get( attributeId ) );
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return attributes.OrderBy( a => a.Order ).ToList();
-        }
+        //    return attributes.OrderBy( a => a.Order ).ToList();
+        //}
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

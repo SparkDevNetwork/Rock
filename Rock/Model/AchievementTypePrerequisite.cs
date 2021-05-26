@@ -16,11 +16,12 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
+using System;
 
 namespace Rock.Model
 {
@@ -30,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "AchievementTypePrerequisite" )]
     [DataContract]
-    public partial class AchievementTypePrerequisite : Model<AchievementTypePrerequisite>, ICacheable
+    public partial class AchievementTypePrerequisite : Model<AchievementTypePrerequisite>/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -72,20 +73,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return AchievementTypePrerequisiteCache.Get( Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return AchievementTypePrerequisiteCache.Get( Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            AchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    AchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
+        //}
 
         #endregion ICacheable
 

@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
+//using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
     [DataContract]
-    public partial class LavaShortcode : Model<LavaShortcode>, ICacheable
+    public partial class LavaShortcode : Model<LavaShortcode>/*, ICacheable*/
     {
         #region Entity Properties
 
@@ -145,20 +145,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return LavaShortcodeCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return LavaShortcodeCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            LavaShortcodeCache.UpdateCachedEntity( this.Id, entityState );
-        }
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    LavaShortcodeCache.UpdateCachedEntity( this.Id, entityState );
+        //}
 
         #endregion
     }

@@ -26,9 +26,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 using Rock.Data;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.Crawler;
-using Rock.UniversalSearch.IndexModels;
+//using Rock.UniversalSearch;
+//using Rock.UniversalSearch.Crawler;
+//using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -41,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Site" )]
     [DataContract]
-    public partial class Site : Model<Site>, IRockIndexable, ICacheable
+    public partial class Site : Model<Site>/*, IRockIndexable, ICacheable*/
     {
         #region Entity Properties
 
@@ -552,6 +552,7 @@ namespace Rock.Model
         /// </value>
         [RockObsolete( "1.8" )]
         [Obsolete( "Moved to Theme" )]
+        [NotMapped]
         public virtual ICollection<DefinedValue> IconExtensions { get; set; } = new Collection<DefinedValue>();
 
         /// <summary>
@@ -763,78 +764,78 @@ namespace Rock.Model
         /// <summary>
         /// Bulks the index documents.
         /// </summary>
-        public void BulkIndexDocuments()
-        {
-            // get list of sites that with indexing enabled
-            var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
+        //public void BulkIndexDocuments()
+        //{
+        //    // get list of sites that with indexing enabled
+        //    var sites = new SiteService( new RockContext() ).Queryable().Where( s => s.IsIndexEnabled );
 
-            foreach ( var site in sites )
-            {
-                // delete current items index
-                IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
+        //    foreach ( var site in sites )
+        //    {
+        //        // delete current items index
+        //        IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
 
-                // clear current documents out
-                var pageCount = new Crawler().CrawlSite( site );
-            }
-        }
+        //        // clear current documents out
+        //        var pageCount = new Crawler().CrawlSite( site );
+        //    }
+        //}
 
         /// <summary>
         /// Deletes the indexed documents.
         /// </summary>
-        public void DeleteIndexedDocuments()
-        {
-            IndexContainer.DeleteDocumentsByType<SitePageIndex>();
-        }
+        //public void DeleteIndexedDocuments()
+        //{
+        //    IndexContainer.DeleteDocumentsByType<SitePageIndex>();
+        //}
 
         /// <summary>
         /// Indexes the name of the model.
         /// </summary>
         /// <returns></returns>
-        public Type IndexModelType()
-        {
-            return typeof( SitePageIndex );
-        }
+        //public Type IndexModelType()
+        //{
+        //    return typeof( SitePageIndex );
+        //}
 
         /// <summary>
         /// Indexes the document.
         /// </summary>
         /// <param name="id"></param>
-        public void IndexDocument( int id )
-        {
-            return;
-        }
+        //public void IndexDocument( int id )
+        //{
+        //    return;
+        //}
 
         /// <summary>
         /// Deletes the indexed document.
         /// </summary>
         /// <param name="id"></param>
-        public void DeleteIndexedDocument( int id )
-        {
-            return;
-        }
+        //public void DeleteIndexedDocument( int id )
+        //{
+        //    return;
+        //}
 
         /// <summary>
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public ModelFieldFilterConfig GetIndexFilterConfig()
-        {
-            ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
-            filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
-            filterConfig.FilterLabel = "Sites";
-            filterConfig.FilterField = "siteName";
+        //public ModelFieldFilterConfig GetIndexFilterConfig()
+        //{
+        //    ModelFieldFilterConfig filterConfig = new ModelFieldFilterConfig();
+        //    filterConfig.FilterValues = new SiteService( new RockContext() ).Queryable().AsNoTracking().Where( s => s.IsIndexEnabled ).Select( s => s.Name ).ToList();
+        //    filterConfig.FilterLabel = "Sites";
+        //    filterConfig.FilterField = "siteName";
 
-            return filterConfig;
-        }
+        //    return filterConfig;
+        //}
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        public bool SupportsIndexFieldFiltering()
-        {
-            return true;
-        }
+        //public bool SupportsIndexFieldFiltering()
+        //{
+        //    return true;
+        //}
 
         /// <summary>
         /// Gets the supported actions.
@@ -847,7 +848,7 @@ namespace Rock.Model
             get
             {
                 var result = base.SupportedActions;
-                result.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve. Used as a base for blocks that use the approve action." );
+                //result.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve. Used as a base for blocks that use the approve action." );
                 return result;
             }
         }
@@ -882,15 +883,15 @@ namespace Rock.Model
                     var binaryFile = new BinaryFileService( rockContext ).Get( ( int ) fileId );
                     if ( binaryFile != null )
                     {
-                        if ( binaryFile.Path.Contains( "~" ) )
-                        {
-                            // Need to build out full path
-                            virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
-                            var globalAttributes = GlobalAttributesCache.Get();
-                            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
-                            virtualPath = $"{publicAppRoot}{virtualPath}";
-                        }
-                        else
+                        //if ( binaryFile.Path.Contains( "~" ) )
+                        //{
+                        //    // Need to build out full path
+                        //    virtualPath = VirtualPathUtility.ToAbsolute( binaryFile.Path );
+                        //    var globalAttributes = GlobalAttributesCache.Get();
+                        //    string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
+                        //    virtualPath = $"{publicAppRoot}{virtualPath}";
+                        //}
+                        //else
                         {
                             virtualPath = binaryFile.Path;
                         }
@@ -909,27 +910,27 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return SiteCache.Get( this.Id );
-        }
+        //public IEntityCache GetCacheObject()
+        //{
+        //    return SiteCache.Get( this.Id );
+        //}
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            SiteCache.UpdateCachedEntity( this.Id, entityState );
+        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        //{
+        //    SiteCache.UpdateCachedEntity( this.Id, entityState );
 
-            foreach ( int pageId in new PageService( ( RockContext ) dbContext ).GetBySiteId( this.Id )
-                    .Select( p => p.Id )
-                    .ToList() )
-            {
-                PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
-            }
-        }
+        //    foreach ( int pageId in new PageService( ( RockContext ) dbContext ).GetBySiteId( this.Id )
+        //            .Select( p => p.Id )
+        //            .ToList() )
+        //    {
+        //        PageCache.UpdateCachedEntity( pageId, EntityState.Detached );
+        //    }
+        //}
 
         #endregion
     }
@@ -1015,12 +1016,12 @@ namespace Rock.Model
 
 #pragma warning disable 0618
             // Need Associative table for IconExtensions (which are Defined Values)
-            this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
-            {
-                p.MapLeftKey( "SiteId" );
-                p.MapRightKey( "DefinedValueId" );
-                p.ToTable( "SiteIconExtensions" );
-            } );
+            //this.HasMany( p => p.IconExtensions ).WithMany().Map( p =>
+            //{
+            //    p.MapLeftKey( "SiteId" );
+            //    p.MapRightKey( "DefinedValueId" );
+            //    p.ToTable( "SiteIconExtensions" );
+            //} );
 #pragma warning restore 0618
         }
     }
