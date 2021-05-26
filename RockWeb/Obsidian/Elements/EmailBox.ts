@@ -66,13 +66,13 @@ export default defineComponent({
     formGroupClasses="rock-text-box"
     name="textbox"
     :rules="computedRules">
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field, errors, tabIndex, disabled}">
         <div class="control-wrapper">
             <div class="input-group">
                 <span class="input-group-addon">
                     <i class="fa fa-envelope"></i>
                 </span>
-                <input :id="uniqueId" class="form-control" v-bind="field" :disabled="disabled" />
+                <input :id="uniqueId" class="form-control" v-bind="field" :disabled="disabled" :tabindex="tabIndex" />
             </div>
         </div>
     </template>

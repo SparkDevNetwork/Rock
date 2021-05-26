@@ -129,7 +129,9 @@ export interface RegistrationEntryBlockViewModel
     RedirectGatewayUrl: string,
     LoginRequiredToRegister: boolean,
     SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null,
-    AllowRegistrationUpdates: boolean
+    AllowRegistrationUpdates: boolean,
+    StartAtBeginning: boolean,
+    GatewayGuid: Guid | null
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel
@@ -213,4 +215,6 @@ export type RegistrarInfo = {
 export type RegistrationEntryBlockSuccessViewModel = {
     TitleHtml: string;
     MessageHtml: string;
+    TransactionCode: string;
+    GatewayPersonIdentifier: string;
 };

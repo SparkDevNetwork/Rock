@@ -146,7 +146,17 @@ System.register(["vue", "../../../Controls/Loading", "../../../Elements/Currency
                                 total += li.DefaultPayment;
                             }
                         });
-                        return hasDefault ? total : this.maxAmountCanBePaid;
+                        total = hasDefault ? total : this.maxAmountCanBePaid;
+                        if (total > this.maxAmountCanBePaid) {
+                            total = this.maxAmountCanBePaid;
+                        }
+                        if (total < this.amountDueToday) {
+                            total = this.amountDueToday;
+                        }
+                        if (total < 0) {
+                            total = 0;
+                        }
+                        return total;
                     },
                     /** The total cost after discounts */
                     discountedTotal: function () {
@@ -180,6 +190,10 @@ System.register(["vue", "../../../Controls/Loading", "../../../Elements/Currency
                         var _a;
                         return ((_a = this.registrationEntryState.ViewModel.Session) === null || _a === void 0 ? void 0 : _a.PreviouslyPaid) || 0;
                     },
+                    /** The amount previously paid formatted as a string */
+                    amountPreviouslyPaidFormatted: function () {
+                        return "$" + Number_1.asFormattedString(this.amountPreviouslyPaid);
+                    },
                     /** The max amount that can be paid today */
                     maxAmountCanBePaid: function () {
                         var balance = this.discountedTotal - this.amountPreviouslyPaid;
@@ -194,8 +208,8 @@ System.register(["vue", "../../../Controls/Loading", "../../../Elements/Currency
                     },
                     /** The amount that would remain if the user paid the amount indicated in the currency box */
                     amountRemaining: function () {
-                        var actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday - this.amountPreviouslyPaid;
-                        var bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
+                        var actual = this.maxAmountCanBePaid - this.registrationEntryState.AmountToPayToday;
+                        var bounded = actual < 0 ? 0 : actual > this.maxAmountCanBePaid ? this.maxAmountCanBePaid : actual;
                         return bounded;
                     },
                     /** The amount that would remain if the user paid the amount indicated in the currency box as a formatted string */
@@ -259,8 +273,11 @@ System.register(["vue", "../../../Controls/Loading", "../../../Elements/Currency
                     });
                 },
                 watch: {
-                    defaultPaymentAmount: function () {
-                        this.registrationEntryState.AmountToPayToday = this.defaultPaymentAmount;
+                    defaultPaymentAmount: {
+                        immediate: true,
+                        handler: function () {
+                            this.registrationEntryState.AmountToPayToday = this.defaultPaymentAmount;
+                        }
                     },
                     'registrationEntryState.DiscountCode': function () {
                         return __awaiter(this, void 0, void 0, function () {

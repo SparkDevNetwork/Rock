@@ -218,12 +218,12 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         // This is after having paid via redirect gateway
                         currentStep = steps.success;
                     }
-                    else if (viewModel.Session) {
+                    else if (viewModel.Session && !viewModel.StartAtBeginning) {
                         // This is an existing registration, start at the summary
                         currentStep = steps.reviewAndPayment;
                     }
                     else if (viewModel.MaxRegistrants === 1 && String_1.isNullOrWhitespace(viewModel.InstructionsHtml)) {
-                        // There is no need to show the numer of registrants selector or instructions. Start at the second page.
+                        // There is no need to show the number of registrants selector or instructions. Start at the second page.
                         currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
                     }
                     var registrationEntryState = vue_1.reactive({

@@ -290,6 +290,22 @@ namespace Rock.ViewModel.Blocks
         /// The success view model.
         /// </value>
         public RegistrationEntryBlockSuccessViewModel SuccessViewModel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [start at beginning].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [start at beginning]; otherwise, <c>false</c>.
+        /// </value>
+        public bool StartAtBeginning { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway unique identifier.
+        /// </summary>
+        /// <value>
+        /// The gateway unique identifier.
+        /// </value>
+        public Guid? GatewayGuid { get; set; }
     }
 
     /// <summary>

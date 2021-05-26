@@ -86,9 +86,9 @@ export default defineComponent({
             {{charsRemaining}}
         </em>
     </template>
-    <template #default="{uniqueId, field, errors, disabled}">
+    <template #default="{uniqueId, field, errors, disabled, tabIndex}">
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" />
+            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
         </div>
     </template>
 </RockFormField>`

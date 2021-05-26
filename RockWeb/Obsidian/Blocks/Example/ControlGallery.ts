@@ -40,7 +40,7 @@ import ProgressTracker, { ProgressTrackerItem } from '../../Elements/ProgressTra
 import RockForm from '../../Controls/RockForm';
 import RockButton from '../../Elements/RockButton';
 import RadioButtonList from '../../Elements/RadioButtonList';
-import { DropDownListOption } from '../../Elements/DropDownList';
+import DropDownList, { DropDownListOption } from '../../Elements/DropDownList';
 import Dialog from '../../Controls/Dialog';
 import CheckBox from '../../Elements/CheckBox';
 import PhoneNumberBox from '../../Elements/PhoneNumberBox';
@@ -101,6 +101,39 @@ const PhoneNumberBoxGallery = defineComponent( {
     </template>
     <template #result>
         {{phoneNumber}}
+    </template>
+</GalleryAndResult>`
+} );
+
+const DropDownListGallery = defineComponent( {
+    name: 'DropDownListGallery',
+    components: {
+        GalleryAndResult,
+        DropDownList
+    },
+    data ()
+    {
+        return {
+            value: 'a',
+            options: [
+                { key: 'a', text: 'A Text', value: 'a' },
+                { key: 'b', text: 'B Text', value: 'b' },
+                { key: 'c', text: 'C Text', value: 'c' },
+                { key: 'd', text: 'D Text', value: 'd' }
+            ] as DropDownListOption[]
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DropDownList
+    </template>
+    <template #gallery>
+        <DropDownList label="Select 1" v-model="value" :options="options" />
+        <DropDownList label="Select 2" v-model="value" :options="options" />
+    </template>
+    <template #result>
+        {{value}}
     </template>
 </GalleryAndResult>`
 } );
@@ -209,7 +242,8 @@ export default defineComponent({
         RadioButtonList,
         DialogGallery,
         CheckBoxGallery,
-        PhoneNumberBoxGallery
+        PhoneNumberBoxGallery,
+        DropDownListGallery
     },
     data() {
         return {
@@ -499,6 +533,7 @@ export default defineComponent({
         <DialogGallery />
         <CheckBoxGallery />
         <PhoneNumberBoxGallery />
+        <DropDownListGallery />
     </template>
 </PaneledBlockTemplate>`
 });

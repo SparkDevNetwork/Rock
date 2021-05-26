@@ -16,11 +16,16 @@
 //
 
 import { defineComponent, inject } from 'vue';
+import SaveFinancialAccountForm from '../../../Controls/SaveFinancialAccountForm';
+import { Guid } from '../../../Util/Guid';
 import { RegistrationEntryState } from '../RegistrationEntry';
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Success',
-    setup()
+    components: {
+        SaveFinancialAccountForm
+    },
+    setup ()
     {
         return {
             registrationEntryState: inject( 'registrationEntryState' ) as RegistrationEntryState
@@ -28,7 +33,7 @@ export default defineComponent( {
     },
     computed: {
         /** The term to refer to a registrant */
-        registrationTerm(): string
+        registrationTerm (): string
         {
             return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
         },
@@ -37,10 +42,35 @@ export default defineComponent( {
         messageHtml (): string
         {
             return this.registrationEntryState.SuccessViewModel?.MessageHtml || `You have successfully completed this ${this.registrationTerm}`;
+        },
+
+        /** The financial gateway record's guid */
+        gatewayGuid (): Guid | null
+        {
+            return this.registrationEntryState.ViewModel.GatewayGuid;
+        },
+
+        /** The transaction code that can be used to create a saved account */
+        transactionCode (): string
+        {
+            return this.registrationEntryState.ViewModel.IsRedirectGateway ?
+                '' :
+                this.registrationEntryState.SuccessViewModel?.TransactionCode || '';
+        },
+
+        /** The token returned for the payment method */
+        gatewayPersonIdentifier (): string
+        {
+            return this.registrationEntryState.SuccessViewModel?.GatewayPersonIdentifier || '';
         }
     },
     template: `
 <div>
     <div v-html="messageHtml"></div>
+    <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier" :gatewayGuid="gatewayGuid" :transactionCode="transactionCode" :gatewayPersonIdentifier="gatewayPersonIdentifier" class="well">
+        <template #header>
+            <h3>Make Payments Even Easier</h3>
+        </template>
+    </SaveFinancialAccountForm>
 </div>`
 } );

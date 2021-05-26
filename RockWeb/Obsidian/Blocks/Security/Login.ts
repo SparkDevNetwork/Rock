@@ -31,7 +31,7 @@ type LoginResponse = {
     AuthCookie: AuthCookie | null;
 };
 
-export default defineComponent({
+export default defineComponent( {
     name: 'Security.Login',
     components: {
         TextBox,
@@ -39,12 +39,14 @@ export default defineComponent({
         RockButton,
         Alert
     },
-    setup() {
+    setup ()
+    {
         return {
-            invokeBlockAction: inject('invokeBlockAction') as InvokeBlockActionFunc
+            invokeBlockAction: inject( 'invokeBlockAction' ) as InvokeBlockActionFunc
         };
     },
-    data() {
+    data ()
+    {
         return {
             username: '',
             password: '',
@@ -54,72 +56,89 @@ export default defineComponent({
         };
     },
     methods: {
-        setCookie(cookie: AuthCookie): void {
+        setCookie ( cookie: AuthCookie ): void
+        {
             let expires = '';
 
-            if (cookie.Expires) {
-                const date = new Date(cookie.Expires);
+            if ( cookie.Expires )
+            {
+                const date = new Date( cookie.Expires );
 
-                if (date < new Date()) {
+                if ( date < new Date() )
+                {
                     expires = '';
                 }
-                else {
+                else
+                {
                     expires = `; expires=${date.toUTCString()}`;
                 }
             }
-            else {
+            else
+            {
                 expires = '';
             }
 
             document.cookie = `${cookie.Name}=${cookie.Value}${expires}; path=/`;
         },
-        redirectAfterLogin(): void {
-            const urlParams = new URLSearchParams(window.location.search);
-            const returnUrl = urlParams.get('returnurl');
+        redirectAfterLogin (): void
+        {
+            const urlParams = new URLSearchParams( window.location.search );
+            const returnUrl = urlParams.get( 'returnurl' );
 
-            if (returnUrl) {
+            if ( returnUrl )
+            {
                 // TODO make this force relative URLs (no absolute URLs)
-                window.location.href = decodeURIComponent(returnUrl);
+                window.location.href = decodeURIComponent( returnUrl );
             }
         },
-        async onHelpClick(): Promise<void> {
+        async onHelpClick (): Promise<void>
+        {
             this.isLoading = true;
             this.errorMessage = '';
 
-            try {
-                const result = await this.invokeBlockAction<string>('help', undefined);
+            try
+            {
+                const result = await this.invokeBlockAction<string>( 'help', undefined );
 
-                if (result.isError) {
+                if ( result.isError )
+                {
                     this.errorMessage = result.errorMessage || 'An unknown error occurred communicating with the server';
                 }
-                else if (result.data) {
+                else if ( result.data )
+                {
                     // TODO make this force relative URLs (no absolute URLs)
                     window.location.href = result.data;
                 }
             }
-            catch (e) {
+            catch ( e )
+            {
                 this.errorMessage = `An exception occurred: ${e}`;
             }
-            finally {
+            finally
+            {
                 this.isLoading = false;
             }
         },
-        async submitLogin(): Promise<void> {
-            if (this.isLoading) {
+        async submitLogin (): Promise<void>
+        {
+            if ( this.isLoading )
+            {
                 return;
             }
 
             this.isLoading = true;
 
-            try {
-                const result = await this.invokeBlockAction<LoginResponse>('DoLogin', {
+            try
+            {
+                const result = await this.invokeBlockAction<LoginResponse>( 'DoLogin', {
                     username: this.username,
                     password: this.password,
                     rememberMe: this.rememberMe
-                });
+                } );
 
-                if (result && !result.isError && result.data && result.data.AuthCookie) {
-                    this.setCookie(result.data.AuthCookie);
+                if ( result && !result.isError && result.data && result.data.AuthCookie )
+                {
+                    this.setCookie( result.data.AuthCookie );
                     this.redirectAfterLogin();
                     return;
                 }
@@ -127,14 +146,17 @@ export default defineComponent({
                 this.isLoading = false;
                 this.errorMessage = result.errorMessage || 'An unknown error occurred communicating with the server';
             }
-            catch (e) {
+            catch ( e )
+            {
                 // ts-ignore-line
-                console.log(JSON.stringify(e.response, null, 2));
+                console.log( JSON.stringify( e.response, null, 2 ) );
 
-                if (typeof e === 'string') {
+                if ( typeof e === 'string' )
+                {
                     this.errorMessage = e;
                 }
-                else {
+                else
+                {
                     this.errorMessage = `An exception occurred: ${e}`;
                 }
 
@@ -166,4 +188,4 @@ export default defineComponent({
 
     </fieldset>
 </div>`
-});
+} );

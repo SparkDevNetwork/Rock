@@ -224,14 +224,14 @@ export default defineComponent( {
     <template v-else>
         <div class="row">
             <div class="col-md-6">
-                <TextBox label="First Name" rules="required" v-model="registrar.NickName" />
-                <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" />
+                <TextBox label="First Name" rules="required" v-model="registrar.NickName" tabIndex="1" />
+                <EmailBox label="Send Confirmation Emails To" rules="required" v-model="registrar.Email" tabIndex="3" />
                 <CheckBox v-if="doShowUpdateEmailOption" label="Should Your Account Be Updated To Use This Email Address?" v-model="registrar.UpdateEmail" />
             </div>
             <div class="col-md-6">
-                <TextBox label="Last Name" rules="required" v-model="registrar.LastName" />
+                <TextBox label="Last Name" rules="required" v-model="registrar.LastName" tabIndex="2" />
                 <RadioButtonList
-                    v-if="familyOptions"
+                    v-if="familyOptions.length"
                     :label="(registrar.NickName || 'Person') + ' is in the same immediate family as'"
                     rules='required:{"allowEmptyString": true}'
                     v-model="registrar.FamilyGuid"

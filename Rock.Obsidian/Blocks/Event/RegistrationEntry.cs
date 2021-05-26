@@ -92,12 +92,6 @@ namespace Rock.Obsidian.Blocks.Event
         DefaultBooleanValue = true,
         Order = 6 )]
 
-    [SystemCommunicationField( "Confirm Account Template",
-        Description = "Confirm Account Email Template",
-        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
-        Order = 7,
-        Key = AttributeKey.ConfirmAccountTemplate )]
-
     [TextField( "Family Term",
         Description = "The term to use for specifying which household or family a person is a member of.",
         IsRequired = true,
@@ -140,7 +134,6 @@ namespace Rock.Obsidian.Blocks.Event
             public const string BatchNamePrefix = "BatchNamePrefix";
             public const string DisplayProgressBar = "DisplayProgressBar";
             public const string SignInline = "SignInline";
-            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
             public const string FamilyTerm = "FamilyTerm";
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
@@ -159,6 +152,7 @@ namespace Rock.Obsidian.Blocks.Event
             public const string Slug = "Slug";
             public const string GroupId = "GroupId";
             public const string PaymentToken = "paymentToken";
+            public const string StartAtBeginning = "StartAtBeginning";
         }
 
         #endregion Keys
@@ -390,7 +384,7 @@ namespace Rock.Obsidian.Blocks.Event
                     return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
                 }
 
-                var successViewModel = GetSuccessViewModel( context.Registration.Id );
+                var successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
         }
@@ -586,7 +580,7 @@ namespace Rock.Obsidian.Blocks.Event
             int? singleFamilyId = null;
             var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
-            if (currentPerson?.PrimaryFamily != null)
+            if ( currentPerson?.PrimaryFamily != null )
             {
                 multipleFamilyGroupIds.AddOrReplace( currentPerson.PrimaryFamily.Guid, currentPerson.PrimaryFamily.Id );
             }
@@ -1094,7 +1088,7 @@ namespace Rock.Obsidian.Blocks.Event
                 }
             }
 
-            // If we have family ID and a meaninful location then update that info
+            // If we have family ID and a meaningful location then update that info
             if ( familyId.HasValue )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
@@ -1722,7 +1716,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns></returns>
         private RegistrationEntryBlockViewModel GetViewModel( RockContext rockContext )
         {
-            // Get the registration context (template, instance, actual registration (if exisiting))
+            // Get the registration context (template, instance, actual registration (if existing))
             var context = GetContext( rockContext, out var errorMessage );
 
             if ( context is null )
@@ -1757,7 +1751,7 @@ namespace Rock.Obsidian.Blocks.Event
                 // This is a redirect from a redirect gateway. The user was sent to another site, made payment, and has come back after completion
                 SubmitRegistration( rockContext, context, args, out errorMessage );
 
-                successViewModel = GetSuccessViewModel( context.Registration.Id );
+                successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
             }
 
             // Get models needed for the view model
@@ -1897,8 +1891,8 @@ namespace Rock.Obsidian.Blocks.Event
             var forceEmailUpdate = GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
 
             // Load the gateway control settings
-            var financialGatewayId = context.RegistrationSettings.FinancialGatewayId ?? 0;
-            var financialGateway = new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId );
+            var financialGatewayId = context.RegistrationSettings.FinancialGatewayId;
+            var financialGateway = financialGatewayId.HasValue ? new FinancialGatewayService( rockContext ).GetNoTracking( financialGatewayId.Value ) : null;
             var gatewayComponent = financialGateway?.GetGatewayComponent();
             var financialGatewayComponent = gatewayComponent as IObsidianFinancialGateway;
 
@@ -1926,6 +1920,11 @@ namespace Rock.Obsidian.Blocks.Event
                     timeoutMinutes = context.RegistrationSettings.TimeoutMinutes.Value;
                 }
             }
+
+            // Determine the starting point
+            var allowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates;
+            var startAtBeginning = !isExistingRegistration ||
+                ( context.RegistrationSettings.AllowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
             var viewModel = new RegistrationEntryBlockViewModel
             {
@@ -1965,7 +1964,9 @@ namespace Rock.Obsidian.Blocks.Event
                 IsUnauthorized = isUnauthorized,
                 SuccessViewModel = successViewModel,
                 TimeoutMinutes = timeoutMinutes,
-                AllowRegistrationUpdates = !isExistingRegistration || context.RegistrationSettings.AllowExternalRegistrationUpdates
+                AllowRegistrationUpdates = allowRegistrationUpdates,
+                StartAtBeginning = startAtBeginning,
+                GatewayGuid = financialGateway?.Guid
             };
 
             return viewModel;
@@ -2074,7 +2075,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             if ( redirectGateway == null && financialAccount == null )
             {
-                errorMessage = "There was a problem with the account configuration for this " + context.RegistrationSettings.RegistrationTerm.ToLower();
+                errorMessage = "There was a problem with the financial account configuration for this registration instance";
                 return null;
             }
 
@@ -2101,13 +2102,31 @@ namespace Rock.Obsidian.Blocks.Event
                 transaction = redirectionGateway.FetchTransaction( rockContext, financialGateway, merchantId, args.GatewayToken );
                 paymentInfo.Amount = transaction.TotalAmount;
             }
+            else if ( gateway is IHostedGatewayComponent hostedGateway )
+            {
+                var customerToken = hostedGateway.CreateCustomerAccount( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                // Charge a new payment with the tokenized payment method
+                paymentInfo.GatewayPersonIdentifier = customerToken;
+                transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+            }
             else
             {
                 // Charge a new payment with the tokenized payment method
                 transaction = gateway.Charge( financialGateway, paymentInfo, out errorMessage );
             }
 
-            return SaveTransaction( financialGateway, gateway, context, transaction, paymentInfo, rockContext, paymentInfo.Amount );
+            return SaveTransaction( financialGateway, gateway, context, transaction, paymentInfo, rockContext, paymentInfo.Amount, paymentInfo.GatewayPersonIdentifier );
         }
 
         /// <summary>
@@ -2120,6 +2139,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="amount">The amount.</param>
+        /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
         private Guid? SaveTransaction(
             FinancialGateway financialGateway,
@@ -2128,7 +2148,8 @@ namespace Rock.Obsidian.Blocks.Event
             FinancialTransaction transaction,
             PaymentInfo paymentInfo,
             RockContext rockContext,
-            decimal amount )
+            decimal amount,
+            string gatewayPersonIdentifier )
         {
             if ( transaction is null )
             {
@@ -2249,6 +2270,8 @@ namespace Rock.Obsidian.Blocks.Event
                     true,
                     currentPerson?.PrimaryAliasId ) );
 
+            context.TransactionCode = transaction.TransactionCode;
+            context.GatewayPersonIdentifier = gatewayPersonIdentifier;
             return transaction.Guid;
         }
 
@@ -2256,8 +2279,10 @@ namespace Rock.Obsidian.Blocks.Event
         /// Gets the success view model.
         /// </summary>
         /// <param name="registrationId">The registration identifier.</param>
+        /// <param name="transactionCode">The transaction code.</param>
+        /// <param name="gatewayPersonIdentifier">The gateway person identifier.</param>
         /// <returns></returns>
-        private RegistrationEntryBlockSuccessViewModel GetSuccessViewModel( int registrationId )
+        private RegistrationEntryBlockSuccessViewModel GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
         {
             var currentPerson = GetCurrentPerson();
 
@@ -2265,7 +2290,9 @@ namespace Rock.Obsidian.Blocks.Event
             var viewModel = new RegistrationEntryBlockSuccessViewModel
             {
                 TitleHtml = "Congratulations",
-                MessageHtml = "You have successfully completed this registration."
+                MessageHtml = "You have successfully completed this registration.",
+                TransactionCode = transactionCode,
+                GatewayPersonIdentifier = gatewayPersonIdentifier
             };
 
             try

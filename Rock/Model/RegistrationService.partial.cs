@@ -374,6 +374,22 @@ namespace Rock.Model
         /// The fee items count remaining.
         /// </value>
         public Dictionary<Guid, int?> FeeItemsCountRemaining { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction code of a recent (this current web session) payment.
+        /// </summary>
+        /// <value>
+        /// The transaction code.
+        /// </value>
+        public string TransactionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway person identifier.
+        /// </summary>
+        /// <value>
+        /// The gateway person identifier.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
     }
 
     /// <summary>

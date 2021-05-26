@@ -73,6 +73,10 @@ export default defineComponent({
         'class': {
             type: String as PropType<string>,
             default: ''
+        },
+        tabIndex: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -116,7 +120,7 @@ export default defineComponent({
         <RockLabel v-if="label || help" :for="uniqueId" :help="help">
             {{label}}
         </RockLabel>
-        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses}" />
+        <slot v-bind="{uniqueId, field, errors, disabled, inputGroupClasses, tabIndex}" />
     </div>
     <slot name="post" />
 </Field>`

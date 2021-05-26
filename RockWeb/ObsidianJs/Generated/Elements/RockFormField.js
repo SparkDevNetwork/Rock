@@ -85,6 +85,10 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                     'class': {
                         type: String,
                         default: ''
+                    },
+                    tabIndex: {
+                        type: String,
+                        default: ''
                     }
                 },
                 emits: [
@@ -120,7 +124,7 @@ System.register(["vue", "../Util/Guid", "vee-validate", "./RockLabel"], function
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<Field v-model=\"internalValue\" :name=\"validationTitle || label\" :rules=\"rules\" #default=\"{field, errors}\">\n    <slot name=\"pre\" />\n    <div class=\"form-group\" :class=\"[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses(formState, errors)]\">\n        <RockLabel v-if=\"label || help\" :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <slot v-bind=\"{uniqueId, field, errors, disabled, inputGroupClasses}\" />\n    </div>\n    <slot name=\"post\" />\n</Field>"
+                template: "\n<Field v-model=\"internalValue\" :name=\"validationTitle || label\" :rules=\"rules\" #default=\"{field, errors}\">\n    <slot name=\"pre\" />\n    <div class=\"form-group\" :class=\"[classAttr, formGroupClasses, isRequired ? 'required' : '', errorClasses(formState, errors)]\">\n        <RockLabel v-if=\"label || help\" :for=\"uniqueId\" :help=\"help\">\n            {{label}}\n        </RockLabel>\n        <slot v-bind=\"{uniqueId, field, errors, disabled, inputGroupClasses, tabIndex}\" />\n    </div>\n    <slot name=\"post\" />\n</Field>"
             }));
         }
     };

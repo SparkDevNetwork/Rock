@@ -120,7 +120,24 @@ export default defineComponent( {
                 }
             } );
 
-            return hasDefault ? total : this.maxAmountCanBePaid;
+            total = hasDefault ? total : this.maxAmountCanBePaid;
+
+            if ( total > this.maxAmountCanBePaid )
+            {
+                total = this.maxAmountCanBePaid;
+            }
+
+            if ( total < this.amountDueToday )
+            {
+                total = this.amountDueToday;
+            }
+
+            if ( total < 0 )
+            {
+                total = 0;
+            }
+
+            return total;
         },
 
         /** The total cost after discounts */
@@ -168,6 +185,12 @@ export default defineComponent( {
             return this.registrationEntryState.ViewModel.Session?.PreviouslyPaid || 0;
         },
 
+        /** The amount previously paid formatted as a string */
+        amountPreviouslyPaidFormatted (): string
+        {
+            return `$${asFormattedString( this.amountPreviouslyPaid )}`;
+        },
+
         /** The max amount that can be paid today */
         maxAmountCanBePaid (): number
         {
@@ -190,8 +213,8 @@ export default defineComponent( {
         /** The amount that would remain if the user paid the amount indicated in the currency box */
         amountRemaining (): number
         {
-            const actual = this.discountedTotal - this.registrationEntryState.AmountToPayToday - this.amountPreviouslyPaid;
-            const bounded = actual < 0 ? 0 : actual > this.discountedTotal ? this.discountedTotal : actual;
+            const actual = this.maxAmountCanBePaid - this.registrationEntryState.AmountToPayToday;
+            const bounded = actual < 0 ? 0 : actual > this.maxAmountCanBePaid ? this.maxAmountCanBePaid : actual;
             return bounded;
         },
 
@@ -247,9 +270,12 @@ export default defineComponent( {
         await this.fetchData();
     },
     watch: {
-        defaultPaymentAmount ()
-        {
-            this.registrationEntryState.AmountToPayToday = this.defaultPaymentAmount;
+        defaultPaymentAmount: {
+            immediate: true,
+            handler ()
+            {
+                this.registrationEntryState.AmountToPayToday = this.defaultPaymentAmount;
+            }
         },
 
         async 'registrationEntryState.DiscountCode' ()

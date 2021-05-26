@@ -462,12 +462,12 @@ namespace Rock.Rest.Controllers
             catch ( TargetInvocationException ex )
             {
                 ExceptionLogService.LogApiException( ex.InnerException, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogApiException( ex, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
             //
@@ -513,6 +513,31 @@ namespace Rock.Rest.Controllers
             {
                 return Ok( result );
             }
+        }
+
+        /// <summary>
+        /// Gets the message for client.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns></returns>
+        private string GetMessageForClient( Exception exception )
+        {
+            if ( exception is null )
+            {
+                return "An unknown error occurred";
+            }
+
+            if ( exception.InnerException != null )
+            {
+                return GetMessageForClient( exception.InnerException );
+            }
+
+            if ( exception.Message.IsNullOrWhiteSpace() )
+            {
+                return "An unknown error occurred";
+            }
+
+            return exception.Message;
         }
     }
 }

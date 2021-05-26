@@ -39,5 +39,21 @@ namespace Rock.ViewModel.Blocks
         /// The message HTML.
         /// </value>
         public string MessageHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the transaction code.
+        /// </summary>
+        /// <value>
+        /// The transaction code.
+        /// </value>
+        public string TransactionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway person identifier.
+        /// </summary>
+        /// <value>
+        /// The gateway person identifier.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
     }
 }

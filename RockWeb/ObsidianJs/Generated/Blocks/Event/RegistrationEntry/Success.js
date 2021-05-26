@@ -14,19 +14,25 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/SaveFinancialAccountForm"], function (exports_1, context_1) {
     "use strict";
-    var vue_1;
+    var vue_1, SaveFinancialAccountForm_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
             function (vue_1_1) {
                 vue_1 = vue_1_1;
+            },
+            function (SaveFinancialAccountForm_1_1) {
+                SaveFinancialAccountForm_1 = SaveFinancialAccountForm_1_1;
             }
         ],
         execute: function () {
             exports_1("default", vue_1.defineComponent({
                 name: 'Event.RegistrationEntry.Success',
+                components: {
+                    SaveFinancialAccountForm: SaveFinancialAccountForm_1.default
+                },
                 setup: function () {
                     return {
                         registrationEntryState: vue_1.inject('registrationEntryState')
@@ -41,9 +47,25 @@ System.register(["vue"], function (exports_1, context_1) {
                     messageHtml: function () {
                         var _a;
                         return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.MessageHtml) || "You have successfully completed this " + this.registrationTerm;
+                    },
+                    /** The financial gateway record's guid */
+                    gatewayGuid: function () {
+                        return this.registrationEntryState.ViewModel.GatewayGuid;
+                    },
+                    /** The transaction code that can be used to create a saved account */
+                    transactionCode: function () {
+                        var _a;
+                        return this.registrationEntryState.ViewModel.IsRedirectGateway ?
+                            '' :
+                            ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.TransactionCode) || '';
+                    },
+                    /** The token returned for the payment method */
+                    gatewayPersonIdentifier: function () {
+                        var _a;
+                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.GatewayPersonIdentifier) || '';
                     }
                 },
-                template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n</div>"
+                template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n    <SaveFinancialAccountForm v-if=\"gatewayGuid && transactionCode && gatewayPersonIdentifier\" :gatewayGuid=\"gatewayGuid\" :transactionCode=\"transactionCode\" :gatewayPersonIdentifier=\"gatewayPersonIdentifier\" class=\"well\">\n        <template #header>\n            <h3>Make Payments Even Easier</h3>\n        </template>\n    </SaveFinancialAccountForm>\n</div>"
             }));
         }
     };

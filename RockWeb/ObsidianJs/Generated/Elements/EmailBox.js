@@ -55,7 +55,7 @@ System.register(["../Rules/Index", "vue", "./RockFormField"], function (exports_
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    formGroupClasses=\"rock-text-box\"\n    name=\"textbox\"\n    :rules=\"computedRules\">\n    <template #default=\"{uniqueId, field, errors, disabled}\">\n        <div class=\"control-wrapper\">\n            <div class=\"input-group\">\n                <span class=\"input-group-addon\">\n                    <i class=\"fa fa-envelope\"></i>\n                </span>\n                <input :id=\"uniqueId\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" />\n            </div>\n        </div>\n    </template>\n</RockFormField>"
+                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    formGroupClasses=\"rock-text-box\"\n    name=\"textbox\"\n    :rules=\"computedRules\">\n    <template #default=\"{uniqueId, field, errors, tabIndex, disabled}\">\n        <div class=\"control-wrapper\">\n            <div class=\"input-group\">\n                <span class=\"input-group-addon\">\n                    <i class=\"fa fa-envelope\"></i>\n                </span>\n                <input :id=\"uniqueId\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" :tabindex=\"tabIndex\" />\n            </div>\n        </div>\n    </template>\n</RockFormField>"
             }));
         }
     };
