@@ -879,7 +879,7 @@ Guid - ContentChannelItem Guid
                         .Where( i => i.ContentChannel.Guid.Equals( contentChannelGuid.Value ) && i.StartDateTime <= now && ( !i.ContentChannel.RequiresApproval || statuses.Contains( i.Status ) ) )
                         .OrderByDescending( c => c.StartDateTime )
                         .FirstOrDefault();
-                    
+
                     if ( contentChannelItem != null )
                     {
                         contentChannelItemKey = contentChannelItem.Id.ToString();
@@ -1079,7 +1079,7 @@ Guid - ContentChannelItem Guid
             }
 
             // use Lava to get the Attribute value formatted for the MetaValue, and specify the URL param in case the Attribute supports rendering the value as a URL (for example, Image)
-            string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}':'Url' }}}}", attributeKey );
+            string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}','Url' }}}}", attributeKey );
 
             string resolvedValue = metaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "mergeObject", mergeObject } } );
 
