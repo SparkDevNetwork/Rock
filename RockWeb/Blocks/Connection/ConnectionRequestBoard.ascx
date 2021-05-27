@@ -484,6 +484,7 @@
                             <div class="actions d-flex mb-4 mt-md-4 mb-md-5">
                                 <asp:LinkButton ID="btnRequestModalViewModeEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnRequestModalViewModeEdit_Click" CausesValidation="false" />
                                 <asp:LinkButton ID="btnRequestModalViewModeTransfer" runat="server" Text="Transfer" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestModalViewModeTransfer_Click" />
+                                <asp:LinkButton ID="btnRequestViewModeViewHistory" runat="server" Text="View History" CssClass="btn btn-link" CausesValidation="false" OnClick="btnRequestViewModeViewHistory_Click" />
                                 <asp:LinkButton ID="btnRequestModalViewModeConnect" runat="server" Text="Connect" CssClass="btn btn-primary ml-auto" CausesValidation="false" OnClick="btnRequestModalViewModeConnect_Click" />
                             </div>
 

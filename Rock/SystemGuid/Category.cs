@@ -79,6 +79,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON_GROUP_MEMBERSHIP = "325278A4-FACA-4F38-A405-9C090B3BAA34";
 
         /// <summary>
+        /// History of connection request
+        /// </summary>
+        public const string HISTORY_PERSON_CONNECTION_REQUEST = "4B472C6A-1ACF-481E-A2D4-9C44436BBCF5";
+
+        /// <summary>
         /// History of person communications
         /// </summary>
         public const string HISTORY_PERSON_COMMUNICATIONS = "F291034B-7581-48F3-B522-E31B8534D529";
