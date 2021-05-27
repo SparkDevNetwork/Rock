@@ -2473,7 +2473,8 @@ Sys.Application.add_load(function () {
             {
                 SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
 
-                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+                // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
+                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
                 cookie.Path += sameSiteCookieValue;
             }
 
