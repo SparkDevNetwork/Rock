@@ -13,27 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-namespace Rock.Web.Utilities
+
+using Rock.Update.Models;
+
+namespace Rock.Update.Interfaces
 {
     /// <summary>
-    /// Represents the possible results of a version check.
+    /// This interface is implemented by RockImpactService and is used so we can mock the service for testing.
     /// </summary>
-    public enum DotNetVersionCheckResult
+    public interface IRockImpactService
     {
         /// <summary>
-        /// The version check definitely fails
+        /// Sends the impact statistics to spark.
         /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// This version check definitely passes
-        /// </summary>
-        Pass = 1,
-
-        /// <summary>
-        /// The version check could not determine pass or fail so proceed at own risk.
-        /// </summary>
-        Unknown = 2
+        /// <param name="impactStatistic">The impact statistic.</param>
+        void SendImpactStatisticsToSpark( ImpactStatistic impactStatistic );
     }
 }

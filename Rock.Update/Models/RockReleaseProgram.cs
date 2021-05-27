@@ -13,27 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-namespace Rock.Web.Utilities
+
+namespace Rock.Update.Models
 {
     /// <summary>
-    /// Represents the possible results of a version check.
+    /// One of three options that represent which release 'program' one can be on.
     /// </summary>
-    public enum DotNetVersionCheckResult
+    public enum RockReleaseProgram
     {
         /// <summary>
-        /// The version check definitely fails
+        /// The alpha
         /// </summary>
-        Fail = 0,
+        Alpha = 1,
 
         /// <summary>
-        /// This version check definitely passes
+        /// The beta
         /// </summary>
-        Pass = 1,
+        Beta = 2,
 
         /// <summary>
-        /// The version check could not determine pass or fail so proceed at own risk.
+        /// The production
         /// </summary>
-        Unknown = 2
+        Production = 3
     }
 }

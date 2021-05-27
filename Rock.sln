@@ -89,6 +89,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Common.Web", "Rock.Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Common", "Rock.Common\Rock.Common.csproj", "{13568622-324E-4493-B605-C9896E725D30}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Update", "Rock.Update\Rock.Update.csproj", "{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -215,6 +217,10 @@ Global
 		{13568622-324E-4493-B605-C9896E725D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13568622-324E-4493-B605-C9896E725D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13568622-324E-4493-B605-C9896E725D30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B62B27C8-1F77-43CF-8EE7-30DE7F93FACD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
