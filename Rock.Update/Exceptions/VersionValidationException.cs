@@ -13,27 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-namespace Rock.Web.Utilities
+
+using System;
+
+namespace Rock.Update.Exceptions
 {
     /// <summary>
-    /// Represents the possible results of a version check.
+    /// 
     /// </summary>
-    public enum DotNetVersionCheckResult
+    /// <seealso cref="System.Exception" />
+    public class VersionValidationException : Exception
     {
         /// <summary>
-        /// The version check definitely fails
+        /// Initializes a new instance of the <see cref="VersionValidationException"/> class.
         /// </summary>
-        Fail = 0,
-
-        /// <summary>
-        /// This version check definitely passes
-        /// </summary>
-        Pass = 1,
-
-        /// <summary>
-        /// The version check could not determine pass or fail so proceed at own risk.
-        /// </summary>
-        Unknown = 2
+        /// <param name="message">The message that describes the error.</param>
+        public VersionValidationException( string message ) : base( message )
+        {
+        }
     }
 }
