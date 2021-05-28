@@ -36,6 +36,10 @@ namespace Rock.Model
 
     public partial class Tag : Model<Tag>, IOrdered
     {
+        /// <summary>
+        /// The Regular Expression used to determine a valid tag name. This regex will return true if the string does not contain angle brackets, percent, or ampersand.
+        /// </summary>
+        public const string VALIDATOR_REGEX_BLACKLIST = @"^((?!<)(?!>)(?!%)(?!&).)*$";
 
         #region Entity Properties
 
@@ -283,6 +287,18 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
+        }
+
+        /// <summary>
+        /// Determines whether specified tag name is allowed.
+        /// </summary>
+        /// <param name="tagName">Name of the tag.</param>
+        /// <returns>
+        ///   <c>true</c> if [is valid tag name] [the specified tag name]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsValidTagName( string tagName )
+        {
+            return new System.Text.RegularExpressions.Regex( VALIDATOR_REGEX_BLACKLIST ).IsMatch( tagName );
         }
 
         #endregion
