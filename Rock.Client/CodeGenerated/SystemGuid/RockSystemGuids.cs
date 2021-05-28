@@ -233,6 +233,13 @@ namespace Rock.Client.SystemGuid
 
     /// <summary>
     /// </summary>
+    public class BinaryFile
+    {
+        public const string FINANCIAL_STATEMENT_TEMPLATE_ROCK_DEFAULT_LOGO = "8C453AA3-4F99-40B2-9F88-0DDAB8B8D180";
+    }
+
+    /// <summary>
+    /// </summary>
     public class BinaryFiletype
     {
         public const string BENEVOLENCE_REQUEST_DOCUMENTS = "2599DDBE-40E1-158E-4436-AACA6C00556E";
@@ -298,6 +305,7 @@ namespace Rock.Client.SystemGuid
         public const string CONTENT_CHANNEL_NAVIGATION = "0E023AE3-BF08-48E0-93F8-08C32EB5CAFA";
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";
         public const string CONTENT_COMPONENT = "AD802CA1-842C-47F0-B5E9-739FE2B4A2BD";
+        public const string CONTRIBUTION_STATEMENT_LAVA_LEGACY = "AF986B72-ADD9-4E05-971F-1DE4EBED8667";
         public const string CONVERT_BUSINESS = "115A7725-6760-4E86-8171-57F4A3CF6909";
         public const string DISC = "A161D12D-FEA7-422F-B00E-A689629680E4";
         public const string EQ_INVENTORY = "040CFD6D-5155-4BC9-BAEE-A53219A7BECE";
@@ -475,6 +483,7 @@ namespace Rock.Client.SystemGuid
         public const string SCHOOL_GRADES = "24E5A79F-1E62-467A-AD5D-0D10A2328B4D";
         public const string SMALL_GROUP_TOPIC = "D4111631-6B42-1CBD-4019-427D6BC6F475";
         public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
+        public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
         public const string STRUCTURED_CONTENT_EDITOR_TOOLS = "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA";
         public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
         public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";

@@ -420,5 +420,12 @@ namespace Rock.SystemGuid
         /// The check in attendance types
         /// </summary>
         public const string CHECK_IN_ATTENDANCE_TYPES = "C0508751-3BDD-40A7-BE37-8AA4FC56E00E";
+
+        /// <summary>
+        /// The statement generator lava template (Legacy)
+        /// </summary>
+        [Obsolete( "Use FinancialStatementTemplate instead" )]
+        [RockObsolete( "12.4" )]
+        public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
     }
 }

@@ -1,0 +1,23 @@
+﻿{
+  "TransactionSettings": {
+    "AccountSelectionOption": 0,
+    "SelectedAccountIds": [ 1 ],
+    "CurrencyTypesForCashGiftGuids": [ "8b086a19-405a-451f-8d44-174e92d6b402", "f3adc889-1ee8-4eb6-b3fd-8c10f3c8af93", "928a2e04-c77b-4282-888f-ec549cee026a", "dabee8fd-aedf-43e1-8547-4c97fa14d9b6", "d42c4df7-1ae9-4dde-ada2-774b866b798c", "6151f6e0-3223-46ba-a59e-e091be4af75c", "56c9ae9c-b5eb-46d5-9650-2ef86b14f856", "0fdf0bb3-b483-4c0a-9dff-a35abe3b688d" ],
+    "CurrencyTypesForNonCashGuids": [ "7950ff66-80ee-e8ab-4a77-4a13edeb7513" ],
+    "TransactionTypeGuids": [ "2d607262-52d6-4724-910d-5c6e8fb89acc" ],
+    "HideRefundedTransactions": true,
+    "HideCorrectedTransactionOnSameData": true
+  },
+  "PledgeSettings": {
+    "AccountIds": [],
+    "IncludeGiftsToChildAccounts": false,
+    "IncludeNonCashGifts": false
+  },
+  "PDFSettings": {
+    "PaperSize": 0,
+    "MarginRightMillimeters": 10,
+    "MarginLeftMillimeters": 10,
+    "MarginBottomMillimeters": 15,
+    "MarginTopMillimeters": 10
+  }
+}

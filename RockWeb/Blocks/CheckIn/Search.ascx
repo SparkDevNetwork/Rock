@@ -95,7 +95,7 @@
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
-                        <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
+                        <Rock:RockTextBox ID="txtName" runat="server" Label="Name" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" spellcheck="false" autocorrect="off" />
                     </asp:Panel>
 
                     <div class="checkin-actions">

@@ -86,7 +86,8 @@ namespace Rock.Financial
         public decimal ContributionTotal { get; set; }
 
         /// <summary>
-        /// The total amount of pledges reported on the statement.
+        /// The total Pledged Amount of pledges reported on the statement. For example, if $100 was pledged, but only $25
+        /// was given, use $100 as the Pledge Total
         /// </summary>
         /// <value>
         /// The pledge total.
@@ -125,7 +126,7 @@ namespace Rock.Financial
         /// <value>
         /// The location identifier.
         /// </value>
-        public Guid? LocationGuid { get; set; }
+        public int? LocationId { get; set; }
 
         /// <summary>
         /// Gets or sets the postal code.
@@ -176,5 +177,21 @@ namespace Rock.Financial
         ///   <c>true</c> if this instance is complete; otherwise, <c>false</c>.
         /// </value>
         public bool IsComplete { get; set; }
+
+        /// <summary>
+        /// Gets or sets the opted out.
+        /// </summary>
+        /// <value>
+        /// The opted out.
+        /// </value>
+        public bool? OptedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contribution total.
+        /// </summary>
+        /// <value>
+        /// The contribution total.
+        /// </value>
+        public decimal? ContributionTotal { get; set; }
     }
 }

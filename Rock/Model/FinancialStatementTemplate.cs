@@ -16,6 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -161,6 +163,32 @@ namespace Rock.Model
         public virtual FinancialStatementTemplateHeaderFooterSettings FooterSettings { get; set; } = new FinancialStatementTemplateHeaderFooterSettings();
 
         #endregion Virtual Properties
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( LogoBinaryFileId.HasValue )
+            {
+                var originalLogoBinaryFileId = entry.OriginalValues["LogoBinaryFileId"].ToStringSafe().AsIntegerOrNull();
+                var isLogoBinaryFileIdModified = entry.State == EntityState.Modified &&
+                                        ( ( originalLogoBinaryFileId.HasValue && originalLogoBinaryFileId.Value != LogoBinaryFileId.Value ) || !originalLogoBinaryFileId.HasValue );
+                if ( entry.State == EntityState.Added || isLogoBinaryFileIdModified )
+                {
+                    BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                    var binaryFile = binaryFileService.Get( LogoBinaryFileId.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
     }
 
     #region Entity Configuration

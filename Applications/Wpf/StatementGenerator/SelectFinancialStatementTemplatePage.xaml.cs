@@ -14,59 +14,65 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Rock.Net;
+
+using RestSharp;
 
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// Interaction logic for SelectLavaTemplatePage.xaml
+    /// Interaction logic for SelectFinancialStatementTemplatePage.xaml
     /// </summary>
-    public partial class SelectLavaTemplatePage : Page
+    public partial class SelectFinancialStatementTemplatePage : Page
     {
         /// <summary>
-        /// The _rock rest client
+        /// Initializes a new instance of the <see cref="SelectFinancialStatementTemplatePage"/> class.
         /// </summary>
-        private RockRestClient _rockRestClient;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SelectLavaTemplatePage"/> class.
-        /// </summary>
-        public SelectLavaTemplatePage()
+        public SelectFinancialStatementTemplatePage()
         {
             InitializeComponent();
-
-            RockConfig rockConfig = RockConfig.Load();
-
-            _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
-            _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
-
-            LoadLavaTemplates();
+            LoadFinancialStatementTemplates();
         }
 
         /// <summary>
-        /// Loads the lava templates.
+        /// Loads the financial statement templates.
         /// </summary>
-        public void LoadLavaTemplates()
+        public void LoadFinancialStatementTemplates()
         {
-            var rockConfig = RockConfig.Load();
+            RockConfig rockConfig = RockConfig.Load();
 
-            var lavaTemplateDefineValues = _rockRestClient.GetData<List<Rock.Client.DefinedValue>>( "api/FinancialTransactions/GetStatementGeneratorTemplates" );
+            var restClient = new RestClient( rockConfig.RockBaseUrl );
+            restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
+
+            var getFinancialStatementTemplatesRequest = new RestRequest( "api/FinancialStatementTemplates" );
+            var getFinancialStatementTemplatesResponse = restClient.Execute<List<Client.FinancialStatementTemplate>>( getFinancialStatementTemplatesRequest );
+
+            if ( getFinancialStatementTemplatesResponse.ErrorException != null )
+            {
+                throw getFinancialStatementTemplatesResponse.ErrorException;
+            }
+
+            List<Client.FinancialStatementTemplate> financialStatementTemplateList = getFinancialStatementTemplatesResponse.Data.Where( a => a.IsActive ).ToList();
+
+            if (!financialStatementTemplateList.Any() )
+            {
+                lblWarning.Content = "No Templates available. Use the Rock website to define Financial Statement Templates.";
+                lblWarning.Visibility = Visibility.Visible;
+            }
 
             List<RadioButton> radioButtonList = new List<RadioButton>();
-            foreach ( var lavaTemplateDefineValue in lavaTemplateDefineValues.OrderBy( a => a.Order ).ThenBy( a => a.Value ) )
+            foreach ( var financialStatementTemplate in financialStatementTemplateList.OrderBy(a => a.Name) )
             {
-                RadioButton radLavaTemplate = new RadioButton();
-                radLavaTemplate.Tag = lavaTemplateDefineValue;
-                radLavaTemplate.Content = lavaTemplateDefineValue.Value;
-                radLavaTemplate.ToolTip = lavaTemplateDefineValue.Description;
+                RadioButton radFinancialStatementTemplate = new RadioButton();
+                radFinancialStatementTemplate.Tag = financialStatementTemplate;
+                radFinancialStatementTemplate.Content = financialStatementTemplate.Name;
+                radFinancialStatementTemplate.ToolTip = financialStatementTemplate.Description;
 
-                radLavaTemplate.IsChecked = rockConfig.LayoutDefinedValueGuid == lavaTemplateDefineValue.Guid;
-                radioButtonList.Add( radLavaTemplate );
+                radFinancialStatementTemplate.IsChecked = rockConfig.FinancialStatementTemplateGuid == financialStatementTemplate.Guid;
+                radioButtonList.Add( radFinancialStatementTemplate );
             }
 
             if ( !radioButtonList.Any( a => a.IsChecked ?? false ) )
@@ -77,10 +83,10 @@ namespace Rock.Apps.StatementGenerator
                 }
             }
 
-            lstLavaTemplates.Items.Clear();
+            lstFinancialStatementTemplates.Items.Clear();
             foreach ( var item in radioButtonList )
             {
-                lstLavaTemplates.Items.Add( item );
+                lstFinancialStatementTemplates.Items.Add( item );
             }
         }
 
@@ -91,21 +97,23 @@ namespace Rock.Apps.StatementGenerator
         /// <returns></returns>
         private bool SaveChanges( bool showWarnings )
         {
-            var selected = lstLavaTemplates.Items.OfType<RadioButton>().First( a => a.IsChecked == true );
+            var selected = lstFinancialStatementTemplates.Items.OfType<RadioButton>().Where( a => a.IsChecked == true ).FirstOrDefault();
             if ( selected == null )
             {
                 if ( showWarnings )
                 {
+                    lblWarning.Content = "Please select a template.";
+                    lblWarning.Visibility = Visibility.Visible;
                     return false;
                 }
             }
 
             var rockConfig = RockConfig.Load();
-            var lavaDefinedValue = selected?.Tag as Rock.Client.DefinedValue;
-            rockConfig.LayoutDefinedValueGuid = lavaDefinedValue?.Guid;
+            var financialStatementTemplate = selected?.Tag as Rock.Client.FinancialStatementTemplate;
+            rockConfig.FinancialStatementTemplateGuid = financialStatementTemplate?.Guid;
             rockConfig.Save();
 
-            ReportOptions.Current.LayoutDefinedValueGuid = lavaDefinedValue?.Guid;
+            ReportOptions.Current.FinancialStatementTemplateId = financialStatementTemplate?.Id;
             
             return true;
         }

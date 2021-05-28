@@ -48,6 +48,7 @@ namespace Rock.Apps.StatementGenerator
         void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
         {
             ErrorMessageWindow errorMessageWindow = new ErrorMessageWindow( e.Exception );
+            errorMessageWindow.Owner = MainWindow;
             errorMessageWindow.ShowDialog();
             e.Handled = true;
         }
