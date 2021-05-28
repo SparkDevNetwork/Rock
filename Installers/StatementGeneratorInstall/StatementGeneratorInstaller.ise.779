@@ -65,7 +65,7 @@
 		<pagecount>200</pagecount>
 		<wordcount>0</wordcount>
 		<charcount/>
-		<appname>InstallShield</appname>
+		<appname>InstallShield Express</appname>
 		<security>1</security>
 	</summary>
 	
@@ -4010,7 +4010,6 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISCompilerOption_WarningLevel</td><td>3</td></row>
 		<row><td>ISCompilerOption_WarningsAsErrors</td><td>1</td></row>
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
-		<row><td>ISUpdateNotifications</td><td>0</td></row>
 		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
@@ -4022,7 +4021,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>784</td></row>
+		<row><td>SchemaVersion</td><td>779</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -4388,7 +4387,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]StatementGenerator.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{D40E4125-237C-4379-AF5F-F2883D5E48A2}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Statement Generator</td><td/></row>
-		<row><td>ProductVersion</td><td>1.12.4.1</td><td/></row>
+		<row><td>ProductVersion</td><td>1.10.0.1</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
