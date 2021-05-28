@@ -32,6 +32,9 @@ namespace Rock.Client
     public partial class FinancialStatementGeneratorRecipientEntity
     {
         /// <summary />
+        public decimal? ContributionTotal { get; set; }
+
+        /// <summary />
         public string Country { get; set; }
 
         /// <summary />
@@ -47,10 +50,13 @@ namespace Rock.Client
         public string LastName { get; set; }
 
         /// <summary />
-        public Guid? LocationGuid { get; set; }
+        public int? LocationId { get; set; }
 
         /// <summary />
         public string NickName { get; set; }
+
+        /// <summary />
+        public bool? OptedOut { get; set; }
 
         /// <summary />
         public int? PersonId { get; set; }
@@ -67,13 +73,15 @@ namespace Rock.Client
         /// <param name="source">The source.</param>
         public void CopyPropertiesFrom( FinancialStatementGeneratorRecipient source )
         {
+            this.ContributionTotal = source.ContributionTotal;
             this.Country = source.Country;
             this.GroupId = source.GroupId;
             this.IsComplete = source.IsComplete;
             this.IsInternationalAddress = source.IsInternationalAddress;
             this.LastName = source.LastName;
-            this.LocationGuid = source.LocationGuid;
+            this.LocationId = source.LocationId;
             this.NickName = source.NickName;
+            this.OptedOut = source.OptedOut;
             this.PersonId = source.PersonId;
             this.PostalCode = source.PostalCode;
             this.RenderedPageCount = source.RenderedPageCount;
