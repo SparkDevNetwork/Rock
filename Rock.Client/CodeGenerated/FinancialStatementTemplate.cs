@@ -61,7 +61,7 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
-        public string ReportSettingsJson { get; set; } = @"{""TransactionSettings"":{""AccountSelectionOption"":0,""SelectedAccountIds"":[],""CurrencyTypesForCashGiftIds"":[],""CurrencyTypesForNonCashIds"":[],""TransactionTypeIds"":[],""HideRefundedTransactions"":false,""HideCorrectedTransactionOnSameData"":false},""PledgeSettings"":{""AccountIds"":[],""IncludeGiftsToChildAccounts"":false,""IncludeNonCashGifts"":false},""PDFSettings"":{""PaperSize"":0,""MarginRightMillimeters"":10,""MarginLeftMillimeters"":10,""MarginBottomMillimeters"":10,""MarginTopMillimeters"":10}}";
+        public string ReportSettingsJson { get; set; } = @"{""TransactionSettings"":{""AccountSelectionOption"":0,""SelectedAccountIds"":[],""CurrencyTypesForCashGiftGuids"":[],""CurrencyTypesForNonCashGuids"":[],""TransactionTypeGuids"":[],""HideRefundedTransactions"":false,""HideCorrectedTransactionOnSameData"":false},""PledgeSettings"":{""AccountIds"":[],""IncludeGiftsToChildAccounts"":false,""IncludeNonCashGifts"":false},""PDFSettings"":{""PaperSize"":0,""MarginRightMillimeters"":10,""MarginLeftMillimeters"":10,""MarginBottomMillimeters"":10,""MarginTopMillimeters"":10}}";
 
         /// <summary />
         public string ReportTemplate { get; set; }

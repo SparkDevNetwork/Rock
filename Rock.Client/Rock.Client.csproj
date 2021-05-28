@@ -163,6 +163,7 @@
     <Compile Include="CodeGenerated\FinancialStatementIndividualSaveOptions.cs" />
     <Compile Include="CodeGenerated\FinancialStatementReportConfiguration.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplate.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateHeaderFooterSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplatePDFSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplatePledgeSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplateReportSettings.cs" />

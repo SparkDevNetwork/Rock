@@ -156,9 +156,9 @@ namespace Rock.Financial
         public FinancialStatementTemplateTransactionSetting()
         {
             SelectedAccountIds = new List<int>();
-            CurrencyTypesForCashGiftIds = new List<int>();
-            CurrencyTypesForNonCashIds = new List<int>();
-            TransactionTypeIds = new List<int>();
+            CurrencyTypesForCashGiftGuids = new List<Guid>();
+            CurrencyTypesForNonCashGuids = new List<Guid>();
+            TransactionTypeGuids = new List<Guid>();
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace Rock.Financial
         /// <value>
         /// The currency types for cash gifts.
         /// </value>
-        public List<int> CurrencyTypesForCashGiftIds { get; set; }
+        public List<Guid> CurrencyTypesForCashGiftGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the currency types for non-cash gifts.
@@ -194,7 +194,7 @@ namespace Rock.Financial
         /// <value>
         /// The currency types for non-cash gifts.
         /// </value>
-        public List<int> CurrencyTypesForNonCashIds { get; set; }
+        public List<Guid> CurrencyTypesForNonCashGuids { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction types.
@@ -202,7 +202,7 @@ namespace Rock.Financial
         /// <value>
         /// The transaction types.
         /// </value>
-        public List<int> TransactionTypeIds { get; set; }
+        public List<Guid> TransactionTypeGuids { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether refunded transaction should be hidden.

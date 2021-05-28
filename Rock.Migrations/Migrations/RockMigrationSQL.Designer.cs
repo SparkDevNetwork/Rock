@@ -2495,18 +2495,71 @@ namespace Rock.Migrations.Migrations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
-        ///VALUES (
-        ///      N&apos;Sparkline Chart&apos;
-        ///    , N&apos;Generate small inline charts with just a single line of Lava.&apos;
-        ///    , N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
-        ///&lt;pre&gt;&lt;code&gt;{[ sparkline type:&apos;&apos;line&apos;&apos; data:&apos;&apos;5,6,7,9,9,5,3,2,2,4,6,7&apos;&apos; ]}
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode]
+        ///SET 
+        ///	  [Markup] = N&apos;{% javascript url:&apos;&apos;~/Scripts/sparkline/jquery-sparkline.min.js&apos;&apos; id:&apos;&apos;sparkline&apos;&apos;%}{% endjavascript %}
         ///
-        ///{[ sparkline type:&apos;&apos;ba [rest of string was truncated]&quot;;.
+        ///
+        ///{%- comment -%}{%- assign type = &apos;&apos;&apos;&apos; -%}{%- endcomment -%}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{%- assign renderChart = &apos;&apos;true&apos;&apos; | AsBoolean -%}
+        ///{%- if cssclasstarget == &apos;&apos;&apos;&apos; -%}
+        ///  {%- assign class = &apos;&apos;sparkline-&apos;&apos; | Append:id | Prepend:&apos;&apos;.&apos;&apos; -%}
+        ///  {%- assign data = data | Trim | Prepend:&apos;&apos;[&apos;&apos; | Append:&apos;&apos;]&apos;&apos; -%}
+        ///{%- else -%}
+        ///  {%- assign data = &apos;&apos;&quot;html&quot;&apos; [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202105251443228_SparklineChart_SparklineUpdate {
             get {
                 return ResourceManager.GetString("_202105251443228_SparklineChart_SparklineUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105280103566_StatementGenerator_RockDefaultTemplate {
+            get {
+                return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to { &quot;HtmlFragment&quot;: &quot;&lt;table style=&apos;width: 100%; margin-left: 5mm; margin-right: 5mm;&apos;&gt;\n    &lt;tr&gt;\n        &lt;td style=\&quot;text-align:left; font-size:8px; opacity:.5\&quot;&gt;\n            {{ Salutation }}\n        &lt;/td&gt;\n        &lt;td style=\&quot;text-align:right; font-size:8px; opacity:.5\&quot;&gt;\n            Page &lt;span class=&apos;pageNumber&apos;&gt;&lt;/span&gt; of &lt;span class=&apos;totalPages&apos;&gt;&lt;/span&gt;\n        &lt;/td&gt;\n    &lt;/tr&gt;\n&lt;/table&gt;\n\n\n&quot; }.
+        /// </summary>
+        public static string _202105280103566_StatementGenerator_RockDefaultTemplateFooter {
+            get {
+                return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplateFooter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 0xFFD8FFE000104A46494600010101006000600000FFE1003A4578696600004D4D002A000000080003511000010000000101000000511100040000000100000EC4511200040000000100000EC400000000FFDB0043000201010101010201010102020202020403020202020504040304060506060605060606070908060709070606080B08090A0A0A0A0A06080B0C0B0A0C090A0A0AFFDB004301020202020202050303050A0706070A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0A0AFFC000110800C8025803012200021101031101FFC4001F0000010501010101010100000000 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105280103566_StatementGenerator_RockDefaultTemplateLogo {
+            get {
+                return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplateLogo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {
+        ///  &quot;TransactionSettings&quot;: {
+        ///    &quot;AccountSelectionOption&quot;: 0,
+        ///    &quot;SelectedAccountIds&quot;: [ 1 ],
+        ///    &quot;CurrencyTypesForCashGiftGuids&quot;: [ &quot;8b086a19-405a-451f-8d44-174e92d6b402&quot;, &quot;f3adc889-1ee8-4eb6-b3fd-8c10f3c8af93&quot;, &quot;928a2e04-c77b-4282-888f-ec549cee026a&quot;, &quot;dabee8fd-aedf-43e1-8547-4c97fa14d9b6&quot;, &quot;d42c4df7-1ae9-4dde-ada2-774b866b798c&quot;, &quot;6151f6e0-3223-46ba-a59e-e091be4af75c&quot;, &quot;56c9ae9c-b5eb-46d5-9650-2ef86b14f856&quot;, &quot;0fdf0bb3-b483-4c0a-9dff-a35abe3b688d&quot; ],
+        ///    &quot;CurrencyTypesForNonCashGuids&quot;: [ &quot;7950ff66-80e [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202105280103566_StatementGenerator_RockDefaultTemplateReportSettings {
+            get {
+                return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings", resourceCulture);
             }
         }
     }

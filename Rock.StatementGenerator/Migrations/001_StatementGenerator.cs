@@ -33,7 +33,7 @@ namespace Rock.StatementGenerator.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.AddDefinedType( "Financial", "Statement  Generator Lava Template", "Lava Templates that the StatementGenerator application can use to generate giving statements", Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE );
+            RockMigrationHelper.AddDefinedType( "Financial", "Statement  Generator Lava Template (Legacy)", "Lava Templates that the StatementGenerator application can use to generate giving statements", Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE );
 
             RockMigrationHelper.AddDefinedTypeAttribute( Rock.StatementGenerator.SystemGuid.DefinedType.STATEMENT_GENERATOR_LAVA_TEMPLATE, Rock.SystemGuid.FieldType.CODE_EDITOR, 
                 "Lava Template", "LavaTemplate", "The lava template that will be used to generate each statement", 100, string.Empty, Rock.StatementGenerator.SystemGuid.Attribute.DEFINEDVALUE_STATEMENT_GENERATOR_LAVA_TEMPLATE_LAVA_TEMPLATE );

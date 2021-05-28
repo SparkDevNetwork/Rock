@@ -150,43 +150,35 @@ namespace Rock.StatementGenerator.Rest
                 }
             }
 
-            var documentService = new DocumentService( rockContext );
+            
             var today = RockDateTime.Today;
             var tomorrow = today.AddDays( 1 );
 
             foreach ( var documentPersonId in documentPersonIds )
             {
                 // Create the document, linking the entity and binary file.
-                Document document = null;
+
                 if ( saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate == true )
                 {
-                    // See if there is an existing one.
-                    // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
-                    document = documentService.Queryable().Where(
-                        a => a.DocumentTypeId == documentTypeId.Value
-                        && a.EntityId == documentPersonId
-                        && a.CreatedDateTime.HasValue
-                        && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
-                        .Include( a => a.BinaryFile )
-                        .FirstOrDefault();
-                }
-
-                if ( document == null )
-                {
-                    document = new Document
+                    using ( var deleteDocContext = new RockContext() )
                     {
-                        DocumentTypeId = documentTypeId.Value,
-                        EntityId = documentPersonId,
-                    };
+                        var deleteDocumentService = new DocumentService( deleteDocContext );
 
-                    documentService.Add( document );
-                }
-                else
-                {
-                    // we'll overwrite with a new binary file, so mark the old one as temporary so it'll get cleared up
-                    if ( document.BinaryFile != null )
-                    {
-                        document.BinaryFile.IsTemporary = true;
+                        // See if there is an existing one.
+                        // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
+                        var existingDocument = deleteDocumentService.Queryable().Where(
+                            a => a.DocumentTypeId == documentTypeId.Value
+                            && a.EntityId == documentPersonId
+                            && a.CreatedDateTime.HasValue
+                            && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
+                            .Include( a => a.BinaryFile ).FirstOrDefault();
+
+                        // NOTE: Delete vs update since we normally don't change the contents of documents/binary files once they've been created
+                        if ( existingDocument != null )
+                        {
+                            deleteDocumentService.Delete( existingDocument );
+                            deleteDocContext.SaveChanges();
+                        }
                     }
                 }
 
@@ -202,11 +194,22 @@ namespace Rock.StatementGenerator.Rest
                 };
 
                 new BinaryFileService( rockContext ).Add( binaryFile );
+                rockContext.SaveChanges();
 
-                document.PurposeKey = saveOptions.DocumentPurposeKey;
-                document.Name = saveOptions.DocumentName;
-                document.Description = saveOptions.DocumentDescription;
-                document.BinaryFile = binaryFile;
+                Document document = new Document
+                {
+                    DocumentTypeId = documentTypeId.Value,
+                    EntityId = documentPersonId,
+                    PurposeKey = saveOptions.DocumentPurposeKey,
+                    Name = saveOptions.DocumentName,
+                    Description = saveOptions.DocumentDescription
+                };
+                
+                document.SetBinaryFile( binaryFile.Id, rockContext );
+
+                var documentService = new DocumentService( rockContext );
+
+                documentService.Add( document );
             }
 
             rockContext.SaveChanges();

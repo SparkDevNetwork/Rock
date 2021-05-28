@@ -26,7 +26,7 @@ namespace Rock.StatementGenerator.SystemGuid
     public static class DefinedType
     {
         /// <summary>
-        /// The statement generator lava template
+        /// The statement generator lava template (Legacy)
         /// </summary>
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
     }
