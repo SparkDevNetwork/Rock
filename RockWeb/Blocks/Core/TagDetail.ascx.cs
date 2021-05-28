@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Core
         #region Fields
 
         private bool _canConfigure = false;
-
         #endregion
 
         #region Control Methods
@@ -58,6 +57,7 @@ namespace RockWeb.Blocks.Core
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Tag ) ).Id;
+            revTagName.ValidationExpression = Rock.Model.Tag.VALIDATOR_REGEX_BLACKLIST;
         }
 
         /// <summary>
