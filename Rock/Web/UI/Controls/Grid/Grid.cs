@@ -2334,11 +2334,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     if ( dataField is RockTemplateField )
                     {
                         var rockTemplateField = dataField as RockTemplateField;
-                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
-                        {
-                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
-                            visibleFields.Add( fieldOrder++, rockTemplateField );
-                        }
 
                         /*
                          * 2020-03-03 - JPH
@@ -2350,11 +2345,29 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                          *
                          * Reason: Issue #3950 (Lava report fields generate two columns in Excel exports)
                          * https://github.com/SparkDevNetwork/Rock/issues/3950
+                         * 
+                         * 2021-05-28 ETD
+                         * Changed to check if this is a LavaField first and then add it to the LavaField list.
+                         * Add it to the Visibility list if it is Visible and ExcelExportBehavior is IncludeIfVisible.
+                         * 
+                         * Reason: This is to ensure that a lava field in a report does get exported.
+                         * https://github.com/SparkDevNetwork/Rock/issues/4673
                          */
                         if ( dataField is LavaField )
                         {
                             var lavaField = dataField as LavaField;
                             lavaFields.Add( lavaField );
+
+                            if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude
+                                || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                            {
+                                visibleFields.Add( fieldOrder++, rockTemplateField );
+                            }
+                        }
+                        else if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
+                        {
+                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
+                            visibleFields.Add( fieldOrder++, rockTemplateField );
                         }
                     }
                 }
