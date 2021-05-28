@@ -57,6 +57,10 @@ namespace Rock.Lava.Blocks
         /// Parameter name for specifying a filter for the intended audiences of the Event Occurrences. If not specified, all audiences are considered.
         /// </summary>
         public static readonly string ParameterAudienceIds = "audienceids";
+        /// <summary>
+        /// Parameter name for specifying a filter for the campus of the Event Occurrences. If not specified, all campuses are considered.
+        /// </summary>
+        public static readonly string ParameterCampusIds = "campusids";
 
         #endregion
 
@@ -73,7 +77,7 @@ namespace Rock.Lava.Blocks
         public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings )
         {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterCampusIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
@@ -108,12 +112,15 @@ namespace Rock.Lava.Blocks
             // Get the Audiences.
             var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
+            // Get the Campuses.
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
+
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
 
             qryOccurrences = qryOccurrences.Where( m => m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == calendar.Id ) );
 
-            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, maxOccurrences, startDate, endDate );
+            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, campusIdList, maxOccurrences, startDate, endDate );
 
             return summaries;
         }
@@ -126,7 +133,7 @@ namespace Rock.Lava.Blocks
         public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings )
         {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCampusIds, ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
@@ -161,12 +168,15 @@ namespace Rock.Lava.Blocks
             // Get the Audiences.
             var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
+            // Get the Campuses.
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
+
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
 
             qryOccurrences = qryOccurrences.Where( m => m.EventItem.Id == eventItem.Id );
 
-            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, maxOccurrences, startDate, endDate );
+            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, campusIdList, maxOccurrences, startDate, endDate );
 
             return summaries;
         }
@@ -281,6 +291,58 @@ namespace Rock.Lava.Blocks
             }
 
             return audienceIdList;
+        }
+
+        private List<int> ResolveCampusSettingOrThrow( string campuseSettingValue )
+        {
+            var campusIdList = new List<int>();
+
+            if ( !string.IsNullOrWhiteSpace( campuseSettingValue ) )
+            {
+                var campuses = campuseSettingValue.SplitDelimitedValues( "," );
+
+                foreach ( var campusFilterValue in campuses )
+                {
+                    CampusCache campus = null;
+
+                    // Get by ID.
+                    var campusId = campusFilterValue.AsIntegerOrNull();
+
+                    if ( campusId != null )
+                    {
+                        campus = CampusCache.Get( campusId.Value );
+                    }
+
+                    // Get by Guid.
+                    if ( campus == null )
+                    {
+                        var campusGuid = campusFilterValue.AsGuidOrNull();
+
+                        if ( campusGuid != null )
+                        {
+                            campus = CampusCache.Get( campusGuid.Value );
+                        }
+                    }
+
+                    // Get by Value.
+                    if ( campus == null )
+                    {
+                        var campusName = campusFilterValue.Trim();
+
+                        campus = CampusCache.All().FirstOrDefault( x => x.Name != null && x.Name.Equals( campusName, StringComparison.OrdinalIgnoreCase ) );
+                    }
+
+                    // Report an error if the campus is invalid.
+                    if ( campus == null )
+                    {
+                        throw new Exception( $"Cannot apply a campus filter for the reference \"{ campusFilterValue }\"." );
+                    }
+
+                    campusIdList.Add( campus.Id );
+                }
+            }
+
+            return campusIdList;
         }
 
         private EventCalendar ResolveCalendarSettingOrThrow( RockContext rockContext, string calendarSettingValue )
@@ -398,15 +460,20 @@ namespace Rock.Lava.Blocks
             return qryOccurrences;
         }
 
-        private List<EventOccurrenceSummary> GetFilteredEventOccurrenceSummaries( IQueryable<EventItemOccurrence> qryOccurrences, List<int> audienceIdList, int maxOccurrences, DateTime? startDate, DateTime? endDate )
+        private List<EventOccurrenceSummary> GetFilteredEventOccurrenceSummaries( IQueryable<EventItemOccurrence> qryOccurrences, List<int> audienceIdList, List<int> campusIdList, int maxOccurrences, DateTime? startDate, DateTime? endDate )
         {
             qryOccurrences = qryOccurrences.Where( x => x.EventItem.IsActive && x.EventItem.IsApproved );
 
             // Filter by Audience
-            if ( audienceIdList != null
-                 && audienceIdList.Any() )
+            if ( audienceIdList != null && audienceIdList.Any() )
             {
                 qryOccurrences = qryOccurrences.Where( i => i.EventItem.EventItemAudiences.Any( c => audienceIdList.Contains( c.DefinedValueId ) ) );
+            }
+
+            // Filter by Campus
+            if ( campusIdList != null && campusIdList.Any() )
+            {
+                qryOccurrences = qryOccurrences.Where( i => campusIdList.Contains( i.CampusId.Value ) );
             }
 
             // Get the occurrences
