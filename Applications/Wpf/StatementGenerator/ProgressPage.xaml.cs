@@ -159,6 +159,11 @@ namespace Rock.Apps.StatementGenerator
                     _isRunning = true;
                     _statementCount = _contributionReport.RunReport();
                 }
+                catch ( Exception ex )
+                {
+                    App.LogException( ex );
+                    throw;
+                }
                 finally
                 {
                     _isRunning = false;

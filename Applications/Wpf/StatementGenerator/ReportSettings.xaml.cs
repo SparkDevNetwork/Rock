@@ -203,5 +203,16 @@ namespace Rock.Apps.StatementGenerator
             var seletedReportConfig = ( sender as DataGridRow ).DataContext as FinancialStatementReportConfiguration;
             AddEditReportSettings( seletedReportConfig );
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnEditReportOption control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnEditReportOption_Click( object sender, RoutedEventArgs e )
+        {
+            var seletedReportConfig = ( sender as Button ).DataContext as FinancialStatementReportConfiguration;
+            AddEditReportSettings( seletedReportConfig );
+        }
     }
 }

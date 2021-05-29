@@ -137,14 +137,22 @@
                             Header="Prevent Orphans"
                             HeaderStyle="{StaticResource gridHeaderStyleWhite}" />
 
-                        <DataGridTemplateColumn Width="50">
+                        <DataGridTemplateColumn Width="75">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button
-                                        Name="btnDeleteReportOption"
-                                        Click="btnDeleteReportOption_Click"
-                                        Content="&#xf00d;"
-                                        Style="{StaticResource buttonStyleGridColumnIcon}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button
+                                            Name="btnEditReportOption"
+                                            Click="btnEditReportOption_Click"
+                                            Content="&#xf040;"
+                                            Style="{StaticResource buttonStyleGridColumnIcon}" />
+                                        <Button
+                                            Name="btnDeleteReportOption"
+                                            Click="btnDeleteReportOption_Click"
+                                            Content="&#xf00d;"
+                                            Style="{StaticResource buttonStyleGridColumnIcon}" />
+                                    </StackPanel>
+
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
 

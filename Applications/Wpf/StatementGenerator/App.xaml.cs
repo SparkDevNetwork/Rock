@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.IO;
 using System.Net;
 using System.Windows;
+
+using RestSharp;
+
 using Rock.Wpf;
 
 namespace Rock.Apps.StatementGenerator
@@ -36,7 +40,7 @@ namespace Rock.Apps.StatementGenerator
 
             // set the current directory to the same as the current exe so that we can find the layout and logo files
             Directory.SetCurrentDirectory( applicationFolder );
-            
+
             this.DispatcherUnhandledException += App_DispatcherUnhandledException;
         }
 
@@ -51,6 +55,37 @@ namespace Rock.Apps.StatementGenerator
             errorMessageWindow.Owner = MainWindow;
             errorMessageWindow.ShowDialog();
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Silently tries to log the exception to the server's exception log service
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        public static void LogException( Exception ex, string message = null )
+        {
+            try
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                var restClient = new RestClient( rockConfig.RockBaseUrl );
+                restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
+                var request = new RestRequest( "api/ExceptionLogs/LogException" );
+                StatementGeneratorException statementGeneratorException;
+                if ( ex is StatementGeneratorException )
+                {
+                    statementGeneratorException = ex as StatementGeneratorException;
+                }
+                else
+                {
+                    statementGeneratorException = new StatementGeneratorException( ex, message );
+                }
+                var exceptionJson = statementGeneratorException.ToJson();
+                request.AddJsonBody( statementGeneratorException );
+                var response = restClient.Post( request );
+            }
+            catch
+            {
+                // intentionally ignore if we can't log the exception to the server
+            }
         }
     }
 }
