@@ -1187,14 +1187,7 @@ The Lava can include Lava merge fields:";
             }
 
             var chartFactory = GetChartJsFactory( metric );
-            pnlActivityChart.Visible = chartFactory.HasData && GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
-            nbActivityChartMessage.Visible = !chartFactory.HasData;
-
-            if ( !chartFactory.HasData )
-            {
-                nbActivityChartMessage.Text = "There are no completed Steps matching the current filter.";
-                return;
-            }
+            pnlActivityChart.Visible = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             // Add client script to construct the chart.
             var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
