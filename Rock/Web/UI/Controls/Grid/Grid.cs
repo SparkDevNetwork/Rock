@@ -2296,6 +2296,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             continue;
                         }
                     }
+                    else if ( selectedKeys.Any() )
+                    {
+                        // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
+                        gridRowCounter++;
+                        if ( !selectedKeys.Contains( gridRowCounter ) )
+                        {
+                            continue;
+                        }
+                    }
 
                     rowCounter++;
 
@@ -3472,6 +3481,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             continue;
                         }
                     }
+                    else if ( selectedKeys.Any() )
+                    {
+                        // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
+                        gridRowCounter++;
+                        if ( !selectedKeys.Contains( gridRowCounter ) )
+                        {
+                            continue;
+                        }
+                    }                    
 
                     var item = new Rock.Model.EntitySetItem();
 
