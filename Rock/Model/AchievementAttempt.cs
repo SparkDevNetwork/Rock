@@ -18,6 +18,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -171,21 +172,21 @@ namespace Rock.Model
         private UpdateAchievementAttempt.Message GetUpdateAchievementAttemptMessage( DbEntityEntry entry )
         {
             var updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message();
-            if ( entry.State != System.Data.Entity.EntityState.Added && entry.State != System.Data.Entity.EntityState.Modified )
+            if ( entry.State != EFEntityState.Added && entry.State != EFEntityState.Modified )
             {
                 return updateAchievementAttemptMsg;
             }
 
             var achievementAttempt = entry.Entity as AchievementAttempt;
 
-            var wasClosed = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsClosed" )?.OriginalValue as bool? ?? false );
-            var wasSuccessful = entry.State != System.Data.Entity.EntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
+            var wasClosed = entry.State != EFEntityState.Added && ( entry.Property( "IsClosed" )?.OriginalValue as bool? ?? false );
+            var wasSuccessful = entry.State != EFEntityState.Added && ( entry.Property( "IsSuccessful" )?.OriginalValue as bool? ?? false );
 
             // Add a transaction to process workflows and add steps
             updateAchievementAttemptMsg = new UpdateAchievementAttempt.Message
             {
                 AchievementAttemptGuid = achievementAttempt.Guid,
-                IsNowStarting = entry.State == System.Data.Entity.EntityState.Added,
+                IsNowStarting = entry.State == EFEntityState.Added,
                 IsNowEnding = !wasClosed && achievementAttempt.IsClosed,
                 IsNowSuccessful = !wasSuccessful && achievementAttempt.IsSuccessful,
                 AchievementTypeId = achievementAttempt.AchievementTypeId,

@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Spatial;
+using Microsoft.EntityFrameworkCore;
+//using System.Data.Entity.Spatial;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 using System.Linq;
 using System.Text;
 using Rock.Data;
@@ -158,7 +159,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
+#if NET5_0_OR_GREATER
+        public IQueryable<Group> GetGeofencedFamilies( List<NetTopologySuite.Geometries.Polygon> geofences )
+#else
         public IQueryable<Group> GetGeofencedFamilies( List<DbGeography> geofences )
+#endif
         {
             var rockContext = ( RockContext ) this.Context;
             var groupLocationService = new GroupLocationService( rockContext );

@@ -824,20 +824,20 @@ namespace Rock.Model
             //var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             //var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
-            var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
-            {
-                PersonAliasId = m.Person.PrimaryAliasId.Value,
-                Status = CommunicationRecipientStatus.Pending,
-                CommunicationId = Id,
-                MediumEntityTypeId = DetermineMediumEntityTypeId(
-                    emailMediumEntityType.Id,
-                    smsMediumEntityType.Id,
-                    pushMediumEntityType.Id,
-                    CommunicationType,
-                    m.CommunicationPreference,
-                    m.Person.CommunicationPreference )
-            } );
-            rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
+            //var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
+            //{
+            //    PersonAliasId = m.Person.PrimaryAliasId.Value,
+            //    Status = CommunicationRecipientStatus.Pending,
+            //    CommunicationId = Id,
+            //    MediumEntityTypeId = DetermineMediumEntityTypeId(
+            //        emailMediumEntityType.Id,
+            //        smsMediumEntityType.Id,
+            //        pushMediumEntityType.Id,
+            //        CommunicationType,
+            //        m.CommunicationPreference,
+            //        m.Person.CommunicationPreference )
+            //} );
+            //rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
 
             // Get all pending communication recipients that are no longer part of the group list member, then delete them from the Recipients
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
@@ -1028,19 +1028,19 @@ namespace Rock.Model
             }
 
             var sendTasks = new List<Task>();
-            foreach ( var medium in communication.GetMediums() )
-            {
-                var asyncMedium = medium as IAsyncMediumComponent;
+            //foreach ( var medium in communication.GetMediums() )
+            //{
+            //    var asyncMedium = medium as IAsyncMediumComponent;
 
-                if ( asyncMedium == null )
-                {
-                    sendTasks.Add( Task.Run( () => medium.Send( communication ) ) );
-                }
-                else
-                {
-                    sendTasks.Add( asyncMedium.SendAsync( communication ) );
-                }
-            }
+            //    if ( asyncMedium == null )
+            //    {
+            //        sendTasks.Add( Task.Run( () => medium.Send( communication ) ) );
+            //    }
+            //    else
+            //    {
+            //        sendTasks.Add( asyncMedium.SendAsync( communication ) );
+            //    }
+            //}
 
             var aggregateExceptions = new List<Exception>();
             while ( sendTasks.Count > 0 )

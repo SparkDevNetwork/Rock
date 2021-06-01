@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Data.Entity.Spatial;
+//using System.Data.Entity.Spatial;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 using System.Linq;
 
 namespace Rock.Model
@@ -87,7 +88,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="geofences">The geofences.</param>
         /// <returns></returns>
+#if NET5_0_OR_GREATER
+        public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<NetTopologySuite.Geometries.Polygon> geofences )
+#else
         public IQueryable<GroupLocation> GetMappedLocationsByGeofences( List<DbGeography> geofences )
+#endif
         {
             List<int> locationIds = new List<int>();
 

@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -313,7 +314,7 @@ namespace Rock.Model
         {
             int? previousStepStatusId = null;
 
-            if ( entry.State == System.Data.Entity.EntityState.Modified )
+            if ( entry.State == EFEntityState.Modified )
             {
                 var dbProperty = entry.Property( nameof( StepStatusId ) );
                 previousStepStatusId = dbProperty?.OriginalValue as int?;

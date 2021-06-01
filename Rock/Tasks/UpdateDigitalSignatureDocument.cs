@@ -35,28 +35,28 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var docTypeService = new SignatureDocumentTemplateService( rockContext );
-                var docService = new SignatureDocumentService( rockContext );
+            //using ( var rockContext = new RockContext() )
+            //{
+            //    var docTypeService = new SignatureDocumentTemplateService( rockContext );
+            //    var docService = new SignatureDocumentService( rockContext );
 
-                var document = docService.Get( message.SignatureDocumentId );
-                if ( document != null )
-                {
-                    var status = document.Status;
-                    int? binaryFileId = document.BinaryFileId;
-                    string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
-                    var updateErrorMessages = new List<string>();
+            //    var document = docService.Get( message.SignatureDocumentId );
+            //    if ( document != null )
+            //    {
+            //        var status = document.Status;
+            //        int? binaryFileId = document.BinaryFileId;
+            //        string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
+            //        var updateErrorMessages = new List<string>();
 
-                    if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
-                    {
-                        if ( status != document.Status || !binaryFileId.Equals( document.BinaryFileId ) )
-                        {
-                            rockContext.SaveChanges();
-                        }
-                    }
-                }
-            }
+            //        if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )
+            //        {
+            //            if ( status != document.Status || !binaryFileId.Equals( document.BinaryFileId ) )
+            //            {
+            //                rockContext.SaveChanges();
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>

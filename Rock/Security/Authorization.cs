@@ -16,12 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
-using System.Web.Security;
+//using System.Web.Security;
 
 using Rock.Data;
 using Rock.Model;
@@ -773,90 +773,90 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
-        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
-        {
-            var ticket = new FormsAuthenticationTicket(
-                1,
-                userName,
-                RockDateTime.Now,
-                RockDateTime.Now.Add( FormsAuthentication.Timeout ),
-                isPersisted,
-                IsImpersonated.ToString(),
-                FormsAuthentication.FormsCookiePath );
+        //public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        //{
+        //    var ticket = new FormsAuthenticationTicket(
+        //        1,
+        //        userName,
+        //        RockDateTime.Now,
+        //        RockDateTime.Now.Add( FormsAuthentication.Timeout ),
+        //        isPersisted,
+        //        IsImpersonated.ToString(),
+        //        FormsAuthentication.FormsCookiePath );
 
-            var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
-            if ( ticket.IsPersistent )
-            {
-                authCookie.Expires = ticket.Expiration;
-            }
+        //    var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
+        //    if ( ticket.IsPersistent )
+        //    {
+        //        authCookie.Expires = ticket.Expiration;
+        //    }
 
-            RockPage.AddOrUpdateCookie( authCookie );
+        //    RockPage.AddOrUpdateCookie( authCookie );
 
-            // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
-            // when the user signs out.
-            if ( !authCookie.Domain.IsNotNullOrWhiteSpace() )
-            {
-                return;
-            }
+        //    // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
+        //    // when the user signs out.
+        //    if ( !authCookie.Domain.IsNotNullOrWhiteSpace() )
+        //    {
+        //        return;
+        //    }
 
-            var domainCookie =
-                new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
-                {
-                    HttpOnly = true,
-                    Domain = authCookie.Domain,
-                    Path = FormsAuthentication.FormsCookiePath,
-                    Secure = FormsAuthentication.RequireSSL,
-                    Expires = authCookie.Expires
-                };
+        //    var domainCookie =
+        //        new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN", authCookie.Domain )
+        //        {
+        //            HttpOnly = true,
+        //            Domain = authCookie.Domain,
+        //            Path = FormsAuthentication.FormsCookiePath,
+        //            Secure = FormsAuthentication.RequireSSL,
+        //            Expires = authCookie.Expires
+        //        };
 
-            RockPage.AddOrUpdateCookie( domainCookie );
-        }
+        //    RockPage.AddOrUpdateCookie( domainCookie );
+        //}
 
         /// <summary>
         /// Signs a user out of rock by deleting the appropriate forms authentication cookies
         /// </summary>
-        public static void SignOut()
-        {
-            ExpireUnsecuredPersonIdentifierCookie();
+        //public static void SignOut()
+        //{
+        //    ExpireUnsecuredPersonIdentifierCookie();
 
-            var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
-            var domainCookie = HttpContext.Current.Request.Cookies[domainCookieName];
+        //    var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
+        //    var domainCookie = HttpContext.Current.Request.Cookies[domainCookieName];
 
-            if ( domainCookie != null )
-            {
-                var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = DateTime.Now.AddDays( -1d );
-                RockPage.AddOrUpdateCookie( authCookie );
+        //    if ( domainCookie != null )
+        //    {
+        //        var authCookie = GetAuthCookie( domainCookie.Value, null );
+        //        authCookie.Expires = DateTime.Now.AddDays( -1d );
+        //        RockPage.AddOrUpdateCookie( authCookie );
 
-                domainCookie = new HttpCookie( domainCookieName )
-                {
-                    HttpOnly = true,
-                    Domain = authCookie.Domain,
-                    Path = FormsAuthentication.FormsCookiePath,
-                    Secure = FormsAuthentication.RequireSSL,
-                    Expires = DateTime.Now.AddDays( -1d )
-                };
+        //        domainCookie = new HttpCookie( domainCookieName )
+        //        {
+        //            HttpOnly = true,
+        //            Domain = authCookie.Domain,
+        //            Path = FormsAuthentication.FormsCookiePath,
+        //            Secure = FormsAuthentication.RequireSSL,
+        //            Expires = DateTime.Now.AddDays( -1d )
+        //        };
 
-                RockPage.AddOrUpdateCookie( domainCookie );
+        //        RockPage.AddOrUpdateCookie( domainCookie );
 
-            }
-            else
-            {
-                FormsAuthentication.SignOut();
-            }
-        }
+        //    }
+        //    else
+        //    {
+        //        FormsAuthentication.SignOut();
+        //    }
+        //}
 
         /// <summary>
         /// Expires the Unsecured Person Identifier Cookie
         /// </summary>
         /// <returns></returns>
-        private static void ExpireUnsecuredPersonIdentifierCookie()
-        {
-            if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
-            {
-                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.Now.AddDays( -1d ) );
-            }
-        }
+        //private static void ExpireUnsecuredPersonIdentifierCookie()
+        //{
+        //    if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
+        //    {
+        //        RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.Now.AddDays( -1d ) );
+        //    }
+        //}
 
         /// <summary>
         /// Create a forms authentication cookie.
@@ -864,51 +864,51 @@ namespace Rock.Security
         /// <param name="domain">The domain.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        private static HttpCookie GetAuthCookie( string domain, string value )
-        {
-            // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax", "Strict", and "None".
-            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+        //private static HttpCookie GetAuthCookie( string domain, string value )
+        //{
+        //    // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax", "Strict", and "None".
+        //    SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
 
-            // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
+        //    // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
+        //    string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
 
-            var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
-            {
-                Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
-                HttpOnly = true,
-                Path = FormsAuthentication.FormsCookiePath + sameSiteCookieValue,
-                Secure = FormsAuthentication.RequireSSL
-            };
+        //    var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
+        //    {
+        //        Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
+        //        HttpOnly = true,
+        //        Path = FormsAuthentication.FormsCookiePath + sameSiteCookieValue,
+        //        Secure = FormsAuthentication.RequireSSL
+        //    };
 
-            return httpCookie;
-        }
+        //    return httpCookie;
+        //}
 
 
         /// <summary>
         /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
         /// </summary>
         /// <returns></returns>
-        private static string GetCookieDomain()
-        {
-            // Get the domains that should be saving cookies as domain level cookies instead of the default of subdomain level.
-            var dt = DefinedTypeCache.Get( SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
-            var domains = dt?.DefinedValues.Select( v => v.Value ).ToList() ?? new List<string>();
+        //private static string GetCookieDomain()
+        //{
+        //    // Get the domains that should be saving cookies as domain level cookies instead of the default of subdomain level.
+        //    var dt = DefinedTypeCache.Get( SystemGuid.DefinedType.DOMAINS_SHARING_LOGINS.AsGuid() );
+        //    var domains = dt?.DefinedValues.Select( v => v.Value ).ToList() ?? new List<string>();
 
-            // Get the first domain in the list that the current request's host name ends with
-            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-            var domain = domains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
-            if ( !domain.IsNotNullOrWhiteSpace() )
-            {
-                return null;
-            }
+        //    // Get the first domain in the list that the current request's host name ends with
+        //    var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+        //    var domain = domains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
+        //    if ( !domain.IsNotNullOrWhiteSpace() )
+        //    {
+        //        return null;
+        //    }
 
-            // Make sure domain name is prefixed with a '.'
-            domain = domain != null && domain.StartsWith( "." ) ? domain : $".{domain}";
+        //    // Make sure domain name is prefixed with a '.'
+        //    domain = domain != null && domain.StartsWith( "." ) ? domain : $".{domain}";
 
-            // Make sure there now at least two '.' characters (this is required for browser to store cookie).
-            return domain.Count( c => c == '.' ) >= 2 ? domain : string.Empty;
+        //    // Make sure there now at least two '.' characters (this is required for browser to store cookie).
+        //    return domain.Count( c => c == '.' ) >= 2 ? domain : string.Empty;
 
-        }
+        //}
 
         /// <summary>
         /// Checks to see if a person is authorized for entity
@@ -939,13 +939,13 @@ namespace Rock.Security
         /// Sets the unsecure person identifier (COOKIE_UNSECURED_PERSON_IDENTIFIER) cookie.
         /// </summary>
         /// <param name="personAliasGuid">The person alias unique identifier.</param>
-        public static void SetUnsecurePersonIdentifier( Guid personAliasGuid )
-        {
-            HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-            httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
-            RockPage.AddOrUpdateCookie( httpcookie );
-        }
+        //public static void SetUnsecurePersonIdentifier( Guid personAliasGuid )
+        //{
+        //    HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
+        //    httpcookie.Value = personAliasGuid.ToString();
+        //    httpcookie.Expires = DateTime.Now.AddYears( 1 );
+        //    RockPage.AddOrUpdateCookie( httpcookie );
+        //}
 
         #endregion
 

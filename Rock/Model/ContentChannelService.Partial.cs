@@ -106,33 +106,33 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.ContentChannelPath">ContentChannelPath</see> objects.
         /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Used, not needed. Could cause an exception." )]
-        public IEnumerable<ContentChannelPath> GetAllAssociatedDescendentsPath( int parentContentChannelId )
-        {
-            return this.Context.Database.SqlQuery<ContentChannelPath>(
-                @"
-                -- Get ContentChannel association hierarchy with ContentChannel ancestor path information
-                WITH CTE (ChildContentChannelId,ContentChannelId, HierarchyPath) AS
-                (
-                      SELECT [ChildContentChannelId], [ContentChannelId], CONVERT(nvarchar(500),'')
-                      FROM   [ContentChannelAssociation] GTA
-		                INNER JOIN [ContentChannel] GT ON GT.[Id] = GTA.[ContentChannelId]
-                      WHERE  [ContentChannelId] = {0}
-                      UNION ALL 
-                      SELECT
-                            GTA.[ChildContentChannelId], GTA.[ContentChannelId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
-                      FROM
-                            ContentChannelAssociation GTA
-		                INNER JOIN CTE ON CTE.[ChildContentChannelId] = GTA.[ContentChannelId]
-		                INNER JOIN [ContentChannel] GT2 ON GT2.[Id] = GTA.[ContentChannelId]
-                      WHERE CTE.[ChildContentChannelId] <> CTE.[ContentChannelId]
-                )
-                SELECT GT3.Id as 'ContentChannelId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
-                FROM CTE
-                INNER JOIN [ContentChannel] GT3 ON GT3.[Id] = CTE.[ChildContentChannelId]
-                ", parentContentChannelId );
-        }
+        //[RockObsolete( "1.12" )]
+        //[Obsolete( "Not Used, not needed. Could cause an exception." )]
+        //public IEnumerable<ContentChannelPath> GetAllAssociatedDescendentsPath( int parentContentChannelId )
+        //{
+        //    return this.Context.Database.SqlQuery<ContentChannelPath>(
+        //        @"
+        //        -- Get ContentChannel association hierarchy with ContentChannel ancestor path information
+        //        WITH CTE (ChildContentChannelId,ContentChannelId, HierarchyPath) AS
+        //        (
+        //              SELECT [ChildContentChannelId], [ContentChannelId], CONVERT(nvarchar(500),'')
+        //              FROM   [ContentChannelAssociation] GTA
+		      //          INNER JOIN [ContentChannel] GT ON GT.[Id] = GTA.[ContentChannelId]
+        //              WHERE  [ContentChannelId] = {0}
+        //              UNION ALL 
+        //              SELECT
+        //                    GTA.[ChildContentChannelId], GTA.[ContentChannelId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
+        //              FROM
+        //                    ContentChannelAssociation GTA
+		      //          INNER JOIN CTE ON CTE.[ChildContentChannelId] = GTA.[ContentChannelId]
+		      //          INNER JOIN [ContentChannel] GT2 ON GT2.[Id] = GTA.[ContentChannelId]
+        //              WHERE CTE.[ChildContentChannelId] <> CTE.[ContentChannelId]
+        //        )
+        //        SELECT GT3.Id as 'ContentChannelId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
+        //        FROM CTE
+        //        INNER JOIN [ContentChannel] GT3 ON GT3.[Id] = CTE.[ChildContentChannelId]
+        //        ", parentContentChannelId );
+        //}
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.ContentChannel">ContentChannel</see> that are descendants of a specified content channel type.

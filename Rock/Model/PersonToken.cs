@@ -217,11 +217,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
-        //public static string ObfuscateRockMagicToken( string url )
-        //{
-        //    // obfuscate rock magic token
-        //    return ObfuscateRockMagicToken( url, null );
-        //}
+        public static string ObfuscateRockMagicToken( string url )
+        {
+            // obfuscate rock magic token
+            return ObfuscateRockMagicToken( url, null );
+        }
 
         /// <summary>
         /// Obfuscates the rock magic token.
@@ -229,38 +229,42 @@ namespace Rock.Model
         /// <param name="url">The URL.</param>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        //public static string ObfuscateRockMagicToken( string url, System.Web.UI.Page page )
-        //{
-        //    if ( string.IsNullOrWhiteSpace( url ) )
-        //    {
-        //        return url;
-        //    }
+#if NET5_0_OR_GREATER
+        public static string ObfuscateRockMagicToken( string url, object page )
+#else
+        public static string ObfuscateRockMagicToken( string url, System.Web.UI.Page page )
+#endif
+        {
+            if ( string.IsNullOrWhiteSpace( url ) )
+            {
+                return url;
+            }
 
-        //    var match = rckipidRegEx.Match( url );
-        //    if ( match.Success )
-        //    {
-        //        return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-        //    }
+            var match = rckipidRegEx.Match( url );
+            if ( match.Success )
+            {
+                return rckipidRegEx.Replace( url, "rckipid=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+            }
 
-        //    var routeData = page?.RouteData;
-        //    if ( routeData == null )
-        //    {
-        //        Uri uri;
+            //var routeData = page?.RouteData;
+            //if ( routeData == null )
+            //{
+            //    Uri uri;
 
-        //        // if this is a valid full url, lookup the route so we can obfuscate any {rckipid} keys in it 
-        //        if ( Uri.TryCreate( url, UriKind.Absolute, out uri ) )
-        //        {
-        //            routeData = Rock.Web.UI.RouteUtils.GetRouteDataByUri( uri, HttpContext.Current?.Request?.ApplicationPath );
-        //        }
-        //    }
+            //    // if this is a valid full url, lookup the route so we can obfuscate any {rckipid} keys in it 
+            //    if ( Uri.TryCreate( url, UriKind.Absolute, out uri ) )
+            //    {
+            //        routeData = Rock.Web.UI.RouteUtils.GetRouteDataByUri( uri, HttpContext.Current?.Request?.ApplicationPath );
+            //    }
+            //}
 
-        //    if ( routeData != null && routeData.Values.ContainsKey( "rckipid" ) )
-        //    {
-        //        return url.Replace( ( string ) routeData.Values["rckipid"], "XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-        //    }
+            //if ( routeData != null && routeData.Values.ContainsKey( "rckipid" ) )
+            //{
+            //    return url.Replace( ( string ) routeData.Values["rckipid"], "XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+            //}
 
-        //    return url;
-        //}
+            return url;
+        }
 
         /// <summary>
         /// Removes any instances of a rckipid parameter within the specified url so that isn't included.

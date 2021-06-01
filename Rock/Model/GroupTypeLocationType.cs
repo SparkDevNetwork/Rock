@@ -27,7 +27,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-    public class GroupTypeLocationType: DotLiquid.ILiquidizable, ILavaDataDictionarySource
+    public class GroupTypeLocationType: /*DotLiquid.ILiquidizable, */ILavaDataDictionarySource
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.

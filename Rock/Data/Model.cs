@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-using Rock.Transactions;
+//using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -39,8 +39,8 @@ namespace Rock.Data
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
     [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
-    public abstract class Model<T> : Entity<T>, IModel/*, ISecured*/, IHasAttributes, IHasInheritedAttributes
-        where T : Model<T>/*, ISecured*/, new()
+    public abstract class Model<T> : Entity<T>, IModel, ISecured, IHasAttributes, IHasInheritedAttributes
+        where T : Model<T>, ISecured, new()
     {
         #region Entity Properties
 
@@ -350,30 +350,30 @@ namespace Rock.Data
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        //[NotMapped]
-        //public virtual ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        if ( this.Id == 0 )
-        //        {
-        //            return new GlobalDefault();
-        //        }
-        //        else
-        //        {
-        //            return new T();
-        //        }
-        //    }
-        //}
+        [NotMapped]
+        public virtual ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Id == 0 )
+                {
+                    return new GlobalDefault();
+                }
+                else
+                {
+                    return new T();
+                }
+            }
+        }
 
         /// <summary>
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        //public virtual ISecured ParentAuthorityPre
-        //{
-        //    get { return null; }
-        //}
+        public virtual ISecured ParentAuthorityPre
+        {
+            get { return null; }
+        }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -386,9 +386,9 @@ namespace Rock.Data
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
                 return _supportedActions;
             }
@@ -406,8 +406,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsAuthorized( string action, Rock.Model.Person person )
         {
-            throw new NotSupportedException();
-            //return Authorization.Authorized( this, action, person );
+            return Authorization.Authorized( this, action, person );
         }
 
         /// <summary>
@@ -418,10 +417,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            throw new NotSupportedException();
             // Model is the ultimate base Parent Authority of child classes of Models, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
             // In the case of VIEW or TAG, we want to default to Allowed.
-            //return action == Authorization.VIEW || action == Authorization.TAG;
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>
@@ -432,10 +430,10 @@ namespace Rock.Data
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        //public virtual bool IsPrivate( string action, Person person )
-        //{
-        //    return Authorization.IsPrivate( this, action, person );
-        //}
+        public virtual bool IsPrivate( string action, Person person )
+        {
+            return Authorization.IsPrivate( this, action, person );
+        }
 
         /// <summary>
         /// Makes the action on the current entity private (Only the current user will have access).
@@ -443,10 +441,10 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
-        //{
-        //    Authorization.MakePrivate( this, action, person, rockContext );
-        //}
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
+        {
+            Authorization.MakePrivate( this, action, person, rockContext );
+        }
 
         /// <summary>
         /// If the action on the current entity is private, removes the auth rules that made it private.
@@ -454,10 +452,10 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
-        //{
-        //    Authorization.MakeUnPrivate( this, action, person, rockContext );
-        //}
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
+        {
+            Authorization.MakeUnPrivate( this, action, person, rockContext );
+        }
 
         /// <summary>
         /// Adds an 'Allow' rule for the current person as the first rule for the selected action
@@ -465,10 +463,10 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
-        //{
-        //    Authorization.AllowPerson( this, action, person, rockContext );
-        //}
+        public virtual void AllowPerson( string action, Person person, RockContext rockContext = null )
+        {
+            Authorization.AllowPerson( this, action, person, rockContext );
+        }
 
         /// <summary>
         /// Allows the security role.
@@ -476,10 +474,10 @@ namespace Rock.Data
         /// <param name="action">The action.</param>
         /// <param name="group">The group.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void AllowSecurityRole( string action, Group group, RockContext rockContext = null )
-        //{
-        //    Authorization.AllowSecurityRole( this, action, group, rockContext );
-        //}
+        public virtual void AllowSecurityRole( string action, Group group, RockContext rockContext = null )
+        {
+            Authorization.AllowSecurityRole( this, action, group, rockContext );
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -553,20 +551,20 @@ namespace Rock.Data
                             {
                                 Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey )/*, System.Web.HttpContext.Current */);
 
-                                if ( unformatted )
-                                {
-                                    return GetAttributeValueAsType( attribute.Key );
-                                }
+                                //if ( unformatted )
+                                //{
+                                //    return GetAttributeValueAsType( attribute.Key );
+                                //}
 
-                                var field = attribute.FieldType.Field;
-                                string value = GetAttributeValue( attribute.Key );
+                                //var field = attribute.FieldType.Field;
+                                //string value = GetAttributeValue( attribute.Key );
 
-                                if ( url && field is Rock.Field.ILinkableFieldType )
-                                {
-                                    return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
-                                }
+                                //if ( url && field is Rock.Field.ILinkableFieldType )
+                                //{
+                                //    return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
+                                //}
 
-                                return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
+                                //return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
                             }
                         }
                     }
@@ -692,20 +690,19 @@ namespace Rock.Data
         /// <returns></returns>
         public string GetAttributeValue( string key )
         {
-            throw new NotSupportedException();
-            //if ( this.AttributeValues != null &&
-            //    this.AttributeValues.ContainsKey( key ) )
-            //{
-            //    return this.AttributeValues[key].Value;
-            //}
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                return this.AttributeValues[key].Value;
+            }
 
-            //if ( this.Attributes != null &&
-            //    this.Attributes.ContainsKey( key ) )
-            //{
-            //    return this.Attributes[key].DefaultValue;
-            //}
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
+            {
+                return this.Attributes[key].DefaultValue;
+            }
 
-            //return null;
+            return null;
         }
 
         /// <summary>
@@ -715,15 +712,14 @@ namespace Rock.Data
         /// <returns></returns>
         public string GetAttributeValue( Guid guid )
         {
-            throw new NotSupportedException();
-            //var attributeCache = AttributeCache.Get( guid );
+            var attributeCache = AttributeCache.Get( guid );
 
-            //if ( attributeCache is null )
-            //{
-            //    return null;
-            //}
+            if ( attributeCache is null )
+            {
+                return null;
+            }
 
-            //return GetAttributeValue( attributeCache.Key );
+            return GetAttributeValue( attributeCache.Key );
         }
 
         /// <summary>
@@ -731,23 +727,22 @@ namespace Rock.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public object GetAttributeValueAsType( string key )
-        {
-            throw new NotSupportedException();
-            //if ( this.AttributeValues != null &&
-            //    this.AttributeValues.ContainsKey( key ) )
-            //{
-            //    return this.AttributeValues[key].ValueAsType;
-            //}
+        //public object GetAttributeValueAsType( string key )
+        //{
+        //    if ( this.AttributeValues != null &&
+        //        this.AttributeValues.ContainsKey( key ) )
+        //    {
+        //        return this.AttributeValues[key].ValueAsType;
+        //    }
 
-            //if ( this.Attributes != null &&
-            //    this.Attributes.ContainsKey( key ) )
-            //{
-            //    return this.Attributes[key].DefaultValueAsType;
-            //}
+        //    if ( this.Attributes != null &&
+        //        this.Attributes.ContainsKey( key ) )
+        //    {
+        //        return this.Attributes[key].DefaultValueAsType;
+        //    }
 
-            //return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Gets the value of an attribute key - splitting that delimited value into a list of strings.
@@ -756,14 +751,13 @@ namespace Rock.Data
         /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
-            throw new NotSupportedException();
-            //string value = GetAttributeValue( key );
-            //if ( !string.IsNullOrWhiteSpace( value ) )
-            //{
-            //    return value.SplitDelimitedValues().ToList();
-            //}
+            string value = GetAttributeValue( key );
+            if ( !string.IsNullOrWhiteSpace( value ) )
+            {
+                return value.SplitDelimitedValues().ToList();
+            }
 
-            //return new List<string>();
+            return new List<string>();
         }
 
         /// <summary>
@@ -773,12 +767,11 @@ namespace Rock.Data
         /// <param name="value">The value.</param>
         public void SetAttributeValue( string key, string value )
         {
-            throw new NotSupportedException();
-            //if ( this.AttributeValues != null &&
-            //    this.AttributeValues.ContainsKey( key ) )
-            //{
-            //    this.AttributeValues[key].Value = value;
-            //}
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                this.AttributeValues[key].Value = value;
+            }
         }
 
         #endregion
@@ -789,10 +782,10 @@ namespace Rock.Data
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        //public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        //{
-        //    return null;
-        //}
+        public virtual List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            return null;
+        }
 
         /// <summary>
         /// Get any alternate Ids that should be used when loading attribute value for this entity.

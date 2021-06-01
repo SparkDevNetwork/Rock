@@ -221,6 +221,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
+        [NotMapped]
         [LavaVisible]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
@@ -239,13 +240,13 @@ namespace Rock.Model
         /// <value>
         /// The parent security authority for this Workflow action.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.Workflow != null ? this.Workflow : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Workflow != null ? this.Workflow : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -259,11 +260,11 @@ namespace Rock.Model
         {
             get
             {
-                //string propertyKey = key.ToStringSafe();
-                //if ( propertyKey == "ActivityType" )
-                //{
-                //    return ActivityTypeCache;
-                //}
+                string propertyKey = key.ToStringSafe();
+                if ( propertyKey == "ActivityType" )
+                {
+                    return ActivityTypeCache;
+                }
                 return base[key];
             }
         }
@@ -340,15 +341,15 @@ namespace Rock.Model
 
             if ( this.Workflow != null )
             {
-                //var workflowType = this.Workflow.WorkflowTypeCache;
-                //if ( force || (
-                //    workflowType != null && (
-                //    workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
-                //    workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
-                //{
-                //    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
-                //    this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
-                //}
+                var workflowType = this.Workflow.WorkflowTypeCache;
+                if ( force || (
+                    workflowType != null && (
+                    workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
+                    workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
+                {
+                    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                    this.Workflow.AddLogEntry( string.Format( "{0} Activity {1}: {2}", this.ToString(), idStr, logEntry ), force );
+                }
             }
         }
 
@@ -389,13 +390,13 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        //public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
-        //{
-        //    using ( var rockContext = new RockContext() )
-        //    {
-        //        return Activate( activityTypeCache, workflow, rockContext );
-        //    }
-        //}
+        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( activityTypeCache, workflow, rockContext );
+            }
+        }
 
         /// <summary>
         /// Activates the specified WorkflowActivity
@@ -406,25 +407,25 @@ namespace Rock.Model
         /// <returns>
         /// The activated <see cref="Rock.Model.WorkflowActivity" />.
         /// </returns>
-        //public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
-        //{
-        //    var activity = new WorkflowActivity();
-        //    activity.Workflow = workflow;
-        //    activity.ActivityTypeId = activityTypeCache.Id;
-        //    activity.ActivatedDateTime = RockDateTime.Now;
-        //    activity.LoadAttributes( rockContext );
+        public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
+        {
+            var activity = new WorkflowActivity();
+            activity.Workflow = workflow;
+            activity.ActivityTypeId = activityTypeCache.Id;
+            activity.ActivatedDateTime = RockDateTime.Now;
+            activity.LoadAttributes( rockContext );
 
-        //    activity.AddLogEntry( "Activated" );
+            activity.AddLogEntry( "Activated" );
 
-        //    foreach ( var actionType in activityTypeCache.ActionTypes )
-        //    {
-        //        activity.Actions.Add( WorkflowAction.Activate( actionType, activity, rockContext ) );
-        //    }
+            foreach ( var actionType in activityTypeCache.ActionTypes )
+            {
+                activity.Actions.Add( WorkflowAction.Activate( actionType, activity, rockContext ) );
+            }
 
-        //    workflow.Activities.Add( activity );
+            workflow.Activities.Add( activity );
 
-        //    return activity;
-        //}
+            return activity;
+        }
 
         #endregion
 

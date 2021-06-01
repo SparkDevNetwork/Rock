@@ -28,7 +28,7 @@ namespace Rock.Common
     /// </summary>
     public class RockDateTime
     {
-#if NETCORE
+#if NET5_0_OR_GREATER
         /// <summary>
         /// Gets the time zone information for this execution context.
         /// </summary>

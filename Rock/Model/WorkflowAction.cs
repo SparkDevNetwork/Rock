@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
-using Rock.Workflow;
+//using Rock.Workflow;
 
 namespace Rock.Model
 {
@@ -591,13 +591,13 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        //internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity )
-        //{
-        //    using ( var rockContext = new RockContext() )
-        //    {
-        //        return Activate( actionTypeCache, activity, rockContext );
-        //    }
-        //}
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( actionTypeCache, activity, rockContext );
+            }
+        }
 
         /// <summary>
         /// Activates the specified <see cref="Rock.Model.WorkflowAction" />.
@@ -608,24 +608,24 @@ namespace Rock.Model
         /// <returns>
         /// The <see cref="Rock.Model.WorkflowAction" />
         /// </returns>
-        //internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity, RockContext rockContext )
-        //{
-        //    var action = new WorkflowAction();
-        //    action.Activity = activity;
-        //    action.ActionTypeId = actionTypeCache.Id;
-        //    action.LoadAttributes( rockContext );
+        internal static WorkflowAction Activate( WorkflowActionTypeCache actionTypeCache, WorkflowActivity activity, RockContext rockContext )
+        {
+            var action = new WorkflowAction();
+            action.Activity = activity;
+            action.ActionTypeId = actionTypeCache.Id;
+            action.LoadAttributes( rockContext );
 
-        //    action.AddLogEntry( "Activated" );
+            action.AddLogEntry( "Activated" );
 
-        //    return action;
-        //}
+            return action;
+        }
 
         #endregion
 
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+        //[DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {

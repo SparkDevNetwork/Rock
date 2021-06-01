@@ -47,14 +47,14 @@ namespace Rock.Tasks
 
                 foreach ( var scheduledTransactionId in message.ScheduledTransactionIds )
                 {
-                    var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
+                    //var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
 
-                    if ( financialScheduledTransaction != null )
-                    {
-                        financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out _ );
+                    //if ( financialScheduledTransaction != null )
+                    //{
+                    //    financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out _ );
 
-                        rockContext.SaveChanges();
-                    }
+                    //    rockContext.SaveChanges();
+                    //}
                 }
             }
         }

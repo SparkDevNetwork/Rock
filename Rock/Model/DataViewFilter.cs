@@ -340,66 +340,66 @@ namespace Rock.Model
                         throw new RockDataViewFilterExpressionException( this, $"Unable to determine EntityType not defined for EntityTypeId {EntityTypeId}" );
                     }
 
-                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                    if ( component == null )
+                    //var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                    //if ( component == null )
                     {
                         // if this happens, we want to throw an exception to prevent incorrect results
                         throw new RockDataViewFilterExpressionException( this, $"Unable to determine Component for EntityType {entityType.Name}" );
                     }
 
-                    string selection; // A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)
-                    var dataViewFilterOverride = dataViewFilterOverrides?.GetOverride( this.Guid );
-                    if ( dataViewFilterOverride != null )
-                    {
-                        if ( dataViewFilterOverride.IncludeFilter == false )
-                        {
-                            /*
-                            1/15/2021 - Shaun
-                            This should not assume that returning Expression.Constant( true ) is equivalent to not filtering as this predicate
-                            may be joined to other predicates and the AND/OR logic may result in an inappropriate filter.  Instead, we simply
-                            return null and allow the caller to handle this in a manner appropriate to the given filter.
-                            */
+                    //string selection; // A formatted string representing the filter settings: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)
+                    //var dataViewFilterOverride = dataViewFilterOverrides?.GetOverride( this.Guid );
+                    //if ( dataViewFilterOverride != null )
+                    //{
+                    //    if ( dataViewFilterOverride.IncludeFilter == false )
+                    //    {
+                    //        /*
+                    //        1/15/2021 - Shaun
+                    //        This should not assume that returning Expression.Constant( true ) is equivalent to not filtering as this predicate
+                    //        may be joined to other predicates and the AND/OR logic may result in an inappropriate filter.  Instead, we simply
+                    //        return null and allow the caller to handle this in a manner appropriate to the given filter.
+                    //        */
 
-                            // If the dataview filter should not be included, don't have this filter filter anything. 
-                            return null;
-                        }
-                        else
-                        {
-                            selection = dataViewFilterOverride.Selection;
-                        }
-                    }
-                    else
-                    {
-                        selection = this.Selection;
-                    }
+                    //        // If the dataview filter should not be included, don't have this filter filter anything. 
+                    //        return null;
+                    //    }
+                    //    else
+                    //    {
+                    //        selection = dataViewFilterOverride.Selection;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    selection = this.Selection;
+                    //}
 
-                    Expression expression;
+                    //Expression expression;
 
-                    try
-                    {
-                        if ( component is IDataFilterWithOverrides )
-                        {
-                            expression = ( component as IDataFilterWithOverrides ).GetExpressionWithOverrides( dataViewEntityTypeType, serviceInstance, parameter, dataViewFilterOverrides, selection );
-                        }
-                        else
-                        {
-                            expression = component.GetExpression( dataViewEntityTypeType, serviceInstance, parameter, selection );
-                        }
-                    }
-                    catch ( RockDataViewFilterExpressionException dex )
-                    {
-                        // components don't know which DataView/DataFilter they are working with, so if there was a RockDataViewFilterExpressionException, let's tell it what DataViewFilter/DataView it was using
-                        dex.SetDataFilterIfNotSet( this );
-                        throw;
-                    }
+                    //try
+                    //{
+                    //    if ( component is IDataFilterWithOverrides )
+                    //    {
+                    //        expression = ( component as IDataFilterWithOverrides ).GetExpressionWithOverrides( dataViewEntityTypeType, serviceInstance, parameter, dataViewFilterOverrides, selection );
+                    //    }
+                    //    else
+                    //    {
+                    //        expression = component.GetExpression( dataViewEntityTypeType, serviceInstance, parameter, selection );
+                    //    }
+                    //}
+                    //catch ( RockDataViewFilterExpressionException dex )
+                    //{
+                    //    // components don't know which DataView/DataFilter they are working with, so if there was a RockDataViewFilterExpressionException, let's tell it what DataViewFilter/DataView it was using
+                    //    dex.SetDataFilterIfNotSet( this );
+                    //    throw;
+                    //}
 
-                    if ( expression == null )
-                    {
-                        // If a DataFilter component returned a null expression, that probably means that it decided not to filter anything. So, we'll interpret that as "Don't Filter"
-                        expression = Expression.Constant( true );
-                    }
+                    //if ( expression == null )
+                    //{
+                    //    // If a DataFilter component returned a null expression, that probably means that it decided not to filter anything. So, we'll interpret that as "Don't Filter"
+                    //    expression = Expression.Constant( true );
+                    //}
 
-                    return expression;
+                    //return expression;
 
                 case FilterExpressionType.GroupAll:
                 case FilterExpressionType.GroupAnyFalse:

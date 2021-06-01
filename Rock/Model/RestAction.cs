@@ -94,31 +94,31 @@ namespace Rock.Model
             {
                 if ( _cacheControlHeaderSettings != value )
                 {
-                    //_cacheControlHeader = null;
+                    _cacheControlHeader = null;
                 }
                 _cacheControlHeaderSettings = value;
             }
         }
 
-        //private RockCacheability _cacheControlHeader;
+        private RockCacheability _cacheControlHeader;
         /// <summary>
         /// Gets the cache control header.
         /// </summary>
         /// <value>
         /// The cache control header.
         /// </value>
-        //[NotMapped]
-        //public RockCacheability CacheControlHeader
-        //{
-        //    get
-        //    {
-        //        if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
-        //        {
-        //            _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-        //        }
-        //        return _cacheControlHeader;
-        //    }
-        //}
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null && CacheControlHeaderSettings.IsNotNullOrWhiteSpace() )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+                return _cacheControlHeader;
+            }
+        }
         #endregion
 
         #region Virtual Properties

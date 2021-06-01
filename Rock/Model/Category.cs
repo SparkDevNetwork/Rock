@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Lava;
+using System.Collections.ObjectModel;
 
 namespace Rock.Model
 {
@@ -171,12 +172,12 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        public virtual ICollection<Attribute> Attributes
+        public virtual ICollection<Attribute> AttributeItems
         {
-            get { return _attributes ?? ( _attributes = new Collection<Attribute>() ); }
-            set { _attributes = value; }
+            get { return _attributeItems ?? ( _attributeItems = new Collection<Attribute>() ); }
+            set { _attributeItems = value; }
         }
-        private ICollection<Attribute> _attributes;
+        private ICollection<Attribute> _attributeItems;
 
         public virtual ICollection<ContentChannel> ContentChannels
         {

@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Reflection;
 
@@ -143,28 +143,28 @@ namespace Rock.Model
         /// "Common" flag set to true.
         /// </summary>
         /// <returns>A list of <see cref="Rock.Model.EntityType"/> <see cref="System.Web.UI.WebControls.ListItem">ListItems</see> ordered by their "Common" flag and FriendlyName</returns>
-        public List<System.Web.UI.WebControls.ListItem> GetEntityListItems()
-        {
-            var items = new List<System.Web.UI.WebControls.ListItem>();
+        //public List<System.Web.UI.WebControls.ListItem> GetEntityListItems()
+        //{
+        //    var items = new List<System.Web.UI.WebControls.ListItem>();
 
-            var entities = GetEntities().OrderBy( e => e.FriendlyName ).ToList();
+        //    var entities = GetEntities().OrderBy( e => e.FriendlyName ).ToList();
 
-            foreach ( var entity in entities.Where( t => t.IsCommon ) )
-            {
-                var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
-                li.Attributes.Add( "optiongroup", "Common" );
-                items.Add( li );
-            }
+        //    foreach ( var entity in entities.Where( t => t.IsCommon ) )
+        //    {
+        //        var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+        //        li.Attributes.Add( "optiongroup", "Common" );
+        //        items.Add( li );
+        //    }
 
-            foreach ( var entity in entities )
-            {
-                var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
-                li.Attributes.Add( "optiongroup", "All Entities" );
-                items.Add( li );
-            }
+        //    foreach ( var entity in entities )
+        //    {
+        //        var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+        //        li.Attributes.Add( "optiongroup", "All Entities" );
+        //        items.Add( li );
+        //    }
 
-            return items;
-        }
+        //    return items;
+        //}
 
         /// <summary>
         /// Gets an Entity by type and entity Id.

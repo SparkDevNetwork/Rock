@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
-using Rock.Constants;
+//using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -198,63 +198,63 @@ namespace Rock.Web
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void SetValueToWebConfig( string key, string value )
-        {
-            try
-            {
-                if ( System.Configuration.ConfigurationManager.AppSettings[key] != null )
-                {
-                    System.Configuration.Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
-                    rockWebConfig.AppSettings.Settings[key].Value = value;
-                    rockWebConfig.Save();
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
+        //public static void SetValueToWebConfig( string key, string value )
+        //{
+        //    try
+        //    {
+        //        if ( System.Configuration.ConfigurationManager.AppSettings[key] != null )
+        //        {
+        //            System.Configuration.Configuration rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+        //            rockWebConfig.AppSettings.Settings[key].Value = value;
+        //            rockWebConfig.Save();
+        //        }
+        //    }
+        //    catch ( Exception ex )
+        //    {
+        //        ExceptionLogService.LogException( ex, null );
+        //    }
+        //}
 
         /// <summary>
         /// Sets values to web configuration.
         /// Use this when saving multiple keys so a save is not called for each key.
         /// </summary>
         /// <param name="settings">The settings.</param>
-        public static void SetValueToWebConfig( Dictionary<string, string> settings )
-        {
-            bool changed = false;
-            System.Configuration.Configuration rockWebConfig = null;
+        //public static void SetValueToWebConfig( Dictionary<string, string> settings )
+        //{
+        //    bool changed = false;
+        //    System.Configuration.Configuration rockWebConfig = null;
 
-            try
-            {
-                rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
+        //    try
+        //    {
+        //        rockWebConfig = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration( "~" );
+        //    }
+        //    catch ( Exception ex )
+        //    {
+        //        ExceptionLogService.LogException( ex, null );
+        //    }
 
-            foreach ( var setting in settings )
-            {
-                if ( System.Configuration.ConfigurationManager.AppSettings[setting.Key] != null )
-                {
-                    rockWebConfig.AppSettings.Settings[setting.Key].Value = setting.Value;
-                    changed = true;
-                }
-            }
+        //    foreach ( var setting in settings )
+        //    {
+        //        if ( System.Configuration.ConfigurationManager.AppSettings[setting.Key] != null )
+        //        {
+        //            rockWebConfig.AppSettings.Settings[setting.Key].Value = setting.Value;
+        //            changed = true;
+        //        }
+        //    }
 
-            try
-            {
-                if ( changed )
-                {
-                    rockWebConfig.Save();
-                }
-            }
-            catch ( Exception ex )
-            {
-                ExceptionLogService.LogException( ex, null );
-            }
-        }
+        //    try
+        //    {
+        //        if ( changed )
+        //        {
+        //            rockWebConfig.Save();
+        //        }
+        //    }
+        //    catch ( Exception ex )
+        //    {
+        //        ExceptionLogService.LogException( ex, null );
+        //    }
+        //}
 
         /// <summary>
         /// Loads/Reload the system settings from the database

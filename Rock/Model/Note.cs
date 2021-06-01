@@ -248,7 +248,7 @@ namespace Rock.Model
             get
             {
                 // only get notes they have auth to VIEW ( note that VIEW has special rules based on approval status, etc. See Note.IsAuthorized for details )
-                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPerson = null/*System.Web.HttpContext.Current?.Items["CurrentPerson"]*/ as Person;
 
                 var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
 
@@ -349,7 +349,7 @@ namespace Rock.Model
 
                 var mergeFields = new Dictionary<string, object> { { "Note", this } };
 
-                string approvalUrl = approvalUrlTemplate.ResolveMergeFields( mergeFields );
+                string approvalUrl = string.Empty/*approvalUrlTemplate.ResolveMergeFields( mergeFields )*/;
 
                 return approvalUrl;
             }
@@ -366,7 +366,7 @@ namespace Rock.Model
         {
             get
             {
-                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                var currentPerson = null/*System.Web.HttpContext.Current?.Items["CurrentPerson"]*/ as Person;
                 var currentPersonId = currentPerson?.Id;
                 if ( currentPersonId.HasValue )
                 {
@@ -398,7 +398,7 @@ namespace Rock.Model
             {
                 if ( !_viewableDescendentsCount.HasValue )
                 {
-                    var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+                    var currentPerson = null/*System.Web.HttpContext.Current?.Items["CurrentPerson"]*/ as Person;
 
                     using ( var rockContext = new RockContext() )
                     {

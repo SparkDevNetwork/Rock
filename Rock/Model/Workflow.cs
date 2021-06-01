@@ -654,13 +654,13 @@ namespace Rock.Model
         /// <param name="workflowTypeCache">The workflow type cache.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        //public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
-        //{
-        //    using ( var rockContext = new RockContext() )
-        //    {
-        //        return Activate( workflowTypeCache, name, rockContext );
-        //    }
-        //}
+        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return Activate( workflowTypeCache, name, rockContext );
+            }
+        }
 
         /// <summary>
         /// Activates the specified workflow type cache.
@@ -669,37 +669,37 @@ namespace Rock.Model
         /// <param name="name">The name.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        //public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
-        //{
-        //    var workflow = new Workflow();
-        //    workflow.WorkflowTypeId = workflowTypeCache.Id;
+        public static Workflow Activate( WorkflowTypeCache workflowTypeCache, string name, RockContext rockContext )
+        {
+            var workflow = new Workflow();
+            workflow.WorkflowTypeId = workflowTypeCache.Id;
 
-        //    if ( !string.IsNullOrWhiteSpace( name ) )
-        //    {
-        //        workflow.Name = name;
-        //    }
-        //    else
-        //    {
-        //        workflow.Name = workflowTypeCache.Name;
-        //    }
+            if ( !string.IsNullOrWhiteSpace( name ) )
+            {
+                workflow.Name = name;
+            }
+            else
+            {
+                workflow.Name = workflowTypeCache.Name;
+            }
 
-        //    workflow.Status = "Active";
-        //    workflow.IsProcessing = false;
-        //    workflow.ActivatedDateTime = RockDateTime.Now;
-        //    workflow.LoadAttributes( rockContext );
+            workflow.Status = "Active";
+            workflow.IsProcessing = false;
+            workflow.ActivatedDateTime = RockDateTime.Now;
+            workflow.LoadAttributes( rockContext );
 
-        //    workflow.AddLogEntry( "Activated" );
+            workflow.AddLogEntry( "Activated" );
 
-        //    foreach ( var activityType in workflowTypeCache.ActivityTypes.OrderBy( a => a.Order ) )
-        //    {
-        //        if ( activityType.IsActivatedWithWorkflow )
-        //        {
-        //            WorkflowActivity.Activate( activityType, workflow, rockContext );
-        //        }
-        //    }
+            foreach ( var activityType in workflowTypeCache.ActivityTypes.OrderBy( a => a.Order ) )
+            {
+                if ( activityType.IsActivatedWithWorkflow )
+                {
+                    WorkflowActivity.Activate( activityType, workflow, rockContext );
+                }
+            }
 
-        //    return workflow;
-        //}
+            return workflow;
+        }
 
         #endregion
 

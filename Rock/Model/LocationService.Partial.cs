@@ -16,13 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Spatial;
+//using System.Data.Entity.Spatial;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Field.Types;
-using Rock.Address;
+//using Rock.Field.Types;
+//using Rock.Address;
 
 namespace Rock.Model
 {
@@ -287,14 +288,22 @@ namespace Rock.Model
         /// <param name="point">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object
         ///     representing the Geopoint for the location.</param>
         /// <returns>The first <see cref="Rock.Model.Location"/> that matches the specified GeoPoint.</returns>
+#if NET5_0_OR_GREATER
+        public Location GetByGeoPoint( NetTopologySuite.Geometries.Point point )
+#else
         public Location GetByGeoPoint( DbGeography point )
+#endif
         {
             // get the first address that has a GeoPoint the value
             // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
             var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoPoint != null &&
+#if NET5_0_OR_GREATER
+                    a.GeoPoint.EqualsTopologically( point ) );
+#else
                     a.GeoPoint.SpatialEquals( point ) );
+#endif
 
             var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
@@ -327,14 +336,22 @@ namespace Rock.Model
         /// <param name="fence">A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that
         ///  represents the GeoFence of the location to retrieve.</param>
         /// <returns>The <see cref="Rock.Model.Location"/> for the specified GeoFence. </returns>
+#if NET5_0_OR_GREATER
+        public Location GetByGeoFence( NetTopologySuite.Geometries.Polygon fence )
+#else
         public Location GetByGeoFence( DbGeography fence )
+#endif
         {
             // get the first address that has the GeoFence value
             // use the 'Where Max(ID)' trick instead of TOP 1 to optimize SQL performance
             var qryWhere = Queryable()
                 .Where( a =>
                     a.GeoFence != null &&
+#if NET5_0_OR_GREATER
+                    a.GeoFence.EqualsTopologically( fence ) );
+#else
                     a.GeoFence.SpatialEquals( fence ) );
+#endif
 
             var result = Queryable().Where( a => a.Id == qryWhere.Max( b => b.Id ) ).FirstOrDefault();
 
@@ -382,46 +399,46 @@ namespace Rock.Model
             // Verify requirements for individual fields.
             var invalidFields = new List<string>();
 
-            if ( countryValue != null )
-            {
-                var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var localityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var stateRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
-                var postalCodeRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //if ( countryValue != null )
+            //{
+            //    var addressLine1Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine1Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //    var addressLine2Requirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLine2Requirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //    var cityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //    var localityRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //    var stateRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
+            //    var postalCodeRequirement = countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeRequirement ).ConvertToEnum<DataEntryRequirementLevelSpecifier>( DataEntryRequirementLevelSpecifier.Optional );
 
-                if ( addressLine1Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street1 ) )
-                {
-                    invalidFields.Add( "Address Line 1" );
-                }
+            //    if ( addressLine1Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street1 ) )
+            //    {
+            //        invalidFields.Add( "Address Line 1" );
+            //    }
 
-                if ( addressLine2Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street2 ) )
-                {
-                    invalidFields.Add( "Address Line 2" );
-                }
+            //    if ( addressLine2Requirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.Street2 ) )
+            //    {
+            //        invalidFields.Add( "Address Line 2" );
+            //    }
 
-                if ( cityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.City ) )
-                {
-                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityLabel ).IfEmpty( "City" ) );
-                }
+            //    if ( cityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.City ) )
+            //    {
+            //        invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressCityLabel ).IfEmpty( "City" ) );
+            //    }
 
-                if ( localityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.County ) )
-                {
-                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityLabel ).IfEmpty( "Locality" ) );
-                }
+            //    if ( localityRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.County ) )
+            //    {
+            //        invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressLocalityLabel ).IfEmpty( "Locality" ) );
+            //    }
 
-                if ( stateRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.State ) )
-                {
-                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel ).IfEmpty( "State" ) );
-                }
+            //    if ( stateRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.State ) )
+            //    {
+            //        invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressStateLabel ).IfEmpty( "State" ) );
+            //    }
 
-                if ( postalCodeRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.PostalCode ) )
-                {
-                    invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).IfEmpty( "Postal Code" ) );
-                }
-            }
-            else
+            //    if ( postalCodeRequirement == DataEntryRequirementLevelSpecifier.Required && string.IsNullOrWhiteSpace( location.PostalCode ) )
+            //    {
+            //        invalidFields.Add( countryValue.GetAttributeValue( SystemKey.CountryAttributeKey.AddressPostalCodeLabel ).IfEmpty( "Postal Code" ) );
+            //    }
+            //}
+            //else
             {
                 invalidFields.Add( "Country" );
             }
@@ -485,112 +502,112 @@ namespace Rock.Model
             DbGeography geoPoint = location.GeoPoint;
 
             // Try each of the verification services that were found through MEF
-            foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
-            {
-                var component = service.Value.Value;
-                if ( component != null &&
-                    component.IsActive && (
-                    ( !standardized && component.SupportsStandardization ) ||
-                    ( !geocoded && component.SupportsGeocoding ) ) )
-                {
-                    string resultMsg = string.Empty;
-                    var result = component.Verify( location, out resultMsg );
+            //foreach ( var service in Rock.Address.VerificationContainer.Instance.Components )
+            //{
+            //    var component = service.Value.Value;
+            //    if ( component != null &&
+            //        component.IsActive && (
+            //        ( !standardized && component.SupportsStandardization ) ||
+            //        ( !geocoded && component.SupportsGeocoding ) ) )
+            //    {
+            //        string resultMsg = string.Empty;
+            //        var result = component.Verify( location, out resultMsg );
 
-                    if ( !standardized && component.SupportsStandardization )
-                    {
-                        anyActiveStandardizationService = true;
+            //        if ( !standardized && component.SupportsStandardization )
+            //        {
+            //            anyActiveStandardizationService = true;
 
-                        // Log the service and result
-                        location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                        location.StandardizeAttemptedResult = resultMsg;
+            //            // Log the service and result
+            //            location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
+            //            location.StandardizeAttemptedResult = resultMsg;
 
-                        // As long as there wasn't a connection error, update the attempted datetime
-                        if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
-                        {
-                            location.StandardizeAttemptedDateTime = RockDateTime.Now;
-                        }
+            //            // As long as there wasn't a connection error, update the attempted datetime
+            //            if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
+            //            {
+            //                location.StandardizeAttemptedDateTime = RockDateTime.Now;
+            //            }
 
-                        // If location was successfully geocoded, update the timestamp
-                        if ( ( result & Address.VerificationResult.Standardized ) == Address.VerificationResult.Standardized )
-                        {
-                            location.StandardizedDateTime = RockDateTime.Now;
-                            standardized = true;
+            //            // If location was successfully geocoded, update the timestamp
+            //            if ( ( result & Address.VerificationResult.Standardized ) == Address.VerificationResult.Standardized )
+            //            {
+            //                location.StandardizedDateTime = RockDateTime.Now;
+            //                standardized = true;
 
-                            // Save standardized address in case another service is called for geocoding
-                            street1 = location.Street1;
-                            street2 = location.Street2;
-                            city = location.City;
-                            county = location.County;
-                            state = location.State;
-                            country = location.Country;
-                            postalCode = location.PostalCode;
-                            barcode = location.Barcode;
-                        }
-                    }
-                    else
-                    {
-                        // Reset the address back to what it was originally or after previous service successfully standardized it
-                        location.Street1 = street1;
-                        location.Street2 = street2;
-                        location.City = city;
-                        location.County = county;
-                        location.State = state;
-                        location.Country = country;
-                        location.PostalCode = postalCode;
-                        location.Barcode = barcode;
-                    }
+            //                // Save standardized address in case another service is called for geocoding
+            //                street1 = location.Street1;
+            //                street2 = location.Street2;
+            //                city = location.City;
+            //                county = location.County;
+            //                state = location.State;
+            //                country = location.Country;
+            //                postalCode = location.PostalCode;
+            //                barcode = location.Barcode;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            // Reset the address back to what it was originally or after previous service successfully standardized it
+            //            location.Street1 = street1;
+            //            location.Street2 = street2;
+            //            location.City = city;
+            //            location.County = county;
+            //            location.State = state;
+            //            location.Country = country;
+            //            location.PostalCode = postalCode;
+            //            location.Barcode = barcode;
+            //        }
 
-                    if ( !geocoded && component.SupportsGeocoding )
-                    {
-                        anyActiveGeocodingService = true;
+            //        if ( !geocoded && component.SupportsGeocoding )
+            //        {
+            //            anyActiveGeocodingService = true;
 
-                        // Log the service and result
-                        location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
-                        location.GeocodeAttemptedResult = resultMsg;
+            //            // Log the service and result
+            //            location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
+            //            location.GeocodeAttemptedResult = resultMsg;
 
-                        // As long as there wasn't a connection error, update the attempted datetime
-                        if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
-                        {
-                            location.GeocodeAttemptedDateTime = RockDateTime.Now;
-                        }
+            //            // As long as there wasn't a connection error, update the attempted datetime
+            //            if ( ( result & Address.VerificationResult.ConnectionError ) != Address.VerificationResult.ConnectionError )
+            //            {
+            //                location.GeocodeAttemptedDateTime = RockDateTime.Now;
+            //            }
 
-                        // If location was successfully geocoded, update the timestamp
-                        if ( ( result & Address.VerificationResult.Geocoded ) == Address.VerificationResult.Geocoded )
-                        {
-                            location.GeocodedDateTime = RockDateTime.Now;
-                            geocoded = true;
+            //            // If location was successfully geocoded, update the timestamp
+            //            if ( ( result & Address.VerificationResult.Geocoded ) == Address.VerificationResult.Geocoded )
+            //            {
+            //                location.GeocodedDateTime = RockDateTime.Now;
+            //                geocoded = true;
 
-                            // Save the lat/long in case another service is called for standardization
-                            geoPoint = location.GeoPoint;
-                        }
-                    }
-                    else
-                    {
-                        // Reset the lat/long back to what it was originally or after previous service successfully geocoded it
-                        location.GeoPoint = geoPoint;
-                    }
+            //                // Save the lat/long in case another service is called for standardization
+            //                geoPoint = location.GeoPoint;
+            //            }
+            //        }
+            //        else
+            //        {
+            //            // Reset the lat/long back to what it was originally or after previous service successfully geocoded it
+            //            location.GeoPoint = geoPoint;
+            //        }
 
-                    // Log the results of the service
-                    if ( !string.IsNullOrWhiteSpace( resultMsg ) )
-                    {
-                        Model.ServiceLog log = new Model.ServiceLog();
-                        log.LogDateTime = RockDateTime.Now;
-                        log.Type = "Location Verify";
-                        log.Name = service.Value.Metadata.ComponentName;
-                        log.Input = inputLocation;
-                        log.Result = resultMsg.Left( 200 );
-                        log.Success = success;
-                        logService.Add( log );
-                    }
+            //        // Log the results of the service
+            //        if ( !string.IsNullOrWhiteSpace( resultMsg ) )
+            //        {
+            //            Model.ServiceLog log = new Model.ServiceLog();
+            //            log.LogDateTime = RockDateTime.Now;
+            //            log.Type = "Location Verify";
+            //            log.Name = service.Value.Metadata.ComponentName;
+            //            log.Input = inputLocation;
+            //            log.Result = resultMsg.Left( 200 );
+            //            log.Success = success;
+            //            logService.Add( log );
+            //        }
 
-                    // If location has been successfully standardized and geocoded, break to get out, otherwise next service will be attempted
-                    if ( standardized && geocoded )
-                    {
-                        break;
-                    }
+            //        // If location has been successfully standardized and geocoded, break to get out, otherwise next service will be attempted
+            //        if ( standardized && geocoded )
+            //        {
+            //            break;
+            //        }
 
-                }
-            }
+            //    }
+            //}
 
             // If there is only one type of active service (standardization/geocoding) the other type's attempted datetime 
             // needs to be updated so that the verification job will continue to process additional locations vs just getting
@@ -615,28 +632,28 @@ namespace Rock.Model
         /// </summary>
         /// <param name="postalCode">The postalcode.</param>
         /// <returns></returns>
-        public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
-        {
-            Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
-            string resultMsg = string.Empty;
-            var coordinate = smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
-            // Log the results of the service
-            if ( !string.IsNullOrWhiteSpace( resultMsg ) )
-            {
-                var rockContext = new RockContext();
-                Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
-                Model.ServiceLog log = new Model.ServiceLog();
-                log.LogDateTime = RockDateTime.Now;
-                log.Type = "Mapcoordinate from postalcode";
-                log.Name = smartyStreets.TypeName;
-                log.Input = postalCode;
-                log.Result = resultMsg.Left( 200 );
-                log.Success = coordinate != null;
-                logService.Add( log );
-                rockContext.SaveChanges();
-            }
-            return coordinate;
-        }
+        //public MapCoordinate GetMapCoordinateFromPostalCode( string postalCode )
+        //{
+        //    Address.SmartyStreets smartyStreets = new Address.SmartyStreets();
+        //    string resultMsg = string.Empty;
+        //    var coordinate = smartyStreets.GetLocationFromPostalCode( postalCode, out resultMsg );
+        //    // Log the results of the service
+        //    if ( !string.IsNullOrWhiteSpace( resultMsg ) )
+        //    {
+        //        var rockContext = new RockContext();
+        //        Model.ServiceLogService logService = new Model.ServiceLogService( rockContext );
+        //        Model.ServiceLog log = new Model.ServiceLog();
+        //        log.LogDateTime = RockDateTime.Now;
+        //        log.Type = "Mapcoordinate from postalcode";
+        //        log.Name = smartyStreets.TypeName;
+        //        log.Input = postalCode;
+        //        log.Result = resultMsg.Left( 200 );
+        //        log.Success = coordinate != null;
+        //        logService.Add( log );
+        //        rockContext.SaveChanges();
+        //    }
+        //    return coordinate;
+        //}
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>

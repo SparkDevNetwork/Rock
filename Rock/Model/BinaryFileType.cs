@@ -194,33 +194,33 @@ namespace Rock.Model
             get => _cacheControlHeaderSettings;
             set
             {
-                //if ( _cacheControlHeaderSettings != value )
-                //{
-                //    _cacheControlHeader = null;
-                //}
+                if ( _cacheControlHeaderSettings != value )
+                {
+                    _cacheControlHeader = null;
+                }
                 _cacheControlHeaderSettings = value;
             }
         }
 
-        //private RockCacheability _cacheControlHeader;
+        private RockCacheability _cacheControlHeader;
         /// <summary>
         /// Gets the cache control header.
         /// </summary>
         /// <value>
         /// The cache control header.
         /// </value>
-        //[NotMapped]
-        //public RockCacheability CacheControlHeader
-        //{
-        //    get
-        //    {
-        //        if ( _cacheControlHeader == null )
-        //        {
-        //            _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
-        //        }
-        //        return _cacheControlHeader;
-        //    }
-        //}
+        [NotMapped]
+        public RockCacheability CacheControlHeader
+        {
+            get
+            {
+                if ( _cacheControlHeader == null )
+                {
+                    _cacheControlHeader = Newtonsoft.Json.JsonConvert.DeserializeObject<RockCacheability>( CacheControlHeaderSettings );
+                }
+                return _cacheControlHeader;
+            }
+        }
         #endregion
 
         #region Constructors

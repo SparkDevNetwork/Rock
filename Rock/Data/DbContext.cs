@@ -28,12 +28,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
-//using Rock.Bus.Message;
+using Rock.Bus.Message;
 using Rock.Model;
-//using Rock.Tasks;
+using Rock.Tasks;
 //using Rock.Transactions;
 //using Rock.UniversalSearch;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
@@ -523,29 +523,29 @@ namespace Rock.Data
                 }
 
                 // check if this entity should be passed on for indexing
-                if ( item.Entity is IRockIndexable )
-                {
-                    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
-                    {
-                        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
-                        {
-                            EntityTypeId = item.Entity.TypeId,
-                            EntityId = item.Entity.Id
-                        };
+                //if ( item.Entity is IRockIndexable )
+                //{
+                //    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
+                //    {
+                //        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                //        {
+                //            EntityTypeId = item.Entity.TypeId,
+                //            EntityId = item.Entity.Id
+                //        };
 
-                        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
-                    }
-                    else
-                    {
-                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                        {
-                            EntityTypeId = item.Entity.TypeId,
-                            EntityId = item.Entity.Id
-                        };
+                //        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                //    }
+                //    else
+                //    {
+                //        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                //        {
+                //            EntityTypeId = item.Entity.TypeId,
+                //            EntityId = item.Entity.Id
+                //        };
 
-                        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
-                    }
-                }
+                //        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
+                //    }
+                //}
 
                 if ( item.Entity is ICacheable cacheable )
                 {
@@ -556,15 +556,15 @@ namespace Rock.Data
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
             if ( processEntityTypeIndexMsgs.Any() || deleteEntityTypeIndexMsgs.Any() )
             {
-                System.Threading.Tasks.Task.Run( () =>
-                {
-                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
-                    if ( indexingEnabled )
-                    {
-                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                    }
-                } );
+                //System.Threading.Tasks.Task.Run( () =>
+                //{
+                //    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                //    if ( indexingEnabled )
+                //    {
+                //        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                //        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                //    }
+                //} );
             }
         }
 
@@ -746,8 +746,8 @@ namespace Rock.Data
         /// <returns></returns>
         private bool TriggerWorkflows( ContextItem item, WorkflowTriggerType triggerType, PersonAlias personAlias )
         {
-            //IEntity entity = item.Entity;
-            //Dictionary<string, PropertyInfo> properties = null;
+            IEntity entity = item.Entity;
+            Dictionary<string, PropertyInfo> properties = null;
 
             // Look at each trigger for this entity and for the given trigger type
             // and see if it's a match.

@@ -2406,21 +2406,21 @@ namespace Rock.Model
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
-        //[RockObsolete( "12.4" )]
-        //[Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
-        //public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
-        //{
-        //    var args = new CalculateFamilySalutationArgs( includeChildren )
-        //    {
-        //        IncludeInactive = includeInactive,
-        //        UseFormalNames = useFormalNames,
-        //        FinalSeparator = finalSeparator,
-        //        Separator = separator,
-        //        LimitToPersonIds = null
-        //    };
+        [RockObsolete( "12.4" )]
+        [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
+        public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
+        {
+            var args = new CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalSeparator,
+                Separator = separator,
+                LimitToPersonIds = null
+            };
 
-        //    return CalculateFamilySalutation( person, args );
-        //}
+            return CalculateFamilySalutation( person, args );
+        }
 
         /// <summary>
         /// 
@@ -2499,166 +2499,166 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="calculateFamilySalutationArgs">The calculate family salutation arguments.</param>
         /// <returns></returns>
-        //public static string CalculateFamilySalutation( Person person, CalculateFamilySalutationArgs calculateFamilySalutationArgs )
-        //{
-        //    calculateFamilySalutationArgs = calculateFamilySalutationArgs ?? new CalculateFamilySalutationArgs( false );
-        //    var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
-        //    var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
-        //    var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+        public static string CalculateFamilySalutation( Person person, CalculateFamilySalutationArgs calculateFamilySalutationArgs )
+        {
+            calculateFamilySalutationArgs = calculateFamilySalutationArgs ?? new CalculateFamilySalutationArgs( false );
+            var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
+            var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
+            var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
 
-        //    var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+            var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
 
-        //    var finalSeparator = calculateFamilySalutationArgs.FinalSeparator;
-        //    var separator = calculateFamilySalutationArgs.Separator;
-        //    var includeInactive = calculateFamilySalutationArgs.IncludeInactive;
-        //    var includeChildren = calculateFamilySalutationArgs.IncludeChildren;
-        //    var useFormalNames = calculateFamilySalutationArgs.UseFormalNames;
-        //    var limitToPersonIds = calculateFamilySalutationArgs.LimitToPersonIds;
+            var finalSeparator = calculateFamilySalutationArgs.FinalSeparator;
+            var separator = calculateFamilySalutationArgs.Separator;
+            var includeInactive = calculateFamilySalutationArgs.IncludeInactive;
+            var includeChildren = calculateFamilySalutationArgs.IncludeChildren;
+            var useFormalNames = calculateFamilySalutationArgs.UseFormalNames;
+            var limitToPersonIds = calculateFamilySalutationArgs.LimitToPersonIds;
 
-        //    // clean up the separators
-        //    finalSeparator = $" {finalSeparator} "; // add spaces before and after
-        //    if ( separator == "," )
-        //    {
-        //        separator = $"{separator} "; // add space after
-        //    }
-        //    else
-        //    {
-        //        separator = $" {separator} "; // add spaces before and after
-        //    }
+            // clean up the separators
+            finalSeparator = $" {finalSeparator} "; // add spaces before and after
+            if ( separator == "," )
+            {
+                separator = $"{separator} "; // add space after
+            }
+            else
+            {
+                separator = $" {separator} "; // add spaces before and after
+            }
 
-        //    List<string> familyMemberNames = new List<string>();
-        //    string primaryLastName = string.Empty;
+            List<string> familyMemberNames = new List<string>();
+            string primaryLastName = string.Empty;
 
-        //    var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
+            var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
 
-        //    // Filter for inactive.
-        //    if ( !includeInactive )
-        //    {
-        //        var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
-        //        familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId );
-        //    }
+            // Filter for inactive.
+            if ( !includeInactive )
+            {
+                var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+                familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId );
+            }
 
-        //    if ( limitToPersonIds != null && limitToPersonIds.Length > 0 )
-        //    {
-        //        familyMembersQry = familyMembersQry.Where( m => limitToPersonIds.Contains( m.PersonId ) );
-        //    }
+            if ( limitToPersonIds != null && limitToPersonIds.Length > 0 )
+            {
+                familyMembersQry = familyMembersQry.Where( m => limitToPersonIds.Contains( m.PersonId ) );
+            }
 
-        //    // just in case there are no Adults, have this query ready
-        //    var familyMembersIncludingChildrenQry = familyMembersQry;
+            // just in case there are no Adults, have this query ready
+            var familyMembersIncludingChildrenQry = familyMembersQry;
 
-        //    // Filter out kids if not needed.
-        //    if ( !includeChildren )
-        //    {
-        //        familyMembersQry = familyMembersQry.Where( f => f.GroupRoleId == _adultRole.Id );
-        //    }
+            // Filter out kids if not needed.
+            if ( !includeChildren )
+            {
+                familyMembersQry = familyMembersQry.Where( f => f.GroupRoleId == _adultRole.Id );
+            }
 
-        //    var familyMembersList = familyMembersQry.Select( s => new
-        //    {
-        //        LastName = s.Person.LastName,
-        //        NickName = s.Person.NickName,
-        //        FirstName = s.Person.FirstName,
-        //        Gender = s.Person.Gender,
-        //        s.Person.BirthDate,
-        //        GroupRoleId = s.GroupRoleId
-        //    } ).ToList();
+            var familyMembersList = familyMembersQry.Select( s => new
+            {
+                LastName = s.Person.LastName,
+                NickName = s.Person.NickName,
+                FirstName = s.Person.FirstName,
+                Gender = s.Person.Gender,
+                s.Person.BirthDate,
+                GroupRoleId = s.GroupRoleId
+            } ).ToList();
 
-        //    //  There are a couple of cases where there would be no familyMembers
-        //    // 1) There are no adults in the family, and includeChildren=false .
-        //    // 2) All the members of the family are deceased/inactive.
-        //    // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
-        //    if ( !familyMembersList.Any() )
-        //    {
-        //        familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
-        //        {
-        //            LastName = s.Person.LastName,
-        //            NickName = s.Person.NickName,
-        //            FirstName = s.Person.FirstName,
-        //            Gender = s.Person.Gender,
-        //            s.Person.BirthDate,
-        //            GroupRoleId = s.GroupRoleId
-        //        } ).ToList();
+            //  There are a couple of cases where there would be no familyMembers
+            // 1) There are no adults in the family, and includeChildren=false .
+            // 2) All the members of the family are deceased/inactive.
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            if ( !familyMembersList.Any() )
+            {
+                familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
+                {
+                    LastName = s.Person.LastName,
+                    NickName = s.Person.NickName,
+                    FirstName = s.Person.FirstName,
+                    Gender = s.Person.Gender,
+                    s.Person.BirthDate,
+                    GroupRoleId = s.GroupRoleId
+                } ).ToList();
 
-        //        if ( !familyMembersList.Any() )
-        //        {
-        //            // This shouldn't happen, but if somehow there are no family members, just return the specified person's name
-        //            return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
-        //        }
-        //    }
+                if ( !familyMembersList.Any() )
+                {
+                    // This shouldn't happen, but if somehow there are no family members, just return the specified person's name
+                    return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
+                }
+            }
 
-        //    // Determine if more than one last name is at play.
-        //    var multipleLastNamesExist = familyMembersList.Select( f => f.LastName ).Distinct().Count() > 1;
+            // Determine if more than one last name is at play.
+            var multipleLastNamesExist = familyMembersList.Select( f => f.LastName ).Distinct().Count() > 1;
 
-        //    // Add adults and children separately as adults need to be sorted by gender and children by age.
+            // Add adults and children separately as adults need to be sorted by gender and children by age.
 
-        //    // Adults:
-        //    var adults = familyMembersList.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Gender );
+            // Adults:
+            var adults = familyMembersList.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Gender );
 
-        //    if ( adults.Count() > 0 )
-        //    {
-        //        primaryLastName = adults.First().LastName;
+            if ( adults.Count() > 0 )
+            {
+                primaryLastName = adults.First().LastName;
 
-        //        foreach ( var adult in adults )
-        //        {
-        //            var firstName = adult.NickName;
+                foreach ( var adult in adults )
+                {
+                    var firstName = adult.NickName;
 
-        //            if ( useFormalNames )
-        //            {
-        //                firstName = adult.FirstName;
-        //            }
+                    if ( useFormalNames )
+                    {
+                        firstName = adult.FirstName;
+                    }
 
-        //            if ( !multipleLastNamesExist )
-        //            {
-        //                familyMemberNames.Add( firstName );
-        //            }
-        //            else
-        //            {
-        //                familyMemberNames.Add( $"{firstName} {adult.LastName}" );
-        //            }
-        //        }
-        //    }
+                    if ( !multipleLastNamesExist )
+                    {
+                        familyMemberNames.Add( firstName );
+                    }
+                    else
+                    {
+                        familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                    }
+                }
+            }
 
-        //    // Children:
-        //    if ( includeChildren || !adults.Any() )
-        //    {
-        //        var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
+            // Children:
+            if ( includeChildren || !adults.Any() )
+            {
+                var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
 
-        //        if ( children.Count() > 0 )
-        //        {
-        //            if ( primaryLastName.IsNullOrWhiteSpace() )
-        //            {
-        //                primaryLastName = children.First().LastName;
-        //            }
+                if ( children.Count() > 0 )
+                {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
 
-        //            foreach ( var child in children )
-        //            {
-        //                var firstName = child.NickName;
+                    foreach ( var child in children )
+                    {
+                        var firstName = child.NickName;
 
-        //                if ( useFormalNames )
-        //                {
-        //                    firstName = child.FirstName;
-        //                }
+                        if ( useFormalNames )
+                        {
+                            firstName = child.FirstName;
+                        }
 
-        //                if ( !multipleLastNamesExist )
-        //                {
-        //                    familyMemberNames.Add( firstName );
-        //                }
-        //                else
-        //                {
-        //                    familyMemberNames.Add( $"{firstName} {child.LastName}" );
-        //                }
-        //            }
-        //        }
-        //    }
+                        if ( !multipleLastNamesExist )
+                        {
+                            familyMemberNames.Add( firstName );
+                        }
+                        else
+                        {
+                            familyMemberNames.Add( $"{firstName} {child.LastName}" );
+                        }
+                    }
+                }
+            }
 
-        //    var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
+            var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
 
-        //    if ( !multipleLastNamesExist )
-        //    {
-        //        familySalutation = familySalutation + " " + primaryLastName;
-        //    }
+            if ( !multipleLastNamesExist )
+            {
+                familySalutation = familySalutation + " " + primaryLastName;
+            }
 
-        //    return familySalutation;
-        //}
+            return familySalutation;
+        }
 
         /// <summary>
         /// Gets the person photo URL.
@@ -3360,10 +3360,10 @@ namespace Rock.Model
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        public ModelFieldFilterConfig GetIndexFilterConfig()
-        {
-            return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
-        }
+        //public ModelFieldFilterConfig GetIndexFilterConfig()
+        //{
+        //    return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
+        //}
 
         /// <summary>
         /// Gets the index filter field.
@@ -3913,9 +3913,9 @@ namespace Rock.Model
                       {
                           Person = p,
 #if NET5_0_OR_GREATER
-                          Age = p.BirthDate > currentDate.AddYears( -EF.Functions.DateDiffYear( p.BirthDate, currentDate ).Value
+                          Age = p.BirthDate > currentDate.AddYears( -EF.Functions.DateDiffYear( p.BirthDate, currentDate ).Value )
                             ? EF.Functions.DateDiffYear( p.BirthDate, currentDate ) - 1
-                            : EF.Functions.DateDiffYear( p.BirthDate, currentDate ) )
+                            : EF.Functions.DateDiffYear( p.BirthDate, currentDate )
 #else
                           Age = p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
                             ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1

@@ -30,8 +30,8 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Security;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
+//using Rock.UniversalSearch;
+//using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
 

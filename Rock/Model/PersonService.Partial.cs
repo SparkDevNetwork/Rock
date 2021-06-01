@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 //using System.Data.Entity.Spatial;
+using DbGeography = NetTopologySuite.Geometries.Geometry;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
@@ -26,7 +27,7 @@ using System.Web.UI.WebControls;
 using Rock;
 //using Rock.BulkExport;
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Model
@@ -3423,26 +3424,26 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        //public IQueryable<DbGeography> GetGeopoints( int personId )
-        //{
-        //    var rockContext = ( RockContext ) this.Context;
-        //    var groupMemberService = new GroupMemberService( rockContext );
+        public IQueryable<DbGeography> GetGeopoints( int personId )
+        {
+            var rockContext = ( RockContext ) this.Context;
+            var groupMemberService = new GroupMemberService( rockContext );
 
-        //    int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
+            int groupTypeFamilyId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
-        //    // get the geopoints for the family locations for the selected person
-        //    return groupMemberService
-        //        .Queryable( true ).AsNoTracking()
-        //        .Where( m =>
-        //            m.PersonId == personId &&
-        //            m.Group.GroupTypeId == groupTypeFamilyId )
-        //        .OrderBy( m => m.GroupOrder ?? int.MaxValue )
-        //        .SelectMany( m => m.Group.GroupLocations )
-        //        .Where( l =>
-        //            l.IsMappedLocation &&
-        //            l.Location.GeoPoint != null )
-        //        .Select( l => l.Location.GeoPoint );
-        //}
+            // get the geopoints for the family locations for the selected person
+            return groupMemberService
+                .Queryable( true ).AsNoTracking()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.Group.GroupTypeId == groupTypeFamilyId )
+                .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                .SelectMany( m => m.Group.GroupLocations )
+                .Where( l =>
+                    l.IsMappedLocation &&
+                    l.Location.GeoPoint != null )
+                .Select( l => l.Location.GeoPoint );
+        }
 
         #region Static Methods
 
@@ -3457,20 +3458,20 @@ namespace Rock.Model
         //    string sql = $@"
         //        UPDATE Person
         //            SET [BirthDate] = (
-		      //              CASE 
-			     //               WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
-				    //                THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-			     //               ELSE NULL
-			     //               END
-		      //              )
+        //              CASE 
+        //               WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+        //                THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+        //               ELSE NULL
+        //               END
+        //              )
         //            FROM Person
         //            WHERE [BirthDate] != (
-		      //              CASE 
-			     //               WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
-				    //                THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
-			     //               ELSE NULL
-			     //               END
-		      //              )
+        //              CASE 
+        //               WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+        //                THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+        //               ELSE NULL
+        //               END
+        //              )
         //            AND IsDeceased = 0
         //            AND RecordStatusValueId <> {inactiveStatusId}";
 

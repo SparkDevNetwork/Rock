@@ -612,7 +612,7 @@ namespace Rock.Model
             this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
 #if NET5_0_OR_GREATER
             Builder.HasMany( a => a.Categories )
-                .WithMany( c => c.Attributes )
+                .WithMany( c => c.AttributeItems )
                 .UsingEntity( j =>
                 {
                     j.ToTable( "AttributeCategory" );

@@ -17,9 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Rock.Lava.DotLiquid;
+//using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
+//using Rock.Lava.RockLiquid;
 
 namespace Rock.Lava
 {
@@ -109,24 +109,24 @@ namespace Rock.Lava
                     options.FileSystem = new FluidFileSystem( options.FileSystem );
                 }
             }
-            else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
-            {
-                engine = new DotLiquidEngine();
+            //else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
+            //{
+            //    engine = new DotLiquidEngine();
 
-                options = options ?? new LavaEngineConfigurationOptions();
+            //    options = options ?? new LavaEngineConfigurationOptions();
 
-                if ( options.FileSystem != null )
-                {
-                    options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
-                }
-            }
-            else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                // Instantiate the default engine.
-                engine = new RockLiquidEngine();
+            //    if ( options.FileSystem != null )
+            //    {
+            //        options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
+            //    }
+            //}
+            //else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
+            //{
+            //    // Instantiate the default engine.
+            //    engine = new RockLiquidEngine();
 
-                options = options ?? new LavaEngineConfigurationOptions();
-            }
+            //    options = options ?? new LavaEngineConfigurationOptions();
+            //}
 
             engine.Initialize( options );
 

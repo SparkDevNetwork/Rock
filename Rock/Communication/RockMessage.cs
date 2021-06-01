@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -306,12 +306,12 @@ namespace Rock.Communication
                     var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
-                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                        if ( medium != null )
-                        {
-                            medium.Send( this, out errorMessages );
-                            return !errorMessages.Any();
-                        }
+                        //var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        //if ( medium != null )
+                        //{
+                        //    medium.Send( this, out errorMessages );
+                        //    return !errorMessages.Any();
+                        //}
                     }
 
                     errorMessages.Add( "Could not find valid Medium" );
@@ -322,7 +322,7 @@ namespace Rock.Communication
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, HttpContext.Current );
+                ExceptionLogService.LogException( ex/*, HttpContext.Current*/ );
                 errorMessages.Add( ex.Message );
                 return false;
             }
@@ -343,21 +343,21 @@ namespace Rock.Communication
                     var mediumEntity = EntityTypeCache.Get( MediumEntityTypeId );
                     if ( mediumEntity != null )
                     {
-                        var medium = MediumContainer.GetComponent( mediumEntity.Name );
-                        if ( medium != null )
-                        {
-                            var iAsyncMedium = medium as IAsyncMediumComponent;
-                            if ( iAsyncMedium == null )
-                            {
-                                medium.Send( this, out var errorMessages );
-                                sendEmailResult.Errors.AddRange( errorMessages );
-                            }
-                            else
-                            {
-                                sendEmailResult = await iAsyncMedium.SendAsync( this ).ConfigureAwait( false );
-                            }
-                            return sendEmailResult;
-                        }
+                        //var medium = MediumContainer.GetComponent( mediumEntity.Name );
+                        //if ( medium != null )
+                        //{
+                        //    var iAsyncMedium = medium as IAsyncMediumComponent;
+                        //    if ( iAsyncMedium == null )
+                        //    {
+                        //        medium.Send( this, out var errorMessages );
+                        //        sendEmailResult.Errors.AddRange( errorMessages );
+                        //    }
+                        //    else
+                        //    {
+                        //        sendEmailResult = await iAsyncMedium.SendAsync( this ).ConfigureAwait( false );
+                        //    }
+                        //    return sendEmailResult;
+                        //}
                     }
 
                     sendEmailResult.Errors.Add( "Could not find valid Medium" );
@@ -368,7 +368,7 @@ namespace Rock.Communication
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, HttpContext.Current );
+                ExceptionLogService.LogException( ex/*, HttpContext.Current*/ );
                 sendEmailResult.Errors.Add( ex.Message );
                 return sendEmailResult;
             }

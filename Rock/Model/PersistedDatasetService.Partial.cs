@@ -18,10 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
+using Microsoft.EntityFrameworkCore;
+//using System.Data.Entity.SqlServer;
 using System.Linq;
-using Rock.Chart;
+//using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
 

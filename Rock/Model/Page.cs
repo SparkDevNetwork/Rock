@@ -31,7 +31,7 @@ using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 using Rock.Tasks;
-using Rock.Transactions;
+//using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Lava;
@@ -507,14 +507,14 @@ namespace Rock.Model
         /// <value>
         /// The site identifier.
         /// </value>
-        //public virtual int SiteId
-        //{
-        //    get
-        //    {
-        //        var layout = LayoutCache.Get( this.LayoutId );
-        //        return layout != null ? layout.SiteId : 0;
-        //    }
-        //}
+        public virtual int SiteId
+        {
+            get
+            {
+                var layout = LayoutCache.Get( this.LayoutId );
+                return layout != null ? layout.SiteId : 0;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.

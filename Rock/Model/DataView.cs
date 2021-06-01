@@ -32,7 +32,7 @@ using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 
 using Rock.Data;
 using Rock.Logging;
-//using Rock.Reporting;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -491,12 +491,12 @@ namespace Rock.Model
         /// <param name="paramExpression">The parameter expression.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        //[RockObsolete( "1.12" )]
-        //[Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
-        //{
-        //    return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
-        //}
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
+        {
+            return this.GetExpression( serviceInstance, paramExpression, null, out errorMessages );
+        }
 
         /// <summary>
         /// Gets the expression.
@@ -506,13 +506,13 @@ namespace Rock.Model
         /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        //[RockObsolete( "1.12" )]
-        //[Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
-        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
-        //{
-        //    errorMessages = new List<string>();
-        //    return GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
-        //}
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetExpression( IService serviceInstance, ParameterExpression paramExpression )" )]
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression, DataViewFilterOverrides dataViewFilterOverrides, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+            return GetExpression( serviceInstance, paramExpression, dataViewFilterOverrides );
+        }
 
         /// <summary>
         /// Gets the expression.
@@ -520,10 +520,10 @@ namespace Rock.Model
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="paramExpression">The parameter expression.</param>
         /// <returns></returns>
-        //public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
-        //{
-        //    return this.GetExpression( serviceInstance, paramExpression, null );
-        //}
+        public Expression GetExpression( IService serviceInstance, ParameterExpression paramExpression )
+        {
+            return this.GetExpression( serviceInstance, paramExpression, null );
+        }
 
         /// <summary>
         /// Gets the expression.
@@ -620,14 +620,14 @@ namespace Rock.Model
                 if ( this.TransformEntityTypeId.HasValue )
                 {
 
-                    Expression transformedExpression = GetTransformExpression( this.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );
-                    if ( transformedExpression == null )
+                    //Expression transformedExpression = GetTransformExpression( this.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );
+                    //if ( transformedExpression == null )
                     {
                         // if TransformEntityTypeId is defined, but we got null back, we'll get unexpected results, so throw an exception
                         throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}" );
                     }
 
-                    return transformedExpression;
+                    //return transformedExpression;
                 }
 
                 return filterExpression;

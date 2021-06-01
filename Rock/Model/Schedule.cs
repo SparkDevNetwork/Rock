@@ -1662,6 +1662,7 @@ namespace Rock.Model
             return calendarEvent;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the occurrences.
         /// </summary>
@@ -1688,6 +1689,7 @@ namespace Rock.Model
         {
             return icalEvent.GetOccurrences( startTime, endTime ).ToList();
         }
+#endif
 
         /// <summary>
         /// Gets the occurrences for the specified iCal

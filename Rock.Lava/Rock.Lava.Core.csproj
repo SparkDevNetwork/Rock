@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>Rock.Lava</RootNamespace>
+    <Version>1.13.0.14</Version>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Implementations\DotLiquid\**" />
+    <EmbeddedResource Remove="Implementations\DotLiquid\**" />
+    <None Remove="Implementations\DotLiquid\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Implementations\RockLiquidEngine.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Fluid.Core" Version="2.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.Core.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.Core.csproj" />
+  </ItemGroup>
+
+</Project>

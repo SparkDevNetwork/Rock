@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
-using Rock.Transactions;
+//using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model

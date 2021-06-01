@@ -17,7 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
+using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 using Rock.Bus.Queue;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -82,9 +83,9 @@ namespace Rock.Bus.Message
         /// The of an entity that will cause publishing a message on the <see cref="RockMessageBus"/>
         /// </summary>
         private static readonly HashSet<EntityState> _statesToPublishOnBus = new HashSet<EntityState> {
-            System.Data.Entity.EntityState.Added,
-            System.Data.Entity.EntityState.Modified,
-            System.Data.Entity.EntityState.Deleted
+            EFEntityState.Added,
+            EFEntityState.Modified,
+            EFEntityState.Deleted
         };
 
         /// <summary>

@@ -369,10 +369,10 @@ namespace Rock.Model
         /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
         /// </summary>
         /// <param name="interactionData">The interaction data.</param>
-        //public void SetInteractionData( string interactionData )
-        //{
-        //    this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
-        //}
+        public void SetInteractionData( string interactionData )
+        {
+            this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+        }
 
         /// <summary>
         /// Gets or sets the interaction source date.

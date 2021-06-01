@@ -43,10 +43,10 @@ namespace Rock.Model
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns></returns>
-        //public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate, int? groupId )
-        //{
-        //    return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null );
-        //}
+        public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate, int? groupId )
+        {
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, null, null, null );
+        }
 
         /// <summary>
         /// Adds or updates an attendance record and will create the occurrence if needed
@@ -58,11 +58,11 @@ namespace Rock.Model
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
-        //public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate,
-        //            int? groupId, int? locationId, int? scheduleId, int? campusId )
-        //{
-        //    return AddOrUpdate( personAliasId, occurrenceDate, groupId, locationId, scheduleId, campusId, null, null, null, null, null );
-        //}
+        public Attendance AddOrUpdate( int personAliasId, DateTime occurrenceDate,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId )
+        {
+            return AddOrUpdate( personAliasId, occurrenceDate, groupId, locationId, scheduleId, campusId, null, null, null, null, null );
+        }
 
         /// <summary>
         /// Adds or updates an attendance record and will create the occurrence if needed
@@ -79,13 +79,13 @@ namespace Rock.Model
         /// <param name="searchResultGroupId">The search result group identifier.</param>
         /// <param name="attendanceCodeId">The attendance code identifier.</param>
         /// <returns></returns>
-        //public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-        //            int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-        //            int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId )
-        //{
-        //    return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
-        //        searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, null );
-        //}
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId )
+        {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
+                searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, null );
+        }
 
         /// <summary>
         /// Adds or updates an attendance record and will create the occurrence if needed
@@ -103,13 +103,13 @@ namespace Rock.Model
         /// <param name="attendanceCodeId">The attendance code identifier.</param>
         /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
         /// <returns></returns>
-        //public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-        //            int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-        //            int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
-        //{
-        //    return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
-        //             searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId, null );
-        //}
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
+        {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId,
+                     searchTypeValueId, searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId, null );
+        }
 
         /// <summary>
         /// Adds or updates an attendance record and will create the occurrence if needed
@@ -128,64 +128,64 @@ namespace Rock.Model
         /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
         /// <param name="attendanceTypeValueId">The attendance type identifier.</param>
         /// <returns></returns>
-        //public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-        //            int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-        //            int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId,
-        //            int? checkedInByPersonAliasId, int? attendanceTypeValueId )
-        //{
-        //    // Check to see if an occurrence exists already
-        //    var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
-        //    var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees", attendanceTypeValueId );
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                    int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                    int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId,
+                    int? checkedInByPersonAliasId, int? attendanceTypeValueId )
+        {
+            // Check to see if an occurrence exists already
+            var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
+            var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees", attendanceTypeValueId );
 
-        //    // If we still don't have an occurrence record (i.e. validation failed) return null 
-        //    if ( occurrence == null )
-        //    {
-        //        return null;
-        //    }
+            // If we still don't have an occurrence record (i.e. validation failed) return null 
+            if ( occurrence == null )
+            {
+                return null;
+            }
 
-        //    // Query for existing attendance record
-        //    Attendance attendance = null;
-        //    if ( personAliasId.HasValue )
-        //    {
-        //        attendance = occurrence.Attendees
-        //        .FirstOrDefault( a =>
-        //            a.PersonAliasId.HasValue &&
-        //            a.PersonAliasId.Value == personAliasId.Value );
-        //    }
+            // Query for existing attendance record
+            Attendance attendance = null;
+            if ( personAliasId.HasValue )
+            {
+                attendance = occurrence.Attendees
+                .FirstOrDefault( a =>
+                    a.PersonAliasId.HasValue &&
+                    a.PersonAliasId.Value == personAliasId.Value );
+            }
 
-        //    // If an attendance record doesn't exist for the occurrence, add a new record
-        //    if ( attendance == null )
-        //    {
-        //        attendance = new Attendance
-        //        {
-        //            Occurrence = occurrence,
-        //            OccurrenceId = occurrence.Id,
-        //            PersonAliasId = personAliasId
-        //        };
+            // If an attendance record doesn't exist for the occurrence, add a new record
+            if ( attendance == null )
+            {
+                attendance = new Attendance
+                {
+                    Occurrence = occurrence,
+                    OccurrenceId = occurrence.Id,
+                    PersonAliasId = personAliasId
+                };
 
-        //        Add( attendance );
-        //    }
+                Add( attendance );
+            }
 
-        //    // Update details of the attendance (do not overwrite an existing value with an empty value)
-        //    if ( campusId.HasValue )
-        //        attendance.CampusId = campusId.Value;
-        //    if ( deviceId.HasValue )
-        //        attendance.DeviceId = deviceId.Value;
-        //    if ( searchTypeValueId.HasValue )
-        //        attendance.SearchTypeValueId = searchTypeValueId;
-        //    if ( searchValue.IsNotNullOrWhiteSpace() )
-        //        attendance.SearchValue = searchValue;
-        //    if ( checkedInByPersonAliasId.HasValue )
-        //        attendance.CheckedInByPersonAliasId = checkedInByPersonAliasId.Value;
-        //    if ( searchResultGroupId.HasValue )
-        //        attendance.SearchResultGroupId = searchResultGroupId;
-        //    if ( attendanceCodeId.HasValue )
-        //        attendance.AttendanceCodeId = attendanceCodeId;
-        //    attendance.StartDateTime = checkinDateTime;
-        //    attendance.DidAttend = true;
+            // Update details of the attendance (do not overwrite an existing value with an empty value)
+            if ( campusId.HasValue )
+                attendance.CampusId = campusId.Value;
+            if ( deviceId.HasValue )
+                attendance.DeviceId = deviceId.Value;
+            if ( searchTypeValueId.HasValue )
+                attendance.SearchTypeValueId = searchTypeValueId;
+            if ( searchValue.IsNotNullOrWhiteSpace() )
+                attendance.SearchValue = searchValue;
+            if ( checkedInByPersonAliasId.HasValue )
+                attendance.CheckedInByPersonAliasId = checkedInByPersonAliasId.Value;
+            if ( searchResultGroupId.HasValue )
+                attendance.SearchResultGroupId = searchResultGroupId;
+            if ( attendanceCodeId.HasValue )
+                attendance.AttendanceCodeId = attendanceCodeId;
+            attendance.StartDateTime = checkinDateTime;
+            attendance.DidAttend = true;
 
-        //    return attendance;
-        //}
+            return attendance;
+        }
 
         /// <summary>
         /// Adds or updates an attendance record and will create the occurrence if needed
@@ -204,16 +204,16 @@ namespace Rock.Model
         /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
         /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
         /// <returns></returns>
-        //[Obsolete( "The syncMatchingStreaks param is no longer used" )]
-        //[RockObsolete( "1.10" )]
-        //public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-        //        int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-        //        int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
-        //        bool syncMatchingStreaks )
-        //{
-        //    return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId,
-        //        searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId );
-        //}
+        [Obsolete( "The syncMatchingStreaks param is no longer used" )]
+        [RockObsolete( "1.10" )]
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
+                bool syncMatchingStreaks )
+        {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId,
+                searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId );
+        }
 
         /// <summary>
         /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
@@ -992,7 +992,7 @@ namespace Rock.Model
                 var recipient = individualNotification.Individual;
                 var attendances = individualNotification.Attendances;
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                var mergeFields = new Dictionary<string, object>()/*Rock.Lava.LavaHelper.GetCommonMergeFields( null )*/;
                 mergeFields.Add( "Attendance", attendances.FirstOrDefault() );
                 mergeFields.Add( "Attendances", attendances );
 
@@ -1013,19 +1013,19 @@ namespace Rock.Model
                                    individualNotification.Individual.CommunicationPreference );
                 try
                 {
-                    var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
+                    //var sendIndividualMessageResult = CommunicationHelper.SendMessage( individualNotification.Individual, mediumType, communicationMessage, mergeFields );
 
-                    sendMessageResults.Errors.AddRange( sendIndividualMessageResult.Errors );
-                    sendMessageResults.Warnings.AddRange( sendIndividualMessageResult.Warnings );
+                    //sendMessageResults.Errors.AddRange( sendIndividualMessageResult.Errors );
+                    //sendMessageResults.Warnings.AddRange( sendIndividualMessageResult.Warnings );
 
-                    if ( sendIndividualMessageResult.MessagesSent > 0 )
-                    {
-                        sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
-                        foreach ( var attendance in attendances )
-                        {
-                            updateAttendanceRecord( attendance );
-                        }
-                    }
+                    //if ( sendIndividualMessageResult.MessagesSent > 0 )
+                    //{
+                    //    sendMessageResults.MessagesSent += sendIndividualMessageResult.MessagesSent;
+                    //    foreach ( var attendance in attendances )
+                    //    {
+                    //        updateAttendanceRecord( attendance );
+                    //    }
+                    //}
                 }
                 catch ( Exception ex )
                 {
@@ -2309,21 +2309,21 @@ namespace Rock.Model
                 return;
             }
             
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            var group = attendance.Occurrence.Group;
+            //var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            //var group = attendance.Occurrence.Group;
 
-            mergeFields.Add( "Group", group );
-            mergeFields.Add( "ScheduledItem", attendance );
-            mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
-            mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
-            mergeFields.Add( "Person", attendance.PersonAlias.Person );
-            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
-            mergeFields.Add( "Recipient", recipientPerson );
+            //mergeFields.Add( "Group", group );
+            //mergeFields.Add( "ScheduledItem", attendance );
+            //mergeFields.Add( "OccurrenceDate", attendance.Occurrence.OccurrenceDate );
+            //mergeFields.Add( "ScheduledStartTime", DateTime.Today.Add( attendance.Occurrence.Schedule.StartTimeOfDay ).ToString( "h:mm tt" ) );
+            //mergeFields.Add( "Person", attendance.PersonAlias.Person );
+            //mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+            //mergeFields.Add( "Recipient", recipientPerson );
 
-            var emailMessage = new RockEmailMessage( schedulingResponseEmailGuid.Value );
-            emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
-            emailMessage.CreateCommunicationRecord = false;
-            emailMessage.Send();
+            //var emailMessage = new RockEmailMessage( schedulingResponseEmailGuid.Value );
+            //emailMessage.AddRecipient( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+            //emailMessage.CreateCommunicationRecord = false;
+            //emailMessage.Send();
         }
 
         /// <summary>

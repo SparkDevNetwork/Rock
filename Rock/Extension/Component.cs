@@ -50,16 +50,16 @@ namespace Rock.Extension
     /// </code>
     /// </summary>
 
-    [IntegerField(
-        "Order",
-        Description = "The order that this service should be used (priority)",
-        Key = BaseAttributeKey.Order )]
+    //[IntegerField(
+    //    "Order",
+    //    Description = "The order that this service should be used (priority)",
+    //    Key = BaseAttributeKey.Order )]
 
-    [BooleanField(
-        "Active",
-        Description = "Should Service be used?",
-        DefaultBooleanValue =false,
-        Key = BaseAttributeKey.Active )]
+    //[BooleanField(
+    //    "Active",
+    //    Description = "Should Service be used?",
+    //    DefaultBooleanValue =false,
+    //    Key = BaseAttributeKey.Active )]
 
     public abstract class Component : IHasAttributes, ISecured
     {
@@ -187,9 +187,9 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="rootUrl">The root URL.</param>
-        public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
-        {
-        }
+        //public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
+        //{
+        //}
 
         /// <summary>
         /// Method that is called when attribute values are updated. Components can

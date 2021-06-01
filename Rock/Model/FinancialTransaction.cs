@@ -492,7 +492,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        //[BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
@@ -505,7 +505,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeAmount
         {
             get
@@ -530,7 +530,7 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public virtual decimal? TotalFeeCoverageAmount
         {
             get

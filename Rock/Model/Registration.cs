@@ -642,32 +642,32 @@ namespace Rock.Model
     /// <summary>
     /// Extension method class for Registration
     /// </summary>
-    //public static partial class RegistrationExtensionMethods
-    //{
-    //    /// <summary>
-    //    /// Gets the payments.
-    //    /// </summary>
-    //    /// <param name="registration">The registration.</param>
-    //    /// <param name="rockContext">The rock context.</param>
-    //    /// <returns></returns>
-    //    public static IQueryable<FinancialTransactionDetail> GetPayments( this Registration registration, RockContext rockContext = null )
-    //    {
-    //        rockContext = rockContext ?? new RockContext();
-    //        return new RegistrationService( rockContext ).GetPayments( registration != null ? registration.Id : 0 );
-    //    }
+    public static partial class RegistrationExtensionMethods
+    {
+        /// <summary>
+        /// Gets the payments.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<FinancialTransactionDetail> GetPayments( this Registration registration, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new RegistrationService( rockContext ).GetPayments( registration != null ? registration.Id : 0 );
+        }
 
-    //    /// <summary>
-    //    /// Gets the total paid.
-    //    /// </summary>
-    //    /// <param name="registration">The registration.</param>
-    //    /// <param name="rockContext">The rock context.</param>
-    //    /// <returns></returns>
-    //    public static decimal GetTotalPaid( this Registration registration, RockContext rockContext = null )
-    //    {
-    //        rockContext = rockContext ?? new RockContext();
-    //        return new RegistrationService( rockContext ).GetTotalPayments( registration != null ? registration.Id : 0 );
-    //    }
-    //}
+        /// <summary>
+        /// Gets the total paid.
+        /// </summary>
+        /// <param name="registration">The registration.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static decimal GetTotalPaid( this Registration registration, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            return new RegistrationService( rockContext ).GetTotalPayments( registration != null ? registration.Id : 0 );
+        }
+    }
 
     #endregion
 
