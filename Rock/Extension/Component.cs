@@ -50,16 +50,16 @@ namespace Rock.Extension
     /// </code>
     /// </summary>
 
-    //[IntegerField(
-    //    "Order",
-    //    Description = "The order that this service should be used (priority)",
-    //    Key = BaseAttributeKey.Order )]
+    [IntegerField(
+        "Order",
+        Description = "The order that this service should be used (priority)",
+        Key = BaseAttributeKey.Order )]
 
-    //[BooleanField(
-    //    "Active",
-    //    Description = "Should Service be used?",
-    //    DefaultBooleanValue =false,
-    //    Key = BaseAttributeKey.Active )]
+    [BooleanField(
+        "Active",
+        Description = "Should Service be used?",
+        DefaultBooleanValue = false,
+        Key = BaseAttributeKey.Active )]
 
     public abstract class Component : IHasAttributes, ISecured
     {

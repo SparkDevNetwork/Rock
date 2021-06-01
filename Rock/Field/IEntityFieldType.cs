@@ -19,6 +19,10 @@ using System.Web.UI;
 
 using Rock.Data;
 
+#if NET5_0_OR_GREATER
+using Control = System.Object;
+#endif
+
 namespace Rock.Field
 {
     /// <summary>

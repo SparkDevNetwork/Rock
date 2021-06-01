@@ -21,6 +21,10 @@ using System.Web.UI;
 
 using Rock.Reporting;
 
+#if NET5_0_OR_GREATER
+using Control = System.Object;
+#endif
+
 namespace Rock.Field
 {
     /// <summary>
@@ -28,6 +32,7 @@ namespace Rock.Field
     /// </summary>
     public interface IFieldType
     {
+#if !NET5_0_OR_GREATER
         #region Configuration
 
         /// <summary>
@@ -57,13 +62,16 @@ namespace Rock.Field
         void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues );
 
         #endregion
+#endif
 
         #region Formatting
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the align value that should be used when displaying value
         /// </summary>
         System.Web.UI.WebControls.HorizontalAlign AlignValue { get; }
+#endif
 
         /// <summary>
         /// Formats the value based on the type and qualifiers

@@ -17,17 +17,25 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+#if !NET5_0_OR_GREATER
 using DotLiquid;
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
+#if !NET5_0_OR_GREATER
 using Rock.Lava.DotLiquid;
+#endif
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -46,10 +54,12 @@ namespace Rock
         /// </summary>
         static ExtensionMethods()
         {
+#if !NET5_0_OR_GREATER
             //
             // Register any 3rd party library classes that are safe to use.
             //
             Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
+#endif
         }
 
         #endregion
@@ -76,10 +86,14 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
+#if !NET5_0_OR_GREATER
             System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
+#endif
             var formatLavaTask = new Task( () =>
             {
+#if !NET5_0_OR_GREATER
                 System.Web.HttpContext.Current = taskContext;
+#endif
                 lavaDebugPanel.Append( formatLavaDebugInfo( lavaObject.LiquidizeChildren( 0, rockContext ) ) );
             } );
 
@@ -513,6 +527,18 @@ namespace Rock
         /// <returns></returns>
         private static Data.DbContext GetDbContextFromEntity( object entity )
         {
+#if NET5_0_OR_GREATER
+            if ( !( entity is Microsoft.EntityFrameworkCore.Proxies.Internal.IProxyLazyLoader proxy ) )
+            {
+                return null;
+            }
+
+#pragma warning disable EF1001 // Internal EF Core API usage.
+            var contextProperty = proxy.LazyLoader.GetType().GetProperty( "Context", BindingFlags.NonPublic | BindingFlags.Instance );
+#pragma warning restore EF1001 // Internal EF Core API usage.
+
+            return contextProperty.GetValue( proxy ) as Data.DbContext;
+#else
             FieldInfo entityWrapperField = entity.GetType().GetField( "_entityWrapper" );
 
             if ( entityWrapperField == null )
@@ -523,6 +549,7 @@ namespace Rock
             var context = ( System.Data.Entity.Core.Objects.ObjectContext ) entityWrapperContextProperty.GetValue( entityWrapper, null );
 
             return context?.TransactionHandler?.DbContext as Data.DbContext;
+#endif
         }
 
         /// <summary>
@@ -615,7 +642,11 @@ namespace Rock
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
+#if NET5_0_OR_GREATER
+                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ) );
+#else
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
+#endif
                     }
                 }
 
@@ -653,7 +684,11 @@ namespace Rock
                             catch ( Exception ex )
                             {
                                 // Log the exception and continue, because the final render will be performed by RockLiquid.
+#if NET5_0_OR_GREATER
+                                ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ) );
+#else
                                 ExceptionLogService.LogException( new LavaException( "Lava Verification Error: Parse template failed.", ex ), System.Web.HttpContext.Current );
+#endif
 
                                 // Add a placeholder to prevent this invalid template from being recompiled.
                                 var emptyTemplate = engine.ParseTemplate( string.Empty ).Template;
@@ -678,7 +713,11 @@ namespace Rock
                             // Log the exception, with a simple top-level exception containing a warning message.
                             var renderException = new LavaRenderException( LavaService.CurrentEngineName, content, $"Lava engine render output is unexpected.\n[Expected={rockLiquidOutput},\nActual={lavaEngineOutput}]" );
 
+#if NET5_0_OR_GREATER
+                            ExceptionLogService.LogException( new LavaException( "Lava Verification Warning: Render output mismatch.", renderException ) );
+#else
                             ExceptionLogService.LogException( new LavaException( "Lava Verification Warning: Render output mismatch.", renderException ), System.Web.HttpContext.Current );
+#endif
                         }
                     }
 
@@ -704,7 +743,11 @@ namespace Rock
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    ExceptionLogService.LogException( ex );
+#else
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#endif
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }
@@ -712,6 +755,9 @@ namespace Rock
 
         private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
+#if NET5_0_OR_GREATER
+            throw new NotSupportedException();
+#else
             Template template = GetTemplate( content );
 
             template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
@@ -746,6 +792,7 @@ namespace Rock
             }
 
             return result;
+#endif
         }
 
         /// <summary>
@@ -911,6 +958,7 @@ namespace Rock
 
         #region Lava Legacy code
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Create a parsed Lava template or retrieve it from the cache.
         /// </summary>
@@ -947,6 +995,8 @@ namespace Rock
 
             return template;
         }
+
+#endif
 
         #endregion
     }

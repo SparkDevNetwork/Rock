@@ -156,6 +156,7 @@ namespace Rock.Reporting
             List<EntityField> entityFields = null;
             _workflowTypeNameLookup = null;
 
+#if !NET5_0_OR_GREATER
             if ( HttpContext.Current != null )
             {
                 entityFields = HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] as List<EntityField>;
@@ -164,6 +165,7 @@ namespace Rock.Reporting
                     return entityFields;
                 }
             }
+#endif
 
             if ( entityFields == null )
             {
@@ -374,10 +376,12 @@ namespace Rock.Reporting
                 sortedFields.Add( entityField );
             }
 
+#if !NET5_0_OR_GREATER
             if ( HttpContext.Current != null )
             {
                 HttpContext.Current.Items[EntityHelper.GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields )] = sortedFields;
             }
+#endif
 
             return sortedFields;
         }
@@ -755,6 +759,7 @@ namespace Rock.Reporting
         /// </value>
         public FieldTypeCache FieldType { get; set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the type of the bound field.
         /// </summary>
@@ -774,6 +779,7 @@ namespace Rock.Reporting
                 return Grid.GetGridField( this.PropertyType );
             }
         }
+#endif
 
         /// <summary>
         /// Gets or sets the field configuration.

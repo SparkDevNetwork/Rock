@@ -14,7 +14,6 @@
     <Compile Remove="Blocks\**" />
     <Compile Remove="Bulk\**" />
     <Compile Remove="Bus\**" />
-    <Compile Remove="Cache\Entities\Obsolete\**" />
     <Compile Remove="Chart\**" />
     <Compile Remove="CheckIn\**" />
     <Compile Remove="Communication\**" />
@@ -60,7 +59,6 @@
     <EmbeddedResource Remove="Blocks\**" />
     <EmbeddedResource Remove="Bulk\**" />
     <EmbeddedResource Remove="Bus\**" />
-    <EmbeddedResource Remove="Cache\Entities\Obsolete\**" />
     <EmbeddedResource Remove="Chart\**" />
     <EmbeddedResource Remove="CheckIn\**" />
     <EmbeddedResource Remove="Communication\**" />
@@ -106,7 +104,6 @@
     <None Remove="Blocks\**" />
     <None Remove="Bulk\**" />
     <None Remove="Bus\**" />
-    <None Remove="Cache\Entities\Obsolete\**" />
     <None Remove="Chart\**" />
     <None Remove="CheckIn\**" />
     <None Remove="Communication\**" />
@@ -148,8 +145,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Cache\NonEntities\LavaTemplateCache.cs" />
-    <Compile Remove="Cache\RockCacheConsumer.cs" />
     <Compile Remove="Data\BoundFieldTypeAttribute.cs" />
     <Compile Remove="Data\DecimalPrecisionAttributeConvention.cs" />
     <Compile Remove="Data\IMigration.cs" />
@@ -174,10 +169,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\Helper.cs" />
     <Compile Include="Attribute\IHasAttributes.cs" />
     <Compile Include="Attribute\IHasInheritedAttributes.cs" />
+    <Compile Include="Attribute\IntegerFieldAttribute.cs" />
+    <Compile Include="Attribute\TextFieldAttribute.cs" />
     <Compile Include="Blocks\IRockBlockType.cs" />
     <Compile Include="Bus\Consumer\RockConsumer.cs" />
     <Compile Include="Bus\Consumer\RockDebugConsumer.cs" />
@@ -210,14 +208,24 @@
     <Compile Include="Communication\RockMessageRecipient.cs" />
     <Compile Include="Communication\SendMessageResult.cs" />
     <Compile Include="Extension\Component.cs" />
+    <Compile Include="Extension\ComponentDescription.cs" />
     <Compile Include="Extension\Container.cs" />
+    <Compile Include="Extension\FixedSizeList.cs" />
     <Compile Include="Extension\IComponentData.cs" />
     <Compile Include="Extension\IContainer.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\ConfigurationValue.cs" />
+    <Compile Include="Field\FieldVisibilityRules.cs" />
+    <Compile Include="Field\Helper.cs" />
+    <Compile Include="Field\ICachedEntitiesFieldType.cs" />
+    <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\IEntityQualifierFieldType.cs" />
+    <Compile Include="Field\IFieldType.cs" />
+    <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
     <Compile Include="Financial\PaymentInfo.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
+    <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\LegacyLavaSyntaxDetectedException.cs" />
     <Compile Include="Media\MediaElementFileData.cs" />
@@ -762,6 +770,8 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
+    <Compile Include="Reporting\ComparisonHelper.cs" />
+    <Compile Include="Reporting\EntityHelper.cs" />
     <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Reporting\RockReportingException.cs" />
     <Compile Include="Security\Authorization.cs" />
@@ -819,14 +829,18 @@
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
     <Compile Include="Utility\Enums\RockCacheablityType.cs" />
     <Compile Include="Utility\Enums\TimeIntervalUnit.cs" />
+    <Compile Include="Utility\ExpressionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\AssemblyExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\AttributesExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\BooleanExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DateTimeExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\IntegerExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\JsonExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\LavaExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LinqExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
@@ -847,7 +861,73 @@
     <Compile Include="Utility\SimpleModeJsonConverter.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
+    <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\AttributeCache.cs" />
+    <Compile Include="Web\Cache\Entities\BadgeCache.cs" />
+    <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\BlockCache.cs" />
+    <Compile Include="Web\Cache\Entities\BlockTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\CampusCache.cs" />
+    <Compile Include="Web\Cache\Entities\CategoryCache.cs" />
+    <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\DefinedTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\DefinedValueCache.cs" />
+    <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntityTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EventCalendarCache.cs" />
+    <Compile Include="Web\Cache\Entities\FieldTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractionChannelCache.cs" />
+    <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
+    <Compile Include="Web\Cache\Entities\LavaShortcodeCache.cs" />
+    <Compile Include="Web\Cache\Entities\LayoutCache.cs" />
+    <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
+    <Compile Include="Web\Cache\Entities\NoteTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PageCache.cs" />
+    <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
+    <Compile Include="Web\Cache\Entities\RegistrationTemplateFormFieldCache.cs" />
+    <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
+    <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
+    <Compile Include="Web\Cache\Entities\SignalTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\SiteCache.cs" />
+    <Compile Include="Web\Cache\Entities\SmsActionCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
+    <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StreakTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StreakTypeExclusionCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionFormAttributeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionFormCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActionTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowActivityTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\WorkflowTypeCache.cs" />
+    <Compile Include="Web\Cache\EntityCache.cs" />
+    <Compile Include="Web\Cache\EntityItemCache.cs" />
+    <Compile Include="Web\Cache\ICacheable.cs" />
+    <Compile Include="Web\Cache\IEntityCache.cs" />
+    <Compile Include="Web\Cache\IIHasLifespan.cs" />
+    <Compile Include="Web\Cache\IItemCache.cs" />
+    <Compile Include="Web\Cache\IRockCacheManager.cs" />
+    <Compile Include="Web\Cache\ItemCache.cs" />
+    <Compile Include="Web\Cache\ModelCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityAttributesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityNoteTypesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\IdFromGuidCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
+    <Compile Include="Web\Cache\NonEntities\WorkflowTriggersCache.cs" />
+    <Compile Include="Web\Cache\RockCache.cs" />
+    <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\Cache\RockCacheManager.cs" />
     <Compile Include="Web\SystemSettings.cs" />
+    <Compile Include="Web\UI\Controls\ValueFilter.cs" />
     <Compile Include="Web\Utilities\HtmlSanitizer.cs" />
   </ItemGroup>
 

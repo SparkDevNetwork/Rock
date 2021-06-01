@@ -26,6 +26,7 @@ using Humanizer;
 
 namespace Rock.Web.UI.Controls
 {
+#if !NET5_0_OR_GREATER
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.ValueFilter"/> control for editing a simple filter
     /// </summary>
@@ -455,6 +456,7 @@ Rock.controls.valueFilter.initialize({{
 
         #endregion
     }
+#endif
 
     /// <summary>
     /// Defines the base filter expression class that concrete filter expressions

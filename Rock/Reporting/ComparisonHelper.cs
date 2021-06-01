@@ -195,6 +195,7 @@ namespace Rock.Reporting
             return comparisonExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets a DropDownList of the supported comparison types
         /// </summary>
@@ -218,6 +219,7 @@ namespace Rock.Reporting
 
             return ddl;
         }
+#endif
 
         /// <summary>
         /// Gets the comparison types typically used simple comparisons of: equal, not equal, blank or not blank.
