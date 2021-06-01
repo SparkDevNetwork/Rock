@@ -797,7 +797,15 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 reportTemporaryDirectoryPath = Path.GetTempPath();
             }
 
-            var previousRunFiles = Directory.EnumerateFiles( reportTemporaryDirectoryPath, "GeneratorConfig.Json", SearchOption.AllDirectories );
+            List<string> previousRunFiles = new List<string>();
+            var folders = Directory.EnumerateDirectories( reportTemporaryDirectoryPath, "Rock Statement Generator-*", SearchOption.TopDirectoryOnly );
+            foreach( var folder in folders )
+            {
+                Directory.EnumerateFiles( folder, "GeneratorConfig.Json" );
+                
+                previousRunFiles.AddRange( Directory.EnumerateFiles( folder, "GeneratorConfig.Json", SearchOption.TopDirectoryOnly ).ToList() );
+            }
+
             var generatorConfigs = previousRunFiles.Select( a => File.ReadAllText( a ).FromJsonOrNull<GeneratorConfig>() ).ToList();
             var mostRecentGeneratorConfig = generatorConfigs.Where( a => a != null ).OrderBy( g => g.RunDate ).FirstOrDefault();
 
