@@ -192,6 +192,7 @@ namespace Rock.Web.Cache
 
         #region Public Methods
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Sets the security actions.
         /// </summary>
@@ -203,6 +204,7 @@ namespace Rock.Web.Cache
             // SecurityActions is now loaded on demand, so we don't need to do anything here
             return;
         }
+#endif
 
         /// <summary>
         /// Sets the security actions.
@@ -255,6 +257,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
+#if !NET5_0_OR_GREATER
             string physicalPath;
 
             // This will add a file system watcher so that when the block on the file system changes, this 
@@ -290,6 +293,7 @@ namespace Rock.Web.Cache
 
             // Begin watching.
             watcher.EnableRaisingEvents = true;
+#endif
         }
 
         /// <summary>
@@ -310,6 +314,7 @@ namespace Rock.Web.Cache
         {
             if ( !string.IsNullOrWhiteSpace( this.Path ) )
             {
+#if !NET5_0_OR_GREATER
                 try
                 {
                     return System.Web.Compilation.BuildManager.GetCompiledType( Path );
@@ -319,6 +324,7 @@ namespace Rock.Web.Cache
                     ExceptionLogService.LogException( ex );
                     return null;
                 }
+#endif
                 
             }
             else if ( EntityTypeId.HasValue )

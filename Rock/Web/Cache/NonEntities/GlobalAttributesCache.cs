@@ -17,7 +17,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -384,12 +388,14 @@ namespace Rock.Web.Cache
         {
             Clear();
 
+#if !NET5_0_OR_GREATER
             if ( HttpContext.Current == null ) return;
 
             var appSettings = HttpContext.Current.Application;
             appSettings[ORG_LOC_GUID] = null;
             appSettings[ORG_LOC_STATE] = null;
             appSettings[ORG_LOC_COUNTRY] = null;
+#endif
         }
 
         /// <summary>
@@ -506,6 +512,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;
@@ -530,6 +537,7 @@ namespace Rock.Web.Cache
                         return location.State;
                     }
                 }
+#endif
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -558,6 +566,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;
@@ -582,6 +591,7 @@ namespace Rock.Web.Cache
                         return location.Country;
                     }
                 }
+#endif
 
                 using ( var rockContext = new RockContext() )
                 {
@@ -610,6 +620,7 @@ namespace Rock.Web.Cache
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;
 
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current != null )
                 {
                     var appSettings = HttpContext.Current.Application;
@@ -633,6 +644,7 @@ namespace Rock.Web.Cache
                         return location.ToString();
                     }
                 }
+#endif
 
                 using ( var rockContext = new RockContext() )
                 {

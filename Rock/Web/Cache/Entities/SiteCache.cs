@@ -89,6 +89,9 @@ namespace Rock.Web.Cache
         {
             get
             {
+#if NET5_0_OR_GREATER
+                return ConfiguredTheme;
+#else
                 var httpContext = HttpContext.Current;
                 var request = httpContext?.Request;
 
@@ -145,6 +148,7 @@ namespace Rock.Web.Cache
                 Rock.Web.UI.RockPage.AddOrUpdateCookie( cookie );
 
                 return ConfiguredTheme;
+#endif
             }
 
             private set
@@ -171,6 +175,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? DefaultPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the default page reference.
         /// </summary>
@@ -178,6 +183,7 @@ namespace Rock.Web.Cache
         /// The default page reference.
         /// </value>
         public PageReference DefaultPageReference => new PageReference( DefaultPageId ?? 0, DefaultPageRouteId ?? 0 );
+#endif
 
 
         /// <summary>
@@ -198,6 +204,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? ChangePasswordPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the change password page reference.
         /// </summary>
@@ -205,6 +212,7 @@ namespace Rock.Web.Cache
         /// The change password page reference.
         /// </value>
         public PageReference ChangePasswordPageReference => new PageReference( ChangePasswordPageId ?? 0, ChangePasswordPageRouteId ?? 0 );
+#endif
 
         /// <summary>
         /// Gets or sets the 404 page id.
@@ -224,6 +232,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PageNotFoundPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the page not found page reference.
         /// </summary>
@@ -231,6 +240,7 @@ namespace Rock.Web.Cache
         /// The page not found page reference.
         /// </value>
         public PageReference PageNotFoundPageReference => new PageReference( PageNotFoundPageId ?? 0, PageNotFoundPageRouteId ?? 0 );
+#endif
 
         /// <summary>
         /// Gets or sets the login page id.
@@ -250,6 +260,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? LoginPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the login page reference.
         /// </summary>
@@ -257,6 +268,7 @@ namespace Rock.Web.Cache
         /// The login page reference.
         /// </value>
         public PageReference LoginPageReference => new PageReference( LoginPageId ?? 0, LoginPageRouteId ?? 0 );
+#endif
 
         /// <summary>
         /// Gets or sets the communication page identifier.
@@ -276,6 +288,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? CommunicationPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the communication page reference.
         /// </summary>
@@ -283,6 +296,7 @@ namespace Rock.Web.Cache
         /// The communication page reference.
         /// </value>
         public PageReference CommunicationPageReference => new PageReference( CommunicationPageId ?? 0, CommunicationPageRouteId ?? 0 );
+#endif
 
         /// <summary>
         /// Gets or sets the registration page id.
@@ -302,6 +316,7 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? RegistrationPageRouteId { get; private set; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the registration page reference.
         /// </summary>
@@ -309,6 +324,7 @@ namespace Rock.Web.Cache
         /// The registration page reference.
         /// </value>
         public PageReference RegistrationPageReference => new PageReference( RegistrationPageId ?? 0, RegistrationPageRouteId ?? 0 );
+#endif
 
         /// <summary>
         /// Gets or sets the error page.
@@ -650,6 +666,7 @@ namespace Rock.Web.Cache
             return Name;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Redirects to default page.
         /// </summary>
@@ -744,6 +761,7 @@ namespace Rock.Web.Cache
             context.Response.Redirect( PageNotFoundPageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
+#endif
 
         #endregion
 

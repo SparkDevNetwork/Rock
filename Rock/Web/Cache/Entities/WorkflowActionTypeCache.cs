@@ -138,6 +138,7 @@ namespace Rock.Web.Cache
         /// </value>
         public EntityTypeCache EntityType => EntityTypeCache.Get( EntityTypeId );
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the workflow action.
         /// </summary>
@@ -145,6 +146,7 @@ namespace Rock.Web.Cache
         /// The workflow action.
         /// </value>
         public Workflow.ActionComponent WorkflowAction => WorkflowActionType.GetWorkflowAction( EntityTypeId );
+#endif
 
         /// <summary>
         /// Gets the type of the field.

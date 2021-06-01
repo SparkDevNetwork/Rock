@@ -110,10 +110,14 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
+#if NET5_0_OR_GREATER
+            bool cacheStatisticsEnabled = false;
+#else
             bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean()?? false;
 
             bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean()?? false;
             if ( redisEnabled == false )
+#endif
             {
                 var config = new ConfigurationBuilder( "InProcess" )
                 .WithDictionaryHandle();
@@ -129,6 +133,7 @@ namespace Rock.Web.Cache
                 return config.Build();
             }
 
+#if !NET5_0_OR_GREATER
             string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
             string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
             int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
@@ -174,6 +179,7 @@ namespace Rock.Web.Cache
             }
 
             return cacheConfig.Build();
+#endif
         }
 
         /// <summary>

@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+#if !NET5_0_OR_GREATER
 using System.Linq.Dynamic;
+#endif
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Model;

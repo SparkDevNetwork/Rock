@@ -30,7 +30,9 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
+#if !NET5_0_OR_GREATER
     [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
+#endif
     public class AttributeValueCache
     {
         #region constructors

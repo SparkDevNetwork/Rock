@@ -443,6 +443,9 @@ namespace Rock.Web.Cache
                     return ( propValue as Guid? )?.ToString() ?? propValue;
                 }
 
+#if NET5_0_OR_GREATER
+                return null;
+#else
                 // The remainder of this method is only necessary to support the old way of getting attribute 
                 // values in liquid templates (e.g. {{ Person.BaptismData }} ).  Once support for this method is 
                 // deprecated ( in v4.0 ), and only the new method of using the Attribute filter is 
@@ -485,6 +488,7 @@ namespace Rock.Web.Cache
                 }
 
                 return field.FormatValue( null, attribute.EntityTypeId, Id, value, attribute.QualifierValues, false );
+#endif
 
             }
         }

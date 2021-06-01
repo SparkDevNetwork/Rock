@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+#if !NET5_0_OR_GREATER
 using Rock.Achievement;
+#endif
 using Rock.Data;
 using Rock.Model;
 
@@ -215,6 +217,7 @@ namespace Rock.Web.Cache
             get => CategoryId.HasValue ? CategoryCache.Get( CategoryId.Value ) : null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the achievement component.
         /// </summary>
@@ -225,6 +228,7 @@ namespace Rock.Web.Cache
         {
             get => AchievementEntityType != null ? AchievementContainer.GetComponent( AchievementEntityType.Name ) : null;
         }
+#endif
 
         /// <summary>
         /// Gets the prerequisites.
@@ -302,6 +306,7 @@ namespace Rock.Web.Cache
             CategoryId = achievementType.CategoryId;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the by source entity.
         /// </summary>
@@ -372,6 +377,7 @@ namespace Rock.Web.Cache
 
             return updatedAttempts.Values.ToList();
         }
+#endif
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance Title.

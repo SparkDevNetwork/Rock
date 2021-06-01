@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -451,6 +455,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public override ISecured ParentAuthority => new Model.Attribute { Id = 0, EntityTypeId = EntityTypeId };
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Adds the control.
         /// </summary>
@@ -645,6 +650,7 @@ namespace Rock.Web.Cache
             var id = $"attribute_field_{Id}";
             return attributeControl.ID == id ? attributeControl : attributeControl.FindControl( id );
         }
+#endif
 
         #endregion
 

@@ -339,7 +339,9 @@ namespace Rock.Web.Cache
 		[Serializable]
         [DataContract]
         [LavaType( "Day", "Time" )]
+#if !NET5_0_OR_GREATER
         [DotLiquid.LiquidType( "Day", "Time" )]
+#endif
         public class ServiceTime
         {
             /// <summary>
@@ -367,7 +369,9 @@ namespace Rock.Web.Cache
         [Serializable]
         [DataContract]
         [LavaType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
+#if !NET5_0_OR_GREATER
         [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
+#endif
         public class CampusLocation
         {
             /// <summary>
@@ -473,8 +477,8 @@ namespace Rock.Web.Cache
 
                 if ( locationModel.GeoPoint == null ) return;
 
-                Latitude = locationModel.GeoPoint.Latitude;
-                Longitude = locationModel.GeoPoint.Longitude;
+                Latitude = locationModel.Latitude;
+                Longitude = locationModel.Longitude;
             }
         }
 

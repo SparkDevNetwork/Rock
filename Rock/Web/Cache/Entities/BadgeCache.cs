@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+#if !NET5_0_OR_GREATER
 using Rock.Badge;
+#endif
 using Rock.Data;
 
 namespace Rock.Web.Cache
@@ -129,6 +131,7 @@ namespace Rock.Web.Cache
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the badge component.
         /// </summary>
@@ -136,6 +139,7 @@ namespace Rock.Web.Cache
         /// The badge component.
         /// </value>
         public virtual BadgeComponent BadgeComponent => BadgeComponentEntityType != null ? BadgeContainer.GetComponent( BadgeComponentEntityType.Name ) : null;
+#endif
 
         #endregion
 
