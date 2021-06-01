@@ -816,7 +816,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 buttonMergeFields.Add( "ButtonClick", buttonClickScript );
 
-                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, buttonText );
+                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
                 buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
 
                 buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );

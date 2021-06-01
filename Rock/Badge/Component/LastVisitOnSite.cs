@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
+using System.Text.Encodings.Web;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -108,10 +108,10 @@ namespace Rock.Badge.Component
                             var badgeHtml = '';
                             var daysSinceVisit = data;
                             var cssClass = '';
-                            var linkUrl = '{detailPageUrl}';
+                            var linkUrl = '{JavaScriptEncoder.Default.Encode( detailPageUrl )}';
                             var badgeContent = '';
                             var labelContent = '';
-                            var siteName = '{siteName}';
+                            var siteName = '{JavaScriptEncoder.Default.Encode( siteName )}';
 
                             if (daysSinceVisit >= 0 && daysSinceVisit < 1000) {{
         
