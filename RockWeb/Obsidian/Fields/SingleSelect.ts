@@ -14,24 +14,34 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from 'vue';
+import { defineComponent, inject } from 'vue';
 import { Guid } from '../Util/Guid';
 import { registerFieldType, getFieldTypeProps } from './Index';
 import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
+import RadioButtonList from '../Elements/RadioButtonList';
 
 const fieldTypeGuid: Guid = '7525C4CB-EE6B-41D4-9B64-A08048D5A5C0';
 
 enum ConfigurationValueKey
 {
-    Values = 'values'
+    Values = 'values',
+    FieldType = 'fieldtype',
+    RepeatColumns = 'repeatColumns'
 }
 
 export default registerFieldType(fieldTypeGuid, defineComponent({
     name: 'SingleSelectField',
     components: {
-        DropDownList
+        DropDownList,
+        RadioButtonList
     },
     props: getFieldTypeProps(),
+    setup ()
+    {
+        return {
+            isRequired: inject ( 'isRequired' ) as boolean
+        }
+    },
     data() {
         return {
             internalValue: ''
@@ -49,7 +59,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
             const valuesConfig = this.configurationValues[ ConfigurationValueKey.Values ];
             if ( valuesConfig && valuesConfig.Value )
             {
-                return valuesConfig.Value.split( ',' ).map( v =>
+                const providedOptions = valuesConfig.Value.split( ',' ).map( v =>
                 {
                     if ( v.indexOf( '^' ) !== -1 )
                     {
@@ -70,15 +80,54 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
                         value: v
                     } as DropDownListOption;
                 } );
+
+                if ( this.isRadioButtons && !this.isRequired )
+                {
+                    providedOptions.unshift( {
+                        key: 'None',
+                        text: 'None',
+                        value: ''
+                    } );
+                }
+
+                return providedOptions;
             }
 
             return [];
         },
 
-        /** Any additional attributes that will be assigned to the control */
-        configAttributes(): Record<string, number | boolean> {
+        /** Any additional attributes that will be assigned to the drop down list control */
+        ddlConfigAttributes(): Record<string, number | boolean> {
             const attributes: Record<string, number | boolean> = {};
+            const fieldTypeConfig = this.configurationValues[ ConfigurationValueKey.FieldType ];
+
+            if ( fieldTypeConfig?.Value === 'ddl_enhanced' )
+            {
+                attributes[ 'enhanceForLongLists' ] = true;
+            }
+
             return attributes;
+        },
+
+        /** Any additional attributes that will be assigned to the radio button control */
+        rbConfigAttributes (): Record<string, number | boolean>
+        {
+            const attributes: Record<string, number | boolean> = {};
+            const repeatColumnsConfig = this.configurationValues[ ConfigurationValueKey.RepeatColumns ];
+
+            if ( repeatColumnsConfig?.Value )
+            {
+                attributes[ 'repeatColumns' ] = Number( repeatColumnsConfig.Value ) || 0;
+            }
+
+            return attributes;
+        },
+
+        /** Is the control going to be radio buttons? */
+        isRadioButtons (): boolean
+        {
+            const fieldTypeConfig = this.configurationValues[ ConfigurationValueKey.FieldType ];
+            return fieldTypeConfig?.Value === 'rb';
         }
     },
     watch: {
@@ -94,6 +143,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<DropDownList v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" :options="options" />
+<RadioButtonList v-if="isEditMode && isRadioButtons" v-model="internalValue" v-bind="rbConfigAttributes" :options="options" horizontal />
+<DropDownList v-else-if="isEditMode" v-model="internalValue" v-bind="ddlConfigAttributes" :options="options" />
 <span v-else>{{ safeValue }}</span>`
 }));

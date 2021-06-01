@@ -16,7 +16,7 @@
 //
 import { getFieldTypeComponent } from '../Fields/Index';
 import { Guid } from '../Util/Guid';
-import { Component, defineComponent, PropType } from 'vue';
+import { Component, computed, defineComponent, PropType, provide } from 'vue';
 
 // Import and assign TextField because it is the fallback
 import TextField from '../Fields/TextField';
@@ -28,19 +28,30 @@ import '../Fields/DefinedValueField';
 import '../Fields/SingleSelect';
 import '../Fields/PhoneNumber';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'RockField',
     props: {
         fieldTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+        rules: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
+    setup ( props )
+    {
+        const isRequired = computed( () => props.rules.includes( 'required' ) );
+        provide( 'isRequired', isRequired );
+    },
     computed: {
-        fieldComponent(): Component | null {
-            const field = getFieldTypeComponent(this.fieldTypeGuid);
+        fieldComponent (): Component | null
+        {
+            const field = getFieldTypeComponent( this.fieldTypeGuid );
 
-            if (!field) {
+            if ( !field )
+            {
                 // Fallback to text field
                 return TextField.component;
             }
@@ -49,5 +60,5 @@ export default defineComponent({
         }
     },
     template: `
-<component :is="fieldComponent" />`
-});
+<component :is="fieldComponent" :rules="rules" />`
+} );

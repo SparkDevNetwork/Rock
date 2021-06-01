@@ -16,15 +16,9 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using Rock.Communication;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;

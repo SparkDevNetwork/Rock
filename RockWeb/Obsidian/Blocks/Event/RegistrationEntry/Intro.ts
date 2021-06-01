@@ -185,7 +185,7 @@ export default defineComponent( {
     },
     template: `
 <div class="registrationentry-intro">
-    <Alert v-if="isFull" class="text-left" alertType="warning">
+    <Alert v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
             There are not any more {{registrationTermPlural}} available for {{viewModel.InstanceName}}. 
@@ -209,7 +209,7 @@ export default defineComponent( {
         of inactivity.
     </Alert>
     <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
-        This {{registrationTerm}} has reached its capacity. Complete the registration below to be added to the waitlist.
+        This {{registrationTerm}} has reached its capacity. Complete the registration to be added to the waitlist.
     </Alert>
     <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
         This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.

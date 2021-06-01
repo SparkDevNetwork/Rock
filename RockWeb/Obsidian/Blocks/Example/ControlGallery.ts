@@ -131,9 +131,53 @@ const DropDownListGallery = defineComponent( {
     <template #gallery>
         <DropDownList label="Select 1" v-model="value" :options="options" />
         <DropDownList label="Select 2" v-model="value" :options="options" />
+        <DropDownList label="Enhanced Select 1" v-model="value" :options="options" enhanceForLongLists />
+        <DropDownList label="Enhanced Select 2" v-model="value" :options="options" enhanceForLongLists />
     </template>
     <template #result>
         {{value}}
+    </template>
+</GalleryAndResult>`
+} );
+
+const RadioButtonListGallery = defineComponent( {
+    name: 'RadioButtonListGallery',
+    components: {
+        GalleryAndResult,
+        RadioButtonList,
+        Toggle,
+        NumberUpDown
+    },
+    data ()
+    {
+        return {
+            value: 'a',
+            isHorizontal: true,
+            repeatColumns: 0,
+            options: [
+                { key: 'a', text: 'A Text', value: 'a' },
+                { key: 'b', text: 'B Text', value: 'b' },
+                { key: 'c', text: 'C Text', value: 'c' },
+                { key: 'd', text: 'D Text', value: 'd' },
+                { key: 'e', text: 'E Text', value: 'e' },
+                { key: 'f', text: 'F Text', value: 'f' },
+                { key: 'g', text: 'G Text', value: 'g' }
+            ] as DropDownListOption[]
+        };
+    },
+    template: `
+<GalleryAndResult :splitWidth="false">
+    <template #header>
+        RadioButtonList
+    </template>
+    <template #gallery>
+        <NumberUpDown label="Horizontal Columns" v-model="repeatColumns" :min="0" />
+        <Toggle label="Horizontal" v-model="isHorizontal" />
+        <RadioButtonList label="Radio List 1" v-model="value" :options="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+        <RadioButtonList label="Radio List 2" v-model="value" :options="options" />
+    </template>
+    <template #result>
+        Value: {{value}}
     </template>
 </GalleryAndResult>`
 } );
@@ -239,7 +283,7 @@ export default defineComponent({
         ProgressTracker,
         RockForm,
         RockButton,
-        RadioButtonList,
+        RadioButtonListGallery,
         DialogGallery,
         CheckBoxGallery,
         PhoneNumberBoxGallery,
@@ -283,13 +327,6 @@ export default defineComponent({
             ruleTestCurrency: 1,
             ruleTestText: '',
             rules: 'required',
-            radioValue: 'a',
-            radioOptions: [
-                { key: 'a', text: 'a', value: 'a' },
-                { key: 'b', text: 'b', value: 'b' },
-                { key: 'c', text: 'c', value: 'c' },
-                { key: 'd', text: 'd', value: 'd' }
-            ] as DropDownListOption[],
             isDialogVisible: false
         };
     },
@@ -518,18 +555,7 @@ export default defineComponent({
                 </RockForm>
             </template>
         </GalleryAndResult>
-        <GalleryAndResult>
-            <template #header>
-                RadioButtonList
-            </template>
-            <template #gallery>
-                <RadioButtonList label="Radio 1" v-model="radioValue" :options="radioOptions" />
-                <RadioButtonList label="Radio 2" v-model="radioValue" :options="radioOptions" />
-            </template>
-            <template #result>
-                <TextBox label="Radio Value" v-model="radioValue" />
-            </template>
-        </GalleryAndResult>
+        <RadioButtonListGallery />
         <DialogGallery />
         <CheckBoxGallery />
         <PhoneNumberBoxGallery />

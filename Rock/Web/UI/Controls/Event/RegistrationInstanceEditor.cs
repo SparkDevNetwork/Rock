@@ -56,6 +56,9 @@ namespace Rock.Web.UI.Controls
         HtmlEditor _htmlAdditionalConfirmationDetails;
         RockDropDownList _ddlGatewayMerchants;
         RockDropDownList _ddlGatewayFunds;
+        NumberBox _nbTimeoutLengthMinutes;
+        NumberBox _nbTimeoutThreshold;
+
 
         /// <summary>
         /// Gets or sets a value indicating whether active checkbox should be displayed
@@ -573,6 +576,46 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the timeout length minutes.
+        /// </summary>
+        /// <value>
+        /// The timeout length minutes.
+        /// </value>
+        public int? TimeoutLengthMinutes
+        {
+            get
+            {
+                EnsureChildControls();
+                return _nbTimeoutLengthMinutes.IntegerValue;
+            }
+            set
+            {
+                EnsureChildControls();
+                _nbTimeoutLengthMinutes.IntegerValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the timeout threshold.
+        /// </summary>
+        /// <value>
+        /// The timeout threshold.
+        /// </value>
+        public int? TimeoutThreshold
+        {
+            get
+            {
+                EnsureChildControls();
+                return _nbTimeoutThreshold.IntegerValue;
+            }
+            set
+            {
+                EnsureChildControls();
+                _nbTimeoutThreshold.IntegerValue = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the gateway entity type identifier.
         /// </summary>
         /// <value>
@@ -618,6 +661,8 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalReminderDetails.ValidationGroup = value;
                 _ddlGatewayFunds.ValidationGroup = value;
                 _ddlGatewayMerchants.ValidationGroup = value;
+                _nbTimeoutThreshold.ValidationGroup = value;
+                _nbTimeoutLengthMinutes.ValidationGroup = value;
             }
         }
 
@@ -675,6 +720,8 @@ namespace Rock.Web.UI.Controls
                 _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
                 _htmlAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
+                _nbTimeoutThreshold.IntegerValue = instance.TimeoutThreshold;
+                _nbTimeoutLengthMinutes.IntegerValue = instance.TimeoutLengthMinutes;
 
                 if ( instance.RegistrationTemplate.FinancialGateway.IsRedirectionGateway() )
                 {
@@ -730,6 +777,8 @@ namespace Rock.Web.UI.Controls
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
+                _nbTimeoutLengthMinutes.IntegerValue = null;
+                _nbTimeoutThreshold.IntegerValue = null;
                 _htmlRegistrationInstructions.Text = string.Empty;
                 _htmlAdditionalReminderDetails.Text = string.Empty;
                 _htmlAdditionalConfirmationDetails.Text = string.Empty;
@@ -771,6 +820,9 @@ namespace Rock.Web.UI.Controls
                 instance.RegistrationInstructions = _htmlRegistrationInstructions.Text;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text;
                 instance.AdditionalConfirmationDetails = _htmlAdditionalConfirmationDetails.Text;
+                instance.TimeoutIsEnabled = _nbTimeoutLengthMinutes.IntegerValue.HasValue;
+                instance.TimeoutLengthMinutes = _nbTimeoutLengthMinutes.IntegerValue;
+                instance.TimeoutThreshold = _nbTimeoutThreshold.IntegerValue;
 
                 var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
                 var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGateway;
@@ -927,6 +979,20 @@ namespace Rock.Web.UI.Controls
                 _cbReminderSent.Label = "Reminder Sent";
                 _cbReminderSent.Text = "Yes";
                 Controls.Add( _cbReminderSent );
+
+                _nbTimeoutLengthMinutes = new NumberBox();
+                _nbTimeoutLengthMinutes.ID = ID + "_nbTimeoutLengthMinutes";
+                _nbTimeoutLengthMinutes.Label = "Timeout Length";
+                _nbTimeoutLengthMinutes.AppendText = "Minutes";
+                _nbTimeoutLengthMinutes.Help = "If desired, a timeout can be applied to registrations. If applied, then registrants have this amount of time to fill out each page of the registration. Their registration spots are reserved until the timeout elapses, or they advance in the registration process.";
+                Controls.Add( _nbTimeoutLengthMinutes );
+
+                _nbTimeoutThreshold = new NumberBox();
+                _nbTimeoutThreshold.ID = ID + "_nbTimeoutThreshold";
+                _nbTimeoutThreshold.Label = "Timeout Threshold";
+                _nbTimeoutThreshold.AppendText = "Registrants";
+                _nbTimeoutThreshold.Help = "If a timeout length is set, then this threshold is the lower limit of available registrations before the timeout is enforced. Registrants will be unaware that a timeout exists if they apply before this threshold is hit. Using this setting allows for early registrants to have a lower stress experience.";
+                Controls.Add( _nbTimeoutThreshold );
 
                 _htmlRegistrationInstructions = new HtmlEditor();
                 _htmlRegistrationInstructions.ID = this.ID + "_htmlRegistrationInstructions";
@@ -1107,6 +1173,24 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // col-xs-4
 
                 writer.RenderEndTag();  // row
+            } );
+
+            RockControlHelper.RenderSection( "Registration Session Timeout", CssClass, writer, ( HtmlTextWriter ) =>
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _nbTimeoutLengthMinutes.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _nbTimeoutThreshold.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
             } );
 
             RockControlHelper.RenderSection( "Registration Contact Information", CssClass, writer, ( HtmlTextWriter ) =>

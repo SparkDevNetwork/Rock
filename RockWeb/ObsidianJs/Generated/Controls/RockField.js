@@ -31,7 +31,15 @@ System.register(["../Fields/Index", "vue", "../Fields/TextField", "../Fields/Boo
                     fieldTypeGuid: {
                         type: String,
                         required: true
+                    },
+                    rules: {
+                        type: String,
+                        default: ''
                     }
+                },
+                setup: function (props) {
+                    var isRequired = vue_1.computed(function () { return props.rules.includes('required'); });
+                    vue_1.provide('isRequired', isRequired);
                 },
                 computed: {
                     fieldComponent: function () {
@@ -43,7 +51,7 @@ System.register(["../Fields/Index", "vue", "../Fields/TextField", "../Fields/Boo
                         return field;
                     }
                 },
-                template: "\n<component :is=\"fieldComponent\" />"
+                template: "\n<component :is=\"fieldComponent\" :rules=\"rules\" />"
             }));
         }
     };

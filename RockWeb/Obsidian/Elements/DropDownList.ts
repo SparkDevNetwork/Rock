@@ -24,7 +24,7 @@ export type DropDownListOption = {
     text: string
 };
 
-export default defineComponent({
+export default defineComponent( {
     name: 'DropDownList',
     components: {
         RockFormField
@@ -49,41 +49,105 @@ export default defineComponent({
         formControlClasses: {
             type: String as PropType<string>,
             default: ''
+        },
+        enhanceForLongLists: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
-    data: function () {
+    data: function ()
+    {
         return {
             uniqueId: `rock-dropdownlist-${newGuid()}`,
             internalValue: this.blankValue
         };
     },
-    methods: {
-        syncValue() {
-            this.internalValue = this.modelValue;
-            const selectedOption = this.options.find(o => o.value === this.internalValue) || null;
+    computed: {
+        /** The compiled list of CSS classes (props and calculated from other inputs) for the select element */
+        compiledFormControlClasses (): string
+        {
+            if ( this.enhanceForLongLists )
+            {
+                return this.formControlClasses + ' chosen-select';
+            }
 
-            if (!selectedOption) {
+            return this.formControlClasses;
+        }
+    },
+    methods: {
+        /** Uses jQuery to get the chosen element */
+        getChosenJqueryEl ()
+        {
+            const jquery = window[ '$' ];
+            const $chosenDropDown = jquery( this.$refs[ 'theSelect' ] );
+            return $chosenDropDown;
+        },
+
+        /** Initializes the jQuery control */
+        initializeChosen ()
+        {
+            const $chosenDropDown = this.getChosenJqueryEl();
+
+            $chosenDropDown
+                .chosen( {
+                    width: '100%',
+                    allow_single_deselect: true,
+                    placeholder_text_multiple: ' ',
+                    placeholder_text_single: ' '
+                } )
+                .change( ev =>
+                {
+                    this.internalValue = ev.target.value;
+                } );
+        },
+
+        syncValue ()
+        {
+            this.internalValue = this.modelValue;
+            const selectedOption = this.options.find( o => o.value === this.internalValue ) || null;
+
+            if ( !selectedOption )
+            {
                 this.internalValue = this.showBlankItem ?
                     this.blankValue :
-                    (this.options[0]?.value || this.blankValue);
+                    ( this.options[ 0 ]?.value || this.blankValue );
+            }
+
+            if ( this.enhanceForLongLists )
+            {
+                this.$nextTick( () =>
+                {
+                    const $chosenDropDown = this.getChosenJqueryEl();
+                    $chosenDropDown.trigger( 'chosen:updated' );
+                } );
             }
         }
     },
     watch: {
         modelValue: {
             immediate: true,
-            handler() {
+            handler ()
+            {
                 this.syncValue();
             }
         },
         options: {
             immediate: true,
-            handler() {
+            handler ()
+            {
                 this.syncValue();
             }
         },
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
+        }
+    },
+    mounted ()
+    {
+        if ( this.enhanceForLongLists )
+        {
+            this.initializeChosen();
         }
     },
     template: `
@@ -93,11 +157,11 @@ export default defineComponent({
     name="dropdownlist">
     <template #default="{uniqueId, field, errors, disabled}">
         <div class="control-wrapper">
-            <select :id="uniqueId" class="form-control" :class="formControlClasses" :disabled="disabled" v-bind="field" v-model="internalValue">
+            <select :id="uniqueId" class="form-control" :class="compiledFormControlClasses" :disabled="disabled" v-bind="field" v-model="internalValue" ref="theSelect">
                 <option v-if="showBlankItem" :value="blankValue"></option>
                 <option v-for="o in options" :key="o.key" :value="o.value">{{o.text}}</option>
             </select>
         </div>
     </template>
 </RockFormField>`
-});
+} );

@@ -33,6 +33,14 @@ export default defineComponent({
         modelValue: {
             type: String as PropType<string>,
             default: ''
+        },
+        repeatColumns: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+        horizontal: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
     emits: [
@@ -42,6 +50,28 @@ export default defineComponent({
         return {
             internalValue: ''
         };
+    },
+    computed: {
+        containerClasses (): string
+        {
+            const classes: string[] = [];
+
+            if ( this.repeatColumns > 0 )
+            {
+                classes.push(`in-columns in-columns-${this.repeatColumns}`);
+            }
+
+            if ( this.horizontal )
+            {
+                classes.push( 'rockradiobuttonlist-horizontal' );
+            }
+            else
+            {
+                classes.push( 'rockradiobuttonlist-vertical' );
+            }
+
+            return classes.join( ' ' );
+        }
     },
     methods: {
         getOptionUniqueId(uniqueId: Guid, option: DropDownListOption): string {
@@ -62,14 +92,22 @@ export default defineComponent({
     template: `
 <RockFormField formGroupClasses="rock-radio-button-list" #default="{uniqueId}" name="radiobuttonlist" v-model="internalValue">
     <div class="control-wrapper">
-        <div class="controls rockradiobuttonlist rockradiobuttonlist-vertical">
+        <div class="controls rockradiobuttonlist" :class="containerClasses">
             <span>
-                <div v-for="option in options" class="radio">
-                    <label class="" :for="getOptionUniqueId(uniqueId, option)">
+                <template v-if="horizontal">
+                    <label v-for="option in options" class="radio-inline" :for="getOptionUniqueId(uniqueId, option)">
                         <input :id="getOptionUniqueId(uniqueId, option)" :name="uniqueId" type="radio" :value="option.value" v-model="internalValue" />
                         <span class="label-text">{{option.text}}</span>
                     </label>
-                </div>
+                </template>
+                <template v-else>
+                    <div v-for="option in options" class="radio">
+                        <label :for="getOptionUniqueId(uniqueId, option)">
+                            <input :id="getOptionUniqueId(uniqueId, option)" :name="uniqueId" type="radio" :value="option.value" v-model="internalValue" />
+                            <span class="label-text">{{option.text}}</span>
+                        </label>
+                    </div>
+                </template>
             </span>
         </div>
     </div>
