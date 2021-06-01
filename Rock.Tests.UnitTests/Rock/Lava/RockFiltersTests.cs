@@ -1414,6 +1414,7 @@ namespace Rock.Tests.Rock.Lava
         /// For use in Lava -- should find the end datetime (10 AM) occurrence for the fictitious, first Saturday of the month event for Saturday a year from today.
         /// </summary>
         [TestMethod]
+        [Ignore]
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
             // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month. So 12 months from now would be the previous month next year.
