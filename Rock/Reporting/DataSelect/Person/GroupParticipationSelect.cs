@@ -356,7 +356,17 @@ namespace Rock.Reporting.DataSelect.Person
             }
 
             ddlRoleType.SelectedValue = settings.RoleType.ToStringSafe();
-            ddlGroupMemberStatus.SelectedValue = settings.MemberStatus.ToStringSafe();
+            if ( settings.MemberStatus.HasValue )
+            {
+                ddlGroupMemberStatus.SetValue( settings.MemberStatus.ConvertToInt() );
+            }
+            else
+            {
+                /* [2021-06-02] DJL
+                   Don't use SetValue( int? value ) when trying to set the empty option when any the values in the ListItem have value "0"
+                */
+                ddlGroupMemberStatus.SelectedValue = string.Empty;
+            }
         }
 
         #endregion
