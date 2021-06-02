@@ -28,9 +28,9 @@ export default defineComponent({
     components: {
         PaneledBlockTemplate,
         Alert,
-        Grid: Grid<PluginWidget>(),
-        GridRow: GridRow<PluginWidget>(),
-        GridColumn: GridColumn<PluginWidget>()
+        Grid,
+        GridRow,
+        GridColumn
     },
     setup() {
         return {

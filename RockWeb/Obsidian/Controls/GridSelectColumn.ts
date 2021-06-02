@@ -15,56 +15,64 @@
 // </copyright>
 //
 import { defineComponent, inject, ref } from 'vue';
-import { GridContext, RowContext } from './Grid';
+import { GridContext, RowContext, RowId } from './Grid';
 import GridColumn from './GridColumn';
 
-export default function OfType<T>() {
-    return defineComponent({
-        name: 'GridSelectColumn',
-        components: {
-            GridColumn: GridColumn<T>()
-        },
-        setup() {
-            const gridContext = inject('gridContext') as GridContext;
-            const rowContext = inject('rowContext') as RowContext<T>;
+export default defineComponent( {
+    name: 'GridSelectColumn',
+    components: {
+        GridColumn
+    },
+    setup ()
+    {
+        const gridContext = inject( 'gridContext' ) as GridContext;
+        const rowContext = inject( 'rowContext' ) as RowContext;
 
-            const selectAllRows = gridContext.selectAllRows;
-            const isThisRowSelected = gridContext.selectedRowIds[rowContext.rowId];
-            const isSelected = ref(selectAllRows || isThisRowSelected);
+        const selectAllRows = gridContext.selectAllRows;
+        const isThisRowSelected = gridContext.selectedRowIds[ rowContext.rowId ];
+        const isSelected = ref( selectAllRows || isThisRowSelected );
 
-            return {
-                gridContext,
-                rowContext,
-                isSelected
-            };
+        return {
+            gridContext,
+            rowContext,
+            isSelected
+        };
+    },
+    computed: {
+        rowId (): RowId
+        {
+            return this.rowContext.rowId;
         },
-        computed: {
-            rowId(): number {
-                return this.rowContext.rowId;
-            },
-            isHeader(): boolean {
-                return this.rowContext.isHeader;
+        isHeader (): boolean
+        {
+            return this.rowContext.isHeader;
+        }
+    },
+    watch: {
+        'gridContext.selectAllRows' (): void
+        {
+            if ( !this.isHeader )
+            {
+                this.isSelected = this.gridContext.selectAllRows;
+                this.gridContext.selectedRowIds[ this.rowId ] = this.isSelected;
             }
         },
-        watch: {
-            'gridContext.selectAllRows'(): void {
-                if (!this.isHeader) {
-                    this.isSelected = this.gridContext.selectAllRows;
-                    this.gridContext.selectedRowIds[this.rowId] = this.isSelected;
-                }
-            },
-            'gridContext.selectedRowIds'(): void {
-                if (!this.isHeader) {
-                    this.isSelected = this.gridContext.selectedRowIds[this.rowId];
-                }
-            },
-            isSelected(): void {
-                if (!this.isHeader) {
-                    this.gridContext.selectedRowIds[this.rowId] = this.isSelected;
-                }
+        'gridContext.selectedRowIds' (): void
+        {
+            if ( !this.isHeader )
+            {
+                this.isSelected = this.gridContext.selectedRowIds[ this.rowId ];
             }
         },
-        template: `
+        isSelected (): void
+        {
+            if ( !this.isHeader )
+            {
+                this.gridContext.selectedRowIds[ this.rowId ] = this.isSelected;
+            }
+        }
+    },
+    template: `
 <GridColumn class="grid-select-field" align="center">
     <template #header>
         <div @click.stop class="checkbox">
@@ -83,5 +91,4 @@ export default function OfType<T>() {
         </div>
     </template>
 </GridColumn>`
-    });
-}
+} );

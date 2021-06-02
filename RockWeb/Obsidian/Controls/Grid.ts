@@ -32,79 +32,95 @@ export type SortProperty = {
 };
 
 export type GridContext = {
-    selectedRowIds: Record<number, boolean>;
+    selectedRowIds: Record<string, boolean>;
     selectAllRows: boolean;
     sortProperty: SortProperty | null;
 };
 
-export type RowContext<T> = {
-    rowData: T;
+export type RowData = Record<string, unknown>;
+export type RowId = string;
+
+export type RowContext = {
+    rowData: RowData;
     isHeader: boolean;
-    rowId: number;
+    rowId: RowId;
 };
 
-export default function OfType<T>() {
-    return defineComponent({
-        name: 'Grid',
-        props: {
-            gridData: {
-                type: Array as PropType<T[]>,
-                required: true
-            },
-            rowIdKey: {
-                type: String as PropType<string>,
-                required: true
-            },
-            sortProperty: {
-                type: Object as PropType<SortProperty | null>,
-                default: null
-            },
-            rowItemText: {
-                type: String as PropType<string>,
-                default: 'Entity'
-            }
-        },
-        data() {
-            return {
-                gridContext: {
-                    selectedRowIds: {},
-                    selectAllRows: false,
-                    sortProperty: this.sortProperty
-                } as GridContext
-            };
-        },
-        watch: {
-            gridData() {
-                this.gridContext.selectedRowIds = {};
+export function getRowId ( rowData: RowData, rowIdKey: string ): RowId
+{
+    return `${rowData[ rowIdKey ]}`;
+}
 
-                for (const rowData of this.gridData) {
-                    const rowId = rowData[this.rowIdKey] as number;
-                    this.gridContext.selectedRowIds[rowId] = false;
-                }
-            },
-            'gridContext.sortProperty': {
-                deep: true,
-                handler() {
-                    this.$emit('update:sortProperty', this.gridContext.sortProperty);
-                }
-            },
+export default defineComponent( {
+    name: 'Grid',
+    props: {
+        gridData: {
+            type: Array as PropType<RowData[]>,
+            required: true
         },
-        methods: {
-            getRowContext(rowData: T, isHeader: boolean): RowContext<T> {
-                return {
-                    rowData,
-                    isHeader,
-                    rowId: rowData[this.rowIdKey]
-                };
+        rowIdKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+        sortProperty: {
+            type: Object as PropType<SortProperty | null>,
+            default: null
+        },
+        rowItemText: {
+            type: String as PropType<string>,
+            default: 'Entity'
+        }
+    },
+    data ()
+    {
+        return {
+            gridContext: {
+                selectedRowIds: {},
+                selectAllRows: false,
+                sortProperty: this.sortProperty
+            } as GridContext
+        };
+    },
+    watch: {
+        gridData ()
+        {
+            this.gridContext.selectedRowIds = {};
+
+            for ( const rowData of this.gridData )
+            {
+                const rowId = getRowId( rowData, this.rowIdKey );
+                this.gridContext.selectedRowIds[ rowId ] = false;
             }
         },
-        provide() {
-            return {
-                gridContext: this.gridContext
-            };
+        'gridContext.sortProperty': {
+            deep: true,
+            handler ()
+            {
+                this.$emit( 'update:sortProperty', this.gridContext.sortProperty );
+            }
         },
-        template:
-`<div class="table-responsive">
+    },
+    methods: {
+        getRowId,
+        getRowContext ( rowData: RowData, isHeader: boolean ): RowContext
+        {
+            const rowId = getRowId( rowData, this.rowIdKey );
+
+            return {
+                rowData,
+                isHeader,
+                rowId
+            };
+        }
+    },
+    provide ()
+    {
+        return {
+            gridContext: this.gridContext
+        };
+    },
+    template: `
+<div class="table-responsive">
     <table class="grid-table table table-bordered table-striped table-hover">
         <thead>
             <slot :rowData="null" :isHeader="true" :rowId="null" />
@@ -119,11 +135,10 @@ export default function OfType<T>() {
                     </td>
                 </tr>
             </template>
-            <template v-else v-for="rowData in gridData" :key="rowData[rowIdKey]" >
+            <template v-else v-for="rowData in gridData" :key="getRowId(rowData, rowIdKey)" >
                 <slot v-bind="getRowContext(rowData, false, )" />
             </template>
         </tbody>
     </table>
 </div>`
-    });
-}
+} );

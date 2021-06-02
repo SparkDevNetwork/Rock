@@ -18,68 +18,78 @@ import JavaScriptAnchor from '../Elements/JavaScriptAnchor';
 import { defineComponent, PropType, inject } from 'vue';
 import { GridContext, RowContext, SortDirection, SortProperty } from './Grid';
 
-export default function OfType<T>() {
-    return defineComponent({
-        name: 'GridColumn',
-        components: {
-            JavaScriptAnchor
+export default defineComponent( {
+    name: 'GridColumn',
+    components: {
+        JavaScriptAnchor
+    },
+    props: {
+        title: {
+            type: String as PropType<string>,
+            default: ''
         },
-        props: {
-            title: {
-                type: String as PropType<string>,
-                default: ''
-            },
-            property: {
-                type: String as PropType<string>,
-                default: ''
-            },
-            sortExpression: {
-                type: String as PropType<string>,
-                default: ''
-            }
+        property: {
+            type: String as PropType<string>,
+            default: ''
         },
-        setup() {
-            return {
-                gridContext: inject('gridContext') as GridContext,
-                rowContext: inject('rowContext') as RowContext<T>
-            };
+        sortExpression: {
+            type: String as PropType<string>,
+            default: ''
+        }
+    },
+    setup ()
+    {
+        return {
+            gridContext: inject( 'gridContext' ) as GridContext,
+            rowContext: inject( 'rowContext' ) as RowContext
+        };
+    },
+    computed: {
+        mySortExpression (): string
+        {
+            return this.sortExpression || this.property;
         },
-        computed: {
-            mySortExpression(): string {
-                return this.sortExpression || this.property;
-            },
-            canSort(): boolean {
-                return !!this.sortProperty;
-            },
-            sortProperty(): SortProperty | null {
-                return this.gridContext.sortProperty;
-            },
-            isCurrentlySorted(): boolean {
-                return !!this.mySortExpression && this.sortProperty?.Property === this.mySortExpression;
-            },
-            isCurrentlySortedDesc(): boolean {
-                return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Descending;
-            },
-            isCurrentlySortedAsc(): boolean {
-                return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Ascending;
-            }
+        canSort (): boolean
+        {
+            return !!this.sortProperty;
         },
-        methods: {
-            onHeaderClick() {
-                this.$emit('click:header', this.property);
+        sortProperty (): SortProperty | null
+        {
+            return this.gridContext.sortProperty;
+        },
+        isCurrentlySorted (): boolean
+        {
+            return !!this.mySortExpression && this.sortProperty?.Property === this.mySortExpression;
+        },
+        isCurrentlySortedDesc (): boolean
+        {
+            return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Descending;
+        },
+        isCurrentlySortedAsc (): boolean
+        {
+            return this.isCurrentlySorted && this.sortProperty?.Direction === SortDirection.Ascending;
+        }
+    },
+    methods: {
+        onHeaderClick ()
+        {
+            this.$emit( 'click:header', this.property );
 
-                if (this.mySortExpression && this.sortProperty) {
-                    if (this.isCurrentlySortedAsc) {
-                        this.sortProperty.Direction = SortDirection.Descending;
-                    }
-                    else {
-                        this.sortProperty.Property = this.mySortExpression;
-                        this.sortProperty.Direction = SortDirection.Ascending;
-                    }
+            if ( this.mySortExpression && this.sortProperty )
+            {
+                if ( this.isCurrentlySortedAsc )
+                {
+                    this.sortProperty.Direction = SortDirection.Descending;
                 }
-            },
+                else
+                {
+                    this.sortProperty.Property = this.mySortExpression;
+                    this.sortProperty.Direction = SortDirection.Ascending;
+                }
+            }
         },
-        template: `
+    },
+    template: `
 <th
     v-if="rowContext.isHeader"
     scope="col"
@@ -101,5 +111,4 @@ export default function OfType<T>() {
         {{rowContext.rowData[property]}}
     </slot>
 </td>`
-    });
-}
+} );

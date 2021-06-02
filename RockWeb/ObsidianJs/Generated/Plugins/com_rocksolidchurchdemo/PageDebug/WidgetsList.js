@@ -65,9 +65,9 @@ System.register(["vue", "../../../Elements/Alert", "../../../Templates/PaneledBl
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_1.default,
                     Alert: Alert_1.default,
-                    Grid: Grid_1.default(),
-                    GridRow: GridRow_1.default(),
-                    GridColumn: GridColumn_1.default()
+                    Grid: Grid_1.default,
+                    GridRow: GridRow_1.default,
+                    GridColumn: GridColumn_1.default
                 },
                 setup: function () {
                     return {

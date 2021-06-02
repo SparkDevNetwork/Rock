@@ -43,11 +43,11 @@ export default defineComponent({
     components: {
         PaneledBlockTemplate,
         Alert,
-        Grid: Grid<GroupMemberViewModel>(),
-        GridRow: GridRow<GroupMemberViewModel>(),
-        GridColumn: GridColumn<GroupMemberViewModel>(),
-        GridSelectColumn: GridSelectColumn<GroupMemberViewModel>(),
-        GridProfileLinkColumn: GridProfileLinkColumn<GroupMemberViewModel>()
+        Grid,
+        GridRow,
+        GridColumn,
+        GridSelectColumn,
+        GridProfileLinkColumn
     },
     setup() {
         return {

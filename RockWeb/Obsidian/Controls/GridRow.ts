@@ -17,33 +17,35 @@
 import { defineComponent, PropType } from 'vue';
 import { RowContext } from './Grid';
 
-export default function OfType<T>() {
-    return defineComponent({
-        name: 'GridRow',
-        props: {
-            rowContext: {
-                type: Object as PropType<RowContext<T>>,
-                required: true
+export default defineComponent( {
+    name: 'GridRow',
+    props: {
+        rowContext: {
+            type: Object as PropType<RowContext>,
+            required: true
+        }
+    },
+    provide ()
+    {
+        return {
+            rowContext: this.rowContext
+        };
+    },
+    methods: {
+        onRowClick ()
+        {
+            if ( !this.rowContext.isHeader )
+            {
+                this.$emit( 'click:body', this.rowContext );
             }
-        },
-        provide() {
-            return {
-                rowContext: this.rowContext
-            };
-        },
-        methods: {
-            onRowClick() {
-                if (!this.rowContext.isHeader) {
-                    this.$emit('click:body', this.rowContext);
-                }
-                else {
-                    this.$emit('click:header', this.rowContext);
-                }
+            else
+            {
+                this.$emit( 'click:header', this.rowContext );
             }
-        },
-        template: `
+        }
+    },
+    template: `
 <tr @click="onRowClick">
     <slot />
 </tr>`
-    });
-}
+} );

@@ -74,11 +74,11 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Store/Ind
                 components: {
                     PaneledBlockTemplate: PaneledBlockTemplate_1.default,
                     Alert: Alert_1.default,
-                    Grid: Grid_1.default(),
-                    GridRow: GridRow_1.default(),
-                    GridColumn: GridColumn_1.default(),
-                    GridSelectColumn: GridSelectColumn_1.default(),
-                    GridProfileLinkColumn: GridProfileLinkColumn_1.default()
+                    Grid: Grid_1.default,
+                    GridRow: GridRow_1.default,
+                    GridColumn: GridColumn_1.default,
+                    GridSelectColumn: GridSelectColumn_1.default,
+                    GridProfileLinkColumn: GridProfileLinkColumn_1.default
                 },
                 setup: function () {
                     return {
