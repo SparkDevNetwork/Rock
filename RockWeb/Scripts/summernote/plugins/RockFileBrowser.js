@@ -33,7 +33,8 @@
                         context.invoke('editor.restoreRange');
                         context.invoke('editor.createLink', {
                             text: resultParts[1],
-                            url: encodeURI(Rock.settings.get('baseUrl') + resultParts[0]),
+                            // Ensure the string is not double-encoded.
+                            url: encodeURI(decodeURI(Rock.settings.get('baseUrl') + resultParts[0])),
                             newWindow: false
                         });
 
@@ -45,8 +46,6 @@
                     Rock.controls.modal.close();
                 });
             });
-
-            
         }
     });
 
