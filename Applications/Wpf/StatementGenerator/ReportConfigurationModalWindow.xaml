@@ -71,11 +71,12 @@
                         Width="320"
                         Style="{StaticResource textboxStyle}" />
                     <Button
+                        Name="btnSelectFolder"
                         Width="100"
                         Margin="8,4,0,0"
-                        Name="btnSelectFolder"
+                        Click="btnSelectFolder_Click"
                         Content="Select Folder"
-                        Style="{StaticResource buttonStyleMini}" Click="btnSelectFolder_Click"/>
+                        Style="{StaticResource buttonStyleMini}" />
                 </StackPanel>
 
                 <Label
@@ -148,9 +149,10 @@
                     HorizontalAlignment="Left"
                     Click="btnSaveChanges_Click"
                     Style="{StaticResource buttonStylePrimaryMini}">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Save" Style="{StaticResource labelStyleButtonTextPrimary}" />
-                    </StackPanel>
+                    <Label
+                        Margin="0,0,0,2"
+                        Content="Save"
+                        Style="{StaticResource labelStyleButtonTextPrimary}" />
                 </Button>
                 <Button
                     x:Name="btnCancel"
@@ -158,9 +160,12 @@
                     HorizontalAlignment="Left"
                     Click="btnCancel_Click"
                     Style="{StaticResource buttonStyleMini}">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Cancel" Style="{StaticResource labelStyleButtonText}" />
-                    </StackPanel>
+
+                    <Label
+                        Margin="0,0,0,0"
+                        Content="Cancel"
+                        Style="{StaticResource labelStyleButtonText}" />
+
                 </Button>
             </StackPanel>
 

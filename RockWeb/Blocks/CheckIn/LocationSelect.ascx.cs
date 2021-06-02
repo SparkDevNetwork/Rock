@@ -65,6 +65,9 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class LocationSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string Caption = "Caption";

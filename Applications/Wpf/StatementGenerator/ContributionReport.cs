@@ -154,30 +154,9 @@ namespace Rock.Apps.StatementGenerator
         /// <returns></returns>
         public int RunReport()
         {
-            var browserFetcher = new BrowserFetcher( Product.Chrome );
-            browserFetcher.DownloadProgressChanged += BrowserFetcher_DownloadProgressChanged;
-            browserFetcher.DownloadAsync().Wait();
-
-            browser = Puppeteer.LaunchAsync( new LaunchOptions { Headless = true, DefaultViewport = new ViewPortOptions { Width = 1280, Height = 1024, DeviceScaleFactor = 1 } } ).Result;
+            InitializeChromeEngine();
 
             UpdateProgress( "Starting...", 0, 0 );
-
-            try
-            {
-                var browserProcessModule = browser.Process.MainModule;
-                var allProcesses = Process.GetProcesses();
-                foreach ( var process in allProcesses.Where( a => a.ProcessName == browser.Process.ProcessName ) )
-                {
-                    if ( process.Id != browser.Process.Id && ( process.MainModule.FileName == browserProcessModule.FileName ) )
-                    {
-                        process.Kill();
-                    }
-                }
-            }
-            catch ( Exception ex )
-            {
-                Debug.WriteLine( ex );
-            }
 
             availablePagesCache = new ConcurrentStack<Page>();
             for ( int i = 0; i < _maxRenderThreads; i++ )
@@ -187,7 +166,7 @@ namespace Rock.Apps.StatementGenerator
                 availablePagesCache.Push( page );
             }
 
-            System.Threading.Tasks.TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             StartDateTime = DateTime.Now;
             _stopwatchAll = new Stopwatch();
@@ -226,7 +205,7 @@ namespace Rock.Apps.StatementGenerator
 
                 // Get Recipients from save recipient list from the incomplete session
                 recipientList = GetSavedRecipientList( ResumeRunDate.Value );
-                SaveGeneratorConfig( _currentDayTemporaryDirectory, true, false );
+                SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: true, reportsCompleted: false );
             }
             else
             {
@@ -250,7 +229,7 @@ namespace Rock.Apps.StatementGenerator
                 }
                 catch ( Exception ex )
                 {
-                    Debug.WriteLine( $"Error deleting temp directories: {ex.Message}" );
+                    WriteToExceptionLog( $"INFO: Error deleting temp directories", ex );
                 }
 
                 // re-create directory
@@ -259,7 +238,7 @@ namespace Rock.Apps.StatementGenerator
                 // Get Recipients from Rock REST Endpoint
                 UpdateProgress( "Getting Statement Recipients...", 0, 0 );
                 recipientList = GetRecipients( restClient );
-                SaveGeneratorConfig( _currentDayTemporaryDirectory, false, false );
+                SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: false );
             }
 
             this.RecordCount = recipientList.Count;
@@ -277,7 +256,7 @@ namespace Rock.Apps.StatementGenerator
             var recipientProgressMax = recipientList.Count;
 
             StartDateTime = DateTime.Now;
-            _stopwatchRenderPDFsOverall = Stopwatch.StartNew();
+
             List<FinancialStatementGeneratorRecipient> incompleteRecipients;
             int progressOffset = 0;
             if ( Resume )
@@ -293,6 +272,8 @@ namespace Rock.Apps.StatementGenerator
             var enablePageCountPredetermination = this.Options.EnablePageCountPredetermination;
 
             SaveRecipientListStatus( recipientList, _currentDayTemporaryDirectory, false );
+
+            _stopwatchRenderPDFsOverall = Stopwatch.StartNew();
 
             foreach ( var recipient in incompleteRecipients )
             {
@@ -367,7 +348,7 @@ namespace Rock.Apps.StatementGenerator
                 WriteStatementPDFs( financialStatementReportConfiguration, recipientList );
             }
 
-            SaveGeneratorConfig( _currentDayTemporaryDirectory, false, true );
+            SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: true );
 
             UpdateProgress( "Cleaning up temporary files.", 0, 0 );
 
@@ -399,6 +380,98 @@ namespace Rock.Apps.StatementGenerator
             }
 
             return this.RecordCount;
+        }
+
+        private string GetStatementGeneratorLocalApplicationDataFolder()
+        {
+            var statementGeneratorUserDataFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "Spark_Development_Network", "StatementGenerator" );
+            var browserDownloadPath = Path.Combine( statementGeneratorUserDataFolder, ".local-chromium" );
+            if ( !Directory.Exists( browserDownloadPath ) )
+            {
+                Directory.CreateDirectory( browserDownloadPath );
+            }
+            return browserDownloadPath;
+        }
+
+        /// <summary>
+        /// Initializes the chrome engine.
+        /// </summary>
+        private void InitializeChromeEngine()
+        {
+            var browserDownloadPath = GetStatementGeneratorLocalApplicationDataFolder();
+
+            var browserFetcherOptions = new BrowserFetcherOptions
+            {
+                Product = Product.Chrome,
+                Path = browserDownloadPath,
+            };
+
+            var browserFetcher = new BrowserFetcher( browserFetcherOptions );
+            browserFetcher.DownloadProgressChanged += BrowserFetcher_DownloadProgressChanged;
+            browserFetcher.DownloadAsync().Wait();
+
+            var launchOptions = new LaunchOptions
+            {
+                Headless = true,
+                DefaultViewport = new ViewPortOptions { Width = 1280, Height = 1024, DeviceScaleFactor = 1 },
+                ExecutablePath = browserFetcher.RevisionInfo().ExecutablePath
+            };
+
+            browser = Puppeteer.LaunchAsync( launchOptions ).Result;
+
+            // 
+            try
+            {
+                var browserProcessModule = browser.Process.MainModule;
+                var allProcesses = Process.GetProcesses();
+                foreach ( var process in allProcesses.Where( a => a.ProcessName == browser.Process.ProcessName ) )
+                {
+                    if ( process.Id != browser.Process.Id && ( process.MainModule.FileName == browserProcessModule.FileName ) )
+                    {
+                        process.Kill();
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                WriteToLog( $"INFO: Unable to cleanup orphaned chrome.exe processes, {ex}" );
+            }
+        }
+
+        /// <summary>
+        /// Writes to log.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void WriteToLog( string message )
+        {
+            try
+            {
+                Debug.WriteLine( $"\n{message}" );
+                var exceptionFilePath = Path.Combine( GetStatementGeneratorLocalApplicationDataFolder(), "Exceptions.Log" );
+                File.AppendAllText( exceptionFilePath, $"{DateTime.Now} {message}" );
+            }
+            catch
+            {
+                //
+            }
+        }
+
+        /// <summary>
+        /// Writes to exception log.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="ex">The ex.</param>
+        private void WriteToExceptionLog( string message, Exception ex )
+        {
+            WriteToLog( $"\n{message}\n{ex}" );
+            try
+            {
+                App.LogException( ex, message );
+            }
+            catch
+            {
+                //
+            }
         }
 
         /// <summary>
@@ -468,7 +541,7 @@ namespace Rock.Apps.StatementGenerator
             var incompleteTasks = _renderPdfTasks.Where( a => !a.IsCompleted ).ToArray();
             while ( incompleteTasks.Count() > _maxRenderThreads )
             {
-                Debug.WriteLine( $"incompleteTasks.Count():{incompleteTasks.Count()}" );
+                WriteToLog( $"incompleteTasks.Count():{incompleteTasks.Count()}" );
                 Thread.Sleep( 100 );
                 Task.WaitAny( incompleteTasks, 1000 );
                 incompleteTasks = _renderPdfTasks.Where( a => !a.IsCompleted ).ToArray();
@@ -577,7 +650,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
         private void TaskScheduler_UnobservedTaskException( object sender, UnobservedTaskExceptionEventArgs e )
         {
             e.SetObserved();
-            Debug.WriteLine( e.Exception );
+            WriteToExceptionLog( "UnobservedTaskException", e.Exception );
         }
 
         /// <summary>
@@ -595,7 +668,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             {
                 page = browser.NewPageAsync().Result;
                 page.EmulateMediaTypeAsync( PuppeteerSharp.Media.MediaType.Screen ).Wait();
-                Debug.WriteLine( "new page" );
+                WriteToLog( "INFO: Adding additional Page process" );
             }
 
             page.SetContentAsync( html ).Wait();
@@ -676,7 +749,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 // if still writing, just skip. It is OK if it is a little behind
                 if ( recipientDataJsonFileLocker.WaitingWriteCount > 0 )
                 {
-                    Debug.WriteLine( $"recipientDataJsonFileLocker.WaitingWriteCount: {recipientDataJsonFileLocker.WaitingWriteCount}" );
+                    WriteToLog( $"recipientDataJsonFileLocker.WaitingWriteCount: {recipientDataJsonFileLocker.WaitingWriteCount}" );
                     return;
                 }
 
@@ -797,9 +870,17 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 reportTemporaryDirectoryPath = Path.GetTempPath();
             }
 
-            var previousRunFiles = Directory.EnumerateFiles( reportTemporaryDirectoryPath, "GeneratorConfig.Json", SearchOption.AllDirectories );
+            List<string> previousRunFiles = new List<string>();
+            var folders = Directory.EnumerateDirectories( reportTemporaryDirectoryPath, "Rock Statement Generator-*", SearchOption.TopDirectoryOnly );
+            foreach( var folder in folders )
+            {
+                Directory.EnumerateFiles( folder, "GeneratorConfig.Json" );
+                
+                previousRunFiles.AddRange( Directory.EnumerateFiles( folder, "GeneratorConfig.Json", SearchOption.TopDirectoryOnly ).ToList() );
+            }
+
             var generatorConfigs = previousRunFiles.Select( a => File.ReadAllText( a ).FromJsonOrNull<GeneratorConfig>() ).ToList();
-            var mostRecentGeneratorConfig = generatorConfigs.Where( a => a != null ).OrderBy( g => g.RunDate ).FirstOrDefault();
+            var mostRecentGeneratorConfig = generatorConfigs.Where( a => a != null ).OrderByDescending( g => g.RunDate ).FirstOrDefault();
 
             return mostRecentGeneratorConfig;
         }
@@ -1103,16 +1184,9 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             {
                 string primarySortFileName = $"{financialStatementReportConfiguration.FilenamePrefix}{primarySort.Key}.pdf".MakeValidFileName();
                 string mergeDocFilePath = Path.Combine( financialStatementReportConfiguration.DestinationFolder, primarySortFileName );
-                try
-                {
-                    var sortedRecipients = SortByPrimaryAndSecondaryOrder( financialStatementReportConfiguration, primarySort.Value );
-                    SaveToMergedDocument( mergeDocFilePath, sortedRecipients.ToList() );
-                }
-                catch ( Exception ex )
-                {
-                    Debug.WriteLine( $"{ex }\n\n:primarySortFileName:{primarySortFileName}, mergeDocFilePath;{mergeDocFilePath}" );
-                    throw;
-                }
+
+                var sortedRecipients = SortByPrimaryAndSecondaryOrder( financialStatementReportConfiguration, primarySort.Value );
+                SaveToMergedDocument( mergeDocFilePath, sortedRecipients.ToList() );
 
                 progressPosition++;
 
@@ -1266,7 +1340,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             }
             catch ( Exception ex )
             {
-                Debug.WriteLine( ex );
+                WriteToExceptionLog( "INFO: Errors during Dispose", ex );
             }
         }
     }
