@@ -14,23 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, PropType } from 'vue';
-import HelpBlock from './HelpBlock';
 
-export default defineComponent({
-    name: 'RockLabel',
+import { defineComponent, PropType } from 'vue';
+import JavaScriptAnchor from './JavaScriptAnchor';
+
+/** Displays a help block tool-tip. */
+const HelpBlock = defineComponent( {
+    name: 'HelpBlock',
     components: {
-        HelpBlock
+        JavaScriptAnchor
     },
     props: {
-        help: {
+        text: {
             type: String as PropType<string>,
-            default: ''
+            required: true
         }
     },
+    mounted ()
+    {
+        const jquery = window[ '$' ];
+        jquery( this.$el ).tooltip();
+    },
     template: `
-<label class="control-label">
-    <slot />
-    <HelpBlock v-if="help" :text="help" />
-</label>`
-});
+<JavaScriptAnchor class="help" tabindex="-1" data-toggle="tooltip" data-placement="auto" data-container="body" data-html="true" title="" :data-original-title="text">
+    <i class="fa fa-info-circle"></i>
+</JavaScriptAnchor>`
+} );
+
+export default HelpBlock;

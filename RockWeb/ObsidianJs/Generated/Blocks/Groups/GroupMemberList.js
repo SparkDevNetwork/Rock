@@ -116,7 +116,7 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Store/Ind
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, 4, 5]);
-                                        return [4 /*yield*/, this.invokeBlockAction('getGroupMemberList', {
+                                        return [4 /*yield*/, this.invokeBlockAction('GetGroupMemberList', {
                                                 groupId: this.groupId,
                                                 filterOptions: {
                                                     Take: 50,

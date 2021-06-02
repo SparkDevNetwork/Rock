@@ -67,6 +67,8 @@ export type RegistrationEntryState = {
     Registrar: RegistrarInfo;
     GatewayToken: string;
     DiscountCode: string;
+    DiscountAmount: number;
+    DiscountPercentage: number;
     SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null;
     AmountToPayToday: number;
     SessionExpirationDate: Date | null;
@@ -213,6 +215,8 @@ export default defineComponent( {
             },
             GatewayToken: '',
             DiscountCode: viewModel.Session?.DiscountCode || '',
+            DiscountAmount: viewModel.Session?.DiscountAmount || 0,
+            DiscountPercentage: viewModel.Session?.DiscountPercentage || 0,
             SuccessViewModel: viewModel.SuccessViewModel,
             AmountToPayToday: 0,
             SessionExpirationDate: null,

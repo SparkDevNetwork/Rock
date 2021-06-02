@@ -180,6 +180,7 @@ export default defineComponent( {
         {
             if ( this.isSessionExpired )
             {
+                this.spotsSecured = null;
                 this.isModalVisible = true;
             }
         }

@@ -119,7 +119,6 @@ System.register(["vue", "../../../Elements/CheckBox", "../../../Elements/EmailBo
                         for (var i = 0; i < this.registrationEntryState.Registrants.length; i++) {
                             var registrant = this.registrationEntryState.Registrants[i];
                             var info = RegistrationEntry_1.getRegistrantBasicInfo(registrant, this.viewModel.RegistrantForms);
-                            console.log(info, usedFamilyGuids);
                             if (!usedFamilyGuids[registrant.FamilyGuid] && (info === null || info === void 0 ? void 0 : info.FirstName) && (info === null || info === void 0 ? void 0 : info.LastName)) {
                                 options.push({
                                     key: registrant.FamilyGuid,

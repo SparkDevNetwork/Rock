@@ -123,7 +123,6 @@ export default defineComponent( {
             {
                 const registrant = this.registrationEntryState.Registrants[ i ];
                 const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
-                console.log( info, usedFamilyGuids );
 
                 if ( !usedFamilyGuids[ registrant.FamilyGuid ] && info?.FirstName && info?.LastName )
                 {

@@ -80,7 +80,7 @@ export default defineComponent({
             this.errorMessage = '';
 
             try {
-                const result = await this.invokeBlockAction<GetGroupMemberListResponse>('getGroupMemberList', {
+                const result = await this.invokeBlockAction<GetGroupMemberListResponse>('GetGroupMemberList', {
                     groupId: this.groupId,
                     filterOptions: {
                         Take: 50,

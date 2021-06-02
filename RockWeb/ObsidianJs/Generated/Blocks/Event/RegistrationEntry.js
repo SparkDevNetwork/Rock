@@ -197,7 +197,7 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                 setup: function () {
                     var _a;
                     var _this = this;
-                    var _b, _c, _d, _e, _f, _g;
+                    var _b, _c, _d, _e, _f, _g, _h, _j;
                     var steps = (_a = {},
                         _a[Step.intro] = Step.intro,
                         _a[Step.registrationStartForm] = Step.registrationStartForm,
@@ -245,10 +245,12 @@ System.register(["vue", "../../Elements/RockButton", "../../Util/Guid", "./Regis
                         },
                         GatewayToken: '',
                         DiscountCode: ((_f = viewModel.Session) === null || _f === void 0 ? void 0 : _f.DiscountCode) || '',
+                        DiscountAmount: ((_g = viewModel.Session) === null || _g === void 0 ? void 0 : _g.DiscountAmount) || 0,
+                        DiscountPercentage: ((_h = viewModel.Session) === null || _h === void 0 ? void 0 : _h.DiscountPercentage) || 0,
                         SuccessViewModel: viewModel.SuccessViewModel,
                         AmountToPayToday: 0,
                         SessionExpirationDate: null,
-                        RegistrationSessionGuid: ((_g = viewModel.Session) === null || _g === void 0 ? void 0 : _g.RegistrationSessionGuid) || Guid_1.newGuid()
+                        RegistrationSessionGuid: ((_j = viewModel.Session) === null || _j === void 0 ? void 0 : _j.RegistrationSessionGuid) || Guid_1.newGuid()
                     });
                     vue_1.provide('registrationEntryState', registrationEntryState);
                     /** A method to get the args needed for persisting the session */

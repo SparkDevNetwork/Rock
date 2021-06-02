@@ -19,7 +19,7 @@ import { defineComponent, inject } from 'vue';
 import Loading from '../../../Controls/Loading';
 import { InvokeBlockActionFunc } from '../../../Controls/RockBlock';
 import CurrencyBox from '../../../Elements/CurrencyBox';
-import JavaScriptAnchor from '../../../Elements/JavaScriptAnchor';
+import HelpBlock from '../../../Elements/HelpBlock';
 import { ruleArrayToString } from '../../../Rules/Index';
 import { asFormattedString } from '../../../Services/Number';
 import { RegistrationEntryState } from '../RegistrationEntry';
@@ -54,8 +54,8 @@ export default defineComponent( {
     name: 'Event.RegistrationEntry.CostSummary',
     components: {
         Loading,
-        JavaScriptAnchor,
-        CurrencyBox
+        CurrencyBox,
+        HelpBlock
     },
     setup ()
     {
@@ -302,9 +302,7 @@ export default defineComponent( {
                 {{lineItem.Description}}
             </div>
             <div v-if="hasDiscount" class="col-sm-3 fee-value">
-                <JavaScriptAnchor v-if="lineItem.DiscountHelp" class="help" :title="lineItem.DiscountHelp">
-                    <i class="fa fa-info-circle"></i>
-                </JavaScriptAnchor>
+                <HelpBlock v-if="lineItem.DiscountHelp" :text="lineItem.DiscountHelp" />
                 <span class="visible-xs-inline">Discounted Amount:</span>
                 $ {{lineItem.DiscountedAmountFormatted}}
             </div>

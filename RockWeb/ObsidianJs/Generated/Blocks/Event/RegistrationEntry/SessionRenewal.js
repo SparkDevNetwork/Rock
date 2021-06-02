@@ -203,6 +203,7 @@ System.register(["vue", "../../../Controls/Dialog", "../../../Elements/LoadingIn
                 watch: {
                     isSessionExpired: function () {
                         if (this.isSessionExpired) {
+                            this.spotsSecured = null;
                             this.isModalVisible = true;
                         }
                     }

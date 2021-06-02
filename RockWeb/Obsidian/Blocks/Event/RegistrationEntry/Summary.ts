@@ -24,26 +24,18 @@ import Alert from '../../../Elements/Alert';
 import CheckBox from '../../../Elements/CheckBox';
 import EmailBox from '../../../Elements/EmailBox';
 import RockButton from '../../../Elements/RockButton';
-import TextBox from '../../../Elements/TextBox';
 import { asFormattedString } from '../../../Services/Number';
 import { getRegistrantBasicInfo, RegistrantBasicInfo, RegistrationEntryState } from '../RegistrationEntry';
 import CostSummary from './CostSummary';
+import DiscountCodeForm from './DiscountCodeForm';
 import Registrar from './Registrar';
 import { RegistrationEntryBlockArgs } from './RegistrationEntryBlockArgs';
 import { RegistrationEntryBlockSuccessViewModel, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
-
-type CheckDiscountCodeResult = {
-    DiscountCode: string;
-    UsagesRemaining: number | null;
-    DiscountAmount: number;
-    DiscountPercentage: number;
-};
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Summary',
     components: {
         RockButton,
-        TextBox,
         CheckBox,
         EmailBox,
         RockForm,
@@ -51,7 +43,8 @@ export default defineComponent( {
         GatewayControl,
         RockValidation,
         CostSummary,
-        Registrar
+        Registrar,
+        DiscountCodeForm
     },
     setup ()
     {
@@ -67,18 +60,6 @@ export default defineComponent( {
             /** Is there an AJAX call in-flight? */
             loading: false,
 
-            /** The bound value to the discount code input */
-            discountCodeInput: '',
-
-            /** A warning message about the discount code that is a result of a failed AJAX call */
-            discountCodeWarningMessage: '',
-
-            /** The dollar amount to be discounted because of the discount code entered. */
-            discountAmount: 0,
-
-            /** The percent of the total to be discounted because of the discount code entered. */
-            discountPercent: 0,
-
             /** Should the gateway control submit to the gateway to create a token? */
             doGatewayControlSubmit: false,
 
@@ -93,35 +74,6 @@ export default defineComponent( {
         };
     },
     computed: {
-        /** The success message displayed once a discount code has been applied */
-        discountCodeSuccessMessage (): string
-        {
-            const discountAmount = this.viewModel.Session?.DiscountAmount || this.discountAmount;
-            const discountPercent = this.viewModel.Session?.DiscountPercentage || this.discountPercent;
-
-            if ( !discountPercent && !discountAmount )
-            {
-                return '';
-            }
-
-            const discountText = discountPercent ?
-                `${asFormattedString( discountPercent * 100, 0 )}%` :
-                `$${asFormattedString( discountAmount, 2 )}`;
-
-            return `Your ${discountText} discount code for all registrants was successfully applied.`;
-        },
-
-        /** Should the discount panel be shown? */
-        isDiscountPanelVisible (): boolean
-        {
-            if ( !this.viewModel.HasDiscountsAvailable )
-            {
-                return false;
-            }
-
-            return true;
-        },
-
         /** The settings for the gateway (MyWell, etc) control */
         gatewayControlModel (): GatewayControlModel
         {
@@ -200,36 +152,6 @@ export default defineComponent( {
                 {
                     this.$emit( 'next' );
                 }
-            }
-        },
-
-        /** Send a user input discount code to the server so the server can check and send back
-         *  the discount amount. */
-        async tryDiscountCode ()
-        {
-            this.loading = true;
-
-            try
-            {
-                const result = await this.invokeBlockAction<CheckDiscountCodeResult>( 'CheckDiscountCode', {
-                    code: this.discountCodeInput
-                } );
-
-                if ( result.isError || !result.data )
-                {
-                    this.discountCodeWarningMessage = `'${this.discountCodeInput}' is not a valid Discount Code.`;
-                }
-                else
-                {
-                    this.discountCodeWarningMessage = '';
-                    this.discountAmount = result.data.DiscountAmount;
-                    this.discountPercent = result.data.DiscountPercentage;
-                    this.registrationEntryState.DiscountCode = result.data.DiscountCode;
-                }
-            }
-            finally
-            {
-                this.loading = false;
             }
         },
 
@@ -320,19 +242,7 @@ export default defineComponent( {
 
         <div v-if="viewModel.Cost">
             <h4>Payment Summary</h4>
-            <Alert v-if="discountCodeWarningMessage" alertType="warning">{{discountCodeWarningMessage}}</Alert>
-            <Alert v-if="discountCodeSuccessMessage" alertType="success">{{discountCodeSuccessMessage}}</Alert>
-            <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
-                <div class="form-group pull-right">
-                    <label class="control-label">Discount Code</label>
-                    <div class="input-group">
-                        <input type="text" :disabled="loading || !!discountCodeSuccessMessage" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-                        <RockButton v-if="!discountCodeSuccessMessage" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode">
-                            Apply
-                        </RockButton>
-                    </div>
-                </div>
-            </div>
+            <DiscountCodeForm />
             <CostSummary />
         </div>
 
