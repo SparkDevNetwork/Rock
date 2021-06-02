@@ -188,7 +188,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Implement this method to provide a Liquid framework-specific instance of a new render context. 
+        /// Implement this method to provide a Liquid framework-specific instance of a new render context.
         /// </summary>
         /// <returns></returns>
         protected abstract ILavaRenderContext OnCreateRenderContext();
@@ -490,6 +490,10 @@ namespace Rock.Lava
             var renderResult = new LavaRenderResult();
 
             var exceptionStrategy = parameters.ExceptionHandlingStrategy ?? this.ExceptionHandlingStrategy;
+
+            parameters = parameters ?? new LavaRenderParameters();
+
+            var renderResult = new LavaRenderResult();
 
             try
             {
@@ -937,5 +941,25 @@ namespace Rock.Lava
 
             return true;
         }
+
+        /// <summary>
+        /// Parse the input text into a compiled Lava template.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        //public LavaParseResult ParseTemplate( string inputTemplate )
+        //{
+        //    ILavaTemplate template;
+        //    List<Exception> errors;
+
+        //    var isValid = TryParseTemplate( inputTemplate, out template, out errors );
+
+        //    if ( !isValid )
+        //    {
+        //        throw new LavaException( "ParseTemplate failed. The Lava template is invalid." );
+        //    }
+
+        //    return template;
+        //}
     }
 }

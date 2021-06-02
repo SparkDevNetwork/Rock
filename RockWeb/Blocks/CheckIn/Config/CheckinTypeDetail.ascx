@@ -10,7 +10,7 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
-                    
+
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                     </div>
@@ -55,24 +55,24 @@
 
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes" 
+                                            <Rock:RockCheckBox ID="cbAllowCheckout" runat="server" Label="Allow Checkout" Text="Yes"
                                         Help="Should individuals be allowed to manually check out?" />
                                         </div>
                                         <div class="col-md-6">
-                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes" 
+                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
                                         Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
                                         </div>
                                     </div>
-                                    <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes"
                                         Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
-                                    <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes"
                                         Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer" 
-                                        Help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked 
+                                    <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer"
+                                        Help="The number of days back to look for a previous check-in for each person in the family (or related person). If they have previously checked
                                         within this number of days, they will automatically be selected during the Family check-in process." />
-                                    <Rock:RockDropDownList ID="ddlAutoSelectOptions" runat="server" Label="Auto Select Options" 
+                                    <Rock:RockDropDownList ID="ddlAutoSelectOptions" runat="server" Label="Auto Select Options"
                                         Help="The options that should be pre-selected if an individual has previously checked in.">
                                         <asp:ListItem Text="People Only" Value="0" />
                                         <asp:ListItem Text="People and Their Area/Group/Location" Value="1" />
@@ -80,9 +80,9 @@
                                     <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
 
-                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes"
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
-                                    <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes"
                                         Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
                                 </div>
                             </div>
@@ -97,7 +97,7 @@
                                         <Rock:RockControlWrapper
                                             ID="rcwSecurityCode"
                                             runat="server"
-                                            Label="Label Security Code Length" 
+                                            Label="Label Security Code Length"
                                             Help="The number of alpha-numeric, alpha, and/or numeric characters to use when generating a unique security code for labels.
                                             Note: Alpha-Numeric characters will be printed first, followed by Alpha characters, then by numeric characters.">
 
@@ -199,17 +199,17 @@
                         <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced Settings">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockTextBox ID="tbSearchRegex" runat="server" Label="Regular Expression Filter" 
+                                    <Rock:RockTextBox ID="tbSearchRegex" runat="server" Label="Regular Expression Filter"
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
-                                    <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer" 
+                                    <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer"
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes"
                                         Help="If an area and/or group has an age requirement, check this option to prevent people without an age from checking in to that area/group." />
-                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes"
                                         Help="If an area and/or group has a grade requirement, check this option to prevent people without a grade from checking in to that area/group." />
-                                    <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes" 
+                                    <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes"
                                         Help="Should the room locations options include a count of how many people are currently checked into that location?" />
                                 </div>
                             </div>
@@ -260,7 +260,7 @@
             </div>
 
 
-            
+
         </asp:Panel>
 
     </ContentTemplate>

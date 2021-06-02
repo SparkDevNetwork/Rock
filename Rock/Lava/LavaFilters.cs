@@ -1279,7 +1279,7 @@ namespace Rock.Lava
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
-            
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
@@ -3444,7 +3444,7 @@ namespace Rock.Lava
             var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
 
             if ( rockContext == null )
-            { 
+            {
                 rockContext = new RockContext();
 
                 context.SetInternalField( "rock_context", rockContext );
@@ -4072,7 +4072,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 resultDataObject = dataObject;
 
                 // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
@@ -4111,7 +4111,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 if ( isCollection )
                 {
                     IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
@@ -4210,7 +4210,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum FollowFilterType
         {

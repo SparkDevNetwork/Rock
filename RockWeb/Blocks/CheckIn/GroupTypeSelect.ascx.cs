@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.",
         DefaultBooleanValue = false,
         Order = 8 )]
-    
+
     [TextField( "Caption",
         Key = AttributeKey.Caption,
         IsRequired = false,
