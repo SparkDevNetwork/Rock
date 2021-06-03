@@ -56,7 +56,7 @@ Email: ted@rocksolidchurch.com
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
                 TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input, options );
             } );
@@ -84,7 +84,7 @@ Included 'a' = b
 Outer 'a' = b
 ";
 
-            var testEngineDotLiquid = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+            var testEngineDotLiquid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
             TestHelper.AssertTemplateOutput( testEngineDotLiquid, expectedOutputLiquid, input );
 
@@ -96,7 +96,7 @@ Included 'a' = b
 Outer 'a' = a
 ";
 
-            var testEngineFluid = LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+            var testEngineFluid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
             TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
         }
@@ -112,11 +112,13 @@ Outer 'a' = a
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-                var result = testEngine.RenderTemplate( input );
+                var result = testEngine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
 
-                Assert.That.IsTrue( result.Text.Contains( "File Load Failed." ) );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
+
+                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
             } );
         }
 
@@ -129,11 +131,11 @@ Outer 'a' = a
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
 
                 var result = testEngine.RenderTemplate( input );
 
-                Assert.That.IsTrue( result.Text.Contains( "File Load Failed." ) );
+                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
             } );
         }
 
@@ -144,7 +146,7 @@ Outer 'a' = a
             // Add a lava template that references merge fields from the outer template.
             var contactDetailsTemplate = @"
 Mobile: {{ mobilePhone }}
-Home: {{ homePhone }} 
+Home: {{ homePhone }}
 Work: {{ workPhone }}
 Email: {{ email }}
 ";

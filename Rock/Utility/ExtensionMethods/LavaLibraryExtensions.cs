@@ -57,7 +57,7 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
-            System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
+            System.Web.HttpContext taskContext = System.Web.HttpContext.Current;
             var formatLavaTask = new Task( () =>
             {
                 System.Web.HttpContext.Current = taskContext;
@@ -196,7 +196,7 @@ namespace Rock
 
                 foreach ( var key in liquidObject.AvailableKeys )
                 {
-                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion) 
+                    // Ignore the person property of the person's primary alias (prevent unnecessary recursion)
                     if ( key == "Person" && parentElement.Contains( ".PrimaryAlias" ) )
                     {
                         result.AddOrIgnore( key, string.Empty );
@@ -516,14 +516,14 @@ namespace Rock
                     enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
                 }
 
-                var context = LavaEngine.CurrentEngine.NewRenderContext();
+                var context = LavaService.NewRenderContext();
 
                 context.SetEnabledCommands( enabledLavaCommands, "," );
 
                 context.SetMergeField( "CurrentPerson", currentPersonOverride );
                 context.SetMergeFields( mergeObjects );
 
-                var result = LavaEngine.CurrentEngine.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
+                var result = LavaService.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
 
                 if ( result.HasErrors )
                 {
@@ -598,7 +598,7 @@ namespace Rock
                     }
                 }
 
-                var context = LavaEngine.CurrentEngine.NewRenderContext( mergeObjects );
+                var context = LavaService.NewRenderContext( mergeObjects );
 
                 if ( enabledLavaCommands != null )
                 {
@@ -609,13 +609,8 @@ namespace Rock
 
                 renderParameters.ShouldEncodeStringsAsXml = encodeStrings;
 
-                //string result;
-                //List<Exception> errors;
-
-                //ILavaTemplate template;
-
                 // Try and parse the template, or retrieve it from the cache if it has been previously parsed.
-                var result = LavaEngine.CurrentEngine.RenderTemplate( content, renderParameters );
+                var result = LavaService.RenderTemplate( content, renderParameters );
 
                 if ( result.HasErrors )
                 {

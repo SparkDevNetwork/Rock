@@ -1,12 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionTypeList.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionTypeList" %>
 
-<div class="clearfix margin-b-sm">
-    <div class="pull-right">
-                <a href="/CampaignConfiguration" class="btn btn-xs btn-default">Connection Campaigns
-                </a>
-    </div>
-</div>
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -14,7 +7,8 @@
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-plug"></i> Connection Types</h1>
 
-                <div class="pull-right">
+                <div class="panel-labels">
+                    <a href="/CampaignConfiguration" class="btn btn-xs btn-default mr-1">Connection Campaigns</a>
                     <asp:LinkButton ID="lbAddConnectionType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddConnectionType_Click" CausesValidation="false" Title="Add Connection Type"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
             </div>

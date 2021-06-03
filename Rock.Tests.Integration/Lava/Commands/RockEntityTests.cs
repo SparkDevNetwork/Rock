@@ -19,7 +19,7 @@ namespace Rock.Tests.Integration.Lava
         [Ignore("This test requires specific test data that does not exist in the sample database.")]
         public void EventCalendarItemAllowsEventItemSummary()
         {
-            RockEntityBlock.RegisterEntityCommands( LavaEngine.CurrentEngine );
+            RockEntityBlock.RegisterEntityCommands( LavaService.GetCurrentEngine() );
 
             var expectedOutput = @"
 3 [2]: <br>

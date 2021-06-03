@@ -29,6 +29,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -97,10 +98,10 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. 
+        /// Gets or sets the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> that represents the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. If there is 
+        /// A <see cref="System.Int32"/> that represents the DataViewFilterId of the root/base <see cref="Rock.Model.DataViewFilter"/> that is used to generate this DataView. If there is
         /// not a filter on this DataView, this value will be null.
         /// </value>
         [DataMember]
@@ -305,7 +306,7 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Gets the query using the most appropriate type of dbContext 
+        /// Gets the query using the most appropriate type of dbContext
         /// </summary>
         /// <param name="sortProperty">The sort property.</param>
         /// <param name="databaseTimeoutSeconds">The database timeout seconds.</param>
@@ -566,6 +567,7 @@ namespace Rock.Model
             }
 
             // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
             if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
             {
                 DataViewService.AddRunDataViewTransaction( Id );
@@ -795,7 +797,7 @@ namespace Rock.Model
     #endregion
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public sealed class DataViewGetQueryArgs
     {

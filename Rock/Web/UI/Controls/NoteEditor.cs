@@ -732,8 +732,9 @@ $@"Rock.controls.noteEditor.initialize({{
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // The optional create date text box, but only for new notes...
-            if ( NoteOptions.ShowCreateDateInput && !NoteId.HasValue )
+            // The optional create date text box if ShowCreateDateInput is enabled.
+            // This allows back-dating of existing notes
+            if ( NoteOptions.ShowCreateDateInput)
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "createDate" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );

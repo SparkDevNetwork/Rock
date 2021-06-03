@@ -27,7 +27,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string GetLiquidElementNameFromShortcodeName( string shortcodeName )
         {
-            var internalName = shortcodeName.Trim().ToLower() + LavaEngine.ShortcodeInternalNameSuffix;
+            // Note that Liquid names are case-sensitive, so we need to preserve the casing of the element name.
+            var internalName = shortcodeName.Trim() + LavaService.ShortcodeInternalNameSuffix;
 
             return internalName;
         }
@@ -41,9 +42,9 @@ namespace Rock.Lava
         public static string GetShortcodeNameFromLiquidElementName( string shortcodeName )
         {
             if ( shortcodeName != null
-                 && shortcodeName.EndsWith( LavaEngine.ShortcodeInternalNameSuffix ) )
+                 && shortcodeName.EndsWith( LavaService.ShortcodeInternalNameSuffix ) )
             {
-                return shortcodeName.Substring( 0, shortcodeName.Length - LavaEngine.ShortcodeInternalNameSuffix.Length );
+                return shortcodeName.Substring( 0, shortcodeName.Length - LavaService.ShortcodeInternalNameSuffix.Length );
             }
 
             return shortcodeName;

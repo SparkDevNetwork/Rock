@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.",
         DefaultBooleanValue = false,
         Order = 8 )]
-    
+
     [TextField( "Caption",
         Key = AttributeKey.Caption,
         IsRequired = false,
@@ -291,12 +291,12 @@ namespace RockWeb.Blocks.CheckIn
         {
             var mergeFields = new Dictionary<string, object>
             {
-                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily },
-                { LavaMergeFieldName.Individual, CurrentCheckInState.CheckIn.CurrentPerson },
-                { LavaMergeFieldName.SelectedSchedule, CurrentCheckInState.CheckIn.CurrentPerson.CurrentSchedule.Schedule }
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily?.Group },
+                { LavaMergeFieldName.Individual, CurrentCheckInState.CheckIn.CurrentPerson?.Person },
+                { LavaMergeFieldName.SelectedSchedule, CurrentCheckInState.CheckIn.CurrentPerson.CurrentSchedule?.Schedule }
             };
 
-            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectHeaderLavaTemplate ?? string.Empty;
+            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.GroupTypeSelectHeaderLavaTemplate ?? string.Empty;
             return personSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 

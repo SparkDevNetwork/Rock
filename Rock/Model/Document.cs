@@ -83,6 +83,15 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the purpose key.
+        /// </summary>
+        /// <value>
+        /// The purpose key.
+        /// </value>
+        [MaxLength( 100 )]
+        public string PurposeKey { get; set; }
+
+        /// <summary>
         /// Gets or sets a description of the document.
         /// </summary>
         /// <value>
@@ -255,6 +264,19 @@ namespace Rock.Model
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.DocumentType != null ? this.DocumentType : base.ParentAuthority;
+            }
         }
 
         #endregion

@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -29,7 +31,7 @@ namespace Rock.Tests.Integration.Lava
             var lavaScript = @"{% sql timeout:'10' %}
 
             WAITFOR DELAY '00:00:20';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -44,9 +46,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( output, "Execution Timeout Expired." );
+                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -57,7 +59,7 @@ namespace Rock.Tests.Integration.Lava
             var lavaScript = @"{% sql timeout:'40' %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -72,9 +74,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( output, "Execution Timeout Expired." );
+                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -83,7 +85,7 @@ namespace Rock.Tests.Integration.Lava
         {
             var lavaScript = @"{% sql %}
 
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -98,9 +100,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( output, "Execution Timeout Expired." );
+                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -111,7 +113,7 @@ namespace Rock.Tests.Integration.Lava
             var lavaScript = @"{% sql %}
 
             WAITFOR DELAY '00:00:35';
-            SELECT TOP 5 * 
+            SELECT TOP 5 *
             FROM Person
             {% endsql %}
 
@@ -126,9 +128,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( output, "Execution Timeout Expired." );
+                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -145,9 +147,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.Contains( output, "Execution Timeout Expired." );
+                Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -164,9 +166,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( output, "Execution Timeout Expired." );
+                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -181,9 +183,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var result = ExecuteSqlBlock( engine, lavaScript );
 
-                Assert.That.DoesNotContain( output, "Execution Timeout Expired." );
+                Assert.That.DoesNotContain( result.Error?.Messages().JoinStrings( "//" ), "Execution Timeout Expired." );
             } );
         }
 
@@ -200,10 +202,25 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, lavaScript, new LavaTestRenderOptions { EnabledCommands = "Sql" } );
+                var renderContext = engine.NewRenderContext( new List<string> { "Sql" } );
 
-                Assert.That.Contains( output, "Execution Timeout Expired." );
+                var result = engine.RenderTemplate( lavaScript,
+                    new LavaRenderParameters { Context = renderContext, ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
+
+                var errorMessages = result.Error.Messages().JoinStrings( "//" );
+
+                Assert.That.Contains( errorMessages, "Execution Timeout Expired." );
             } );
+        }
+
+        private LavaRenderResult ExecuteSqlBlock(ILavaEngine engine, string lavaScript)
+        {
+            var renderContext = engine.NewRenderContext( new List<string> { "Sql" } );
+
+            var result = engine.RenderTemplate( lavaScript,
+                new LavaRenderParameters { Context = renderContext, ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
+
+            return result;
         }
     }
 }

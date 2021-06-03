@@ -16,9 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -342,8 +343,30 @@ namespace Rock.Lava.Blocks
                             throw new Exception( "Your Lava command must contain at least one valid filter. If you configured a filter it's possible that the property or attribute you provided does not exist." );
                         }
 
-                        // reassemble the queryable with the sort expressions
+                        // Disable lazy loading if requested
+                        if ( parms.Any( p => p.Key == "lazyloadenabled" ) )
+                        {
+                            if ( !parms["lazyloadenabled"].AsBoolean() )
+                            {
+                                dbContext.Configuration.LazyLoadingEnabled = false;
+                            }
+                        }
+
+                        // Reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
+
+                        // Add included entities
+                        if ( parms.Any( p => p.Key == "include" ) )
+                        {
+                            var includeList = parms["include"].Split( ',' )
+                                                .Select( x => x.Trim() )
+                                                .Where( x => !string.IsNullOrWhiteSpace( x ) );
+
+                            foreach ( var includeItem in includeList )
+                            {
+                                queryResult = queryResult.Include( includeItem );
+                            }
+                        }
 
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
@@ -419,15 +442,71 @@ namespace Rock.Lava.Blocks
                                 queryResult = queryResult.Take( 1000 );
                             }
 
-                            var resultList = queryResult.ToList();
+                            // Process logic to be able to return an anonymous types and group bys. We have to abstract the return types as
+                            // the select returns a type of List<dynamic> while the normal entity command returns List<IEntity>.
+                            // Using a type of List<object> for both did not work (that would have eliminated the need for the
+                            // firstItem and returnCount.
+                            object returnValues = null;
+                            object firstItem = null;
+                            int returnCount = 0;
+
+                            if ( parms.ContainsKey( "groupby" ) || parms.ContainsKey( "select" ) || parms.ContainsKey( "selectmany" ) )
+                            {
+                                /* 
+                                   3/1/2021 - JME
+                                   Ensure that lazy loading is enabled. If this is false it throws a null reference exception.
+                                   I confirmed that the anonymous type is getting it's data from the single source SQL (no lazy loading).
+                                   Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
+                                   package. The important part is that the data is coming back in a single query.
+                                */
+                                dbContext.Configuration.LazyLoadingEnabled = true;
+
+
+                                List<dynamic> results = null;
+
+                                // Logic here is a groupby has to have a select, but a select doesn't need a groupby.
+                                if ( parms.ContainsKey( "groupby" ) && parms.ContainsKey( "select" ) )
+                                {
+                                    results = queryResult.Cast( entityType )
+                                                    .GroupBy( parms["groupby"] )
+                                                    .Select( parms["select"] )
+                                                    .ToDynamicList();
+                                }
+                                else
+                                {
+                                    if ( parms.ContainsKey( "select" ) )
+                                    {
+                                        results = queryResult.Cast( entityType )
+                                                        .Select( parms["select"] )
+                                                        .ToDynamicList();
+                                    }
+                                    else  // selectmany
+                                    {
+                                        results = queryResult.Cast( entityType )
+                                                        .SelectMany( parms["selectmany"] )
+                                                        .ToDynamicList();
+                                    }
+                                }
+
+                                returnValues = results;
+                                firstItem = results.FirstOrDefault();
+                                returnCount = results.Count();
+                            }
+                            else
+                            {
+                                var results = queryResult.ToList();
+                                returnValues = results;
+                                firstItem = results.FirstOrDefault();
+                                returnCount = results.Count();
+                            }
 
                             // Add the result to the current context.
-                            context.SetMergeField( parms["iterator"], resultList, LavaContextRelativeScopeSpecifier.Current );
+                            context.SetMergeField( parms["iterator"], returnValues, LavaContextRelativeScopeSpecifier.Current );
 
-                            if ( resultList.Count == 1 )
+                            if ( returnCount == 1 )
                             {
                                 // If there is only one item, set a singleton variable in addition to the result list.
-                                context.SetMergeField( EntityName, resultList.FirstOrDefault(), LavaContextRelativeScopeSpecifier.Current );
+                                context.SetMergeField( EntityName, firstItem, LavaContextRelativeScopeSpecifier.Current );
                             }
                         }
                     }
@@ -664,6 +743,11 @@ namespace Rock.Lava.Blocks
                             case "iterator":
                             case "checksecurity":
                             case "includedeceased":
+                            case "lazyloadenabled":
+                            case "include":
+                            case "select":
+                            case "selectmany":
+                            case "groupby":
                             case "securityenabled":
                                 {
                                     parms.AddOrReplace( dynamicParm, dynamicParmValue );

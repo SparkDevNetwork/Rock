@@ -49,8 +49,8 @@ namespace RockWeb.Blocks.Reporting
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
 
                 <div class='pull-right margin-l-md'><i class='fa fa-chevron-right'></i></div>
-                
-                <div class='panel-labels'> 
+
+                <div class='panel-labels'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
                 </div>
             </div>
@@ -217,13 +217,15 @@ namespace RockWeb.Blocks.Reporting
                 Template defaultTemplate = null;
                 ILavaTemplate defaultLavaTemplate = null;
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     defaultTemplate = Template.Parse( GetAttributeValue( "DefaultTemplate" ) );
+
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "DefaultTemplate" ) );
                 }
                 else
                 {
-                    var parseResult = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( "DefaultTemplate" ) );
 
                     defaultLavaTemplate = parseResult.Template;
                 }
@@ -238,7 +240,7 @@ namespace RockWeb.Blocks.Reporting
 
                 var channelItems = new List<ChannelItem>();
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     foreach ( var channel in channelQry )
                     {
@@ -311,7 +313,7 @@ namespace RockWeb.Blocks.Reporting
 	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
 	            }
 			}
-			
+
             return personId;
         }
 

@@ -17,6 +17,7 @@
 using System;
 using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Tests.Shared;
 using Rock.Utility.Settings;
 
@@ -117,6 +118,23 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        public void RockInstanceConfigFilter_LavaEngine_RendersExpectedValue()
+        {
+            var template = "{{ 'LavaEngine' | RockInstanceConfig }}";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( template );
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+
+                var expectedOutput = RockInstanceConfig.LavaEngineName;
+
+                Assert.That.AreEqual( expectedOutput, result.Text );
+            } );
+        }
+
+        [TestMethod]
         public void RockInstanceConfigFilter_InvalidParameterName_RendersErrorMessage()
         {
             var template = "{{ 'unknown_setting' | RockInstanceConfig }}";
@@ -150,12 +168,15 @@ namespace Rock.Tests.Integration.Lava
 
             engine.RegisterFilter( filterMethodValid, "AppendValue" );
 
-            TestHelper.AssertTemplateOutput(Rock.Lava.LavaEngineTypeSpecifier.Fluid, expectedOutput, inputTemplate );
+            // This should render correctly.
+            TestHelper.AssertTemplateOutput( Rock.Lava.LavaEngineTypeSpecifier.Fluid, expectedOutput, inputTemplate );
 
-            // This should throw an exception.
+            // This should throw an exception when attempting to render a template containing the invalid filter.
             engine.RegisterFilter( filterMethodInvalid, "AppendValue" );
 
-            TestHelper.AssertTemplateOutput( Rock.Lava.LavaEngineTypeSpecifier.Fluid, "Lava Error", inputTemplate, new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+            var result = engine.RenderTemplate( inputTemplate, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
+
+            Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Parameter type 'Guid' is not supported" );
         }
 
         public static class TestLavaLibraryFilter

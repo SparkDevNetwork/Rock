@@ -244,14 +244,14 @@ namespace Rock.Model
 
             // Get PersonAlias.
             var person = this.PersonAlias?.Person;
-            if ( person == null )
+            if ( person == null && this.PersonAliasId != 0 )
             {
                 if ( rockContext == null )
                 {
                     rockContext = new RockContext();
                 }
                 var personAlias = new PersonAliasService( rockContext ).Get( this.PersonAliasId );
-                person = personAlias.Person;
+                person = personAlias?.Person;
             }
 
             // Get StepType.

@@ -52,5 +52,11 @@ namespace Rock.Lava
         /// If not specified, the template content is used to calculate the cache key.
         /// </summary>
         public string CacheKey { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets the strategy for handling exceptions encountered during the rendering process.
+        /// </summary>
+        public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy { get; set; }
+
     }
 }

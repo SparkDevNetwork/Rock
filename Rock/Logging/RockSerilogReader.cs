@@ -109,20 +109,28 @@ namespace Rock.Logging
             }
 
             var currentFileIndex = 0;
-            var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
-
-            while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
+            try
             {
-                currentFileIndex++;
-                var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
-                var temp = new string[additionalLogs.Length + logs.Length];
-                additionalLogs.CopyTo( temp, 0 );
-                logs.CopyTo( temp, additionalLogs.Length );
+                var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
 
-                logs = temp;
+                while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
+                {
+                    currentFileIndex++;
+                    var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
+                    var temp = new string[additionalLogs.Length + logs.Length];
+                    additionalLogs.CopyTo( temp, 0 );
+                    logs.CopyTo( temp, additionalLogs.Length );
+
+                    logs = temp;
+                }
+
+                return logs;
             }
-
-            return logs;
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return new string[] { };
+            }
         }
 
         private int GetRockLogRecordCount()

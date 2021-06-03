@@ -180,7 +180,7 @@ namespace Rock.Lava
 
             try
             {
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     /*
                         7/6/2020 - JH
@@ -409,7 +409,7 @@ namespace Rock.Lava
                 return false;
             }
 
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            if ( LavaService.RockLiquidIsEnabled )
             {
                 return obj != null && obj is Rock.Lava.ILiquidizable;
             }
@@ -435,7 +435,8 @@ namespace Rock.Lava
         /// </summary>
         private static void InitializeLavaCommentsRegex()
         {
-            const string stringElement = @"(('|"")[^'""]*('|""))+";
+            const string doubleQuotedString = @"(""[^""]*"")+";
+            const string singleQuotedString = @"('[^']*')+";
 
             string lineCommentElement = LavaTokenLineComment + @"(.*?)\r?\n";
 
@@ -443,7 +444,7 @@ namespace Rock.Lava
 
             var rawBlock = @"\{%\sraw\s%\}(.*?)\{%\sendraw\s%\}";
 
-            var templateElementMatchGroups = rawBlock + "|" + blockCommentElement + "|" + lineCommentElement + "|" + stringElement;
+            var templateElementMatchGroups = rawBlock + "|" + singleQuotedString + "|" + doubleQuotedString + "|" + blockCommentElement + "|" + lineCommentElement;
 
             // Create and compile the Regex, because it will be used very frequently.
             _lavaCommentMatchGroupsRegex = new Regex( templateElementMatchGroups, RegexOptions.Compiled | RegexOptions.Singleline );
@@ -466,23 +467,88 @@ namespace Rock.Lava
         {
             if ( string.IsNullOrEmpty( lavaTemplate ) )
             {
-               return string.Empty;
+                return string.Empty;
             }
 
             // Remove comments from the content.
             var lavaWithoutComments = _lavaCommentMatchGroupsRegex.Replace( lavaTemplate,
-                me => {
+                me =>
+                {
                     // If the match group is a line comment, retain the end-of-line marker.
                     if ( me.Value.StartsWith( LavaTokenBlockCommentStart ) || me.Value.StartsWith( LavaTokenLineComment ) )
                     {
                         return me.Value.StartsWith( LavaTokenLineComment ) ? Environment.NewLine : string.Empty;
                     }
 
-                    // Keep the literal strings
+                    // If the match group is not a comment, return a literal string.
                     return me.Value;
                 } );
 
             return lavaWithoutComments;
+        }
+
+        /// <summary>
+        /// Indicates if the target string contains any Lava-specific comment elements.
+        /// Liquid {% comment %} tags are not classified as Lava-specific comment syntax, and
+        /// comments contained in quoted strings and {% raw %} tags are ignored.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool ContainsLavaComments( string content )
+        {
+            if ( string.IsNullOrEmpty( content ) )
+            {
+                return false;
+            }
+
+            int searchStartIndex = 0;
+            Match match = null;
+
+            while ( match == null || match.Success )
+            {
+                match = _lavaCommentMatchGroupsRegex.Match( content, searchStartIndex );
+
+                if ( match.Value.StartsWith( LavaTokenBlockCommentStart ) || match.Value.StartsWith( LavaTokenLineComment ) )
+                {
+                    return true;
+                }
+
+                searchStartIndex = match.Index + match.Length;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region IsLavaTemplate
+
+        /// <summary>
+        /// Indicates if the target string contains any elements of a Lava template.
+        /// NOTE: This function may return a false positive if the target string contains anything that resembles a Lava element, perhaps contained in a string literal.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        public static bool IsLavaTemplate( this string content )
+        {
+            if ( content == null )
+            {
+                return false;
+            }
+
+            // If the input string contains any Lava tags, consider it as a template.
+            if ( content.HasMergeFields() )
+            {
+                return true;
+            }
+
+            // If the input string contains any Lava-style comments, consider it as a template.
+            if ( ContainsLavaComments( content ) )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         #endregion
@@ -632,6 +698,62 @@ namespace Rock.Lava
                         parms.AddOrReplace( key, value );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Parse the provided Lava template using the current Lava engine, and write any errors to the exception log.
+        /// </summary>
+        /// <param name="content"></param>
+        public static void VerifyParseTemplateForCurrentEngine( string content )
+        {
+            // If RockLiquid mode is enabled, try to render uncached templates using the current Lava engine and record any errors that occur.
+            // Render the final output using the RockLiquid legacy code.
+            var engine = LavaService.GetCurrentEngine();
+
+            if ( engine == null )
+            {
+                return;
+            }
+
+            var cacheKey = engine.TemplateCacheService.GetCacheKeyForTemplate( content );
+            var isCached = engine.TemplateCacheService.ContainsKey( cacheKey );
+
+            if ( !isCached )
+            {
+                // Verify the Lava template using the current LavaEngine.
+                // Although it would improve performance, we can't execute this task on a background thread because some Lava filters require access to the current HttpRequest.
+                try
+                {
+                    var result = engine.ParseTemplate( content );
+
+                    if ( result.HasErrors )
+                    {
+                        throw result.GetLavaException();
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // Log the exception and continue, because the final render will be performed by RockLiquid.
+                    ExceptionLogService.LogException( ConvertToLavaException( ex ), System.Web.HttpContext.Current );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Wrap an existing Exception if it is not a LavaException.
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <returns></returns>
+        public static LavaException ConvertToLavaException( Exception ex )
+        {
+            if ( ex is LavaException lex )
+            {
+                return lex;
+            }
+            else
+            {
+                return new LavaException( "Lava Processing Error.", ex );
             }
         }
 

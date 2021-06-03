@@ -51,12 +51,12 @@ namespace Rock.Model
         public bool CanDelete( Person item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<PersonAlias>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -134,7 +134,6 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.Gender = source.Gender;
             target.GivingGroupId = source.GivingGroupId;
-            target.GivingId = source.GivingId;
             target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;

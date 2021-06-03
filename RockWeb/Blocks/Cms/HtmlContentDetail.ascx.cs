@@ -802,7 +802,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( contentHtml != null )
                     {
-                        if ( contentHtml.HasMergeFields() )
+                        if ( LavaHelper.IsLavaTemplate( contentHtml ) )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );

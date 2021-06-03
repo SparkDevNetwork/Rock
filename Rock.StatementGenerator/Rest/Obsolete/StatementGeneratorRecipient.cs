@@ -22,6 +22,8 @@ namespace Rock.StatementGenerator
     /// 
     /// </summary>
     /// <seealso cref="Rock.StatementGenerator.StatementGeneratorRecipient" />
+    [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+    [RockObsolete( "1.12.4" )]
     public class StatementGeneratorRecipientResult : StatementGeneratorRecipient
     {
         /// <summary>
@@ -53,6 +55,8 @@ namespace Rock.StatementGenerator
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "Use ~/api/FinancialGivingStatement/ endpoints instead " )]
+    [RockObsolete( "1.12.4" )]
     public class StatementGeneratorRecipient
     {
         /// <summary>
