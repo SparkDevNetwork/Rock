@@ -17,12 +17,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-//using System.Web.Routing;
+#if !NET5_0_OR_GREATER
+using System.Web.Routing;
+#endif
 
 using Newtonsoft.Json;
 
@@ -73,7 +80,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> containing the format of the RoutePath.
         /// </value>
-        //[Route]
+#if !NET5_0_OR_GREATER
+        [Route]
+#endif
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
@@ -114,24 +123,26 @@ namespace Rock.Model
         {
             if ( entry.State == EntityState.Deleted )
             {
-                //var routes = RouteTable.Routes;
-                //if ( routes != null )
-                //{
-                //    var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( this.Id ) );
-                //    if ( existingRoute != null )
-                //    {
-                //        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
-                //        pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != this.Id ).ToList();
-                //        if ( pageAndRouteIds.Any() )
-                //        {
-                //            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
-                //        }
-                //        else
-                //        {
-                //            RouteTable.Routes.Remove( existingRoute );
-                //        }
-                //    }
-                //}
+#if !NET5_0_OR_GREATER
+                var routes = RouteTable.Routes;
+                if ( routes != null )
+                {
+                    var existingRoute = RouteTable.Routes.OfType<Route>().FirstOrDefault( a => a.RouteIds().Contains( this.Id ) );
+                    if ( existingRoute != null )
+                    {
+                        var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
+                        pageAndRouteIds = pageAndRouteIds.Where( p => p.RouteId != this.Id ).ToList();
+                        if ( pageAndRouteIds.Any() )
+                        {
+                            existingRoute.DataTokens["PageRoutes"] = pageAndRouteIds;
+                        }
+                        else
+                        {
+                            RouteTable.Routes.Remove( existingRoute );
+                        }
+                    }
+                }
+#endif
             }
 
             base.PreSaveChanges( dbContext, entry );

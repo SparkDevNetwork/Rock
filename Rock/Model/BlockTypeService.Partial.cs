@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,8 +78,12 @@ namespace Rock.Model
         /// <param name="blockTypesIdToVerify">The block types identifier to verify.</param>
         public static void VerifyBlockTypeInstanceProperties( int[] blockTypesIdToVerify )
         {
+#if NET5_0_OR_GREATER
+            VerifyBlockTypeInstanceProperties( blockTypesIdToVerify, CancellationToken.None );
+#else
             CancellationToken cancellationToken;
             VerifyBlockTypeInstanceProperties( blockTypesIdToVerify, cancellationToken );
+#endif
         }
 
         /// <summary>
@@ -115,7 +123,9 @@ namespace Rock.Model
                                     var blockTypeCache = BlockTypeCache.Get( blockTypeId );
                                     Type blockCompiledType = blockTypeCache.GetCompiledType();
 
+#if !NET5_0_OR_GREATER
                                     bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
+#endif
                                     BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
                                 }
                             }
@@ -206,6 +216,7 @@ namespace Rock.Model
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
@@ -307,6 +318,7 @@ namespace Rock.Model
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Finds all the <see cref="Rock.Model.BlockType">BlockTypes</see> within a given path.

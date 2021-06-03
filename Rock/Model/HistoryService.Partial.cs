@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Reflection;
 
@@ -42,63 +46,63 @@ namespace Rock.Model
         /// <param name="secondaryEntityType">Type of the secondary entity.</param>
         /// <param name="additionalMergeFields">The additional merge fields.</param>
         /// <returns></returns>
-        //public string GetTimelineHtml( string timelineLavaTemplate, EntityTypeCache primaryEntityType, int entityId, EntityTypeCache secondaryEntityType, Dictionary<string, object> additionalMergeFields )
-        //{
-        //    RockContext rockContext = this.Context as RockContext;
-        //    HistoryService historyService = new HistoryService( rockContext );
+        public string GetTimelineHtml( string timelineLavaTemplate, EntityTypeCache primaryEntityType, int entityId, EntityTypeCache secondaryEntityType, Dictionary<string, object> additionalMergeFields )
+        {
+            RockContext rockContext = this.Context as RockContext;
+            HistoryService historyService = new HistoryService( rockContext );
 
-        //    // change this to adjust the granularity of the GetHistorySummaryByDateTime
-        //    TimeSpan dateSummaryGranularity = TimeSpan.FromDays( 1 );
+            // change this to adjust the granularity of the GetHistorySummaryByDateTime
+            TimeSpan dateSummaryGranularity = TimeSpan.FromDays( 1 );
 
-        //    if ( primaryEntityType == null )
-        //    {
-        //        return null;
-        //    }
+            if ( primaryEntityType == null )
+            {
+                return null;
+            }
 
-        //    var entityTypeIdPrimary = primaryEntityType.Id;
+            var entityTypeIdPrimary = primaryEntityType.Id;
 
-        //    var primaryEntity = historyService.GetEntityQuery( entityTypeIdPrimary ).FirstOrDefault( a => a.Id == entityId );
-        //    var historyQry = historyService.Queryable().Where( a => a.CreatedDateTime.HasValue );
+            var primaryEntity = historyService.GetEntityQuery( entityTypeIdPrimary ).FirstOrDefault( a => a.Id == entityId );
+            var historyQry = historyService.Queryable().Where( a => a.CreatedDateTime.HasValue );
 
-        //    if ( secondaryEntityType == null )
-        //    {
-        //        // get history records where the primaryentity is the Entity
-        //        historyQry = historyQry.Where( a => a.EntityTypeId == entityTypeIdPrimary && a.EntityId == entityId );
-        //    }
-        //    else
-        //    {
-        //        // get history records where the primaryentity is the Entity OR the primaryEntity is the RelatedEntity and the Entity is the Secondary Entity
-        //        // For example, for GroupHistory, Set PrimaryEntityType to Group and SecondaryEntityType to GroupMember, then get history where the Group is History.Entity or the Group is the RelatedEntity and GroupMember is the EntityType
-        //        var entityTypeIdSecondary = secondaryEntityType.Id;
-        //        historyQry = historyQry.Where( a =>
-        //            ( a.EntityTypeId == entityTypeIdPrimary && a.EntityId == entityId )
-        //            || ( a.RelatedEntityTypeId == entityTypeIdPrimary && a.EntityTypeId == entityTypeIdSecondary && a.RelatedEntityId == entityId ) );
-        //    }
+            if ( secondaryEntityType == null )
+            {
+                // get history records where the primaryentity is the Entity
+                historyQry = historyQry.Where( a => a.EntityTypeId == entityTypeIdPrimary && a.EntityId == entityId );
+            }
+            else
+            {
+                // get history records where the primaryentity is the Entity OR the primaryEntity is the RelatedEntity and the Entity is the Secondary Entity
+                // For example, for GroupHistory, Set PrimaryEntityType to Group and SecondaryEntityType to GroupMember, then get history where the Group is History.Entity or the Group is the RelatedEntity and GroupMember is the EntityType
+                var entityTypeIdSecondary = secondaryEntityType.Id;
+                historyQry = historyQry.Where( a =>
+                    ( a.EntityTypeId == entityTypeIdPrimary && a.EntityId == entityId )
+                    || ( a.RelatedEntityTypeId == entityTypeIdPrimary && a.EntityTypeId == entityTypeIdSecondary && a.RelatedEntityId == entityId ) );
+            }
 
-        //    var historySummaryList = historyService.GetHistorySummary( historyQry );
-        //    var historySummaryByDateList = historyService.GetHistorySummaryByDateTime( historySummaryList, dateSummaryGranularity );
-        //    historySummaryByDateList = historySummaryByDateList.OrderByDescending( a => a.SummaryDateTime ).ToList();
-        //    var historySummaryByDateByVerbList = historyService.GetHistorySummaryByDateTimeAndVerb( historySummaryByDateList );
+            var historySummaryList = historyService.GetHistorySummary( historyQry );
+            var historySummaryByDateList = historyService.GetHistorySummaryByDateTime( historySummaryList, dateSummaryGranularity );
+            historySummaryByDateList = historySummaryByDateList.OrderByDescending( a => a.SummaryDateTime ).ToList();
+            var historySummaryByDateByVerbList = historyService.GetHistorySummaryByDateTimeAndVerb( historySummaryByDateList );
 
-        //    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-        //    mergeFields.Add( "PrimaryEntity", primaryEntity );
-        //    mergeFields.Add( "PrimaryEntityTypeName", primaryEntityType.FriendlyName );
-        //    if ( secondaryEntityType != null )
-        //    {
-        //        mergeFields.Add( "SecondaryEntityTypeName", secondaryEntityType.FriendlyName );
-        //    }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "PrimaryEntity", primaryEntity );
+            mergeFields.Add( "PrimaryEntityTypeName", primaryEntityType.FriendlyName );
+            if ( secondaryEntityType != null )
+            {
+                mergeFields.Add( "SecondaryEntityTypeName", secondaryEntityType.FriendlyName );
+            }
 
-        //    mergeFields.Add( "HistorySummaryByDateByVerbList", historySummaryByDateByVerbList );
-        //    if ( additionalMergeFields != null )
-        //    {
-        //        foreach ( var additionalMergeField in additionalMergeFields )
-        //        {
-        //            mergeFields.AddOrIgnore( additionalMergeField.Key, additionalMergeField.Value );
-        //        }
-        //    }
-        //    string timelineHtml = timelineLavaTemplate.ResolveMergeFields( mergeFields );
-        //    return timelineHtml;
-        //}
+            mergeFields.Add( "HistorySummaryByDateByVerbList", historySummaryByDateByVerbList );
+            if ( additionalMergeFields != null )
+            {
+                foreach ( var additionalMergeField in additionalMergeFields )
+                {
+                    mergeFields.AddOrIgnore( additionalMergeField.Key, additionalMergeField.Value );
+                }
+            }
+            string timelineHtml = timelineLavaTemplate.ResolveMergeFields( mergeFields );
+            return timelineHtml;
+        }
 
         /// <summary>
         /// Gets the entity query for the specified EntityTypeId
@@ -107,26 +111,26 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<IEntity> GetEntityQuery( int entityTypeId )
         {
-            //EntityTypeCache entityTypeCache = EntityTypeCache.Get( entityTypeId );
+            EntityTypeCache entityTypeCache = EntityTypeCache.Get( entityTypeId );
 
-            //var rockContext = this.Context as RockContext;
+            var rockContext = this.Context as RockContext;
 
-            //if ( entityTypeCache.AssemblyName != null )
-            //{
-            //    Type entityType = entityTypeCache.GetEntityType();
-            //    if ( entityType != null )
-            //    {
-            //        Type[] modelType = { entityType };
-            //        Type genericServiceType = typeof( Rock.Data.Service<> );
-            //        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-            //        Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
+            if ( entityTypeCache.AssemblyName != null )
+            {
+                Type entityType = entityTypeCache.GetEntityType();
+                if ( entityType != null )
+                {
+                    Type[] modelType = { entityType };
+                    Type genericServiceType = typeof( Rock.Data.Service<> );
+                    Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                    Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
 
-            //        MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
-            //        var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
+                    MethodInfo qryMethod = serviceInstance.GetType().GetMethod( "Queryable", new Type[] { } );
+                    var entityQry = qryMethod.Invoke( serviceInstance, new object[] { } ) as IQueryable<IEntity>;
 
-            //        return entityQry;
-            //    }
-            //}
+                    return entityQry;
+                }
+            }
 
             return null;
         }
@@ -338,7 +342,7 @@ namespace Rock.Model
             {
                 get
                 {
-                    return null/*EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName*/;
+                    return EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName;
                 }
             }
 
@@ -513,7 +517,7 @@ namespace Rock.Model
             {
                 get
                 {
-                    return null/*EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName*/;
+                    return EntityTypeCache.Get( this.EntityTypeId )?.FriendlyName;
                 }
             }
 
@@ -547,13 +551,13 @@ namespace Rock.Model
             /// <value>
             /// The category.
             /// </value>
-            //public CategoryCache Category
-            //{
-            //    get
-            //    {
-            //        return CategoryCache.Get( this.CategoryId );
-            //    }
-            //}
+            public CategoryCache Category
+            {
+                get
+                {
+                    return CategoryCache.Get( this.CategoryId );
+                }
+            }
 
             /// <summary>
             /// Gets or sets the related entity type identifier.
@@ -573,10 +577,10 @@ namespace Rock.Model
             {
                 get
                 {
-                    //if ( RelatedEntityTypeId.HasValue )
-                    //{
-                    //    return EntityTypeCache.Get( this.RelatedEntityTypeId.Value )?.FriendlyName;
-                    //}
+                    if ( RelatedEntityTypeId.HasValue )
+                    {
+                        return EntityTypeCache.Get( this.RelatedEntityTypeId.Value )?.FriendlyName;
+                    }
 
                     return null;
                 }
@@ -610,35 +614,39 @@ namespace Rock.Model
             {
                 get
                 {
-                    //var category = this.Category;
+                    var category = this.Category;
                     var caption = this.Caption;
-                    //if ( category != null )
-                    //{
-                    //    string urlMask = category.GetAttributeValue( "UrlMask" );
-                    //    string virtualUrl = string.Empty;
-                    //    if ( !string.IsNullOrWhiteSpace( urlMask ) )
-                    //    {
-                    //        if ( urlMask.Contains( "{0}" ) )
-                    //        {
-                    //            string p1 = this.RelatedEntityId.HasValue ? this.RelatedEntityId.Value.ToString() : "";
-                    //            string p2 = this.EntityId.ToString();
-                    //            virtualUrl = string.Format( urlMask, p1, p2 );
-                    //        }
+                    if ( category != null )
+                    {
+                        string urlMask = category.GetAttributeValue( "UrlMask" );
+                        string virtualUrl = string.Empty;
+                        if ( !string.IsNullOrWhiteSpace( urlMask ) )
+                        {
+                            if ( urlMask.Contains( "{0}" ) )
+                            {
+                                string p1 = this.RelatedEntityId.HasValue ? this.RelatedEntityId.Value.ToString() : "";
+                                string p2 = this.EntityId.ToString();
+                                virtualUrl = string.Format( urlMask, p1, p2 );
+                            }
 
-                    //        string resolvedUrl;
+                            string resolvedUrl;
 
-                    //        if ( System.Web.HttpContext.Current == null )
-                    //        {
-                    //            resolvedUrl = virtualUrl;
-                    //        }
-                    //        else
-                    //        {
-                    //            resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
-                    //        }
+#if NET5_0_OR_GREATER
+                            resolvedUrl = virtualUrl;
+#else
+                            if ( System.Web.HttpContext.Current == null )
+                            {
+                                resolvedUrl = virtualUrl;
+                            }
+                            else
+                            {
+                                resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+                            }
+#endif
 
-                    //        return string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
-                    //    }
-                    //}
+                            return string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
+                        }
+                    }
 
                     return caption;
                 }
@@ -744,51 +752,51 @@ namespace Rock.Model
         {
             SetHistoryEntriesSourceOfChange( changes, sourceOfChange, sourceOfChange != null );
 
-            //var entityType = EntityTypeCache.Get( modelType );
-            //var category = CategoryCache.Get( categoryGuid );
-            //var creationDate = RockDateTime.Now;
+            var entityType = EntityTypeCache.Get( modelType );
+            var category = CategoryCache.Get( categoryGuid );
+            var creationDate = RockDateTime.Now;
 
-            //int? relatedEntityTypeId = null;
-            //if ( relatedModelType != null )
-            //{
-            //    var relatedEntityType = EntityTypeCache.Get( relatedModelType );
-            //    if ( relatedModelType != null )
-            //    {
-            //        relatedEntityTypeId = relatedEntityType.Id;
-            //    }
-            //}
+            int? relatedEntityTypeId = null;
+            if ( relatedModelType != null )
+            {
+                var relatedEntityType = EntityTypeCache.Get( relatedModelType );
+                if ( relatedModelType != null )
+                {
+                    relatedEntityTypeId = relatedEntityType.Id;
+                }
+            }
 
             List<History> historyRecordsToInsert = new List<History>();
 
-            //if ( entityType != null && category != null )
-            //{
-            //    foreach ( var historyChange in changes.Where( m => m != null ) )
-            //    {
-            //        var history = new History();
-            //        history.EntityTypeId = entityType.Id;
-            //        history.CategoryId = category.Id;
-            //        history.EntityId = entityId;
-            //        history.Caption = caption.Truncate( 200 );
-            //        history.RelatedEntityTypeId = relatedEntityTypeId;
-            //        history.RelatedEntityId = relatedEntityId;
+            if ( entityType != null && category != null )
+            {
+                foreach ( var historyChange in changes.Where( m => m != null ) )
+                {
+                    var history = new History();
+                    history.EntityTypeId = entityType.Id;
+                    history.CategoryId = category.Id;
+                    history.EntityId = entityId;
+                    history.Caption = caption.Truncate( 200 );
+                    history.RelatedEntityTypeId = relatedEntityTypeId;
+                    history.RelatedEntityId = relatedEntityId;
 
-            //        historyChange.CopyToHistory( history );
+                    historyChange.CopyToHistory( history );
 
-            //        if ( modifiedByPersonAliasId.HasValue )
-            //        {
-            //            history.CreatedByPersonAliasId = modifiedByPersonAliasId;
-            //        }
+                    if ( modifiedByPersonAliasId.HasValue )
+                    {
+                        history.CreatedByPersonAliasId = modifiedByPersonAliasId;
+                    }
 
-            //        // If not specified, manually set the creation date on these history items so that they will be grouped together.
-            //        if ( historyChange.ChangedDateTime == null )
-            //        {
-            //            history.CreatedDateTime = creationDate;
-            //        }
+                    // If not specified, manually set the creation date on these history items so that they will be grouped together.
+                    if ( historyChange.ChangedDateTime == null )
+                    {
+                        history.CreatedDateTime = creationDate;
+                    }
 
-            //        historyRecordsToInsert.Add( history );
+                    historyRecordsToInsert.Add( history );
 
-            //    }
-            //}
+                }
+            }
 
             return historyRecordsToInsert;
         }
@@ -890,20 +898,20 @@ namespace Rock.Model
         /// <param name="entityId">The entity identifier.</param>
         public static void DeleteChanges( RockContext rockContext, Type modelType, int entityId )
         {
-            //var entityType = EntityTypeCache.Get( modelType );
-            //if ( entityType != null )
-            //{
-            //    var historyService = new HistoryService( rockContext );
-            //    foreach ( var history in historyService.Queryable()
-            //        .Where( h =>
-            //            h.EntityTypeId == entityType.Id &&
-            //            h.EntityId == entityId ) )
-            //    {
-            //        historyService.Delete( history );
-            //    }
+            var entityType = EntityTypeCache.Get( modelType );
+            if ( entityType != null )
+            {
+                var historyService = new HistoryService( rockContext );
+                foreach ( var history in historyService.Queryable()
+                    .Where( h =>
+                        h.EntityTypeId == entityType.Id &&
+                        h.EntityId == entityId ) )
+                {
+                    historyService.Delete( history );
+                }
 
-            //    rockContext.SaveChanges();
-            //}
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>

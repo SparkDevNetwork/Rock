@@ -46,7 +46,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [Required]
         [MaxLength( 250 )]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         public string NodeName { get; set; }
 
         /// <summary>
@@ -119,7 +121,9 @@ namespace Rock.Model
         /// The current leadership polling interval seconds.
         /// </value>
         [DataMember]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         public decimal CurrentLeadershipPollingIntervalSeconds { get; set; }
 
         /// <summary>

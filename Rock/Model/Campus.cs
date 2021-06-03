@@ -17,12 +17,16 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,7 +37,7 @@ namespace Rock.Model
     [Table( "Campus" )]
     [DataContract]
     [Analytics( false, true )]
-    public partial class Campus : Model<Campus>, IOrdered/*, ICacheable*/
+    public partial class Campus : Model<Campus>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -56,7 +60,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
@@ -279,31 +285,31 @@ namespace Rock.Model
             *
             * Reason: Campus Team Feature
             */
-            //var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
-            //if ( state != EntityState.Deleted && campusTeamGroupTypeId.HasValue )
-            //{
-            //    if ( this.TeamGroup == null || this.TeamGroup.GroupTypeId != campusTeamGroupTypeId.Value )
-            //    {
-            //        // this Campus does not yet have a Group of the correct GroupType: create one and assign it
-            //        var teamGroup = new Group
-            //        {
-            //            IsSystem = true,
-            //            GroupTypeId = campusTeamGroupTypeId.Value,
-            //            Name = string.Format( "{0} Team", this.Name ),
-            //            Description = "Are responsible for leading and administering the Campus."
-            //        };
+            var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
+            if ( state != EntityState.Deleted && campusTeamGroupTypeId.HasValue )
+            {
+                if ( this.TeamGroup == null || this.TeamGroup.GroupTypeId != campusTeamGroupTypeId.Value )
+                {
+                    // this Campus does not yet have a Group of the correct GroupType: create one and assign it
+                    var teamGroup = new Group
+                    {
+                        IsSystem = true,
+                        GroupTypeId = campusTeamGroupTypeId.Value,
+                        Name = string.Format( "{0} Team", this.Name ),
+                        Description = "Are responsible for leading and administering the Campus."
+                    };
 
-            //        new GroupService( rockContext ).Add( teamGroup );
+                    new GroupService( rockContext ).Add( teamGroup );
 
-            //        this.TeamGroup = teamGroup;
-            //    }
+                    this.TeamGroup = teamGroup;
+                }
 
-            //    if ( !this.TeamGroup.IsSystem )
-            //    {
-            //        // this Campus already had a Group of the correct GroupType, but the IsSystem value was incorrect
-            //        this.TeamGroup.IsSystem = true;
-            //    }
-            //}
+                if ( !this.TeamGroup.IsSystem )
+                {
+                    // this Campus already had a Group of the correct GroupType, but the IsSystem value was incorrect
+                    this.TeamGroup.IsSystem = true;
+                }
+            }
 
             base.PreSaveChanges( dbContext, state );
         }
@@ -327,20 +333,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return CampusCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return CampusCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    CampusCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CampusCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
     }

@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -124,12 +124,12 @@ namespace Rock
 
             if ( type.Namespace.Equals( "Rock.Model" ) )
             {
-                //var entityType = EntityTypeCache.Get( type, false );
-                //if ( entityType != null && entityType.FriendlyName != null )
-                //{
-                //    return entityType.FriendlyName;
-                //}
-                //else
+                var entityType = EntityTypeCache.Get( type, false );
+                if ( entityType != null && entityType.FriendlyName != null )
+                {
+                    return entityType.FriendlyName;
+                }
+                else
                 {
                     return type.Name.SplitCase();
                 }

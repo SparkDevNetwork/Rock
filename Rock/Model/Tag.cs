@@ -214,18 +214,18 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        if ( this.CategoryId.HasValue )
-        //        {
-        //            return Rock.Web.Cache.CategoryCache.Get( this.CategoryId.Value ) ?? base.ParentAuthority;
-        //        }
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.CategoryId.HasValue )
+                {
+                    return Rock.Web.Cache.CategoryCache.Get( this.CategoryId.Value ) ?? base.ParentAuthority;
+                }
 
-        //        return this.Category != null ? this.Category : base.ParentAuthority;
-        //    }
-        //}
+                return this.Category != null ? this.Category : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -237,10 +237,10 @@ namespace Rock.Model
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    //_supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
-                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
                 return _supportedActions;
             }

@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -95,12 +99,12 @@ namespace Rock.Tasks
 
                     if ( messageRecipients.Any() )
                     {
-                        //var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.REGISTRATION_NOTIFICATION.AsGuid() );
-                        //emailMessage.AdditionalMergeFields = mergeFields;
-                        //emailMessage.SetRecipients( messageRecipients );
-                        //emailMessage.AppRoot = message.AppRoot;
-                        //emailMessage.ThemeRoot = message.ThemeRoot;
-                        //emailMessage.Send();
+                        var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.REGISTRATION_NOTIFICATION.AsGuid() );
+                        emailMessage.AdditionalMergeFields = mergeFields;
+                        emailMessage.SetRecipients( messageRecipients );
+                        emailMessage.AppRoot = message.AppRoot;
+                        emailMessage.ThemeRoot = message.ThemeRoot;
+                        emailMessage.Send();
                     }
                 }
             }

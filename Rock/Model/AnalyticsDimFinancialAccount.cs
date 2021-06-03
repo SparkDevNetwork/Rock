@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
+#endif
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -223,6 +225,7 @@ namespace Rock.Model
         #endregion
     }
 
+#if NET5_0_OR_GREATER
     public partial class AnalyticsDimFinancialAccountConfiguration : EntityTypeConfiguration<AnalyticsDimFinancialAccount>
     {
         /// <summary>
@@ -232,5 +235,5 @@ namespace Rock.Model
         {
         }
     }
-
+#endif
 }

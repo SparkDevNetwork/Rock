@@ -51,7 +51,9 @@ namespace Rock.Data
         /// </summary>
         static LinqRuntimeTypeBuilder()
         {
-            //moduleBuilder = Thread.GetDomain().DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run ).DefineDynamicModule( assemblyName.Name );
+#if !NET5_0_OR_GREATER
+            moduleBuilder = Thread.GetDomain().DefineDynamicAssembly( assemblyName, AssemblyBuilderAccess.Run ).DefineDynamicModule( assemblyName.Name );
+#endif
         }
 
         /// <summary>
@@ -80,6 +82,9 @@ namespace Rock.Data
         /// <exception cref="System.ArgumentOutOfRangeException">fields;fields must have at least 1 field definition</exception>
         public static Type GetDynamicType( Dictionary<string, Type> fields )
         {
+#if NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             if ( null == fields )
             {
                 throw new ArgumentNullException( "fields" );
@@ -138,6 +143,7 @@ namespace Rock.Data
             {
                 return null;
             }
+#endif
         }
 
         /// <summary>

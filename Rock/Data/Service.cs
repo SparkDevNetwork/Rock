@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -87,7 +91,7 @@ namespace Rock.Data
         {
             _context = dbContext;
             _objectSet = _context.Set<T>();
-            //RelatedEntities = new RelatedEntityHelper<T>( this );
+            RelatedEntities = new RelatedEntityHelper<T>( this );
         }
 
         #endregion
@@ -639,7 +643,7 @@ namespace Rock.Data
         /// <value>
         /// The related entities.
         /// </value>
-        //public RelatedEntityHelper<T> RelatedEntities { get; private set; }
+        public RelatedEntityHelper<T> RelatedEntities { get; private set; }
 
         #endregion Related Entities
 
@@ -704,7 +708,11 @@ namespace Rock.Data
         /// <returns></returns>
         public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
+#if NET5_0_OR_GREATER
             return _objectSet.FromSqlRaw( query, parameters );
+#else
+            return _objectSet.SqlQuery( query, parameters );
+#endif
         }
 
         /// <summary>
@@ -719,6 +727,7 @@ namespace Rock.Data
             return this.Queryable().Any( lambda );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Transforms the specified source.
         /// </summary>
@@ -726,12 +735,13 @@ namespace Rock.Data
         /// <param name="transformation">The transformation.</param>
         /// <param name="sortProperty">The sort property.</param>
         /// <returns></returns>
-        //public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
-        //{
-        //    var paramExpression = Expression.Parameter( source.ElementType, "p" );
-        //    var whereExpression = transformation.GetExpression( this, source, paramExpression );
-        //    return Get( paramExpression, whereExpression, sortProperty );
-        //}
+        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
+        {
+            var paramExpression = Expression.Parameter( source.ElementType, "p" );
+            var whereExpression = transformation.GetExpression( this, source, paramExpression );
+            return Get( paramExpression, whereExpression, sortProperty );
+        }
+#endif
 
         /// <summary>
         /// Copies the Values from a Source Entity into a Target Entity

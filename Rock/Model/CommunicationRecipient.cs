@@ -239,7 +239,9 @@ namespace Rock.Model
         ///  A <see cref="System.Collections.Generic.Dictionary{String,String}"/> of <see cref="System.String"/> objects containing additional merge values for the <see cref="Rock.Model.Communication"/>
         /// </value>
         [DataMember]
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         public virtual Dictionary<string, object> AdditionalMergeValues
         {
             get { return _additionalMergeValues; }
@@ -365,31 +367,31 @@ namespace Rock.Model
             {
                 if ( !mergeValues.ContainsKey( mergeField.Key ) )
                 {
-                    //var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeField.Key );
-                    //if ( entityTypeInfo?.EntityType != null )
-                    //{
-                    //    // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
-                    //    var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
-                    //    var entityIdString = mergeField.Value.ToString();
-                    //    IEntity mergeEntity = null;
-                    //    var entityId = entityIdString.AsIntegerOrNull();
-                    //    if ( entityId.HasValue )
-                    //    {
-                    //        mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
-                    //    }
-                    //    else
-                    //    {
-                    //        var entityGuid = entityIdString.AsGuidOrNull();
-                    //        if ( entityGuid.HasValue )
-                    //        {
-                    //            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
-                    //        }
-                    //    }
+                    var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeField.Key );
+                    if ( entityTypeInfo?.EntityType != null )
+                    {
+                        // Merge Field is reference to an Entity record. So, get the Entity from the database and use that as a merge object
+                        var entityTypeType = entityTypeInfo.EntityType.GetEntityType();
+                        var entityIdString = mergeField.Value.ToString();
+                        IEntity mergeEntity = null;
+                        var entityId = entityIdString.AsIntegerOrNull();
+                        if ( entityId.HasValue )
+                        {
+                            mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityId.Value );
+                        }
+                        else
+                        {
+                            var entityGuid = entityIdString.AsGuidOrNull();
+                            if ( entityGuid.HasValue )
+                            {
+                                mergeEntity = Reflection.GetIEntityForEntityType( entityTypeType, entityGuid.Value );
+                            }
+                        }
 
-                    //    // Add Entity as Merge field. For example ("GroupMember", groupMember)
-                    //    mergeValues.Add( entityTypeType.Name, mergeEntity );
-                    //}
-                    //else
+                        // Add Entity as Merge field. For example ("GroupMember", groupMember)
+                        mergeValues.Add( entityTypeType.Name, mergeEntity );
+                    }
+                    else
                     {
                         // regular mergefield value
                         mergeValues.Add( mergeField.Key, mergeField.Value );

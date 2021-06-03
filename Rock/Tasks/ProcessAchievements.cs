@@ -38,9 +38,7 @@ namespace Rock.Tasks
                 return;
             }
 
-#if !NET5_0_OR_GREATER
             AchievementTypeCache.ProcessAchievements( entity );
-#endif
         }
 
         /// <summary>

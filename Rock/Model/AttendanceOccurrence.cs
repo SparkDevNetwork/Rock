@@ -80,7 +80,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        //[Index( "IX_OccurrenceDate" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_OccurrenceDate" )]
+#endif
         public DateTime OccurrenceDate
         {
             get
@@ -112,7 +114,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        //[Index( "IX_SundayDate" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_SundayDate" )]
+#endif
         public DateTime SundayDate
         {
             get

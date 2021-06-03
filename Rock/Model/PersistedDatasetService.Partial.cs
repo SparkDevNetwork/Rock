@@ -18,10 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
-//using System.Data.Entity.SqlServer;
+#else
+using System.Data.Entity;
+using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
-//using Rock.Chart;
+using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
 

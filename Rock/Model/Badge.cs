@@ -16,12 +16,16 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Badge" )]
     [DataContract]
-    public partial class Badge : Model<Badge>, IOrdered/*, ICacheable*/, IHasActiveFlag
+    public partial class Badge : Model<Badge>, IOrdered, ICacheable, IHasActiveFlag
     {
         #region Entity Properties
 
@@ -135,22 +139,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    throw new System.NotSupportedException();
-        //    //return BadgeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return BadgeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    throw new System.NotSupportedException();
-        //    //BadgeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            BadgeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
     }

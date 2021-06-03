@@ -21,7 +21,9 @@ using System.ComponentModel.Composition;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+#if !NET5_0_OR_GREATER
 using Rock.Web.UI.Controls.Communication;
+#endif
 
 namespace Rock.Communication.Medium
 {
@@ -68,6 +70,7 @@ You can view an online version of this email here:
         /// </value>
         public override CommunicationType CommunicationType { get { return CommunicationType.Email; } }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the control.
         /// </summary>
@@ -77,5 +80,6 @@ You can view an online version of this email here:
         {
             return new Rock.Web.UI.Controls.Communication.Email( useSimpleMode );
         }
+#endif
     }
 }

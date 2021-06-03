@@ -23,7 +23,9 @@ using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
+#if !NET5_0_OR_GREATER
 using Rock.Web.UI.Controls.Communication;
+#endif
 
 namespace Rock.Communication
 {
@@ -77,12 +79,14 @@ namespace Rock.Communication
         /// </value>
         public abstract CommunicationType CommunicationType { get; }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the control.
         /// </summary>
         /// <param name="useSimpleMode">if set to <c>true</c> [use simple mode].</param>
         /// <returns></returns>
         public abstract MediumControl GetControl( bool useSimpleMode );
+#endif
 
         /// <summary>
         /// Sends the specified rock message.
@@ -107,7 +111,9 @@ namespace Rock.Communication
 
                 if ( rockMessage.CurrentPerson == null )
                 {
+#if !NET5_0_OR_GREATER
                     rockMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
+#endif
                 }
 
                 // Use the transport to send communication

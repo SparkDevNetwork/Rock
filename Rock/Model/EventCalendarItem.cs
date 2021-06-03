@@ -31,7 +31,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendarItem" )]
     [DataContract]
-    public partial class EventCalendarItem : Model<EventCalendarItem>/*, ISecured*/
+    public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
 
         /// <summary>
@@ -86,13 +86,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
-        //    }
-        //}
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
+            }
+        }
         #endregion
 
     }

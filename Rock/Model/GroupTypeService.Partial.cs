@@ -288,61 +288,61 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.GroupTypePath">GroupTypePath</see> objects.
         /// </returns>
-       // [RockObsolete( "1.12" )]
-       // [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
-       // public IEnumerable<GroupTypePath> GetAllAssociatedDescendentsPath( int parentGroupTypeId )
-       // {
-       //     return this.Context.Database.SqlQuery<GroupTypePath>(
-       //         @"
-       //         -- Get GroupType association hierarchy with GroupType ancestor path information
-       //         WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
-       //         (
-       //               SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
-       //               FROM   [GroupTypeAssociation] GTA
-		     //           INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
-       //               WHERE  [GroupTypeId] = {0}
-       //               UNION ALL 
-       //               SELECT
-       //                     GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
-       //               FROM
-       //                     GroupTypeAssociation GTA
-		     //           INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
-		     //           INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
-       //               WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-					  //-- and the child group type can't be a parent group type
-					  //AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
-       //         )
-       //         SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
-       //         FROM CTE
-       //         INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
-       //         ", parentGroupTypeId );
-       // }
+        [RockObsolete( "1.12" )]
+        [Obsolete( "This is misleading and could cause an exception. It should only be used GroupTypes are that are used as Checkin Areas. Use GetCheckinAreaDescendants instead." )]
+        public IEnumerable<GroupTypePath> GetAllAssociatedDescendentsPath( int parentGroupTypeId )
+        {
+            return this.Context.Database.SqlQuery<GroupTypePath>(
+                @"
+                -- Get GroupType association hierarchy with GroupType ancestor path information
+                WITH CTE (ChildGroupTypeId,GroupTypeId, HierarchyPath) AS
+                (
+                      SELECT [ChildGroupTypeId], [GroupTypeId], CONVERT(nvarchar(500),'')
+                      FROM   [GroupTypeAssociation] GTA
+		                INNER JOIN [GroupType] GT ON GT.[Id] = GTA.[GroupTypeId]
+                      WHERE  [GroupTypeId] = {0}
+                      UNION ALL 
+                      SELECT
+                            GTA.[ChildGroupTypeId], GTA.[GroupTypeId], CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT2.Name)
+                      FROM
+                            GroupTypeAssociation GTA
+		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
+		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
+                      WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+					  -- and the child group type can't be a parent group type
+					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+                )
+                SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
+                FROM CTE
+                INNER JOIN [GroupType] GT3 ON GT3.[Id] = CTE.[ChildGroupTypeId]
+                ", parentGroupTypeId );
+        }
 
         /// <summary>
         /// Gets all checkin group type paths.
         /// </summary>
         /// <returns></returns>
-        //[RockObsolete( "1.12" )]
-        //[Obsolete( "Use GetAllCheckinAreaPaths instead" )]
-        //public IEnumerable<GroupTypePath> GetAllCheckinGroupTypePaths()
-        //{
-        //    List<GroupTypePath> result = new List<GroupTypePath>();
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use GetAllCheckinAreaPaths instead" )]
+        public IEnumerable<GroupTypePath> GetAllCheckinGroupTypePaths()
+        {
+            List<GroupTypePath> result = new List<GroupTypePath>();
 
-        //    GroupTypeService groupTypeService = this;
+            GroupTypeService groupTypeService = this;
 
-        //    var qry = groupTypeService.Queryable();
+            var qry = groupTypeService.Queryable();
 
-        //    // limit to show only GroupTypes that have a group type purpose of Checkin Template
-        //    int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
-        //    qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
+            // limit to show only GroupTypes that have a group type purpose of Checkin Template
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
 
-        //    foreach ( var groupTypeId in qry.Select( a => a.Id ) )
-        //    {
-        //        result.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ) );
-        //    }
+            foreach ( var groupTypeId in qry.Select( a => a.Id ) )
+            {
+                result.AddRange( groupTypeService.GetAllAssociatedDescendentsPath( groupTypeId ) );
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.

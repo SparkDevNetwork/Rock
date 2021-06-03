@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -32,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
-    public partial class RestAction : Model<RestAction>/*, ICacheable*/
+    public partial class RestAction : Model<RestAction>, ICacheable
     {
 
         #region Entity Properties
@@ -142,13 +146,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get 
-        //    {
-        //        return this.Controller != null ? this.Controller : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Controller != null ? this.Controller : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this RestAction.
@@ -169,20 +173,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return RestActionCache.Get( this.ApiId );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return RestActionCache.Get( this.ApiId );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    RestActionCache.UpdateCachedEntity( this.ApiId, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            RestActionCache.UpdateCachedEntity( this.ApiId, entityState );
+        }
 
         #endregion
     }

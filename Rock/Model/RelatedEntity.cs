@@ -41,7 +41,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 1 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 1 )]
+#endif
         public int SourceEntityTypeId { get; set; }
 
         /// <summary>
@@ -53,7 +55,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Range( 1, int.MaxValue, ErrorMessage = "SourceEntityId must be greater than zero" )]
-        //[Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 2 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 2 )]
+#endif
         public int SourceEntityId { get; set; }
 
         /// <summary>
@@ -64,7 +68,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 3 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 3 )]
+#endif
         public int TargetEntityTypeId { get; set; }
 
         /// <summary>
@@ -76,7 +82,9 @@ namespace Rock.Model
         [Required]
         [Range( 1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
         [DataMember( IsRequired = true )]
-        //[Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
+#endif
         public int TargetEntityId { get; set; }
 
         /// <summary>
@@ -87,7 +95,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        //[Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 5 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 5 )]
+#endif
         public string PurposeKey { get; set; }
 
         /// <summary>

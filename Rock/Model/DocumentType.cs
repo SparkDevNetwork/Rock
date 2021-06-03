@@ -18,14 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -35,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DocumentType" )]
     [DataContract]
-    public partial class DocumentType : Model<DocumentType>, IOrdered/*, ICacheable*/
+    public partial class DocumentType : Model<DocumentType>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -216,21 +220,21 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return DocumentTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return DocumentTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    DocumentTypeCache.UpdateCachedEntity( this.Id, entityState );
-        //    DocumentTypeCache.RemoveEntityDocumentTypes();
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            DocumentTypeCache.UpdateCachedEntity( this.Id, entityState );
+            DocumentTypeCache.RemoveEntityDocumentTypes();
+        }
 
         #endregion
     }

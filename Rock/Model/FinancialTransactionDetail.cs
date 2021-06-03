@@ -18,8 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -37,7 +42,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionDetail" )]
     [DataContract]
-    public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>/*, ITransactionDetail*/
+    public partial class FinancialTransactionDetail : Model<FinancialTransactionDetail>, ITransactionDetail
     {
         #region Entity Properties
 
@@ -71,7 +76,9 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the total amount of the transaction detail.
         /// </value>
         [DataMember]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -109,7 +116,9 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
         /// </value>
         [DataMember]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         [IncludeAsEntityProperty]
         public decimal? FeeAmount { get; set; }
 
@@ -134,7 +143,9 @@ namespace Rock.Model
         /// This value will be in the currency specified by the Financial Transaction's Foreign Currency Code which defaults to USD.
         /// </remarks>
         [DataMember]
-        //[BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
+#endif
         [DecimalPrecision( 18, 2 )]
         public decimal? ForeignCurrencyAmount { get; set; }
         #endregion
@@ -177,7 +188,9 @@ namespace Rock.Model
         /// </value>
         [RockObsolete( "1.8" )]
         [Obsolete( "Use HistoryChangeList instead", true )]
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -219,7 +232,7 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        //HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency() );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency() );
                         break;
                     }
 
@@ -234,16 +247,16 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChangeList, "Account", History.GetValue<FinancialAccount>( null, origAccountId, rockContext ), acct );
                         }
 
-                        //History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
-                        //History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeAmount.FormatAsCurrency() );
-                        //History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeCoverageAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeCoverageAmount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeAmount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeCoverageAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeCoverageAmount.FormatAsCurrency() );
 
                         break;
                     }
                 case EntityState.Deleted:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
-                        //HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency() );
+                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency() );
                         break;
                     }
             }
@@ -278,28 +291,28 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        //public override ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        if ( this.TransactionId != 0 )
-        //        {
-        //            FinancialTransaction parentTransaction = this.Transaction;
-        //            if ( parentTransaction == null )
-        //            {
-        //                // All we need to auth a FinancialTransaction is FinancialTransaction object with the TransactionId
-        //                parentTransaction = new FinancialTransaction { Id = this.TransactionId };
-        //            }
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.TransactionId != 0 )
+                {
+                    FinancialTransaction parentTransaction = this.Transaction;
+                    if ( parentTransaction == null )
+                    {
+                        // All we need to auth a FinancialTransaction is FinancialTransaction object with the TransactionId
+                        parentTransaction = new FinancialTransaction { Id = this.TransactionId };
+                    }
 
-        //            return parentTransaction;
-        //        }
-        //        else
-        //        {
+                    return parentTransaction;
+                }
+                else
+                {
 
-        //            return base.ParentAuthority;
-        //        }
-        //    }
-        //}
+                    return base.ParentAuthority;
+                }
+            }
+        }
 
         #endregion
 

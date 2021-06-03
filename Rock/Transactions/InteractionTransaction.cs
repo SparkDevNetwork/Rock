@@ -559,6 +559,7 @@ namespace Rock.Transactions
         /// <param name="queue">The <see cref="ConcurrentQueue{InterationInfo}"/> into which this info object should be enqueued.</param>
         public void Initialize( ConcurrentQueue<InteractionTransactionInfo> queue )
         {
+#if !NET5_0_OR_GREATER
             RockPage rockPage = null;
             HttpRequest request = null;
 
@@ -589,10 +590,12 @@ namespace Rock.Transactions
                     // Intentionally ignore exception (.Request will throw an exception instead of simply returning null if it isn't available).
                 }
             }
+#endif
 
             // Fall back to values from the HTTP request if specified by the caller AND the values weren't explicitly set on the info object:
             // (The rockPage and request variables will only be defined if this.GetValuesFromHttpRequest was true.)
 
+#if !NET5_0_OR_GREATER
             this.InteractionData = this.InteractionData ?? request?.Url.ToString();
             this.UserAgent = this.UserAgent ?? request?.UserAgent;
 
@@ -608,6 +611,7 @@ namespace Rock.Transactions
             this.BrowserSessionId = this.BrowserSessionId ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
 
             this.PersonAliasId = this.PersonAliasId ?? rockPage?.CurrentPersonAliasId;
+#endif
 
             // Make sure we don't exceed this field's character limit.
             this.InteractionOperation = EnforceLengthLimitation( this.InteractionOperation, 25 );
@@ -616,6 +620,7 @@ namespace Rock.Transactions
             {
                 // If InteractionSummary was not specified, use the Page title.
                 var title = string.Empty;
+#if !NET5_0_OR_GREATER
                 if ( rockPage != null )
                 {
                     if ( rockPage.BrowserTitle.IsNotNullOrWhiteSpace() )
@@ -627,6 +632,7 @@ namespace Rock.Transactions
                         title = rockPage.PageTitle;
                     }
                 }
+#endif
 
                 // Remove the site name from the title.
                 if ( title?.Contains( "|" ) == true )

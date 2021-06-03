@@ -473,7 +473,7 @@ namespace Rock.Model
         {
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-            this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( a => a.BirthDateKey ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );
         }
     }
 

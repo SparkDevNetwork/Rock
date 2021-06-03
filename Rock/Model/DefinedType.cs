@@ -17,13 +17,17 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -39,7 +43,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DefinedType" )]
     [DataContract]
-    public partial class DefinedType : Model<DefinedType>, IOrdered/*, ICacheable*/
+    public partial class DefinedType : Model<DefinedType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -187,29 +191,29 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return DefinedTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return DefinedTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    var cachedDefinedValues = DefinedTypeCache.Get( this.Id, ( RockContext ) dbContext )?.DefinedValues;
-        //    if ( cachedDefinedValues?.Any() == true )
-        //    {
-        //        foreach ( var cachedDefinedValue in cachedDefinedValues )
-        //        {
-        //            DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, EntityState.Detached );
-        //        }
-        //    }
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var cachedDefinedValues = DefinedTypeCache.Get( this.Id, ( RockContext ) dbContext )?.DefinedValues;
+            if ( cachedDefinedValues?.Any() == true )
+            {
+                foreach ( var cachedDefinedValue in cachedDefinedValues )
+                {
+                    DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, EntityState.Detached );
+                }
+            }
 
-        //    DefinedTypeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+            DefinedTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 

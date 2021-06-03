@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -30,7 +35,7 @@ using Humanizer;
 using Rock.Data;
 using Rock.Security;
 using Rock.Tasks;
-//using Rock.Transactions;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
@@ -44,7 +49,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMember" )]
     [DataContract]
-    public partial class GroupMember : Model<GroupMember>/*, ICacheable*/
+    public partial class GroupMember : Model<GroupMember>, ICacheable
     {
         #region Entity Properties
 
@@ -322,20 +327,20 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        //public override ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        if ( this.Group != null )
-        //        {
-        //            return this.Group;
-        //        }
-        //        else
-        //        {
-        //            return base.ParentAuthority;
-        //        }
-        //    }
-        //}
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Group != null )
+                {
+                    return this.Group;
+                }
+                else
+                {
+                    return base.ParentAuthority;
+                }
+            }
+        }
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -419,17 +424,17 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            //string errorMessage;
+            string errorMessage;
             if ( entry.State != EntityState.Deleted
                  && this.IsArchived == false
                  && this.GroupMemberStatus != GroupMemberStatus.Inactive )
             {
-                //if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
-                //{
-                //    var ex = new GroupMemberValidationException( errorMessage );
-                //    ExceptionLogService.LogException( ex );
-                //    throw ex;
-                //}
+                if ( !ValidateGroupMembership( ( RockContext ) dbContext, out errorMessage ) )
+                {
+                    var ex = new GroupMemberValidationException( errorMessage );
+                    ExceptionLogService.LogException( ex );
+                    throw ex;
+                }
             }
 
             var updateGroupMemberMsg = new UpdateGroupMember.Message
@@ -766,19 +771,19 @@ namespace Rock.Model
             // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
             // GivingLeadId, and GroupSalution is updated
             // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
-            //var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
-            //if ( groupTypeFamilyRoleIds?.Any() == true )
-            //{
-            //    if ( groupTypeFamilyRoleIds.Contains( this.GroupRoleId ) )
-            //    {
-            //        PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
-            //        PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
-            //        PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
+            var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
+            if ( groupTypeFamilyRoleIds?.Any() == true )
+            {
+                if ( groupTypeFamilyRoleIds.Contains( this.GroupRoleId ) )
+                {
+                    PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
+                    PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
+                    PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
 
-            //        // NOTE, make sure to do this after UpdatePrimaryFamily
-            //        PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
-            //    }
-            //}
+                    // NOTE, make sure to do this after UpdatePrimaryFamily
+                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
+                }
+            }
         }
 
         /// <summary>
@@ -813,13 +818,13 @@ namespace Rock.Model
             var result = base.IsValid;
             if ( result )
             {
-                //string errorMessage;
+                string errorMessage;
 
-                //if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
-                //{
-                //    ValidationResults.Add( new ValidationResult( errorMessage ) );
-                //    result = false;
-                //}
+                if ( !ValidateGroupMembership( rockContext, out errorMessage ) )
+                {
+                    ValidationResults.Add( new ValidationResult( errorMessage ) );
+                    result = false;
+                }
             }
 
             return result;
@@ -874,130 +879,130 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        //private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
-        //{
-        //    errorMessage = string.Empty;
-        //    var group = this.Group ?? new GroupService( rockContext ).GetNoTracking( this.GroupId );
+        private bool ValidateGroupMembership( RockContext rockContext, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var group = this.Group ?? new GroupService( rockContext ).GetNoTracking( this.GroupId );
 
-        //    var groupType = GroupTypeCache.Get( group.GroupTypeId );
-        //    if ( groupType == null )
-        //    {
-        //        // For some reason we could not get a GroupType
-        //        errorMessage = $"The GroupTypeId {group.GroupTypeId} used by {this.Group.Name} does not exist.";
-        //        return false;
-        //    }
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+            if ( groupType == null )
+            {
+                // For some reason we could not get a GroupType
+                errorMessage = $"The GroupTypeId {group.GroupTypeId} used by {this.Group.Name} does not exist.";
+                return false;
+            }
 
-        //    var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
-        //    if ( groupRole == null )
-        //    {
-        //        // This is the only point in the method where we need a person object loaded.
-        //        this.Person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
+            var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
+            if ( groupRole == null )
+            {
+                // This is the only point in the method where we need a person object loaded.
+                this.Person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
 
-        //        // For some reason we could not get a GroupTypeRole for the GroupRoleId for this GroupMember.
-        //        errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
-        //        return false;
-        //    }
+                // For some reason we could not get a GroupTypeRole for the GroupRoleId for this GroupMember.
+                errorMessage = $"The GroupRoleId {this.GroupRoleId} for the group member {this.Person.FullName} in group {group.Name} does not exist in the GroupType.Roles for GroupType {groupType.Name}.";
+                return false;
+            }
 
-        //    // Verify duplicate role/person
-        //    if ( !GroupService.AllowsDuplicateMembers() )
-        //    {
-        //        if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
-        //        {
-        //            return false;
-        //        }
-        //    }
+            // Verify duplicate role/person
+            if ( !GroupService.AllowsDuplicateMembers() )
+            {
+                if ( !ValidateGroupMemberDuplicateMember( rockContext, groupType, out errorMessage ) )
+                {
+                    return false;
+                }
+            }
 
-        //    // Verify max group role membership
-        //    if ( groupRole.MaxCount.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
-        //    {
-        //        int memberCountInRole = group.Members
-        //                .Where( m =>
-        //                    m.GroupRoleId == this.GroupRoleId
-        //                    && m.GroupMemberStatus == GroupMemberStatus.Active )
-        //                .Where( m => m != this )
-        //                .Count();
+            // Verify max group role membership
+            if ( groupRole.MaxCount.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
+            {
+                int memberCountInRole = group.Members
+                        .Where( m =>
+                            m.GroupRoleId == this.GroupRoleId
+                            && m.GroupMemberStatus == GroupMemberStatus.Active )
+                        .Where( m => m != this )
+                        .Count();
 
-        //        bool roleMembershipAboveMax = false;
+                bool roleMembershipAboveMax = false;
 
-        //        // if adding new group member..
-        //        if ( this.Id.Equals( 0 ) )
-        //        {
-        //            // verify that active count has not exceeded the max
-        //            if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
-        //            {
-        //                roleMembershipAboveMax = true;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            // if existing group member changing role or status..
-        //            if ( this.IsStatusOrRoleModified( rockContext ) )
-        //            {
-        //                // verify that active count has not exceeded the max
-        //                if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
-        //                {
-        //                    roleMembershipAboveMax = true;
-        //                }
-        //            }
-        //        }
+                // if adding new group member..
+                if ( this.Id.Equals( 0 ) )
+                {
+                    // verify that active count has not exceeded the max
+                    if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                    {
+                        roleMembershipAboveMax = true;
+                    }
+                }
+                else
+                {
+                    // if existing group member changing role or status..
+                    if ( this.IsStatusOrRoleModified( rockContext ) )
+                    {
+                        // verify that active count has not exceeded the max
+                        if ( ( memberCountInRole + 1 ) > groupRole.MaxCount )
+                        {
+                            roleMembershipAboveMax = true;
+                        }
+                    }
+                }
 
-        //        // throw error if above max.. do not proceed
-        //        if ( roleMembershipAboveMax )
-        //        {
-        //            errorMessage = $"The number of {groupRole.Name.Pluralize().ToLower()} for this {groupType.GroupTerm.ToLower()} is above its maximum allowed limit of {groupRole.MaxCount:N0} active {groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ).ToLower()}.";
-        //            return false;
-        //        }
-        //    }
+                // throw error if above max.. do not proceed
+                if ( roleMembershipAboveMax )
+                {
+                    errorMessage = $"The number of {groupRole.Name.Pluralize().ToLower()} for this {groupType.GroupTerm.ToLower()} is above its maximum allowed limit of {groupRole.MaxCount:N0} active {groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ).ToLower()}.";
+                    return false;
+                }
+            }
 
-        //    // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
-        //    if ( this.IsNewOrChangedGroupMember( rockContext ) )
-        //    {
-        //        if ( group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
-        //        {
-        //            var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
-        //                .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
-        //                && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
+            // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
+            if ( this.IsNewOrChangedGroupMember( rockContext ) )
+            {
+                if ( group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
+                {
+                    var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
+                        .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet
+                        && ( ( a.GroupRequirement.GroupRequirementType.RequirementCheckType != RequirementCheckType.Manual ) && ( a.GroupRequirement.MustMeetRequirementToAddMember == true ) ) );
 
-        //            if ( requirementStatusesRequiredForAdd.Any() )
-        //            {
-        //                // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
-        //                errorMessage = "This person must meet the following requirements before they are added or made an active member in this group: "
-        //                    + requirementStatusesRequiredForAdd
-        //                    .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
-        //                    .ToList().AsDelimited( ", " );
+                    if ( requirementStatusesRequiredForAdd.Any() )
+                    {
+                        // deny if any of the non-manual MustMeetRequirementToAddMember requirements are not met
+                        errorMessage = "This person must meet the following requirements before they are added or made an active member in this group: "
+                            + requirementStatusesRequiredForAdd
+                            .Select( a => string.Format( "{0}", a.GroupRequirement.GroupRequirementType ) )
+                            .ToList().AsDelimited( ", " );
 
-        //                return false;
-        //            }
-        //        }
-        //    }
+                        return false;
+                    }
+                }
+            }
 
-        //    // check group capacity
-        //    if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
-        //    {
-        //        var currentActiveGroupMemberCount = group.ActiveMembers().Count( gm => gm.Id != Id );
-        //        var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
+            // check group capacity
+            if ( groupType.GroupCapacityRule == GroupCapacityRule.Hard && group.GroupCapacity.HasValue && this.GroupMemberStatus == GroupMemberStatus.Active )
+            {
+                var currentActiveGroupMemberCount = group.ActiveMembers().Count( gm => gm.Id != Id );
+                var existingGroupMembershipForPerson = group.Members.Where( m => m.PersonId == this.PersonId );
 
-        //        // check if this would be adding an active group member (new active group member or changing existing group member status to active)
-        //        if ( this.Id == 0 )
-        //        {
-        //            if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
-        //            {
-        //                errorMessage = "Adding this individual would put the group over capacity.";
-        //                return false;
-        //            }
-        //        }
-        //        else if ( existingGroupMembershipForPerson.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any() )
-        //        {
-        //            if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
-        //            {
-        //                errorMessage = "Adding this individual would put the group over capacity.";
-        //                return false;
-        //            }
-        //        }
-        //    }
+                // check if this would be adding an active group member (new active group member or changing existing group member status to active)
+                if ( this.Id == 0 )
+                {
+                    if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
+                    {
+                        errorMessage = "Adding this individual would put the group over capacity.";
+                        return false;
+                    }
+                }
+                else if ( existingGroupMembershipForPerson.Where( m => m.Id == this.Id && m.GroupMemberStatus != GroupMemberStatus.Active ).Any() )
+                {
+                    if ( currentActiveGroupMemberCount + 1 > group.GroupCapacity )
+                    {
+                        errorMessage = "Adding this individual would put the group over capacity.";
+                        return false;
+                    }
+                }
+            }
 
-        //    return true;
-        //}
+            return true;
+        }
 
         /// <summary>
         /// Determines whether this is an existing record but the GroupMemberStatus or GroupRoleId was modified since loaded from the database
@@ -1167,36 +1172,36 @@ namespace Rock.Model
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        //{
-        //    var group = this.Group;
-        //    if ( group == null && this.GroupId > 0 )
-        //    {
-        //        group = new GroupService( rockContext )
-        //            .Queryable().AsNoTracking()
-        //            .FirstOrDefault( g => g.Id == this.GroupId );
-        //    }
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var group = this.Group;
+            if ( group == null && this.GroupId > 0 )
+            {
+                group = new GroupService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( g => g.Id == this.GroupId );
+            }
 
-        //    if ( group != null )
-        //    {
-        //        var groupType = group.GroupType;
-        //        if ( groupType == null && group.GroupTypeId > 0 )
-        //        {
-        //            // Can't use GroupTypeCache here since it loads attributes and would
-        //            // result in a recursive stack overflow situation.
-        //            groupType = new GroupTypeService( rockContext )
-        //                .Queryable().AsNoTracking()
-        //                .FirstOrDefault( t => t.Id == group.GroupTypeId );
-        //        }
+            if ( group != null )
+            {
+                var groupType = group.GroupType;
+                if ( groupType == null && group.GroupTypeId > 0 )
+                {
+                    // Can't use GroupTypeCache here since it loads attributes and would
+                    // result in a recursive stack overflow situation.
+                    groupType = new GroupTypeService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .FirstOrDefault( t => t.Id == group.GroupTypeId );
+                }
 
-        //        if ( groupType != null )
-        //        {
-        //            return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
-        //        }
-        //    }
+                if ( groupType != null )
+                {
+                    return groupType.GetInheritedAttributesForQualifier( rockContext, TypeId, "GroupTypeId" );
+                }
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
         #endregion
 
@@ -1206,29 +1211,29 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return null;
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
-        //    if ( group != null )
-        //    {
-        //        var groupType = GroupTypeCache.Get( group.GroupTypeId, ( RockContext ) dbContext );
-        //        if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
-        //        {
-        //            RoleCache.FlushItem( group.Id );
-        //            Rock.Security.Authorization.Clear();
-        //        }
-        //    }
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var group = this.Group ?? new GroupService( new RockContext() ).GetNoTracking( this.GroupId );
+            if ( group != null )
+            {
+                var groupType = GroupTypeCache.Get( group.GroupTypeId, ( RockContext ) dbContext );
+                if ( group.IsSecurityRole || groupType?.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                {
+                    RoleCache.FlushItem( group.Id );
+                    Rock.Security.Authorization.Clear();
+                }
+            }
+        }
 
         #endregion
     }
@@ -1258,7 +1263,10 @@ namespace Rock.Model
 
             // In the case of GroupMember as a property (not a collection), we DO want to fetch the groupMember record even if it is archived, so ensure that AllowPropertyFilter = false;
             // NOTE: This is not specific to GroupMember, it is for any Filtered Model (currently just Group and GroupMember)
-            //Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
+#if !NET5_0_OR_GREATER
+            // NET5: Cannot find any equivalent in ZZZ library for EF Core.
+            Z.EntityFramework.Plus.QueryFilterManager.AllowPropertyFilter = false;
+#endif
         }
     }
 

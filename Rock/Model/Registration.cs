@@ -288,7 +288,7 @@ namespace Rock.Model
         {
             get
             {
-                return 0/*this.GetTotalPaid()*/;
+                return this.GetTotalPaid();
             }
         }
 
@@ -382,18 +382,18 @@ namespace Rock.Model
             string registrationPerson = PersonAlias != null && PersonAlias.Person != null ?
                 PersonAlias.Person.FullName :
                 string.Format( "{0} {1}", FirstName, LastName );
-//            result.AppendFormat( @".
-//Registration By: {0} Total Cost/Fees:{1}
-//", registrationPerson, DiscountedCost.FormatAsCurrency() );
+            result.AppendFormat( @".
+Registration By: {0} Total Cost/Fees:{1}
+", registrationPerson, DiscountedCost.FormatAsCurrency() );
 
             var registrantPersons = new List<string>();
             if ( Registrants != null )
             {
                 foreach ( var registrant in Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                 {
-                    //registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}",
-                    //    registrant.PersonAlias.Person.FullName,
-                    //    registrant.DiscountedCost( DiscountPercentage, DiscountAmount ).FormatAsCurrency() ) );
+                    registrantPersons.Add( string.Format( "{0} Cost/Fees:{1}",
+                        registrant.PersonAlias.Person.FullName,
+                        registrant.DiscountedCost( DiscountPercentage, DiscountAmount ).FormatAsCurrency() ) );
                 }
             }
             result.AppendFormat( "Registrants: {0}", registrantPersons.AsDelimited( ", " ) );
@@ -406,21 +406,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="mergeObjects">The merge objects.</param>
         /// <returns></returns>
-        //public RockMessageRecipient GetConfirmationRecipient( Dictionary<string, object> mergeObjects )
-        //{
-        //    var person = this.PersonAlias?.Person;
-        //    string personEmail = person?.Email;
+        public RockMessageRecipient GetConfirmationRecipient( Dictionary<string, object> mergeObjects )
+        {
+            var person = this.PersonAlias?.Person;
+            string personEmail = person?.Email;
 
-        //    var confirmationEmail = this.ConfirmationEmail;
-        //    if ( personEmail == confirmationEmail )
-        //    {
-        //        return new RockEmailMessageRecipient( person, mergeObjects );
-        //    }
-        //    else
-        //    {
-        //        return RockEmailMessageRecipient.CreateAnonymous( confirmationEmail, mergeObjects );
-        //    }
-        //}
+            var confirmationEmail = this.ConfirmationEmail;
+            if ( personEmail == confirmationEmail )
+            {
+                return new RockEmailMessageRecipient( person, mergeObjects );
+            }
+            else
+            {
+                return RockEmailMessageRecipient.CreateAnonymous( confirmationEmail, mergeObjects );
+            }
+        }
 
         /// <summary>
         /// Saves the person notes and history.
@@ -444,139 +444,139 @@ namespace Rock.Model
         {
             // Setup Note settings
             Registration registration = this;
-            //NoteTypeCache noteType = null;
-            //using ( RockContext rockContext = new RockContext() )
-            //{
-            //    RegistrationInstance registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext ).Get( registration.RegistrationInstanceId );
-            //    RegistrationTemplate registrationTemplate = registrationInstance.RegistrationTemplate ?? new RegistrationTemplateService( rockContext ).Get( registrationInstance.RegistrationTemplateId );
+            NoteTypeCache noteType = null;
+            using ( RockContext rockContext = new RockContext() )
+            {
+                RegistrationInstance registrationInstance = registration.RegistrationInstance ?? new RegistrationInstanceService( rockContext ).Get( registration.RegistrationInstanceId );
+                RegistrationTemplate registrationTemplate = registrationInstance.RegistrationTemplate ?? new RegistrationTemplateService( rockContext ).Get( registrationInstance.RegistrationTemplateId );
 
-            //    if ( registrationTemplate != null && registrationTemplate.AddPersonNote )
-            //    {
-            //        noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
-            //        if ( noteType != null )
-            //        {
-            //            var noteService = new NoteService( rockContext );
-            //            var personAliasService = new PersonAliasService( rockContext );
+                if ( registrationTemplate != null && registrationTemplate.AddPersonNote )
+                {
+                    noteType = NoteTypeCache.Get( Rock.SystemGuid.NoteType.PERSON_EVENT_REGISTRATION.AsGuid() );
+                    if ( noteType != null )
+                    {
+                        var noteService = new NoteService( rockContext );
+                        var personAliasService = new PersonAliasService( rockContext );
 
-            //            Person registrar = null;
-            //            if ( registration.PersonAliasId.HasValue )
-            //            {
-            //                registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
-            //            }
+                        Person registrar = null;
+                        if ( registration.PersonAliasId.HasValue )
+                        {
+                            registrar = personAliasService.GetPerson( registration.PersonAliasId.Value );
+                        }
 
-            //            var registrantNames = new List<string>();
+                        var registrantNames = new List<string>();
 
-            //            // Get each registrant
-            //            foreach ( var registrantPersonAliasId in registration.Registrants
-            //                .Where( r => r.PersonAliasId.HasValue )
-            //                .Select( r => r.PersonAliasId.Value )
-            //                .ToList() )
-            //            {
-            //                var registrantPerson = personAliasService.GetPerson( registrantPersonAliasId );
-            //                if ( registrantPerson != null && ( previousRegistrantPersonIds == null || !previousRegistrantPersonIds.Contains( registrantPerson.Id ) ) )
-            //                {
-            //                    var noteText = new StringBuilder();
-            //                    noteText.AppendFormat( "Registered for {0}", registrationInstance.Name );
+                        // Get each registrant
+                        foreach ( var registrantPersonAliasId in registration.Registrants
+                            .Where( r => r.PersonAliasId.HasValue )
+                            .Select( r => r.PersonAliasId.Value )
+                            .ToList() )
+                        {
+                            var registrantPerson = personAliasService.GetPerson( registrantPersonAliasId );
+                            if ( registrantPerson != null && ( previousRegistrantPersonIds == null || !previousRegistrantPersonIds.Contains( registrantPerson.Id ) ) )
+                            {
+                                var noteText = new StringBuilder();
+                                noteText.AppendFormat( "Registered for {0}", registrationInstance.Name );
 
-            //                    string registrarFullName = string.Empty;
+                                string registrarFullName = string.Empty;
 
-            //                    if ( registrar != null && registrar.Id != registrantPerson.Id )
-            //                    {
-            //                        registrarFullName = string.Format( " by {0}", registrar.FullName );
-            //                        registrantNames.Add( registrantPerson.FullName );
-            //                    }
+                                if ( registrar != null && registrar.Id != registrantPerson.Id )
+                                {
+                                    registrarFullName = string.Format( " by {0}", registrar.FullName );
+                                    registrantNames.Add( registrantPerson.FullName );
+                                }
 
-            //                    if ( registrar != null && ( registrationPersonFirstName != registrar.NickName || registrationPersonLastName != registrar.LastName ) )
-            //                    {
-            //                        registrarFullName = string.Format( " by {0}", registrationPersonFirstName + " " + registrationPersonLastName );
-            //                    }
+                                if ( registrar != null && ( registrationPersonFirstName != registrar.NickName || registrationPersonLastName != registrar.LastName ) )
+                                {
+                                    registrarFullName = string.Format( " by {0}", registrationPersonFirstName + " " + registrationPersonLastName );
+                                }
 
-            //                    noteText.Append( registrarFullName );
+                                noteText.Append( registrarFullName );
 
-            //                    if ( noteText.Length > 0 )
-            //                    {
-            //                        var note = new Note();
-            //                        note.NoteTypeId = noteType.Id;
-            //                        note.IsSystem = false;
-            //                        note.IsAlert = false;
-            //                        note.IsPrivateNote = false;
-            //                        note.EntityId = registrantPerson.Id;
-            //                        note.Caption = string.Empty;
-            //                        note.Text = noteText.ToString();
-            //                        if ( registrar == null )
-            //                        {
-            //                            note.CreatedByPersonAliasId = currentPersonAliasId;
-            //                        }
-            //                        else
-            //                        {
-            //                            note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
-            //                        }
-            //                        noteService.Add( note );
-            //                    }
+                                if ( noteText.Length > 0 )
+                                {
+                                    var note = new Note();
+                                    note.NoteTypeId = noteType.Id;
+                                    note.IsSystem = false;
+                                    note.IsAlert = false;
+                                    note.IsPrivateNote = false;
+                                    note.EntityId = registrantPerson.Id;
+                                    note.Caption = string.Empty;
+                                    note.Text = noteText.ToString();
+                                    if ( registrar == null )
+                                    {
+                                        note.CreatedByPersonAliasId = currentPersonAliasId;
+                                    }
+                                    else
+                                    {
+                                        note.CreatedByPersonAliasId = registrar.PrimaryAliasId;
+                                    }
+                                    noteService.Add( note );
+                                }
 
-            //                    var changes = new History.HistoryChangeList();
-            //                    changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, null );
-            //                    HistoryService.SaveChanges(
-            //                        rockContext,
-            //                        typeof( Person ),
-            //                        Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
-            //                        registrantPerson.Id,
-            //                        changes,
-            //                        registrationInstance.Name,
-            //                        typeof( Registration ),
-            //                        registration.Id,
-            //                        false,
-            //                        currentPersonAliasId,
-            //                        rockContext.SourceOfChange );
-            //                }
-            //            }
+                                var changes = new History.HistoryChangeList();
+                                changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, null );
+                                HistoryService.SaveChanges(
+                                    rockContext,
+                                    typeof( Person ),
+                                    Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                    registrantPerson.Id,
+                                    changes,
+                                    registrationInstance.Name,
+                                    typeof( Registration ),
+                                    registration.Id,
+                                    false,
+                                    currentPersonAliasId,
+                                    rockContext.SourceOfChange );
+                            }
+                        }
 
-            //            if ( registrar != null && registrantNames.Any() )
-            //            {
-            //                string namesText = string.Empty;
-            //                if ( registrantNames.Count >= 2 )
-            //                {
-            //                    int lessOne = registrantNames.Count - 1;
-            //                    namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
-            //                        " and " +
-            //                        registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
-            //                }
-            //                else
-            //                {
-            //                    namesText = registrantNames.First() + " ";
-            //                }
+                        if ( registrar != null && registrantNames.Any() )
+                        {
+                            string namesText = string.Empty;
+                            if ( registrantNames.Count >= 2 )
+                            {
+                                int lessOne = registrantNames.Count - 1;
+                                namesText = registrantNames.Take( lessOne ).ToList().AsDelimited( ", " ) +
+                                    " and " +
+                                    registrantNames.Skip( lessOne ).Take( 1 ).First() + " ";
+                            }
+                            else
+                            {
+                                namesText = registrantNames.First() + " ";
+                            }
 
-            //                var note = new Note();
-            //                note.NoteTypeId = noteType.Id;
-            //                note.IsSystem = false;
-            //                note.IsAlert = false;
-            //                note.IsPrivateNote = false;
-            //                note.EntityId = registrar.Id;
-            //                note.Caption = string.Empty;
-            //                note.Text = string.Format( "Registered {0} for {1}", namesText, registrationInstance.Name );
-            //                noteService.Add( note );
+                            var note = new Note();
+                            note.NoteTypeId = noteType.Id;
+                            note.IsSystem = false;
+                            note.IsAlert = false;
+                            note.IsPrivateNote = false;
+                            note.EntityId = registrar.Id;
+                            note.Caption = string.Empty;
+                            note.Text = string.Format( "Registered {0} for {1}", namesText, registrationInstance.Name );
+                            noteService.Add( note );
 
-            //                var changes = new History.HistoryChangeList();
-            //                changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, namesText );
+                            var changes = new History.HistoryChangeList();
+                            changes.AddChange( History.HistoryVerb.Registered, History.HistoryChangeType.Record, namesText );
 
-            //                HistoryService.SaveChanges(
-            //                    rockContext,
-            //                    typeof( Person ),
-            //                    Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
-            //                    registrar.Id,
-            //                    changes,
-            //                    registrationInstance.Name,
-            //                    typeof( Registration ),
-            //                    registration.Id,
-            //                    false,
-            //                    currentPersonAliasId,
-            //                    rockContext.SourceOfChange );
-            //            }
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_REGISTRATION.AsGuid(),
+                                registrar.Id,
+                                changes,
+                                registrationInstance.Name,
+                                typeof( Registration ),
+                                registration.Id,
+                                false,
+                                currentPersonAliasId,
+                                rockContext.SourceOfChange );
+                        }
 
-            //            rockContext.SaveChanges();
-            //        }
-            //    }
-            //}
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -602,13 +602,13 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        //public override ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return RegistrationInstance != null ? RegistrationInstance : base.ParentAuthority;
-        //    }
-        //}
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return RegistrationInstance != null ? RegistrationInstance : base.ParentAuthority;
+            }
+        }
         #endregion
 
     }
@@ -1185,11 +1185,11 @@ namespace Rock.Model
 
                         foreach ( var field in templateFields )
                         {
-                            //object dbValue = GetRegistrantValue( null, person, family, field, rockContext );
-                            //if ( dbValue != null )
-                            //{
-                            //    FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
-                            //}
+                            object dbValue = GetRegistrantValue( null, person, family, field, rockContext );
+                            if ( dbValue != null )
+                            {
+                                FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
+                            }
                         }
                     }
                 }
@@ -1244,11 +1244,11 @@ namespace Rock.Model
                         .SelectMany( f => f.Fields );
                     foreach ( var field in templateFields )
                     {
-                        //object dbValue = GetRegistrantValue( registrant, person, family, field, rockContext );
-                        //if ( dbValue != null )
-                        //{
-                        //    FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
-                        //}
+                        object dbValue = GetRegistrantValue( registrant, person, family, field, rockContext );
+                        if ( dbValue != null )
+                        {
+                            FieldValues.Add( field.Id, new FieldValueObject( field, dbValue ) );
+                        }
                     }
 
                     foreach ( var fee in registrant.Fees )
@@ -1269,132 +1269,132 @@ namespace Rock.Model
         /// <param name="field">The field.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        //public object GetRegistrantValue( RegistrationRegistrant registrant, Person person, Group family,
-        //    RegistrationTemplateFormField field, RockContext rockContext )
-        //{
-        //    if ( field.FieldSource == RegistrationFieldSource.PersonField )
-        //    {
-        //        if ( person != null )
-        //        {
-        //            DefinedValueCache dvPhone = null;
+        public object GetRegistrantValue( RegistrationRegistrant registrant, Person person, Group family,
+            RegistrationTemplateFormField field, RockContext rockContext )
+        {
+            if ( field.FieldSource == RegistrationFieldSource.PersonField )
+            {
+                if ( person != null )
+                {
+                    DefinedValueCache dvPhone = null;
 
-        //            switch ( field.PersonFieldType )
-        //            {
-        //                case RegistrationPersonFieldType.FirstName:
-        //                    return person.NickName;
-        //                case RegistrationPersonFieldType.MiddleName:
-        //                    return person.MiddleName;
-        //                case RegistrationPersonFieldType.LastName:
-        //                    return person.LastName;
-        //                case RegistrationPersonFieldType.Campus:
-        //                    {
-        //                        if ( family != null )
-        //                        {
-        //                            return family.CampusId;
-        //                        }
-        //                        break;
-        //                    }
-        //                case RegistrationPersonFieldType.Address:
-        //                    {
-        //                        var location = person.GetHomeLocation( rockContext );
-        //                        if ( location != null )
-        //                        {
-        //                            return location.Clone();
-        //                        }
-        //                        break;
-        //                    }
-        //                case RegistrationPersonFieldType.Email:
-        //                    return person.Email;
-        //                case RegistrationPersonFieldType.Birthdate:
-        //                    return person.BirthDate;
-        //                case RegistrationPersonFieldType.Grade:
-        //                    return person.GraduationYear;
-        //                case RegistrationPersonFieldType.Gender:
-        //                    return person.Gender;
-        //                case RegistrationPersonFieldType.MaritalStatus:
-        //                    return person.MaritalStatusValueId;
-        //                case RegistrationPersonFieldType.AnniversaryDate:
-        //                    return person.AnniversaryDate;
-        //                case RegistrationPersonFieldType.MobilePhone:
-        //                    {
-        //                        dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
-        //                        break;
-        //                    }
-        //                case RegistrationPersonFieldType.HomePhone:
-        //                    {
-        //                        dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
-        //                        break;
-        //                    }
-        //                case RegistrationPersonFieldType.WorkPhone:
-        //                    {
-        //                        dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
-        //                        break;
-        //                    }
-        //                case RegistrationPersonFieldType.ConnectionStatus:
-        //                    return person.ConnectionStatusValueId;
-        //            }
+                    switch ( field.PersonFieldType )
+                    {
+                        case RegistrationPersonFieldType.FirstName:
+                            return person.NickName;
+                        case RegistrationPersonFieldType.MiddleName:
+                            return person.MiddleName;
+                        case RegistrationPersonFieldType.LastName:
+                            return person.LastName;
+                        case RegistrationPersonFieldType.Campus:
+                            {
+                                if ( family != null )
+                                {
+                                    return family.CampusId;
+                                }
+                                break;
+                            }
+                        case RegistrationPersonFieldType.Address:
+                            {
+                                var location = person.GetHomeLocation( rockContext );
+                                if ( location != null )
+                                {
+                                    return location.Clone();
+                                }
+                                break;
+                            }
+                        case RegistrationPersonFieldType.Email:
+                            return person.Email;
+                        case RegistrationPersonFieldType.Birthdate:
+                            return person.BirthDate;
+                        case RegistrationPersonFieldType.Grade:
+                            return person.GraduationYear;
+                        case RegistrationPersonFieldType.Gender:
+                            return person.Gender;
+                        case RegistrationPersonFieldType.MaritalStatus:
+                            return person.MaritalStatusValueId;
+                        case RegistrationPersonFieldType.AnniversaryDate:
+                            return person.AnniversaryDate;
+                        case RegistrationPersonFieldType.MobilePhone:
+                            {
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
+                                break;
+                            }
+                        case RegistrationPersonFieldType.HomePhone:
+                            {
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                                break;
+                            }
+                        case RegistrationPersonFieldType.WorkPhone:
+                            {
+                                dvPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK );
+                                break;
+                            }
+                        case RegistrationPersonFieldType.ConnectionStatus:
+                            return person.ConnectionStatusValueId;
+                    }
 
-        //            if ( dvPhone != null )
-        //            {
-        //                var phoneNumber = new PersonService( rockContext ).GetPhoneNumber( person, dvPhone );
-        //                if ( phoneNumber != null )
-        //                {
-        //                    return phoneNumber.Clone();
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
-        //        if ( attribute != null )
-        //        {
-        //            switch ( field.FieldSource )
-        //            {
-        //                case RegistrationFieldSource.PersonAttribute:
-        //                    {
-        //                        if ( person != null )
-        //                        {
-        //                            if ( person.Attributes == null )
-        //                            {
-        //                                person.LoadAttributes();
-        //                            }
-        //                            return person.GetAttributeValue( attribute.Key );
-        //                        }
-        //                        break;
-        //                    }
+                    if ( dvPhone != null )
+                    {
+                        var phoneNumber = new PersonService( rockContext ).GetPhoneNumber( person, dvPhone );
+                        if ( phoneNumber != null )
+                        {
+                            return phoneNumber.Clone();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
+                if ( attribute != null )
+                {
+                    switch ( field.FieldSource )
+                    {
+                        case RegistrationFieldSource.PersonAttribute:
+                            {
+                                if ( person != null )
+                                {
+                                    if ( person.Attributes == null )
+                                    {
+                                        person.LoadAttributes();
+                                    }
+                                    return person.GetAttributeValue( attribute.Key );
+                                }
+                                break;
+                            }
 
-        //                case RegistrationFieldSource.GroupMemberAttribute:
-        //                    {
-        //                        if ( registrant != null && registrant.GroupMember != null )
-        //                        {
-        //                            if ( registrant.GroupMember.Attributes == null )
-        //                            {
-        //                                registrant.GroupMember.LoadAttributes();
-        //                            }
-        //                            return registrant.GroupMember.GetAttributeValue( attribute.Key );
-        //                        }
-        //                        break;
-        //                    }
+                        case RegistrationFieldSource.GroupMemberAttribute:
+                            {
+                                if ( registrant != null && registrant.GroupMember != null )
+                                {
+                                    if ( registrant.GroupMember.Attributes == null )
+                                    {
+                                        registrant.GroupMember.LoadAttributes();
+                                    }
+                                    return registrant.GroupMember.GetAttributeValue( attribute.Key );
+                                }
+                                break;
+                            }
 
-        //                case RegistrationFieldSource.RegistrantAttribute:
-        //                    {
-        //                        if ( registrant != null )
-        //                        {
-        //                            if ( registrant.Attributes == null )
-        //                            {
-        //                                registrant.LoadAttributes();
-        //                            }
-        //                            return registrant.GetAttributeValue( attribute.Key );
-        //                        }
-        //                        break;
-        //                    }
-        //            }
-        //        }
-        //    }
+                        case RegistrationFieldSource.RegistrantAttribute:
+                            {
+                                if ( registrant != null )
+                                {
+                                    if ( registrant.Attributes == null )
+                                    {
+                                        registrant.LoadAttributes();
+                                    }
+                                    return registrant.GetAttributeValue( attribute.Key );
+                                }
+                                break;
+                            }
+                    }
+                }
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
         /// <summary>
         /// Gets the first name.

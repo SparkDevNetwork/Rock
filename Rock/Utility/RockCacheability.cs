@@ -154,41 +154,43 @@ namespace Rock.Utility
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Setups the HTTP cache policy based on the current RockCacheability properties.
         /// </summary>
         /// <param name="httpCachePolicy">The HTTP cache policy.</param>
-        //public void SetupHttpCachePolicy( HttpCachePolicy httpCachePolicy )
-        //{
-        //    switch ( RockCacheablityType )
-        //    {
-        //        case RockCacheablityType.NoCache:
-        //            httpCachePolicy.SetCacheability( HttpCacheability.NoCache );
-        //            break;
-        //        case RockCacheablityType.Public:
-        //            httpCachePolicy.SetCacheability( HttpCacheability.Public );
-        //            break;
-        //        case RockCacheablityType.Private:
-        //            httpCachePolicy.SetCacheability( HttpCacheability.Private );
-        //            break;
-        //        case RockCacheablityType.NoStore:
-        //            httpCachePolicy.SetNoStore();
-        //            break;
-        //    }
+        public void SetupHttpCachePolicy( HttpCachePolicy httpCachePolicy )
+        {
+            switch ( RockCacheablityType )
+            {
+                case RockCacheablityType.NoCache:
+                    httpCachePolicy.SetCacheability( HttpCacheability.NoCache );
+                    break;
+                case RockCacheablityType.Public:
+                    httpCachePolicy.SetCacheability( HttpCacheability.Public );
+                    break;
+                case RockCacheablityType.Private:
+                    httpCachePolicy.SetCacheability( HttpCacheability.Private );
+                    break;
+                case RockCacheablityType.NoStore:
+                    httpCachePolicy.SetNoStore();
+                    break;
+            }
 
-        //    if ( OptionSupportsAge( RockCacheablityType ) )
-        //    {
-        //        if ( MaxAge != null )
-        //        {
-        //            httpCachePolicy.SetMaxAge( new System.TimeSpan( 0, 0, MaxAge.ToSeconds() ) );
-        //        }
+            if ( OptionSupportsAge( RockCacheablityType ) )
+            {
+                if ( MaxAge != null )
+                {
+                    httpCachePolicy.SetMaxAge( new System.TimeSpan( 0, 0, MaxAge.ToSeconds() ) );
+                }
 
-        //        if ( SharedMaxAge != null )
-        //        {
-        //            httpCachePolicy.SetProxyMaxAge( new System.TimeSpan( 0, 0, SharedMaxAge.ToSeconds() ) );
-        //        }
-        //    }
-        //}
+                if ( SharedMaxAge != null )
+                {
+                    httpCachePolicy.SetProxyMaxAge( new System.TimeSpan( 0, 0, SharedMaxAge.ToSeconds() ) );
+                }
+            }
+        }
+#endif
 
         private void SetBooleanPropertyValue( string option, bool value )
         {

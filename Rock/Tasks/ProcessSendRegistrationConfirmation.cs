@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -51,23 +55,23 @@ namespace Rock.Tasks
                     var template = registration.RegistrationInstance.RegistrationTemplate;
                     if ( template != null && !string.IsNullOrWhiteSpace( template.ConfirmationEmailTemplate ) )
                     {
-                        //var currentPersonOverride = ( registration.RegistrationInstance.ContactPersonAlias != null ) ? registration.RegistrationInstance.ContactPersonAlias.Person : null;
+                        var currentPersonOverride = ( registration.RegistrationInstance.ContactPersonAlias != null ) ? registration.RegistrationInstance.ContactPersonAlias.Person : null;
 
-                        //var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPersonOverride );
-                        //mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
-                        //mergeFields.Add( "Registration", registration );
+                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, currentPersonOverride );
+                        mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                        mergeFields.Add( "Registration", registration );
 
-                        //var emailMessage = new RockEmailMessage();
-                        //emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
-                        //emailMessage.AdditionalMergeFields = mergeFields;
-                        //emailMessage.FromEmail = template.ConfirmationFromEmail;
-                        //emailMessage.FromName = template.ConfirmationFromName;
-                        //emailMessage.Subject = template.ConfirmationSubject;
-                        //emailMessage.Message = template.ConfirmationEmailTemplate;
-                        //emailMessage.AppRoot = message.AppRoot;
-                        //emailMessage.ThemeRoot = message.ThemeRoot;
-                        //emailMessage.CurrentPerson = currentPersonOverride;
-                        //emailMessage.Send();
+                        var emailMessage = new RockEmailMessage();
+                        emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeFields ) );
+                        emailMessage.AdditionalMergeFields = mergeFields;
+                        emailMessage.FromEmail = template.ConfirmationFromEmail;
+                        emailMessage.FromName = template.ConfirmationFromName;
+                        emailMessage.Subject = template.ConfirmationSubject;
+                        emailMessage.Message = template.ConfirmationEmailTemplate;
+                        emailMessage.AppRoot = message.AppRoot;
+                        emailMessage.ThemeRoot = message.ThemeRoot;
+                        emailMessage.CurrentPerson = currentPersonOverride;
+                        emailMessage.Send();
                     }
                 }
             }

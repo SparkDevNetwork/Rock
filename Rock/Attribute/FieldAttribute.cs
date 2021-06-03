@@ -53,11 +53,11 @@ namespace Rock.Attribute
             {
                 Key = key;
             }
-            
-            //if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
-            //{
-            //    fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
-            //}
+
+            if ( string.IsNullOrWhiteSpace( fieldTypeClass ) )
+            {
+                fieldTypeClass = typeof( Rock.Field.Types.TextFieldType ).FullName;
+            }
 
             Name = name;
             Category = category;

@@ -18,7 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -35,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table("Device")]
     [DataContract]
-    public partial class Device : Model<Device>/*, ICacheable*/
+    public partial class Device : Model<Device>, ICacheable
     {
         #region Entity Properties
 
@@ -227,20 +231,22 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        //{
-        //    Rock.CheckIn.KioskDevice.FlushItem( this.Id );
-        //}
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+#if !NET5_0_OR_GREATER
+            Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+#endif
+        }
 
         /// <summary>
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    // doesn't apply
-        //    return null;
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
 
         #endregion ICacheable
 

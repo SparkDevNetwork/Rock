@@ -17,10 +17,12 @@
 using System;
 using System.Configuration;
 
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#endif
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock
 {
@@ -118,6 +120,7 @@ END";
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
+#if NET5_0_OR_GREATER
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                 rockContext.Database.ExecuteSqlRaw( @"
 UPDATE FinancialTransaction
@@ -132,6 +135,22 @@ SET SundayDate = dbo.ufnUtility_GetSundayDate(OccurrenceDate)
 WHERE SundayDate IS NULL
 	OR SundayDate != dbo.ufnUtility_GetSundayDate(OccurrenceDate)
 " );
+#else
+                rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE FinancialTransaction
+SET SundayDate = dbo.ufnUtility_GetSundayDate(TransactionDateTime)
+WHERE SundayDate IS NULL
+	OR SundayDate != dbo.ufnUtility_GetSundayDate(TransactionDateTime)
+" );
+
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AttendanceOccurrence
+SET SundayDate = dbo.ufnUtility_GetSundayDate(OccurrenceDate)
+WHERE SundayDate IS NULL
+	OR SundayDate != dbo.ufnUtility_GetSundayDate(OccurrenceDate)
+" );
+#endif
 
                 //// NOTE:
                 ////  - [spAnalytics_ETL_Attendance] will take care of updating existing SundayDate data in the [AnalyticsSourceAttendance] table
@@ -272,8 +291,7 @@ WHERE SundayDate IS NULL
         {
             get
             {
-                return DefaultFirstDayOfWeek;
-                //return Rock.Web.SystemSettings.StartDayOfWeek;
+                return Rock.Web.SystemSettings.StartDayOfWeek;
             }
         }
 
@@ -311,17 +329,16 @@ WHERE SundayDate IS NULL
         {
             get
             {
-                throw new NotSupportedException();
-                //var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
-                //if ( graduationDateWithCurrentYear < RockDateTime.Today )
-                //{
-                //    // if the graduation date already occurred this year, return next year' graduation date
-                //    return graduationDateWithCurrentYear.AddYears( 1 );
-                //}
-                //else
-                //{
-                //    return graduationDateWithCurrentYear;
-                //}
+                var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+                if ( graduationDateWithCurrentYear < RockDateTime.Today )
+                {
+                    // if the graduation date already occurred this year, return next year' graduation date
+                    return graduationDateWithCurrentYear.AddYears( 1 );
+                }
+                else
+                {
+                    return graduationDateWithCurrentYear;
+                }
             }
         }
 

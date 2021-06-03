@@ -18,15 +18,20 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Storage;
+using Rock.Storage;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -129,15 +134,15 @@ namespace Rock.Model
             {
                 _storageEntityTypeId = value;
 
-                //StorageProvider = null;
-                //if ( value.HasValue )
-                //{
-                //    var entityType = EntityTypeCache.Get( value.Value );
-                //    if ( entityType != null )
-                //    {
-                //        StorageProvider = ProviderContainer.GetComponent( entityType.Name );
-                //    }
-                //}
+                StorageProvider = null;
+                if ( value.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( value.Value );
+                    if ( entityType != null )
+                    {
+                        StorageProvider = ProviderContainer.GetComponent( entityType.Name );
+                    }
+                }
 
 
             }
@@ -234,7 +239,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaVisible]
-        //public virtual Storage.ProviderComponent StorageProvider { get; private set; }
+        public virtual Storage.ProviderComponent StorageProvider { get; private set; }
 
         /// <summary>
         /// Gets or sets the document.
@@ -257,11 +262,11 @@ namespace Rock.Model
         {
             get
             {
-                //if ( StorageProvider != null )
-                //{
-                //    return StorageProvider.GetUrl( this );
-                //}
-                //else
+                if ( StorageProvider != null )
+                {
+                    return StorageProvider.GetUrl( this );
+                }
+                else
                 {
                     return Path;
                 }
@@ -281,36 +286,36 @@ namespace Rock.Model
         {
             get
             {
-                //if ( _stream == null )
-                //{
-                //    if ( StorageProvider != null )
-                //    {
-                //        _stream = StorageProvider.GetContentStream( this );
-                //    }
-                //}
-                //else
-                //{
-                //    if ( _stream.CanSeek )
-                //    {
-                //        _stream.Position = 0;
-                //    }
-                //    else
-                //    {
-                //        _stream = StorageProvider.GetContentStream( this );
-                //    }
-                //}
+                if ( _stream == null )
+                {
+                    if ( StorageProvider != null )
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
+                }
+                else
+                {
+                    if ( _stream.CanSeek )
+                    {
+                        _stream.Position = 0;
+                    }
+                    else
+                    {
+                        _stream = StorageProvider.GetContentStream( this );
+                    }
+                }
 
                 return _stream;
             }
             set
             {
                 _stream = value;
-                //_contentIsDirty = true;
+                _contentIsDirty = true;
                 ContentLastModified = RockDateTime.Now;
             }
         }
         private Stream _stream;
-        //private bool _contentIsDirty = false;
+        private bool _contentIsDirty = false;
 
         /// <summary>
         /// Gets the storage settings.
@@ -352,22 +357,22 @@ namespace Rock.Model
         {
             if ( entry.State == EntityState.Deleted )
             {
-                //if ( StorageProvider != null )
-                //{
-                //    this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
+                if ( StorageProvider != null )
+                {
+                    this.BinaryFileTypeId = entry.OriginalValues["BinaryFileTypeId"].ToString().AsInteger();
 
-                //    try
-                //    {
-                //        StorageProvider.DeleteContent( this );
-                //    }
-                //    catch ( Exception ex )
-                //    {
-                //        // If an exception occurred while trying to delete provider's file, log the exception, but continue with the delete.
-                //        ExceptionLogService.LogException( ex );
-                //    }
+                    try
+                    {
+                        StorageProvider.DeleteContent( this );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // If an exception occurred while trying to delete provider's file, log the exception, but continue with the delete.
+                        ExceptionLogService.LogException( ex );
+                    }
 
-                //    this.BinaryFileTypeId = null;
-                //}
+                    this.BinaryFileTypeId = null;
+                }
             }
             else
             {
@@ -397,44 +402,46 @@ namespace Rock.Model
                                 BinaryFileType.MaxWidth.HasValue && 
                                 BinaryFileType.MaxWidth != 0 )
                             {
-                                //ResizeSettings settings = new ResizeSettings();
-                                //MemoryStream resizedStream = new MemoryStream();
-                                //if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
-                                //{
-                                //    settings.Add( "mode", "max" );
-                                //    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
-                                //    {
-                                //        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
-                                //        {
-                                //            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                //        }
-                                //        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
-                                //        {
-                                //            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
-                                //        }
-                                //    }
-                                //    else if ( BinaryFileType.MaxHeight < Height )
-                                //    {
+#if !NET5_0_OR_GREATER
+                                ResizeSettings settings = new ResizeSettings();
+                                MemoryStream resizedStream = new MemoryStream();
+                                if ( BinaryFileType.MaxWidth.Value < Width || BinaryFileType.MaxHeight < Height )
+                                {
+                                    settings.Add( "mode", "max" );
+                                    if ( BinaryFileType.MaxHeight < Height && BinaryFileType.MaxWidth < Width )
+                                    {
+                                        if ( BinaryFileType.MaxHeight >= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                        }
+                                        if ( BinaryFileType.MaxHeight <= BinaryFileType.MaxWidth )
+                                        {
+                                            settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                        }
+                                    }
+                                    else if ( BinaryFileType.MaxHeight < Height )
+                                    {
 
-                                //        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
-                                //    }
-                                //    else
-                                //    {
-                                //        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
+                                        settings.Add( "height", BinaryFileType.MaxHeight.Value.ToString() );
+                                    }
+                                    else
+                                    {
+                                        settings.Add( "width", BinaryFileType.MaxWidth.Value.ToString() );
 
-                                //    }
-                                //    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
-                                //    ContentStream = resizedStream;
+                                    }
+                                    ImageBuilder.Current.Build( this.ContentStream, resizedStream, settings );
+                                    ContentStream = resizedStream;
 
-                                //    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
-                                //    {
-                                //        if ( bm != null )
-                                //        {
-                                //            this.Width = bm.Width;
-                                //            this.Height = bm.Height;
-                                //        }
-                                //    }
-                                //}
+                                    using ( Bitmap bm = new Bitmap( this.ContentStream ) )
+                                    {
+                                        if ( bm != null )
+                                        {
+                                            this.Width = bm.Width;
+                                            this.Height = bm.Height;
+                                        }
+                                    }
+                                }
+#endif
                             }
                         }
                     }
@@ -451,28 +458,28 @@ namespace Rock.Model
 
                         // Persist the storage type's settings specific to this binary file type
                         var settings = new Dictionary<string, string>();
-                        //if ( BinaryFileType.Attributes == null )
-                        //{
-                        //    BinaryFileType.LoadAttributes();
-                        //}
-                        //foreach ( var attributeValue in BinaryFileType.AttributeValues )
-                        //{
-                        //    settings.Add( attributeValue.Key, attributeValue.Value.Value );
-                        //}
+                        if ( BinaryFileType.Attributes == null )
+                        {
+                            BinaryFileType.LoadAttributes();
+                        }
+                        foreach ( var attributeValue in BinaryFileType.AttributeValues )
+                        {
+                            settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                        }
                         StorageEntitySettings = settings.ToJson();
 
-                        //if ( StorageProvider != null )
-                        //{
-                        //    // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
-                        //    long? outFileSize = null;
-                        //    StorageProvider.SaveContent( this, out outFileSize );
-                        //    if ( outFileSize.HasValue )
-                        //    {
-                        //        FileSize = outFileSize;
-                        //    }
+                        if ( StorageProvider != null )
+                        {
+                            // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
+                            long? outFileSize = null;
+                            StorageProvider.SaveContent( this, out outFileSize );
+                            if ( outFileSize.HasValue )
+                            {
+                                FileSize = outFileSize;
+                            }
 
-                        //    Path = StorageProvider.GetPath( this );
-                        //}
+                            Path = StorageProvider.GetPath( this );
+                        }
                     }
                 }
 
@@ -487,51 +494,51 @@ namespace Rock.Model
                         // to the binary file type changed, delete the original provider's content
                         if ( StorageEntityTypeId.HasValue && BinaryFileType.StorageEntityTypeId.HasValue )
                         {
-                            //var settings = new Dictionary<string, string>();
-                            //if ( BinaryFileType.Attributes == null )
-                            //{
-                            //    BinaryFileType.LoadAttributes();
-                            //}
-                            //foreach ( var attributeValue in BinaryFileType.AttributeValues )
-                            //{
-                            //    settings.Add( attributeValue.Key, attributeValue.Value.Value );
-                            //}
-                            //string settingsJson = settings.ToJson();
+                            var settings = new Dictionary<string, string>();
+                            if ( BinaryFileType.Attributes == null )
+                            {
+                                BinaryFileType.LoadAttributes();
+                            }
+                            foreach ( var attributeValue in BinaryFileType.AttributeValues )
+                            {
+                                settings.Add( attributeValue.Key, attributeValue.Value.Value );
+                            }
+                            string settingsJson = settings.ToJson();
 
-                            //if ( StorageProvider != null && (
-                            //    StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
-                            //    StorageEntitySettings != settingsJson ) )
-                            //{
+                            if ( StorageProvider != null && (
+                                StorageEntityTypeId.Value != BinaryFileType.StorageEntityTypeId.Value ||
+                                StorageEntitySettings != settingsJson ) )
+                            {
 
-                            //    var ms = new MemoryStream();
-                            //    ContentStream.Position = 0;
-                            //    ContentStream.CopyTo( ms );
-                            //    ContentStream.Dispose();
+                                var ms = new MemoryStream();
+                                ContentStream.Position = 0;
+                                ContentStream.CopyTo( ms );
+                                ContentStream.Dispose();
 
-                            //    // Delete the current provider's storage
-                            //    StorageProvider.DeleteContent( this );
+                                // Delete the current provider's storage
+                                StorageProvider.DeleteContent( this );
 
-                            //    // Set the new storage provider with its settings
-                            //    StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
-                            //    StorageEntitySettings = settingsJson;
+                                // Set the new storage provider with its settings
+                                StorageEntityTypeId = BinaryFileType.StorageEntityTypeId;
+                                StorageEntitySettings = settingsJson;
 
-                            //    ContentStream = new MemoryStream();
-                            //    ms.Position = 0;
-                            //    ms.CopyTo( ContentStream );
-                            //    ContentStream.Position = 0;
-                            //    FileSize = ContentStream.Length;
-                            //}
+                                ContentStream = new MemoryStream();
+                                ms.Position = 0;
+                                ms.CopyTo( ContentStream );
+                                ContentStream.Position = 0;
+                                FileSize = ContentStream.Length;
+                            }
                         }
                     }
 
-                    //if ( _contentIsDirty && StorageProvider != null )
-                    //{
-                    //    long? fileSize = null;
-                    //    StorageProvider.SaveContent( this, out fileSize );
+                    if ( _contentIsDirty && StorageProvider != null )
+                    {
+                        long? fileSize = null;
+                        StorageProvider.SaveContent( this, out fileSize );
 
-                    //    FileSize = fileSize;
-                    //    Path = StorageProvider.GetPath( this );
-                    //}
+                        FileSize = fileSize;
+                        Path = StorageProvider.GetPath( this );
+                    }
                 }
             }
 
@@ -574,13 +581,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
+            }
+        }
 
         #endregion
     }

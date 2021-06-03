@@ -138,6 +138,7 @@ namespace Rock.Security.Authentication
             return EncodeBcrypt( password );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
         /// </summary>
@@ -173,6 +174,7 @@ namespace Rock.Security.Authentication
         {
             throw new NotImplementedException();
         }
+#endif
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.

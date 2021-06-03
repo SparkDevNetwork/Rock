@@ -283,40 +283,40 @@ namespace Rock
         /// <param name="markdown">The markdown.</param>
         /// <param name="renderSoftLineBreaksAsLineBreaks">if set to <c>true</c> [render soft line breaks as line breaks].</param>
         /// <returns></returns>
-        //public static string ConvertMarkdownToHtml( this string markdown, bool renderSoftLineBreaksAsLineBreaks = false )
-        //{
-        //    // convert any Markdown into HTML
-        //    var settings = CommonMark.CommonMarkSettings.Default.Clone();
-        //    settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
+        public static string ConvertMarkdownToHtml( this string markdown, bool renderSoftLineBreaksAsLineBreaks = false )
+        {
+            // convert any Markdown into HTML
+            var settings = CommonMark.CommonMarkSettings.Default.Clone();
+            settings.RenderSoftLineBreaksAsLineBreaks = renderSoftLineBreaksAsLineBreaks;
 
-        //    /*
-	       //     6/9/2020 - JME 
-	       //     Added the .Trim() to the return below. Without it CommonMark was converting strings
-        //        like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
-        //        when other filters were being applied in Lava to make line breaks '<br>'.
+            /*
+	            6/9/2020 - JME 
+	            Added the .Trim() to the return below. Without it CommonMark was converting strings
+                like 'Test' to '<p>Test</p>/r/n/r/n'. The adding of two line breaks was causing issues
+                when other filters were being applied in Lava to make line breaks '<br>'.
 
-        //        Reason: Notes Lava was having extra <br>'s at the end.
-        //    */
-            
-        //    return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
-        //}
+                Reason: Notes Lava was having extra <br>'s at the end.
+            */
+
+            return CommonMark.CommonMarkConverter.Convert( markdown, settings ).Trim();
+        }
 
         /// <summary>
         /// Moves the CSS inline using PreMailer.Net, which moves any stylesheets to inline style attributes, for maximum compatibility with email clients
         /// </summary>
         /// <param name="html">The HTML.</param>
         /// <returns></returns>
-        //public static string ConvertHtmlStylesToInlineAttributes( this string html )
-        //{
-        //    try
-        //    {
-        //        var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
-        //        return result.Html;
-        //    }
-        //    catch
-        //    {
-        //        return html;
-        //    }
-        //}
+        public static string ConvertHtmlStylesToInlineAttributes( this string html )
+        {
+            try
+            {
+                var result = PreMailer.Net.PreMailer.MoveCssInline( html, false, ".ignore" );
+                return result.Html;
+            }
+            catch
+            {
+                return html;
+            }
+        }
     }
 }

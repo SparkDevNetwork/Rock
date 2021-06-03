@@ -187,7 +187,11 @@ namespace Rock.CheckIn
                 {
                     var label = new KioskLabel();
                     label.Guid = file.Guid;
+#if NET5_0_OR_GREATER
+                    label.Url = string.Format( "{0}GetFile.ashx?id={1}", "/", file.Id );
+#else
                     label.Url = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+#endif
                     label._mergeCodeDefinedValueIds = new Dictionary<string, int>();
                     label.FileContent = file.ContentsToString();
 

@@ -68,18 +68,18 @@ namespace Rock.Tasks
 
                             foreach ( var approver in approvers )
                             {
-                                //var recipients = new List<RockEmailMessageRecipient>();
-                                //var emailMessage = new RockEmailMessage( communicationSettingApprovalGuid.Value );
+                                var recipients = new List<RockEmailMessageRecipient>();
+                                var emailMessage = new RockEmailMessage( communicationSettingApprovalGuid.Value );
 
-                                //// Build Lava merge fields.
-                                //var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                                //mergeFields.Add( "Approver", approver.Person );
-                                //mergeFields.Add( "Communication", communication );
-                                //mergeFields.Add( "RecipientsCount", communication.GetRecipientsQry( rockContext ).Count() );
-                                //mergeFields.Add( "ApprovalPageUrl", approvalPageUrl );
-                                //recipients.Add( new RockEmailMessageRecipient( approver.Person, mergeFields ) );
-                                //emailMessage.SetRecipients( recipients );
-                                //emailMessage.Send();
+                                // Build Lava merge fields.
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+                                mergeFields.Add( "Approver", approver.Person );
+                                mergeFields.Add( "Communication", communication );
+                                mergeFields.Add( "RecipientsCount", communication.GetRecipientsQry( rockContext ).Count() );
+                                mergeFields.Add( "ApprovalPageUrl", approvalPageUrl );
+                                recipients.Add( new RockEmailMessageRecipient( approver.Person, mergeFields ) );
+                                emailMessage.SetRecipients( recipients );
+                                emailMessage.Send();
                             }
                         }
                     }

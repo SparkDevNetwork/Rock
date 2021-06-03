@@ -119,7 +119,7 @@ namespace Rock.Model
                 .HasForeignKey<FinancialTransactionRefund>( r => r.Id )
                 .IsRequired()
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Cascade );
-#endif        
+#endif
             this.HasOptional( r => r.OriginalTransaction ).WithMany( t => t.Refunds ).HasForeignKey( r => r.OriginalTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.RefundReasonValue ).WithMany().HasForeignKey( r => r.RefundReasonValueId ).WillCascadeOnDelete( false );
         }

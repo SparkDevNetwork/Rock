@@ -16,7 +16,9 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
+#endif
 using System.Runtime.Serialization;
 using Rock.Lava;
 
@@ -27,7 +29,11 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-    public class GroupTypeLocationType: /*DotLiquid.ILiquidizable, */ILavaDataDictionarySource
+#if NET5_0_OR_GREATER
+    public class GroupTypeLocationType : ILavaDataDictionarySource
+#else
+    public class GroupTypeLocationType: DotLiquid.ILiquidizable, ILavaDataDictionarySource
+#endif
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.
@@ -35,7 +41,9 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/>.
         /// </value>
-        //[Key]
+#if !NET5_0_OR_GREATER
+        [Key]
+#endif
         [Column(Order=0)]
         [DataMember]
         public int GroupTypeId { get; set; }
@@ -48,7 +56,9 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue"/>  that is supported by a <see cref="Rock.Model.GroupType"/>.
         /// </value>
-        //[Key]
+#if !NET5_0_OR_GREATER
+        [Key]
+#endif
         [Column( Order = 1 )]
         [DataMember]
         public int LocationTypeValueId { get; set; }
@@ -86,6 +96,7 @@ namespace Rock.Model
         }
     }
 
+#if NET5_0_OR_GREATER
     /// <summary>
     /// GroupTypeLocationTypeType EntityTypeConfiguration
     /// </summary>
@@ -99,4 +110,5 @@ namespace Rock.Model
             this.HasKey( k => new { k.GroupTypeId, k.LocationTypeValueId } );
         }
     }
+#endif
 }

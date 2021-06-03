@@ -18,9 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-#if !NET5_0_OR_GREATER
 using Rock.Communication.SmsActions;
-#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Lava;
@@ -90,7 +88,6 @@ namespace Rock.Web.Cache
         [DataMember]
         public int SmsPipelineId { get; private set; }
 
-#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the field.
         /// </summary>
@@ -116,7 +113,6 @@ namespace Rock.Web.Cache
             }
         }
         private SmsActionComponent _smsActionComponent = null;
-#endif
 
         #endregion
 

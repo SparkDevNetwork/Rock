@@ -167,6 +167,7 @@ namespace Rock.CheckIn
             Messages = new List<CheckInMessage>();
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState"/> class.
         /// </summary>
@@ -180,6 +181,7 @@ namespace Rock.CheckIn
             CheckIn = new CheckInStatus();
             Messages = new List<CheckInMessage>();
         }
+#endif
 
         /// <summary>
         /// Creates a new CheckInState object Froms a json string.

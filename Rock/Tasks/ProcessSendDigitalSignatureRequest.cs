@@ -35,29 +35,29 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            //using ( var rockContext = new RockContext() )
-            //{
-            //    var documentService = new SignatureDocumentService( rockContext );
-            //    var personAliasService = new PersonAliasService( rockContext );
-            //    var appliesPerson = personAliasService.GetPerson( message.AppliesToPersonAliasId );
-            //    var assignedPerson = personAliasService.GetPerson( message.AssignedToPersonAliasId );
+            using ( var rockContext = new RockContext() )
+            {
+                var documentService = new SignatureDocumentService( rockContext );
+                var personAliasService = new PersonAliasService( rockContext );
+                var appliesPerson = personAliasService.GetPerson( message.AppliesToPersonAliasId );
+                var assignedPerson = personAliasService.GetPerson( message.AssignedToPersonAliasId );
 
-            //    if ( !documentService.Queryable().Any( d =>
-            //            d.SignatureDocumentTemplateId == message.SignatureDocumentTemplateId &&
-            //            d.AppliesToPersonAliasId.HasValue &&
-            //            d.AppliesToPersonAliasId.Value == message.AppliesToPersonAliasId &&
-            //            d.Status == SignatureDocumentStatus.Signed ) )
-            //    {
-            //        var documentTypeService = new SignatureDocumentTemplateService( rockContext );
-            //        var signatureDocumentTemplate = documentTypeService.Get( message.SignatureDocumentTemplateId );
+                if ( !documentService.Queryable().Any( d =>
+                        d.SignatureDocumentTemplateId == message.SignatureDocumentTemplateId &&
+                        d.AppliesToPersonAliasId.HasValue &&
+                        d.AppliesToPersonAliasId.Value == message.AppliesToPersonAliasId &&
+                        d.Status == SignatureDocumentStatus.Signed ) )
+                {
+                    var documentTypeService = new SignatureDocumentTemplateService( rockContext );
+                    var signatureDocumentTemplate = documentTypeService.Get( message.SignatureDocumentTemplateId );
 
-            //        var errorMessages = new List<string>();
-            //        if ( documentTypeService.SendDocument( signatureDocumentTemplate, appliesPerson, assignedPerson, message.DocumentName, message.Email, out errorMessages ) )
-            //        {
-            //            rockContext.SaveChanges();
-            //        }
-            //    }
-            //}
+                    var errorMessages = new List<string>();
+                    if ( documentTypeService.SendDocument( signatureDocumentTemplate, appliesPerson, assignedPerson, message.DocumentName, message.Email, out errorMessages ) )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
         }
 
         /// <summary>

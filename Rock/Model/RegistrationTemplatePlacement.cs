@@ -22,7 +22,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -146,14 +146,14 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetIconCssClass()
         {
-            //if ( this.IconCssClass.IsNotNullOrWhiteSpace() )
+            if ( this.IconCssClass.IsNotNullOrWhiteSpace() )
             {
                 return this.IconCssClass;
             }
-            //else
-            //{
-            //    return GroupTypeCache.Get( this.GroupTypeId ).IconCssClass;
-            //}
+            else
+            {
+                return GroupTypeCache.Get( this.GroupTypeId ).IconCssClass;
+            }
         }
 
         #endregion Methods

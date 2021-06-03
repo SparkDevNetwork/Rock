@@ -18,7 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -34,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelType" )]
     [DataContract]
-    public partial class ContentChannelType : Model<ContentChannelType>/*, ICacheable*/
+    public partial class ContentChannelType : Model<ContentChannelType>, ICacheable
     {
 
         #region Entity Properties
@@ -135,17 +139,17 @@ namespace Rock.Model
         /// <value>
         /// The supported actions.
         /// </value>
-        //[NotMapped]
-        //public override Dictionary<string, string> SupportedActions
-        //{
-        //    get
-        //    {
-        //        var supportedActions = base.SupportedActions;
-        //        supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve." );
-        //        supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
-        //        return supportedActions;
-        //    }
-        //}
+        [NotMapped]
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                return supportedActions;
+            }
+        }
 
         #endregion
 
@@ -182,20 +186,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return ContentChannelTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return ContentChannelTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    ContentChannelTypeCache.UpdateCachedEntity( Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ContentChannelTypeCache.UpdateCachedEntity( Id, entityState );
+        }
 
         #endregion ICacheable
     }

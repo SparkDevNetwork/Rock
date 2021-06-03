@@ -20,6 +20,8 @@ namespace Rock.Reporting.DataFilter
 {
     internal interface IRelatedChildDataView
     {
+#if !NET5_0_OR_GREATER
         int? GetRelatedDataViewId( Control[] controls );
+#endif
     }
 }

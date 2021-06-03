@@ -21,7 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -158,26 +158,26 @@ namespace Rock.Model
         /// <param name="attributeValue">The attribute value.</param>
         /// <param name="effectiveDateTime">The effective date time.</param>
         /// <returns></returns>
-        //public static AttributeValueHistorical CreateCurrentRowFromAttributeValue( AttributeValue attributeValue, DateTime effectiveDateTime )
-        //{
-        //    var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
-        //    string formattedValue = attributeCache.FieldType.Field.FormatValue( null, attributeValue.Value, attributeCache.QualifierValues, true );
-        //    var attributeValueHistoricalCurrent = new AttributeValueHistorical
-        //    {
-        //        AttributeValueId = attributeValue.Id,
-        //        Value = attributeValue.Value,
-        //        ValueFormatted = formattedValue,
-        //        ValueAsNumeric = attributeValue.ValueAsNumeric,
-        //        ValueAsDateTime = attributeValue.ValueAsDateTime,
-        //        ValueAsBoolean = attributeValue.ValueAsBoolean,
-        //        ValueAsPersonId = attributeValue.ValueAsPersonId,
-        //        CurrentRowIndicator = true,
-        //        EffectiveDateTime = effectiveDateTime,
-        //        ExpireDateTime = HistoricalTracking.MaxExpireDateTime
-        //    };
+        public static AttributeValueHistorical CreateCurrentRowFromAttributeValue( AttributeValue attributeValue, DateTime effectiveDateTime )
+        {
+            var attributeCache = AttributeCache.Get( attributeValue.AttributeId );
+            string formattedValue = attributeCache.FieldType.Field.FormatValue( null, attributeValue.Value, attributeCache.QualifierValues, true );
+            var attributeValueHistoricalCurrent = new AttributeValueHistorical
+            {
+                AttributeValueId = attributeValue.Id,
+                Value = attributeValue.Value,
+                ValueFormatted = formattedValue,
+                ValueAsNumeric = attributeValue.ValueAsNumeric,
+                ValueAsDateTime = attributeValue.ValueAsDateTime,
+                ValueAsBoolean = attributeValue.ValueAsBoolean,
+                ValueAsPersonId = attributeValue.ValueAsPersonId,
+                CurrentRowIndicator = true,
+                EffectiveDateTime = effectiveDateTime,
+                ExpireDateTime = HistoricalTracking.MaxExpireDateTime
+            };
 
-        //    return attributeValueHistoricalCurrent;
-        //}
+            return attributeValueHistoricalCurrent;
+        }
 
         #endregion
     }

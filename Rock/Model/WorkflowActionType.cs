@@ -17,13 +17,17 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-//using Rock.Workflow;
+using Rock.Workflow;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -34,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionType" )]
     [DataContract]
-    public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered/*, ICacheable*/
+    public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -161,13 +165,13 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Workflow.ActionComponent"/>
         /// </value>
-        //public virtual ActionComponent WorkflowAction
-        //{
-        //    get
-        //    {
-        //        return GetWorkflowAction( this.EntityTypeId );
-        //    }
-        //}
+        public virtual ActionComponent WorkflowAction
+        {
+            get
+            {
+                return GetWorkflowAction( this.EntityTypeId );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the workflow form.
@@ -184,13 +188,13 @@ namespace Rock.Model
         /// <value>
         /// The parent security authority for this ActionType.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.ActivityType != null ? this.ActivityType : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ActivityType != null ? this.ActivityType : base.ParentAuthority;
+            }
+        }
 
         #endregion
 
@@ -212,23 +216,23 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <returns></returns>
-        //public static ActionComponent GetWorkflowAction( int entityTypeId )
-        //{
-        //    var entityType = EntityTypeCache.Get( entityTypeId );
-        //    if ( entityType != null )
-        //    {
-        //        foreach ( var serviceEntry in ActionContainer.Instance.Components )
-        //        {
-        //            var component = serviceEntry.Value.Value;
-        //            string componentName = component.GetType().FullName;
-        //            if ( componentName == entityType.Name )
-        //            {
-        //                return component;
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
+        public static ActionComponent GetWorkflowAction( int entityTypeId )
+        {
+            var entityType = EntityTypeCache.Get( entityTypeId );
+            if ( entityType != null )
+            {
+                foreach ( var serviceEntry in ActionContainer.Instance.Components )
+                {
+                    var component = serviceEntry.Value.Value;
+                    string componentName = component.GetType().FullName;
+                    if ( componentName == entityType.Name )
+                    {
+                        return component;
+                    }
+                }
+            }
+            return null;
+        }
 
         #endregion
 
@@ -239,27 +243,27 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return WorkflowActionTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActionTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
-        //    if ( workflowTypeId.HasValue )
-        //    {
-        //        WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
-        //    }
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
+            if ( workflowTypeId.HasValue )
+            {
+                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
+            }
 
-        //    WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified ); 
-        //    WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified );
+            WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
     }

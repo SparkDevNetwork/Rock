@@ -16,10 +16,13 @@
 //
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-//using System.Data.Entity.Infrastructure;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,7 +30,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Tasks;
-//using Rock.Transactions;
+using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -147,7 +150,9 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date and time that person checked in
         /// </value>
         [DataMember]
-        //[Index( "IX_StartDateTime" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_StartDateTime" )]
+#endif
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -483,11 +488,11 @@ namespace Rock.Model
             var currentDateTime = RockDateTime.Now;
             if ( campusId.HasValue )
             {
-                //var campus = CampusCache.Get( campusId.Value );
-                //if ( campus != null )
-                //{
-                //    currentDateTime = campus.CurrentDateTime;
-                //}
+                var campus = CampusCache.Get( campusId.Value );
+                if ( campus != null )
+                {
+                    currentDateTime = campus.CurrentDateTime;
+                }
             }
 
             // Now that we know the correct time, make sure that the attendance is for today and previous to current time.
@@ -760,7 +765,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                //Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
+                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -48,7 +53,9 @@ namespace Rock.Model
         /// The authorized person identifier.
         /// </value>
         [DataMember]
-        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 2 )]
+#endif
         public int? AuthorizedPersonAliasId { get; set; }
 
         /// <summary>
@@ -95,7 +102,9 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the time that the transaction occurred. This is the local server time.
         /// </value>
         [DataMember]
-        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 0 )]
+#endif
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
@@ -133,7 +142,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )]
-        //[Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_TransactionDateTime_TransactionTypeValueId_Person", 1 )]
+#endif
         public int TransactionTypeValueId { get; set; }
 
         /// <summary>
@@ -169,7 +180,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 128 )]
-        //[Index]
+#if !NET5_0_OR_GREATER
+        [Index]
+#endif
         [HideFromReporting]
         public string CheckMicrHash { get; set; }
 
@@ -288,7 +301,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        //[Index( "IX_SundayDate" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_SundayDate" )]
+#endif
         public DateTime? SundayDate
         {
             get
@@ -492,7 +507,9 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        //[BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         public virtual decimal TotalAmount
         {
             get { return TransactionDetails.Sum( d => d.Amount ); }
@@ -505,7 +522,9 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         public virtual decimal? TotalFeeAmount
         {
             get
@@ -530,7 +549,9 @@ namespace Rock.Model
         /// The total amount.
         /// </value>
         [LavaVisible]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         public virtual decimal? TotalFeeCoverageAmount
         {
             get
@@ -690,7 +711,7 @@ namespace Rock.Model
                         if ( batchId.HasValue )
                         {
                             var batchChanges = new History.HistoryChangeList();
-                            //batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                            batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
 
@@ -735,11 +756,11 @@ namespace Rock.Model
 
                             if ( origBatchId.HasValue )
                             {
-                                //batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                                batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
                             if ( batchId.HasValue )
                             {
-                                //batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                                batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" ).SetNewValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
                             }
 
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
@@ -766,7 +787,7 @@ namespace Rock.Model
                             string batch = History.GetValue<FinancialBatch>( Batch, BatchId, rockContext );
                             string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
                             var batchChanges = new History.HistoryChangeList();
-                            //batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
+                            batchChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" ).SetOldValue( $"{this.TotalAmount.FormatAsCurrency()} for {person}" );
 
                             BatchHistoryChangeList.Add( batchId.Value, batchChanges );
                         }
@@ -779,8 +800,8 @@ namespace Rock.Model
                         }
 
                         // If a FinancialPaymentDetail was linked to this FinancialTransaction and is now orphaned, delete it.
-                        //var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
-                        //financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
+                        var financialPaymentDetailService = new FinancialPaymentDetailService( rockContext );
+                        financialPaymentDetailService.DeleteOrphanedFinancialPaymentDetail( entry );
 
                         break;
                     }
@@ -957,20 +978,18 @@ namespace Rock.Model
         /// <returns></returns>
         public static FinancialTransaction ProcessRefund( this FinancialTransaction transaction, decimal? amount, int? reasonValueId, string summary, bool process, string batchNameSuffix, out string errorMessage )
         {
-            errorMessage = "Not supported";
-            return null;
-            //using ( var rockContext = new RockContext() )
-            //{
-            //    var service = new FinancialTransactionService( rockContext );
-            //    var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new FinancialTransactionService( rockContext );
+                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
 
-            //    if ( refundTransaction != null )
-            //    {
-            //        rockContext.SaveChanges();
-            //    }
+                if ( refundTransaction != null )
+                {
+                    rockContext.SaveChanges();
+                }
 
-            //    return refundTransaction;
-            //}
+                return refundTransaction;
+            }
         }
 
         /// <summary>

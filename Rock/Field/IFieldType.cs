@@ -32,7 +32,6 @@ namespace Rock.Field
     /// </summary>
     public interface IFieldType
     {
-#if !NET5_0_OR_GREATER
         #region Configuration
 
         /// <summary>
@@ -62,7 +61,6 @@ namespace Rock.Field
         void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues );
 
         #endregion
-#endif
 
         #region Formatting
 

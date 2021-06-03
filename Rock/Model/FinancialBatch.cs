@@ -125,7 +125,9 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the control amount of the batch.
         /// </value>
         [DataMember]
-        //[BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#if !NET5_0_OR_GREATER
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+#endif
         public decimal ControlAmount { get; set; }
 
         /// <summary>

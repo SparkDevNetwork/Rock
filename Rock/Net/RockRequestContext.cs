@@ -112,80 +112,90 @@ namespace Rock.Net
             RootUrlPath = string.Empty;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
-        //internal RockRequestContext( HttpRequest request )
-        //{
-        //    CurrentUser = UserLoginService.GetCurrentUser( true );
+        internal RockRequestContext( HttpRequest request )
+        {
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
-        //    var uri = new Uri( request.Url.ToString() );
-        //    RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
+            var uri = new Uri( request.Url.ToString() );
+            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
 
-        //    ClientInformation = new ClientInformation( request );
+            ClientInformation = new ClientInformation( request );
 
-        //    //
-        //    // Setup the page parameters.
-        //    //
-        //    PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-        //    foreach ( var key in request.QueryString.AllKeys )
-        //    {
-        //        PageParameters.AddOrReplace( key, request.QueryString[key] );
-        //    }
-        //    foreach ( var kvp in request.RequestContext.RouteData.Values )
-        //    {
-        //        PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
-        //    }
+            //
+            // Setup the page parameters.
+            //
+            PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
+            foreach ( var key in request.QueryString.AllKeys )
+            {
+                PageParameters.AddOrReplace( key, request.QueryString[key] );
+            }
+            foreach ( var kvp in request.RequestContext.RouteData.Values )
+            {
+                PageParameters.AddOrReplace( kvp.Key, kvp.Value.ToStringSafe() );
+            }
 
-        //    //
-        //    // Setup the headers
-        //    //
-        //    Headers = request.Headers.AllKeys
-        //        .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
-        //        .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+            //
+            // Setup the headers
+            //
+            Headers = request.Headers.AllKeys
+                .Select( k => new KeyValuePair<string, IEnumerable<string>>( k, request.Headers.GetValues( k ) ) )
+                .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
 
-        //    //
-        //    // Initialize any context entities found.
-        //    //
-        //    ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
-        //    AddContextEntitiesFromHeaders();
-        //}
+            //
+            // Initialize any context entities found.
+            //
+            ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            AddContextEntitiesFromHeaders();
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
         /// </summary>
         /// <param name="request">The request from an API call that we will initialize from.</param>
-        //internal RockRequestContext( HttpRequestMessage request )
-        //{
-        //    //CurrentUser = UserLoginService.GetCurrentUser( true );
+        internal RockRequestContext( HttpRequestMessage request )
+        {
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
-        //    var uri = request.RequestUri;
-        //    RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
+            var uri = request.RequestUri;
+            RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
 
-        //    ClientInformation = new ClientInformation( request );
+            ClientInformation = new ClientInformation( request );
 
-        //    //
-        //    // Setup the page parameters, only use query string for now. Route
-        //    // parameters don't make a lot of sense with an API call.
-        //    //
-        //    PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-        //    foreach ( var kvp in request.GetQueryNameValuePairs() )
-        //    {
-        //        PageParameters.AddOrReplace( kvp.Key, kvp.Value );
-        //    }
+            //
+            // Setup the page parameters, only use query string for now. Route
+            // parameters don't make a lot of sense with an API call.
+            //
+            PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
+#if NET5_0_OR_GREATER
+            var queryString = HttpUtility.ParseQueryString( request.RequestUri.Query );
+            foreach ( string k in queryString.Keys )
+            {
+                PageParameters.AddOrReplace( k, queryString[k] );
+            }
+#else
+            foreach ( var kvp in request.GetQueryNameValuePairs() )
+            {
+                PageParameters.AddOrReplace( kvp.Key, kvp.Value );
+            }
+#endif
 
-        //    //
-        //    // Setup the headers
-        //    //
-        //    Headers = request.Headers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
+            //
+            // Setup the headers
+            //
+            Headers = request.Headers.ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
 
-        //    //
-        //    // Initialize any context entities found.
-        //    //
-        //    ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
-        //    AddContextEntitiesFromHeaders();
-        //}
+            //
+            // Initialize any context entities found.
+            //
+            ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            AddContextEntitiesFromHeaders();
+        }
 
         #endregion
 
@@ -339,60 +349,62 @@ namespace Rock.Net
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="options">The options to use when initializing the merge fields.</param>
         /// <returns>A new dictionary of merge fields.</returns>
-        //public virtual Dictionary<string, object> GetCommonMergeFields( Person currentPersonOverride = null, CommonMergeFieldsOptions options = null )
-        //{
-        //    var mergeFields = new Dictionary<string, object>();
+        public virtual Dictionary<string, object> GetCommonMergeFields( Person currentPersonOverride = null, CommonMergeFieldsOptions options = null )
+        {
+            var mergeFields = new Dictionary<string, object>();
 
-        //    options = options ?? new CommonMergeFieldsOptions();
+            options = options ?? new CommonMergeFieldsOptions();
 
-        //    if ( options.GetPageContext )
-        //    {
-        //        var contextObjects = new LazyDictionary<string, object>();
+            if ( options.GetPageContext )
+            {
+                var contextObjects = new LazyDictionary<string, object>();
 
-        //        foreach ( var ctx in ContextEntities )
-        //        {
-        //            contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
-        //        }
+                foreach ( var ctx in ContextEntities )
+                {
+                    contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
+                }
 
-        //        if ( contextObjects.Any() )
-        //        {
-        //            mergeFields.Add( "Context", contextObjects );
-        //        }
-        //    }
+                if ( contextObjects.Any() )
+                {
+                    mergeFields.Add( "Context", contextObjects );
+                }
+            }
 
-        //    if ( options.GetPageParameters )
-        //    {
-        //        mergeFields.Add( "PageParameter", PageParameters );
-        //    }
+            if ( options.GetPageParameters )
+            {
+                mergeFields.Add( "PageParameter", PageParameters );
+            }
 
-        //    if ( options.GetOSFamily )
-        //    {
-        //        mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
-        //    }
+            if ( options.GetOSFamily )
+            {
+                mergeFields.Add( "OSFamily", ClientInformation.Browser.OS.Family.ToLower() );
+            }
 
-        //    if ( options.GetDeviceFamily )
-        //    {
-        //        mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
-        //    }
+            if ( options.GetDeviceFamily )
+            {
+                mergeFields.Add( "DeviceFamily", ClientInformation.Browser.Device.Family );
+            }
 
-        //    var person = currentPersonOverride ?? CurrentPerson;
-        //    if ( options.GetCurrentPerson && person != null )
-        //    {
-        //        mergeFields.Add( "CurrentPerson", person );
-        //    }
+            var person = currentPersonOverride ?? CurrentPerson;
+            if ( options.GetCurrentPerson && person != null )
+            {
+                mergeFields.Add( "CurrentPerson", person );
+            }
 
-        //    if ( options.GetCampuses )
-        //    {
-        //        mergeFields.Add( "Campuses", CampusCache.All() );
-        //    }
+            if ( options.GetCampuses )
+            {
+                mergeFields.Add( "Campuses", CampusCache.All() );
+            }
 
-        //    if ( Headers.ContainsKey( "X-Rock-DeviceData" ) )
-        //    {
-        //        mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
-        //    }
+#if !NET5_0_OR_GREATER
+            if ( Headers.ContainsKey( "X-Rock-DeviceData" ) )
+            {
+                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
+            }
+#endif
 
-        //    return mergeFields;
-        //}
+            return mergeFields;
+        }
 
         /// <summary>
         /// Gets the values associated with the specified header.

@@ -202,19 +202,21 @@ namespace Rock.Financial
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Updates the address fields from an address control.
         /// </summary>
         /// <param name="addressControl">The address control.</param>
-        //public void UpdateAddressFieldsFromAddressControl( AddressControl addressControl )
-        //{
-        //    Street1 = addressControl.Street1;
-        //    Street2 = addressControl.Street2;
-        //    City = addressControl.City;
-        //    State = addressControl.State;
-        //    PostalCode = addressControl.PostalCode;
-        //    Country = addressControl.Country;
-        //}
+        public void UpdateAddressFieldsFromAddressControl( AddressControl addressControl )
+        {
+            Street1 = addressControl.Street1;
+            Street2 = addressControl.Street2;
+            City = addressControl.City;
+            State = addressControl.State;
+            PostalCode = addressControl.PostalCode;
+            Country = addressControl.Country;
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaymentInfo"/> class.

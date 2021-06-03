@@ -17,7 +17,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -33,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "ScheduleCategoryExclusion" )]
     [DataContract]
-    public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>/*, ICacheable*/
+    public partial class ScheduleCategoryExclusion : Model<ScheduleCategoryExclusion>, ICacheable
     {
         #region Entity Properties
 
@@ -99,22 +103,22 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    // doesn't apply
-        //    return null;
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are dependent on this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    // Tell the CategoryCache that is has been modified since its ScheduleExclusions modified
-        //    CategoryCache.UpdateCachedEntity( this.CategoryId, EntityState.Modified );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // Tell the CategoryCache that is has been modified since its ScheduleExclusions modified
+            CategoryCache.UpdateCachedEntity( this.CategoryId, EntityState.Modified );
+        }
 
         #endregion
 

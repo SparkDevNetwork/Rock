@@ -23,7 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
-//using Rock.Chart;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Lava;
 
@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "MetricValue" )]
     [DataContract]
-    public partial class MetricValue : Model<MetricValue>/*, IChartData*/
+    public partial class MetricValue : Model<MetricValue>, IChartData
     {
         #region Entity Properties
 
@@ -96,7 +96,9 @@ namespace Rock.Model
         /// <value>
         /// The metric value date time.
         /// </value>
-        //[Index]
+#if !NET5_0_OR_GREATER
+        [Index]
+#endif
         [DataMember]
         [Previewable]
         public DateTime? MetricValueDateTime { get; set; }
@@ -219,13 +221,13 @@ namespace Rock.Model
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.Metric != null ? this.Metric : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Metric != null ? this.Metric : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

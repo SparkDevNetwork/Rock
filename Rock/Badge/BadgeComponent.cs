@@ -85,6 +85,7 @@ namespace Rock.Badge
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets or sets the parent context block.
         /// </summary>
@@ -131,6 +132,7 @@ namespace Rock.Badge
         {
             get => ParentContextEntityBlock as PersonBlock;
         }
+#endif
 
         /// <summary>
         /// Optional: The Entity that should be used when determining which PropertyFields and Attributes to show (instead of just basing it off of EntityType)
@@ -142,21 +144,25 @@ namespace Rock.Badge
         {
             get
             {
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] as IEntity;
                 }
+#endif
 
                 return _nonHttpContextEntity;
             }
 
             set
             {
+#if !NET5_0_OR_GREATER
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] = value;
                 }
                 else
+#endif
                 {
                     _nonHttpContextEntity = value;
                 }
@@ -225,6 +231,7 @@ namespace Rock.Badge
             return badge.GetAttributeValue( key );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the attribute value for the badge
         /// </summary>
@@ -245,6 +252,7 @@ namespace Rock.Badge
         /// <param name="badge">The badge.</param>
         /// <param name="writer">The writer.</param>
         public virtual void Render( BadgeCache badge, HtmlTextWriter writer ) { }
+#endif
 
         /// <summary>
         /// Gets the java script.
@@ -296,6 +304,7 @@ $@"(function () {{
             return $"{GetType().Name}-{badge.Guid}-{entityKey}";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
@@ -304,5 +313,6 @@ $@"(function () {{
         [RockObsolete( "1.10" )]
         [Obsolete( "Use the BadgeCache param instead.", false )]
         public virtual void Render( PersonBadgeCache personBadgeCache, HtmlTextWriter writer ) { }
+#endif
     }
 }

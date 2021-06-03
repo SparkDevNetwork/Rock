@@ -199,29 +199,29 @@ namespace Rock
             var exportValueString = input as string;
 
             // If the object is a string...
-            //if ( exportValueString != null )
-            //{
-            //    var currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
-            //    var currencySymbol = currencyInfo.Symbol;
+            if ( exportValueString != null )
+            {
+                var currencyInfo = new RockCurrencyCodeInfo( currencyCodeDefinedValueId );
+                var currencySymbol = currencyInfo.Symbol;
 
-            //    // ... that contains the currency symbol ...
-            //    if ( exportValueString.Contains( currencySymbol ) )
-            //    {
-            //        var decimalString = exportValueString.Replace( currencySymbol, string.Empty );
-            //        decimal exportValueDecimal;
+                // ... that contains the currency symbol ...
+                if ( exportValueString.Contains( currencySymbol ) )
+                {
+                    var decimalString = exportValueString.Replace( currencySymbol, string.Empty );
+                    decimal exportValueDecimal;
 
-            //        // ... and the value without the currency symbol is a valid decimal value ...
-            //        if ( decimal.TryParse( decimalString, out exportValueDecimal ) )
-            //        {
-            //            // ... that matches the input string when formatted as currency ...
-            //            if ( exportValueDecimal.FormatAsCurrency( currencyCodeDefinedValueId ) == exportValueString )
-            //            {
-            //                // ... return the input as a decimal
-            //                return exportValueDecimal;
-            //            }
-            //        }
-            //    }
-            //}
+                    // ... and the value without the currency symbol is a valid decimal value ...
+                    if ( decimal.TryParse( decimalString, out exportValueDecimal ) )
+                    {
+                        // ... that matches the input string when formatted as currency ...
+                        if ( exportValueDecimal.FormatAsCurrency( currencyCodeDefinedValueId ) == exportValueString )
+                        {
+                            // ... return the input as a decimal
+                            return exportValueDecimal;
+                        }
+                    }
+                }
+            }
 
             // Otherwise just return the input back out
             return input;

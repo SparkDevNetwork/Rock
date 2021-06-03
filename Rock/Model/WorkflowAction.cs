@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web.Cache;
-//using Rock.Workflow;
+using Rock.Workflow;
 
 namespace Rock.Model
 {
@@ -161,21 +161,21 @@ namespace Rock.Model
             get
             {
                 bool result = true;
-                //var actionType = this.ActionTypeCache;
-                //if ( actionType != null && actionType.CriteriaAttributeGuid.HasValue )
-                //{
-                //    result = false;
+                var actionType = this.ActionTypeCache;
+                if ( actionType != null && actionType.CriteriaAttributeGuid.HasValue )
+                {
+                    result = false;
 
-                //    string criteria = GetWorkflowAttributeValue( actionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
-                //    string value = actionType.CriteriaValue;
+                    string criteria = GetWorkflowAttributeValue( actionType.CriteriaAttributeGuid.Value ) ?? string.Empty;
+                    string value = actionType.CriteriaValue;
 
-                //    if ( IsValueAnAttribute( value ) )
-                //    {
-                //        value = GetWorkflowAttributeValue( actionType.CriteriaValue.AsGuid() );
-                //    }
+                    if ( IsValueAnAttribute( value ) )
+                    {
+                        value = GetWorkflowAttributeValue( actionType.CriteriaValue.AsGuid() );
+                    }
 
-                //    return criteria.CompareTo( value, actionType.CriteriaComparisonType );
-                //}
+                    return criteria.CompareTo( value, actionType.CriteriaComparisonType );
+                }
 
                 return result;
             }
@@ -187,13 +187,13 @@ namespace Rock.Model
         /// <value>
         /// The parent security authority for this WorkflowAction.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.Activity != null ? this.Activity : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Activity != null ? this.Activity : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -207,11 +207,11 @@ namespace Rock.Model
         {
             get
             {
-                //string propertyKey = key.ToStringSafe();
-                //if ( propertyKey == "ActionType" )
-                //{
-                //    return ActionTypeCache;
-                //}
+                string propertyKey = key.ToStringSafe();
+                if ( propertyKey == "ActionType" )
+                {
+                    return ActionTypeCache;
+                }
                 return base[key];
             }
         }
@@ -234,57 +234,57 @@ namespace Rock.Model
         {
             AddLogEntry( "Processing..." );
 
-            //var actionType = this.ActionTypeCache;
-            //if ( actionType == null )
+            var actionType = this.ActionTypeCache;
+            if ( actionType == null )
             {
                 throw new SystemException( string.Format( "ActionTypeId: {0} could not be loaded.", this.ActionTypeId ) );
             }
 
-            //ActionComponent workflowAction = actionType.WorkflowAction;
-            //if ( workflowAction == null )
-            //{
-            //    throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", actionType.EntityType ) );
-            //}
+            ActionComponent workflowAction = actionType.WorkflowAction;
+            if ( workflowAction == null )
+            {
+                throw new SystemException( string.Format( "The '{0}' component does not exist, or is not active", actionType.EntityType ) );
+            }
 
-            //if ( IsCriteriaValid )
-            //{
-            //    bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
+            if ( IsCriteriaValid )
+            {
+                bool success = workflowAction.Execute( rockContext, this, entity, out errorMessages );
 
-            //    this.LastProcessedDateTime = RockDateTime.Now;
+                this.LastProcessedDateTime = RockDateTime.Now;
 
-            //    if ( errorMessages.Any() )
-            //    {
-            //        foreach ( string errorMsg in errorMessages )
-            //        {
-            //            AddLogEntry( "Error Occurred: " + errorMsg, true );
-            //        }
-            //    }
+                if ( errorMessages.Any() )
+                {
+                    foreach ( string errorMsg in errorMessages )
+                    {
+                        AddLogEntry( "Error Occurred: " + errorMsg, true );
+                    }
+                }
 
-            //    AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
+                AddLogEntry( string.Format( "Processing Complete (Success:{0})", success.ToString() ) );
 
-            //    if ( success )
-            //    {
-            //        if ( actionType.IsActionCompletedOnSuccess )
-            //        {
-            //            this.MarkComplete();
-            //        }
+                if ( success )
+                {
+                    if ( actionType.IsActionCompletedOnSuccess )
+                    {
+                        this.MarkComplete();
+                    }
 
-            //        if ( actionType.IsActivityCompletedOnSuccess )
-            //        {
-            //            this.Activity.MarkComplete();
-            //        }
-            //    }
+                    if ( actionType.IsActivityCompletedOnSuccess )
+                    {
+                        this.Activity.MarkComplete();
+                    }
+                }
 
-            //    return success;
-            //}
-            //else
-            //{
-            //    errorMessages = new List<string>();
+                return success;
+            }
+            else
+            {
+                errorMessages = new List<string>();
 
-            //    AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+                AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
 
-            //    return true;
-            //}
+                return true;
+            }
         }
 
         /// <summary>
@@ -296,33 +296,33 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetWorkflowAttributeValue( Guid guid, bool formatted = false, bool condensed = false )
         {
-            //var attribute = AttributeCache.Get( guid );
-            //if ( attribute != null && Activity != null )
-            //{
-            //    string value = string.Empty;
-            //    int? entityId = null;
+            var attribute = AttributeCache.Get( guid );
+            if ( attribute != null && Activity != null )
+            {
+                string value = string.Empty;
+                int? entityId = null;
 
-            //    if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
-            //    {
-            //        value = Activity.Workflow.GetAttributeValue( attribute.Key );
-            //        entityId = Activity.Workflow.Id;
-            //    }
-            //    else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-            //    {
-            //        value = Activity.GetAttributeValue( attribute.Key );
-            //        entityId = Activity.Id;
-            //    }
+                if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                {
+                    value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                    entityId = Activity.Workflow.Id;
+                }
+                else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                {
+                    value = Activity.GetAttributeValue( attribute.Key );
+                    entityId = Activity.Id;
+                }
 
-            //    if (!string.IsNullOrWhiteSpace(value))
-            //    {
-            //        if (formatted)
-            //        {
-            //            value = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, condensed );
-            //        }
-            //    }
+                if ( !string.IsNullOrWhiteSpace( value ) )
+                {
+                    if ( formatted )
+                    {
+                        value = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, condensed );
+                    }
+                }
 
-            //    return value ?? string.Empty;
-            //}
+                return value ?? string.Empty;
+            }
 
             return null;
         }
@@ -340,19 +340,19 @@ namespace Rock.Model
             var attributeGuid = value.AsGuidOrNull();
             if ( attributeGuid.HasValue )
             {
-                //var attribute = AttributeCache.Get( attributeGuid.Value );
-                //if ( attribute != null )
-                //{
-                //    value = GetWorkflowAttributeValue( attributeGuid.Value );
-                //    if ( !string.IsNullOrWhiteSpace( value ) )
-                //    {
-                //        var field = attribute.FieldType.Field;
-                //        if ( field is Rock.Field.IEntityFieldType )
-                //        {
-                //            return ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( value, rockContext );
-                //        }
-                //    }
-                //}
+                var attribute = AttributeCache.Get( attributeGuid.Value );
+                if ( attribute != null )
+                {
+                    value = GetWorkflowAttributeValue( attributeGuid.Value );
+                    if ( !string.IsNullOrWhiteSpace( value ) )
+                    {
+                        var field = attribute.FieldType.Field;
+                        if ( field is Rock.Field.IEntityFieldType )
+                        {
+                            return ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( value, rockContext );
+                        }
+                    }
+                }
             }
 
             return null;
@@ -383,34 +383,34 @@ namespace Rock.Model
             if ( guid.HasValue )
             {
                 // Check to see if attribute exists with selected guid
-                //var attribute = AttributeCache.Get( guid.Value );
+                var attribute = AttributeCache.Get( guid.Value );
 
-                //// If so, check to see if the current workflow or activity contains that attribute
-                //if ( attribute != null && Activity != null )
-                //{
-                //    // Check for workflow attribute
-                //    if ( Activity.Workflow != null )
-                //    {
-                //        if ( Activity.Workflow.Attributes == null )
-                //        {
-                //            Activity.Workflow.LoadAttributes();
-                //        }
-                //        if ( Activity.Workflow.Attributes.ContainsKey( attribute.Key ) )
-                //        {
-                //            return true;
-                //        }
-                //    }
+                // If so, check to see if the current workflow or activity contains that attribute
+                if ( attribute != null && Activity != null )
+                {
+                    // Check for workflow attribute
+                    if ( Activity.Workflow != null )
+                    {
+                        if ( Activity.Workflow.Attributes == null )
+                        {
+                            Activity.Workflow.LoadAttributes();
+                        }
+                        if ( Activity.Workflow.Attributes.ContainsKey( attribute.Key ) )
+                        {
+                            return true;
+                        }
+                    }
 
-                //    // Check for activity attribute
-                //    if ( Activity.Attributes == null )
-                //    {
-                //        Activity.LoadAttributes();
-                //    }
-                //    if ( Activity.Attributes.ContainsKey( attribute.Key ) )
-                //    {
-                //        return true;
-                //    }
-                //}
+                    // Check for activity attribute
+                    if ( Activity.Attributes == null )
+                    {
+                        Activity.LoadAttributes();
+                    }
+                    if ( Activity.Attributes.ContainsKey( attribute.Key ) )
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;
@@ -425,15 +425,15 @@ namespace Rock.Model
         {
             if ( this.Activity != null && this.Activity.Workflow != null )
             {
-                //var workflowType = this.Activity.Workflow.WorkflowTypeCache;
-                //if ( force || ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
-                //{
-                //    string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
-                //    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
+                var workflowType = this.Activity.Workflow.WorkflowTypeCache;
+                if ( force || ( workflowType != null && workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) )
+                {
+                    string activityIdStr = this.Activity.Id > 0 ? "(" + this.Activity.Id.ToString() + ")" : "";
+                    string idStr = Id > 0 ? "(" + Id.ToString() + ")" : "";
 
-                //    this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
-                //        this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
-                //}
+                    this.Activity.Workflow.AddLogEntry( string.Format( "{0} Activity {1} > {2} Action {3}: {4}",
+                        this.Activity.ToString(), activityIdStr, this.ToString(), idStr, logEntry ), force );
+                }
             }
         }
 
@@ -513,51 +513,51 @@ namespace Rock.Model
             get
             {
                 var attributeList = new List<LiquidFormAttribute>();
-                //var actionType = this.ActionTypeCache;
-                //if ( actionType != null && actionType.WorkflowForm != null )
-                //{
-                //    foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
-                //    {
-                //        var attribute = AttributeCache.Get( formAttribute.AttributeId );
-                //        if ( attribute != null && Activity != null )
-                //        {
-                //            string value = string.Empty;
-                //            int? entityId = null;
+                var actionType = this.ActionTypeCache;
+                if ( actionType != null && actionType.WorkflowForm != null )
+                {
+                    foreach ( var formAttribute in actionType.WorkflowForm.FormAttributes.OrderBy( a => a.Order ) )
+                    {
+                        var attribute = AttributeCache.Get( formAttribute.AttributeId );
+                        if ( attribute != null && Activity != null )
+                        {
+                            string value = string.Empty;
+                            int? entityId = null;
 
-                //            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
-                //            {
-                //                value = Activity.Workflow.GetAttributeValue( attribute.Key );
-                //                entityId = Activity.Workflow.Id;
-                //            }
-                //            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
-                //            {
-                //                value = Activity.GetAttributeValue( attribute.Key );
-                //                entityId = Activity.Id;
-                //            }
+                            if ( attribute.EntityTypeId == new Rock.Model.Workflow().TypeId && Activity.Workflow != null )
+                            {
+                                value = Activity.Workflow.GetAttributeValue( attribute.Key );
+                                entityId = Activity.Workflow.Id;
+                            }
+                            else if ( attribute.EntityTypeId == new Rock.Model.WorkflowActivity().TypeId )
+                            {
+                                value = Activity.GetAttributeValue( attribute.Key );
+                                entityId = Activity.Id;
+                            }
 
-                //            var field = attribute.FieldType.Field;
+                            var field = attribute.FieldType.Field;
 
-                //            string formattedValue = field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, false );
+                            string formattedValue = field.FormatValue( null, attribute.EntityTypeId, entityId, value, attribute.QualifierValues, false );
 
-                //            var liquidFormAttribute = new LiquidFormAttribute();
-                //            liquidFormAttribute.Name = attribute.Name;
-                //            liquidFormAttribute.Key = attribute.Key;
-                //            liquidFormAttribute.Value = formattedValue;
-                //            liquidFormAttribute.IsVisible = formAttribute.IsVisible;
-                //            liquidFormAttribute.IsReadOnly = formAttribute.IsReadOnly;
-                //            liquidFormAttribute.IsRequired = formAttribute.IsRequired;
-                //            liquidFormAttribute.HideLabel = formAttribute.HideLabel;
-                //            liquidFormAttribute.PreHtml = formAttribute.PreHtml;
-                //            liquidFormAttribute.PostHtml = formAttribute.PostHtml;
-                //            if ( field is Rock.Field.ILinkableFieldType )
-                //            {
-                //                liquidFormAttribute.Url = "~/" + ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
-                //            }
+                            var liquidFormAttribute = new LiquidFormAttribute();
+                            liquidFormAttribute.Name = attribute.Name;
+                            liquidFormAttribute.Key = attribute.Key;
+                            liquidFormAttribute.Value = formattedValue;
+                            liquidFormAttribute.IsVisible = formAttribute.IsVisible;
+                            liquidFormAttribute.IsReadOnly = formAttribute.IsReadOnly;
+                            liquidFormAttribute.IsRequired = formAttribute.IsRequired;
+                            liquidFormAttribute.HideLabel = formAttribute.HideLabel;
+                            liquidFormAttribute.PreHtml = formAttribute.PreHtml;
+                            liquidFormAttribute.PostHtml = formAttribute.PostHtml;
+                            if ( field is Rock.Field.ILinkableFieldType )
+                            {
+                                liquidFormAttribute.Url = "~/" + ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
+                            }
 
-                //            attributeList.Add( liquidFormAttribute );
-                //        }
-                //    }
-                //}
+                            attributeList.Add( liquidFormAttribute );
+                        }
+                    }
+                }
 
                 return attributeList;
             }
@@ -571,11 +571,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            //var actionType = this.ActionTypeCache;
-            //if ( actionType != null )
-            //{
-            //    return actionType.ToStringSafe();
-            //}
+            var actionType = this.ActionTypeCache;
+            if ( actionType != null )
+            {
+                return actionType.ToStringSafe();
+            }
             return base.ToString();
         }
 
@@ -625,7 +625,9 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding form attributes to liquid
         /// </summary>
-        //[DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+#if !NET5_0_OR_GREATER
+        [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+#endif
         [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {

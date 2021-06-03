@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Net.Sockets;
 
@@ -76,7 +78,7 @@ namespace Rock.Model
         /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
         public IQueryable<Device> GetDevicesByGeocode( double latitude, double longitude, int deviceTypeValueId )
         {
-            DbGeography geoLocation = Location.GetGeoPoint( latitude, longitude );
+            var geoLocation = Location.GetGeoPoint( latitude, longitude );
 
             var deviceQueryable = Queryable()
                 .Where( d =>

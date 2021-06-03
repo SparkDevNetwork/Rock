@@ -18,8 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -333,28 +338,28 @@ namespace Rock.Model
         /// <value>
         /// The expiration date.
         /// </value>
-        //[NotMapped]
-        //public string ExpirationDate
-        //{
-        //    get
-        //    {
-        //        int? expMonth = ExpirationMonth;
-        //        int? expYear = ExpirationYear;
-        //        if ( expMonth.HasValue && expYear.HasValue )
-        //        {
-        //            // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
-        //            string expireYY = expYear.Value.ToString();
-        //            if ( expireYY.Length == 4 )
-        //            {
-        //                expireYY = expireYY.Substring( 2 );
-        //            }
+        [NotMapped]
+        public string ExpirationDate
+        {
+            get
+            {
+                int? expMonth = ExpirationMonth;
+                int? expYear = ExpirationYear;
+                if ( expMonth.HasValue && expYear.HasValue )
+                {
+                    // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
+                    string expireYY = expYear.Value.ToString();
+                    if ( expireYY.Length == 4 )
+                    {
+                        expireYY = expireYY.Substring( 2 );
+                    }
 
-        //            return $"{expMonth.Value:00}/{expireYY:00}";
-        //        }
+                    return $"{expMonth.Value:00}/{expireYY:00}";
+                }
 
-        //        return null;
-        //    }
-        //}
+                return null;
+            }
+        }
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
@@ -481,104 +486,104 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
-        //{
-        //    /* 2020-08-27 MDP
-        //     This method should only update values haven't been set yet. So
-        //        1) Make sure paymentInfo has the data (isn't null or whitespace)
-        //        2) Don't overwrite data in this (FinancialPaymentDetail) that already has the data set.
-        //     */
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
+        {
+            /* 2020-08-27 MDP
+             This method should only update values haven't been set yet. So
+                1) Make sure paymentInfo has the data (isn't null or whitespace)
+                2) Don't overwrite data in this (FinancialPaymentDetail) that already has the data set.
+             */
 
-        //    if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
-        //    {
-        //        AccountNumberMasked = paymentInfo.MaskedNumber;
-        //    }
+            if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
+            {
+                AccountNumberMasked = paymentInfo.MaskedNumber;
+            }
 
-        //    if ( paymentInfo is ReferencePaymentInfo referencePaymentInfo )
-        //    {
-        //        if ( GatewayPersonIdentifier.IsNullOrWhiteSpace() )
-        //        {
-        //            GatewayPersonIdentifier = referencePaymentInfo.GatewayPersonIdentifier;
-        //        }
+            if ( paymentInfo is ReferencePaymentInfo referencePaymentInfo )
+            {
+                if ( GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                {
+                    GatewayPersonIdentifier = referencePaymentInfo.GatewayPersonIdentifier;
+                }
 
-        //        if ( !FinancialPersonSavedAccountId.HasValue )
-        //        {
-        //            FinancialPersonSavedAccountId = referencePaymentInfo.FinancialPersonSavedAccountId;
-        //        }
-        //    }
+                if ( !FinancialPersonSavedAccountId.HasValue )
+                {
+                    FinancialPersonSavedAccountId = referencePaymentInfo.FinancialPersonSavedAccountId;
+                }
+            }
 
-        //    if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
-        //    {
-        //        CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
-        //    }
+            if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
+            {
+                CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+            }
 
-        //    if ( !CreditCardTypeValueId.HasValue && paymentInfo.CreditCardTypeValue != null )
-        //    {
-        //        CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
-        //    }
+            if ( !CreditCardTypeValueId.HasValue && paymentInfo.CreditCardTypeValue != null )
+            {
+                CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
+            }
 
-        //    if ( paymentInfo is CreditCardPaymentInfo )
-        //    {
-        //        var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
-        //        string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
+                string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
 
-        //        // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
-        //        var newLocation = new LocationService( rockContext ).Get(
-        //            ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
+                var newLocation = new LocationService( rockContext ).Get(
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
-        //        if ( NameOnCard.IsNullOrWhiteSpace() && nameOnCard.IsNotNullOrWhiteSpace() )
-        //        {
-        //            NameOnCard = nameOnCard;
-        //        }
+                if ( NameOnCard.IsNullOrWhiteSpace() && nameOnCard.IsNotNullOrWhiteSpace() )
+                {
+                    NameOnCard = nameOnCard;
+                }
 
-        //        if ( !ExpirationMonth.HasValue )
-        //        {
-        //            ExpirationMonth = ccPaymentInfo.ExpirationDate.Month;
-        //        }
+                if ( !ExpirationMonth.HasValue )
+                {
+                    ExpirationMonth = ccPaymentInfo.ExpirationDate.Month;
+                }
 
-        //        if ( !ExpirationYear.HasValue )
-        //        {
-        //            ExpirationYear = ccPaymentInfo.ExpirationDate.Year;
-        //        }
+                if ( !ExpirationYear.HasValue )
+                {
+                    ExpirationYear = ccPaymentInfo.ExpirationDate.Year;
+                }
 
-        //        if ( !BillingLocationId.HasValue && newLocation != null )
-        //        {
-        //            BillingLocationId = newLocation.Id;
-        //        }
-        //    }
-        //    else if ( paymentInfo is SwipePaymentInfo )
-        //    {
-        //        var swipePaymentInfo = ( SwipePaymentInfo ) paymentInfo;
+                if ( !BillingLocationId.HasValue && newLocation != null )
+                {
+                    BillingLocationId = newLocation.Id;
+                }
+            }
+            else if ( paymentInfo is SwipePaymentInfo )
+            {
+                var swipePaymentInfo = ( SwipePaymentInfo ) paymentInfo;
 
-        //        if ( NameOnCard.IsNullOrWhiteSpace() && swipePaymentInfo.NameOnCard.IsNotNullOrWhiteSpace() )
-        //        {
-        //            NameOnCard = swipePaymentInfo.NameOnCard;
-        //        }
+                if ( NameOnCard.IsNullOrWhiteSpace() && swipePaymentInfo.NameOnCard.IsNotNullOrWhiteSpace() )
+                {
+                    NameOnCard = swipePaymentInfo.NameOnCard;
+                }
 
-        //        if ( !ExpirationMonth.HasValue )
-        //        {
-        //            ExpirationMonth = swipePaymentInfo.ExpirationDate.Month;
-        //        }
+                if ( !ExpirationMonth.HasValue )
+                {
+                    ExpirationMonth = swipePaymentInfo.ExpirationDate.Month;
+                }
 
-        //        if ( !ExpirationYear.HasValue )
-        //        {
-        //            ExpirationYear = swipePaymentInfo.ExpirationDate.Year;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
-        //        var newLocation = new LocationService( rockContext ).Get(
-        //            paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
+                if ( !ExpirationYear.HasValue )
+                {
+                    ExpirationYear = swipePaymentInfo.ExpirationDate.Year;
+                }
+            }
+            else
+            {
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
+                var newLocation = new LocationService( rockContext ).Get(
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
-        //        if ( !BillingLocationId.HasValue && newLocation != null )
-        //        {
-        //            BillingLocationId = newLocation.Id;
-        //        }
+                if ( !BillingLocationId.HasValue && newLocation != null )
+                {
+                    BillingLocationId = newLocation.Id;
+                }
 
-        //    }
-        //}
+            }
+        }
 
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
@@ -622,7 +627,7 @@ namespace Rock.Model
                 // Ensure that CurrencyTypeValueId is set. The UI tries to prevent it, but just in case, if it isn't, set it to Unknown
                 if ( !this.CurrencyTypeValueId.HasValue )
                 {
-                    //this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
+                    this.CurrencyTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
                 }
             }
 

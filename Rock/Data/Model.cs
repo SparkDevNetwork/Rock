@@ -17,7 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Service;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -25,11 +32,11 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-//using Rock.Transactions;
+#if !NET5_0_OR_GREATER
+using Rock.Transactions;
+#endif
 using Rock.Web.Cache;
 using Rock.Lava;
-
-using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 
 namespace Rock.Data
 {
@@ -551,20 +558,20 @@ namespace Rock.Data
                             {
                                 Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( this.GetType().GetFriendlyTypeName(), attributeKey )/*, System.Web.HttpContext.Current */);
 
-                                //if ( unformatted )
-                                //{
-                                //    return GetAttributeValueAsType( attribute.Key );
-                                //}
+                                if ( unformatted )
+                                {
+                                    return GetAttributeValueAsType( attribute.Key );
+                                }
 
-                                //var field = attribute.FieldType.Field;
-                                //string value = GetAttributeValue( attribute.Key );
+                                var field = attribute.FieldType.Field;
+                                string value = GetAttributeValue( attribute.Key );
 
-                                //if ( url && field is Rock.Field.ILinkableFieldType )
-                                //{
-                                //    return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
-                                //}
+                                if ( url && field is Rock.Field.ILinkableFieldType )
+                                {
+                                    return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
+                                }
 
-                                //return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
+                                return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
                             }
                         }
                     }
@@ -727,22 +734,22 @@ namespace Rock.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        //public object GetAttributeValueAsType( string key )
-        //{
-        //    if ( this.AttributeValues != null &&
-        //        this.AttributeValues.ContainsKey( key ) )
-        //    {
-        //        return this.AttributeValues[key].ValueAsType;
-        //    }
+        public object GetAttributeValueAsType( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) )
+            {
+                return this.AttributeValues[key].ValueAsType;
+            }
 
-        //    if ( this.Attributes != null &&
-        //        this.Attributes.ContainsKey( key ) )
-        //    {
-        //        return this.Attributes[key].DefaultValueAsType;
-        //    }
+            if ( this.Attributes != null &&
+                this.Attributes.ContainsKey( key ) )
+            {
+                return this.Attributes[key].DefaultValueAsType;
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
         /// <summary>
         /// Gets the value of an attribute key - splitting that delimited value into a list of strings.

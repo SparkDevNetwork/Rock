@@ -70,7 +70,7 @@ namespace Rock.Model
                 .HasForeignKey<BinaryFileData>( d => d.Id )
                 .IsRequired()
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Cascade );
-#endif        
+#endif
         }
     }
 

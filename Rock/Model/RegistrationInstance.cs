@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -381,7 +386,7 @@ namespace Rock.Model
         {
             if ( state == EntityState.Deleted )
             {
-                //new RegistrationInstanceService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
+                new RegistrationInstanceService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
             }
 
             base.PreSaveChanges( dbContext, entry, state );

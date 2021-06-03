@@ -17,7 +17,11 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -36,7 +40,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Category" )]
     [DataContract]
-    public partial class Category : Model<Category>, IOrdered/*, ICacheable*/
+    public partial class Category : Model<Category>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -172,6 +176,9 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
+#if NET5_0_OR_GREATER
+        // Added to support ManyToMany relationship.
+
         public virtual ICollection<Attribute> AttributeItems
         {
             get { return _attributeItems ?? ( _attributeItems = new Collection<Attribute>() ); }
@@ -185,6 +192,7 @@ namespace Rock.Model
             set { _contentChannels = value; }
         }
         private ICollection<ContentChannel> _contentChannels;
+#endif
 
         /// <summary>
         /// Gets the parent authority where security authorizations are being inherited from.
@@ -192,51 +200,51 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        if ( ParentCategory != null )
-        //        {
-        //            return ParentCategory;
-        //        }
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( ParentCategory != null )
+                {
+                    return ParentCategory;
+                }
 
-        //        return base.ParentAuthority;
-        //    }
-        //}
+                return base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        //public override Dictionary<string, string> SupportedActions
-        //{
-        //    get
-        //    {
-        //        var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId );
-        //        if ( entityTypeCache == null && this.EntityType != null )
-        //        {
-        //            entityTypeCache = EntityTypeCache.Get( this.EntityType.Id );
-        //        }
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var entityTypeCache = EntityTypeCache.Get( this.EntityTypeId );
+                if ( entityTypeCache == null && this.EntityType != null )
+                {
+                    entityTypeCache = EntityTypeCache.Get( this.EntityType.Id );
+                }
 
-        //        if ( entityTypeCache != null )
-        //        {
-        //            switch( entityTypeCache.Name )
-        //            {
-        //                case "Rock.Model.Tag":
-        //                    {
-        //                        var supportedActions = new Dictionary<string, string>();
-        //                        supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-        //                        supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
-        //                        supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-        //                        supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-        //                        return supportedActions;
-        //                    }
-        //            }
-        //        }
+                if ( entityTypeCache != null )
+                {
+                    switch ( entityTypeCache.Name )
+                    {
+                        case "Rock.Model.Tag":
+                            {
+                                var supportedActions = new Dictionary<string, string>();
+                                supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                                supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
+                                supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                                supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                                return supportedActions;
+                            }
+                    }
+                }
 
-        //        return base.SupportedActions;
-        //    }
-        //}
+                return base.SupportedActions;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -299,20 +307,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return CategoryCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return CategoryCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    CategoryCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            CategoryCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 

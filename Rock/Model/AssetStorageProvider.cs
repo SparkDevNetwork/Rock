@@ -20,8 +20,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Storage.AssetStorage;
-//using Rock.Web.Cache;
+#if !NET5_0_OR_GREATER
+using Rock.Storage.AssetStorage;
+#endif
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -29,7 +31,9 @@ namespace Rock.Model
     /// 
     /// </summary>
     [DataContract]
+#if NET5_0_OR_GREATER
     [Table( "AssetStorageProvider ")]
+#endif
     public partial class AssetStorageProvider : Model<AssetStorageProvider>, IHasActiveFlag
     {
         #region Entity Properties
@@ -104,23 +108,25 @@ namespace Rock.Model
 
         #region Public Methods
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the asset storage component.
         /// </summary>
         /// <returns></returns>
-        //public virtual AssetStorageComponent GetAssetStorageComponent()
-        //{
-        //    if ( EntityTypeId.HasValue )
-        //    {
-        //        var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-        //        if ( entityType != null )
-        //        {
-        //            return AssetStorageContainer.GetComponent( entityType.Name );
-        //        }
-        //    }
+        public virtual AssetStorageComponent GetAssetStorageComponent()
+        {
+            if ( EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return AssetStorageContainer.GetComponent( entityType.Name );
+                }
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
+#endif
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

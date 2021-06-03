@@ -16,7 +16,11 @@
 //
 
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using Rock.Bus;
 using Rock.Bus.Message;
@@ -120,11 +124,11 @@ namespace Rock.Tasks
 
                     if ( person != null && systemCommunication != null )
                     {
-                        //CommunicationHelper.SendMessage( person, ( int ) person.CommunicationPreference, systemCommunication, new Dictionary<string, object> {
-                        //    { nameof(FinancialTransactionAlert), alert },
-                        //    { nameof(FinancialTransactionAlertType), alertType },
-                        //    { nameof(Person), person }
-                        //} );
+                        CommunicationHelper.SendMessage( person, ( int ) person.CommunicationPreference, systemCommunication, new Dictionary<string, object> {
+                            { nameof(FinancialTransactionAlert), alert },
+                            { nameof(FinancialTransactionAlertType), alertType },
+                            { nameof(Person), person }
+                        } );
                     }
                 }
 

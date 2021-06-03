@@ -17,8 +17,13 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -198,7 +203,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 500 )]
-        //[Index( "IX_ChannelCustomIndexed1" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_ChannelCustomIndexed1" )]
+#endif
         public string ChannelCustomIndexed1 { get; set; }
 
         /// <summary>
@@ -409,7 +416,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                //Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

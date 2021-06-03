@@ -313,15 +313,18 @@ namespace Rock.Model
                 virtualPath = "~/Assets/Images/no-picture.svg?";
             }
 
-            throw new NotSupportedException();
-            //if ( System.Web.HttpContext.Current == null )
-            //{
-            //    return virtualPath;
-            //}
-            //else
-            //{
-            //    return VirtualPathUtility.ToAbsolute( virtualPath );
-            //}
+#if NET5_0_OR_GREATER
+            return virtualPath.StartsWith( "~" ) ? virtualPath.Substring( 1 ) : virtualPath;
+#else
+            if ( System.Web.HttpContext.Current == null )
+            {
+                return virtualPath;
+            }
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+#endif
         }
 
         /// <summary>
@@ -336,11 +339,11 @@ namespace Rock.Model
                 return null;
             }
 
-            //if ( !campusId.HasValue && CampusCache.All().Count == 1 )
-            //{
-            //    // Rock hides campus pickers if there is only one campus
-            //    campusId = CampusCache.All().First().Id;
-            //}
+            if ( !campusId.HasValue && CampusCache.All().Count == 1 )
+            {
+                // Rock hides campus pickers if there is only one campus
+                campusId = CampusCache.All().First().Id;
+            }
 
             if ( campusId.HasValue )
             {
@@ -399,13 +402,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.ConnectionType != null ? this.ConnectionType : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.ConnectionType != null ? this.ConnectionType : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

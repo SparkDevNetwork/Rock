@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 #if NET5_0_OR_GREATER
+using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 #else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
@@ -31,8 +33,10 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
-//using Rock.Transactions;
-//using Rock.UniversalSearch;
+#if !NET5_0_OR_GREATER
+using Rock.Transactions;
+#endif
+using Rock.UniversalSearch;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -41,8 +45,6 @@ using Audit = Rock.Model.Audit;
 #if NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore.Migrations;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
 using EFEntityEntry = System.Data.Entity.Infrastructure.EntityEntry;
@@ -65,11 +67,13 @@ namespace Rock.Data
         /// </summary>
         public DbContext() : base() { }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Initializes a new instance of the <see cref="DbContext"/> class.
         /// </summary>
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
-        //public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+        public DbContext( string nameOrConnectionString ) : base( nameOrConnectionString ) { }
+#else
         private readonly string _nameOrConnectionString;
 
         /// <summary>
@@ -93,10 +97,11 @@ namespace Rock.Data
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings[_nameOrConnectionString]?.ConnectionString ?? _nameOrConnectionString;
 
             optionsBuilder.UseSqlServer( connectionString, a => a.UseNetTopologySuite() )
-                .UseLazyLoadingProxies()
+                //.UseLazyLoadingProxies()
                 .ReplaceService<IMigrationsAssembly, CoreShims.RockMigrationsAssembly>()
                 .ReplaceService<IMigrationsSqlGenerator, CoreShims.RockSqlServerMigrationsSqlGenerator>();
         }
+#endif
 
         /// <summary>
         /// Gets any error messages that occurred during a SaveChanges
@@ -233,7 +238,7 @@ namespace Rock.Data
             // Try to get the current person alias and id
             PersonAlias personAlias = GetCurrentPersonAlias();
 
-            bool enableAuditing = false/*GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean()*/;
+            bool enableAuditing = GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
             // Evaluate the current context for items that have changes
             var updatedItems = RockPreSave( this, personAlias, enableAuditing );
@@ -312,14 +317,16 @@ namespace Rock.Data
         /// <returns></returns>
         internal PersonAlias GetCurrentPersonAlias()
         {
-            //if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            //{
-            //    var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
-            //    if ( currentPerson != null && currentPerson.PrimaryAlias != null )
-            //    {
-            //        return currentPerson.PrimaryAlias;
-            //    }
-            //}
+#if !NET5_0_OR_GREATER
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAlias != null )
+                {
+                    return currentPerson.PrimaryAlias;
+                }
+            }
+#endif
 
             return null;
         }
@@ -499,22 +506,22 @@ namespace Rock.Data
             foreach ( var item in updatedItems )
             {
                 // Publish on the message bus if the entity type is configured
-                //EntityWasUpdatedMessage.PublishIfShould( item.Entity, item.PreSaveState );
+                EntityWasUpdatedMessage.PublishIfShould( item.Entity, item.PreSaveState );
 
-                //if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
-                //{
-                //    TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
-                //}
-                //else
-                //{
-                //    if ( item.PreSaveState == EntityState.Added )
-                //    {
-                //        TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
-                //    }
+                if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
+                {
+                    TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
+                }
+                else
+                {
+                    if ( item.PreSaveState == EntityState.Added )
+                    {
+                        TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
+                    }
 
-                //    TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
-                //    TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
-                //}
+                    TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
+                    TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
+                }
 
                 if ( item.Entity is IModel )
                 {
@@ -523,29 +530,29 @@ namespace Rock.Data
                 }
 
                 // check if this entity should be passed on for indexing
-                //if ( item.Entity is IRockIndexable )
-                //{
-                //    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
-                //    {
-                //        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
-                //        {
-                //            EntityTypeId = item.Entity.TypeId,
-                //            EntityId = item.Entity.Id
-                //        };
+                if ( item.Entity is IRockIndexable )
+                {
+                    if ( item.State == EntityState.Detached || item.State == EntityState.Deleted )
+                    {
+                        var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
 
-                //        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
-                //    }
-                //    else
-                //    {
-                //        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
-                //        {
-                //            EntityTypeId = item.Entity.TypeId,
-                //            EntityId = item.Entity.Id
-                //        };
+                        deleteEntityTypeIndexMsgs.Add( deleteEntityTypeIndexMsg );
+                    }
+                    else
+                    {
+                        var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                        {
+                            EntityTypeId = item.Entity.TypeId,
+                            EntityId = item.Entity.Id
+                        };
 
-                //        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
-                //    }
-                //}
+                        processEntityTypeIndexMsgs.Add( processEntityTypeIndexMsg );
+                    }
+                }
 
                 if ( item.Entity is ICacheable cacheable )
                 {
@@ -556,15 +563,15 @@ namespace Rock.Data
             // check if Indexing is enabled in another thread to avoid deadlock when Snapshot Isolation is turned off when the Index components upload/load attributes
             if ( processEntityTypeIndexMsgs.Any() || deleteEntityTypeIndexMsgs.Any() )
             {
-                //System.Threading.Tasks.Task.Run( () =>
-                //{
-                //    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
-                //    if ( indexingEnabled )
-                //    {
-                //        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                //        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
-                //    }
-                //} );
+                System.Threading.Tasks.Task.Run( () =>
+                {
+                    var indexingEnabled = IndexContainer.GetActiveComponent() == null ? false : true;
+                    if ( indexingEnabled )
+                    {
+                        processEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                        deleteEntityTypeIndexMsgs.ForEach( t => t.Send() );
+                    }
+                } );
             }
         }
 
@@ -605,8 +612,11 @@ namespace Rock.Data
                 return new List<AchievementAttempt>();
             }
 
-            //return AchievementTypeCache.ProcessAchievements( updatedItem.Entity );
+#if NET5_0_OR_GREATER
             return new List<AchievementAttempt>();
+#else
+            return AchievementTypeCache.ProcessAchievements( updatedItem.Entity );
+#endif
         }
 
         #region Bulk Operations
@@ -624,7 +634,7 @@ namespace Rock.Data
             // model hooks, achievements need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit.
             var entitiesForAchievements = new List<IEntity>();
-            var isAchievementsEnabled = canUseCache && false;// EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
+            var isAchievementsEnabled = canUseCache && EntityTypeCache.Get<T>()?.IsAchievementsEnabled == true;
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
@@ -652,33 +662,33 @@ namespace Rock.Data
             }
 
             // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
-            int timeout = 300;
-            if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > timeout )
+            int minTimeout = 300;
+            if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > minTimeout )
             {
-                timeout = this.Database.GetCommandTimeout().Value;
+                minTimeout = this.Database.GetCommandTimeout().Value;
             }
 
 #if NET5_0_OR_GREATER
             this.BulkInsert( records, options =>
             {
-                options.BatchTimeout = timeout;
+                options.BatchTimeout = minTimeout;
                 options.IsCheckConstraintOnInsertDisabled = false;
             } );
 #else
-            EntityFramework.Utilties.Configuration.SqlCommandTimeout = timeout;
+            EntityFramework.Utilties.Configuration.SqlCommandTimeout = minTimeout;
             EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
             EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
 #endif
 
             // Send the achievements messages
-            //foreach ( var entityForAchievement in entitiesForAchievements )
-            //{
-            //    new ProcessAchievements.Message
-            //    {
-            //        EntityGuid = entityForAchievement.Guid,
-            //        EntityTypeName = entityForAchievement.TypeName
-            //    }.Send();
-            //}
+            foreach ( var entityForAchievement in entitiesForAchievements )
+            {
+                new ProcessAchievements.Message
+                {
+                    EntityGuid = entityForAchievement.Guid,
+                    EntityTypeName = entityForAchievement.TypeName
+                }.Send();
+            }
         }
 
         /// <summary>
@@ -703,16 +713,19 @@ namespace Rock.Data
         /// <returns>the number of records updated</returns>
         public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
         {
-            return 0;
-            //var currentDateTime = RockDateTime.Now;
-            //PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
-            //var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
-            //var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
-            //int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
-            //{
-            //    batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
-            //} );
-            //return recordsUpdated;
+            var currentDateTime = RockDateTime.Now;
+            PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
+            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
+            var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
+            int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
+            {
+#if NET5_0_OR_GREATER
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
+#else
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+#endif
+            } );
+            return recordsUpdated;
         }
 
         /// <summary>
@@ -731,7 +744,11 @@ namespace Rock.Data
             return queryable.Delete( d =>
             {
                 d.BatchSize = batchSize ?? 4000;
+#if NET5_0_OR_GREATER
                 d.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
+#else
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+#endif
             } );
         }
 
@@ -961,30 +978,30 @@ namespace Rock.Data
 
                 if ( audit.Details.Any() )
                 {
-                    //var entityType = EntityTypeCache.Get( rockEntityType );
-                    //if ( entityType != null )
-                    //{
-                    //    string title;
-                    //    try
-                    //    {
-                    //        title = item.Entity.ToString();
-                    //    }
-                    //    catch
-                    //    {
-                    //        // ignore exception (Entity often overrides ToString() and we don't want that prevent the audit if it fails)
-                    //        title = null;
-                    //    }
+                    var entityType = EntityTypeCache.Get( rockEntityType );
+                    if ( entityType != null )
+                    {
+                        string title;
+                        try
+                        {
+                            title = item.Entity.ToString();
+                        }
+                        catch
+                        {
+                            // ignore exception (Entity often overrides ToString() and we don't want that prevent the audit if it fails)
+                            title = null;
+                        }
 
-                    //    if ( string.IsNullOrWhiteSpace( title ) )
-                    //    {
-                    //        title = entityType.FriendlyName ?? string.Empty;
-                    //    }
-                    //    audit.DateTime = RockDateTime.Now;
-                    //    audit.PersonAliasId = personAliasId;
-                    //    audit.EntityTypeId = entityType.Id;
-                    //    audit.EntityId = item.Entity.Id;
-                    //    audit.Title = title.Truncate( 195 );
-                    //}
+                        if ( string.IsNullOrWhiteSpace( title ) )
+                        {
+                            title = entityType.FriendlyName ?? string.Empty;
+                        }
+                        audit.DateTime = RockDateTime.Now;
+                        audit.PersonAliasId = personAliasId;
+                        audit.EntityTypeId = entityType.Id;
+                        audit.EntityId = item.Entity.Id;
+                        audit.Title = title.Truncate( 195 );
+                    }
                 }
             }
         }
@@ -1121,17 +1138,24 @@ namespace Rock.Data
                 if ( dbEntityEntry.State == EntityState.Modified )
 
                 {
-                    //var triggers = WorkflowTriggersCache.Triggers( entity.TypeName )
-                    //    .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
+                    var triggers = WorkflowTriggersCache.Triggers( entity.TypeName )
+                        .Where( t => t.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave || t.WorkflowTriggerType == WorkflowTriggerType.PostSave );
 
-                    //if ( triggers.Any() )
-                    //{
-                    //    OriginalValues = new Dictionary<string, object>();
-                    //    foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
-                    //    {
-                    //        OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
-                    //    }
-                    //}
+                    if ( triggers.Any() )
+                    {
+                        OriginalValues = new Dictionary<string, object>();
+#if NET5_0_OR_GREATER
+                        foreach ( var p in DbEntityEntry.OriginalValues.Properties )
+                        {
+                            OriginalValues.Add( p.Name, DbEntityEntry.OriginalValues[p] );
+                        }
+#else
+                        foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                        {
+                            OriginalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                        }
+#endif
+                    }
                 }
 
             }

@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -723,10 +728,10 @@ namespace Rock.Model
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
-                    //_supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    //_supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
-                    //_supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    //_supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
+                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
+                    _supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
+                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
+                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                 }
 
                 return _supportedActions;
@@ -749,7 +754,7 @@ namespace Rock.Model
         {
             if ( state == EntityState.Deleted )
             {
-                //new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
+                new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
             }
 
             base.PreSaveChanges( dbContext, entry, state );

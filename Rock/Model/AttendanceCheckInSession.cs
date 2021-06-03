@@ -71,7 +71,11 @@ namespace Rock.Model
         /// The attendances.
         /// </value>
         [DataMember]
+#if NET5_0_OR_GREATER
         public virtual ICollection<Attendance> Attendances { get; set; }
+#else
+        public ICollection<Attendance> Attendances { get; set; }
+#endif
     }
 
     /// <summary>
@@ -86,10 +90,13 @@ namespace Rock.Model
         {
             this.HasOptional( c => c.Device ).WithMany().HasForeignKey( c => c.DeviceId ).WillCascadeOnDelete( false );
 
-            // the Migration will manually add a ON DELETE SET NULL for AttendanceCheckInSessionId
+#if !NET5_0_OR_GREATER
             // EFCORE: Moved to Attendance with reverse relationship setup.
-            //this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession )
-            //    .HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
+
+            // the Migration will manually add a ON DELETE SET NULL for AttendanceCheckInSessionId
+            this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession )
+                .HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
+#endif
         }
     }
 }

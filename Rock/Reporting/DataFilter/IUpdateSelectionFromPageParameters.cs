@@ -21,6 +21,7 @@ namespace Rock.Reporting.DataFilter
     /// </summary>
     public interface IUpdateSelectionFromPageParameters
     {
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Updates the selection from page parameters.
         /// </summary>
@@ -28,5 +29,6 @@ namespace Rock.Reporting.DataFilter
         /// <param name="rockBlock">The rock block.</param>
         /// <returns></returns>
         string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock );
+#endif
     }
 }

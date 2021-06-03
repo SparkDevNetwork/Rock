@@ -17,13 +17,17 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -34,7 +38,7 @@ namespace Rock.Model
     [Table( "PersistedDataset" )]
     [DataContract]
     [HideFromReporting]
-    public class PersistedDataset : Entity<PersistedDataset>/*, ICacheable*/
+    public class PersistedDataset : Entity<PersistedDataset>, ICacheable
     {
         #region Entity Properties
 
@@ -47,7 +51,9 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         [HideFromReporting]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         public string AccessKey { get; set; }
 
         /// <summary>
@@ -220,20 +226,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return PersistedDatasetCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return PersistedDatasetCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        //{
-        //    PersistedDatasetCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            PersistedDatasetCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion ICacheable
 
@@ -246,38 +252,38 @@ namespace Rock.Model
         /// <exception cref="Rock.Model.PersistedDataset.UnsupportedBuildScriptTypeException">Is thrown if the BuildScriptType is not known/supported.</exception>
         public void UpdateResultData()
         {
-            //var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            //switch ( this.BuildScriptType )
-            //{
-            //    case PersistedDatasetScriptType.Lava:
-            //        {
-            //            var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
-            //            var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+            var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
+            switch ( this.BuildScriptType )
+            {
+                case PersistedDatasetScriptType.Lava:
+                    {
+                        var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
+                        var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
 
-            //            // Ensure resulting output is valid for its defined format,
-            //            // otherwise log the problem and throw an exception.
-            //            if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
-            //            {
-            //                if ( output.FromJsonDynamicOrNull() == null )
-            //                {
-            //                    throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
-            //                }
-            //            }
+                        // Ensure resulting output is valid for its defined format,
+                        // otherwise log the problem and throw an exception.
+                        if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
+                        {
+                            if ( output.FromJsonDynamicOrNull() == null )
+                            {
+                                throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                            }
+                        }
 
-            //            this.ResultData = output;
-            //            break;
-            //        }
+                        this.ResultData = output;
+                        break;
+                    }
 
-            //    default:
-            //        {
-            //            throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
-            //        }
-            //}
+                default:
+                    {
+                        throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
+                    }
+            }
 
-            //timeToBuildStopwatch.Stop();
-            //this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
+            timeToBuildStopwatch.Stop();
+            this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
 
-            //this.LastRefreshDateTime = RockDateTime.Now;
+            this.LastRefreshDateTime = RockDateTime.Now;
 
         }
 

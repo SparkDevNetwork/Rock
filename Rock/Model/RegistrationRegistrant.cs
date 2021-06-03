@@ -17,7 +17,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -316,51 +320,51 @@ namespace Rock.Model
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        //{
-        //    var entityTypeCache = EntityTypeCache.Get( TypeId );
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var entityTypeCache = EntityTypeCache.Get( TypeId );
 
-        //    // Get the registration
-        //    var registration = this.Registration;
-        //    if ( registration == null && this.RegistrationId > 0 )
-        //    {
-        //        registration = new RegistrationService( rockContext )
-        //            .Queryable().AsNoTracking()
-        //            .FirstOrDefault( r => r.Id == this.RegistrationId );
-        //    }
-        //    if ( entityTypeCache == null || registration == null )
-        //    {
-        //        return null;
-        //    }
+            // Get the registration
+            var registration = this.Registration;
+            if ( registration == null && this.RegistrationId > 0 )
+            {
+                registration = new RegistrationService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( r => r.Id == this.RegistrationId );
+            }
+            if ( entityTypeCache == null || registration == null )
+            {
+                return null;
+            }
 
-        //    // Get the instance
-        //    var registrationInstance = registration.RegistrationInstance;
-        //    if ( registrationInstance == null && registration.RegistrationInstanceId > 0 )
-        //    {
-        //        registrationInstance = new RegistrationInstanceService( rockContext )
-        //            .Queryable().AsNoTracking()
-        //            .FirstOrDefault( r => r.Id == registration.RegistrationInstanceId );
-        //    }
-        //    if ( registrationInstance == null )
-        //    {
-        //        return null;
-        //    }
+            // Get the instance
+            var registrationInstance = registration.RegistrationInstance;
+            if ( registrationInstance == null && registration.RegistrationInstanceId > 0 )
+            {
+                registrationInstance = new RegistrationInstanceService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .FirstOrDefault( r => r.Id == registration.RegistrationInstanceId );
+            }
+            if ( registrationInstance == null )
+            {
+                return null;
+            }
 
-        //    // Get all attributes there were defined for instance's template.
-        //    var attributes = new List<AttributeCache>();
-        //    foreach( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
-        //        .Where( e => 
-        //            e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
-        //            e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
-        //    {
-        //        foreach ( int attributeId in entityAttributes.AttributeIds )
-        //        {
-        //            attributes.Add( AttributeCache.Get( attributeId ) );
-        //        }
-        //    }
+            // Get all attributes there were defined for instance's template.
+            var attributes = new List<AttributeCache>();
+            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
+                .Where( e =>
+                    e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
+                    e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
+            {
+                foreach ( int attributeId in entityAttributes.AttributeIds )
+                {
+                    attributes.Add( AttributeCache.Get( attributeId ) );
+                }
+            }
 
-        //    return attributes;
-        //}
+            return attributes;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

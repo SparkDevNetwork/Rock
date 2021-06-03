@@ -37,7 +37,9 @@ namespace Rock.Model
         /// The metric identifier.
         /// </value>
         [DataMember]
-        //[Index( "IX_MetricCategory", 0 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_MetricCategory", 0 )]
+#endif
         public int MetricId { get; set; }
 
         /// <summary>
@@ -47,7 +49,9 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
-        //[Index( "IX_MetricCategory", 1 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_MetricCategory", 1 )]
+#endif
         public int CategoryId { get; set; }
 
         /// <summary>
@@ -125,22 +129,22 @@ namespace Rock.Model
         /// A parent authority.  If a user is not specifically allowed or denied access to
         /// this object, Rock will check access to the parent authority specified by this property.
         /// </summary>
-        //public virtual Security.ISecured ParentAuthority
-        //{
-        //    get 
-        //    { 
-        //        return this.Metric.ParentAuthority; 
-        //    }
-        //}
+        public virtual Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Metric.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>
-        //public virtual Security.ISecured ParentAuthorityPre
-        //{
-        //    get { return null; }
-        //}
+        public virtual Security.ISecured ParentAuthorityPre
+        {
+            get { return null; }
+        }
 
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
@@ -161,17 +165,17 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
         /// </returns>
-        //public virtual bool IsAuthorized( string action, Person person )
-        //{
-        //    if ( this.Metric != null )
-        //    {
-        //        return this.Metric.IsAuthorized( action, person );
-        //    }
-        //    else
-        //    {
-        //        return action == Rock.Security.Authorization.VIEW;
-        //    }
-        //}
+        public virtual bool IsAuthorized( string action, Person person )
+        {
+            if ( this.Metric != null )
+            {
+                return this.Metric.IsAuthorized( action, person );
+            }
+            else
+            {
+                return action == Rock.Security.Authorization.VIEW;
+            }
+        }
 
         /// <summary>
         /// If a user or role is not specifically allowed or denied to perform the selected action,
@@ -192,10 +196,10 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
         /// </returns>
-        //public virtual bool IsPrivate( string action, Person person )
-        //{
-        //    return this.Metric.IsPrivate( action, person );
-        //}
+        public virtual bool IsPrivate( string action, Person person )
+        {
+            return this.Metric.IsPrivate( action, person );
+        }
 
         /// <summary>
         /// Makes the action on the current entity private (Only the current user will have access).
@@ -203,10 +207,10 @@ namespace Rock.Model
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
-        //{
-        //    this.Metric.MakePrivate( action, person, rockContext );
-        //}
+        public virtual void MakePrivate( string action, Person person, RockContext rockContext = null )
+        {
+            this.Metric.MakePrivate( action, person, rockContext );
+        }
 
         /// <summary>
         /// If action on the current entity is private, removes security that made it private.
@@ -214,10 +218,10 @@ namespace Rock.Model
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
-        //public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
-        //{
-        //    this.Metric.MakeUnPrivate( action, person, rockContext );
-        //}
+        public virtual void MakeUnPrivate( string action, Person person, RockContext rockContext = null )
+        {
+            this.Metric.MakeUnPrivate( action, person, rockContext );
+        }
 
         #endregion
     }

@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 using Rock.Data;
@@ -74,7 +78,9 @@ namespace Rock.Model
                 var scheduleService = new ScheduleService( rockContext );
                 var locationService = new LocationService( rockContext );
 
+#if !NET5_0_OR_GREATER
                 using ( new Rock.Data.QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+#endif
                 {
 
                     // Set up an 'occurrences' query for the group
@@ -86,12 +92,20 @@ namespace Rock.Model
                     if ( fromDateTime.HasValue )
                     {
                         var fromDate = fromDateTime.Value.Date;
+#if NET5_0_OR_GREATER
+                        qry = qry.Where( a => a.StartDateTime.Date >= fromDate );
+#else
                         qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) >= ( fromDate ) );
+#endif
                     }
                     if ( toDateTime.HasValue )
                     {
                         var toDate = toDateTime.Value.Date;
+#if NET5_0_OR_GREATER
+                        qry = qry.Where( a => a.StartDateTime.Date < toDate );
+#else
                         qry = qry.Where( a => DbFunctions.TruncateTime( a.StartDateTime ) < ( toDate ) );
+#endif
                     }
 
                     // Location Filter
@@ -112,7 +126,11 @@ namespace Rock.Model
                     {
                         a.LocationId,
                         a.ScheduleId,
+#if NET5_0_OR_GREATER
+                        Date = a.StartDateTime.Date
+#else
                         Date = DbFunctions.TruncateTime( a.StartDateTime )
+#endif
                     } )
                     .Distinct()
                     .ToList();
@@ -157,11 +175,19 @@ namespace Rock.Model
                             scheduleStartTimes.Add( s.Id, s.StartTimeOfDay );
                         } );
 
+#if NET5_0_OR_GREATER
+                    foreach ( var occurrence in occurrenceDates )
+#else
                     foreach ( var occurrence in occurrenceDates.Where( o => o.Date.HasValue ) )
+#endif
                     {
                         occurrences.Add(
                             new ScheduleOccurrence(
+#if NET5_0_OR_GREATER
+                                occurrence.Date,
+#else
                                 occurrence.Date.Value,
+#endif
                                 occurrence.ScheduleId.HasValue && scheduleStartTimes.ContainsKey( occurrence.ScheduleId.Value ) ?
                                     scheduleStartTimes[occurrence.ScheduleId.Value] : new TimeSpan(),
                                 occurrence.ScheduleId,
@@ -390,7 +416,11 @@ namespace Rock.Model
                     a.GroupId == group.Id &&
                     a.LocationId.Equals( occurrence.LocationId ) &&
                     a.ScheduleId.Equals( occurrence.ScheduleId ) &&
+#if NET5_0_OR_GREATER
+                    a.StartDateTime.Date.Equals( occurrence.Date ) )
+#else
                     DbFunctions.TruncateTime( a.StartDateTime ).Equals( occurrence.Date ) )
+#endif
                 .ToList();
 
                 if ( attendances.Any() )

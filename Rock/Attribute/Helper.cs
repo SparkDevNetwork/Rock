@@ -16,12 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI;
-//using System.Web.UI.HtmlControls;
+#if !NET5_0_OR_GREATER
+using System.Web.UI.HtmlControls;
+#endif
 using System.Web.UI.WebControls;
 
 using Rock.Data;
@@ -78,18 +84,18 @@ namespace Rock.Attribute
             var entityProperties = new List<FieldAttribute>();
 
             // If a ContextAwareAttribute exists without an EntityType defined, add a property attribute to specify the type
-            //int properties = 0;
-            //foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
-            //{
-            //    var contextAttribute = ( ContextAwareAttribute ) customAttribute;
-            //    if ( contextAttribute != null && contextAttribute.IsConfigurable )
-            //    {
-            //        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-            //        properties++;
+            int properties = 0;
+            foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
+            {
+                var contextAttribute = ( ContextAwareAttribute ) customAttribute;
+                if ( contextAttribute != null && contextAttribute.IsConfigurable )
+                {
+                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                    properties++;
 
-            //        entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
-            //    }
-            //}
+                    entityProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                }
+            }
 
             // Add any property attributes that were defined for the entity
             foreach ( var customAttribute in type.GetCustomAttributes( typeof( FieldAttribute ), true ) )
@@ -99,21 +105,27 @@ namespace Rock.Attribute
 
             rockContext = rockContext ?? new RockContext();
 
-            //bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
-            //if ( customGridColumnsBlock )
-            //{
-            //    entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
-            //}
+#if !NET5_0_OR_GREATER
+            bool customGridColumnsBlock = typeof( Rock.Web.UI.ICustomGridColumns ).IsAssignableFrom( type );
+            if ( customGridColumnsBlock )
+            {
+                entityProperties.Add( new TextFieldAttribute( CustomGridColumnsConfig.AttributeKey, category: "CustomSetting" ) );
+            }
 
-            //bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
-            //if ( customGridOptionsBlock )
-            //{
-            //    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
-            //    entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
-            //    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
-            //}
+            bool customGridOptionsBlock = typeof( Rock.Web.UI.ICustomGridOptions ).IsAssignableFrom( type );
+            if ( customGridOptionsBlock )
+            {
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
+                entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
+            }
+#endif
 
-            bool dynamicAttributesBlock = false/*typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type )*/;
+#if NET5_0_OR_GREATER
+            bool dynamicAttributesBlock = false;
+#else
+            bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
+#endif
 
             // Create any attributes that need to be created
             foreach ( var entityProperty in entityProperties )
@@ -689,6 +701,7 @@ This can be due to multiple threads updating the same attribute at the same time
             attributeCategory.Attributes.Add( attribute );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Saves any attribute edits made using an Attribute Editor control
         /// </summary>
@@ -701,33 +714,34 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <remarks>
         /// If a rockContext value is included, this method will save any previous changes made to the context
         /// </remarks>
-        //public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
-        //{
-        //    // Create and update a new attribute object with new values
-        //    rockContext = rockContext ?? new RockContext();
-        //    var internalAttributeService = new AttributeService( rockContext );
+        public static Rock.Model.Attribute SaveAttributeEdits( AttributeEditor edtAttribute, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue, RockContext rockContext = null )
+        {
+            // Create and update a new attribute object with new values
+            rockContext = rockContext ?? new RockContext();
+            var internalAttributeService = new AttributeService( rockContext );
 
-        //    Rock.Model.Attribute attribute = null;
-        //    var newAttribute = new Rock.Model.Attribute();
+            Rock.Model.Attribute attribute = null;
+            var newAttribute = new Rock.Model.Attribute();
 
-        //    if ( edtAttribute.AttributeId.HasValue )
-        //    {
-        //        attribute = internalAttributeService.Get( edtAttribute.AttributeId.Value );
-        //    }
+            if ( edtAttribute.AttributeId.HasValue )
+            {
+                attribute = internalAttributeService.Get( edtAttribute.AttributeId.Value );
+            }
 
-        //    if ( attribute != null )
-        //    {
-        //        newAttribute.CopyPropertiesFrom( attribute );
-        //    }
-        //    else
-        //    {
-        //        newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
-        //    }
+            if ( attribute != null )
+            {
+                newAttribute.CopyPropertiesFrom( attribute );
+            }
+            else
+            {
+                newAttribute.Order = internalAttributeService.Queryable().Max( a => a.Order ) + 1;
+            }
 
-        //    edtAttribute.GetAttributeProperties( newAttribute );
+            edtAttribute.GetAttributeProperties( newAttribute );
 
-        //    return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
-        //}
+            return SaveAttributeEdits( newAttribute, entityTypeId, entityTypeQualifierColumn, entityTypeQualifierValue, rockContext );
+        }
+#endif
 
         /// <summary>
         /// Saves the attribute edits.
@@ -1021,17 +1035,17 @@ This can be due to multiple threads updating the same attribute at the same time
                     foreach ( var item in source.AttributeValues )
                     {
                         var attribute = source.Attributes[item.Key];
-                        //var fieldType = attribute.FieldType.Field as Field.FieldType;
+                        var fieldType = attribute.FieldType.Field as Field.FieldType;
 
-                        //var value = item.Value;
-                        //if ( fieldType != null && value != null )
-                        //{
-                        //    var attributeValue = new AttributeValueCache();
-                        //    attributeValue.AttributeId = value.AttributeId;
-                        //    attributeValue.Value = fieldType.GetCopyValue( value.Value, rockContext );
-                        //    target.AttributeValues.Add( item.Key, attributeValue );
-                        //}
-                        //else
+                        var value = item.Value;
+                        if ( fieldType != null && value != null )
+                        {
+                            var attributeValue = new AttributeValueCache();
+                            attributeValue.AttributeId = value.AttributeId;
+                            attributeValue.Value = fieldType.GetCopyValue( value.Value, rockContext );
+                            target.AttributeValues.Add( item.Key, attributeValue );
+                        }
+                        else
                         {
                             target.AttributeValues.Add( item.Key, null );
                         }
@@ -1044,6 +1058,7 @@ This can be due to multiple threads updating the same attribute at the same time
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Adds edit controls for each of the item's attributes
         /// </summary>
@@ -1052,10 +1067,10 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="supressOrdering">if set to <c>true</c> suppresses reordering of the attributes within each Category. (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        //public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
-        //{
-        //    AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
-        //}
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup = "", bool supressOrdering = false )
+        {
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), supressOrdering );
+        }
 
         /// <summary>
         /// Adds edit controls for each of the item's attributes
@@ -1066,10 +1081,10 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> suppresses reordering of the attributes within each Category. (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        //public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
-        //{
-        //    AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
-        //}
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering = false )
+        {
+            AddEditControls( item, parentControl, setValue, validationGroup, exclude, supressOrdering, null );
+        }
 
         /// <summary>
         /// Adds the edit controls.
@@ -1079,10 +1094,10 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        //public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
-        //{
-        //    AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
-        //}
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, int? numberOfColumns )
+        {
+            AddEditControls( item, parentControl, setValue, validationGroup, new List<string>(), false, numberOfColumns );
+        }
 
         /// <summary>
         /// Adds the edit controls.
@@ -1094,23 +1109,23 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="numberOfColumns">The number of columns.</param>
         /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="supressOrdering">if set to <c>true</c> suppresses reordering of the attributes within each Category. (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
-        //public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
-        //{
-        //    if ( item != null && item.Attributes != null )
-        //    {
-        //        exclude = exclude ?? new List<string>();
-        //        foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
-        //        {
-        //            if ( attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
-        //            {
-        //                AddEditControls(
-        //                    attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
-        //                    attributeCategory.Attributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
-        //                    item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
-        //            }
-        //        }
-        //    }
-        //}
+        public static void AddEditControls( Rock.Attribute.IHasAttributes item, Control parentControl, bool setValue, string validationGroup, List<string> exclude, bool supressOrdering, int? numberOfColumns = null )
+        {
+            if ( item != null && item.Attributes != null )
+            {
+                exclude = exclude ?? new List<string>();
+                foreach ( var attributeCategory in GetAttributeCategories( item, false, false, supressOrdering ) )
+                {
+                    if ( attributeCategory.Attributes.Where( a => a.IsActive ).Where( a => !exclude.Contains( a.Name ) && !exclude.Contains( a.Key ) ).Select( a => a.Key ).Count() > 0 )
+                    {
+                        AddEditControls(
+                            attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
+                            attributeCategory.Attributes.Where( a => a.IsActive ).Select( a => a.Key ).ToList(),
+                            item, parentControl, validationGroup, setValue, exclude, numberOfColumns );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Adds the edit controls.
@@ -1122,10 +1137,10 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">The exclude.</param>
-        //public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
-        //{
-        //    AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
-        //}
+        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude )
+        {
+            AddEditControls( category, attributeKeys, item, parentControl, validationGroup, setValue, exclude, null );
+        }
 
         /// <summary>
         /// Adds the edit controls.
@@ -1138,18 +1153,18 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="exclude">List of attributes not to render. Attributes with a Key or Name in the exclude list will not be shown.</param>
         /// <param name="numberOfColumns">The number of columns.</param>
-        //public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
-        //{
-        //    AttributeAddEditControlsOptions attributeAddEditControlsOptions = new AttributeAddEditControlsOptions
-        //    {
-        //        NumberOfColumns = numberOfColumns
-        //    };
+        public static void AddEditControls( string category, List<string> attributeKeys, Rock.Attribute.IHasAttributes item, Control parentControl, string validationGroup, bool setValue, List<string> exclude, int? numberOfColumns )
+        {
+            AttributeAddEditControlsOptions attributeAddEditControlsOptions = new AttributeAddEditControlsOptions
+            {
+                NumberOfColumns = numberOfColumns
+            };
 
-        //    attributeAddEditControlsOptions.IncludedAttributes = attributeKeys != null ? item?.Attributes.Select( a => a.Value ).Where( a => attributeKeys.Contains( a.Key ) ).ToList() : null;
-        //    attributeAddEditControlsOptions.ExcludedAttributes = exclude != null ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList() : null;
+            attributeAddEditControlsOptions.IncludedAttributes = attributeKeys != null ? item?.Attributes.Select( a => a.Value ).Where( a => attributeKeys.Contains( a.Key ) ).ToList() : null;
+            attributeAddEditControlsOptions.ExcludedAttributes = exclude != null ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList() : null;
 
-        //    AddEditControlsForCategory( category, item, parentControl, validationGroup, setValue, attributeAddEditControlsOptions );
-        //}
+            AddEditControlsForCategory( category, item, parentControl, validationGroup, setValue, attributeAddEditControlsOptions );
+        }
 
         /// <summary>
         /// Adds the edit controls for category.
@@ -1160,97 +1175,97 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="validationGroup">The validation group.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="addEditControlsOptions">The add edit controls options.</param>
-        //public static void AddEditControlsForCategory( string categoryName, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, AttributeAddEditControlsOptions addEditControlsOptions )
-        //{
-        //    int? numberOfColumns = addEditControlsOptions?.NumberOfColumns;
-        //    List<AttributeCache> excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
-        //    List<AttributeCache> attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
-        //    bool showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
+        public static void AddEditControlsForCategory( string categoryName, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, AttributeAddEditControlsOptions addEditControlsOptions )
+        {
+            int? numberOfColumns = addEditControlsOptions?.NumberOfColumns;
+            List<AttributeCache> excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
+            List<AttributeCache> attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
+            bool showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
 
-        //    // ensure valid number of columns
-        //    if ( numberOfColumns.HasValue )
-        //    {
-        //        if ( numberOfColumns.Value > 12 )
-        //        {
+            // ensure valid number of columns
+            if ( numberOfColumns.HasValue )
+            {
+                if ( numberOfColumns.Value > 12 )
+                {
 
-        //        }
-        //        else if ( numberOfColumns < 1 )
-        //        {
-        //            numberOfColumns = 1;
-        //        }
-        //    }
+                }
+                else if ( numberOfColumns < 1 )
+                {
+                    numberOfColumns = 1;
+                }
+            }
 
-        //    bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
-        //    HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
+            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
+            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
 
-        //    parentControl.Controls.Add( fieldSet );
-        //    fieldSet.Controls.Clear();
-        //    if ( showCategoryLabel && !string.IsNullOrEmpty( categoryName ) )
-        //    {
-        //        HtmlGenericControl legend = new HtmlGenericControl( "h4" );
+            parentControl.Controls.Add( fieldSet );
+            fieldSet.Controls.Clear();
+            if ( showCategoryLabel && !string.IsNullOrEmpty( categoryName ) )
+            {
+                HtmlGenericControl legend = new HtmlGenericControl( "h4" );
 
-        //        if ( numberOfColumns.HasValue )
-        //        {
-        //            HtmlGenericControl row = new HtmlGenericControl( "div" );
-        //            row.AddCssClass( "row" );
-        //            fieldSet.Controls.Add( row );
+                if ( numberOfColumns.HasValue )
+                {
+                    HtmlGenericControl row = new HtmlGenericControl( "div" );
+                    row.AddCssClass( "row" );
+                    fieldSet.Controls.Add( row );
 
-        //            HtmlGenericControl col = new HtmlGenericControl( "div" );
-        //            col.AddCssClass( "col-md-12" );
-        //            row.Controls.Add( col );
+                    HtmlGenericControl col = new HtmlGenericControl( "div" );
+                    col.AddCssClass( "col-md-12" );
+                    row.Controls.Add( col );
 
-        //            col.Controls.Add( legend );
-        //        }
-        //        else
-        //        {
-        //            fieldSet.Controls.Add( legend );
-        //        }
+                    col.Controls.Add( legend );
+                }
+                else
+                {
+                    fieldSet.Controls.Add( legend );
+                }
 
-        //        legend.Controls.Clear();
-        //        legend.InnerText = categoryName.Trim();
-        //    }
+                legend.Controls.Clear();
+                legend.InnerText = categoryName.Trim();
+            }
 
-        //    HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
-        //    if ( numberOfColumns.HasValue )
-        //    {
-        //        fieldSet.Controls.Add( attributeRow );
-        //        attributeRow.AddCssClass( "row" );
-        //    }
+            HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
+            if ( numberOfColumns.HasValue )
+            {
+                fieldSet.Controls.Add( attributeRow );
+                attributeRow.AddCssClass( "row" );
+            }
 
-        //    foreach ( AttributeCache attribute in attributes )
-        //    {
-        //        if ( attribute.IsActive && !excludedAttributes.Contains( attribute ) )
-        //        {
-        //            // Add the control for editing the attribute value
-        //            AttributeControlOptions attributeControlOptions = new AttributeControlOptions
-        //            {
-        //                SetValue = setValue,
-        //                SetId = true,
-        //                ValidationGroup = validationGroup,
-        //                Value = setValue ? item.AttributeValues?[attribute.Key]?.Value : null,
-        //                ShowPrePostHtml = ( addEditControlsOptions?.ShowPrePostHtml ?? true )
-        //            };
+            foreach ( AttributeCache attribute in attributes )
+            {
+                if ( attribute.IsActive && !excludedAttributes.Contains( attribute ) )
+                {
+                    // Add the control for editing the attribute value
+                    AttributeControlOptions attributeControlOptions = new AttributeControlOptions
+                    {
+                        SetValue = setValue,
+                        SetId = true,
+                        ValidationGroup = validationGroup,
+                        Value = setValue ? item.AttributeValues?[attribute.Key]?.Value : null,
+                        ShowPrePostHtml = ( addEditControlsOptions?.ShowPrePostHtml ?? true )
+                    };
 
-        //            if ( addEditControlsOptions.RequiredAttributes != null )
-        //            {
-        //                attributeControlOptions.Required = addEditControlsOptions.RequiredAttributes.Any( a => a.Id == attribute.Id );
-        //            }
+                    if ( addEditControlsOptions.RequiredAttributes != null )
+                    {
+                        attributeControlOptions.Required = addEditControlsOptions.RequiredAttributes.Any( a => a.Id == attribute.Id );
+                    }
 
-        //            if ( numberOfColumns.HasValue )
-        //            {
-        //                int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
-        //                HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
-        //                attributeRow.Controls.Add( attributeCol );
-        //                attributeCol.AddCssClass( $"col-md-{colSize}" );
-        //                attribute.AddControl( attributeCol.Controls, attributeControlOptions );
-        //            }
-        //            else
-        //            {
-        //                attribute.AddControl( fieldSet.Controls, attributeControlOptions );
-        //            }
-        //        }
-        //    }
-        //}
+                    if ( numberOfColumns.HasValue )
+                    {
+                        int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
+                        HtmlGenericControl attributeCol = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
+                        attributeRow.Controls.Add( attributeCol );
+                        attributeCol.AddCssClass( $"col-md-{colSize}" );
+                        attribute.AddControl( attributeCol.Controls, attributeControlOptions );
+                    }
+                    else
+                    {
+                        attribute.AddControl( fieldSet.Controls, attributeControlOptions );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the display HTML.
@@ -1260,15 +1275,15 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="exclude">The exclude.</param>
         /// <param name="supressOrdering">if set to <c>true</c> suppresses reordering of the attributes within each Category. (LoadAttributes() may perform custom ordering as is the case for group member attributes).</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        //public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
-        //{
-        //    exclude = exclude ?? new List<string>();
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, Control parentControl, List<string> exclude = null, bool supressOrdering = false, bool showHeading = true )
+        {
+            exclude = exclude ?? new List<string>();
 
-        //    if ( item?.Attributes != null )
-        //    {
-        //        AddDisplayControls( item, GetAttributeCategories( item, false, supressOrdering ), parentControl, exclude, showHeading );
-        //    }
-        //}
+            if ( item?.Attributes != null )
+            {
+                AddDisplayControls( item, GetAttributeCategories( item, false, supressOrdering ), parentControl, exclude, showHeading );
+            }
+        }
 
         /// <summary>
         /// Adds the display controls.
@@ -1278,18 +1293,18 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        //public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
-        //{
-        //    AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
-        //    {
-        //        ShowCategoryLabel = showHeading,
-        //    };
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
+        {
+            AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
+            {
+                ShowCategoryLabel = showHeading,
+            };
 
-        //    attributeAddDisplayControlsOptions.ExcludedAttributes = exclude != null ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList() : null;
+            attributeAddDisplayControlsOptions.ExcludedAttributes = exclude != null ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList() : null;
 
 
-        //    AddDisplayControls( item, attributeCategories, parentControl, attributeAddDisplayControlsOptions );
-        //}
+            AddDisplayControls( item, attributeCategories, parentControl, attributeAddDisplayControlsOptions );
+        }
 
         /// <summary>
         /// Adds the display controls.
@@ -1298,136 +1313,136 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="attributeAddDisplayControlsOptions">The attribute add display controls options.</param>
-        //public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions )
-        //{
-        //    if ( item == null )
-        //    {
-        //        return;
-        //    }
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions )
+        {
+            if ( item == null )
+            {
+                return;
+            }
 
-        //    attributeAddDisplayControlsOptions = attributeAddDisplayControlsOptions ?? new AttributeAddDisplayControlsOptions();
-        //    List<AttributeCache> excludedAttributes = attributeAddDisplayControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
-        //    int? numberOfColumns = attributeAddDisplayControlsOptions?.NumberOfColumns;
+            attributeAddDisplayControlsOptions = attributeAddDisplayControlsOptions ?? new AttributeAddDisplayControlsOptions();
+            List<AttributeCache> excludedAttributes = attributeAddDisplayControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
+            int? numberOfColumns = attributeAddDisplayControlsOptions?.NumberOfColumns;
 
-        //    // ensure valid number of columns
-        //    if ( numberOfColumns.HasValue )
-        //    {
-        //        if ( numberOfColumns.Value > 12 )
-        //        {
+            // ensure valid number of columns
+            if ( numberOfColumns.HasValue )
+            {
+                if ( numberOfColumns.Value > 12 )
+                {
 
-        //        }
-        //        else if ( numberOfColumns < 1 )
-        //        {
-        //            numberOfColumns = 1;
-        //        }
-        //    }
+                }
+                else if ( numberOfColumns < 1 )
+                {
+                    numberOfColumns = 1;
+                }
+            }
 
-        //    foreach ( var attributeCategory in attributeCategories )
-        //    {
-        //        if ( attributeAddDisplayControlsOptions.ShowCategoryLabel )
-        //        {
-        //            HtmlGenericControl header = new HtmlGenericControl( "h4" );
+            foreach ( var attributeCategory in attributeCategories )
+            {
+                if ( attributeAddDisplayControlsOptions.ShowCategoryLabel )
+                {
+                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-        //            string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
 
-        //            header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-        //            parentControl.Controls.Add( header );
-        //        }
+                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                    parentControl.Controls.Add( header );
+                }
 
-        //        HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-        //        parentControl.Controls.Add( dl );
-        //        dl.AddCssClass( "attribute-value-container-display" );
-        //        if ( numberOfColumns.HasValue )
-        //        {
-        //            dl.AddCssClass( "row" );
-        //        }
+                HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                parentControl.Controls.Add( dl );
+                dl.AddCssClass( "attribute-value-container-display" );
+                if ( numberOfColumns.HasValue )
+                {
+                    dl.AddCssClass( "row" );
+                }
 
-        //        foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive && !excludedAttributes.Contains( a ) ) )
-        //        {
-        //            // Get the Attribute Value formatted for display.
-        //            string value = attribute.DefaultValue;
-        //            if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
-        //            {
-        //                value = item.AttributeValues[attribute.Key].Value;
-        //            }
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive && !excludedAttributes.Contains( a ) ) )
+                {
+                    // Get the Attribute Value formatted for display.
+                    string value = attribute.DefaultValue;
+                    if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
+                    {
+                        value = item.AttributeValues[attribute.Key].Value;
+                    }
 
-        //            string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
+                    string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
 
-        //            // If the Attribute Value has some content, display it.
-        //            if ( !string.IsNullOrWhiteSpace( controlHtml ) )
-        //            {
-        //                HtmlGenericControl dtDdParent;
-        //                if ( numberOfColumns.HasValue )
-        //                {
-        //                    int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
-        //                    dtDdParent = new HtmlGenericControl( "div" );
-        //                    dtDdParent.AddCssClass( $"col-md-{colSize}" );
-        //                    dl.Controls.Add( dtDdParent );
-        //                }
-        //                else
-        //                {
-        //                    dtDdParent = dl;
-        //                }
+                    // If the Attribute Value has some content, display it.
+                    if ( !string.IsNullOrWhiteSpace( controlHtml ) )
+                    {
+                        HtmlGenericControl dtDdParent;
+                        if ( numberOfColumns.HasValue )
+                        {
+                            int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
+                            dtDdParent = new HtmlGenericControl( "div" );
+                            dtDdParent.AddCssClass( $"col-md-{colSize}" );
+                            dl.Controls.Add( dtDdParent );
+                        }
+                        else
+                        {
+                            dtDdParent = dl;
+                        }
 
-        //                dtDdParent.AddCssClass( "js-attribute-display-wrapper" );
-        //                dtDdParent.Attributes["data-attribute-id"] = attribute.Id.ToString();
+                        dtDdParent.AddCssClass( "js-attribute-display-wrapper" );
+                        dtDdParent.Attributes["data-attribute-id"] = attribute.Id.ToString();
 
-        //                HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-        //                dt.InnerText = attribute.Name;
-        //                dtDdParent.Controls.Add( dt );
+                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                        dt.InnerText = attribute.Name;
+                        dtDdParent.Controls.Add( dt );
 
-        //                HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
 
-        //                dd.InnerHtml = controlHtml;
-        //                dtDdParent.Controls.Add( dd );
-        //            }
-        //        }
-        //    }
-        //}
+                        dd.InnerHtml = controlHtml;
+                        dtDdParent.Controls.Add( dd );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the attributes that ended up getting displayed as a result of AddDisplayControls
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <returns></returns>
-        //public static List<AttributeCache> GetDisplayedAttributes( Control parentControl )
-        //{
-        //    List<AttributeCache> displayedAttributes = new List<AttributeCache>();
-        //    var attributeWrappers = parentControl.ControlsOfTypeRecursive<HtmlGenericControl>().Where( a => a.Attributes["class"]?.Contains( "js-attribute-display-wrapper" ) == true ).ToList();
-        //    foreach ( var attributeWrapper in attributeWrappers )
-        //    {
-        //        var attributeId = attributeWrapper.Attributes?["data-attribute-id"]?.AsIntegerOrNull();
-        //        if ( attributeId.HasValue )
-        //        {
-        //            displayedAttributes.Add( AttributeCache.Get( attributeId.Value ) );
-        //        }
-        //    }
+        public static List<AttributeCache> GetDisplayedAttributes( Control parentControl )
+        {
+            List<AttributeCache> displayedAttributes = new List<AttributeCache>();
+            var attributeWrappers = parentControl.ControlsOfTypeRecursive<HtmlGenericControl>().Where( a => a.Attributes["class"]?.Contains( "js-attribute-display-wrapper" ) == true ).ToList();
+            foreach ( var attributeWrapper in attributeWrappers )
+            {
+                var attributeId = attributeWrapper.Attributes?["data-attribute-id"]?.AsIntegerOrNull();
+                if ( attributeId.HasValue )
+                {
+                    displayedAttributes.Add( AttributeCache.Get( attributeId.Value ) );
+                }
+            }
 
-        //    return displayedAttributes.Where( a => a != null ).ToList();
-        //}
+            return displayedAttributes.Where( a => a != null ).ToList();
+        }
 
         /// <summary>
         /// Gets the edit values from edit controls contained within the parentControl for the specified item
         /// </summary>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="item">The item.</param>
-        //public static void GetEditValues( Control parentControl, Rock.Attribute.IHasAttributes item )
-        //{
-        //    var attributeEditControls = GetAttributeEditControls( parentControl, item );
-        //    if ( attributeEditControls != null )
-        //    {
-        //        foreach ( var attributeEditControl in attributeEditControls )
-        //        {
-        //            var attribute = attributeEditControl.Key;
-        //            var control = attributeEditControl.Value;
-        //            if ( control != null )
-        //            {
-        //                var editValue = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
-        //                item.AttributeValues[attribute.Key] = new AttributeValueCache { AttributeId = attribute.Id, EntityId = item.Id, Value = editValue };
-        //            }
-        //        }
-        //    }
-        //}
+        public static void GetEditValues( Control parentControl, Rock.Attribute.IHasAttributes item )
+        {
+            var attributeEditControls = GetAttributeEditControls( parentControl, item );
+            if ( attributeEditControls != null )
+            {
+                foreach ( var attributeEditControl in attributeEditControls )
+                {
+                    var attribute = attributeEditControl.Key;
+                    var control = attributeEditControl.Value;
+                    if ( control != null )
+                    {
+                        var editValue = attribute.FieldType.Field.GetEditValue( control, attribute.QualifierValues );
+                        item.AttributeValues[attribute.Key] = new AttributeValueCache { AttributeId = attribute.Id, EntityId = item.Id, Value = editValue };
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Gets a dictionary of each edit control (where Key is AttributeCache) contained within the parentControl for the specified item
@@ -1435,23 +1450,24 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="parentControl">The parent control.</param>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        //public static Dictionary<AttributeCache, Control> GetAttributeEditControls( Control parentControl, Rock.Attribute.IHasAttributes item )
-        //{
-        //    Dictionary<AttributeCache, Control> result = new Dictionary<AttributeCache, Control>();
-        //    if ( item?.Attributes != null )
-        //    {
-        //        foreach ( var attributeKeyValue in item.Attributes )
-        //        {
-        //            Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
-        //            if ( control != null )
-        //            {
-        //                result.AddOrIgnore( attributeKeyValue.Value, control );
-        //            }
-        //        }
-        //    }
+        public static Dictionary<AttributeCache, Control> GetAttributeEditControls( Control parentControl, Rock.Attribute.IHasAttributes item )
+        {
+            Dictionary<AttributeCache, Control> result = new Dictionary<AttributeCache, Control>();
+            if ( item?.Attributes != null )
+            {
+                foreach ( var attributeKeyValue in item.Attributes )
+                {
+                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
+                    if ( control != null )
+                    {
+                        result.AddOrIgnore( attributeKeyValue.Value, control );
+                    }
+                }
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
+#endif
 
         /// <summary>
         /// Gets the attribute value expression.
@@ -1461,42 +1477,42 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="parentIdProperty">The parent identifier property.</param>
         /// <param name="attributeId">The attribute identifier.</param>
         /// <returns></returns>
-        //public static Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
-        //{
-        //    MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
-        //    MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
-        //    Expression attributeIdConstant = Expression.Constant( attributeId );
+        public static Expression GetAttributeValueExpression( IQueryable<AttributeValue> attributeValues, ParameterExpression attributeValueParameter, Expression parentIdProperty, int attributeId )
+        {
+            MemberExpression attributeIdProperty = Expression.Property( attributeValueParameter, "AttributeId" );
+            MemberExpression entityIdProperty = Expression.Property( attributeValueParameter, "EntityId" );
+            Expression attributeIdConstant = Expression.Constant( attributeId );
 
-        //    Expression attributeIdCompare = Expression.Equal( attributeIdProperty, attributeIdConstant );
-        //    Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
-        //    Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
+            Expression attributeIdCompare = Expression.Equal( attributeIdProperty, attributeIdConstant );
+            Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
+            Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
 
-        //    var match = new Expression[] {
-        //        Expression.Constant(attributeValues),
-        //        Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
-        //    };
+            var match = new Expression[] {
+                Expression.Constant(attributeValues),
+                Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
+            };
 
-        //    Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
+            Expression whereExpression = Expression.Call( typeof( Queryable ), "Where", new Type[] { typeof( AttributeValue ) }, match );
 
-        //    var attributeCache = AttributeCache.Get( attributeId );
-        //    var attributeValueFieldName = "Value";
-        //    Type attributeValueFieldType = typeof( string );
-        //    if ( attributeCache != null )
-        //    {
-        //        attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
-        //        attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
-        //    }
+            var attributeCache = AttributeCache.Get( attributeId );
+            var attributeValueFieldName = "Value";
+            Type attributeValueFieldType = typeof( string );
+            if ( attributeCache != null )
+            {
+                attributeValueFieldName = attributeCache.FieldType.Field.AttributeValueFieldName;
+                attributeValueFieldType = attributeCache.FieldType.Field.AttributeValueFieldType;
+            }
 
-        //    MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );
+            MemberExpression valueProperty = Expression.Property( attributeValueParameter, attributeValueFieldName );
 
-        //    Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
+            Expression valueLambda = Expression.Lambda( valueProperty, new ParameterExpression[] { attributeValueParameter } );
 
-        //    Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), attributeValueFieldType }, whereExpression, valueLambda );
+            Expression selectValue = Expression.Call( typeof( Queryable ), "Select", new Type[] { typeof( AttributeValue ), attributeValueFieldType }, whereExpression, valueLambda );
 
-        //    Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { attributeValueFieldType }, selectValue );
+            Expression firstOrDefault = Expression.Call( typeof( Queryable ), "FirstOrDefault", new Type[] { attributeValueFieldType }, selectValue );
 
-        //    return firstOrDefault;
-        //}
+            return firstOrDefault;
+        }
     }
 
     /// <summary>

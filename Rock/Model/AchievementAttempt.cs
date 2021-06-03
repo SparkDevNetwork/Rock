@@ -18,13 +18,18 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity.Infrastructure;
+using EFEntityState = System.Data.Entity.EntityState;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
-//using Rock.Transactions;
+using Rock.Transactions;
 
 namespace Rock.Model
 {

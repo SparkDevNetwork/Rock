@@ -20,10 +20,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using System.Data.Entity.ModelConfiguration;
-//using System.Data.Entity.SqlServer;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
+#endif
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -33,8 +39,8 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Tasks;
-//using Rock.UniversalSearch;
-//using Rock.UniversalSearch.IndexModels;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -47,7 +53,7 @@ namespace Rock.Model
     [Table( "Person" )]
     [DataContract]
     [Analytics( true, true )]
-    public partial class Person : Model<Person>/*, IRockIndexable*/
+    public partial class Person : Model<Person>, IRockIndexable
     {
         #region Constants
 
@@ -136,8 +142,10 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        //[Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 1 )]
-        //[Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 1 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 1 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 1 )]
+#endif
         public bool IsDeceased
         {
             get
@@ -171,8 +179,10 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        //[Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
-        //[Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
+#endif
         public string FirstName { get; set; }
 
         /// <summary>
@@ -208,8 +218,10 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        //[Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
-        //[Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
+#endif
         public string LastName { get; set; }
 
         /// <summary>
@@ -336,7 +348,9 @@ namespace Rock.Model
         /// The giver identifier.
         /// </value>
         [DataMember]
-        //[Index( "IX_GivingId" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_GivingId" )]
+#endif
         public string GivingId { get; private set; }
 
         /// <summary>
@@ -359,7 +373,9 @@ namespace Rock.Model
         [DataMember]
         [Previewable]
         [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
-        //[Index( "IX_Email" )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_Email" )]
+#endif
         public string Email { get; set; }
 
         /// <summary>
@@ -369,7 +385,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the email address is active, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        //[Newtonsoft.Json.JsonConverter( typeof( Rock.Utility.NotNullJsonConverter<bool> ), true )]
+        [Newtonsoft.Json.JsonConverter( typeof( Rock.Utility.NotNullJsonConverter<bool> ), true )]
         [DefaultValue( true )]
         public bool IsEmailActive
         {
@@ -643,10 +659,10 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance is business; otherwise, <c>false</c>.
         /// </returns>
-        //public bool IsBusiness()
-        //{
-        //    return IsBusiness( this.RecordTypeValueId );
-        //}
+        public bool IsBusiness()
+        {
+            return IsBusiness( this.RecordTypeValueId );
+        }
 
         /// <summary>
         /// Gets a value indicating the specified recordTypeValueId is the record type of a <see cref="SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS" /> record type
@@ -654,18 +670,18 @@ namespace Rock.Model
         /// <value>
         /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
         /// </value>
-        //private static bool IsBusiness( int? recordTypeValueId )
-        //{
-        //    if ( recordTypeValueId.HasValue )
-        //    {
-        //        int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-        //        return recordTypeValueId.Value == recordTypeValueIdBusiness;
-        //    }
-        //    else
-        //    {
-        //        return false;
-        //    }
-        //}
+        private static bool IsBusiness( int? recordTypeValueId )
+        {
+            if ( recordTypeValueId.HasValue )
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                return recordTypeValueId.Value == recordTypeValueIdBusiness;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Determines whether the <see cref="RecordTypeValue"/> of this Person is Nameless
@@ -673,11 +689,11 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance is nameless; otherwise, <c>false</c>.
         /// </returns>
-        //public bool IsNameless()
-        //{
-        //    int recordTypeValueIdNameless = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
-        //    return this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
-        //}
+        public bool IsNameless()
+        {
+            int recordTypeValueIdNameless = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
+            return this.RecordTypeValueId.HasValue && this.RecordTypeValueId.Value == recordTypeValueIdNameless;
+        }
 
         /// <summary>
         /// Gets a value indicating the specified recordTypeValueId is the record type of a <see cref="SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/> record type
@@ -686,18 +702,18 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if the specified record type value identifier is nameless; otherwise, <c>false</c>.
         /// </returns>
-        //public static bool IsNameless( int? recordTypeValueId )
-        //{
-        //    if ( recordTypeValueId.HasValue )
-        //    {
-        //        int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
-        //        return recordTypeValueId.Value == recordTypeValueIdBusiness;
-        //    }
-        //    else
-        //    {
-        //        return false;
-        //    }
-        //}
+        public static bool IsNameless( int? recordTypeValueId )
+        {
+            if ( recordTypeValueId.HasValue )
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
+                return recordTypeValueId.Value == recordTypeValueIdBusiness;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -705,14 +721,14 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        //[NotMapped]
-        //public virtual string FullNameReversed
-        //{
-        //    get
-        //    {
-        //        return FormatFullNameReversed( this.LastName, this.NickName, this.SuffixValueId, this.RecordTypeValueId );
-        //    }
-        //}
+        [NotMapped]
+        public virtual string FullNameReversed
+        {
+            get
+            {
+                return FormatFullNameReversed( this.LastName, this.NickName, this.SuffixValueId, this.RecordTypeValueId );
+            }
+        }
 
         /// <summary>
         /// Gets the full name reversed.
@@ -722,31 +738,31 @@ namespace Rock.Model
         /// <param name="suffixValueId">The suffix value identifier.</param>
         /// <param name="recordTypeValueId">The record type value identifier.</param>
         /// <returns></returns>
-        //public static string FormatFullNameReversed( string lastName, string nickName, int? suffixValueId, int? recordTypeValueId )
-        //{
-        //    if ( IsBusiness( recordTypeValueId ) )
-        //    {
-        //        return lastName;
-        //    }
+        public static string FormatFullNameReversed( string lastName, string nickName, int? suffixValueId, int? recordTypeValueId )
+        {
+            if ( IsBusiness( recordTypeValueId ) )
+            {
+                return lastName;
+            }
 
-        //    var fullName = new StringBuilder();
+            var fullName = new StringBuilder();
 
-        //    fullName.Append( lastName );
+            fullName.Append( lastName );
 
-        //    // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
-        //    // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
-        //    if ( suffixValueId.HasValue )
-        //    {
-        //        var suffix = DefinedValueCache.Get( suffixValueId.Value );
-        //        if ( suffix != null )
-        //        {
-        //            fullName.AppendFormat( " {0}", suffix.Value );
-        //        }
-        //    }
+            // Use the SuffixValueId and DefinedValue cache instead of referencing SuffixValue property so
+            // that if FullName is used in datagrid, the SuffixValue is not lazy-loaded for each row
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    fullName.AppendFormat( " {0}", suffix.Value );
+                }
+            }
 
-        //    fullName.AppendFormat( ", {0}", nickName );
-        //    return fullName.ToString();
-        //}
+            fullName.AppendFormat( ", {0}", nickName );
+            return fullName.ToString();
+        }
 
         /// <summary>
         /// Gets the Full Name of the Person using the Title FirstName LastName format.
@@ -754,28 +770,28 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the Full Name of a Person using the Title FirstName LastName format.
         /// </value>
-        //[NotMapped]
-        //public virtual string FullNameFormal
-        //{
-        //    get
-        //    {
-        //        if ( IsBusiness( this.RecordTypeValueId ) )
-        //        {
-        //            return LastName;
-        //        }
+        [NotMapped]
+        public virtual string FullNameFormal
+        {
+            get
+            {
+                if ( IsBusiness( this.RecordTypeValueId ) )
+                {
+                    return LastName;
+                }
 
-        //        var fullName = new StringBuilder();
+                var fullName = new StringBuilder();
 
-        //        fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
 
-        //        if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-        //        {
-        //            fullName.AppendFormat( " {0}", SuffixValue.Value );
-        //        }
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                {
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                }
 
-        //        return fullName.ToString();
-        //    }
-        //}
+                return fullName.ToString();
+            }
+        }
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -783,28 +799,28 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the full name of a Person using the LastName, FirstName format
         /// </value>
-        //[NotMapped]
-        //public virtual string FullNameFormalReversed
-        //{
-        //    get
-        //    {
-        //        if ( IsBusiness( this.RecordTypeValueId ) )
-        //        {
-        //            return LastName;
-        //        }
+        [NotMapped]
+        public virtual string FullNameFormalReversed
+        {
+            get
+            {
+                if ( IsBusiness( this.RecordTypeValueId ) )
+                {
+                    return LastName;
+                }
 
-        //        var fullName = new StringBuilder();
-        //        fullName.Append( LastName );
+                var fullName = new StringBuilder();
+                fullName.Append( LastName );
 
-        //        if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
-        //        {
-        //            fullName.AppendFormat( " {0}", SuffixValue.Value );
-        //        }
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
+                {
+                    fullName.AppendFormat( " {0}", SuffixValue.Value );
+                }
 
-        //        fullName.AppendFormat( ", {0}", FirstName );
-        //        return fullName.ToString();
-        //    }
-        //}
+                fullName.AppendFormat( ", {0}", FirstName );
+                return fullName.ToString();
+            }
+        }
 
         /// <summary>
         /// Gets the day of the week the person's birthday falls on for the current year.
@@ -1706,13 +1722,13 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String" /> representing the person action identifier.
         /// </value>
-        //public virtual string GetPersonActionIdentifier( string action )
-        //{
-        //    var encryptedToken = Rock.Security.Encryption.EncryptString( $"{Guid}>{action}" );
+        public virtual string GetPersonActionIdentifier( string action )
+        {
+            var encryptedToken = Rock.Security.Encryption.EncryptString( $"{Guid}>{action}" );
 
-        //    // do a Replace('%', '!') after we UrlEncode it (to make it more safely embeddable in HTML and cross browser compatible)
-        //    return System.Web.HttpUtility.UrlEncode( encryptedToken ).Replace( '%', '!' );
-        //}
+            // do a Replace('%', '!') after we UrlEncode it (to make it more safely embeddable in HTML and cross browser compatible)
+            return System.Web.HttpUtility.UrlEncode( encryptedToken ).Replace( '%', '!' );
+        }
 
         /// <summary>
         /// Builds an encrypted action identifier stringfor the person instance.
@@ -1722,10 +1738,10 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String" /> representing the person action identifier.
         /// </value>
-        //public virtual string GetPersonActionIdentifierParameter( string action )
-        //{
-        //    return $"rckid={GetPersonActionIdentifier( action )}";
-        //}
+        public virtual string GetPersonActionIdentifierParameter( string action )
+        {
+            return $"rckid={GetPersonActionIdentifier( action )}";
+        }
 
         /// <summary>
         /// Creates and stores a new PersonToken for a person using the specified ExpireDateTime, UsageLimit, and Page
@@ -1778,10 +1794,14 @@ namespace Rock.Model
         /// </value>
         public string GetEmailTag( string rockUrlRoot, string cssClass = "", string preText = "", string postText = "", string styles = "" )
         {
-            return string.Empty;
-            //return GetEmailTag( rockUrlRoot, null, cssClass, preText, postText, styles );
+#if NET5_0_OR_GREATER
+            return Email;
+#else
+            return GetEmailTag( rockUrlRoot, null, cssClass, preText, postText, styles );
+#endif
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets an anchor tag to send person a communication
         /// </summary>
@@ -1795,86 +1815,87 @@ namespace Rock.Model
         /// <value>
         /// The email tag.
         /// </value>
-        //public string GetEmailTag( string rockUrlRoot, Rock.Web.PageReference communicationPageReference, string cssClass = "", string preText = "", string postText = "", string styles = "" )
-        //{
-        //    if ( !string.IsNullOrWhiteSpace( Email ) )
-        //    {
-        //        if ( IsEmailActive )
-        //        {
-        //            rockUrlRoot.EnsureTrailingBackslash();
+        public string GetEmailTag( string rockUrlRoot, Rock.Web.PageReference communicationPageReference, string cssClass = "", string preText = "", string postText = "", string styles = "" )
+        {
+            if ( !string.IsNullOrWhiteSpace( Email ) )
+            {
+                if ( IsEmailActive )
+                {
+                    rockUrlRoot.EnsureTrailingBackslash();
 
-        //            // get email link preference (new communication/mailto)
-        //            var globalAttributes = GlobalAttributesCache.Get();
-        //            string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
+                    // get email link preference (new communication/mailto)
+                    var globalAttributes = GlobalAttributesCache.Get();
+                    string emailLinkPreference = globalAttributes.GetValue( "PreferredEmailLinkType" );
 
-        //            string emailLink = string.Empty;
+                    string emailLink = string.Empty;
 
-        //            // create link
-        //            if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
-        //            {
-        //                if ( communicationPageReference != null )
-        //                {
-        //                    communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
-        //                    communicationPageReference.QueryString["person"] = this.Id.ToString();
-        //                    emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
-        //                }
-        //                else
-        //                {
-        //                    emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
-        //                }
-        //            }
-        //            else
-        //            {
-        //                emailLink = string.Format( "mailto:{0}", Email );
-        //            }
+                    // create link
+                    if ( string.IsNullOrWhiteSpace( emailLinkPreference ) || emailLinkPreference == "1" )
+                    {
+                        if ( communicationPageReference != null )
+                        {
+                            communicationPageReference.QueryString = new System.Collections.Specialized.NameValueCollection( communicationPageReference.QueryString ?? new System.Collections.Specialized.NameValueCollection() );
+                            communicationPageReference.QueryString["person"] = this.Id.ToString();
+                            emailLink = new Rock.Web.PageReference( communicationPageReference.PageId, communicationPageReference.RouteId, communicationPageReference.Parameters, communicationPageReference.QueryString ).BuildUrl();
+                        }
+                        else
+                        {
+                            emailLink = string.Format( "{0}Communication?person={1}", rockUrlRoot, Id );
+                        }
+                    }
+                    else
+                    {
+                        emailLink = string.Format( "mailto:{0}", Email );
+                    }
 
-        //            switch ( EmailPreference )
-        //            {
-        //                case EmailPreference.EmailAllowed:
-        //                    {
-        //                        return string.Format(
-        //                            "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
-        //                            cssClass,
-        //                            styles,
-        //                            emailLink,
-        //                            preText,
-        //                            Email,
-        //                            postText );
-        //                    }
+                    switch ( EmailPreference )
+                    {
+                        case EmailPreference.EmailAllowed:
+                            {
+                                return string.Format(
+                                    "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
+                                    cssClass,
+                                    styles,
+                                    emailLink,
+                                    preText,
+                                    Email,
+                                    postText );
+                            }
 
-        //                case EmailPreference.NoMassEmails:
-        //                    {
-        //                        return string.Format(
-        //                            "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
-        //                            cssClass,
-        //                            emailLink,
-        //                            preText,
-        //                            Email,
-        //                            postText );
-        //                    }
+                        case EmailPreference.NoMassEmails:
+                            {
+                                return string.Format(
+                                    "<span class='js-email-status email-status no-mass-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'><a class='{0}' href='{1}'>{2} {3} {4} <i class='fa fa-exchange'></i></a> </span>",
+                                    cssClass,
+                                    emailLink,
+                                    preText,
+                                    Email,
+                                    postText );
+                            }
 
-        //                case EmailPreference.DoNotEmail:
-        //                    {
-        //                        return string.Format(
-        //                            "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
-        //                            cssClass,
-        //                            preText,
-        //                            Email,
-        //                            postText );
-        //                    }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            return string.Format(
-        //                "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
-        //                EmailNote,
-        //                Email );
-        //        }
-        //    }
+                        case EmailPreference.DoNotEmail:
+                            {
+                                return string.Format(
+                                    "<span class='{0} js-email-status email-status do-not-email' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'>{1} {2} {3} <i class='fa fa-ban'></i></span>",
+                                    cssClass,
+                                    preText,
+                                    Email,
+                                    postText );
+                            }
+                    }
+                }
+                else
+                {
+                    return string.Format(
+                        "<span class='js-email-status not-active email-status' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'>{1} <i class='fa fa-exclamation-triangle'></i></span>",
+                        EmailNote,
+                        Email );
+                }
+            }
 
-        //    return string.Empty;
-        //}
+            return string.Empty;
+        }
+#endif
 
         /// <summary>
         /// Uploads the person's photo from the specified url and sets it as the person's Photo using the default BinaryFileType.
@@ -1961,56 +1982,56 @@ namespace Rock.Model
         {
             var rockContext = ( RockContext ) dbContext;
 
-            //var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            //var deceased = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
+            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
+            var deceased = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() );
 
-            //if ( inactiveStatus != null && deceased != null )
-            //{
-            //    bool isInactive = ( RecordStatusValueId.HasValue && RecordStatusValueId.Value == inactiveStatus.Id ) ||
-            //        ( RecordStatusValue != null && RecordStatusValue.Id == inactiveStatus.Id );
-            //    bool isReasonDeceased = ( RecordStatusReasonValueId.HasValue && RecordStatusReasonValueId.Value == deceased.Id ) ||
-            //        ( RecordStatusReasonValue != null && RecordStatusReasonValue.Id == deceased.Id );
+            if ( inactiveStatus != null && deceased != null )
+            {
+                bool isInactive = ( RecordStatusValueId.HasValue && RecordStatusValueId.Value == inactiveStatus.Id ) ||
+                    ( RecordStatusValue != null && RecordStatusValue.Id == inactiveStatus.Id );
+                bool isReasonDeceased = ( RecordStatusReasonValueId.HasValue && RecordStatusReasonValueId.Value == deceased.Id ) ||
+                    ( RecordStatusReasonValue != null && RecordStatusReasonValue.Id == deceased.Id );
 
-            //    IsDeceased = isInactive && isReasonDeceased;
+                IsDeceased = isInactive && isReasonDeceased;
 
-            //    if ( isInactive )
-            //    {
-            //        var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
-            //        if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
-            //        {
-            //            // If person was just inactivated, update the group member status for all their group memberships to be inactive
-            //            foreach ( var groupMember in new GroupMemberService( rockContext )
-            //                .Queryable()
-            //                .Where( m =>
-            //                    m.PersonId == Id &&
-            //                    m.GroupMemberStatus != GroupMemberStatus.Inactive &&
-            //                    !m.Group.GroupType.IgnorePersonInactivated ) )
-            //            {
-            //                groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
-            //            }
+                if ( isInactive )
+                {
+                    var dbPropertyEntry = entry.Property( "RecordStatusValueId" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                    {
+                        // If person was just inactivated, update the group member status for all their group memberships to be inactive
+                        foreach ( var groupMember in new GroupMemberService( rockContext )
+                            .Queryable()
+                            .Where( m =>
+                                m.PersonId == Id &&
+                                m.GroupMemberStatus != GroupMemberStatus.Inactive &&
+                                !m.Group.GroupType.IgnorePersonInactivated ) )
+                        {
+                            groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                        }
 
-            //            // Also update the person's connection requests
-            //            int[] aliasIds = Aliases.Select( a => a.Id ).ToArray();
-            //            foreach ( var connectionRequest in new ConnectionRequestService( rockContext )
-            //                .Queryable()
-            //                .Where( c =>
-            //                     aliasIds.Contains( c.PersonAliasId ) &&
-            //                     c.ConnectionState != ConnectionState.Inactive &&
-            //                     c.ConnectionState != ConnectionState.Connected ) )
-            //            {
-            //                connectionRequest.ConnectionState = ConnectionState.Inactive;
-            //            }
-            //        }
-            //    }
-            //}
+                        // Also update the person's connection requests
+                        int[] aliasIds = Aliases.Select( a => a.Id ).ToArray();
+                        foreach ( var connectionRequest in new ConnectionRequestService( rockContext )
+                            .Queryable()
+                            .Where( c =>
+                                 aliasIds.Contains( c.PersonAliasId ) &&
+                                 c.ConnectionState != ConnectionState.Inactive &&
+                                 c.ConnectionState != ConnectionState.Connected ) )
+                        {
+                            connectionRequest.ConnectionState = ConnectionState.Inactive;
+                        }
+                    }
+                }
+            }
 
-            //RecordTypeValueId = RecordTypeValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-            //RecordStatusValueId = RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+            RecordTypeValueId = RecordTypeValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            RecordStatusValueId = RecordStatusValueId ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
 
-            //if ( !IsBusiness() && !ConnectionStatusValueId.HasValue )
-            //{
-            //    ConnectionStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
-            //}
+            if ( !IsBusiness() && !ConnectionStatusValueId.HasValue )
+            {
+                ConnectionStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+            }
 
             if ( string.IsNullOrWhiteSpace( NickName ) )
             {
@@ -2057,22 +2078,22 @@ namespace Rock.Model
 
             if ( this.AnniversaryDate.HasValue )
             {
-                //if ( this.MaritalStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
-                //{
-                //    this.AnniversaryDate = null;
-                //}
-                //else
-                //{
-                //    var dbPropertyEntry = entry.Property( "AnniversaryDate" );
-                //    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
-                //    {
-                //        var spouse = this.GetSpouse( ( RockContext ) dbContext );
-                //        if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
-                //        {
-                //            spouse.AnniversaryDate = this.AnniversaryDate;
-                //        }
-                //    }
-                //}
+                if ( this.MaritalStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ).Id )
+                {
+                    this.AnniversaryDate = null;
+                }
+                else
+                {
+                    var dbPropertyEntry = entry.Property( "AnniversaryDate" );
+                    if ( dbPropertyEntry != null && dbPropertyEntry.IsModified )
+                    {
+                        var spouse = this.GetSpouse( ( RockContext ) dbContext );
+                        if ( spouse != null && spouse.AnniversaryDate != this.AnniversaryDate )
+                        {
+                            spouse.AnniversaryDate = this.AnniversaryDate;
+                        }
+                    }
+                }
             }
 
             // Calculates the BirthDate and sets it
@@ -2132,15 +2153,15 @@ namespace Rock.Model
                         }
 
                         // ensure a new person has an Alternate Id
-                        //int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-                        //var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                        //PersonSearchKey personSearchKey = new PersonSearchKey()
-                        //{
-                        //    PersonAlias = this.Aliases.First(),
-                        //    SearchTypeValueId = alternateValueId,
-                        //    SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true, rockContext )
-                        //};
-                        //personSearchKeyService.Add( personSearchKey );
+                        int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                        var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                        PersonSearchKey personSearchKey = new PersonSearchKey()
+                        {
+                            PersonAlias = this.Aliases.First(),
+                            SearchTypeValueId = alternateValueId,
+                            SearchValue = PersonSearchKeyService.GenerateRandomAlternateId( true, rockContext )
+                        };
+                        personSearchKeyService.Add( personSearchKey );
 
                         break;
                     }
@@ -2200,18 +2221,18 @@ namespace Rock.Model
                             if ( !string.IsNullOrEmpty( currentEmail ) )
                             {
                                 var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                                //var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                                //if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue.Equals( currentEmail, StringComparison.OrdinalIgnoreCase ) ) )
-                                //{
-                                //    PersonSearchKey personSearchKey = new PersonSearchKey()
-                                //    {
-                                //        PersonAliasId = PrimaryAliasId.Value,
-                                //        SearchTypeValueId = searchTypeValue.Id,
-                                //        SearchValue = currentEmail
-                                //    };
+                                var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
+                                if ( !personSearchKeyService.Queryable().Any( a => a.PersonAlias.PersonId == Id && a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue.Equals( currentEmail, StringComparison.OrdinalIgnoreCase ) ) )
+                                {
+                                    PersonSearchKey personSearchKey = new PersonSearchKey()
+                                    {
+                                        PersonAliasId = PrimaryAliasId.Value,
+                                        SearchTypeValueId = searchTypeValue.Id,
+                                        SearchValue = currentEmail
+                                    };
 
-                                //    personSearchKeyService.Add( personSearchKey );
-                                //}
+                                    personSearchKeyService.Add( personSearchKey );
+                                }
                             }
                         }
 
@@ -2219,11 +2240,11 @@ namespace Rock.Model
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
 
-                            //var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-                            //if ( this.RecordStatusValueId == activeStatus.Id )
-                            //{
-                            //    this.ReviewReasonValueId = null;
-                            //}
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;
@@ -2345,24 +2366,24 @@ namespace Rock.Model
         /// </summary>
         public void CalculateSignals()
         {
-            //if ( Signals != null )
-            //{
-            //    var rockContext = new RockContext();
-            //    var topSignal = Signals
-            //        .Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now )
-            //        .Select( s => new
-            //        {
-            //            Id = s.Id,
-            //            SignalType = SignalTypeCache.Get( s.SignalTypeId )
-            //        } )
-            //        .OrderBy( s => s.SignalType.Order )
-            //        .ThenBy( s => s.SignalType.Id )
-            //        .FirstOrDefault();
+            if ( Signals != null )
+            {
+                var rockContext = new RockContext();
+                var topSignal = Signals
+                    .Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now )
+                    .Select( s => new
+                    {
+                        Id = s.Id,
+                        SignalType = SignalTypeCache.Get( s.SignalTypeId )
+                    } )
+                    .OrderBy( s => s.SignalType.Order )
+                    .ThenBy( s => s.SignalType.Id )
+                    .FirstOrDefault();
 
-            //    TopSignalId = topSignal?.Id;
-            //    TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
-            //    TopSignalColor = topSignal?.SignalType.SignalColor;
-            //}
+                TopSignalId = topSignal?.Id;
+                TopSignalIconCssClass = topSignal?.SignalType.SignalIconCssClass;
+                TopSignalColor = topSignal?.SignalType.SignalColor;
+            }
         }
 
         /// <summary>
@@ -2370,11 +2391,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="phoneType">Type of the phone.</param>
         /// <returns></returns>
-        //public PhoneNumber GetPhoneNumber( Guid phoneType )
-        //{
-        //    int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
-        //    return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
-        //}
+        public PhoneNumber GetPhoneNumber( Guid phoneType )
+        {
+            int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
+            return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
+        }
 
         /// <summary>
         /// Determines whether this Person can receive emails.
@@ -2695,10 +2716,10 @@ namespace Rock.Model
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
-        //public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
-        //{
-        //    return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
-        //}
+        public static string GetPersonNoPictureUrl( Person person, int? maxWidth = null, int? maxHeight = null )
+        {
+            return GetPersonPhotoUrl( person.Id, null, person.Age, person.Gender, person.RecordTypeValueId.HasValue ? DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid : ( Guid? ) null, person.AgeClassification, maxWidth, maxHeight );
+        }
 
         /// <summary>
         /// Gets the person photo URL.
@@ -2786,14 +2807,18 @@ namespace Rock.Model
                 }
             }
 
-            //if ( System.Web.HttpContext.Current == null )
+#if NET5_0_OR_GREATER
+            return virtualPath;
+#else
+            if ( System.Web.HttpContext.Current == null )
             {
                 return virtualPath;
             }
-            //else
-            //{
-            //    return VirtualPathUtility.ToAbsolute( virtualPath );
-            //}
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
+            }
+#endif
         }
 
         /// <summary>
@@ -2858,7 +2883,7 @@ namespace Rock.Model
             Guid? recordTypeValueGuid = null;
             if ( person?.RecordStatusValueId != null )
             {
-                //recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
+                recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
             }
 
             var personPhotoImageTagArgs = new GetPersonPhotoImageTagArgs
@@ -2933,7 +2958,11 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
-            //photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+#if NET5_0_OR_GREATER
+            photoUrl.Append( "/" );
+#else
+            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+#endif
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
@@ -3038,14 +3067,14 @@ namespace Rock.Model
         /// <param name="rockContext">The rock context.</param>
         public static void CreateCheckinRelationship( int personId, int relatedPersonId, RockContext rockContext = null )
         {
-            //var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-            //var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
-            //if ( canCheckInRole != null )
-            //{
-            //    rockContext = rockContext ?? new RockContext();
-            //    var groupMemberService = new GroupMemberService( rockContext );
-            //    groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
-            //}
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var canCheckInRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) );
+            if ( canCheckInRole != null )
+            {
+                rockContext = rockContext ?? new RockContext();
+                var groupMemberService = new GroupMemberService( rockContext );
+                groupMemberService.CreateKnownRelationship( personId, relatedPersonId, canCheckInRole.Id );
+            }
         }
 
         /// <summary>
@@ -3079,24 +3108,24 @@ namespace Rock.Model
         /// <returns></returns>
         public static string FormatFullName( string nickName, string lastName, int? suffixValueId, int? recordTypeValueId = null )
         {
-            //if ( IsNameless( recordTypeValueId ) )
-            //{
-            //    return "Nameless Person";
-            //}
+            if ( IsNameless( recordTypeValueId ) )
+            {
+                return "Nameless Person";
+            }
 
-            //if ( IsBusiness( recordTypeValueId ) )
-            //{
-            //    return lastName;
-            //}
+            if ( IsBusiness( recordTypeValueId ) )
+            {
+                return lastName;
+            }
 
-            //if ( suffixValueId.HasValue )
-            //{
-            //    var suffix = DefinedValueCache.Get( suffixValueId.Value );
-            //    if ( suffix != null )
-            //    {
-            //        return FormatFullName( nickName, lastName, suffix.Value );
-            //    }
-            //}
+            if ( suffixValueId.HasValue )
+            {
+                var suffix = DefinedValueCache.Get( suffixValueId.Value );
+                if ( suffix != null )
+                {
+                    return FormatFullName( nickName, lastName, suffix.Value );
+                }
+            }
 
             return FormatFullName( nickName, lastName, string.Empty );
         }
@@ -3167,16 +3196,16 @@ namespace Rock.Model
         {
             if ( gradeOffset.HasValue && gradeOffset >= 0 )
             {
-                //var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                //if ( schoolGrades != null )
-                //{
-                //    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                //    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                //    if ( schoolGradeValue != null )
-                //    {
-                //        return schoolGradeValue.Description;
-                //    }
-                //}
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                if ( schoolGrades != null )
+                {
+                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                    if ( schoolGradeValue != null )
+                    {
+                        return schoolGradeValue.Description;
+                    }
+                }
             }
 
             return string.Empty;
@@ -3203,31 +3232,31 @@ namespace Rock.Model
 
                 if ( homeAddressGuid.HasValue && familyGuid.HasValue )
                 {
-                    //var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
-                    //var familyGroupType = GroupTypeCache.Get( familyGuid.Value );
-                    //if ( homeAddressDv != null && familyGroupType != null )
-                    //{
-                    //    var personLocations = new GroupMemberService( rockContext ).Queryable()
-                    //            .Where( m =>
-                    //                 personIds.Contains( m.PersonId )
-                    //                 && m.Group.GroupTypeId == familyGroupType.Id )
-                    //            .Select( m => new
-                    //            {
-                    //                m.PersonId,
-                    //                Location = m.Group.GroupLocations
-                    //                                                 .Where( gl => gl.GroupLocationTypeValueId == homeAddressDv.Id )
-                    //                                                 .Select( gl => gl.Location )
-                    //                                                 .FirstOrDefault()
-                    //            } ).ToList();
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var familyGroupType = GroupTypeCache.Get( familyGuid.Value );
+                    if ( homeAddressDv != null && familyGroupType != null )
+                    {
+                        var personLocations = new GroupMemberService( rockContext ).Queryable()
+                                .Where( m =>
+                                     personIds.Contains( m.PersonId )
+                                     && m.Group.GroupTypeId == familyGroupType.Id )
+                                .Select( m => new
+                                {
+                                    m.PersonId,
+                                    Location = m.Group.GroupLocations
+                                                                     .Where( gl => gl.GroupLocationTypeValueId == homeAddressDv.Id )
+                                                                     .Select( gl => gl.Location )
+                                                                     .FirstOrDefault()
+                                } ).ToList();
 
-                    //    foreach ( var personLocation in personLocations )
-                    //    {
-                    //        if ( !personHomeAddresses.ContainsKey( personLocation.PersonId ) )
-                    //        {
-                    //            personHomeAddresses.Add( personLocation.PersonId, personLocation.Location );
-                    //        }
-                    //    }
-                    //}
+                        foreach ( var personLocation in personLocations )
+                        {
+                            if ( !personHomeAddresses.ContainsKey( personLocation.PersonId ) )
+                            {
+                                personHomeAddresses.Add( personLocation.PersonId, personLocation.Location );
+                            }
+                        }
+                    }
                 }
             }
 
@@ -3240,139 +3269,139 @@ namespace Rock.Model
         /// <summary>
         /// Bulks the index documents.
         /// </summary>
-        //public void BulkIndexDocuments()
-        //{
-        //    List<IndexModelBase> indexableItems = new List<IndexModelBase>();
+        public void BulkIndexDocuments()
+        {
+            List<IndexModelBase> indexableItems = new List<IndexModelBase>();
 
-        //    var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-        //    var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-        //    RockContext rockContext = new RockContext();
+            RockContext rockContext = new RockContext();
 
-        //    // return people
-        //    var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-        //                        .Where( p => p.RecordTypeValueId == recordTypePersonId );
+            // return people
+            var people = new PersonService( rockContext ).Queryable().AsNoTracking()
+                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
 
-        //    int recordCounter = 0;
+            int recordCounter = 0;
 
-        //    foreach ( var person in people )
-        //    {
-        //        recordCounter++;
+            foreach ( var person in people )
+            {
+                recordCounter++;
 
-        //        var indexablePerson = PersonIndex.LoadByModel( person );
-        //        indexableItems.Add( indexablePerson );
+                var indexablePerson = PersonIndex.LoadByModel( person );
+                indexableItems.Add( indexablePerson );
 
-        //        if ( recordCounter > 100 )
-        //        {
-        //            IndexContainer.IndexDocuments( indexableItems );
-        //            indexableItems = new List<IndexModelBase>();
-        //            recordCounter = 0;
-        //        }
-        //    }
+                if ( recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
 
-        //    // return businesses
-        //    var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
-        //                        .Where( p =>
-        //                             p.IsSystem == false
-        //                             && p.RecordTypeValueId == recordTypeBusinessId );
+            // return businesses
+            var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
+                                .Where( p =>
+                                     p.IsSystem == false
+                                     && p.RecordTypeValueId == recordTypeBusinessId );
 
-        //    foreach ( var business in businesses )
-        //    {
-        //        var indexableBusiness = BusinessIndex.LoadByModel( business );
-        //        indexableItems.Add( indexableBusiness );
+            foreach ( var business in businesses )
+            {
+                var indexableBusiness = BusinessIndex.LoadByModel( business );
+                indexableItems.Add( indexableBusiness );
 
-        //        if ( recordCounter > 100 )
-        //        {
-        //            IndexContainer.IndexDocuments( indexableItems );
-        //            indexableItems = new List<IndexModelBase>();
-        //            recordCounter = 0;
-        //        }
-        //    }
+                if ( recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
 
-        //    IndexContainer.IndexDocuments( indexableItems );
-        //}
+            IndexContainer.IndexDocuments( indexableItems );
+        }
 
         /// <summary>
         /// Deletes the indexed documents.
         /// </summary>
-        //public void DeleteIndexedDocuments()
-        //{
-        //    IndexContainer.DeleteDocumentsByType<PersonIndex>();
-        //    IndexContainer.DeleteDocumentsByType<BusinessIndex>();
-        //}
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<PersonIndex>();
+            IndexContainer.DeleteDocumentsByType<BusinessIndex>();
+        }
 
         /// <summary>
         /// Indexes the name of the model.
         /// </summary>
         /// <returns></returns>
-        //public Type IndexModelType()
-        //{
-        //    return typeof( PersonIndex );
-        //}
+        public Type IndexModelType()
+        {
+            return typeof( PersonIndex );
+        }
 
         /// <summary>
         /// Indexes the document.
         /// </summary>
         /// <param name="id"></param>
-        //public void IndexDocument( int id )
-        //{
-        //    var personEntity = new PersonService( new RockContext() ).Get( id );
+        public void IndexDocument( int id )
+        {
+            var personEntity = new PersonService( new RockContext() ).Get( id );
 
-        //    if ( personEntity != null )
-        //    {
-        //        if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
-        //        {
-        //            var indexItem = PersonIndex.LoadByModel( personEntity );
-        //            IndexContainer.IndexDocument( indexItem );
-        //        }
-        //        else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-        //        {
-        //            var indexItem = BusinessIndex.LoadByModel( personEntity );
-        //            IndexContainer.IndexDocument( indexItem );
-        //        }
-        //    }
-        //}
+            if ( personEntity != null )
+            {
+                if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
+                {
+                    var indexItem = PersonIndex.LoadByModel( personEntity );
+                    IndexContainer.IndexDocument( indexItem );
+                }
+                else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    var indexItem = BusinessIndex.LoadByModel( personEntity );
+                    IndexContainer.IndexDocument( indexItem );
+                }
+            }
+        }
 
         /// <summary>
         /// Deletes the indexed document.
         /// </summary>
         /// <param name="id"></param>
-        //public void DeleteIndexedDocument( int id )
-        //{
-        //    var personEntity = new PersonService( new RockContext() ).Get( id );
+        public void DeleteIndexedDocument( int id )
+        {
+            var personEntity = new PersonService( new RockContext() ).Get( id );
 
-        //    if ( personEntity != null )
-        //    {
-        //        if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
-        //        {
-        //            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
-        //            IndexContainer.DeleteDocumentById( indexType, id );
-        //        }
-        //        else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
-        //        {
-        //            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
-        //            IndexContainer.DeleteDocumentById( indexType, id );
-        //        }
-        //    }
-        //}
+            if ( personEntity != null )
+            {
+                if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() )
+                {
+                    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
+                    IndexContainer.DeleteDocumentById( indexType, id );
+                }
+                else if ( personEntity.RecordTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.PersonIndex" );
+                    IndexContainer.DeleteDocumentById( indexType, id );
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the index filter values.
         /// </summary>
         /// <returns></returns>
-        //public ModelFieldFilterConfig GetIndexFilterConfig()
-        //{
-        //    return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
-        //}
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
+        }
 
         /// <summary>
         /// Gets the index filter field.
         /// </summary>
         /// <returns></returns>
-        //public bool SupportsIndexFieldFiltering()
-        //{
-        //    return false;
-        //}
+        public bool SupportsIndexFieldFiltering()
+        {
+            return false;
+        }
         #endregion
     }
 
@@ -3402,8 +3431,10 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
 
+#if NET5_0_OR_GREATER
             this.HasOptional( p => p.CreatedByPersonAlias ).WithMany().HasForeignKey( p => p.CreatedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ModifiedByPersonAlias ).WithMany().HasForeignKey( p => p.ModifiedByPersonAliasId ).WillCascadeOnDelete( false );
+#endif
         }
     }
 
@@ -3434,7 +3465,7 @@ namespace Rock.Model
             Gender = person?.Gender ?? Gender.Unknown;
             if ( person?.RecordStatusValueId != null )
             {
-                //RecordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
+                RecordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
             }
         }
 
@@ -3626,23 +3657,23 @@ namespace Rock.Model
             Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
             if ( homeAddressGuid.HasValue )
             {
-                //var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
-                //if ( homeAddressDv != null )
-                //{
-                //    foreach ( var family in person.GetFamilies( rockContext ) )
-                //    {
-                //        var loc = family.GroupLocations
-                //            .Where( l =>
-                //                l.GroupLocationTypeValueId == homeAddressDv.Id &&
-                //                l.IsMappedLocation )
-                //            .Select( l => l.Location )
-                //            .FirstOrDefault();
-                //        if ( loc != null )
-                //        {
-                //            return loc;
-                //        }
-                //    }
-                //}
+                var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                if ( homeAddressDv != null )
+                {
+                    foreach ( var family in person.GetFamilies( rockContext ) )
+                    {
+                        var loc = family.GroupLocations
+                            .Where( l =>
+                                l.GroupLocationTypeValueId == homeAddressDv.Id &&
+                                l.IsMappedLocation )
+                            .Select( l => l.Location )
+                            .FirstOrDefault();
+                        if ( loc != null )
+                        {
+                            return loc;
+                        }
+                    }
+                }
             }
 
             return null;
@@ -3692,19 +3723,19 @@ namespace Rock.Model
                 var workAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuidOrNull();
                 if ( homeAddressGuid.HasValue && workAddressGuid.HasValue )
                 {
-                    //var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
-                    //var workAddressDv = DefinedValueCache.Get( workAddressGuid.Value );
-                    //if ( homeAddressDv != null && workAddressDv != null )
-                    //{
-                    //    // Get all available mailing locations, prioritizing mapped locations then home locations
-                    //    var mailingLocations = groups.SelectMany( x => x.GroupLocations )
-                    //        .Where( l => l.IsMailingLocation )
-                    //        .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
-                    //        .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
-                    //        .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
+                    var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+                    var workAddressDv = DefinedValueCache.Get( workAddressGuid.Value );
+                    if ( homeAddressDv != null && workAddressDv != null )
+                    {
+                        // Get all available mailing locations, prioritizing mapped locations then home locations
+                        var mailingLocations = groups.SelectMany( x => x.GroupLocations )
+                            .Where( l => l.IsMailingLocation )
+                            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
+                            .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
 
-                    //    return mailingLocations.Select( l => l.Location ).FirstOrDefault();
-                    //}
+                        return mailingLocations.Select( l => l.Location ).FirstOrDefault();
+                    }
                 }
             }
 
@@ -4046,29 +4077,29 @@ namespace Rock.Model
         public static EntitySet CreateMergeRequest( this Person namelessPerson, Person masterPerson )
         {
             var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
-            //var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
-            //if ( definedValueId == null )
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
             {
                 return null;
             }
 
-            //var entitySet = new EntitySet
-            //{
-            //    EntityTypeId = EntityTypeCache.Get<Person>().Id,
-            //    EntitySetPurposeValueId = definedValueId
-            //};
+            var entitySet = new EntitySet
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                EntitySetPurposeValueId = definedValueId
+            };
 
-            //entitySet.Items.Add( new EntitySetItem
-            //{
-            //    EntityId = namelessPerson.Id
-            //} );
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = namelessPerson.Id
+            } );
 
-            //entitySet.Items.Add( new EntitySetItem
-            //{
-            //    EntityId = masterPerson.Id
-            //} );
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = masterPerson.Id
+            } );
 
-            //return entitySet;
+            return entitySet;
         }
     }
 

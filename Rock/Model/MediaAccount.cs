@@ -22,8 +22,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Media;
-//using Rock.Web.Cache;
+using Rock.Media;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -126,17 +126,17 @@ namespace Rock.Model
         /// Gets the media component.
         /// </summary>
         /// <returns></returns>
-        //public virtual MediaAccountComponent GetMediaAccountComponent()
-        //{
-        //    var entityType = EntityTypeCache.Get( ComponentEntityTypeId );
+        public virtual MediaAccountComponent GetMediaAccountComponent()
+        {
+            var entityType = EntityTypeCache.Get( ComponentEntityTypeId );
 
-        //    if ( entityType != null )
-        //    {
-        //        return MediaAccountContainer.GetComponent( entityType.Name );
-        //    }
+            if ( entityType != null )
+            {
+                return MediaAccountContainer.GetComponent( entityType.Name );
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

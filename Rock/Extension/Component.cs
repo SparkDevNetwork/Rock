@@ -58,7 +58,7 @@ namespace Rock.Extension
     [BooleanField(
         "Active",
         Description = "Should Service be used?",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue =false,
         Key = BaseAttributeKey.Active )]
 
     public abstract class Component : IHasAttributes, ISecured
@@ -180,6 +180,7 @@ namespace Rock.Extension
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Method that is called before attribute values are updated. Components can
         /// override this to perform any needed initialization of attribute
@@ -187,9 +188,10 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="rootUrl">The root URL.</param>
-        //public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
-        //{
-        //}
+        public virtual void InitializeAttributeValues( System.Web.HttpRequest request, string rootUrl )
+        {
+        }
+#endif
 
         /// <summary>
         /// Method that is called when attribute values are updated. Components can

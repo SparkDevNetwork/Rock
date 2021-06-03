@@ -28,6 +28,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.CheckIn
 {
+#if !NET5_0_OR_GREATER
     /// <summary>
     /// 
     /// </summary>
@@ -447,6 +448,7 @@ namespace Rock.CheckIn
             return attendanceQuery;
         }
     }
+#endif
 
     /// <summary>
     /// 

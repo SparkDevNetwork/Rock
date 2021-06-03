@@ -66,7 +66,9 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of Rock.
         /// </value>
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]
@@ -124,9 +126,8 @@ namespace Rock.Data
         {
             get
             {
-                throw new NotSupportedException();
                 // Read should never return null since it will create entity type if it doesn't exist
-                //return EntityTypeCache.Get( typeof( T ) ).Id;
+                return EntityTypeCache.Get( typeof( T ) ).Id;
             }
         }
 
@@ -157,12 +158,11 @@ namespace Rock.Data
         {
             get
             {
-                throw new NotSupportedException();
-                //string identifier =
-                //    TypeName + "|" +
-                //    this.Id.ToString() + ">" +
-                //    this.Guid.ToString();
-                //return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
+                string identifier =
+                    TypeName + "|" +
+                    this.Id.ToString() + ">" +
+                    this.Guid.ToString();
+                return System.Web.HttpUtility.UrlEncode( Rock.Security.Encryption.EncryptString( identifier ) );
             }
         }
 
@@ -211,11 +211,11 @@ namespace Rock.Data
                 //// Non-web apps might not have the dataencryptionkey
                 //// so just return empty string if we can't encrypt
 
-                //if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
-                //{
-                //    return result;
-                //}
-                //else
+                if ( Rock.Security.Encryption.TryEncryptString( identifier, out result ) )
+                {
+                    return result;
+                }
+                else
                 {
                     return string.Empty; ;
                 }
@@ -449,7 +449,9 @@ namespace Rock.Data
         /// </value>
         //[LavaIgnore]
         [LavaHidden]
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>
@@ -495,8 +497,7 @@ namespace Rock.Data
         /// <returns></returns>
         private bool LiquidizableProperty( PropertyInfo propInfo )
         {
-            return false;
-            //return Rock.Lava.LavaHelper.IsLavaProperty( propInfo );
+            return Rock.Lava.LavaHelper.IsLavaProperty( propInfo );
         }
 
         /// <summary>
@@ -575,8 +576,7 @@ namespace Rock.Data
         /// </value>
         public static string GetIndexResultTemplate()
         {
-            return string.Empty;
-            //return EntityTypeCache.Get( typeof( T ) ).IndexResultTemplate;
+            return EntityTypeCache.Get( typeof( T ) ).IndexResultTemplate;
         }
 
         #endregion

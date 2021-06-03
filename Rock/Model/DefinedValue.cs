@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -33,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "DefinedValue" )]
     [DataContract]
-    public partial class DefinedValue : Model<DefinedValue>, IOrdered/*, ICacheable*/
+    public partial class DefinedValue : Model<DefinedValue>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -121,13 +125,13 @@ namespace Rock.Model
         /// <value>
         /// An entity that implements the <see cref="Rock.Security.ISecured"/> interface that this DefinedValue inherits security authority from.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get 
-        //    {
-        //        return this.DefinedType != null ? this.DefinedType : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.DefinedType != null ? this.DefinedType : base.ParentAuthority;
+            }
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this DefinedValue.
@@ -148,21 +152,21 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return DefinedValueCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return DefinedValueCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    DefinedValueCache.UpdateCachedEntity( this.Id, entityState );
-        //    DefinedTypeCache.FlushItem( this.DefinedTypeId );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            DefinedValueCache.UpdateCachedEntity( this.Id, entityState );
+            DefinedTypeCache.FlushItem( this.DefinedTypeId );
+        }
 
         #endregion
 

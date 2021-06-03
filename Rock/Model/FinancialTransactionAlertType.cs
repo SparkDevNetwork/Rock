@@ -196,7 +196,9 @@ namespace Rock.Model
         /// <value>
         /// The order.
         /// </value>
-        //[Index]
+#if !NET5_0_OR_GREATER
+        [Index]
+#endif
         [DataMember]
         public int Order { get; set; }
 

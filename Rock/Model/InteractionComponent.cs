@@ -17,8 +17,13 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -35,7 +40,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionComponent" )]
     [DataContract]
-    public partial class InteractionComponent : Model<InteractionComponent>/*, ICacheable*/
+    public partial class InteractionComponent : Model<InteractionComponent>, ICacheable
     {
 
         #region Entity Properties
@@ -161,18 +166,18 @@ namespace Rock.Model
         {
             if ( this.SaveState == EntityState.Added || this.SaveState == EntityState.Deleted )
             {
-                //var channel = InteractionChannelCache.Get( this.InteractionChannelId );
-                //if ( channel != null )
-                //{
-                //    if ( this.SaveState == EntityState.Added )
-                //    {
-                //        channel.AddComponentId( this.Id );
-                //    }
-                //    else
-                //    {
-                //        channel.RemoveComponentId( this.Id );
-                //    }
-                //}
+                var channel = InteractionChannelCache.Get( this.InteractionChannelId );
+                if ( channel != null )
+                {
+                    if ( this.SaveState == EntityState.Added )
+                    {
+                        channel.AddComponentId( this.Id );
+                    }
+                    else
+                    {
+                        channel.RemoveComponentId( this.Id );
+                    }
+                }
             }
 
             base.PostSaveChanges( dbContext );
@@ -186,25 +191,25 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return InteractionComponentCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return InteractionComponentCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    InteractionComponentCache.UpdateCachedEntity( this.Id, this.SaveState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            InteractionComponentCache.UpdateCachedEntity( this.Id, this.SaveState );
+        }
 
         #endregion
 
         #region Obsolete Properties
-        
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
         /// </summary>

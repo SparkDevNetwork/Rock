@@ -27,7 +27,7 @@ using Newtonsoft.Json;
 
 using Rock.Communication;
 using Rock.Data;
-//using Rock.Security;
+using Rock.Security;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -346,7 +346,9 @@ namespace Rock.Model
         /// The merge fields.
         /// </value>
         [DataMember]
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
@@ -501,21 +503,21 @@ namespace Rock.Model
         /// <returns></returns>
         public bool SupportsEmailWizard()
         {
-            //string templateHtml = this.Message;
-            //if ( string.IsNullOrWhiteSpace( templateHtml ) )
-            //{
+            string templateHtml = this.Message;
+            if ( string.IsNullOrWhiteSpace( templateHtml ) )
+            {
                 return false;
-            //}
+            }
 
-            //templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
+            templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
 
-            //HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
-            //templateDoc.LoadHtml( templateHtml );
+            HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( templateHtml );
 
-            //// see if there is at least one 'dropzone' div
-            //var hasDropzones = templateDoc.DocumentNode.Descendants( "div" ).Where( a => a.GetAttributeValue( "class", string.Empty ).Split( new char[] { ' ' } ).Any( c => c == "dropzone" ) ).Any();
+            // see if there is at least one 'dropzone' div
+            var hasDropzones = templateDoc.DocumentNode.Descendants( "div" ).Where( a => a.GetAttributeValue( "class", string.Empty ).Split( new char[] { ' ' } ).Any( c => c == "dropzone" ) ).Any();
 
-            //return hasDropzones;
+            return hasDropzones;
         }
 
         /// <summary>
@@ -532,7 +534,7 @@ namespace Rock.Model
         /// <summary>
         /// When checking for security, if a template does not have specific rules, first check the category it belongs to, but then check the default entity security for templates.
         /// </summary>
-        //public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
+        public override ISecured ParentAuthorityPre => this.Category ?? base.ParentAuthority;
 
         #endregion
 

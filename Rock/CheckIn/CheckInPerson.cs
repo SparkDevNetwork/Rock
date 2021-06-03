@@ -451,7 +451,9 @@ namespace Rock.CheckIn
     /// Helper class for summarizing the selected check-in
     /// </summary>
     [LavaType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
+#if !NET5_0_OR_GREATER
     [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
+#endif
     public class CheckInPersonSummary
     {
         /// <summary>

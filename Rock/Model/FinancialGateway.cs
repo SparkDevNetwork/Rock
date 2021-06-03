@@ -21,8 +21,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.Financial;
-//using Rock.Web.Cache;
+using Rock.Financial;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -129,19 +129,19 @@ namespace Rock.Model
         /// Gets the gateway component.
         /// </summary>
         /// <returns></returns>
-        //public virtual GatewayComponent GetGatewayComponent()
-        //{
-        //    if ( EntityTypeId.HasValue )
-        //    {
-        //        var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-        //        if ( entityType != null )
-        //        {
-        //            return GatewayContainer.GetComponent( entityType.Name );
-        //        }
-        //    }
+        public virtual GatewayComponent GetGatewayComponent()
+        {
+            if ( EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return GatewayContainer.GetComponent( entityType.Name );
+                }
+            }
 
-        //    return null;
-        //}
+            return null;
+        }
 
         /// <summary>
         /// Gets the batch time offset.

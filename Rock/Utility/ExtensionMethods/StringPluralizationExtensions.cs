@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-//using System.Data.Entity.Design.PluralizationServices;
+#if !NET5_0_OR_GREATER
+using System.Data.Entity.Design.PluralizationServices;
+#endif
 using System.Globalization;
 
 namespace Rock
@@ -42,9 +44,12 @@ namespace Rock
                     return str + "ES";
 
                 default:
-                    return str;
-                    //var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
-                    //return pluralizationService.Pluralize( str );
+#if NET5_0_OR_GREATER
+                    return Humanizer.InflectorExtensions.Pluralize( str );
+#else
+                    var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+#endif
             }
         }
 

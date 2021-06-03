@@ -17,12 +17,16 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-//using Rock.UniversalSearch;
+using Rock.UniversalSearch;
 using Rock.Web.Cache;
 using Rock.Lava;
 
@@ -35,7 +39,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
-    public partial class EntityType : Entity<EntityType>/*, ICacheable*/
+    public partial class EntityType : Entity<EntityType>, ICacheable
     {
 
         #region Entity Properties
@@ -47,7 +51,9 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the full name of the EntityType.
         /// </value>
         [MaxLength( 100 )]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         [DataMember]
         public string Name { get; set; }
 
@@ -242,18 +248,18 @@ namespace Rock.Model
 
                 if ( type != null )
                 {
-                    //if ( typeof( IRockIndexable ).IsAssignableFrom( type ) )
-                    //{
-                    //    var constructor = type.GetConstructor( Type.EmptyTypes );
-                    //    object instance = constructor.Invoke( new object[] { } );
-                    //    var method = type.GetMethod( "IndexModelType" );
+                    if ( typeof( IRockIndexable ).IsAssignableFrom( type ) )
+                    {
+                        var constructor = type.GetConstructor( Type.EmptyTypes );
+                        object instance = constructor.Invoke( new object[] { } );
+                        var method = type.GetMethod( "IndexModelType" );
 
-                    //    if ( method != null )
-                    //    {
-                    //        var indexModelType = ( Type ) method.Invoke( instance, null );
-                    //        return indexModelType;
-                    //    }
-                    //}
+                        if ( method != null )
+                        {
+                            var indexModelType = ( Type ) method.Invoke( instance, null );
+                            return indexModelType;
+                        }
+                    }
                 }
 
                 return null;
@@ -349,23 +355,23 @@ namespace Rock.Model
         {
             if ( this.IsSecured )
             {
-                //object entity = null;
-                //try
-                //{
-                //    var type = EntityTypeCache.Get( this ).GetEntityType();
-                //    entity = System.Activator.CreateInstance( type );
-                //}
-                //catch
-                //{
-                //    // unable to create the entity, so return false since we can't do anything with it
-                //    return false;
-                //}
+                object entity = null;
+                try
+                {
+                    var type = EntityTypeCache.Get( this ).GetEntityType();
+                    entity = System.Activator.CreateInstance( type );
+                }
+                catch
+                {
+                    // unable to create the entity, so return false since we can't do anything with it
+                    return false;
+                }
 
-                //if ( entity is Rock.Security.ISecured )
-                //{
-                //    Rock.Security.ISecured iSecured = ( Rock.Security.ISecured ) entity;
-                //    return iSecured.IsAuthorized( action, person );
-                //}
+                if ( entity is Rock.Security.ISecured )
+                {
+                    Rock.Security.ISecured iSecured = ( Rock.Security.ISecured ) entity;
+                    return iSecured.IsAuthorized( action, person );
+                }
             }
 
             return true;
@@ -378,20 +384,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return EntityTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return EntityTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    EntityTypeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            EntityTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 

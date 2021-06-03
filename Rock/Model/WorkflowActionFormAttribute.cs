@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -32,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionFormAttribute" )]
     [DataContract]
-    public partial class WorkflowActionFormAttribute : Model<WorkflowActionFormAttribute>, IOrdered/*, ICacheable*/
+    public partial class WorkflowActionFormAttribute : Model<WorkflowActionFormAttribute>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -151,21 +155,21 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return WorkflowActionFormAttributeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActionFormAttributeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        //{
-        //    WorkflowActionFormCache.UpdateCachedEntity( this.WorkflowActionFormId, EntityState.Modified );
-        //    WorkflowActionFormAttributeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            WorkflowActionFormCache.UpdateCachedEntity( this.WorkflowActionFormId, EntityState.Modified );
+            WorkflowActionFormAttributeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 

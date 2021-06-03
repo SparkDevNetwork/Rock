@@ -16,7 +16,9 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+#if NET5_0_OR_GREATER
 using System.ComponentModel.DataAnnotations.Schema;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -26,7 +28,9 @@ namespace Rock.Model
     /// <summary>
     /// Used to verify individuals by phone number.
     /// </summary>
+#if NET5_0_OR_GREATER
     [Table( "IdentityVerification" )]
+#endif
     public partial class IdentityVerification : Model<IdentityVerification>
     {
         /// <summary>

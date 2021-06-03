@@ -479,7 +479,11 @@ namespace Rock
         /// <returns></returns>
         public static string ToRfc822DateTime( this DateTime dateTime )
         {
-            int offset = TimeZoneInfo.Local/*TimeZone.CurrentTimeZone*/.GetUtcOffset( DateTime.Now ).Hours;
+#if NET5_0_OR_GREATER
+            int offset = TimeZoneInfo.Local.GetUtcOffset( DateTime.Now ).Hours;
+#else
+            int offset = TimeZone.CurrentTimeZone.GetUtcOffset( DateTime.Now ).Hours;
+#endif
             string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );
 
             if ( offset < 0 )

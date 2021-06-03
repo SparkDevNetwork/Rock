@@ -20,18 +20,22 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-//using System.Data.Entity;
-//using System.Data.Entity.Infrastructure;
+#if NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
-//using System.Data.Entity.SqlServer;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.ModelConfiguration;
+using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
 using Rock.Security;
-//using Rock.UniversalSearch;
-//using Rock.UniversalSearch.IndexModels;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
 

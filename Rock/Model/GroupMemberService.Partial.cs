@@ -20,7 +20,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
 
@@ -340,20 +340,20 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased, bool includeInactive )
         {
-            //var dvActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
-            //if ( dvActive != null )
-            //{
-            //    return GetByGroupId( groupId, includeDeceased )
-            //        .Where( m => m.Person.RecordStatusReasonValueId == dvActive.Id )
-            //        .OrderBy( m => m.GroupRole.Order )
-            //        .ThenBy( m => m.Person.BirthYear )
-            //        .ThenBy( m => m.Person.BirthMonth )
-            //        .ThenBy( m => m.Person.BirthDay )
-            //        .ThenBy( m => m.Person.Gender )
-            //        .Select( m => m.Person.NickName )
-            //        .ToList();
-            //}
-            //else
+            var dvActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+            if ( dvActive != null )
+            {
+                return GetByGroupId( groupId, includeDeceased )
+                    .Where( m => m.Person.RecordStatusReasonValueId == dvActive.Id )
+                    .OrderBy( m => m.GroupRole.Order )
+                    .ThenBy( m => m.Person.BirthYear )
+                    .ThenBy( m => m.Person.BirthMonth )
+                    .ThenBy( m => m.Person.BirthDay )
+                    .ThenBy( m => m.Person.Gender )
+                    .Select( m => m.Person.NickName )
+                    .ToList();
+            }
+            else
             {
                 return GetFirstNames( groupId, includeDeceased );
             }
@@ -405,90 +405,90 @@ namespace Rock.Model
 
             if ( groupRole != null )
             {
-                //if ( groupRole.Attributes == null )
-                //{
-                //    groupRole.LoadAttributes();
-                //}
+                if ( groupRole.Attributes == null )
+                {
+                    groupRole.LoadAttributes();
+                }
 
-                //if ( groupRole.Attributes.ContainsKey( "InverseRelationship" ) )
-                //{
-                //    Guid knownRelationShipOwnerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
+                if ( groupRole.Attributes.ContainsKey( "InverseRelationship" ) )
+                {
+                    Guid knownRelationShipOwnerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
 
-                //    // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
-                //    var ownerInfo = Queryable( true )
-                //        .Where( m =>
-                //            m.GroupId == groupMember.GroupId &&
-                //            ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
-                //        .Select( m => new
-                //        {
-                //            PersonId = m.PersonId,
-                //            RoleId = m.GroupRoleId
-                //        } )
-                //        .FirstOrDefault();
+                    // The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
+                    var ownerInfo = Queryable( true )
+                        .Where( m =>
+                            m.GroupId == groupMember.GroupId &&
+                            ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
+                        .Select( m => new
+                        {
+                            PersonId = m.PersonId,
+                            RoleId = m.GroupRoleId
+                        } )
+                        .FirstOrDefault();
 
-                //    int? ownerPersonId = null;
-                //    int? ownerRoleId = null;
+                    int? ownerPersonId = null;
+                    int? ownerRoleId = null;
 
-                //    if ( ownerInfo != null )
-                //    {
-                //        ownerPersonId = ownerInfo.PersonId;
-                //        ownerRoleId = ownerInfo.RoleId;
-                //    }
+                    if ( ownerInfo != null )
+                    {
+                        ownerPersonId = ownerInfo.PersonId;
+                        ownerRoleId = ownerInfo.RoleId;
+                    }
 
-                //    if ( ownerPersonId.HasValue && ownerRoleId.HasValue )
-                //    {
-                //        // Find related person's group where the person is the Owner
-                //        // NOTE: The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
-                //        var inverseGroup = Queryable( true )
-                //            .Where( m =>
-                //                m.PersonId == groupMember.PersonId &&
-                //                m.Group.GroupTypeId == groupRole.GroupTypeId &&
-                //                ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
-                //            .Select( m => m.Group )
-                //            .FirstOrDefault();
+                    if ( ownerPersonId.HasValue && ownerRoleId.HasValue )
+                    {
+                        // Find related person's group where the person is the Owner
+                        // NOTE: The 'owner' of the group is determined by built-in KnownRelationshipsOwner role or the role that is marked as IsLeader for the group
+                        var inverseGroup = Queryable( true )
+                            .Where( m =>
+                                m.PersonId == groupMember.PersonId &&
+                                m.Group.GroupTypeId == groupRole.GroupTypeId &&
+                                ( m.GroupRole.Guid.Equals( knownRelationShipOwnerRoleGuid ) || m.GroupRole.IsLeader ) )
+                            .Select( m => m.Group )
+                            .FirstOrDefault();
 
-                //        if ( inverseGroup == null && createGroup )
-                //        {
-                //            var ownerGroupMember = new GroupMember();
-                //            ownerGroupMember.PersonId = groupMember.PersonId;
-                //            ownerGroupMember.GroupRoleId = ownerRoleId.Value;
+                        if ( inverseGroup == null && createGroup )
+                        {
+                            var ownerGroupMember = new GroupMember();
+                            ownerGroupMember.PersonId = groupMember.PersonId;
+                            ownerGroupMember.GroupRoleId = ownerRoleId.Value;
 
-                //            inverseGroup = new Group();
-                //            inverseGroup.Name = groupRole.GroupType.Name;
-                //            inverseGroup.GroupTypeId = groupRole.GroupTypeId.Value;
-                //            inverseGroup.Members.Add( ownerGroupMember );
-                //        }
+                            inverseGroup = new Group();
+                            inverseGroup.Name = groupRole.GroupType.Name;
+                            inverseGroup.GroupTypeId = groupRole.GroupTypeId.Value;
+                            inverseGroup.Members.Add( ownerGroupMember );
+                        }
 
-                //        if ( inverseGroup != null )
-                //        {
-                //            Guid inverseRoleGuid = Guid.Empty;
-                //            if ( Guid.TryParse( groupRole.GetAttributeValue( "InverseRelationship" ), out inverseRoleGuid ) )
-                //            {
-                //                var inverseGroupMember = Queryable( true )
-                //                    .Where( m =>
-                //                        m.PersonId == ownerPersonId &&
-                //                        m.GroupId == inverseGroup.Id &&
-                //                        m.GroupRole.Guid.Equals( inverseRoleGuid ) )
-                //                    .FirstOrDefault();
+                        if ( inverseGroup != null )
+                        {
+                            Guid inverseRoleGuid = Guid.Empty;
+                            if ( Guid.TryParse( groupRole.GetAttributeValue( "InverseRelationship" ), out inverseRoleGuid ) )
+                            {
+                                var inverseGroupMember = Queryable( true )
+                                    .Where( m =>
+                                        m.PersonId == ownerPersonId &&
+                                        m.GroupId == inverseGroup.Id &&
+                                        m.GroupRole.Guid.Equals( inverseRoleGuid ) )
+                                    .FirstOrDefault();
 
-                //                if ( inverseGroupMember == null )
-                //                {
-                //                    var inverseRole = new GroupTypeRoleService( ( RockContext ) Context ).Get( inverseRoleGuid );
-                //                    if ( inverseRole != null )
-                //                    {
-                //                        inverseGroupMember = new GroupMember();
-                //                        inverseGroupMember.PersonId = ownerPersonId.Value;
-                //                        inverseGroupMember.Group = inverseGroup;
-                //                        inverseGroupMember.GroupRoleId = inverseRole.Id;
-                //                        Add( inverseGroupMember );
-                //                    }
-                //                }
+                                if ( inverseGroupMember == null )
+                                {
+                                    var inverseRole = new GroupTypeRoleService( ( RockContext ) Context ).Get( inverseRoleGuid );
+                                    if ( inverseRole != null )
+                                    {
+                                        inverseGroupMember = new GroupMember();
+                                        inverseGroupMember.PersonId = ownerPersonId.Value;
+                                        inverseGroupMember.Group = inverseGroup;
+                                        inverseGroupMember.GroupRoleId = inverseRole.Id;
+                                        Add( inverseGroupMember );
+                                    }
+                                }
 
-                //                return inverseGroupMember;
-                //            }
-                //        }
-                //    }
-                //}
+                                return inverseGroupMember;
+                            }
+                        }
+                    }
+                }
             }
 
             return null;
@@ -505,15 +505,15 @@ namespace Rock.Model
         /// </returns>
         public GroupMember AddOrRestoreGroupMember( Group group, int personId, int groupRoleId )
         {
-            //var rockContext = this.Context as RockContext;
-            //var groupService = new GroupService( rockContext );
-            //GroupMember archivedGroupMember;
-            //if ( groupService.ExistsAsArchived( group, personId, groupRoleId, out archivedGroupMember ) )
-            //{
-            //    this.Restore( archivedGroupMember );
-            //    return archivedGroupMember;
-            //}
-            //else
+            var rockContext = this.Context as RockContext;
+            var groupService = new GroupService( rockContext );
+            GroupMember archivedGroupMember;
+            if ( groupService.ExistsAsArchived( group, personId, groupRoleId, out archivedGroupMember ) )
+            {
+                this.Restore( archivedGroupMember );
+                return archivedGroupMember;
+            }
+            else
             {
                 var groupMember = new GroupMember { Group = group, GroupId = group.Id, PersonId = personId, GroupRoleId = groupRoleId };
                 base.Add( groupMember );
@@ -548,17 +548,17 @@ namespace Rock.Model
                 groupTypeId = new GroupService( rockContext ).GetSelect( item.GroupId, a => a.GroupTypeId );
             }
 
-            //var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
-            //if ( groupTypeCache?.EnableGroupHistory == true )
-            //{
-            //    var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
-            //    if ( groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == item.Id ) )
-            //    {
-            //        // if the group's GroupType has GroupHistory enabled, and this group member has group member history snapshots, then we need to Archive instead of Delete
-            //        this.Archive( item, null, false );
-            //        return true;
-            //    }
-            //}
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
+            if ( groupTypeCache?.EnableGroupHistory == true )
+            {
+                var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
+                if ( groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == item.Id ) )
+                {
+                    // if the group's GroupType has GroupHistory enabled, and this group member has group member history snapshots, then we need to Archive instead of Delete
+                    this.Archive( item, null, false );
+                    return true;
+                }
+            }
 
             return base.Delete( item );
         }
@@ -596,10 +596,12 @@ namespace Rock.Model
 
             if ( !currentPersonAliasId.HasValue )
             {
-                //if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                //{
-                //    currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
-                //}
+#if !NET5_0_OR_GREATER
+                if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                {
+                    currentPersonAliasId = ( HttpContext.Current.Items["CurrentPerson"] as Person )?.PrimaryAliasId;
+                }
+#endif
             }
 
             groupMember.IsArchived = true;
@@ -615,68 +617,68 @@ namespace Rock.Model
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
         public void CreateKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
-            //var groupMemberService = this;
-            //var rockContext = this.Context as RockContext;
+            var groupMemberService = this;
+            var rockContext = this.Context as RockContext;
 
-            //var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-            //int? ownerRoleId = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )?.Id;
-            //var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
-            //if ( ownerRoleId == null )
-            //{
-            //    throw new Exception( "Unable to find known relationships owner role" );
-            //}
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            int? ownerRoleId = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )?.Id;
+            var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+            if ( ownerRoleId == null )
+            {
+                throw new Exception( "Unable to find known relationships owner role" );
+            }
 
-            //if ( relationshipRole == null )
-            //{
-            //    throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
-            //}
+            if ( relationshipRole == null )
+            {
+                throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
+            }
 
-            //int? knownRelationshipGroupId = groupMemberService.Queryable( true )
-            //    .Where( m =>
-            //        m.PersonId == personId &&
-            //        m.GroupRoleId == ownerRoleId.Value )
-            //    .Select( m => ( int? ) m.GroupId )
-            //    .FirstOrDefault();
+            int? knownRelationshipGroupId = groupMemberService.Queryable( true )
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRoleId == ownerRoleId.Value )
+                .Select( m => ( int? ) m.GroupId )
+                .FirstOrDefault();
 
-            //// Create known relationship group if doesn't exist
-            //if ( !knownRelationshipGroupId.HasValue )
-            //{
-            //    var groupMember = new GroupMember();
-            //    groupMember.PersonId = personId;
-            //    groupMember.GroupRoleId = ownerRoleId.Value;
+            // Create known relationship group if doesn't exist
+            if ( !knownRelationshipGroupId.HasValue )
+            {
+                var groupMember = new GroupMember();
+                groupMember.PersonId = personId;
+                groupMember.GroupRoleId = ownerRoleId.Value;
 
-            //    var knownRelationshipGroup = new Group();
-            //    knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
-            //    knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
-            //    knownRelationshipGroup.Members.Add( groupMember );
+                var knownRelationshipGroup = new Group();
+                knownRelationshipGroup.Name = knownRelationshipGroupType.Name;
+                knownRelationshipGroup.GroupTypeId = knownRelationshipGroupType.Id;
+                knownRelationshipGroup.Members.Add( groupMember );
 
-            //    new GroupService( rockContext ).Add( knownRelationshipGroup );
-            //    rockContext.SaveChanges();
-            //    knownRelationshipGroupId = knownRelationshipGroup.Id;
-            //}
+                new GroupService( rockContext ).Add( knownRelationshipGroup );
+                rockContext.SaveChanges();
+                knownRelationshipGroupId = knownRelationshipGroup.Id;
+            }
 
-            //// Add relationships
-            //var relationshipMember = groupMemberService.Queryable( true )
-            //    .FirstOrDefault( m =>
-            //        m.GroupId == knownRelationshipGroupId.Value &&
-            //        m.PersonId == relatedPersonId &&
-            //        m.GroupRoleId == relationshipRoleId );
+            // Add relationships
+            var relationshipMember = groupMemberService.Queryable( true )
+                .FirstOrDefault( m =>
+                    m.GroupId == knownRelationshipGroupId.Value &&
+                    m.PersonId == relatedPersonId &&
+                    m.GroupRoleId == relationshipRoleId );
 
-            //if ( relationshipMember == null )
-            //{
-            //    relationshipMember = new GroupMember();
-            //    relationshipMember.GroupId = knownRelationshipGroupId.Value;
-            //    relationshipMember.PersonId = relatedPersonId;
-            //    relationshipMember.GroupRoleId = relationshipRoleId;
-            //    groupMemberService.Add( relationshipMember );
-            //    rockContext.SaveChanges();
-            //}
+            if ( relationshipMember == null )
+            {
+                relationshipMember = new GroupMember();
+                relationshipMember.GroupId = knownRelationshipGroupId.Value;
+                relationshipMember.PersonId = relatedPersonId;
+                relationshipMember.GroupRoleId = relationshipRoleId;
+                groupMemberService.Add( relationshipMember );
+                rockContext.SaveChanges();
+            }
 
-            //var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
-            //if ( inverseGroupMember != null && inverseGroupMember.Id <= 0 )
-            //{
-            //    rockContext.SaveChanges();
-            //}
+            var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
+            if ( inverseGroupMember != null && inverseGroupMember.Id <= 0 )
+            {
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -684,45 +686,45 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
-        //public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
-        //{
-        //    var groupMemberService = this;
-        //    var rockContext = this.Context as RockContext;
+        public IQueryable<GroupMember> GetKnownRelationship( int personId, int relationshipRoleId )
+        {
+            var groupMemberService = this;
+            var rockContext = this.Context as RockContext;
 
-        //    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-        //    var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
-        //    var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
-        //    if ( ownerRole == null )
-        //    {
-        //        throw new Exception( "Unable to find known relationships owner role" );
-        //    }
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+            var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+            if ( ownerRole == null )
+            {
+                throw new Exception( "Unable to find known relationships owner role" );
+            }
 
-        //    if ( relationshipRole == null )
-        //    {
-        //        throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
-        //    }
+            if ( relationshipRole == null )
+            {
+                throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
+            }
 
-        //    // find the personId's "known relationship" group
-        //    int? knownRelationshipGroupId = groupMemberService.Queryable( true )
-        //        .Where( m =>
-        //            m.PersonId == personId &&
-        //            m.GroupRoleId == ownerRole.Id )
-        //        .Select( m => m.GroupId )
-        //        .FirstOrDefault();
+            // find the personId's "known relationship" group
+            int? knownRelationshipGroupId = groupMemberService.Queryable( true )
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRoleId == ownerRole.Id )
+                .Select( m => m.GroupId )
+                .FirstOrDefault();
 
-        //    // if there was a known relationship group found
-        //    IQueryable<GroupMember> groupMembers = null;
-        //    if ( knownRelationshipGroupId.HasValue )
-        //    {
-        //        // take everyone that has the specified relationship role.
-        //        groupMembers = groupMemberService.Queryable()
-        //           .Where( gm =>
-        //              gm.GroupId == knownRelationshipGroupId &&
-        //              gm.GroupRoleId == relationshipRoleId );
-        //    }
+            // if there was a known relationship group found
+            IQueryable<GroupMember> groupMembers = null;
+            if ( knownRelationshipGroupId.HasValue )
+            {
+                // take everyone that has the specified relationship role.
+                groupMembers = groupMemberService.Queryable()
+                   .Where( gm =>
+                      gm.GroupId == knownRelationshipGroupId &&
+                      gm.GroupRoleId == relationshipRoleId );
+            }
 
-        //    return groupMembers;
-        //}
+            return groupMembers;
+        }
 
         /// <summary>
         /// Deletes the known relationship.
@@ -730,56 +732,56 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="relatedPersonId">The related person identifier.</param>
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
-        //public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
-        //{
-        //    var groupMemberService = this;
-        //    var rockContext = this.Context as RockContext;
+        public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
+        {
+            var groupMemberService = this;
+            var rockContext = this.Context as RockContext;
 
-        //    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
-        //    var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
-        //    var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
-        //    if ( ownerRole == null )
-        //    {
-        //        throw new Exception( "Unable to find known relationships owner role" );
-        //    }
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
+            var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+            if ( ownerRole == null )
+            {
+                throw new Exception( "Unable to find known relationships owner role" );
+            }
 
-        //    if ( relationshipRole == null )
-        //    {
-        //        throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
-        //    }
+            if ( relationshipRole == null )
+            {
+                throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
+            }
 
-        //    var knownRelationshipGroup = groupMemberService.Queryable()
-        //        .Where( m =>
-        //            m.PersonId == personId &&
-        //            m.GroupRole.Guid.Equals( ownerRole.Guid ) )
-        //        .Select( m => m.Group )
-        //        .FirstOrDefault();
+            var knownRelationshipGroup = groupMemberService.Queryable()
+                .Where( m =>
+                    m.PersonId == personId &&
+                    m.GroupRole.Guid.Equals( ownerRole.Guid ) )
+                .Select( m => m.Group )
+                .FirstOrDefault();
 
-        //    if ( knownRelationshipGroup == null )
-        //    {
-        //        // no group, so it doesn't exist
-        //        return;
-        //    }
+            if ( knownRelationshipGroup == null )
+            {
+                // no group, so it doesn't exist
+                return;
+            }
 
-        //    // lookup the relationship to delete
-        //    var relationshipMember = groupMemberService.Queryable( true )
-        //        .FirstOrDefault( m =>
-        //            m.GroupId == knownRelationshipGroup.Id &&
-        //            m.PersonId == relatedPersonId &&
-        //            m.GroupRoleId == relationshipRoleId );
+            // lookup the relationship to delete
+            var relationshipMember = groupMemberService.Queryable( true )
+                .FirstOrDefault( m =>
+                    m.GroupId == knownRelationshipGroup.Id &&
+                    m.PersonId == relatedPersonId &&
+                    m.GroupRoleId == relationshipRoleId );
 
-        //    if ( relationshipMember != null )
-        //    {
-        //        var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
-        //        if ( inverseGroupMember != null )
-        //        {
-        //            groupMemberService.Delete( inverseGroupMember );
-        //        }
+            if ( relationshipMember != null )
+            {
+                var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
+                if ( inverseGroupMember != null )
+                {
+                    groupMemberService.Delete( inverseGroupMember );
+                }
 
-        //        groupMemberService.Delete( relationshipMember );
-        //        rockContext.SaveChanges();
-        //    }
-        //}
+                groupMemberService.Delete( relationshipMember );
+                rockContext.SaveChanges();
+            }
+        }
 
         /// <summary>
         /// Reorders the group member group.

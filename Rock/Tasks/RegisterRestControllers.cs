@@ -34,7 +34,7 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            //RestControllerService.RegisterControllers();
+            RestControllerService.RegisterControllers();
         }
 
         /// <summary>

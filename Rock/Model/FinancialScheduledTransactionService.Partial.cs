@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Text;
 
@@ -45,7 +49,11 @@ namespace Rock.Model
         /// </returns>
         public IQueryable<FinancialScheduledTransaction> Get( int? personId, int? givingGroupId, bool includeInactive )
         {
+#if NET5_0_OR_GREATER
+            IQueryable<FinancialScheduledTransaction> qry = Queryable()
+#else
             var qry = Queryable()
+#endif
                 .Include( a => a.ScheduledTransactionDetails )
                 .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
                 .Include( a => a.FinancialPaymentDetail.CreditCardTypeValue );

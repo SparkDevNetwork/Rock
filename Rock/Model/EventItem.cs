@@ -239,52 +239,52 @@ namespace Rock.Model
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
         /// <returns>A list of all inherited AttributeCache objects.</returns>
-        //public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        //{
-        //    var calendarIds = this.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
-        //    if ( !calendarIds.Any() )
-        //    {
-        //        return null;
-        //    }
+        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
+        {
+            var calendarIds = this.EventCalendarItems.Select( c => c.EventCalendarId ).ToList();
+            if ( !calendarIds.Any() )
+            {
+                return null;
+            }
 
-        //    var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
-        //    calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<AttributeCache>() ) );
+            var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
+            calendarIds.ForEach( c => inheritedAttributes.Add( c, new List<AttributeCache>() ) );
 
-        //    //
-        //    // Check for any calendar item attributes that the event item inherits.
-        //    //
-        //    var calendarItemEntityType = EntityTypeCache.Get( typeof( EventCalendarItem ) );
-        //    if ( calendarItemEntityType != null )
-        //    {
-        //        foreach ( var calendarItemEntityAttributes in AttributeCache
-        //            .GetByEntity( calendarItemEntityType.Id )
-        //            .Where( a =>
-        //                a.EntityTypeQualifierColumn == "EventCalendarId" &&
-        //                calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
-        //        {
-        //            foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
-        //            {
-        //                inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
-        //                    AttributeCache.Get( attributeId ) );
-        //            }
-        //        }
-        //    }
+            //
+            // Check for any calendar item attributes that the event item inherits.
+            //
+            var calendarItemEntityType = EntityTypeCache.Get( typeof( EventCalendarItem ) );
+            if ( calendarItemEntityType != null )
+            {
+                foreach ( var calendarItemEntityAttributes in AttributeCache
+                    .GetByEntity( calendarItemEntityType.Id )
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "EventCalendarId" &&
+                        calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
+                {
+                    foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
+                    {
+                        inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
+                            AttributeCache.Get( attributeId ) );
+                    }
+                }
+            }
 
-        //    //
-        //    // Walk the generated list of attribute groups and put them, ordered, into a list
-        //    // of inherited attributes.
-        //    //
-        //    var attributes = new List<AttributeCache>();
-        //    foreach ( var attributeGroup in inheritedAttributes )
-        //    {
-        //        foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
-        //        {
-        //            attributes.Add( attribute );
-        //        }
-        //    }
+            //
+            // Walk the generated list of attribute groups and put them, ordered, into a list
+            // of inherited attributes.
+            //
+            var attributes = new List<AttributeCache>();
+            foreach ( var attributeGroup in inheritedAttributes )
+            {
+                foreach ( var attribute in attributeGroup.Value.OrderBy( a => a.Order ) )
+                {
+                    attributes.Add( attribute );
+                }
+            }
 
-        //    return attributes;
-        //}
+            return attributes;
+        }
 
         /// <summary>
         /// Get any alternate Ids that should be used when loading attribute value for this entity.

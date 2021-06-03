@@ -133,8 +133,12 @@ namespace Rock.Storage.Provider
                 return string.Empty;
             }
 
+#if NET5_0_OR_GREATER
+            return relativePath;
+#else
             // allows a fallback for non-IIS environments
             return System.Web.Hosting.HostingEnvironment.MapPath( relativePath ) ?? relativePath;
+#endif
         }
 
         /// <summary>

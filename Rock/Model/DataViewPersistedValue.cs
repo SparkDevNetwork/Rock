@@ -41,7 +41,9 @@ namespace Rock.Model
         /// The data view identifier.
         /// </value>
         [DataMember]
-        //[Key]
+#if !NET5_0_OR_GREATER
+        [Key]
+#endif
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int DataViewId { get; set; }
 
@@ -52,7 +54,9 @@ namespace Rock.Model
         /// The entity identifier.
         /// </value>
         [DataMember]
-        //[Key]
+#if !NET5_0_OR_GREATER
+        [Key]
+#endif
         [DatabaseGenerated( DatabaseGeneratedOption.None )]
         public int EntityId { get; set; }
 

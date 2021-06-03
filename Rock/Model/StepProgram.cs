@@ -18,11 +18,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -32,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepProgram" )]
     [DataContract]
-    public partial class StepProgram : Model<StepProgram>, IOrdered, IHasActiveFlag/*, ICacheable*/
+    public partial class StepProgram : Model<StepProgram>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants
 
@@ -105,20 +109,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return StepProgramCache.Get( Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return StepProgramCache.Get( Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    StepProgramCache.UpdateCachedEntity( Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StepProgramCache.UpdateCachedEntity( Id, entityState );
+        }
 
         #endregion ICacheable
 

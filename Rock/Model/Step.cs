@@ -20,8 +20,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#if NET5_0_OR_GREATER
 using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
+using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EFEntityState = System.Data.Entity.EntityState;
+using System.Data.Entity.Infrastructure;
+#endif
 
 using System.Runtime.Serialization;
 using Rock.Data;

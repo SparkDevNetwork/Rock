@@ -30,8 +30,6 @@ namespace Rock.Model
     /// <summary>
     /// SystemEmail Service class
     /// </summary>
-    [Obsolete( "Use SystemCommunicationService instead." )]
-    [RockObsolete( "1.10" )]
     public partial class SystemEmailService : Service<SystemEmail>
     {
         /// <summary>
@@ -96,8 +94,6 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    [Obsolete( "Use SystemCommunication instead." )]
-    [RockObsolete( "1.10" )]
     public static partial class SystemEmailExtensionMethods
     {
         /// <summary>

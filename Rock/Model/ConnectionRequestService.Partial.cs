@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using Rock.Data;
 using Rock.Lava;
@@ -854,11 +858,13 @@ namespace Rock.Model
                 viewModel.IsUnassigned
             };
 
+#if !NET5_0_OR_GREATER
             if ( LavaService.RockLiquidIsEnabled )
             {
                 mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
             }
             else
+#endif
             {
                 mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
             }

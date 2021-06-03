@@ -18,7 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Reflection;
 
@@ -65,7 +69,11 @@ WHERE o.type = 'V'
             // This could happen if Metric.EnableAnalytics changed from True to False, Metric Title changed, or if a Metric was deleted.
             foreach ( var orphanedView in orphanedDatabaseViews )
             {
+#if NET5_0_OR_GREATER
+                this.Context.Database.ExecuteSqlRaw( $"DROP VIEW [{orphanedView.ViewName}]" );
+#else
                 this.Context.Database.ExecuteSqlCommand( $"DROP VIEW [{orphanedView.ViewName}]" );
+#endif
             }
 
             // Make sure that each Metric with EnableAnalytics=True has a SQL View and that the View Definition is correct
@@ -159,19 +167,32 @@ FROM (
                         if ( databaseViewDefinition.ViewDefinition != viewDefinition )
                         {
                             // view already exists, but something has changed, so drop and recreate it
+#if NET5_0_OR_GREATER
+                            this.Context.Database.ExecuteSqlRaw( $"DROP VIEW [{metricViewName}]" );
+                            this.Context.Database.ExecuteSqlRaw( viewDefinition );
+#else
                             this.Context.Database.ExecuteSqlCommand( $"DROP VIEW [{metricViewName}]" );
                             this.Context.Database.ExecuteSqlCommand( viewDefinition );
+#endif
                         }
                     }
                     else
                     {
+#if NET5_0_OR_GREATER
+                        this.Context.Database.ExecuteSqlRaw( viewDefinition );
+#else
                         this.Context.Database.ExecuteSqlCommand( viewDefinition );
+#endif
                     }
                 }
                 catch ( Exception ex )
                 {
                     // silently log the exception
+#if NET5_0_OR_GREATER
+                    ExceptionLogService.LogException( new Exception( "Error creating Analytics view for " + metric.Title, ex ) );
+#else
                     ExceptionLogService.LogException( new Exception("Error creating Analytics view for " + metric.Title, ex), System.Web.HttpContext.Current );
+#endif
                 }
             }
         }

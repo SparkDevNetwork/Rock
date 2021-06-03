@@ -41,7 +41,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_GroupIdGroupTypeRoleId", 0, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_GroupIdGroupTypeRoleId", 0, IsUnique = true )]
+#endif
         public int GroupId { get; set; }
 
         /// <summary>
@@ -52,7 +54,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_GroupIdGroupTypeRoleId", 1, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_GroupIdGroupTypeRoleId", 1, IsUnique = true )]
+#endif
         public int GroupTypeRoleId { get; set; }
 
         /// <summary>

@@ -82,21 +82,21 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void SetPassword( UserLogin user, string password )
         {
-            //var entityType = EntityTypeCache.Get( user.EntityTypeId ?? 0 );
+            var entityType = EntityTypeCache.Get( user.EntityTypeId ?? 0 );
 
-            //var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
-            //if ( authenticationComponent == null || !authenticationComponent.IsActive )
-            //{
-            //    throw new Exception( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ) );
-            //}
+            var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+            if ( authenticationComponent == null || !authenticationComponent.IsActive )
+            {
+                throw new Exception( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ) );
+            }
 
-            //if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
-            //{
-            //    throw new Exception( "Cannot change password on external service type" );
-            //}
+            if ( authenticationComponent.ServiceType == AuthenticationServiceType.External )
+            {
+                throw new Exception( "Cannot change password on external service type" );
+            }
 
-            //authenticationComponent.SetPassword( user, password );
-            //user.LastPasswordChangedDateTime = RockDateTime.Now;
+            authenticationComponent.SetPassword( user, password );
+            user.LastPasswordChangedDateTime = RockDateTime.Now;
         }
 
         /// <summary>
@@ -198,10 +198,12 @@ namespace Rock.Model
 
                         if ( ( user.IsConfirmed ?? true ) && !( user.IsLockedOut ?? false ) )
                         {
-                            //if ( HttpContext.Current != null && HttpContext.Current.Session != null )
-                            //{
-                            //    HttpContext.Current.Session["RockUserId"] = user.Id;
-                            //}
+#if !NET5_0_OR_GREATER
+                            if ( HttpContext.Current != null && HttpContext.Current.Session != null )
+                            {
+                                HttpContext.Current.Session["RockUserId"] = user.Id;
+                            }
+#endif
 
                             message.Send();
                         }
@@ -210,7 +212,7 @@ namespace Rock.Model
                             message.IsOnline = false;
                             message.Send();
 
-                            //Authorization.SignOut();
+                            Authorization.SignOut();
                             return null;
                         }
                     }
@@ -362,13 +364,13 @@ namespace Rock.Model
 
                     if ( serviceType == AuthenticationServiceType.Internal )
                     {
-                        //var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
-                        //if ( authenticationComponent == null || !authenticationComponent.IsActive )
-                        //{
-                        //    throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
-                        //}
+                        var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
+                        if ( authenticationComponent == null || !authenticationComponent.IsActive )
+                        {
+                            throw new ArgumentException( string.Format( "'{0}' service does not exist, or is not active", entityType.FriendlyName ), "entityTypeId" );
+                        }
 
-                        //user.Password = authenticationComponent.EncodePassword( user, password );
+                        user.Password = authenticationComponent.EncodePassword( user, password );
                     }
 
                     userLoginService.Add( user );
@@ -463,41 +465,47 @@ namespace Rock.Model
 
             if ( impersonated )
             {
-                //var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
+#if NET5_0_OR_GREATER
+                var impersonatedByUser = null as UserLogin;
+#else
+                var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
+#endif
 
-                //relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
-                //relatedEntityId = impersonatedByUser?.PersonId;
+                relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+                relatedEntityId = impersonatedByUser?.PersonId;
 
-                //if ( impersonatedByUser != null )
-                //{
-                //    relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
-                //}
+                if ( impersonatedByUser != null )
+                {
+                    relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
+                }
             }
 
-            //if ( HttpContext.Current != null && HttpContext.Current.Request != null )
-            //{
-            //    string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
+#if !NET5_0_OR_GREATER
+            if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+            {
+                string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
 
-            //    // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
-            //    Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
-            //    cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+                // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
+                Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
+                cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 
-            //    string clientIPAddress;
-            //    try
-            //    {
-            //        clientIPAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
-            //    }
-            //    catch
-            //    {
-            //        // if we get an exception getting the IP Address, just ignore it
-            //        clientIPAddress = "";
-            //    }
+                string clientIPAddress;
+                try
+                {
+                    clientIPAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
+                }
+                catch
+                {
+                    // if we get an exception getting the IP Address, just ignore it
+                    clientIPAddress = "";
+                }
 
-            //    relatedDataBuilder.AppendFormat(
-            //        " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-            //        cleanUrl,
-            //        clientIPAddress );
-            //}
+                relatedDataBuilder.AppendFormat(
+                    " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                    cleanUrl,
+                    clientIPAddress );
+            }
+#endif
 
             var historyChangeList = new History.HistoryChangeList();
             var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );

@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using NetTopologySuite.Geometries;
+#if NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
+#else
+using System.Data.Entity.Spatial;
+#endif
 
 namespace Rock.Data
 {

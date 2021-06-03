@@ -341,7 +341,7 @@ namespace Rock.Model
 #endif
         {
             int? personAliasId = null;
-            if ( personAlias != null )
+            if (personAlias != null)
             {
                 personAliasId = personAlias.Id;
             }
@@ -350,29 +350,29 @@ namespace Rock.Model
             if ( ex is System.Data.SqlClient.SqlException )
             {
                 var sqlEx = ex as System.Data.SqlClient.SqlException;
-                var sqlErrorList = sqlEx.Errors.OfType<System.Data.SqlClient.SqlError>().ToList().Select( a => string.Format( "{0}: Line {1}", a.Procedure, a.LineNumber ) );
+                var sqlErrorList = sqlEx.Errors.OfType<System.Data.SqlClient.SqlError>().ToList().Select(a => string.Format("{0}: Line {1}", a.Procedure, a.LineNumber));
                 if ( sqlErrorList.Any() )
                 {
-                    exceptionMessage += string.Format( "[{0}]", sqlErrorList.ToList().AsDelimited( ", " ) );
+                    exceptionMessage += string.Format( "[{0}]", sqlErrorList.ToList().AsDelimited( ", ") );
                 }
             }
 
             var exceptionLog = new ExceptionLog
-            {
-                SiteId = siteId,
-                PageId = pageId,
-                HasInnerException = ex.InnerException != null,
-                ExceptionType = ex.GetType().ToString(),
-                Description = exceptionMessage,
-                Source = ex.Source,
-                StackTrace = ex.StackTrace,
-                Guid = Guid.NewGuid(),
-                CreatedByPersonAliasId = personAliasId,
-                ModifiedByPersonAliasId = personAliasId,
-                CreatedDateTime = RockDateTime.Now,
-                ModifiedDateTime = RockDateTime.Now,
-                ModifiedAuditValuesAlreadyUpdated = true
-            };
+                {
+                    SiteId = siteId,
+                    PageId = pageId,
+                    HasInnerException = ex.InnerException != null,
+                    ExceptionType = ex.GetType().ToString(),
+                    Description = exceptionMessage,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace,
+                    Guid = Guid.NewGuid(),
+                    CreatedByPersonAliasId = personAliasId,
+                    ModifiedByPersonAliasId = personAliasId,
+                    CreatedDateTime = RockDateTime.Now,
+                    ModifiedDateTime = RockDateTime.Now,
+                    ModifiedAuditValuesAlreadyUpdated = true
+                };
 
             if ( exceptionLog.StackTrace == null )
             {
@@ -399,85 +399,87 @@ namespace Rock.Model
                     return exceptionLog;
                 }
 
+#if !NET5_0_OR_GREATER
                 // If current HttpContext is available, populate its information as well.
-                //var request = context.Request;
+                var request = context.Request;
 
                 StringBuilder cookies = new StringBuilder();
-                //var cookieList = request.Cookies;
+                var cookieList = request.Cookies;
 
-                //if ( cookieList.Count > 0 )
-                //{
-                //    cookies.Append( "<table class=\"cookies exception-table\">" );
+                if ( cookieList.Count > 0 )
+                {
+                    cookies.Append( "<table class=\"cookies exception-table\">" );
 
-                //    foreach ( string cookie in cookieList )
-                //    {
-                //        var httpCookie = cookieList[cookie];
-                //        if ( httpCookie != null )
-                //            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value.EncodeHtml() + "</td></tr>" );
-                //    }
+                    foreach ( string cookie in cookieList )
+                    {
+                        var httpCookie = cookieList[cookie];
+                        if ( httpCookie != null )
+                            cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value.EncodeHtml() + "</td></tr>" );
+                    }
 
-                //    cookies.Append( "</table>" );
-                //}
+                    cookies.Append( "</table>" );
+                }
 
                 StringBuilder formItems = new StringBuilder();
-                //var formList = request.Form;
+                var formList = request.Form;
 
-                //if ( formList.Count > 0 )
-                //{
-                //    formItems.Append( "<table class=\"form-items exception-table\">" );
-                //    foreach ( string formItem in formList )
-                //    {
-                //        if ( formItem.IsNotNullOrWhiteSpace() )
-                //        {
-                //            string formValue = formList[formItem].EncodeHtml();
-                //            string lc = formItem.ToLower();
-                //            if ( IsKeySensitive( lc ) )
-                //            {
-                //                formValue = "***obfuscated***";
-                //            }
-                //            formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formValue + "</td></tr>" );
-                //        }
-                //    }
-                //    formItems.Append( "</table>" );
-                //}
+                if ( formList.Count > 0 )
+                {
+                    formItems.Append( "<table class=\"form-items exception-table\">" );
+                    foreach ( string formItem in formList )
+                    {
+                        if ( formItem.IsNotNullOrWhiteSpace() )
+                        {
+                            string formValue = formList[formItem].EncodeHtml();
+                            string lc = formItem.ToLower();
+                            if ( IsKeySensitive( lc ) )
+                            {
+                                formValue = "***obfuscated***";
+                            }
+                            formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formValue + "</td></tr>" );
+                        }
+                    }
+                    formItems.Append( "</table>" );
+                }
 
                 StringBuilder serverVars = new StringBuilder();
 
                 // 'serverVarList[serverVar]' throws an exception if the value is empty, even if the key exists,
                 // so make a copy of the request server variables to help avoid that error
-                //var serverVarList = new NameValueCollection( request.ServerVariables );
-                //var serverVarListString = serverVarList.ToString();
+                var serverVarList = new NameValueCollection( request.ServerVariables );
+                var serverVarListString = serverVarList.ToString();
 
-                //var serverVarKeys = request.ServerVariables.AllKeys;
+                var serverVarKeys = request.ServerVariables.AllKeys;
 
-                //if ( serverVarList.Count > 0 )
-                //{
-                //    serverVars.Append( "<table class=\"server-variables exception-table\">" );
+                if ( serverVarList.Count > 0 )
+                {
+                    serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
-                //    foreach ( string serverVar in serverVarList )
-                //    {
-                //        string val = string.Empty;
-                //        try
-                //        {
-                //            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
-                //        }
-                //        catch
-                //        {
-                //            // ignore
-                //        }
+                    foreach ( string serverVar in serverVarList )
+                    {
+                        string val = string.Empty;
+                        try
+                        {
+                            val = serverVarList[serverVar].ToStringSafe().EncodeHtml();
+                        }
+                        catch
+                        {
+                            // ignore
+                        }
 
-                //        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
-                //    }
+                        serverVars.Append( $"<tr><td><b>{serverVar}</b></td><td>{val}</td></tr>" );
+                    }
 
-                //    serverVars.Append( "</table>" );
-                //}
+                    serverVars.Append( "</table>" );
+                }
 
                 exceptionLog.Cookies = cookies.ToString();
-                //exceptionLog.StatusCode = context.Response.StatusCode.ToString();
-                //exceptionLog.PageUrl = request.Url.ToString();
+                exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+                exceptionLog.PageUrl = request.Url.ToString();
                 exceptionLog.ServerVariables = serverVars.ToString();
-                //exceptionLog.QueryString = request.Url.Query;
+                exceptionLog.QueryString = request.Url.Query;
                 exceptionLog.Form = formItems.ToString();
+#endif
             }
             catch { }
 
@@ -544,50 +546,52 @@ namespace Rock.Model
                     return exceptionLog;
                 }
 
+#if !NET5_0_OR_GREATER
                 StringBuilder cookies = new StringBuilder();
-                //var cookieList = request.Headers.GetCookies();
+                var cookieList = request.Headers.GetCookies();
 
-                //if ( cookieList.Count > 0 )
-                //{
-                //    cookies.Append( "<table class=\"cookies exception-table\">" );
+                if ( cookieList.Count > 0 )
+                {
+                    cookies.Append( "<table class=\"cookies exception-table\">" );
 
-                //    foreach ( var cookieHeaderValue in cookieList )
-                //    {
-                //        foreach ( var cookie in cookieHeaderValue.Cookies )
-                //        {
-                //            cookies.Append( "<tr><td><b>" + cookie.Name + "</b></td><td>" + cookie.Value.EncodeHtml() + "</td></tr>" );
-                //        }
-                //    }
+                    foreach ( var cookieHeaderValue in cookieList )
+                    {
+                        foreach ( var cookie in cookieHeaderValue.Cookies )
+                        {
+                            cookies.Append( "<tr><td><b>" + cookie.Name + "</b></td><td>" + cookie.Value.EncodeHtml() + "</td></tr>" );
+                        }
+                    }
 
-                //    cookies.Append( "</table>" );
-                //}
+                    cookies.Append( "</table>" );
+                }
 
                 //
                 // Check query string parameters for sensitive data.
                 //
                 string queryString = null;
-                //var queryCollection = request.RequestUri.ParseQueryString();
-                //if ( queryCollection.Count > 0 )
-                //{
-                //    var nvc = new NameValueCollection();
-                //    foreach ( string qKey in queryCollection.Keys )
-                //    {
-                //        if ( IsKeySensitive( qKey.ToLower() ) )
-                //        {
-                //            nvc.Add( qKey, "obfuscated" );
-                //        }
-                //        else
-                //        {
-                //            nvc.Add( qKey, queryCollection[qKey] );
-                //        }
-                //    }
+                var queryCollection = request.RequestUri.ParseQueryString();
+                if ( queryCollection.Count > 0 )
+                {
+                    var nvc = new NameValueCollection();
+                    foreach ( string qKey in queryCollection.Keys )
+                    {
+                        if ( IsKeySensitive( qKey.ToLower() ) )
+                        {
+                            nvc.Add( qKey, "obfuscated" );
+                        }
+                        else
+                        {
+                            nvc.Add( qKey, queryCollection[qKey] );
+                        }
+                    }
 
-                //    queryString = "?" + String.Join( "&", nvc.AllKeys.Select( a => a.UrlEncode() + "=" + nvc[a].UrlEncode() ) );
-                //}
+                    queryString = "?" + String.Join( "&", nvc.AllKeys.Select( a => a.UrlEncode() + "=" + nvc[a].UrlEncode() ) );
+                }
 
                 exceptionLog.Cookies = cookies.ToString();
                 exceptionLog.PageUrl = request.RequestUri.GetLeftPart( UriPartial.Path );
                 exceptionLog.QueryString = queryString;
+#endif
             }
             catch { }
 

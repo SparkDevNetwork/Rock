@@ -23,6 +23,12 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Extension;
 
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+#endif
+
 namespace Rock.Reporting
 {
     /// <summary>
@@ -131,6 +137,7 @@ namespace Rock.Reporting
 
         #region Public Methods
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -142,6 +149,7 @@ namespace Rock.Reporting
             BoundField result = Rock.Web.UI.Controls.Grid.GetGridField( this.ColumnFieldType );
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the title of the DataSelectComponent.
@@ -155,6 +163,7 @@ namespace Rock.Reporting
             return this.ColumnPropertyName;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -219,6 +228,7 @@ namespace Rock.Reporting
 
             return values;
         }
+#endif
 
         /// <summary>
         /// Gets the attribute value from selection.
@@ -246,6 +256,7 @@ namespace Rock.Reporting
             return string.Empty;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Sets the attributes selection values.
         /// </summary>
@@ -298,6 +309,7 @@ namespace Rock.Reporting
         {
             SetAttributesSelectionValues( controls, selection );
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -316,7 +328,7 @@ namespace Rock.Reporting
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( System.Data.Entity.DbContext context, MemberExpression entityIdProperty, string selection )
+        public virtual Expression GetExpression( EFDbContext context, MemberExpression entityIdProperty, string selection )
         {
             return GetExpression( context as RockContext, entityIdProperty, selection );
         }

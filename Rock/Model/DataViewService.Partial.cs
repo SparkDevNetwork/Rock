@@ -16,12 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Linq;
 
 using Rock.Data;
 using Rock.Logging;
-//using Rock.Reporting.DataFilter;
+using Rock.Reporting.DataFilter;
 using Rock.Tasks;
 using Rock.Web.Cache;
 
@@ -60,16 +64,16 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dataViewId">The data view identifier.</param>
         /// <returns></returns>
-        //public List<int> GetIds( int dataViewId )
-        //{
-        //    var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
-        //    var dataViewGetQueryArgs = new DataViewGetQueryArgs
-        //    {
-        //        DatabaseTimeoutSeconds = 180,
-        //    };
+        public List<int> GetIds( int dataViewId )
+        {
+            var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DatabaseTimeoutSeconds = 180,
+            };
 
-        //    return dataView.GetQuery( dataViewGetQueryArgs ).Select( a => a.Id ).ToList();
-        //}
+            return dataView.GetQuery( dataViewGetQueryArgs ).Select( a => a.Id ).ToList();
+        }
 
         /// <summary>
         /// Determines whether the specified Data View forms part of a filter.
@@ -79,11 +83,11 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if the specified Data View forms part of the conditions for the specified filter.
         /// </returns>
-        //public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
-        //{
-        //    var dataView = Get( dataViewId );
-        //    return IsViewInFilter( dataView, filter );
-        //}
+        public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
+        {
+            var dataView = Get( dataViewId );
+            return IsViewInFilter( dataView, filter );
+        }
 
         /// <summary>
         /// Determines whether [is view in filter] [the specified data view].
@@ -93,44 +97,44 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if [is view in filter] [the specified data view]; otherwise, <c>false</c>.
         /// </returns>
-        //public static bool IsViewInFilter( DataView dataView, DataViewFilter filter )
-        //{
-        //    if ( filter.EntityTypeId.HasValue )
-        //    {
-        //        var entityType = EntityTypeCache.Get( filter.EntityTypeId.Value );
-        //        var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-        //        if ( component is OtherDataViewFilter otherDataViewFilter )
-        //        {
-        //            var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
-        //            if ( otherDataView == null )
-        //            {
-        //                return false;
-        //            }
+        public static bool IsViewInFilter( DataView dataView, DataViewFilter filter )
+        {
+            if ( filter.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( filter.EntityTypeId.Value );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                if ( component is OtherDataViewFilter otherDataViewFilter )
+                {
+                    var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
+                    if ( otherDataView == null )
+                    {
+                        return false;
+                    }
 
-        //            if ( otherDataView.Id == dataView.Id )
-        //            {
-        //                // if we discover that this DataView is also used in one of its child views, we've got infinite recursion
-        //                return true;
-        //            }
-        //            else
-        //            {
-        //                // dig down recursively thru the *other* DataView's child filters to see if any of it's child filters is using this dataview
-        //                return IsViewInFilter( dataView, otherDataView.DataViewFilter );
-        //            }
-        //        }
-        //    }
+                    if ( otherDataView.Id == dataView.Id )
+                    {
+                        // if we discover that this DataView is also used in one of its child views, we've got infinite recursion
+                        return true;
+                    }
+                    else
+                    {
+                        // dig down recursively thru the *other* DataView's child filters to see if any of it's child filters is using this dataview
+                        return IsViewInFilter( dataView, otherDataView.DataViewFilter );
+                    }
+                }
+            }
 
-        //    foreach ( var childFilter in filter.ChildFilters )
-        //    {
-        //        // dig down recursively thru *this* DataView's child filters 
-        //        if ( IsViewInFilter( dataView, childFilter ) )
-        //        {
-        //            return true;
-        //        }
-        //    }
+            foreach ( var childFilter in filter.ChildFilters )
+            {
+                // dig down recursively thru *this* DataView's child filters 
+                if ( IsViewInFilter( dataView, childFilter ) )
+                {
+                    return true;
+                }
+            }
 
-        //    return false;
-        //}
+            return false;
+        }
 
         /// <summary>
         /// Create a new non-persisted Data View using an existing Data View as a template. 

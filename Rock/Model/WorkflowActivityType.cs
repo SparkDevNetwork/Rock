@@ -18,7 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -34,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActivityType" )]
     [DataContract]
-    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered/*, ICacheable*/
+    public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -130,13 +134,13 @@ namespace Rock.Model
         /// <value>
         /// An entity object implementing the  <see cref="Security.ISecured"/> interface, representing the parent security authority.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.WorkflowType != null ? this.WorkflowType : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.WorkflowType != null ? this.WorkflowType : base.ParentAuthority;
+            }
+        }
 
         #endregion
 
@@ -161,21 +165,21 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return WorkflowActivityTypeCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActivityTypeCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        //{
-        //    WorkflowTypeCache.UpdateCachedEntity( this.WorkflowTypeId, EntityState.Modified );
-        //    WorkflowActivityTypeCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            WorkflowTypeCache.UpdateCachedEntity( this.WorkflowTypeId, EntityState.Modified );
+            WorkflowActivityTypeCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 

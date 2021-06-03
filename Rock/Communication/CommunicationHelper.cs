@@ -67,6 +67,9 @@ namespace Rock.Communication
 
         private static CreateMessageResult CreateSmsMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication )
         {
+#if NET5_0_OR_GREATER
+            throw new System.NotImplementedException();
+#else
             var isSmsEnabled = MediumContainer.HasActiveSmsTransport() && !string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
             var createMessageResult = new CreateMessageResult();
             var smsNumber = person.PhoneNumbers.GetFirstSmsNumber();
@@ -91,6 +94,7 @@ namespace Rock.Communication
             message.SetRecipients( recipients );
             createMessageResult.Message = message;
             return createMessageResult;
+#endif
         }
 
         private static CreateMessageResult CreateEmailMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication )

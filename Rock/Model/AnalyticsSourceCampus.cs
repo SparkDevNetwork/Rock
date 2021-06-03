@@ -61,7 +61,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [MaxLength( 100 )]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
 

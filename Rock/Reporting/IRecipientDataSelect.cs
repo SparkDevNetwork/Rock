@@ -17,6 +17,12 @@
 using System;
 using System.Linq.Expressions;
 
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+#endif
+
 namespace Rock.Reporting
 {
     /// <summary>
@@ -39,6 +45,6 @@ namespace Rock.Reporting
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext context, MemberExpression entityIdProperty, string selection );
+        Expression GetRecipientPersonIdExpression( EFDbContext context, MemberExpression entityIdProperty, string selection );
     }
 }

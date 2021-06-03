@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -34,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
-    public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered/*, ICacheable*/
+    public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -176,24 +180,24 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    // doesn't apply
-        //    return null;
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply
+            return null;
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        //{
-        //    if ( this.GroupTypeId.HasValue )
-        //    {
-        //        GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
-        //    }
-        //}
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            if ( this.GroupTypeId.HasValue )
+            {
+                GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
+            }
+        }
 
         #endregion
 

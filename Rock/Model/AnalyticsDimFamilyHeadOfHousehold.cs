@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
+#endif
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -34,6 +36,7 @@ namespace Rock.Model
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 
+#if NET5_0_OR_GREATER
     public partial class AnalyticsDimFamilyHeadOfHouseholdConfiguration : EntityTypeConfiguration<AnalyticsDimFamilyHeadOfHousehold>
     {
         /// <summary>
@@ -49,4 +52,5 @@ namespace Rock.Model
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Restrict );
         }
     }
+#endif
 }

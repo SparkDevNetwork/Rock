@@ -19,8 +19,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -248,7 +253,11 @@ namespace Rock.Model
             get
             {
                 // only get notes they have auth to VIEW ( note that VIEW has special rules based on approval status, etc. See Note.IsAuthorized for details )
+#if NET5_0_OR_GREATER
+                Person currentPerson = null;
+#else
                 var currentPerson = null/*System.Web.HttpContext.Current?.Items["CurrentPerson"]*/ as Person;
+#endif
 
                 var viewableChildNotes = ChildNotes.ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ).ToList();
 
@@ -349,7 +358,7 @@ namespace Rock.Model
 
                 var mergeFields = new Dictionary<string, object> { { "Note", this } };
 
-                string approvalUrl = string.Empty/*approvalUrlTemplate.ResolveMergeFields( mergeFields )*/;
+                string approvalUrl = approvalUrlTemplate.ResolveMergeFields( mergeFields );
 
                 return approvalUrl;
             }
@@ -366,7 +375,11 @@ namespace Rock.Model
         {
             get
             {
-                var currentPerson = null/*System.Web.HttpContext.Current?.Items["CurrentPerson"]*/ as Person;
+#if NET5_0_OR_GREATER
+                Person currentPerson = null;
+#else
+                var currentPerson = System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person;
+#endif
                 var currentPersonId = currentPerson?.Id;
                 if ( currentPersonId.HasValue )
                 {
@@ -456,66 +469,66 @@ namespace Rock.Model
                 }
             }
 
-            //if ( action.Equals( Rock.Security.Authorization.APPROVE, StringComparison.OrdinalIgnoreCase ) )
-            //{
-            //    // If checking the APPROVE action, let people Approve private notes that they created (see above), otherwise just use the normal IsAuthorized
-            //    return base.IsAuthorized( action, person );
-            //}
-            //else if ( action.Equals( Rock.Security.Authorization.VIEW, StringComparison.OrdinalIgnoreCase ) )
-            //{
-            //    // View has special rules depending on the approval status and APPROVE verb
+            if ( action.Equals( Rock.Security.Authorization.APPROVE, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // If checking the APPROVE action, let people Approve private notes that they created (see above), otherwise just use the normal IsAuthorized
+                return base.IsAuthorized( action, person );
+            }
+            else if ( action.Equals( Rock.Security.Authorization.VIEW, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // View has special rules depending on the approval status and APPROVE verb
 
-            //    // first check if have normal VIEW access on the base
-            //    if ( !base.IsAuthorized( Authorization.VIEW, person ) )
-            //    {
-            //        return false;
-            //    }
+                // first check if have normal VIEW access on the base
+                if ( !base.IsAuthorized( Authorization.VIEW, person ) )
+                {
+                    return false;
+                }
 
-            //    if ( this.ApprovalStatus == NoteApprovalStatus.Approved )
-            //    {
-            //        return true;
-            //    }
-            //    else if ( this.CreatedByPersonAliasId == person?.PrimaryAliasId )
-            //    {
-            //        return true;
-            //    }
-            //    else if ( this.EditedByPersonAliasId == person?.PrimaryAliasId )
-            //    {
-            //        return true;
-            //    }
-            //    else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals != true )
-            //    {
-            //        /*
-            //        1/21/2021 - Shaun
-            //        If this Note does not have an assigned NoteType, it should be assumed that the NoteType does not
-            //        require approvals.  This is likely because a new instance of a Note entity was created to check
-            //        authorization for viewing Note entities in general, and in this case the first check (to
-            //        base.IsAuthorized) is sufficient to permit access.
+                if ( this.ApprovalStatus == NoteApprovalStatus.Approved )
+                {
+                    return true;
+                }
+                else if ( this.CreatedByPersonAliasId == person?.PrimaryAliasId )
+                {
+                    return true;
+                }
+                else if ( this.EditedByPersonAliasId == person?.PrimaryAliasId )
+                {
+                    return true;
+                }
+                else if ( NoteTypeCache.Get( this.NoteTypeId )?.RequiresApprovals != true )
+                {
+                    /*
+                    1/21/2021 - Shaun
+                    If this Note does not have an assigned NoteType, it should be assumed that the NoteType does not
+                    require approvals.  This is likely because a new instance of a Note entity was created to check
+                    authorization for viewing Note entities in general, and in this case the first check (to
+                    base.IsAuthorized) is sufficient to permit access.
 
-            //        Reason:  Notes should be available for DataViews.
-            //        */
-            //        return true;
-            //    }
-            //    else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
-            //    {
-            //        return true;
-            //    }
+                    Reason:  Notes should be available for DataViews.
+                    */
+                    return true;
+                }
+                else if ( this.IsAuthorized( Authorization.APPROVE, person ) )
+                {
+                    return true;
+                }
 
-            //    return false;
-            //}
-            //else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
-            //{
-            //    // If this note was created by the logged person, they should be able to EDIT their own note,
-            //    // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
-            //    if ( CreatedByPersonAlias?.PersonId == person?.Id )
-            //    {
-            //        return true;
-            //    }
-            //    else
-            //    {
-            //        return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
-            //    }
-            //}
+                return false;
+            }
+            else if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // If this note was created by the logged person, they should be able to EDIT their own note,
+                // otherwise EDIT (and DELETE) of other people's notes require ADMINISTRATE
+                if ( CreatedByPersonAlias?.PersonId == person?.Id )
+                {
+                    return true;
+                }
+                else
+                {
+                    return base.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, person );
+                }
+            }
             else
             {
                 // If this note was created by the logged person, they should be able to do any action (except for APPROVE)
@@ -534,17 +547,17 @@ namespace Rock.Model
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        //public override bool IsPrivate( string action, Person person )
-        //{
-        //    if ( CreatedByPersonAlias != null && person != null &&
-        //        CreatedByPersonAlias.PersonId == person.Id &&
-        //        IsPrivateNote )
-        //    {
-        //        return true;
-        //    }
+        public override bool IsPrivate( string action, Person person )
+        {
+            if ( CreatedByPersonAlias != null && person != null &&
+                CreatedByPersonAlias.PersonId == person.Id &&
+                IsPrivateNote )
+            {
+                return true;
+            }
 
-        //    return base.IsPrivate( action, person );
-        //}
+            return base.IsPrivate( action, person );
+        }
 
         #endregion
 
@@ -561,26 +574,26 @@ namespace Rock.Model
         {
             if ( state == EntityState.Added )
             {
-                //var noteType = NoteTypeCache.Get( this.NoteTypeId );
-                //if ( noteType?.AutoWatchAuthors == true )
-                //{
-                //    // if this is a new note, and AutoWatchAuthors, then add a NoteWatch so the author will get notified when there are any replies
-                //    var rockContext = dbContext as RockContext;
-                //    if ( rockContext != null && this.CreatedByPersonAliasId.HasValue )
-                //    {
-                //        var noteWatchService = new NoteWatchService( rockContext );
+                var noteType = NoteTypeCache.Get( this.NoteTypeId );
+                if ( noteType?.AutoWatchAuthors == true )
+                {
+                    // if this is a new note, and AutoWatchAuthors, then add a NoteWatch so the author will get notified when there are any replies
+                    var rockContext = dbContext as RockContext;
+                    if ( rockContext != null && this.CreatedByPersonAliasId.HasValue )
+                    {
+                        var noteWatchService = new NoteWatchService( rockContext );
 
-                //        // we don't know the Note.Id yet, so just assign the NoteWatch.Note and EF will populate the NoteWatch.NoteId automatically
-                //        var noteWatch = new NoteWatch
-                //        {
-                //            IsWatching = true,
-                //            WatcherPersonAliasId = this.CreatedByPersonAliasId.Value,
-                //            Note = this
-                //        };
+                        // we don't know the Note.Id yet, so just assign the NoteWatch.Note and EF will populate the NoteWatch.NoteId automatically
+                        var noteWatch = new NoteWatch
+                        {
+                            IsWatching = true,
+                            WatcherPersonAliasId = this.CreatedByPersonAliasId.Value,
+                            Note = this
+                        };
 
-                //        noteWatchService.Add( noteWatch );
-                //    }
-                //}
+                        noteWatchService.Add( noteWatch );
+                    }
+                }
             }
 
             base.PreSaveChanges( dbContext, entry, state );

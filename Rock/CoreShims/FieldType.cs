@@ -21,6 +21,18 @@ namespace Rock.Field
         public Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
             => throw new NotImplementedException();
 
+        public List<string> ConfigurationKeys()
+            => new List<string>();
+
+        public List<object> ConfigurationControls()
+            => throw new NotImplementedException();
+
+        public Dictionary<string, ConfigurationValue> ConfigurationValues( List<object> controls )
+            => new Dictionary<string, ConfigurationValue>();
+
+        public void SetConfigurationValues( List<object> controls, Dictionary<string, ConfigurationValue> configurationValues )
+            => throw new NotImplementedException();
+
         public string FormatFilterValues( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
             => throw new NotImplementedException();
 
@@ -35,6 +47,9 @@ namespace Rock.Field
 
         public string FormatValueAsHtml( object parentControl, int? entityTypeId, int? entityId, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed = false )
             => value;
+
+        public virtual string GetCopyValue( string originalValue, Rock.Data.RockContext rockContext )
+            => originalValue;
 
         public bool HasDefaultControl => false;
 
@@ -218,5 +233,25 @@ namespace Rock.Field.Types
         {
             return FilterExpression.FromJsonOrNull( value );
         }
+    }
+
+    public enum DataEntryRequirementLevelSpecifier
+    {
+        /// <summary>
+        /// No requirement level has been specified for this data element.
+        /// </summary>
+        Unspecified = 0,
+        /// <summary>
+        /// The data element is available but not required.
+        /// </summary>
+        Optional = 1,
+        /// <summary>
+        /// The data element is available and required.
+        /// </summary>
+        Required = 2,
+        /// <summary>
+        /// The data element is not available.
+        /// </summary>
+        Unavailable = 3
     }
 }

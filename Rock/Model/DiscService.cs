@@ -17,7 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-//using Rock.Web.Cache;
+
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -164,7 +165,7 @@ namespace Rock.Model
             public int NaturalBehaviorI;
             public int NaturalBehaviorD;
             public string PersonalityType;
-            //public DefinedValueCache DISCProfile { get; set; }
+            public DefinedValueCache DISCProfile { get; set; }
             public DateTime LastSaveDate;
         }
 
@@ -269,7 +270,7 @@ namespace Rock.Model
 
             // Determine the Natural personality type
             testResults.PersonalityType = DetermineNaturalPersonalityType( testResults );
-            //testResults.DISCProfile = LookupPersonalityTypeProfile( testResults.PersonalityType );
+            testResults.DISCProfile = LookupPersonalityTypeProfile( testResults.PersonalityType );
 
             return testResults;
         }
@@ -345,13 +346,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="profileType">Type of the profile.</param>
         /// <returns></returns>
-        //public static DefinedValueCache LookupPersonalityTypeProfile( string profileType )
-        //{
-        //    DefinedTypeCache discResultsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() );
-        //    DefinedValueCache discResultsDefinedValue = discResultsDefinedType.DefinedValues.FirstOrDefault( a => a.Value == profileType );
+        public static DefinedValueCache LookupPersonalityTypeProfile( string profileType )
+        {
+            DefinedTypeCache discResultsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.DISC_RESULTS_TYPE.AsGuid() );
+            DefinedValueCache discResultsDefinedValue = discResultsDefinedType.DefinedValues.FirstOrDefault( a => a.Value == profileType );
 
-        //    return discResultsDefinedValue;
-        //}
+            return discResultsDefinedValue;
+        }
 
         /// <summary>
         /// Fetches DISC scores.
@@ -362,7 +363,7 @@ namespace Rock.Model
         private static int AttributeValueLookup( Person person, string attrib )
         {
             decimal retVal = 0;
-            //bool bCatch = decimal.TryParse( person.AttributeValues[attrib].Value, out retVal );
+            bool bCatch = decimal.TryParse( person.AttributeValues[attrib].Value, out retVal );
             return Convert.ToInt32( decimal.Round( retVal, 1 ) );
         }
 
@@ -375,51 +376,51 @@ namespace Rock.Model
         {
             AssessmentResults savedScores = new AssessmentResults();
 
-            //person.LoadAttributes();
+            person.LoadAttributes();
 
-            //var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
 
-            //foreach ( string attrib in discAttributes )
-            //{
-            //    switch ( attrib )
-            //    {
-            //        case AttributeKeys.AdaptiveD:
-            //            savedScores.AdaptiveBehaviorD = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.AdaptiveI:
-            //            savedScores.AdaptiveBehaviorI = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.AdaptiveS:
-            //            savedScores.AdaptiveBehaviorS = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.AdaptiveC:
-            //            savedScores.AdaptiveBehaviorC = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.NaturalD:
-            //            savedScores.NaturalBehaviorD = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.NaturalI:
-            //            savedScores.NaturalBehaviorI = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.NaturalS:
-            //            savedScores.NaturalBehaviorS = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.NaturalC:
-            //            savedScores.NaturalBehaviorC = AttributeValueLookup( person, attrib );
-            //            break;
-            //        case AttributeKeys.PersonalityType:
-            //            savedScores.PersonalityType = person.AttributeValues[attrib].Value;
-            //            break;
-            //        case AttributeKeys.LastSaveDate:
-            //            DateTime lastAssessmentDate = DateTime.MinValue;
-            //            bool bCatch = DateTime.TryParse( person.AttributeValues[attrib].Value, out lastAssessmentDate );
-            //            savedScores.LastSaveDate = lastAssessmentDate;
-            //            break;
-            //        //case AttributeKeys.DISCProfile:
-            //        //    savedScores.DISCProfile = DefinedValueCache.Get( person.AttributeValues[attrib].Value );
-            //        //    break;
-            //    }
-            //}
+            foreach ( string attrib in discAttributes )
+            {
+                switch ( attrib )
+                {
+                    case AttributeKeys.AdaptiveD:
+                        savedScores.AdaptiveBehaviorD = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.AdaptiveI:
+                        savedScores.AdaptiveBehaviorI = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.AdaptiveS:
+                        savedScores.AdaptiveBehaviorS = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.AdaptiveC:
+                        savedScores.AdaptiveBehaviorC = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.NaturalD:
+                        savedScores.NaturalBehaviorD = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.NaturalI:
+                        savedScores.NaturalBehaviorI = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.NaturalS:
+                        savedScores.NaturalBehaviorS = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.NaturalC:
+                        savedScores.NaturalBehaviorC = AttributeValueLookup( person, attrib );
+                        break;
+                    case AttributeKeys.PersonalityType:
+                        savedScores.PersonalityType = person.AttributeValues[attrib].Value;
+                        break;
+                    case AttributeKeys.LastSaveDate:
+                        DateTime lastAssessmentDate = DateTime.MinValue;
+                        bool bCatch = DateTime.TryParse( person.AttributeValues[attrib].Value, out lastAssessmentDate );
+                        savedScores.LastSaveDate = lastAssessmentDate;
+                        break;
+                    case AttributeKeys.DISCProfile:
+                        savedScores.DISCProfile = DefinedValueCache.Get( person.AttributeValues[attrib].Value );
+                        break;
+                }
+            }
             return savedScores;
         }
 
@@ -438,55 +439,56 @@ namespace Rock.Model
         /// <param name="personalityType">One or two letters of DISC that represents the personality.</param>
         static public void SaveAssessmentResults( Person person, string ABd, string ABi, string ABs, string ABc, string NBd, string NBi, string NBs, string NBc, string personalityType )
         {
-            //person.LoadAttributes();
+            person.LoadAttributes();
 
-            //var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_DISC.AsGuid() || c.Guid == SystemGuid.Category.PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA.AsGuid() ) ).Select( a => a.Key );
 
-            //foreach ( string attrib in discAttributes )
-            //{
-            //    switch ( attrib )
-            //    {
-            //        case AttributeKeys.AdaptiveD:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABd );
-            //            break;
-            //        case AttributeKeys.AdaptiveI:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABi );
-            //            break;
-            //        case AttributeKeys.AdaptiveS:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABs );
-            //            break;
-            //        case AttributeKeys.AdaptiveC:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABc );
-            //            break;
-            //        case AttributeKeys.NaturalD:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBd );
-            //            break;
-            //        case AttributeKeys.NaturalI:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBi );
-            //            break;
-            //        case AttributeKeys.NaturalS:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBs );
-            //            break;
-            //        case AttributeKeys.NaturalC:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc );
-            //            break;
-            //        case AttributeKeys.PersonalityType:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], personalityType );
-            //            break;
-            //        case AttributeKeys.LastSaveDate:
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString( "o" ) );
-            //            break;
-            //        case AttributeKeys.DISCProfile:
-            //            var definedValueCache = LookupPersonalityTypeProfile( personalityType );
-            //            Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], definedValueCache.Guid.ToStringSafe() );
-            //            break;
-            //    }
-            //}
+            foreach ( string attrib in discAttributes )
+            {
+                switch ( attrib )
+                {
+                    case AttributeKeys.AdaptiveD:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABd );
+                        break;
+                    case AttributeKeys.AdaptiveI:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABi );
+                        break;
+                    case AttributeKeys.AdaptiveS:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABs );
+                        break;
+                    case AttributeKeys.AdaptiveC:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], ABc );
+                        break;
+                    case AttributeKeys.NaturalD:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBd );
+                        break;
+                    case AttributeKeys.NaturalI:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBi );
+                        break;
+                    case AttributeKeys.NaturalS:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBs );
+                        break;
+                    case AttributeKeys.NaturalC:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], NBc );
+                        break;
+                    case AttributeKeys.PersonalityType:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], personalityType );
+                        break;
+                    case AttributeKeys.LastSaveDate:
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], RockDateTime.Now.ToString( "o" ) );
+                        break;
+                    case AttributeKeys.DISCProfile:
+                        var definedValueCache = LookupPersonalityTypeProfile( personalityType );
+                        Rock.Attribute.Helper.SaveAttributeValue( person, person.Attributes[attrib], definedValueCache.Guid.ToStringSafe() );
+                        break;
+                }
+            }
 
-            //person.SaveAttributeValues();
+            person.SaveAttributeValues();
         }
 
         #region DISC shared  UI stuff
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Plots the one DISC graph.
         /// </summary>
@@ -499,50 +501,51 @@ namespace Rock.Model
         /// <param name="scoreS">The S score.</param>
         /// <param name="scoreC">The C score.</param>
         /// <param name="maxScale">Highest score which is used for the scale of the chart.</param>
-        //public static void PlotOneGraph( System.Web.UI.HtmlControls.HtmlGenericControl barD, System.Web.UI.HtmlControls.HtmlGenericControl barI,
-        //    System.Web.UI.HtmlControls.HtmlGenericControl barS, System.Web.UI.HtmlControls.HtmlGenericControl barC,
-        //    int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
-        //{
-        //    barD.RemoveCssClass( "discbar-primary" );
-        //    barI.RemoveCssClass( "discbar-primary" );
-        //    barS.RemoveCssClass( "discbar-primary" );
-        //    barC.RemoveCssClass( "discbar-primary" );
+        public static void PlotOneGraph( System.Web.UI.HtmlControls.HtmlGenericControl barD, System.Web.UI.HtmlControls.HtmlGenericControl barI,
+            System.Web.UI.HtmlControls.HtmlGenericControl barS, System.Web.UI.HtmlControls.HtmlGenericControl barC,
+            int scoreD, int scoreI, int scoreS, int scoreC, int maxScale )
+        {
+            barD.RemoveCssClass( "discbar-primary" );
+            barI.RemoveCssClass( "discbar-primary" );
+            barS.RemoveCssClass( "discbar-primary" );
+            barC.RemoveCssClass( "discbar-primary" );
 
-        //    // find the max value
-        //    var maxScore = barD;
-        //    var maxValue = scoreD;
-        //    if ( scoreI > maxValue )
-        //    {
-        //        maxScore = barI;
-        //        maxValue = scoreI;
-        //    }
-        //    if ( scoreS > maxValue )
-        //    {
-        //        maxScore = barS;
-        //        maxValue = scoreS;
-        //    }
-        //    if ( scoreC > maxValue )
-        //    {
-        //        maxScore = barC;
-        //        maxValue = scoreC;
-        //    }
-        //    maxScore.AddCssClass( "discbar-primary" );
-        //    var score = Math.Floor( ( double ) ( ( double ) scoreD / ( double ) maxScale ) * 100 ).ToString();
-        //    barD.Style.Add( "height", score + "%" );
-        //    barD.Attributes["title"] = scoreD.ToString();
+            // find the max value
+            var maxScore = barD;
+            var maxValue = scoreD;
+            if ( scoreI > maxValue )
+            {
+                maxScore = barI;
+                maxValue = scoreI;
+            }
+            if ( scoreS > maxValue )
+            {
+                maxScore = barS;
+                maxValue = scoreS;
+            }
+            if ( scoreC > maxValue )
+            {
+                maxScore = barC;
+                maxValue = scoreC;
+            }
+            maxScore.AddCssClass( "discbar-primary" );
+            var score = Math.Floor( ( double ) ( ( double ) scoreD / ( double ) maxScale ) * 100 ).ToString();
+            barD.Style.Add( "height", score + "%" );
+            barD.Attributes["title"] = scoreD.ToString();
 
-        //    score = Math.Floor( ( double ) ( ( double ) scoreI / ( double ) maxScale ) * 100 ).ToString();
-        //    barI.Style.Add( "height", score + "%" );
-        //    barI.Attributes["title"] = scoreI.ToString();
+            score = Math.Floor( ( double ) ( ( double ) scoreI / ( double ) maxScale ) * 100 ).ToString();
+            barI.Style.Add( "height", score + "%" );
+            barI.Attributes["title"] = scoreI.ToString();
 
-        //    score = Math.Floor( ( double ) ( ( double ) scoreS / ( double ) maxScale ) * 100 ).ToString();
-        //    barS.Style.Add( "height", score + "%" );
-        //    barS.Attributes["title"] = scoreS.ToString();
+            score = Math.Floor( ( double ) ( ( double ) scoreS / ( double ) maxScale ) * 100 ).ToString();
+            barS.Style.Add( "height", score + "%" );
+            barS.Attributes["title"] = scoreS.ToString();
 
-        //    score = Math.Floor( ( double ) ( ( double ) scoreC / ( double ) maxScale ) * 100 ).ToString();
-        //    barC.Style.Add( "height", score + "%" );
-        //    barC.Attributes["title"] = scoreC.ToString();
-        //}
+            score = Math.Floor( ( double ) ( ( double ) scoreC / ( double ) maxScale ) * 100 ).ToString();
+            barC.Style.Add( "height", score + "%" );
+            barC.Attributes["title"] = scoreC.ToString();
+        }
+#endif
         #endregion
 
 

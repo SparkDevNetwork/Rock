@@ -204,9 +204,14 @@ namespace Rock.Model
                 return;
             }
 
+#if NET5_0_OR_GREATER
+            var wrappedException = new Exception( "An exception occurred in the SmsAction pipeline. See the inner exception.", exception );
+            ExceptionLogService.LogException( wrappedException );
+#else
             var context = HttpContext.Current;
             var wrappedException = new Exception( "An exception occurred in the SmsAction pipeline. See the inner exception.", exception );
             ExceptionLogService.LogException( wrappedException, context );
+#endif
         }
 
         /// <summary>
@@ -220,9 +225,14 @@ namespace Rock.Model
                 return;
             }
 
+#if NET5_0_OR_GREATER
+            var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
+            ExceptionLogService.LogException( exception );
+#else
             var context = HttpContext.Current;
             var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
             ExceptionLogService.LogException( exception, context );
+#endif
         }
     }
 }

@@ -19,9 +19,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+#if !NET5_0_OR_GREATER
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
+#endif
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -50,6 +52,9 @@ namespace Rock.Model
         /// </summary>
         public static void RegisterControllers()
         {
+#if NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             /*
              * 12/19/2019 BJW
              *
@@ -159,6 +164,7 @@ namespace Rock.Model
             }
 
             rockContext.SaveChanges();
+#endif
         }
 
         /// <summary>

@@ -18,8 +18,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -215,21 +220,21 @@ namespace Rock.Model
 
                 case EntityState.Modified:
                     {
-                        //string locationTypeName = DefinedValueCache.GetName( GroupLocationTypeValueId ) ?? "Unknown";
-                        //int? oldLocationTypeId = entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
-                        //if ( ( oldLocationTypeId ?? 0 ) == ( GroupLocationTypeValueId ?? 0 ) )
-                        //{
-                        //    History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), Location, LocationId, rockContext );
-                        //}
-                        //else
-                        //{
-                        //    Location newLocation = null;
-                        //    History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, (int?)null, rockContext );
-                        //    History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", (int?)null, Location, LocationId, rockContext );
-                        //}
+                        string locationTypeName = DefinedValueCache.GetName( GroupLocationTypeValueId ) ?? "Unknown";
+                        int? oldLocationTypeId = entry.OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                        if ( ( oldLocationTypeId ?? 0 ) == ( GroupLocationTypeValueId ?? 0 ) )
+                        {
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), Location, LocationId, rockContext );
+                        }
+                        else
+                        {
+                            Location newLocation = null;
+                            History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", entry.OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, ( int? ) null, rockContext );
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", ( int? ) null, Location, LocationId, rockContext );
+                        }
 
-                        //History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", entry.OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), IsMailingLocation );
-                        //History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", entry.OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), IsMailingLocation );
+                        History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", entry.OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), IsMappedLocation );
 
                         break;
                     }
@@ -260,16 +265,16 @@ namespace Rock.Model
             }
 
             // If this is a Group of type Family, update the ModifiedDateTime on the Persons that are members of this family (since one of their Addresses changed)
-            //int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
+            int groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
             var groupService = new GroupService( rockContext );
 
             int groupTypeId = groupService.GetSelect( this.GroupId, s => s.GroupTypeId );
-            //if ( groupTypeId == groupTypeIdFamily )
-            //{
-            //    var currentDateTime = RockDateTime.Now;
-            //    var qryPersonsToUpdate = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.GroupId ).Select( a => a.Person );
-            //    rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
-            //}
+            if ( groupTypeId == groupTypeIdFamily )
+            {
+                var currentDateTime = RockDateTime.Now;
+                var qryPersonsToUpdate = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.GroupId ).Select( a => a.Person );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+            }
 
             base.PostSaveChanges( dbContext );
         }

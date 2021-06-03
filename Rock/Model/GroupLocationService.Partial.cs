@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
-//using System.Data.Entity.Spatial;
-using DbGeography = NetTopologySuite.Geometries.Geometry;
+#if !NET5_0_OR_GREATER
+using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 
 namespace Rock.Model

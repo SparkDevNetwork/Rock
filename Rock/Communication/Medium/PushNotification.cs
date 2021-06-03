@@ -19,7 +19,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 
 using Rock.Model;
+#if !NET5_0_OR_GREATER
 using Rock.Web.UI.Controls.Communication;
+#endif
 
 namespace Rock.Communication.Medium
 {
@@ -35,6 +37,7 @@ namespace Rock.Communication.Medium
 
         public override CommunicationType CommunicationType { get { return CommunicationType.PushNotification; } }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the control.
         /// </summary>
@@ -47,5 +50,6 @@ namespace Rock.Communication.Medium
                 Transport = Transport
             };
         }
+#endif
     }
 }

@@ -134,6 +134,7 @@ namespace Rock.Reporting.DataFilter
             return "Another Data View";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -215,6 +216,7 @@ namespace Rock.Reporting.DataFilter
 
             writer.RenderEndTag();
         }
+#endif
 
         /// <summary>
         /// 
@@ -257,6 +259,7 @@ namespace Rock.Reporting.DataFilter
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the selection.
         /// </summary>
@@ -287,6 +290,7 @@ namespace Rock.Reporting.DataFilter
             ( ( DataViewItemPicker ) controls[0] ).SetValue( selectionConfig.DataViewId );
             ( ( RockCheckBox ) controls[1] ).Checked = selectionConfig.UsePersisted;
         }
+#endif
 
         /// <summary>
         /// Gets the selected data view.
@@ -330,6 +334,7 @@ namespace Rock.Reporting.DataFilter
             return GetExpressionWithOverrides( entityType, serviceInstance, parameterExpression, null, selection );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the related data view identifier.
         /// </summary>
@@ -350,6 +355,7 @@ namespace Rock.Reporting.DataFilter
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
 
         #region IDataFilterWithOverrides

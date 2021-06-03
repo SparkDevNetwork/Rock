@@ -66,7 +66,11 @@ namespace Rock.Address
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
             request.AddHeader( "Accept", "application/json" );
+#if NET5_0_OR_GREATER
+            request.AddJsonBody( payload );
+#else
             request.AddBody( payload );
+#endif
             var response = client.Execute( request );
 
             if ( response.StatusCode == HttpStatusCode.OK )
@@ -137,7 +141,11 @@ namespace Rock.Address
                 var request = new RestRequest( Method.POST );
                 request.RequestFormat = DataFormat.Json;
                 request.AddHeader( "Accept", "application/json" );
+#if NET5_0_OR_GREATER
+                request.AddJsonBody( payload );
+#else
                 request.AddBody( payload );
+#endif
                 var response = client.Execute( request );
 
                 if ( response.StatusCode == HttpStatusCode.OK )

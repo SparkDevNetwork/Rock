@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
+#else
+using System.Data.Entity.Spatial;
+#endif
 using System.Runtime.Serialization;
 
 using Rock.Data;

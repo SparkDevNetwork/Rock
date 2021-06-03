@@ -16,10 +16,16 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Diagnostics;
 using System.Linq;
-//using System.Linq.Dynamic;
+#if !NET5_0_OR_GREATER
+using System.Linq.Dynamic;
+#endif
 using System.Threading.Tasks;
 
 using Rock.Data;

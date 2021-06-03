@@ -183,23 +183,23 @@ namespace Rock.Model
                 return this.Name;
             }
 
-            //if ( this.EntitySetPurposeValueId != null )
-            //{
-            //    var purpose = DefinedValueCache.Get( this.EntitySetPurposeValueId.Value );
-            //    if ( purpose != null )
-            //    {
-            //        return purpose.Value;
-            //    }
-            //}
+            if ( this.EntitySetPurposeValueId != null )
+            {
+                var purpose = DefinedValueCache.Get( this.EntitySetPurposeValueId.Value );
+                if ( purpose != null )
+                {
+                    return purpose.Value;
+                }
+            }
 
-            //if ( this.EntityTypeId.HasValue )
-            //{
-            //    var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
-            //    if ( entityType != null )
-            //    {
-            //        return string.Format( "{0} Entity Set", entityType.Name );
-            //    }
-            //}
+            if ( this.EntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( this.EntityTypeId.Value );
+                if ( entityType != null )
+                {
+                    return string.Format( "{0} Entity Set", entityType.Name );
+                }
+            }
 
             return base.ToString();
         }

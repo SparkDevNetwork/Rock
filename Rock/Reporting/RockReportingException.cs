@@ -118,15 +118,15 @@ namespace Rock.Reporting
 
                 if ( entityType != null )
                 {
-                    //var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
-                    //if ( component != null )
-                    //{
-                    //    var filterDescription = component.FormatSelection( entityType.GetEntityType(), _dataViewFilter.Selection );
-                    //    if ( filterDescription.IsNotNullOrWhiteSpace() )
-                    //    {
-                    //        return $"An error has occurred with the data filter: {filterDescription}";
-                    //    }
-                    //}
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                    if ( component != null )
+                    {
+                        var filterDescription = component.FormatSelection( entityType.GetEntityType(), _dataViewFilter.Selection );
+                        if ( filterDescription.IsNotNullOrWhiteSpace() )
+                        {
+                            return $"An error has occurred with the data filter: {filterDescription}";
+                        }
+                    }
                 }
             }
 

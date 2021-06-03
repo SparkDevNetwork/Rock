@@ -16,9 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
-//using System.Data.Entity.Spatial;
 using DbGeography = NetTopologySuite.Geometries.Geometry;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Text;
 using Rock.Data;

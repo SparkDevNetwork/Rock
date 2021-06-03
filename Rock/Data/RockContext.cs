@@ -68,7 +68,11 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
+#if NET5_0_OR_GREATER
             : base( "RockContext" )
+#else
+            : base()
+#endif
         {
         }
 
@@ -2093,7 +2097,9 @@ namespace Rock.Data
             }
             else
             {
-                //this.Configuration.ValidateOnSaveEnabled = false;
+#if !NET5_0_OR_GREATER
+                this.Configuration.ValidateOnSaveEnabled = false;
+#endif
                 this.Set<T>().AddRange( records );
                 this.SaveChanges( true );
             }
@@ -2210,12 +2216,16 @@ namespace Rock.Data
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
+#if NET5_0_OR_GREATER
             AddConfigurationsFromAssembly( modelBuilder, typeof( RockContext ).Assembly );
-            //modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
-            //modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-            //modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
+#else
+            modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+            modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
+#endif
         }
 
+#if NET5_0_OR_GREATER
         public static void AddConfigurationsFromAssembly( ModelBuilder modelBuilder, Assembly assembly )
         {
             modelBuilder.ApplyConfigurationsFromAssembly( assembly );
@@ -2243,5 +2253,6 @@ namespace Rock.Data
                 entityType.SetTableName( tableAttribute?.Name ?? entityType.Name );
             }
         }
+#endif
     }
 }

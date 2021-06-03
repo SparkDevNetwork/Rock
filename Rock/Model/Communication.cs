@@ -19,7 +19,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
@@ -30,7 +34,7 @@ using Newtonsoft.Json;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Utility;
-//using Rock.Web.Cache;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -510,7 +514,9 @@ namespace Rock.Model
         /// A <see cref="System.Collections.Generic.List{String}"/> of values containing the additional merge field list.
         /// </value>
         [DataMember]
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         public virtual List<string> AdditionalMergeFields
         {
             get
@@ -591,13 +597,13 @@ namespace Rock.Model
         /// this object, Rock will check the default authorization on the current type, and
         /// then the authorization on the Rock.Security.GlobalDefault entity
         /// </summary>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.CommunicationTemplate ?? base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.CommunicationTemplate ?? base.ParentAuthority;
+            }
+        }
 
         #endregion 
 
@@ -610,23 +616,23 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Communication.MediumComponent" /> for the communication medium that is being used.
         /// </value>
-        //public virtual List<MediumComponent> GetMediums()
-        //{
-        //    var mediums = new List<MediumComponent>();
+        public virtual List<MediumComponent> GetMediums()
+        {
+            var mediums = new List<MediumComponent>();
 
-        //    foreach ( var serviceEntry in MediumContainer.Instance.Components )
-        //    {
-        //        var component = serviceEntry.Value.Value;
-        //        if ( component.IsActive &&
-        //            ( this.CommunicationType == component.CommunicationType ||
-        //                this.CommunicationType == CommunicationType.RecipientPreference ) )
-        //        {
-        //            mediums.Add( component );
-        //        }
-        //    }
+            foreach ( var serviceEntry in MediumContainer.Instance.Components )
+            {
+                var component = serviceEntry.Value.Value;
+                if ( component.IsActive &&
+                    ( this.CommunicationType == component.CommunicationType ||
+                        this.CommunicationType == CommunicationType.RecipientPreference ) )
+                {
+                    mediums.Add( component );
+                }
+            }
 
-        //    return mediums;
-        //}
+            return mediums;
+        }
 
         /// <summary>
         /// Adds the attachment.
@@ -751,32 +757,32 @@ namespace Rock.Model
 
             var recipientsQry = GetRecipientsQry( rockContext );
 
-            //int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-            //if ( smsMediumEntityTypeId.HasValue )
-            //{
-            //    IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
-            //        .Where( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).Any() )
-            //        .GroupBy( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).FirstOrDefault().Number )
-            //        .Where( a => a.Count() > 1 )
-            //        .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
-            //        .SelectMany( a => a );
+            int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            if ( smsMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                    .Where( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).Any() )
+                    .GroupBy( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).FirstOrDefault().Number )
+                    .Where( a => a.Count() > 1 )
+                    .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
+                    .SelectMany( a => a );
 
-            //    var duplicateSMSRecipients = duplicateSMSRecipientsQuery.ToList();
-            //    communicationRecipientService.DeleteRange( duplicateSMSRecipients );
-            //}
+                var duplicateSMSRecipients = duplicateSMSRecipientsQuery.ToList();
+                communicationRecipientService.DeleteRange( duplicateSMSRecipients );
+            }
 
-            //int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            //if ( emailMediumEntityTypeId.HasValue )
-            //{
-            //    IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
-            //        .GroupBy( a => a.PersonAlias.Person.Email )
-            //        .Where( a => a.Count() > 1 )
-            //        .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
-            //        .SelectMany( a => a );
+            int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            if ( emailMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                    .GroupBy( a => a.PersonAlias.Person.Email )
+                    .Where( a => a.Count() > 1 )
+                    .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
+                    .SelectMany( a => a );
 
-            //    var duplicateEmailRecipients = duplicateEmailRecipientsQry.ToList();
-            //    communicationRecipientService.DeleteRange( duplicateEmailRecipients );
-            //}
+                var duplicateEmailRecipients = duplicateEmailRecipientsQry.ToList();
+                communicationRecipientService.DeleteRange( duplicateEmailRecipients );
+            }
 
             rockContext.SaveChanges();
         }
@@ -820,24 +826,24 @@ namespace Rock.Model
                 .AsNoTracking()
                 .ToList();
 
-            //var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            //var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-            //var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
+            var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
-            //var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
-            //{
-            //    PersonAliasId = m.Person.PrimaryAliasId.Value,
-            //    Status = CommunicationRecipientStatus.Pending,
-            //    CommunicationId = Id,
-            //    MediumEntityTypeId = DetermineMediumEntityTypeId(
-            //        emailMediumEntityType.Id,
-            //        smsMediumEntityType.Id,
-            //        pushMediumEntityType.Id,
-            //        CommunicationType,
-            //        m.CommunicationPreference,
-            //        m.Person.CommunicationPreference )
-            //} );
-            //rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
+            var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
+            {
+                PersonAliasId = m.Person.PrimaryAliasId.Value,
+                Status = CommunicationRecipientStatus.Pending,
+                CommunicationId = Id,
+                MediumEntityTypeId = DetermineMediumEntityTypeId(
+                    emailMediumEntityType.Id,
+                    smsMediumEntityType.Id,
+                    pushMediumEntityType.Id,
+                    CommunicationType,
+                    m.CommunicationPreference,
+                    m.Person.CommunicationPreference )
+            } );
+            rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
 
             // Get all pending communication recipients that are no longer part of the group list member, then delete them from the Recipients
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
@@ -984,10 +990,10 @@ namespace Rock.Model
                 }
             }
 
-            //foreach ( var medium in communication.GetMediums() )
-            //{
-            //    medium.Send( communication );
-            //}
+            foreach ( var medium in communication.GetMediums() )
+            {
+                medium.Send( communication );
+            }
 
             using ( var rockContext = new RockContext() )
             {
@@ -1028,19 +1034,19 @@ namespace Rock.Model
             }
 
             var sendTasks = new List<Task>();
-            //foreach ( var medium in communication.GetMediums() )
-            //{
-            //    var asyncMedium = medium as IAsyncMediumComponent;
+            foreach ( var medium in communication.GetMediums() )
+            {
+                var asyncMedium = medium as IAsyncMediumComponent;
 
-            //    if ( asyncMedium == null )
-            //    {
-            //        sendTasks.Add( Task.Run( () => medium.Send( communication ) ) );
-            //    }
-            //    else
-            //    {
-            //        sendTasks.Add( asyncMedium.SendAsync( communication ) );
-            //    }
-            //}
+                if ( asyncMedium == null )
+                {
+                    sendTasks.Add( Task.Run( () => medium.Send( communication ) ) );
+                }
+                else
+                {
+                    sendTasks.Add( asyncMedium.SendAsync( communication ) );
+                }
+            }
 
             var aggregateExceptions = new List<Exception>();
             while ( sendTasks.Count > 0 )

@@ -142,9 +142,13 @@ namespace Rock.Model
         /// The attribute matrices.
         /// </value>
         [DataMember]
+#if NET5_0_OR_GREATER
         public virtual ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+#else
+        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+#endif
 
-        #endregion 
+        #endregion
     }
 
     #region Entity Configuration

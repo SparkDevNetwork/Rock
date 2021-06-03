@@ -19,15 +19,20 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using EntityState = Microsoft.EntityFrameworkCore.EntityState;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EntityState = System.Data.Entity.EntityState;
+using System.Data.Entity.Infrastructure;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Rock.Data;
-//using Rock.Transactions;
-//using Rock.Web.Cache;
+using Rock.Transactions;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -46,8 +51,10 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_StreakTypeId", IsUnique = false )]
-        //[Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_StreakTypeId", IsUnique = false )]
+        [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
+#endif
         public int StreakTypeId { get; set; }
 
         /// <summary>
@@ -55,8 +62,10 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_PersonAliasId", IsUnique = false )]
-        //[Index( "IX_StreakTypeId_PersonAliasId", 1, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_PersonAliasId", IsUnique = false )]
+        [Index( "IX_StreakTypeId_PersonAliasId", 1, IsUnique = true )]
+#endif
         public int PersonAliasId { get; set; }
 
         /// <summary>
@@ -236,13 +245,13 @@ namespace Rock.Model
             get
             {
                 var isValid = base.IsValid;
-                //var streakTypeCache = StreakTypeCache.Get( StreakTypeId );
+                var streakTypeCache = StreakTypeCache.Get( StreakTypeId );
 
-                //if ( streakTypeCache != null && EnrollmentDate < streakTypeCache.StartDate )
-                //{
-                //    ValidationResults.Add( new ValidationResult( $"The enrollment date cannot be before the streak type start date, {streakTypeCache.StartDate.ToShortDateString()}." ) );
-                //    isValid = false;
-                //}
+                if ( streakTypeCache != null && EnrollmentDate < streakTypeCache.StartDate )
+                {
+                    ValidationResults.Add( new ValidationResult( $"The enrollment date cannot be before the streak type start date, {streakTypeCache.StartDate.ToShortDateString()}." ) );
+                    isValid = false;
+                }
 
                 return isValid;
             }

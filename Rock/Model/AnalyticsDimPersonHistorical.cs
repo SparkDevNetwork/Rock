@@ -16,11 +16,15 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using DbGeography = NetTopologySuite.Geometries.Geometry;
+using System.Data.Entity.ModelConfiguration;
+#else
+using System.Data.Entity.Spatial;
+#endif
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using System.Data.Entity.ModelConfiguration;
 
 namespace Rock.Model
 {
@@ -36,6 +40,7 @@ namespace Rock.Model
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 
+#if NET5_0_OR_GREATER
     public partial class AnalyticsDimPersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsDimPersonHistorical>
     {
         /// <summary>
@@ -51,6 +56,7 @@ namespace Rock.Model
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Restrict );
         }
     }
+#endif
 
     /// <summary>
     /// *Another* Abstract Layer since AnalyticDimPersonHistorical and AnalyticsDimPersonCurrent share all the same fields

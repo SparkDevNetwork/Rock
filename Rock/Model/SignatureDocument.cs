@@ -193,13 +193,13 @@ namespace Rock.Model
         /// <value>
         /// The parent authority for this SignatureDocument instance.
         /// </value>
-        //public override Security.ISecured ParentAuthority
-        //{
-        //    get
-        //    {
-        //        return this.SignatureDocumentTemplate != null ? this.SignatureDocumentTemplate : base.ParentAuthority;
-        //    }
-        //}
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.SignatureDocumentTemplate != null ? this.SignatureDocumentTemplate : base.ParentAuthority;
+            }
+        }
 
         #endregion
 

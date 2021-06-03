@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
-//using CronExpressionDescriptor;
+using CronExpressionDescriptor;
 
 using Rock.Data;
 using Rock.Lava;
@@ -254,14 +254,14 @@ namespace Rock.Model
         /// <value>
         /// The cron description.
         /// </value>
-        //[LavaVisible]
-        //public string CronDescription
-        //{
-        //    get
-        //    {
-        //        return ExpressionDescriptor.GetDescription( this.CronExpression, new Options { ThrowExceptionOnParseError = false } );
-        //    }
-        //}
+        [LavaVisible]
+        public string CronDescription
+        {
+            get
+            {
+                return ExpressionDescriptor.GetDescription( this.CronExpression, new Options { ThrowExceptionOnParseError = false } );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the a list of previous values that this attribute value had (If ServiceJob.EnableHistory is enabled)

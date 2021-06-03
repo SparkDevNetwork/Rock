@@ -16,7 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -37,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageContext" )]
     [DataContract]
-    public partial class PageContext : Model<PageContext>/*, ICacheable*/
+    public partial class PageContext : Model<PageContext>, ICacheable
     {
 
         #region Entity Properties
@@ -60,8 +64,10 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_PageId")]
-        //[Index( "IX_PageIdEntityIdParameter", 0, IsUnique=true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_PageId" )]
+        [Index( "IX_PageIdEntityIdParameter", 0, IsUnique = true )]
+#endif
         public int PageId { get; set; }
         
         /// <summary>
@@ -73,7 +79,9 @@ namespace Rock.Model
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_PageIdEntityIdParameter", 1, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_PageIdEntityIdParameter", 1, IsUnique = true )]
+#endif
         public string Entity { get; set; }
 
         /// <summary>
@@ -85,7 +93,9 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
-        //[Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( "IX_PageIdEntityIdParameter", 2, IsUnique = true )]
+#endif
         public string IdParameter { get; set; }
 
         #endregion
@@ -109,21 +119,21 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return null;
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    // PageCache has PageContexts that could get stale if PageContext is modified
-        //    PageCache.UpdateCachedEntity( this.PageId, EntityState.Detached );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            // PageCache has PageContexts that could get stale if PageContext is modified
+            PageCache.UpdateCachedEntity( this.PageId, EntityState.Detached );
+        }
 
         #endregion ICacheable
 

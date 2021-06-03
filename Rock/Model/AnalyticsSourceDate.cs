@@ -22,9 +22,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-using Z.EntityFramework.Extensions;
-
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using EntityFramework.Utilities;
+#endif
 
 using Rock.Data;
 
@@ -60,7 +62,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        //[Index( IsUnique = true )]
+#if !NET5_0_OR_GREATER
+        [Index( IsUnique = true )]
+#endif
         public DateTime Date { get; set; }
 
         /// <summary>
@@ -470,13 +474,23 @@ namespace Rock.Model
                 try
                 {
                     // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
+#if NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( 5 );
                     rockContext.Database.ExecuteSqlRaw( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+#else
+                    rockContext.Database.CommandTimeout = 5;
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+#endif
                 }
                 catch
                 {
+#if NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( null );
                     rockContext.Database.ExecuteSqlRaw( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+#else
+                    rockContext.Database.CommandTimeout = null;
+                    rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourceDate ).GetCustomAttribute<TableAttribute>().Name ) );
+#endif
                 }
             }
 
@@ -642,8 +656,11 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 // NOTE: We can't use rockContext.BulkInsert because that enforces that the <T> is Rock.Data.IEntity, so we'll just use EFBatchOperation directly
+#if NET5_0_OR_GREATER
                 rockContext.AnalyticsSourceDates.BulkInsert( generatedDates );
-                //EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+#else
+                EFBatchOperation.For( rockContext, rockContext.AnalyticsSourceDates ).InsertAll( generatedDates );
+#endif
             }
         }
     }

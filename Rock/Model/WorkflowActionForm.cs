@@ -20,7 +20,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -37,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionForm" )]
     [DataContract]
-    public partial class WorkflowActionForm : Model<WorkflowActionForm>/*, ICacheable*/
+    public partial class WorkflowActionForm : Model<WorkflowActionForm>, ICacheable
     {
         #region Entity Properties
 
@@ -410,20 +414,20 @@ namespace Rock.Model
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
-        //public IEntityCache GetCacheObject()
-        //{
-        //    return WorkflowActionFormCache.Get( this.Id );
-        //}
+        public IEntityCache GetCacheObject()
+        {
+            return WorkflowActionFormCache.Get( this.Id );
+        }
 
         /// <summary>
         /// Updates any Cache Objects that are associated with this entity
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        //public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        //{
-        //    WorkflowActionFormCache.UpdateCachedEntity( this.Id, entityState );
-        //}
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            WorkflowActionFormCache.UpdateCachedEntity( this.Id, entityState );
+        }
 
         #endregion
 
@@ -432,7 +436,9 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
-        //[DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
+#if !NET5_0_OR_GREATER
+        [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
+#endif
         [LavaType( "Name", "Html", "EmailHtml" )]        
         public class LiquidButton
         {
@@ -480,12 +486,12 @@ namespace Rock.Model
 
                     if ( details.Length > 1 )
                     {
-                        //var definedValue = DefinedValueCache.Get( details[1].AsGuid() );
-                        //if ( definedValue != null )
-                        //{
-                        //    button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
-                        //    button.EmailHtml = definedValue.GetAttributeValue( "ButtonEmailHTML" );
-                        //}
+                        var definedValue = DefinedValueCache.Get( details[1].AsGuid() );
+                        if ( definedValue != null )
+                        {
+                            button.Html = definedValue.GetAttributeValue( "ButtonHTML" );
+                            button.EmailHtml = definedValue.GetAttributeValue( "ButtonEmailHTML" );
+                        }
                     }
                 }
 

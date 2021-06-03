@@ -16,9 +16,11 @@
 //
 using System;
 using System.Linq;
+#if !NET5_0_OR_GREATER
 using System.Web.Compilation;
 
 using Quartz;
+#endif
 using Rock.Data;
 
 namespace Rock.Model
@@ -46,6 +48,7 @@ namespace Rock.Model
             return Queryable();
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Builds a Quartz Job for a specified <see cref="Rock.Model.ServiceJob">Job</see>
         /// </summary>
@@ -116,6 +119,7 @@ namespace Rock.Model
 
             return trigger;
         }
+#endif
 
         /// <summary>
         /// Deletes the job.

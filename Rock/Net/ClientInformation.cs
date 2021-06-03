@@ -65,41 +65,43 @@ namespace Rock.Net
 
         #region Constructors
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
         /// </summary>
         /// <param name="request">The request to initalize from.</param>
-        //internal ClientInformation( HttpRequest request )
-        //{
-        //    //
-        //    // Set IP Address.
-        //    //
-        //    IpAddress = string.Empty;
+        internal ClientInformation( HttpRequest request )
+        {
+            //
+            // Set IP Address.
+            //
+            IpAddress = string.Empty;
 
-        //    // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
-        //    string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            // http://stackoverflow.com/questions/735350/how-to-get-a-users-client-ip-address-in-asp-net
+            string ipAddress = request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
-        //    if ( !string.IsNullOrEmpty( ipAddress ) )
-        //    {
-        //        string[] addresses = ipAddress.Split( ',' );
-        //        if ( addresses.Length != 0 )
-        //        {
-        //            IpAddress = addresses[0];
-        //        }
-        //    }
-        //    else
-        //    {
-        //        IpAddress = request.ServerVariables["REMOTE_ADDR"];
-        //    }
+            if ( !string.IsNullOrEmpty( ipAddress ) )
+            {
+                string[] addresses = ipAddress.Split( ',' );
+                if ( addresses.Length != 0 )
+                {
+                    IpAddress = addresses[0];
+                }
+            }
+            else
+            {
+                IpAddress = request.ServerVariables["REMOTE_ADDR"];
+            }
 
-        //    // nicely format localhost
-        //    if ( IpAddress == "::1" )
-        //    {
-        //        IpAddress = "localhost";
-        //    }
+            // nicely format localhost
+            if ( IpAddress == "::1" )
+            {
+                IpAddress = "localhost";
+            }
 
-        //    _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.UserAgent ) );
-        //}
+            _browser = new Lazy<ClientInfo>( () => _uaParser.Parse( request.UserAgent ) );
+        }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClientInformation"/> class.
@@ -117,10 +119,12 @@ namespace Rock.Net
             {
                 IpAddress = request.Headers.GetValues( "X-FORWARDED-FOR" ).First();
             }
-            //else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
-            //{
-            //    IpAddress = ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] )?.Request?.UserHostAddress ?? string.Empty;
-            //}
+#if !NET5_0_OR_GREATER
+            else if ( request.Properties.ContainsKey( "MS_HttpContext" ) )
+            {
+                IpAddress = ( ( HttpContextWrapper ) request.Properties["MS_HttpContext"] )?.Request?.UserHostAddress ?? string.Empty;
+            }
+#endif
 
             // nicely format localhost
             if ( IpAddress == "::1" )

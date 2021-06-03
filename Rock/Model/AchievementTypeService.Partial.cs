@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
@@ -66,6 +70,9 @@ namespace Rock.Model
                 throw new ArgumentException( $"The AchievementTypeCache did not resolve for record id {achievementTypeId}" );
             }
 
+#if NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var achievementComponent = achievementTypeCache.AchievementComponent;
 
             if ( achievementComponent == null )
@@ -84,6 +91,7 @@ namespace Rock.Model
                 achievementComponent.Process( rockContext, achievementTypeCache, sourceEntity );
                 rockContext.SaveChanges();
             }
+#endif
         }
 
         /// <summary>
@@ -94,6 +102,9 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetBadgeMarkup( AchievementTypeCache achievementTypeCache, int achieverEntityId )
         {
+#if NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var achievementComponent = achievementTypeCache.AchievementComponent;
 
             if ( achievementComponent == null )
@@ -102,6 +113,7 @@ namespace Rock.Model
             }
 
             return achievementComponent.GetBadgeMarkup( achievementTypeCache, achieverEntityId );
+#endif
         }
 
         #endregion Component Based Logic

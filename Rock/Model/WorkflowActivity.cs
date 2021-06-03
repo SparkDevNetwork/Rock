@@ -221,7 +221,9 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
+#if NET5_0_OR_GREATER
         [NotMapped]
+#endif
         [LavaVisible]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
@@ -290,40 +292,40 @@ namespace Rock.Model
 
             errorMessages = new List<string>();
 
-            //foreach ( var action in this.ActiveActions )
-            //{
-            //    List<string> actionErrorMessages;
-            //    bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
-            //    if ( actionErrorMessages.Any() )
-            //    {
-            //        errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
-            //        errorMessages.AddRange( actionErrorMessages );
-            //    }
+            foreach ( var action in this.ActiveActions )
+            {
+                List<string> actionErrorMessages;
+                bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
+                if ( actionErrorMessages.Any() )
+                {
+                    errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
+                    errorMessages.AddRange( actionErrorMessages );
+                }
 
-            //    // If action was not successful, exit
-            //    if ( !actionSuccess )
-            //    {
-            //        break;
-            //    }
+                // If action was not successful, exit
+                if ( !actionSuccess )
+                {
+                    break;
+                }
 
-            //    // If action completed this activity, exit
-            //    if ( !this.IsActive )
-            //    {
-            //        break;
-            //    }
+                // If action completed this activity, exit
+                if ( !this.IsActive )
+                {
+                    break;
+                }
 
-            //    // If action completed this workflow, exit
-            //    if ( this.Workflow == null || !this.Workflow.IsActive )
-            //    {
-            //        break;
-            //    }
-            //}
+                // If action completed this workflow, exit
+                if ( this.Workflow == null || !this.Workflow.IsActive )
+                {
+                    break;
+                }
+            }
 
             this.LastProcessedDateTime = RockDateTime.Now;
 
             AddLogEntry( "Processing Complete" );
 
-            //if ( !this.ActiveActions.Any() )
+            if ( !this.ActiveActions.Any() )
             {
                 MarkComplete();
             }
@@ -370,11 +372,11 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            //var activityType = this.ActivityTypeCache;
-            //if ( activityType != null )
-            //{
-            //    return activityType.ToStringSafe();
-            //}
+            var activityType = this.ActivityTypeCache;
+            if ( activityType != null )
+            {
+                return activityType.ToStringSafe();
+            }
             return base.ToString();
         }
 
