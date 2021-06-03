@@ -252,6 +252,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
         #region Custom Settings
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Defines the control that will provide additional Basic Settings tab content
         /// for the GroupMemberList block.
@@ -322,6 +323,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 attributeEntity.SetAttributeValue( AttributeKeys.AdditionalFields, jfBuilder.FieldSettings.ToJson() );
             }
         }
+#endif
 
         #endregion
     }

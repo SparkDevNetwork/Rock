@@ -17,7 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 
 using Rock.Attribute;
@@ -152,7 +156,11 @@ namespace Rock.Blocks.Types.Mobile.Core
                     if ( defaultNoteImageFile != null )
                     {
                         var url = defaultNoteImageFile.Path;
+#if NET5_0_OR_GREATER
+                        url = url.StartsWith( "~" ) ? url.Substring( 1 ) : url;
+#else
                         url = url.StartsWith( "~" ) ? System.Web.VirtualPathUtility.ToAbsolute( url ) : url;
+#endif
                         if ( !url.StartsWith( "http", StringComparison.OrdinalIgnoreCase ) )
                         {
                             var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
@@ -403,7 +411,11 @@ namespace Rock.Blocks.Types.Mobile.Core
                         return ActionForbidden( "Not authorized to add note." );
                     }
 
+#if NET5_0_OR_GREATER
+                    note = rockContext.Notes.CreateProxy();
+#else
                     note = rockContext.Notes.Create();
+#endif
                     note.IsSystem = false;
                     note.EntityId = entity.Id;
                     note.ParentNoteId = parentNote?.Id;

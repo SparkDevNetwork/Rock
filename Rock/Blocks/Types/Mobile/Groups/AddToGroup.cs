@@ -17,9 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
+#if !NET5_0_OR_GREATER
 using System.Web.Http;
+#endif
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.AddToGroup;

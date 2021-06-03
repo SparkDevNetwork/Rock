@@ -70,6 +70,7 @@ namespace Rock.Blocks
 
         #region Custom Settings
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Defines the control that will provide the Basic Settings tab content
         /// for all RockMobileBockType blocks.
@@ -94,6 +95,7 @@ namespace Rock.Blocks
             /// </value>
             public override string CustomSettingsTitle => "Mobile Settings";
         }
+#endif
 
         #endregion
     }

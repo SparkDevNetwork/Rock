@@ -25,7 +25,6 @@
     <Compile Remove="Jobs\**" />
     <Compile Remove="Lava\**" />
     <Compile Remove="Media\**" />
-    <Compile Remove="Mobile\**" />
     <Compile Remove="Model\**" />
     <Compile Remove="Net\**" />
     <Compile Remove="Pbx\**" />
@@ -64,7 +63,6 @@
     <EmbeddedResource Remove="Jobs\**" />
     <EmbeddedResource Remove="Lava\**" />
     <EmbeddedResource Remove="Media\**" />
-    <EmbeddedResource Remove="Mobile\**" />
     <EmbeddedResource Remove="Model\**" />
     <EmbeddedResource Remove="Net\**" />
     <EmbeddedResource Remove="Pbx\**" />
@@ -103,7 +101,6 @@
     <None Remove="Jobs\**" />
     <None Remove="Lava\**" />
     <None Remove="Media\**" />
-    <None Remove="Mobile\**" />
     <None Remove="Model\**" />
     <None Remove="Net\**" />
     <None Remove="Pbx\**" />
@@ -169,7 +166,42 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Blocks\BlockActionAttribute.cs" />
+    <Compile Include="Blocks\BlockActionResult.cs" />
     <Compile Include="Blocks\IRockBlockType.cs" />
+    <Compile Include="Blocks\IRockMobileBlockType.cs" />
+    <Compile Include="Blocks\RockBlockType.cs" />
+    <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\StructuredContentView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventItemOccurrenceView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\EventItemOccurrenceListByAudienceLava.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSession.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
+    <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
     <Compile Include="Bus\Consumer\RockConsumer.cs" />
     <Compile Include="Bus\Consumer\RockDebugConsumer.cs" />
     <Compile Include="Bus\Message\CacheWasUpdatedMessage.cs" />
@@ -1018,6 +1050,7 @@
     <Compile Include="Transactions\InteractionTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
+    <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="UniversalSearch\Crawler\CrawledPage.cs" />
     <Compile Include="UniversalSearch\Crawler\Crawler.cs" />
@@ -1199,6 +1232,7 @@
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
+    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.19" />
     <PackageReference Include="Serilog" Version="2.8.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />
@@ -1212,6 +1246,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.Core.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.Core.csproj" />
   </ItemGroup>
 

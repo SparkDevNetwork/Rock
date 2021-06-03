@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field
@@ -141,6 +142,35 @@ namespace Rock.Field
 
 namespace Rock.Field.Types
 {
+    public partial class BlockTemplateFieldType
+    {
+        private static readonly Guid _CustomGuid = new Guid( "ffffffff-ffff-ffff-ffff-ffffffffffff" );
+
+        /// <summary>
+        /// Gets the template value from either the pre-defined template or the custom template content.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The content of the selected template.</returns>
+        public static string GetTemplateContent( string value )
+        {
+            var values = value.Split( new[] { '|' }, 2 );
+
+            if ( values.Length >= 1 )
+            {
+                if ( values[0].AsGuid() == _CustomGuid && values.Length >= 2 )
+                {
+                    return values[1];
+                }
+                else
+                {
+                    return DefinedValueCache.Get( values[0].AsGuid() )?.Description ?? string.Empty;
+                }
+            }
+
+            return string.Empty;
+        }
+    }
+
     public partial class KeyValueListFieldType
     {
         public List<KeyValuePair<string, object>> GetValuesFromString( object ignored, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )

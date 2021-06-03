@@ -48,6 +48,10 @@ namespace Rock.Mobile
         /// <returns>A SiteCache object or null if the request was not valid.</returns>
         public static SiteCache GetCurrentApplicationSite( bool validateApiKey = true, Data.RockContext rockContext = null )
         {
+#if NET5_0_OR_GREATER
+            // Not currently supported.
+            return null;
+#else
             var appId = HttpContext.Current?.Request?.Headers?["X-Rock-App-Id"];
 
             if ( !appId.AsIntegerOrNull().HasValue )
@@ -84,6 +88,7 @@ namespace Rock.Mobile
             {
                 return site;
             }
+#endif
         }
 
         /// <summary>
@@ -204,6 +209,9 @@ namespace Rock.Mobile
         /// <returns>A string that represents the user's authentication token.</returns>
         public static string GetAuthenticationToken( string username )
         {
+#if NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var ticket = new System.Web.Security.FormsAuthenticationTicket( 1,
                 username,
                 RockDateTime.Now,
@@ -212,6 +220,7 @@ namespace Rock.Mobile
                 username.StartsWith( "rckipid=" ).ToString() );
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
+#endif
         }
 
         /// <summary>
