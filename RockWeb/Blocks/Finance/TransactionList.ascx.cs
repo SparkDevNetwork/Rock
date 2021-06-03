@@ -1594,6 +1594,13 @@ namespace RockWeb.Blocks.Finance
                     Status = a.Transaction.Status,
                     SettledDate = a.Transaction.SettledDate,
                     SettledGroupId = a.Transaction.SettledGroupId,
+                    FinancialGatewayId = a.Transaction.FinancialGatewayId,
+                    IsReconciled = a.Transaction.IsReconciled,
+                    IsSettled = a.Transaction.IsSettled,
+                    NonCashAssetTypeValueId = a.Transaction.NonCashAssetTypeValueId,
+                    ProcessedDateTime = a.Transaction.ProcessedDateTime,
+                    ShowAsAnonymous = a.Transaction.ShowAsAnonymous,
+                    StatusMessage = a.Transaction.StatusMessage,
                     TransactionDetail = new DetailInfo
                     {
                         AccountId = a.AccountId,
@@ -1604,6 +1611,7 @@ namespace RockWeb.Blocks.Finance
                     Summary = a.Transaction.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Transaction.Summary,
                     FinancialPaymentDetail = new PaymentDetailInfo
                     {
+                        Id = a.Transaction.FinancialPaymentDetail.Id,
                         CreditCardTypeValueId = a.Transaction.FinancialPaymentDetail.CreditCardTypeValueId,
                         CurrencyTypeValueId = a.Transaction.FinancialPaymentDetail.CurrencyTypeValueId
                     },
@@ -1678,8 +1686,15 @@ namespace RockWeb.Blocks.Finance
                         SettledDate = a.SettledDate,
                         SettledGroupId = a.SettledGroupId,
                         Summary = a.FutureProcessingDateTime.HasValue ? "[charge pending] " + a.Summary : a.Summary,
-                        FinancialPaymentDetail = new PaymentDetailInfo { CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId },
-                        ForeignCurrencyCodeValueId = a.ForeignCurrencyCodeValueId
+                        FinancialPaymentDetail = new PaymentDetailInfo { Id = a.Id, CreditCardTypeValueId = a.FinancialPaymentDetail.CreditCardTypeValueId, CurrencyTypeValueId = a.FinancialPaymentDetail.CurrencyTypeValueId },
+                        ForeignCurrencyCodeValueId = a.ForeignCurrencyCodeValueId,
+                        FinancialGatewayId = a.FinancialGatewayId,
+                        IsReconciled = a.IsReconciled,
+                        IsSettled = a.IsSettled,
+                        NonCashAssetTypeValueId = a.NonCashAssetTypeValueId,
+                        ProcessedDateTime = a.ProcessedDateTime,
+                        ShowAsAnonymous = a.ShowAsAnonymous,
+                        StatusMessage = a.StatusMessage
                     } );
             }
 
@@ -2210,6 +2225,13 @@ namespace RockWeb.Blocks.Finance
             public string Status { get; set; }
             public DateTime? SettledDate { get; set; }
             public string SettledGroupId { get; set; }
+            public int? FinancialGatewayId { get; set; }
+            public bool? IsReconciled { get; set; }
+            public bool? IsSettled { get; set; }
+            public int? NonCashAssetTypeValueId { get; set; }
+            public DateTime? ProcessedDateTime { get; set; }
+            public bool ShowAsAnonymous { get; set; }
+            public string StatusMessage { get; set; }
 
             /// <summary>
             /// NOTE: This will only be used in "Transaction Details" mode
@@ -2239,6 +2261,7 @@ namespace RockWeb.Blocks.Finance
 
         private class PaymentDetailInfo : RockDynamic
         {
+            public int Id { get; set; }
             public int? CreditCardTypeValueId { get; internal set; }
             public int? CurrencyTypeValueId { get; internal set; }
         }
