@@ -529,7 +529,7 @@ namespace RockWeb.Blocks.Assessments
                 }
             }
 
-            // Perform additional customisation of the list grid if required.
+            // Perform additional customization of the list grid if required.
             OnConfigureListGrid( this.ListGridControl );
         }
 
@@ -816,7 +816,7 @@ namespace RockWeb.Blocks.Assessments
         }
 
         /// <summary>
-        /// Show a fatal error indicating that the user does not have permision to access this content.
+        /// Show a fatal error indicating that the user does not have permission to access this content.
         /// </summary>
         private void ShowNotificationViewUnauthorized()
         {

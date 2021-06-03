@@ -460,7 +460,7 @@ namespace Rock.Web.UI.Controls
         {
             get => ViewState["CustomActionConfigs"]
                 .ToStringSafe()
-                .FromJsonOrNull<List<CustomActionConfig>>() ?? 
+                .FromJsonOrNull<List<CustomActionConfig>>() ??
                 new List<CustomActionConfig>();
             set => ViewState["CustomActionConfigs"] = value.ToJson();
         }
@@ -841,7 +841,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the default workflow launch control is visible. 
+        /// Gets or sets a value indicating whether the default workflow launch control is visible.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable default launch workflow]; otherwise, <c>false</c>.
@@ -1191,7 +1191,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
         /// and div element.  The div may be needed for paging when grid is not used in an update panel
-        /// so if wierd errors start happening, this could be the culprit.
+        /// so if weird errors start happening, this could be the culprit.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
         protected override void Render( HtmlTextWriter writer )

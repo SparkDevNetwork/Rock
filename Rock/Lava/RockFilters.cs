@@ -3436,7 +3436,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returnes the nearest group of a specific type.
+        /// Returns the nearest group of a specific type.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
