@@ -491,10 +491,6 @@ namespace Rock.Lava
 
             var exceptionStrategy = parameters.ExceptionHandlingStrategy ?? this.ExceptionHandlingStrategy;
 
-            parameters = parameters ?? new LavaRenderParameters();
-
-            var renderResult = new LavaRenderResult();
-
             try
             {
                 if ( _cacheService != null )
@@ -941,25 +937,5 @@ namespace Rock.Lava
 
             return true;
         }
-
-        /// <summary>
-        /// Parse the input text into a compiled Lava template.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <returns></returns>
-        //public LavaParseResult ParseTemplate( string inputTemplate )
-        //{
-        //    ILavaTemplate template;
-        //    List<Exception> errors;
-
-        //    var isValid = TryParseTemplate( inputTemplate, out template, out errors );
-
-        //    if ( !isValid )
-        //    {
-        //        throw new LavaException( "ParseTemplate failed. The Lava template is invalid." );
-        //    }
-
-        //    return template;
-        //}
     }
 }

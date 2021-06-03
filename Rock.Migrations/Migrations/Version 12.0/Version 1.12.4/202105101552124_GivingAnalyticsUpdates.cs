@@ -22,30 +22,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-<<<<<<< HEAD
     public partial class GivingAnalyticsUpdates : Rock.Migrations.RockMigration
-=======
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
-    public partial class SparklineChart : Rock.Migrations.RockMigration
-=======
-    public partial class GivingAnalyticsUpdates : Rock.Migrations.RockMigration
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-<<<<<<< HEAD
             AddColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift", c => c.Int());
-=======
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
-            Sql( MigrationSQL._202105251443228_SparklineChart_SparklineUpdate );
-=======
-            AddColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift", c => c.Int());
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d
         }
         
         /// <summary>
@@ -53,14 +37,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-<<<<<<< HEAD
             DropColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift");
-=======
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
-=======
-            DropColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift");
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d
         }
     }
 }

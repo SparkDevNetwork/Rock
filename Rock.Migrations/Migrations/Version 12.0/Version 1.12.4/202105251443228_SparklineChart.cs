@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,22 +22,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
     public partial class SparklineChart : Rock.Migrations.RockMigration
-=======
-    public partial class GivingAnalyticsUpdates : Rock.Migrations.RockMigration
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
             Sql( MigrationSQL._202105251443228_SparklineChart_SparklineUpdate );
-=======
-            AddColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift", c => c.Int());
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
         }
         
         /// <summary>
@@ -45,10 +37,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-<<<<<<< HEAD:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105251443228_SparklineChart.cs
-=======
-            DropColumn("dbo.FinancialTransactionAlertType", "MaximumDaysSinceLastGift");
->>>>>>> 0bfe3f8165cc65e4d6e6751dddad9e64a5939b3d:Rock.Migrations/Migrations/Version 12.0/Version 1.12.4/202105101552124_GivingAnalyticsUpdates.cs
         }
     }
 }
