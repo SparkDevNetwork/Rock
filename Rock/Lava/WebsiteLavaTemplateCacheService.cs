@@ -146,6 +146,16 @@ namespace Rock.Lava
         private long _cacheMisses = 0;
         private ILavaEngine _engine = null;
 
+        void ILavaTemplateCacheService.AddTemplate( ILavaTemplate template, string cacheKey )
+        {
+            if ( string.IsNullOrWhiteSpace( cacheKey ) )
+            {
+                throw new Exception( "WebsiteLavaTemplateCache template add failed. A cache key must be specified." );
+            }
+
+            WebsiteLavaTemplateCache.UpdateCacheItem( cacheKey, new WebsiteLavaTemplateCache() { Template = template } );
+        }
+
         long ILavaTemplateCacheService.CacheHits
         {
             get
@@ -178,11 +188,16 @@ namespace Rock.Lava
             WebsiteLavaTemplateCache.Clear();
         }
 
-        bool ILavaTemplateCacheService.ContainsTemplate( string content )
+        bool ILavaTemplateCacheService.ContainsKey( string key )
+        {
+            return Contains( key );
+        }
+
+        string ILavaTemplateCacheService.GetCacheKeyForTemplate( string content )
         {
             var key = GetTemplateKey( content );
 
-            return Contains( key );
+            return key;
         }
 
         void ILavaTemplateCacheService.RemoveTemplate( string content )

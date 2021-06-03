@@ -24,8 +24,8 @@
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                 </div>
                 <div class="col-md-6">
-                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" CssClass="js-isactivegroup" />
-                    <Rock:RockCheckBox ID="cbIsPublic" runat="server" Text="Public" />
+                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" CssClass="js-isactivegroup" />
+                    <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" />
                 </div>
             </div>
 

@@ -60,7 +60,7 @@ namespace Rock.Tests.UnitTests.Lava
                 // Initialize the Rock variant of the DotLiquid Engine
                 var engineOptions = new LavaEngineConfigurationOptions();
 
-                _rockliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
+                _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
 
                 // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
                 RegisterFilters( _rockliquidEngine );
@@ -73,7 +73,7 @@ namespace Rock.Tests.UnitTests.Lava
 
                 engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
 
-                _dotliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance(LavaEngineTypeSpecifier.DotLiquid, engineOptions );
+                _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance(LavaEngineTypeSpecifier.DotLiquid, engineOptions );
 
                 RegisterFilters( _dotliquidEngine );
             }
@@ -85,7 +85,7 @@ namespace Rock.Tests.UnitTests.Lava
 
                 engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
 
-                _fluidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+                _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
 
                 RegisterFilters( _fluidEngine );
             }
@@ -136,7 +136,7 @@ namespace Rock.Tests.UnitTests.Lava
             var context = engine.NewRenderContext( mergeValues );
 
             var result = engine.RenderTemplate( inputTemplate.Trim(), new LavaRenderParameters { Context = context } );
-            
+
             Assert.That.IsFalse( result.HasErrors, "Lava Template is invalid." );
 
             return result.Text;
@@ -152,7 +152,7 @@ namespace Rock.Tests.UnitTests.Lava
             var engines = GetActiveTestEngines();
 
             foreach ( var engine in engines )
-            { 
+            {
                 AssertTemplateOutput( engine.EngineType, expectedOutput, inputTemplate, mergeValues, ignoreWhitespace );
             }
         }

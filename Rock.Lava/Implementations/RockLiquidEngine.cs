@@ -26,7 +26,7 @@ namespace Rock.Lava.RockLiquid
 {
     /// <summary>
     /// Initialization class for the RockLiquid Lava Templating Engine.
-    /// This engine provides pass-through execution of Lava code in Rock v12 or below, using a Rock-specific fork of the DotLiquid framework.
+    /// This engine provides pass-through execution of Lava code for Rock v12 or below, using a Rock-specific fork of the DotLiquid framework.
     /// It is intended as a fall-back option to help troubleshoot issues with more recent engine implementations.
     /// </summary>
     public class RockLiquidEngine : LavaEngineBase
@@ -181,8 +181,10 @@ namespace Rock.Lava.RockLiquid
         /// <param name="output"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        protected override bool OnTryRender( ILavaTemplate template, LavaRenderParameters parameters, out string output, out List<Exception> errors )
+        protected override LavaRenderResult OnRenderTemplate( ILavaTemplate template, LavaRenderParameters parameters )
         {
+            var result = new LavaRenderResult();
+
             try
             {
                 var renderSettings = new RenderParameters();
@@ -211,19 +213,31 @@ namespace Rock.Lava.RockLiquid
                 // Call the Render method of the underlying DotLiquid template.
                 var templateProxy = template as DotLiquidTemplateProxy;
 
-                output = templateProxy.DotLiquidTemplate.Render( renderSettings );
+                result.Text = templateProxy.DotLiquidTemplate.Render( renderSettings );
 
-                errors = renderSettings.Context.Errors;
-
-                return true;
+                if ( renderSettings.Context.Errors != null )
+                {
+                    if ( renderSettings.Context.Errors.Count > 1 )
+                    {
+                        result.Error = new AggregateException( renderSettings.Context.Errors );
+                    }
+                    else
+                    {
+                        result.Error = renderSettings.Context.Errors.FirstOrDefault();
+                    }
+                }
             }
             catch ( Exception ex )
             {
-                ProcessException( ex, out output );
+                string output;
 
-                errors = new List<Exception> { ex };
-                return false;
+                ProcessException( ex, parameters.ExceptionHandlingStrategy, out output );
+
+                result.Text = output;
+                result.Error = ex;
             }
+
+            return result;
         }
 
         /// <summary>

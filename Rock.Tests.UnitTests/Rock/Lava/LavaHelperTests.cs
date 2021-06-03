@@ -24,7 +24,7 @@ namespace Rock.Tests.Rock.Lava
     public class LavaHelperTests
     {
         [TestMethod]
-        public void RemoveLavaCommentsReturnsEmptyStringForNullInput()
+        public void RemoveLavaComments_NullInput_ReturnsEmptyString()
         {
             var actualResult = LavaHelper.RemoveLavaComments( null );
 
@@ -32,7 +32,7 @@ namespace Rock.Tests.Rock.Lava
         }
 
         [TestMethod]
-        public void RemoveLavaCommentsLineCommentAfterContentReturnsContent()
+        public void RemoveLavaComments_LineCommentAfterContent_ReturnsContent()
         {
             var input = @"
 Line 1<br>
@@ -52,7 +52,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void RemoveLavaCommentsCommentInStringLiteralIsNotRemoved()
+        public void RemoveLavaComments_CommentInStringLiteral_IsNotRemoved()
         {
             var input = @"
 -- Begin Example --
@@ -82,7 +82,7 @@ or '/- Block Comment 2...
         }
 
         [TestMethod]
-        public void RemoveLavaCommentsLineCommentContainingQuotedStringIsRemoved()
+        public void RemoveLavaComments_LineCommentContainingQuotedString_IsRemoved()
         {
             var input = @"
 Line 1<br>
@@ -125,7 +125,7 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void RemoveLavaCommentsCommentInRawTagIsNotRemoved()
+        public void RemoveLavaComments_CommentInRawTag_IsNotRemoved()
         {
             var input = @"
 //- Line Comment: A comment that is confined to a single line.
@@ -158,7 +158,7 @@ Example End<br>
         }
 
         [TestMethod]
-        public void RemoveLavaCommentsBlockCommentSpanningMultipleLinesRemovesNewLinesContainedInComment()
+        public void RemoveLavaComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
         {
             var input = @"
 Line 1<br>
@@ -198,6 +198,65 @@ Line 3<br>
             var templateUncommented = LavaHelper.RemoveLavaComments( input );
 
             Assert.That.AreEqual( expectedOutput, templateUncommented );
+        }
+
+        [TestMethod]
+        public void IsLavaTemplate_HtmlWithComment_RendersTrue()
+        {
+            var input = @"
+Line 1<br>
+Line 2 Start<br>/- This is an inline block comment -/Line 2 End<br>
+Line 3<br>
+";
+
+            var isTemplate = LavaHelper.IsLavaTemplate( input );
+
+            Assert.That.AreEqual( true, isTemplate );
+        }
+
+        [TestMethod]
+        public void IsLavaTemplate_TextWithDoubleQuotedComment_ReturnsFalse()
+        {
+            // In Liquid, a string must be surrounded by a pair of double quotes or single quotes: "the 'quoted' text" or 'the "quoted" text'.
+            var input = @"
+Line 1<br>
+Line 2<br>Here is a sample comment: ""/- This is a double-quoted inline comment with an internal 'quote' -/""<br>
+Line 3<br>
+";
+
+            var isTemplate = LavaHelper.IsLavaTemplate( input );
+
+            Assert.That.AreEqual( false, isTemplate );
+        }
+
+        [TestMethod]
+        public void IsLavaTemplate_TextWithSingleQuotedComment_ReturnsFalse()
+        {
+            // In Liquid, a string must be surrounded by a pair of double quotes or single quotes: "the 'quoted' text" or 'the "quoted" text'.
+            var input = @"
+Line 1<br>
+Line 2<br>Here is a sample comment: '/- This is a quoted inline comment with an internal ""quote"" -/'<br>
+Line 3<br>
+
+";
+
+            var isTemplate = LavaHelper.IsLavaTemplate( input );
+
+            Assert.That.AreEqual( false, isTemplate );
+        }
+
+        [TestMethod]
+        public void IsLavaTemplate_CommentContainingQuotedText_ReturnsTrue()
+        {
+            var input = @"
+Line 1<br>
+Line 2<br> /- I said ""This comment contains some quoted text"" -/<br>
+Line 3<br>
+";
+
+            var isTemplate = LavaHelper.IsLavaTemplate( input );
+
+            Assert.That.AreEqual( true, isTemplate );
         }
     }
 }

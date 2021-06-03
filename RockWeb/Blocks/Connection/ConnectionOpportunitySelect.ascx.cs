@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Connection
         #region Attribute Default values
 
         private const string StatusTemplateDefaultValue = @"
-<div class='badge-legend expand-on-hover padding-r-md'>
+<div class='badge-legend expand-on-hover mr-3'>
     <span class='badge badge-info badge-circle js-legend-badge'>Assigned To You</span>
     <span class='badge badge-warning badge-circle js-legend-badge'>Unassigned Item</span>
     <span class='badge badge-critical badge-circle js-legend-badge'>Critical Status</span>

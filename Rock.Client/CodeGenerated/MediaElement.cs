@@ -140,6 +140,12 @@ namespace Rock.Client
     /// </summary>
     public partial class MediaElement : MediaElementEntity
     {
+        /// <summary />
+        public string DefaultFileUrl { get; set; }
+
+        /// <summary />
+        public string DefaultThumbnailUrl { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

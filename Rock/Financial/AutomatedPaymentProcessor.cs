@@ -805,9 +805,9 @@ namespace Rock.Financial
             // Create a new payment detail or update the future transaction's payment detail now that it has been charged
             var financialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? new FinancialPaymentDetail();
             financialPaymentDetail.AccountNumberMasked = _payment.AccountNumberMasked;
-            financialPaymentDetail.NameOnCardEncrypted = _payment.NameOnCardEncrypted;
-            financialPaymentDetail.ExpirationMonthEncrypted = _payment.ExpirationMonthEncrypted;
-            financialPaymentDetail.ExpirationYearEncrypted = _payment.ExpirationYearEncrypted;
+            financialPaymentDetail.NameOnCard = _payment.NameOnCard;
+            financialPaymentDetail.ExpirationMonth = _payment.ExpirationMonth;
+            financialPaymentDetail.ExpirationYear = _payment.ExpirationYear;
             financialPaymentDetail.CreatedByPersonAliasId = _currentPersonAliasId;
             financialPaymentDetail.ForeignKey = _payment.ForeignKey;
             financialPaymentDetail.GatewayPersonIdentifier = _financialPersonSavedAccount?.GatewayPersonIdentifier;

@@ -228,7 +228,10 @@ namespace RockWeb.Blocks.Steps
                 {
                     // use the program's default view setting
                     var program = GetStepProgram();
-                    hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
+                    if ( program != null )
+                    {
+                        hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
+                    }
                 }
             }
 

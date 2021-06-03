@@ -81,6 +81,15 @@ namespace Rock.Lava
         /// </summary>
         public abstract string EngineName { get; }
 
+        #region Events
+
+        /// <summary>
+        /// An event that is triggered when the LavaEngine encounters a processing exception.
+        /// </summary>
+        public event EventHandler<LavaEngineExceptionEventArgs> ExceptionEncountered;
+
+        #endregion
+
         /// <summary>
         /// Create a new template context.
         /// </summary>
@@ -179,7 +188,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Implement this method to provide a Liquid framework-specific instance of a new render context. 
+        /// Implement this method to provide a Liquid framework-specific instance of a new render context.
         /// </summary>
         /// <returns></returns>
         protected abstract ILavaRenderContext OnCreateRenderContext();
@@ -225,22 +234,6 @@ namespace Rock.Lava
         /// Specifying this parameter overrides the effect of any [LavaVisible] and [LavaHidden] custom attributes applied to the type.
         /// </param>
         public abstract void RegisterSafeType( Type type, IEnumerable<string> allowedMembers );
-
-        /// <summary>
-        /// Register a shortcode that is defined and implemented in code.
-        /// </summary>
-        /// <param name="shortcodeFactoryMethod"></param>
-        public void RegisterStaticShortcode( Func<string, ILavaShortcode> shortcodeFactoryMethod )
-        {
-            var instance = shortcodeFactoryMethod( "default" );
-
-            if ( instance == null )
-            {
-                throw new Exception( "Shortcode factory could not provide a valid instance for \"default\"." );
-            }
-
-            RegisterShortcode( instance.SourceElementName, shortcodeFactoryMethod );
-        }
 
         /// <summary>
         /// Register a shortcode that is defined and implemented in code.
@@ -472,30 +465,98 @@ namespace Rock.Lava
         /// The rendered output of the template.
         /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
         /// </returns>
-        //public string RenderTemplate( string inputTemplate, ILavaRenderContext context )
-        //{
-        //    string output;
-        //    List<Exception> errors;
-
-        //    TryRenderTemplate( inputTemplate, context, out output, out errors );
-
-        //    return output;
-        //}
-
-        /// <summary>
-        /// Render the provided template in the specified context.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="context"></param>
-        /// <returns>
-        /// The rendered output of the template.
-        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-        /// </returns>
         public LavaRenderResult RenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields )
         {
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( this.NewRenderContext( mergeFields ) ) );
 
             return result;
+        }
+
+        /// <summary>
+        /// Render the provided template using the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="parameters"></param>
+        /// <returns>
+        /// The result of the render operation.
+        /// If the template is invalid, the Text property may contain an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public LavaRenderResult RenderTemplate( string inputTemplate, LavaRenderParameters parameters )
+        {
+            ILavaTemplate template;
+
+            parameters = parameters ?? new LavaRenderParameters();
+
+            var renderResult = new LavaRenderResult();
+
+            var exceptionStrategy = parameters.ExceptionHandlingStrategy ?? this.ExceptionHandlingStrategy;
+
+            try
+            {
+                if ( _cacheService != null )
+                {
+                    template = _cacheService.GetOrAddTemplate( inputTemplate, parameters.CacheKey );
+                }
+                else
+                {
+                    template = null;
+                }
+
+                bool isParsed = ( template != null );
+
+                if ( !isParsed )
+                {
+                    var parseResult = ParseTemplate( inputTemplate );
+
+                    if ( parseResult.HasErrors )
+                    {
+                        if ( parseResult.Template == null
+                             || exceptionStrategy == ExceptionHandlingStrategySpecifier.Throw )
+                        {
+                            throw new LavaException( "Lava Template parse operation failed." );
+                        }
+                    }
+
+                    template = parseResult.Template;
+                }
+
+                if ( parameters.Context == null )
+                {
+                    parameters.Context = NewRenderContext();
+                }
+
+                renderResult = RenderTemplate( template, parameters );
+            }
+            catch ( Exception ex )
+            {
+                if ( !( ex is LavaException ) )
+                {
+                    ex = new LavaRenderException( this.EngineName, inputTemplate, ex );
+                }
+
+                string message;
+
+                ProcessException( ex, exceptionStrategy, out message );
+
+                renderResult.Error = ex;
+                renderResult.Text = message;
+            }
+
+            return renderResult;
+        }
+
+        /// <summary>
+        /// Render the provided template using the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="context"></param>
+        /// <returns>
+        /// The result of the render operation.
+        /// If the template is invalid, the Text property may contain  an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public LavaRenderResult RenderTemplate( ILavaTemplate template, ILavaRenderContext context )
+        {
+            return RenderTemplate( template, new LavaRenderParameters { Context = context } );
         }
 
         /// <summary>
@@ -511,183 +572,46 @@ namespace Rock.Lava
         {
             parameters = parameters ?? new LavaRenderParameters();
 
-            var renderResult = new LavaRenderResult();
+            LavaRenderResult result;
 
             try
             {
-                List<Exception> errors;
-
                 if ( parameters.Context == null )
                 {
                     parameters.Context = NewRenderContext();
                 }
 
-                string output;
+                result = OnRenderTemplate( template, parameters );
 
-                var isRendered = OnTryRender( template, parameters, out output, out errors );
-
-                renderResult.Text = output;
-                renderResult.Errors = errors;
+                if ( result.Error != null )
+                {
+                    result.Error = GetLavaRenderException( result.Error );
+                }
             }
             catch ( Exception ex )
             {
-                ProcessException( ex );
+                result = new LavaRenderResult();
 
-                renderResult.Errors = new List<Exception> { ex };
-                renderResult.Text = null;
+                var lre = GetLavaRenderException( ex );
+
+                string message;
+
+                ProcessException( lre, parameters.ExceptionHandlingStrategy, out message );
+
+                result.Error = lre;
+                result.Text = message;
             }
 
-            return renderResult;
+            return result;
         }
-
-            /// <summary>
-            /// Render the provided template using the specified parameters.
-            /// </summary>
-            /// <param name="inputTemplate"></param>
-            /// <param name="parameters"></param>
-            /// <returns>
-            /// The result of the render operation.
-            /// If the template is invalid, the Text property may contain  an error message or an empty string according to the current ExceptionHandlingStrategy setting.
-            /// </returns>
-            public LavaRenderResult RenderTemplate( string inputTemplate, LavaRenderParameters parameters )
-        {
-            ILavaTemplate template;
-
-            parameters = parameters ?? new LavaRenderParameters();
-
-            var renderResult = new LavaRenderResult();
-
-            try
-            {
-                if ( _cacheService != null )
-                {
-                    template = _cacheService.GetOrAddTemplate( inputTemplate, parameters.CacheKey );
-                }
-                else
-                {
-                    template = null;
-                }
-
-                bool isParsed = ( template != null );
-
-                List<Exception> errors;
-
-                if ( !isParsed )
-                {
-                    var parseResult = ParseTemplate( inputTemplate ); //, out template, out errors );
-                    //isParsed = TryParseTemplate( inputTemplate, out template, out errors );
-
-                    if ( parseResult.HasErrors )
-                    {
-                        if ( parseResult.Template == null
-                             || this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.Throw )
-                        {
-                            throw new LavaException( "Lava Template render operation failed." );
-                        }
-                    }
-
-                    template = parseResult.Template;
-                }
-
-                if ( parameters.Context == null )
-                {
-                    parameters.Context = NewRenderContext();
-                }
-
-                string output;
-
-                var isRendered = OnTryRender( template, parameters, out output, out errors );
-
-                renderResult.Text = output;
-                renderResult.Errors = errors;
-            }
-            catch ( Exception ex )
-            {
-                ProcessException( ex );
-
-                renderResult.Errors = new List<Exception> { ex };
-                renderResult.Text = null;
-            }
-
-            return renderResult;
-        }
-
-        /// <summary>
-        /// Try to render the provided template.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
-        //[Obsolete( "Use LavaRenderResult RenderTemplate() instead." )]
-        //public bool TryRenderTemplate( string inputTemplate, out string output, out List<Exception> errors )
-        //{
-        //    return TryRenderTemplate( inputTemplate, mergeFields: null, out output, out errors );
-        //}
-
-        /// <summary>
-        /// Try to render the provided template with the specified merge fields.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="mergeFields"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
-        //public bool TryRenderTemplate( string inputTemplate, ILavaDataDictionary mergeFields, out string output, out List<Exception> errors )
-        //{
-        //    ILavaRenderContext context;
-
-        //    if ( mergeFields != null )
-        //    {
-        //        context = NewRenderContext();
-
-        //        context.SetMergeFields( mergeFields );
-        //    }
-        //    else
-        //    {
-        //        context = null;
-        //    }
-
-        //    return TryRenderTemplate( inputTemplate, context, out output, out errors );
-        //}
-
-        /// <summary>
-        /// Try to render the provided template in the specified context.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="context"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
-        //public bool TryRenderTemplate( string inputTemplate, ILavaRenderContext context, out string output, out List<Exception> errors )
-        //{
-        //    var result = RenderTemplate( inputTemplate, new LavaRenderParameters { Context = context } );
-
-        //    output = result.Text;
-        //    errors = result.Errors;
-
-        //    return !result.HasErrors;            
-        //}
-
-        /// <summary>
-        /// Try to render the specified Lava template using the specified parameters.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <param name="parameters"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
-        //public bool TryRenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters, out string output, out List<Exception> errors )
-        //{
-        //    return OnTryRender( inputTemplate, parameters, out output, out errors );
-        //}
 
         /// <summary>
         /// Override this method to render the Lava template using the underlying rendering engine.
         /// </summary>
         /// <param name="inputTemplate"></param>
         /// <param name="parameters"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
         /// <returns></returns>
-        protected abstract bool OnTryRender( ILavaTemplate inputTemplate, LavaRenderParameters parameters, out string output, out List<Exception> errors );
+        protected abstract LavaRenderResult OnRenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters );
 
         /// <summary>
         /// Compare two objects for equivalence according to the applicable Lava equality rules for the input object types.
@@ -712,16 +636,20 @@ namespace Rock.Lava
             }
             catch ( Exception ex )
             {
-                result.Errors = new List<Exception> { ex };
+                var lpe = ex as LavaParseException ?? new LavaParseException( this.EngineName, inputTemplate, ex );
+
+                result.Error = lpe;
 
                 string message;
 
-                ProcessException( ex, out message );
+                var exceptionStrategy = this.ExceptionHandlingStrategy;
+
+                ProcessException( lpe, exceptionStrategy, out message );
 
                 if ( !string.IsNullOrWhiteSpace( message ) )
                 {
                     // Create a new template containing the error message.
-                    if ( this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+                    if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
                     {
                         result.Template = OnParseTemplate( message );
                     }
@@ -878,20 +806,29 @@ namespace Rock.Lava
 
         #endregion
 
-        protected void ProcessException( Exception ex )
+        protected void ProcessException( Exception ex, ExceptionHandlingStrategySpecifier? exceptionStrategy )
         {
-            string discardedOutput;
-
-            ProcessException( ex, out discardedOutput );
+            ProcessException( ex, exceptionStrategy, out _ );
         }
 
-        protected void ProcessException( Exception ex, out string message )
+        protected void ProcessException( Exception ex, ExceptionHandlingStrategySpecifier? exceptionStrategy, out string message )
         {
-            if ( this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+            // Raise an event to notify subscribers that an exception has occurred.
+            if ( this.ExceptionEncountered != null )
             {
-                message = $"Lava Error: {ex.Message}";
+                ExceptionEncountered( this, new LavaEngineExceptionEventArgs { Exception = GetLavaException( ex ) } );
             }
-            else if ( this.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.Ignore )
+
+            // Process the exception according to the specified exception strategy.
+            exceptionStrategy = exceptionStrategy ?? this.ExceptionHandlingStrategy;
+
+            if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+            {
+                var errorMessage = ex.Message.Length > 100 ? ex.Message.Substring( 0, 100 ) + "..." : ex.Message;
+
+                message = $"Lava Error: {errorMessage}";
+            }
+            else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.Ignore )
             {
                 // We should probably log the message here rather than failing silently, but this preserves current behavior.
                 message = null;
@@ -899,15 +836,25 @@ namespace Rock.Lava
             else
             {
                 // Ensure that any exception thrown by the engine is a LavaException so it can be easily identified.
-                if ( ex is LavaException )
-                {
-                    throw ex;
-                }
-                else
-                {
-                    throw new LavaException( "A Lava Processing Error occurred. Check the inner exception for details.", ex );
-                }                
+                throw GetLavaException( ex );
             }
+        }
+
+        private LavaException GetLavaException( Exception ex )
+        {
+            if ( ex is LavaException le )
+            {
+                return le;
+            }
+            else
+            {
+                return new LavaException( "A Lava Processing Error occurred. Check the inner exception for details.", ex );
+            }
+        }
+
+        private LavaRenderException GetLavaRenderException( Exception ex )
+        {
+            return ex as LavaRenderException ?? new LavaRenderException( this.EngineName, string.Empty, ex );
         }
 
         /// <summary>
@@ -942,61 +889,53 @@ namespace Rock.Lava
         /// Remove the registration entry for a Tag with the specified name.
         /// </summary>
         /// <param name="name"></param>
-        public void DeregisterTag( string name )
+        public bool DeregisterTag( string name )
         {
             var registrationKey = LavaUtilityHelper.GetLiquidElementNameFromShortcodeName( name );
 
-            if ( _lavaElements.ContainsKey( registrationKey ) )
+            if ( !_lavaElements.ContainsKey( registrationKey ) )
             {
-                _lavaElements.Remove( registrationKey );
+                return false;
             }
+
+            _lavaElements.Remove( registrationKey );
+
+            return true;
         }
 
         /// <summary>
         /// Remove the registration entry for a Block with the specified name.
         /// </summary>
         /// <param name="name"></param>
-        public void DeregisterBlock( string name )
+        public bool DeregisterBlock( string name )
         {
-            if ( _lavaElements.ContainsKey( name ) )
+            if ( !_lavaElements.ContainsKey( name ) )
             {
-                _lavaElements.Remove( name );
+                return false;
             }
+
+            _lavaElements.Remove( name );
+
+            return true;
         }
 
         /// <summary>
         /// Remove the registration entry for a Shortcode with the specified name.
         /// </summary>
         /// <param name="name"></param>
-        public void DeregisterShortcode( string name )
+        public bool DeregisterShortcode( string name )
         {
             // Get the decorated name for the shortcode.
             var registrationKey = LavaUtilityHelper.GetLiquidElementNameFromShortcodeName( name );
 
-            if ( _lavaElements.ContainsKey( registrationKey ) )
+            if ( !_lavaElements.ContainsKey( registrationKey ) )
             {
-                _lavaElements.Remove( registrationKey );
+                return false;
             }
+
+            _lavaElements.Remove( registrationKey );
+
+            return true;
         }
-
-        /// <summary>
-        /// Parse the input text into a compiled Lava template.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
-        /// <returns></returns>
-        //public LavaParseResult ParseTemplate( string inputTemplate )
-        //{
-        //    ILavaTemplate template;
-        //    List<Exception> errors;
-
-        //    var isValid = TryParseTemplate( inputTemplate, out template, out errors );
-
-        //    if ( !isValid )
-        //    {
-        //        throw new LavaException( "ParseTemplate failed. The Lava template is invalid." );
-        //    }
-
-        //    return template;
-        //}
     }
 }

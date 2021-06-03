@@ -15,10 +15,11 @@
                         <div id="pnlGivingStats" runat="server">
                         <asp:Literal ID="lLastGiving" runat="server" />
                         <hr class="m-0">
-                        <div class="row d-flex flex-wrap align-items-end py-3">
+
+                        <div class="row d-flex flex-wrap align-items-start py-3">
                             <div class="col-xs-12 col-sm-8 col-lg-9 giving-by-month">
-                                <h5 class="mt-0">Giving by Month</h5>
-                                <ul class="trend-chart trend-chart-gap" style="height: 70px;">
+                                <h5 class="kpi-lg-label mt-0 mb-2">Giving by Month</h5>
+                                <ul class="trend-chart trend-chart-gap" style="height:85px;">
                                     <asp:Repeater ID="rptGivingByMonth" runat="server">
                                         <ItemTemplate>
                                             <li title="<%#( ( ( DateTime ) Eval( "key" ) ).ToString( "MMM yyyy" ) ) %>: <%#  Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("value")) %>"><span style="<%# GetGivingByMonthPercent ( (decimal)Eval( "value" ) ) %>"></span></li>
@@ -28,11 +29,12 @@
                             </div>
 
                             <div class="col-xs-10 col-sm-4 col-lg-3 percentile-giving mx-auto mt-3 m-sm-0">
+                                <h5 class="kpi-lg-label mt-0 mb-2">Community View</h5>
                                 <div class="d-flex flex-row rollover-container">
                                     <div class="rollover-item inset-0 z-10 bg-gray-100 p-1 small"><asp:Literal ID="lHelpText" runat="server" /></div>
-                                    <div class="pr-3">
-                                        <span class="stat-value-lg"><asp:Literal ID="lGivingBin" runat="server" /></span>
-                                        <span class="stat-label"><asp:Literal ID="lPercent" runat="server" /> %</span>
+                                    <div class="pr-2">
+                                        <span class="stat-value-lg"><asp:Literal ID="lPercent" runat="server" />%</span>
+                                        <span class="stat-label">Percentile<span class="d-block small">Bin <asp:Literal ID="lGivingBin" runat="server" /></span></span>
                                     </div>
                                     <div class="flex-fill">
                                         <ul class="trend-chart" style="height: 70px;">
@@ -46,7 +48,14 @@
                                             <li><span id="lStage8" runat="server" style="height: 12.5%"></span></li>
                                             <li><span id="lStage9" runat="server" style="height: 10%"></span></li>
                                             <li><span id="lStage10" runat="server" style="height: 8%"></span></li>
-                                            <ul>
+                                        </ul>
+
+                                        <ul class="trend-bar list-unstyled">
+                                            <li style="width: 5%"><span id="lBin1" runat="server"></span></li>
+                                            <li style="width: 15%"><span id="lBin2" runat="server"></span></li>
+                                            <li style="width: 20%"><span id="lBin3" runat="server"></span></li>
+                                            <li style="width: 60%"><span id="lBin4" runat="server"></span></li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -55,7 +64,7 @@
                         <asp:Literal ID="lGivingAnalytics" runat="server" />
                         </div>
                         <hr class="m-0">
-                        <h5>Yearly Summary</h5>
+                        <h5 class="mt-4">Yearly Summary</h5>
                         <div class="row d-flex flex-wrap">
                             <asp:Repeater ID="rptYearSummary" runat="server" OnItemDataBound="rptYearSummary_ItemDataBound">
                                 <ItemTemplate>
