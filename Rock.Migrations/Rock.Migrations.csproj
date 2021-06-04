@@ -3208,10 +3208,18 @@
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplate.lava" />
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateFooter.json" />
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateLogo.data" />
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json" />
+    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplate.lava">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateFooter.json">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateLogo.data">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 10.0\Version 1.10.2\201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>201912092001240_FamilyAnalyticsGivingId.cs</DependentUpon>
     </None>
