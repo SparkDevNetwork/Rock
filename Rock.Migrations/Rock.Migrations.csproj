@@ -61,8 +61,8 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202105280103566_StatementGenerator.cs" />
-    <Compile Include="Migrations\202105280103566_StatementGenerator.Designer.cs">
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105251737592_CodeGenerated_0525.cs" />
@@ -511,7 +511,7 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202105280103566_StatementGenerator.resx">
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105251737592_CodeGenerated_0525.resx">
@@ -922,20 +922,20 @@
       <DependentUpon>202105251443228_SparklineChart.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplate.lava">
+    <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplate.lava">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateFooter.json">
-      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
-    </None>
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateLogo.data">
-      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
-    </None>
-    <None Include="Migrations\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json">
+    <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateFooter.json">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
     <None Include="Migrations\CreateDatabase\201707311527250_LastName.gz">
       <DependentUpon>201707311527250_AddMetaData.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateLogo.data">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
+    </None>
+    <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json">
+      <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>

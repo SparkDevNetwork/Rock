@@ -182,15 +182,15 @@
     <value>version 12.0\version 1.12.4\202105251443228_sparklinechart_sparklineupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202105280103566_statementgenerator_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateFooter" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202105280103566_statementgenerator_rockdefaulttemplatefooter.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatefooter.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202105280103566_statementgenerator_rockdefaulttemplatelogo.data;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatelogo.data;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
   <data name="_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>202105280103566_statementgenerator_rockdefaulttemplatereportsettings.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatereportsettings.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
 </root>
