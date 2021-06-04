@@ -2562,5 +2562,20 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate {
+            get {
+                return ResourceManager.GetString("_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate", resourceCulture);
+            }
+        }
     }
 }

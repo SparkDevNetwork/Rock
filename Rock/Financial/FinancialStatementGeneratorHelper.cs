@@ -144,17 +144,12 @@ namespace Rock.Financial
                                                PersonId = pg.PersonId,
                                                GroupId = pg.GroupId,
                                                LocationId = ( int? ) l.Location.Id,
+                                               Street1 = l.Location.Street1,
                                                PostalCode = l.Location.PostalCode,
                                                Country = l.Location.Country
                                            };
 
-                // Require that LocationId has a value unless this is for a specific person, a dataview, or the IncludeIndividualsWithNoAddress option is enabled
-                if ( financialStatementGeneratorOptions.PersonId == null && financialStatementGeneratorOptions.DataViewId == null && !financialStatementGeneratorOptions.IncludeIndividualsWithNoAddress )
-                {
-                    unionJoinLocationQry = unionJoinLocationQry.Where( a => a.LocationId.HasValue );
-                }
-
-                var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId, a.LocationId, a.PostalCode, a.Country } );
+                var givingIdsQry = unionJoinLocationQry.Select( a => new { a.PersonId, a.GroupId, a.LocationId, a.PostalCode, a.Country, a.Street1 } );
 
                 var localCountry = GlobalAttributesCache.Get().OrganizationLocation?.Country;
 
@@ -166,6 +161,7 @@ namespace Rock.Financial
                         LocationId = a.LocationId,
                         PostalCode = a.PostalCode,
                         Country = a.Country,
+                        HasValidMailingAddress = a.LocationId.HasValue && a.PostalCode.IsNotNullOrWhiteSpace() && a.Street1.IsNotNullOrWhiteSpace(),
 
                         // Indicate if it is a international address. Which is if Country is different than OrganizationLocation Country (and country is not blank)
                         IsInternationalAddress = a.Country.IsNotNullOrWhiteSpace() && localCountry.IsNotNullOrWhiteSpace() && !a.Country.Equals( localCountry, StringComparison.OrdinalIgnoreCase )
@@ -335,21 +331,8 @@ namespace Rock.Financial
                     person = personList.FirstOrDefault();
                 }
 
-                var optedOutPersonIds = FinancialStatementGeneratorHelper.GetOptedOutPersonIds( personList );
-
-                if ( optedOutPersonIds.Any() )
-                {
-                    bool givingLeaderOptedOut = personList.Any( a => optedOutPersonIds.Contains( a.Id ) && a.GivingLeaderId == a.Id );
-
-                    var remaingPersonIds = personList.Where( a => !optedOutPersonIds.Contains( a.Id ) ).ToList();
-
-                    if ( givingLeaderOptedOut || !remaingPersonIds.Any() )
-                    {
-                        // If the giving leader opted out, or if there aren't any people in the giving statement that haven't opted out, marked the result as Opted Out
-                        // this will indicate if the Generator should include the opted out person (based on the Generator's Include Opted Out option)
-                        recipientResult.OptedOut = true;
-                    }
-                }
+                // if *any* giving unit member has opted out, set the recipient as opted out
+                recipientResult.OptedOut = FinancialStatementGeneratorHelper.GetOptedOutPersonIds( personList ).Any();
 
                 var personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
                 if ( personAliasIds.Count == 1 )
@@ -810,7 +793,7 @@ namespace Rock.Financial
             // pledge information
             var pledgeQry = new FinancialPledgeService( rockContext ).Queryable();
 
-            // only include pledges that started *before* the enddate of the statement ( we don't want pledges that start AFTER the statement end date )
+            // only include pledges that started *before* the end date of the statement ( we don't want pledges that start AFTER the statement end date )
             if ( financialStatementGeneratorOptions.EndDate.HasValue )
             {
                 pledgeQry = pledgeQry.Where( p => p.StartDate < financialStatementGeneratorOptions.EndDate.Value );

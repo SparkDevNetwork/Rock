@@ -63,9 +63,9 @@ namespace Rock.Apps.StatementGenerator
             txtDocumentName.Text = saveOptions.DocumentName;
             txtDocumentPurposeKey.Text = saveOptions.DocumentPurposeKey;
             cbOverwriteDocumentsOfThisTypeCreatedOnSameDate.IsChecked = saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate;
-            rbSaveForAllAdults.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdults;
+            rbSaveForAllAdults.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
             rbSaveForPrimaryGiver.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver;
-            rbSaveForAllActiveFamilyMembers.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembers;
+            rbSaveForAllActiveFamilyMembers.IsChecked = saveOptions.DocumentSaveFor == Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
 
             ReportOptions.Current.IndividualSaveOptions = saveOptions;
         }
@@ -116,7 +116,7 @@ namespace Rock.Apps.StatementGenerator
 
             if ( rbSaveForAllAdults.IsChecked == true )
             {
-                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdults;
+                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup;
             }
             else if ( rbSaveForPrimaryGiver.IsChecked == true )
             {
@@ -124,7 +124,7 @@ namespace Rock.Apps.StatementGenerator
             }
             else if ( rbSaveForAllActiveFamilyMembers.IsChecked == true )
             {
-                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembers;
+                saveOptions.DocumentSaveFor = Client.Enums.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup;
             }
 
             ReportOptions.Current.IndividualSaveOptions = saveOptions;
