@@ -78,6 +78,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<string> ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -88,6 +89,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return new ListDelimitedField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -191,6 +193,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectEmail;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -249,6 +252,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         #endregion
     }

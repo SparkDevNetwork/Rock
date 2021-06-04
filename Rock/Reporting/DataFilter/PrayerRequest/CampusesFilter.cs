@@ -159,6 +159,7 @@ function() {{
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -241,6 +242,7 @@ function() {{
                 campusesPicker.SelectedCampusIds = campusIds;
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -284,6 +286,7 @@ function() {{
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Updates the selection from page parameters.
         /// </summary>
@@ -311,6 +314,7 @@ function() {{
 
             return selection;
         }
+#endif
 
         #endregion
 

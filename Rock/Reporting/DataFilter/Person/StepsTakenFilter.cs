@@ -347,6 +347,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -525,6 +526,7 @@ function() {
         {
             base.RenderControls( entityType, filterControl, writer, controls );
         }
+#endif
 
         private StepProgram GetStepProgram( RockContext dataContext, int stepProgramId )
         {
@@ -549,6 +551,7 @@ function() {
             return stepProgram;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the selection.
         /// </summary>
@@ -650,6 +653,7 @@ function() {
                 item.Selected = settings.StepCampusGuids.Contains( item.Value.AsGuid() );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

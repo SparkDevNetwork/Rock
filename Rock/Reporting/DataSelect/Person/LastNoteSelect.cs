@@ -78,6 +78,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( string ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -91,6 +92,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -156,6 +158,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectNoteExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -227,6 +230,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         #endregion
     }

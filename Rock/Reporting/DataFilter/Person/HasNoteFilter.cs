@@ -155,6 +155,7 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -259,6 +260,7 @@ namespace Rock.Reporting.DataFilter.Person
                 slidingDateRange.DelimitedValues = selectionConfig.DelimitedValues;
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

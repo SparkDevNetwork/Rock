@@ -186,6 +186,7 @@ namespace Rock.Reporting.DataSelect.Person
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlNoteTypes = "cblNoteTypes";
         private const string _CtlSlidingDateRangePicker = "slidingDateRangePicker";
 
@@ -264,6 +265,7 @@ namespace Rock.Reporting.DataSelect.Person
             cblNoteTypes.SetValues( settings.NoteTypeIds );
             slidingDateRangePicker.DelimitedValues = settings.DelimitedValues.ToStringSafe();
         }
+#endif
 
         #endregion
 

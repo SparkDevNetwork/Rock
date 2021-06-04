@@ -144,6 +144,31 @@ function() {
                     combineGiving = selectionValues[5].AsBooleanOrNull() ?? false;
                 }
 
+#if NET5_0_OR_GREATER
+                string delimitedValues;
+
+                if ( selectionValues.Length >= 7 )
+                {
+                    // convert comma delimited to pipe
+                    delimitedValues = SlidingDateRangePicker.FormatDelimitedValues( selectionValues[6].Replace( ',', '|' ) );
+                }
+                else
+                {
+                    // if converting from a previous version of the selection
+                    var lowerValue = selectionValues[2].AsDateTime();
+                    var upperValue = selectionValues[3].AsDateTime();
+
+                    delimitedValues = SlidingDateRangePicker.GetDelimitedValues( SlidingDateRangePicker.SlidingDateRangeType.DateRange, null, null, lowerValue, upperValue );
+                }
+
+                result = string.Format(
+                    "{4}Giving amount total {0} {1} {2}. Date Range: {3}",
+                    comparisonType.ConvertToString().ToLower(),
+                    amount.FormatAsCurrency(),
+                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
+                    SlidingDateRangePicker.FormatDelimitedValues( delimitedValues ),
+                    combineGiving ? "Combined " : string.Empty );
+#else
                 SlidingDateRangePicker fakeSlidingDateRangePicker = new SlidingDateRangePicker();
 
                 if ( selectionValues.Length >= 7 )
@@ -168,11 +193,13 @@ function() {
                     !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
                     SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ),
                     combineGiving ? "Combined " : string.Empty );
+#endif
             }
 
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -321,6 +348,7 @@ function() {
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

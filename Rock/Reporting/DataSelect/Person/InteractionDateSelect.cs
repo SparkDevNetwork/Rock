@@ -192,6 +192,7 @@ namespace Rock.Reporting.DataSelect.Person
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -380,6 +381,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         /// <summary>
         /// 

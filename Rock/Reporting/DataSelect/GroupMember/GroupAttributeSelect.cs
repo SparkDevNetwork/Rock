@@ -18,7 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -141,6 +145,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         private const string _CtlGroup = "pnlGroupAttributeFilterControls";
         private const string _CtlProperty = "ddlProperty";
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -202,6 +207,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 ddlProperty.SetValue( selection );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -235,6 +241,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -288,6 +295,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             return null;
         }
+#endif
 
         #endregion
     }

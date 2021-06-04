@@ -133,6 +133,7 @@ function() {
             return $"First contribution {sundayDateString}date{accountsString}.{dateRangeString}";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -230,6 +231,7 @@ function() {
             var cbUseSundayDate = controls[2] as RockCheckBox;
             cbUseSundayDate.Checked = selectionConfig.UseSundayDate;
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

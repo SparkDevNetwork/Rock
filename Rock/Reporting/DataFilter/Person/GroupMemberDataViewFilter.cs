@@ -217,6 +217,7 @@ function ()
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlComparison = "ddlComparison";
         private const string _CtlMemberCount = "nbMemberCount";
@@ -347,6 +348,7 @@ function ()
             ddlCompare.SelectedValue = settings.MemberCountComparison.ConvertToInt().ToString();
             nbValue.Text = settings.MemberCount.ToString();
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
@@ -412,6 +414,7 @@ function ()
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the related data view identifier.
         /// </summary>
@@ -432,6 +435,7 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
     }
 }

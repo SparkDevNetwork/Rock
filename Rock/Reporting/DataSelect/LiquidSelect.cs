@@ -102,6 +102,7 @@ namespace Rock.Reporting.DataSelect
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -115,8 +116,9 @@ namespace Rock.Reporting.DataSelect
             result.LavaTemplate = selection;
             return result;
         }
+#endif
 
-        #endregion
+#endregion
 
         #region Methods
 
@@ -161,6 +163,7 @@ namespace Rock.Reporting.DataSelect
             return Expression.Constant( 0 );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -229,6 +232,7 @@ Note: The fieldname will be the Column Label without spaces or special character
                 }
             }
         }
+#endif
 
         #endregion
     }

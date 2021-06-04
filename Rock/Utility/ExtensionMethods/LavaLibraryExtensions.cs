@@ -17,7 +17,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,12 +61,19 @@ namespace Rock
 
 
             int maxWaitMS = 10000;
+#if NET5_0_OR_GREATER
+            var formatLavaTask = new Task( () =>
+            {
+                lavaDebugPanel.Append( FormatLavaDataObjectInfo( lavaObject.GetLavaDataObjectChildInfo( 0, rockContext ) ) );
+            } );
+#else
             System.Web.HttpContext taskContext = System.Web.HttpContext.Current; 
             var formatLavaTask = new Task( () =>
             {
                 System.Web.HttpContext.Current = taskContext;
                 lavaDebugPanel.Append( FormatLavaDataObjectInfo( lavaObject.GetLavaDataObjectChildInfo( 0, rockContext ) ) );
             } );
+#endif
 
             formatLavaTask.Start();
 
@@ -534,7 +545,11 @@ namespace Rock
             }
             catch ( Exception ex )
             {
+#if NET5_0_OR_GREATER
+                ExceptionLogService.LogException( ex );
+#else
                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#endif
                 return "Error resolving Lava merge fields: " + ex.Message;
             }
         }
@@ -594,7 +609,11 @@ namespace Rock
                 {
                     if ( hasLegacyGlobalAttributeLavaMergeFields.IsMatch( content ) )
                     {
+#if NET5_0_OR_GREATER
+                        Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ) );
+#else
                         Rock.Model.ExceptionLogService.LogException( new Rock.Lava.LegacyLavaSyntaxDetectedException( "GlobalAttribute", "" ), System.Web.HttpContext.Current );
+#endif
                     }
                 }
 
@@ -632,7 +651,11 @@ namespace Rock
                 }
                 else
                 {
+#if NET5_0_OR_GREATER
+                    ExceptionLogService.LogException( ex );
+#else
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#endif
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }

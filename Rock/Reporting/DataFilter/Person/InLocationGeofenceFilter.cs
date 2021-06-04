@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.Spatial;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -120,6 +122,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -209,6 +212,7 @@ function() {
                 ( controls[1] as RockDropDownList ).SetValue( selections[1] );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -225,14 +229,22 @@ function() {
 
             RockContext rockContext = ( RockContext ) serviceInstance.Context;
 
+#if NET5_0_OR_GREATER
+            var geoFence = new LocationService( rockContext )
+#else
             DbGeography geoFence = new LocationService( rockContext )
+#endif
                 .Get( locationGuid ).GeoFence;
 
             Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
             int familyGroupTypeId = new GroupTypeService( rockContext ).Get( familyGroupTypeGuid ).Id;
 
             var groupLocationQry = new GroupLocationService( rockContext )
+#if NET5_0_OR_GREATER
+                .GetMappedLocationsByGeofences( new List<NetTopologySuite.Geometries.Polygon> { geoFence } )
+#else
                 .GetMappedLocationsByGeofences( new List<DbGeography> { geoFence } )
+#endif
                 .Where( gl => gl.Group.GroupType.Id == familyGroupTypeId );
 
             if ( selections.Length >= 2 )

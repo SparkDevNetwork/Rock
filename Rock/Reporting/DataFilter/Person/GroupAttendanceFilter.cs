@@ -157,6 +157,7 @@ namespace Rock.Reporting.DataFilter.Person
             return selectionOutput;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -354,6 +355,7 @@ namespace Rock.Reporting.DataFilter.Person
             slidingDateRangePicker.DelimitedValues = groupAttendanceFilterSelection.SlidingDateRange;
             cbChildGroups.Checked = groupAttendanceFilterSelection.IncludeChildGroups;
         }
+#endif
 
         private GroupAttendanceFilterSelection GetGroupAttendanceFilterSelection( string selection )
         {

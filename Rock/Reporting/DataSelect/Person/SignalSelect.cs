@@ -76,6 +76,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( string ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -89,6 +90,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -135,7 +137,9 @@ namespace Rock.Reporting.DataSelect.Person
             var personQry = new PersonService( context ).Queryable();
             IQueryable<string> personLinkQuery;
 
+#if !NET5_0_OR_GREATER
             string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
+#endif
 
             personLinkQuery = personQry.Select( p =>
                 ( p.TopSignalColor != null && p.TopSignalColor != "" ) ?

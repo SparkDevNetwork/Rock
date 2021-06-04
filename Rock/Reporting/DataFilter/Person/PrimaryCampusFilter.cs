@@ -17,7 +17,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -141,6 +145,7 @@ function() {{
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -249,6 +254,7 @@ function() {{
 
             return selection;
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

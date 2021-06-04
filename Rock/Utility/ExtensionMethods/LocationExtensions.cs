@@ -28,6 +28,7 @@ namespace Rock
     {
         #region Geography extension methods
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Coordinates the specified geography.
         /// </summary>
@@ -59,6 +60,7 @@ namespace Rock
 
             return coordinates;
         }
+#endif
 
         #endregion Geography extension methods
     }

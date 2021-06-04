@@ -17,7 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -288,11 +292,13 @@ namespace Rock.Lava.Shortcodes
 
             if ( currentPerson == null )
             {
+#if !NET5_0_OR_GREATER
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;

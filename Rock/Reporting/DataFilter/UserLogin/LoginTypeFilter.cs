@@ -126,6 +126,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -188,6 +189,7 @@ function() {
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -221,6 +223,7 @@ function() {
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Binds the Login Type.
         /// </summary>
@@ -238,6 +241,7 @@ function() {
 
             ddlLoginType.Items.Insert( 0, new ListItem() );
         }
+#endif
 
         #endregion
     }

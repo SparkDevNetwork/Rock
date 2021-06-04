@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -149,6 +151,7 @@ namespace Rock.Reporting.DataSelect.Person
         }
 
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -208,6 +211,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid() );
             ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : (int?)null );
         }
+#endif
 
         #endregion
     }

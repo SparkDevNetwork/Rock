@@ -121,6 +121,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -193,6 +194,7 @@ function() {
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

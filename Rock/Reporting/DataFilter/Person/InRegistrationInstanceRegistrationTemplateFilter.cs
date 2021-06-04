@@ -108,7 +108,11 @@ namespace Rock.Reporting.DataFilter.Person
                 var registrationTemplateGuids = selectionValues[0].Split( ',' ).AsGuidList();
                 var registrationTemplates = new RegistrationTemplateService( rockContext ).GetByGuids( registrationTemplateGuids );
 
+#if NET5_0_OR_GREATER
+                string delimitedValues = null;
+#else
                 SlidingDateRangePicker fakeSlidingDateRangePicker = null;
+#endif
 
                 bool includeInactiveRegistrationInstances = false;
                 if ( selectionValues.Length >= 2 )
@@ -117,10 +121,14 @@ namespace Rock.Reporting.DataFilter.Person
 
                     if ( selectionValues.Length >= 3 )
                     {
+#if NET5_0_OR_GREATER
+                        delimitedValues = SlidingDateRangePicker.SanitizeDelimitedValues( selectionValues[2].Replace( ',', '|' ) );
+#else
                         fakeSlidingDateRangePicker = new SlidingDateRangePicker();
 
                         // convert comma delimited to pipe
                         fakeSlidingDateRangePicker.DelimitedValues = selectionValues[2].Replace( ',', '|' );
+#endif
                     }
                 }
 
@@ -133,16 +141,24 @@ namespace Rock.Reporting.DataFilter.Person
                         result += ", including inactive registration instances";
                     }
 
+#if NET5_0_OR_GREATER
+                    if ( delimitedValues != null )
+                    {
+                        result += string.Format( ", registered in Date Range: {0}", SlidingDateRangePicker.FormatDelimitedValues( delimitedValues ) );
+                    }
+#else
                     if ( fakeSlidingDateRangePicker != null )
                     {
                         result += string.Format( ", registered in Date Range: {0}", SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ) );
                     }
+#endif
                 }
             }
 
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -296,6 +312,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

@@ -167,6 +167,7 @@ namespace Rock.Lava
 	            Reason: Update Persisted Datasets Job with Lava includes.
             */
 
+#if !NET5_0_OR_GREATER
             if ( HttpContext.Current != null )
             {
                 if ( templatePath.StartsWith( "~~" ) &&
@@ -184,6 +185,7 @@ namespace Rock.Lava
 
                 return HttpContext.Current.Server.MapPath( templatePath );
             }
+#endif
 
             return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, templatePath.Replace( "~~", "Themes/Rock" ).Replace( "~/", "" ) );
         }

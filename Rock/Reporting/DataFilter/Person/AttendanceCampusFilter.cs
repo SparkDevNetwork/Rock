@@ -157,6 +157,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -352,6 +353,7 @@ function() {
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -396,11 +398,15 @@ function() {
                 //// selection was from when it just simply a LastXWeeks instead of Sliding Date Range
                 // Last X Weeks was treated as "LastXWeeks * 7" days, so we have to convert it to a SlidingDateRange of Days to keep consistent behavior
                 int lastXWeeks = options[3].AsIntegerOrNull() ?? 1;
+#if NET5_0_OR_GREATER
+                slidingDelimitedValues = SlidingDateRangePicker.GetDelimitedValues( SlidingDateRangePicker.SlidingDateRangeType.Last, SlidingDateRangePicker.TimeUnitType.Day, lastXWeeks * 7 );
+#else
                 var fakeSlidingDateRangePicker = new SlidingDateRangePicker();
                 fakeSlidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.Last;
                 fakeSlidingDateRangePicker.TimeUnit = SlidingDateRangePicker.TimeUnitType.Day;
                 fakeSlidingDateRangePicker.NumberOfTimeUnits = lastXWeeks * 7;
                 slidingDelimitedValues = fakeSlidingDateRangePicker.DelimitedValues;
+#endif
             }
             else
             {

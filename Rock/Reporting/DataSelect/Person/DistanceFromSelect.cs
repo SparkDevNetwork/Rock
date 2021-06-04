@@ -170,7 +170,11 @@ namespace Rock.Reporting.DataSelect.Person
                         .SelectMany( m => m.Group.GroupLocations )
                         .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
                         .Where( gl => gl.Location.GeoPoint != null )
+#if NET5_0_OR_GREATER
+                        .Select( s => ( double? ) Math.Round( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2 ) )
+#else
                         .Select( s => DbFunctions.Truncate(s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2) )
+#endif
                         .FirstOrDefault() );
             }
             else
@@ -184,6 +188,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -275,6 +280,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         #endregion
     }

@@ -17,8 +17,10 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -131,6 +133,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
+#if NET5_0_OR_GREATER
+            // NET5: Need to implement UDF.
+            throw new NotImplementedException();
+#else
             var groupType = GroupTypeCache.Get( selection.AsGuid() );
             int groupTypeId = ( groupType != null ) ? groupType.Id : 0;
 
@@ -138,8 +144,10 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => RockUdfHelper.ufnGroup_GetGeofencingGroupNames( p.Id, groupTypeId ) );
 
             return SelectExpressionExtractor.Extract( qry, entityIdProperty, "p" );
+#endif
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -195,6 +203,7 @@ namespace Rock.Reporting.DataSelect.Person
             var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid());
             ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : (int?)null );
         }
+#endif
 
         #endregion
     }

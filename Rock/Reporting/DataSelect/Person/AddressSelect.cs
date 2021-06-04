@@ -132,6 +132,10 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
+#if NET5_0_OR_GREATER
+            // NET5: Need to convert the UDF.
+            throw new NotImplementedException();
+#else
             string[] values = selection.Split( '|' );
             Guid groupLocationTypeValueGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
             RockUdfHelper.AddressNamePart addressNamePart = RockUdfHelper.AddressNamePart.Full;
@@ -152,8 +156,10 @@ namespace Rock.Reporting.DataSelect.Person
                 .Select( p => RockUdfHelper.ufnCrm_GetAddress( p.Id, addressTypeId, addressComponent ) );
 
             return SelectExpressionExtractor.Extract( personLocationQuery, entityIdProperty, "p" );
+#endif
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -269,6 +275,7 @@ namespace Rock.Reporting.DataSelect.Person
                 addressPartRadioButtonList.SetValue( values[1] );
             }
         }
+#endif
 
         #endregion
     }

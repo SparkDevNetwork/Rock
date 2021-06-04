@@ -107,6 +107,7 @@ namespace Rock.Reporting.DataSelect.Person
             return "Total Giving";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -322,6 +323,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return callbackField;
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

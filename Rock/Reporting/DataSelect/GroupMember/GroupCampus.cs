@@ -75,6 +75,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -87,6 +88,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
             
             return result;
         }
+#endif
 
         /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field

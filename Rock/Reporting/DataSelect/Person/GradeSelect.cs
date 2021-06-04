@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
@@ -77,6 +79,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( int? ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -90,6 +93,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -132,6 +136,7 @@ namespace Rock.Reporting.DataSelect.Person
             return GetGlobalGradeLabel();
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Handles the OnFormatDataValue event of the CallbackField control.
         /// </summary>
@@ -144,7 +149,8 @@ namespace Rock.Reporting.DataSelect.Person
             fakePerson.GraduationYear = e.DataValue as int?;
             e.FormattedValue = fakePerson.GradeFormatted;
         }
-        
+#endif
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -164,6 +170,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectGradeExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -204,6 +211,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // nothing to do
         }
+#endif
 
         #endregion
     }

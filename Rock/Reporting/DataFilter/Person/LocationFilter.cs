@@ -277,6 +277,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         private readonly string _CtlLocationAddress = "acAddress";
         private readonly string _CtlLocationType = "ddlLocationType";
 
@@ -371,6 +372,7 @@ function() {
             acAddress.PostalCode = settings.PostalCode;
             acAddress.Country = settings.Country;            
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.

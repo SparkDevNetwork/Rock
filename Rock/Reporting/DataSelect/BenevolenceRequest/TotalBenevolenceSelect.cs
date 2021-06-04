@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using Rock.Data;
@@ -75,6 +77,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
             get { return typeof(decimal?); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -85,6 +88,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
         {
             return new Rock.Web.UI.Controls.CurrencyField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -134,6 +138,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
             return selectTotalAmountExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -174,6 +179,7 @@ namespace Rock.Reporting.DataSelect.BenevolenceRequest
         {
             // nothing to do
         }
+#endif
 
         #endregion
     }

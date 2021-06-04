@@ -79,6 +79,7 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Public Methods
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Create the controls for the phone number type list and the Has SMS selection
         /// </summary>
@@ -205,6 +206,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control

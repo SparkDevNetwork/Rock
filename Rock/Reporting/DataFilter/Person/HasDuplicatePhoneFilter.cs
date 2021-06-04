@@ -18,7 +18,11 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -103,6 +107,7 @@ namespace Rock.Reporting.DataFilter.Person
             return "Has duplicate phone numbers";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -144,6 +149,7 @@ namespace Rock.Reporting.DataFilter.Person
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.

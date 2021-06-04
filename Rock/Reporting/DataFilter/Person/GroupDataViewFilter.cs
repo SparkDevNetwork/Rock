@@ -233,6 +233,7 @@ function ()
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlGroupStatus = "ddlGroupStatus";
         private const string _CtlRoleType = "ddlRoleType";
@@ -361,6 +362,7 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
 
         #region Settings

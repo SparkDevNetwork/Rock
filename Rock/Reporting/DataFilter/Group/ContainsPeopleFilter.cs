@@ -212,6 +212,7 @@ function ()
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlComparison = "ddlComparison";
         private const string _CtlMemberCount = "nbMemberCount";
@@ -341,6 +342,7 @@ function ()
             ddlCompare.SelectedValue = settings.PersonCountComparison.ConvertToInt().ToString();
             nbValue.Text = settings.PersonCount.ToString();
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.

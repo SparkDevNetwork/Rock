@@ -27,6 +27,12 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+#endif
+
 namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
@@ -124,6 +130,7 @@ namespace Rock.Reporting.DataSelect.Group
             GroupMemberLink = 2
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -173,6 +180,7 @@ namespace Rock.Reporting.DataSelect.Group
 
             return callbackField;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -288,6 +296,7 @@ namespace Rock.Reporting.DataSelect.Group
             return selectChildrenExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -446,6 +455,7 @@ namespace Rock.Reporting.DataSelect.Group
                 }
             }
         }
+#endif
 
         #endregion
 
@@ -469,7 +479,7 @@ namespace Rock.Reporting.DataSelect.Group
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        public Expression GetRecipientPersonIdExpression( EFDbContext dbContext, MemberExpression entityIdProperty, string selection )
         {
             var rockContext = dbContext as RockContext;
             if ( rockContext != null )

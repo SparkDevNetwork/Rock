@@ -118,6 +118,7 @@ namespace Rock.Reporting.DataSelect.Group
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -130,6 +131,7 @@ namespace Rock.Reporting.DataSelect.Group
             result.HtmlEncode = false;
             return result;
         }
+#endif
 
         /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
@@ -157,7 +159,11 @@ namespace Rock.Reporting.DataSelect.Group
             var groupQry = new GroupService( context ).Queryable();
 
             IQueryable<string> groupLinkQry;
+#if NET5_0_OR_GREATER
+            string baseGroupUrl = "/Group/";
+#else
             string baseGroupUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Group/" );
+#endif
 
             if ( showAsLink )
             {

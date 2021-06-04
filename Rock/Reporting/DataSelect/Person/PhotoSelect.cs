@@ -18,7 +18,9 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
@@ -80,6 +82,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( string ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -93,6 +96,7 @@ namespace Rock.Reporting.DataSelect.Person
             
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -143,8 +147,12 @@ namespace Rock.Reporting.DataSelect.Person
                 height = selectionValues[1].AsIntegerOrNull() ?? height;
             }
 
+#if NET5_0_OR_GREATER
+            string baseUrl = "/";
+#else
             string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
-            
+#endif
+
             // have SQL server do similar to what Person.GetPhotoUrl does
             string widthHeightUrlParams = string.Format("&width={0}&height={1}", width, height);
             string widthHeightHtmlParams = string.Format( " width='{0}' height='{1}' ", width, height );
@@ -159,8 +167,12 @@ namespace Rock.Reporting.DataSelect.Person
             //// Logic is
             //// if the Person has a photoId, show the photo, otherwise show a default Female or Male picture based on Person.Gender
             var personPhotoQuery = new PersonService( context ).Queryable()
-                .Select( p => p.PhotoId != null 
-                    ? "<image src='" + baseUrl + "GetImage.ashx?id=" + SqlFunctions.StringConvert( (double?)p.PhotoId ) + widthHeightUrlParams + "' " + widthHeightHtmlParams + " />" 
+                .Select( p => p.PhotoId != null
+#if NET5_0_OR_GREATER
+                    ? "<image src='" + baseUrl + "GetImage.ashx?id=" + p.PhotoId.ToString() + widthHeightUrlParams + "' " + widthHeightHtmlParams + " />"
+#else
+                    ? "<image src='" + baseUrl + "GetImage.ashx?id=" + SqlFunctions.StringConvert( (double?)p.PhotoId ) + widthHeightUrlParams + "' " + widthHeightHtmlParams + " />"
+#endif
                     : p.BirthDate.HasValue && p.BirthDate > childBirthdateCutoff ? 
                         p.Gender == Gender.Female ? nophotoChildFemaleHtml : nophotoChildMaleHtml 
                         : p.Gender == Gender.Female ? nophotoAdultFemaleHtml : nophotoAdultMaleHtml );
@@ -170,6 +182,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectPhotoExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -243,6 +256,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         #endregion
     }

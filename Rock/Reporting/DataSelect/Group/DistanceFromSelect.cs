@@ -153,7 +153,11 @@ namespace Rock.Reporting.DataSelect.Group
                     .Select( p => p.GroupLocations
                         .Where( gl => gl.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid)
                         .Where( gl => gl.Location.GeoPoint != null)
+#if NET5_0_OR_GREATER
+                        .Select( s => ( double? ) Math.Round( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2 ) ).FirstOrDefault() );
+#else
                         .Select( s => DbFunctions.Truncate( s.Location.GeoPoint.Distance( selectedLocation.GeoPoint ) * Location.MilesPerMeter, 2 ) ).FirstOrDefault() );
+#endif
             }
             else
             {
@@ -166,6 +170,7 @@ namespace Rock.Reporting.DataSelect.Group
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -257,6 +262,7 @@ namespace Rock.Reporting.DataSelect.Group
                 }
             }
         }
+#endif
 
         #endregion
     }

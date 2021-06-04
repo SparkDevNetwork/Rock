@@ -18,7 +18,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
@@ -31,12 +35,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+#if !NET5_0_OR_GREATER
 using System.Web.UI.HtmlControls;
+#endif
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using Ical.Net.DataTypes;
+#if !NET5_0_OR_GREATER
 using ImageResizer;
+#endif
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
@@ -1278,8 +1286,12 @@ namespace Rock.Lava
         private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
+#if NET5_0_OR_GREATER
+            var calendarEvent = calendar.Events[0] as CalendarEvent;
+#else
             var calendarEvent = calendar.Events[0] as Event;
-            
+#endif
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
@@ -2805,7 +2817,7 @@ namespace Rock.Lava
                                 case "GeoPoint":
                                     if ( location.GeoPoint != null )
                                     {
-                                        qualifier = qualifier.Replace( match.ToString(), string.Format( "{0},{1}", location.GeoPoint.Latitude.ToString(), location.GeoPoint.Longitude.ToString() ) );
+                                        qualifier = qualifier.Replace( match.ToString(), string.Format( "{0},{1}", location.Latitude.ToString(), location.Longitude.ToString() ) );
                                     }
                                     else
                                     {
@@ -2816,7 +2828,7 @@ namespace Rock.Lava
                                 case "Latitude":
                                     if ( location.GeoPoint != null )
                                     {
-                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Latitude.ToString() );
+                                        qualifier = qualifier.Replace( match.ToString(), location.Latitude.ToString() );
                                     }
                                     else
                                     {
@@ -2827,7 +2839,7 @@ namespace Rock.Lava
                                 case "Longitude":
                                     if ( location.GeoPoint != null )
                                     {
-                                        qualifier = qualifier.Replace( match.ToString(), location.GeoPoint.Longitude.ToString() );
+                                        qualifier = qualifier.Replace( match.ToString(), location.Longitude.ToString() );
                                     }
                                     else
                                     {
@@ -2992,7 +3004,11 @@ namespace Rock.Lava
                     else
                     {
                         var photoUrl = new StringBuilder();
+#if NET5_0_OR_GREATER
+                        photoUrl.Append( "/" );
+#else
                         photoUrl.Append( HttpContext.Current.Server.MapPath( "~/" ) );
+#endif
 
                         if ( person.Age.HasValue && person.Age.Value < 18 )
                         {
@@ -3759,6 +3775,7 @@ namespace Rock.Lava
             return string.Format( "<![CDATA[{0}]]>", input );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Redirects the specified input.
         /// </summary>
@@ -3784,6 +3801,7 @@ namespace Rock.Lava
 
             return string.Empty;
         }
+#endif
 
         /// <summary>
         /// Resolves the rock address.
@@ -3792,6 +3810,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ResolveRockUrl( string input )
         {
+#if NET5_0_OR_GREATER
+            var url = input.ToString();
+
+            if ( url.StartsWith( "~~" ) )
+            {
+                url = "~/Themes/Rock" + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            if ( url.StartsWith( "~" ) )
+            {
+                url = url.Substring( 1 );
+            }
+
+            return url;
+#else
             RockPage page = HttpContext.Current.Handler as RockPage;
 
             if ( input.StartsWith( "~~" ) )
@@ -3812,6 +3845,7 @@ namespace Rock.Lava
             var url = page.ResolveUrl( input );
 
             return url;
+#endif
         }
 
         /// <summary>
@@ -4330,6 +4364,7 @@ namespace Rock.Lava
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// adds a meta tag to the head of the document
         /// </summary>
@@ -4581,6 +4616,7 @@ namespace Rock.Lava
             }
 
         }
+#endif
 
         /// <summary>
         /// Ratings the markup.
@@ -4613,6 +4649,7 @@ namespace Rock.Lava
             return starMarkup.ToString();
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Pages the specified input.
         /// </summary>
@@ -4753,6 +4790,7 @@ namespace Rock.Lava
 
             return parmReturn;
         }
+#endif
 
         /// <summary>
         /// Converts a lava property to a key value pair
@@ -5788,11 +5826,13 @@ namespace Rock.Lava
 
             if ( currentPerson == null )
             {
+#if !NET5_0_OR_GREATER
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;
@@ -5851,6 +5891,9 @@ namespace Rock.Lava
 
         private static Stream GetResized( string resizeSettings, Stream fileContent )
         {
+#if NET5_0_OR_GREATER
+            return fileContent;
+#else
             try
             {
                 if ( resizeSettings.IsNullOrWhiteSpace() )
@@ -5869,6 +5912,7 @@ namespace Rock.Lava
                 // if resize failed, just return original content
                 return fileContent;
             }
+#endif
         }
 
         #endregion Object Filters
@@ -6099,6 +6143,7 @@ namespace Rock.Lava
 
         #endregion Color Filters
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Get the page route for the specified page Id or Guid.
         /// </summary>
@@ -6213,8 +6258,10 @@ namespace Rock.Lava
 
             return pageReference.BuildUrl();
         }
+#endif
 
         #region POCOs
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// POCO to translate an HTTP cookie in to a Liquidizable form
         /// </summary>
@@ -6343,7 +6390,7 @@ namespace Rock.Lava
                 _cookie = cookie;
             }
         }
-
+#endif
         #endregion POCOs
 
         #region Private Methods

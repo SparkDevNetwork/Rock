@@ -87,6 +87,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<string> ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -97,6 +98,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return new ListDelimitedField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -246,6 +248,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlFormat = "ddlFormat";
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlRoleType = "ddlRoleType";
@@ -358,6 +361,7 @@ namespace Rock.Reporting.DataSelect.Person
             ddlRoleType.SelectedValue = settings.RoleType.ToStringSafe();
             ddlGroupMemberStatus.SelectedValue = settings.MemberStatus.ToStringSafe();
         }
+#endif
 
         #endregion
 

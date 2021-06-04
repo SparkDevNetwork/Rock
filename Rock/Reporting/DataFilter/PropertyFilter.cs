@@ -185,6 +185,7 @@ namespace Rock.Reporting.DataFilter
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -443,6 +444,7 @@ namespace Rock.Reporting.DataFilter
                 SetEntityFieldSelection( entityFields, ddlEntityField, values, entityFieldControls, true );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

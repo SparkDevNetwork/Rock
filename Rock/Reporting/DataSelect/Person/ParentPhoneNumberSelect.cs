@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
@@ -93,6 +95,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<Rock.Model.PhoneNumber> ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -103,6 +106,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return new ListDelimitedField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -188,6 +192,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectNumbersExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -255,6 +260,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             }
         }
+#endif
 
         #endregion
     }

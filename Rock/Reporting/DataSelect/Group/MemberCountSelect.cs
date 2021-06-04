@@ -154,6 +154,7 @@ namespace Rock.Reporting.DataSelect.Group
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -218,6 +219,7 @@ namespace Rock.Reporting.DataSelect.Group
                 ddlMemberStatus.SelectedValue = values[1];
             }
         }
+#endif
 
         #endregion
     }

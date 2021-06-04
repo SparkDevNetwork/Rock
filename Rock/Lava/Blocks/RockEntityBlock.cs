@@ -16,7 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -125,8 +129,10 @@ namespace Rock.Lava.Blocks
                     // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
                     var dbContext = Reflection.GetDbContextForEntityType( entityType );
 
+#if !NET5_0_OR_GREATER
                     // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
                     dbContext.Configuration.AutoDetectChangesEnabled = false;
+#endif
 
                     // Create an instance of the entity's service
                     IService serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
@@ -195,6 +201,7 @@ namespace Rock.Lava.Blocks
 
                             foreach ( var dynamicFilter in dynamicFilters )
                             {
+#if !NET5_0_OR_GREATER
                                 var dynamicFilterValue = HttpContext.Current.Request[dynamicFilter];
                                 var dynamicFilterExpression = GetDynamicFilterExpression( dynamicFilter, dynamicFilterValue, entityType, serviceInstance, paramExpression );
                                 if ( dynamicFilterExpression != null )
@@ -209,6 +216,7 @@ namespace Rock.Lava.Blocks
                                         queryExpression = Expression.AndAlso( queryExpression, dynamicFilterExpression );
                                     }
                                 }
+#endif
                             }
                         }
                     }
@@ -348,7 +356,9 @@ namespace Rock.Lava.Blocks
                         {
                             if ( !parms["lazyloadenabled"].AsBoolean() )
                             {
+#if !NET5_0_OR_GREATER
                                 dbContext.Configuration.LazyLoadingEnabled = false;
+#endif
                             }
                         }
 
@@ -459,7 +469,9 @@ namespace Rock.Lava.Blocks
                                    Not sure why this exception is happening. It looks to be within the ZZZ Project System.Linq.Dynamic.Core
                                    package. The important part is that the data is coming back in a single query.
                                 */
+#if !NET5_0_OR_GREATER
                                 dbContext.Configuration.LazyLoadingEnabled = true;
+#endif
 
 
                                 List<dynamic> results = null;
@@ -648,11 +660,13 @@ namespace Rock.Lava.Blocks
 
             if ( currentPerson == null )
             {
+#if !NET5_0_OR_GREATER
                 var httpContext = System.Web.HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;
@@ -728,6 +742,7 @@ namespace Rock.Lava.Blocks
 
                 foreach ( var dynamicParm in dynamicParmList )
                 {
+#if !NET5_0_OR_GREATER
                     if ( HttpContext.Current.Request[dynamicParm] != null )
                     {
                         var dynamicParmValue = HttpContext.Current.Request[dynamicParm].ToString();
@@ -760,6 +775,7 @@ namespace Rock.Lava.Blocks
                                 }
                         }
                     }
+#endif
                 }
 
                 parms.AddOrReplace( "dynamicparameters", string.Join( ",", dynamicFilters ) );

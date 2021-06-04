@@ -143,6 +143,7 @@ namespace Rock.Reporting.DataSelect.Person
             return lastLoginExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -183,6 +184,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // nothing to do
         }
+#endif
 
         #endregion
     }

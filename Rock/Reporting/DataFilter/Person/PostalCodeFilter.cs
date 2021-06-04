@@ -149,6 +149,7 @@ function() {
             return "Postal code filter";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -249,6 +250,7 @@ function() {
                 ( controls[2] as RockDropDownList ).SelectedValue = values[2];
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

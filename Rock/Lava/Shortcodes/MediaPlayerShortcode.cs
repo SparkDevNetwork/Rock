@@ -356,12 +356,14 @@ so you can customize this to be exactly what you want.</p>
 
             if ( currentPerson == null )
             {
+#if !NET5_0_OR_GREATER
                 var httpContext = HttpContext.Current;
 
                 if ( context != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;
@@ -426,6 +428,7 @@ so you can customize this to be exactly what you want.</p>
             result.WriteLine( $"<div id=\"{elementId}\"></div>" );
             result.WriteLine( script );
 
+#if !NET5_0_OR_GREATER
             // If we have a RockPage related to the current request then
             // register all the JS and CSS links we need.
             if ( HttpContext.Current != null && HttpContext.Current.Handler is RockPage rockPage )
@@ -440,6 +443,7 @@ so you can customize this to be exactly what you want.</p>
 
                 RockPage.AddScriptLink( rockPage, rockPage.ResolveRockUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
             }
+#endif
         }
 
         /// <summary>

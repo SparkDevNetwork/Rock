@@ -212,6 +212,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlLocationType = "ddlLocationType";
 
@@ -301,6 +302,7 @@ function() {
             dvpDataView.SetValue( DataComponentSettingsHelper.GetDataViewId( settings.DataViewGuid ) );
             ddlLocationType.SelectedValue = settings.LocationTypeGuid.ToStringSafe();
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
@@ -360,6 +362,7 @@ function() {
             return extractedFilterExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the related data view identifier.
         /// </summary>
@@ -380,6 +383,7 @@ function() {
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
     }
 }

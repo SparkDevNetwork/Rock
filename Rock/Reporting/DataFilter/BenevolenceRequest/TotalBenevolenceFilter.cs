@@ -123,6 +123,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -209,6 +210,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
                 currencyBox.Text = values[1];
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

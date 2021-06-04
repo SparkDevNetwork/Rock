@@ -111,6 +111,7 @@ namespace Rock.Reporting.DataFilter.Person
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -161,6 +162,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             ( (RadioButtonList)controls[0] ).SelectedValue = selection;
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

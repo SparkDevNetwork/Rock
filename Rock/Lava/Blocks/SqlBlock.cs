@@ -20,6 +20,10 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#endif
+
 using Rock.Data;
 
 namespace Rock.Lava.Blocks
@@ -92,11 +96,19 @@ namespace Rock.Lava.Blocks
 
                         using ( var rockContext = new RockContext() )
                         {
+#if NET5_0_OR_GREATER
+                            if ( sqlTimeout != null )
+                            {
+                                rockContext.Database.SetCommandTimeout( sqlTimeout );
+                            }
+                            int numOfRowsAffected = rockContext.Database.ExecuteSqlRaw( sql.ToString(), sqlParameters.ToArray() );
+#else
                             if ( sqlTimeout != null )
                             {
                                 rockContext.Database.CommandTimeout = sqlTimeout;
                             }
                             int numOfRowsAffected = rockContext.Database.ExecuteSqlCommand( sql.ToString(), sqlParameters.ToArray() );
+#endif
 
                             context.SetMergeField( parms["return"], numOfRowsAffected, LavaContextRelativeScopeSpecifier.Root );
                         }

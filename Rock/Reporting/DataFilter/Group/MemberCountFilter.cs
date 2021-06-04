@@ -162,6 +162,7 @@ function () {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -298,6 +299,7 @@ function () {
                 ddlMemberStatus.SelectedValue = values[3];
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

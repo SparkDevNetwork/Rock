@@ -200,6 +200,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
             return null;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Updates the selection from page parameters if there is a page parameter for the selection
         /// </summary>
@@ -468,6 +469,7 @@ namespace Rock.Reporting.DataFilter.GroupMember
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

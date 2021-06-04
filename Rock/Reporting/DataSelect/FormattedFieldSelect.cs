@@ -18,8 +18,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+#if !NET5_0_OR_GREATER
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.Infrastructure;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
@@ -164,6 +166,7 @@ namespace Rock.Reporting.DataSelect
             return data.Property;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -185,6 +188,7 @@ namespace Rock.Reporting.DataSelect
 
             return result;
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -202,6 +206,7 @@ namespace Rock.Reporting.DataSelect
             return SelectExpressionExtractor.Extract( query, entityIdProperty, "o" );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -404,6 +409,7 @@ namespace Rock.Reporting.DataSelect
 
             return metaEntityType.NavigationProperties.Select( p => p.Name ).ToList();
         }
+#endif
 
         /// <summary>
         /// Build an IQueryable that selects the property from the entity type. This is

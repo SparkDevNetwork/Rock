@@ -168,6 +168,7 @@ namespace Rock.Reporting.DataFilter
             return $"{ GetRelatedEntityName() } Data View";
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Override this method to customise the DataViewItemPicker displayed for this filter by setting the Label text, Help text and other properties as necessary.
         /// </summary>
@@ -177,6 +178,7 @@ namespace Rock.Reporting.DataFilter
             picker.Label = string.Format( "Is associated with any {0} in this Data View", GetRelatedEntityName() );
             picker.Help = string.Format( "A Data View that provides the set of {0} with which the {1} may be connected.", GetRelatedEntityName().Pluralize(), GetTargetEntityName() );
         }
+#endif
 
         /// <summary>
         ///     Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
@@ -238,6 +240,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "ddlDataView";
 
         /// <summary>
@@ -325,6 +328,7 @@ function() {
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
     }
 }

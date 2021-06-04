@@ -117,6 +117,7 @@ namespace Rock.Reporting.DataSelect.Group
             GroupMemberLink = 2
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -166,6 +167,7 @@ namespace Rock.Reporting.DataSelect.Group
 
             return callbackField;
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -239,6 +241,7 @@ namespace Rock.Reporting.DataSelect.Group
             return selectChildrenExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -303,6 +306,7 @@ namespace Rock.Reporting.DataSelect.Group
                 }
             }
         }
+#endif
 
         #endregion
     }

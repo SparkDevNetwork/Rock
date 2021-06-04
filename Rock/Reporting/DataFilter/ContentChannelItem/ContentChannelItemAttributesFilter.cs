@@ -121,6 +121,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
@@ -368,6 +369,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

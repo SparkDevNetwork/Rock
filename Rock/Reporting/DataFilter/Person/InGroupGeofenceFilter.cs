@@ -116,6 +116,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -179,6 +180,7 @@ function() {
                 ( controls[0] as GroupPicker ).SetValue( group.Id );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

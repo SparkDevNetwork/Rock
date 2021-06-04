@@ -161,6 +161,7 @@ function()
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -224,6 +225,7 @@ function()
 
             ctlIncludedGroups.SelectedValue = settings.IncludedGroups.ToString();
         }
+#endif
 
         /// <summary>
         ///     Gets the set of Groups that are included in a Group Branch, either as the parent or a descendant.

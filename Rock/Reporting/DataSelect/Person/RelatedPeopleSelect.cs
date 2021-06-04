@@ -32,6 +32,12 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+#endif
+
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
@@ -171,6 +177,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<RelatedPersonInfo> ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -181,6 +188,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return new ListDelimitedField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -420,6 +428,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// </summary>
         public const string FamilyRelationshipSpouseGuid = "98AD882C-39C4-4FC6-B06D-EC474117BF42";
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -563,6 +572,7 @@ namespace Rock.Reporting.DataSelect.Person
             // List Format
             ddlFormat.SelectedValue = settings.ListFormat.ToString();
         }
+#endif
 
         #endregion
 
@@ -653,7 +663,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        public Expression GetRecipientPersonIdExpression( EFDbContext dbContext, MemberExpression entityIdProperty, string selection )
         {
             var rockContext = dbContext as RockContext;
             if ( rockContext != null )

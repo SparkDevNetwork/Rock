@@ -24,6 +24,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
+#if NET5_0_OR_GREATER
+using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
+#else
+using EFDbContext = System.Data.Entity.DbContext;
+#endif
+
 namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
@@ -90,6 +96,7 @@ namespace Rock.Reporting.DataSelect.Person
             get { return typeof( IEnumerable<string> ); }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -100,6 +107,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             return new ListDelimitedField();
         }
+#endif
 
         /// <summary>
         /// Gets the default column header text.
@@ -177,6 +185,7 @@ namespace Rock.Reporting.DataSelect.Person
             return selectParentsExpression;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -217,6 +226,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // nothing to do
         }
+#endif
 
         #endregion
 
@@ -240,7 +250,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="entityIdProperty">The entity identifier property.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public Expression GetRecipientPersonIdExpression( System.Data.Entity.DbContext dbContext, MemberExpression entityIdProperty, string selection )
+        public Expression GetRecipientPersonIdExpression( EFDbContext dbContext, MemberExpression entityIdProperty, string selection )
         {
             var rockContext = dbContext as RockContext;
             if ( rockContext != null )

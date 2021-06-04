@@ -444,7 +444,11 @@ Response XML ({2}):
 
             if ( isAuthorized )
             {
+#if NET5_0_OR_GREATER
+                var filePath = "/GetFile.ashx";
+#else
                 var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+#endif
                 return string.Format( "{0}?guid={1}", filePath, reportKey );
             }
             else

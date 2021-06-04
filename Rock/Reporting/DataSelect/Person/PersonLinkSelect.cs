@@ -119,6 +119,7 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -131,6 +132,7 @@ namespace Rock.Reporting.DataSelect.Person
             result.HtmlEncode = false;
             return result;
         }
+#endif
 
         /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field
@@ -168,7 +170,11 @@ namespace Rock.Reporting.DataSelect.Person
             var personQry = new PersonService( context ).Queryable();
             IQueryable<string> personLinkQuery;
 
+#if NET5_0_OR_GREATER
+            string basePersonUrl = "/Person/";
+#else
             string basePersonUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/Person/" );
+#endif
 
             if ( showAsLink )
             {

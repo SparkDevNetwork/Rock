@@ -137,6 +137,7 @@ namespace Rock.Reporting.DataFilter.Step
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Updates the selection from page parameters if there is a page parameter for the selection
         /// </summary>
@@ -477,6 +478,7 @@ namespace Rock.Reporting.DataFilter.Step
                 SetEntityFieldSelection( entityFields, ddlProperty, values.Skip( 2 ).ToList(), panelControls );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

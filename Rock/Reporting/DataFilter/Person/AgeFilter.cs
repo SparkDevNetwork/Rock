@@ -18,7 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if NET5_0_OR_GREATER
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity.SqlServer;
+#endif
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -146,6 +150,7 @@ function() {
             }
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -248,6 +253,7 @@ function() {
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.
@@ -259,6 +265,10 @@ function() {
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
+#if NET5_0_OR_GREATER
+            // NET5: Can be implemented, just too lazy at the moment.
+            throw new NotImplementedException();
+#else
             DateTime currentDate = RockDateTime.Today;
             int currentDayOfYear = currentDate.DayOfYear;
 
@@ -304,6 +314,7 @@ function() {
                 BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
                 return result;
             }
+#endif
         }
 
         #endregion

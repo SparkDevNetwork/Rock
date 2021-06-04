@@ -133,6 +133,7 @@ function() {
             return result;
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -196,6 +197,7 @@ function() {
                 ( controls[0] as CampusPicker ).SetValue( campusId );
             }
         }
+#endif
 
         /// <summary>
         /// Gets the expression.

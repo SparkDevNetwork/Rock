@@ -8,6 +8,50 @@ namespace Rock.Web.UI.Controls
 {
     public class SlidingDateRangePicker
     {
+        public static string GetDelimitedValues( SlidingDateRangeType slidingDateRangeMode, TimeUnitType? timeUnit = null, int? numberOfTimeUnits = 1, DateTime? dateRangeModeStart = null, DateTime? dateRangeModeEnd = null )
+        {
+            timeUnit = timeUnit ?? Enum.GetValues( typeof( TimeUnitType ) ).Cast<TimeUnitType>().ToArray().First();
+
+            return string.Format(
+                "{0}|{1}|{2}|{3}|{4}",
+                slidingDateRangeMode,
+                ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( slidingDateRangeMode ) ? numberOfTimeUnits : ( int? ) null,
+                ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming | SlidingDateRangeType.Current ).HasFlag( slidingDateRangeMode ) ? timeUnit : ( TimeUnitType? ) null,
+                slidingDateRangeMode == SlidingDateRangeType.DateRange ? dateRangeModeStart : null,
+                slidingDateRangeMode == SlidingDateRangeType.DateRange ? dateRangeModeEnd : null );
+        }
+
+        public static string SanitizeDelimitedValues( string value, TimeUnitType? defaultTimeUnit = null )
+        {
+            string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+            defaultTimeUnit = defaultTimeUnit ?? Enum.GetValues( typeof( TimeUnitType ) ).Cast<TimeUnitType>().ToArray().First();
+
+            SlidingDateRangeType slidingDateRangeMode;
+            int? numberOfTimeUnits;
+            TimeUnitType timeUnit;
+            DateTime? dateRangeModeStart;
+            DateTime? dateRangeModeEnd;
+
+            if ( splitValues.Length == 5 )
+            {
+                slidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+                numberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                timeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? defaultTimeUnit.Value;
+                dateRangeModeStart = splitValues[3].AsDateTime();
+                dateRangeModeEnd = splitValues[4].AsDateTime();
+            }
+            else
+            {
+                slidingDateRangeMode = SlidingDateRangeType.All;
+                numberOfTimeUnits = 1;
+                timeUnit = defaultTimeUnit.Value;
+                dateRangeModeStart = null;
+                dateRangeModeEnd = null;
+            }
+
+            return GetDelimitedValues( slidingDateRangeMode, timeUnit, numberOfTimeUnits, dateRangeModeStart, dateRangeModeEnd );
+        }
+
         /// <summary>
         /// Calculates the date range from delimited values in format SlidingDateRangeType|Number|TimeUnitType|StartDate|EndDate
         /// NOTE: The Displayed End Date is one day before the actual end date.
@@ -185,6 +229,42 @@ namespace Rock.Web.UI.Controls
                     result.End = result.End.Value.AddMilliseconds( -1 );
                 }
 
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Formats the delimited values as a phrase such as "Last 14 Days"
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatDelimitedValues( string value )
+        {
+            string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+            string result = string.Empty;
+            if ( splitValues.Length == 5 )
+            {
+                var slidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
+                var numberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
+                var timeUnitType = splitValues[2].ConvertToEnumOrNull<TimeUnitType>();
+                string timeUnitText = timeUnitType != null ? timeUnitType.ConvertToString().PluralizeIf( numberOfTimeUnits != 1 ) : null;
+                var start = splitValues[3].AsDateTime();
+                var end = splitValues[4].AsDateTime();
+                if ( slidingDateRangeMode == SlidingDateRangeType.Current )
+                {
+                    return string.Format( "{0} {1}", slidingDateRangeMode.ConvertToString(), timeUnitText );
+                }
+                else if ( ( SlidingDateRangeType.Last | SlidingDateRangeType.Previous | SlidingDateRangeType.Next | SlidingDateRangeType.Upcoming ).HasFlag( slidingDateRangeMode ) )
+                {
+                    return string.Format( "{0} {1} {2}", slidingDateRangeMode.ConvertToString(), numberOfTimeUnits, timeUnitText );
+                }
+                else
+                {
+                    // DateRange
+                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( value );
+                    return dateRange.ToStringAutomatic();
+                }
             }
 
             return result;

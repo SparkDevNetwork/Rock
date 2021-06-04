@@ -170,6 +170,7 @@ namespace Rock.WebFarm
         /// </summary>
         private static IntervalAction _pollingInterval;
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// The cpu counter
         /// </summary>
@@ -184,6 +185,7 @@ namespace Rock.WebFarm
         /// The total ram mb
         /// </summary>
         private static readonly int TotalRamMb = ( int ) ( new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / BytesPerMegayte );
+#endif
 
         /// <summary>
         /// Gets the process identifier.
@@ -391,9 +393,14 @@ namespace Rock.WebFarm
         /// <summary>
         /// Stops this instance.
         /// </summary>
+#if NET5_0_OR_GREATER
+        public static void Shutdown( string shutdownReasonText )
+        {
+#else
         public static void Shutdown( ApplicationShutdownReason shutdownReason )
         {
             var shutdownReasonText = shutdownReason.ConvertToString();
+#endif
 
             if ( !_isWebFarmEnabledAndUnlocked )
             {
@@ -823,6 +830,7 @@ namespace Rock.WebFarm
         /// </summary>
         private static void InitializePerformanceCounters()
         {
+#if !NET5_0_OR_GREATER
             try
             {
                 _cpuCounter = new PerformanceCounter( "Processor", "% Processor Time", "_Total" );
@@ -838,6 +846,7 @@ namespace Rock.WebFarm
                 _cpuCounter = null;
                 _ramCounter = null;
             }
+#endif
         }
 
         /// <summary>
@@ -846,6 +855,7 @@ namespace Rock.WebFarm
         /// <param name="rockContext">The rock context.</param>
         private static void AddMetrics( RockContext rockContext )
         {
+#if !NET5_0_OR_GREATER
             var webFarmNodeMetricService = new WebFarmNodeMetricService( rockContext );
 
             if ( _cpuCounter != null )
@@ -880,6 +890,7 @@ namespace Rock.WebFarm
 
                 Debug( $"Added metric: RAM {ramUsage:N0}MB" );
             }
+#endif
         }
 
         /// <summary>
@@ -1160,7 +1171,11 @@ namespace Rock.WebFarm
         /// <param name="message">The message.</param>
         private static void Debug( string message )
         {
+#if NET5_0_OR_GREATER
+            if ( DEBUG )
+#else
             if ( DEBUG && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+#endif
             {
                 System.Diagnostics.Debug.WriteLine( $"\tFARM {RockDateTime.Now:mm.ss.f} {message}" );
             }

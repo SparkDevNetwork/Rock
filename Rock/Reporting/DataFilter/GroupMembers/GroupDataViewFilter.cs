@@ -195,6 +195,7 @@ function ()
             return selectExpression;
         }
 
+#if !NET5_0_OR_GREATER
         private const string _CtlDataView = "dvpDataView";
 
         /// <summary>
@@ -294,6 +295,7 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+#endif
         #endregion
 
         #region Settings
