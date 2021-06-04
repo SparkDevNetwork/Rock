@@ -55,16 +55,23 @@ namespace Rock.Apps.StatementGenerator
                 throw getFinancialStatementTemplatesResponse.ErrorException;
             }
 
+            if ( getFinancialStatementTemplatesResponse.StatusCode != System.Net.HttpStatusCode.OK )
+            {
+                lblWarning.Content = $"Error: { getFinancialStatementTemplatesResponse.StatusCode}";
+                lblWarning.Visibility = Visibility.Visible;
+                return;
+            }
+
             List<Client.FinancialStatementTemplate> financialStatementTemplateList = getFinancialStatementTemplatesResponse.Data.Where( a => a.IsActive ).ToList();
 
-            if (!financialStatementTemplateList.Any() )
+            if ( !financialStatementTemplateList.Any() )
             {
                 lblWarning.Content = "No Templates available. Use the Rock website to define Financial Statement Templates.";
                 lblWarning.Visibility = Visibility.Visible;
             }
 
             List<RadioButton> radioButtonList = new List<RadioButton>();
-            foreach ( var financialStatementTemplate in financialStatementTemplateList.OrderBy(a => a.Name) )
+            foreach ( var financialStatementTemplate in financialStatementTemplateList.OrderBy( a => a.Name ) )
             {
                 RadioButton radFinancialStatementTemplate = new RadioButton();
                 radFinancialStatementTemplate.Tag = financialStatementTemplate;
@@ -114,7 +121,7 @@ namespace Rock.Apps.StatementGenerator
             rockConfig.Save();
 
             ReportOptions.Current.FinancialStatementTemplateId = financialStatementTemplate?.Id;
-            
+
             return true;
         }
 
