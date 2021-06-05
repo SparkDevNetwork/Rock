@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( campus.Url ) )
             {
-                dl.Add( "Url", campus.Url );
+                dl.Add( "URL", campus.Url );
             }
 
             if ( !string.IsNullOrWhiteSpace( campus.PhoneNumber ) )
