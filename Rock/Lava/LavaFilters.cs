@@ -1143,7 +1143,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            if ( input.ToString() == "Now" )
+            if ( input.ToString().ToLower() == "now" )
             {
                 input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
@@ -1153,30 +1153,36 @@ namespace Rock.Lava
                 return input.ToString();
             }
 
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
             if ( format.Length == 1 )
             {
                 format = " " + format;
             }
 
-            var inputDateTime = input.ToString().AsDateTime();
-
-            // Check for invalid date
-            if ( !inputDateTime.HasValue )
-            {
-                return input.ToString().Trim();
-            }
-
-            // Consider special 'Standard Date' format
+            // Consider special 'Standard Date' and 'Standard Time' formats.
             if ( format == "sd" )
             {
-                return inputDateTime.Value.ToShortDateString();
+                format = "d";
+            }
+            else if ( format == "st" )
+            {
+                format = "t";
             }
 
-            // Consider special 'Standard Time' format
-            if ( format == "st" )
+            // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
+            if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return inputDateTime.Value.ToShortTimeString();
+                return inputDateTimeOffset.ToLocalTime().ToString( format ).Trim();
+            }
+
+            // Convert the input to a valid DateTime if possible.
+            var inputDateTime = input is DateTime time ? time : input.ToString().AsDateTime();
+
+            if ( !inputDateTime.HasValue )
+            {
+                // Not a valid date, so return the input unformatted.
+                return input.ToString().Trim();
             }
 
             return inputDateTime.Value.ToString( format ).Trim();
@@ -1375,6 +1381,8 @@ namespace Rock.Lava
             DateTime dtInput;
             DateTime dtCompare;
 
+            input = GetDateFromObject( input, null );
+
             if ( input != null && input is DateTime )
             {
                 dtInput = ( DateTime ) input;
@@ -1402,7 +1410,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string DaysFromNow( object input )
         {
-            DateTime dtInputDate = GetDateFromObject( input ).Date;
+            DateTime dtInputDate = GetDateFromObject( input, DateTime.MinValue ).Value; //.Date;
             DateTime dtCompareDate = RockDateTime.Now.Date;
 
             int daysDiff = ( dtInputDate - dtCompareDate ).Days;
@@ -1524,8 +1532,8 @@ namespace Rock.Lava
                 return HumanizeTimeSpanWithPrecision( sStartDate, sEndDate, unitOrPrecision.ToString().AsInteger() );
             }
 
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             TimeUnit unitValue = TimeUnit.Day;
 
@@ -1589,8 +1597,8 @@ namespace Rock.Lava
                 precisionUnit = (int)precision;
             }
 
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -1603,13 +1611,14 @@ namespace Rock.Lava
             }
         }
         /// <summary>
-        /// Gets the date from object.
+        /// Gets a date from object.
         /// </summary>
         /// <param name="date">The date.</param>
+        /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private static DateTime GetDateFromObject( object date )
+        private static DateTime? GetDateFromObject( object date, DateTime? defaultValue )
         {
-            DateTime oDateTime = DateTime.MinValue;
+            DateTime oDateTime;
 
             if ( date is String )
             {
@@ -1633,8 +1642,13 @@ namespace Rock.Lava
             {
                 return ( DateTime ) date;
             }
+            else if ( date is DateTimeOffset inputDateTimeOffset )
+            {
+                // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
+                return inputDateTimeOffset.ToLocalTime().DateTime;
+            }
 
-            return DateTime.MinValue;
+            return defaultValue;
         }
 
         /// <summary>
@@ -1646,8 +1660,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -1703,31 +1717,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTime? ToMidnight( object input )
         {
-            if ( input == null )
+            var inputDate = GetDateFromObject( input, null );
+
+            if ( inputDate == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                return ( ( DateTime ) input ).Date;
-            }
-
-            if ( input.ToString() == "Now" )
-            {
-                return RockDateTime.Now.Date;
-            }
-            else
-            {
-                DateTime date;
-
-                if ( DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return date.Date;
-                }
-            }
-
-            return null;
+            return inputDate.Value.Date;
         }
 
         /// <summary>
@@ -1815,28 +1812,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static int? DaysUntil( object input )
         {
-            DateTime date;
-
             if ( input == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                date = ( DateTime ) input;
-            }
-            else
-            {
-                DateTime.TryParse( input.ToString(), out date );
-            }
+            var date = GetDateFromObject( input, null );
 
             if ( date == null )
             {
                 return null;
             }
 
-            return ( date - RockDateTime.Now ).Days;
+            return ( date.Value - RockDateTime.Now ).Days;
         }
 
         /// <summary>
