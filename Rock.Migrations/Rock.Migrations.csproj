@@ -65,6 +65,10 @@
     <Compile Include="Migrations\202106042044568_StatementGeneratorDefaultTemplateUpdate.Designer.cs">
       <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106061641568_UpdateHistoryForConnectionRequest.cs" />
+    <Compile Include="Migrations\202106061641568_UpdateHistoryForConnectionRequest.Designer.cs">
+      <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1741,6 +1745,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202106042044568_StatementGeneratorDefaultTemplateUpdate.resx">
       <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106061641568_UpdateHistoryForConnectionRequest.resx">
+      <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>

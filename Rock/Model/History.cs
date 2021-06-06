@@ -85,7 +85,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the verb of the History.
         /// </value>
-        [MaxLength( 40 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string Verb { get; set; }
 
@@ -428,7 +428,7 @@ namespace Rock.Model
                                     var sentSummary = sentSummaryBuilder.ToString();
                                     return sentSummary;
                                 }
-                            case HistoryVerb.ConnReqAdd:
+                            case HistoryVerb.ConnectionRequestAdded:
                                 {
                                     var strBuilder = new StringBuilder();
                                     strBuilder.Append( "A connection request was added" );
@@ -447,7 +447,7 @@ namespace Rock.Model
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
                                 }
-                            case HistoryVerb.ConnReqConnected:
+                            case HistoryVerb.ConnectionRequestConnected:
                                 {
                                     var strBuilder = new StringBuilder();
 
@@ -465,7 +465,7 @@ namespace Rock.Model
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
                                 }
-                            case HistoryVerb.ConnReqStatusModify:
+                            case HistoryVerb.ConnectionRequestStatusModify:
                                 {
                                     var strBuilder = new StringBuilder();
                                     strBuilder.Append( "The status of " );
@@ -496,7 +496,7 @@ namespace Rock.Model
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
                                 }
-                            case HistoryVerb.ConnReqStateModify:
+                            case HistoryVerb.ConnectionRequestStateModify:
                                 {
                                     var strBuilder = new StringBuilder();
                                     strBuilder.Append( "The state of " );
@@ -527,7 +527,7 @@ namespace Rock.Model
                                     var connectionRequestSummary = strBuilder.ToString();
                                     return connectionRequestSummary;
                                 }
-                            case HistoryVerb.ConnReqDelete:
+                            case HistoryVerb.ConnectionRequestDelete:
                                 {
                                     var strBuilder = new StringBuilder();
 
@@ -669,27 +669,27 @@ namespace Rock.Model
             /// <summary>
             /// Connection Request was Added.
             /// </summary>
-            ConnReqAdd,
+            ConnectionRequestAdded,
 
             /// <summary>
             /// Connection Request was Connected to Connector.
             /// </summary>
-            ConnReqConnected,
+            ConnectionRequestConnected,
 
             /// <summary>
             /// The Status of Connection Request is modified.
             /// </summary>
-            ConnReqStatusModify,
+            ConnectionRequestStatusModify,
 
             /// <summary>
             /// The state of Connection Request is modified.
             /// </summary>
-            ConnReqStateModify,
+            ConnectionRequestStateModify,
 
             /// <summary>
             /// Connection Request was Deleted.
             /// </summary>
-            ConnReqDelete,
+            ConnectionRequestDelete,
         }
 
         /// <summary>

@@ -357,10 +357,10 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Connector", string.Empty, History.GetValue<PersonAlias>( ConnectorPersonAlias, ConnectorPersonAliasId, rockContext ) );
                         History.EvaluateChange( HistoryChangeList, "ConnectionStatus", string.Empty, History.GetValue<ConnectionStatus>( ConnectionStatus, ConnectionStatusId, rockContext ) );
                         History.EvaluateChange( HistoryChangeList, "ConnectionState", null, ConnectionState );
-                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqAdd, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestAdded, History.HistoryChangeType.Record, connectionOpportunity.Name );
                         if ( ConnectionState == ConnectionState.Connected )
                         {
-                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
                         }
                         break;
                     }
@@ -379,7 +379,7 @@ namespace Rock.Model
                             string origConnectionStatus = History.GetValue<ConnectionStatus>( null, originalConnectionStatusId, rockContext );
                             string connectionStatus = History.GetValue<ConnectionStatus>( ConnectionStatus, ConnectionStatusId, rockContext );
                             History.EvaluateChange( HistoryChangeList, "ConnectionStatus", origConnectionStatus, connectionStatus );
-                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqStatusModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStatusModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
                         }
 
                         var originalConnectionState = entry.OriginalValues["ConnectionState"].ToStringSafe().ConvertToEnum<ConnectionState>();
@@ -388,11 +388,11 @@ namespace Rock.Model
                         {
                             if ( ConnectionState == ConnectionState.Connected )
                             {
-                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
                             }
                             else
                             {
-                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqStateModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStateModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
                             }
                         }
 
@@ -402,7 +402,7 @@ namespace Rock.Model
                 case EntityState.Deleted:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "ConnectionRequest" );
-                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnReqDelete, History.HistoryChangeType.Record, connectionOpportunity.Name );
+                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestDelete, History.HistoryChangeType.Record, connectionOpportunity.Name );
                         break;
                     }
             }
