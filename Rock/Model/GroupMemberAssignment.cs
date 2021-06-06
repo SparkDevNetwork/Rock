@@ -40,6 +40,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
+        [IgnoreCanDelete]
         public int GroupMemberId { get; set; }
 
         /// <summary>
@@ -120,7 +121,7 @@ namespace Rock.Model
         /// </summary>
         public GroupMemberAssignmentConfiguration()
         {
-            this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberAssignments ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.GroupMember ).WithMany( a => a.GroupMemberAssignments ).HasForeignKey( a => a.GroupMemberId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( a => a.ScheduleId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( a => a.LocationId ).WillCascadeOnDelete( false );
         }
