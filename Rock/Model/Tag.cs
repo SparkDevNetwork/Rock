@@ -62,7 +62,7 @@ namespace Rock.Model
         public int? EntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the column/property that contains the value that can narrow the scope of entities that can receive this Tag. Entities where this 
+        /// Gets or sets the name of the column/property that contains the value that can narrow the scope of entities that can receive this Tag. Entities where this
         /// column contains the <see cref="EntityTypeQualifierValue"/> will be eligible to have this Tag. This property must be used in conjunction with the <see cref="EntityTypeQualifierValue"/>
         /// property. If all entities of the specified <see cref="Rock.Model.EntityType"/> are eligible to use this Tag, this property will be null.
         /// </summary>
@@ -74,7 +74,7 @@ namespace Rock.Model
         public string EntityTypeQualifierColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets the value in the <see cref="EntityTypeQualifierColumn"/> that narrows the scope of entities that can receive this Tag. Entities that contain this value 
+        /// Gets or sets the value in the <see cref="EntityTypeQualifierColumn"/> that narrows the scope of entities that can receive this Tag. Entities that contain this value
         /// in the <see cref="EntityTypeQualifierColumn"/> are eligible to use this Tag. This property must be used in conjunction with the <see cref="EntityTypeQualifierColumn"/> property.
         /// </summary>
         /// <value>
@@ -165,7 +165,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        public string BackgroundColor { get; set; } = "#e0e0e0";
+        public string BackgroundColor { get; set; } = "#BCBCBD";
 
         #endregion
 
