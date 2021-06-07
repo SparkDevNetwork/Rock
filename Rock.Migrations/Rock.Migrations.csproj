@@ -69,6 +69,10 @@
     <Compile Include="Migrations\202106061641568_UpdateHistoryForConnectionRequest.Designer.cs">
       <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106072003418_ContributionStatementsDetail.cs" />
+    <Compile Include="Migrations\202106072003418_ContributionStatementsDetail.Designer.cs">
+      <DependentUpon>202106072003418_ContributionStatementsDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1749,6 +1753,9 @@
     <EmbeddedResource Include="Migrations\202106061641568_UpdateHistoryForConnectionRequest.resx">
       <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106072003418_ContributionStatementsDetail.resx">
+      <DependentUpon>202106072003418_ContributionStatementsDetail.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -3222,7 +3229,9 @@
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
-    <None Include="Migrations\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava" />
+    <None Include="Migrations\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">
+      <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplate.lava">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
