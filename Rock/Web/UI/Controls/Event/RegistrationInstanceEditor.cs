@@ -59,7 +59,6 @@ namespace Rock.Web.UI.Controls
         NumberBox _nbTimeoutLengthMinutes;
         NumberBox _nbTimeoutThreshold;
 
-
         /// <summary>
         /// Gets or sets a value indicating whether active checkbox should be displayed
         /// </summary>
@@ -983,15 +982,15 @@ namespace Rock.Web.UI.Controls
                 _nbTimeoutLengthMinutes = new NumberBox();
                 _nbTimeoutLengthMinutes.ID = ID + "_nbTimeoutLengthMinutes";
                 _nbTimeoutLengthMinutes.Label = "Timeout Length";
-                _nbTimeoutLengthMinutes.AppendText = "Minutes";
+                _nbTimeoutLengthMinutes.AppendText = "minutes";
                 _nbTimeoutLengthMinutes.Help = "If desired, a timeout can be applied to registrations. If applied, then registrants have this amount of time to fill out each page of the registration. Their registration spots are reserved until the timeout elapses, or they advance in the registration process.";
                 Controls.Add( _nbTimeoutLengthMinutes );
 
                 _nbTimeoutThreshold = new NumberBox();
                 _nbTimeoutThreshold.ID = ID + "_nbTimeoutThreshold";
                 _nbTimeoutThreshold.Label = "Timeout Threshold";
-                _nbTimeoutThreshold.AppendText = "Registrants";
-                _nbTimeoutThreshold.Help = "If a timeout length is set, then this threshold is the lower limit of available registrations before the timeout is enforced. Registrants will be unaware that a timeout exists if they apply before this threshold is hit. Using this setting allows for early registrants to have a lower stress experience.";
+                _nbTimeoutThreshold.AppendText = "registrants";
+                _nbTimeoutThreshold.Help = "If a timeout length is set, then this threshold is the lower limit of available registrant slots before the timeout is enforced. Registrants will be unaware that a timeout exists if they apply before this threshold is hit. Using this setting allows for early registrants to have a lower stress experience.";
                 Controls.Add( _nbTimeoutThreshold );
 
                 _htmlRegistrationInstructions = new HtmlEditor();
@@ -1175,24 +1174,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // row
             } );
 
-            RockControlHelper.RenderSection( "Registration Session Timeout", CssClass, writer, ( HtmlTextWriter ) =>
-            {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _nbTimeoutLengthMinutes.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _nbTimeoutThreshold.RenderControl( writer );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            } );
-
             RockControlHelper.RenderSection( "Registration Contact Information", CssClass, writer, ( HtmlTextWriter ) =>
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
@@ -1268,6 +1249,24 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalReminderDetails.RenderControl( writer );
 
                 _htmlAdditionalConfirmationDetails.RenderControl( writer );
+            } );
+
+            RockControlHelper.RenderSection( "Registration Session Timeout", CssClass, writer, ( HtmlTextWriter ) =>
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _nbTimeoutLengthMinutes.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _nbTimeoutThreshold.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
             } );
         }
     }

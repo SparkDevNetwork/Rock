@@ -58,9 +58,9 @@ export default defineComponent( {
         }
     },
     watch: {
-        strippedValue ()
+        formattedValue ()
         {
-            this.$emit( 'update:modelValue', this.strippedValue );
+            this.$emit( 'update:modelValue', this.formattedValue );
         },
         modelValue: {
             immediate: true,

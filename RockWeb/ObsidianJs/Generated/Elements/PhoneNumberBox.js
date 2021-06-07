@@ -68,8 +68,8 @@ System.register(["vue", "../Util/Guid", "./RockFormField", "../Services/String"]
                     }
                 },
                 watch: {
-                    strippedValue: function () {
-                        this.$emit('update:modelValue', this.strippedValue);
+                    formattedValue: function () {
+                        this.$emit('update:modelValue', this.formattedValue);
                     },
                     modelValue: {
                         immediate: true,
