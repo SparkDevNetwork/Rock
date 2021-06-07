@@ -447,48 +447,72 @@ th[align="right"] {
   }
 
   .panel-settings-group {
+    display: flex;
+    flex-wrap: wrap;
     margin: -(@panel-body-padding);
 
-    .btn {
-      border-color: @panel-heading-border;
-      border-top-width: 0;
-      border-right-width: 0;
-      border-radius: 0 !important;
+    > .form-group {
+      flex: 1 1 100%;
+      border-bottom: 1px solid @input-border;
+
+      &:first-child {
+        border-left: 0;
+      }
+
+      @media (min-width: @screen-sm) {
+        flex: 1 1 auto;
+        border-left: 1px solid @input-border;
+      }
     }
 
-    .btn-group:first-child .btn {
-      border-left-width: 0;
+    .control-label {
+      position: absolute;
+      z-index: 30;
+      padding: @padding-base-vertical @padding-base-horizontal;
+      font-size: 12px;
+      font-weight: 400;
+      color: @text-muted;
+      pointer-events: none;
     }
 
-    &.btn-group-justified {
-      width: auto;
-    }
-
-    &.btn-group-justified > .btn-group .dropdown-menu {
+    .btn,
+    .btn-group,
+    .dropdown-menu {
       width: 100%;
+    }
+
+    .btn {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 0;
+      padding-top: (@padding-base-vertical * 2) + 14px;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 0 !important;
     }
   }
 }
 
 .panel-toolbar {
-  border-bottom: 1px solid #dbdbdb;
   padding: 4px 16px;
   font-size: 12px;
+  border-bottom: 1px solid #dbdbdb;
 
   .btn-tool,
   .picker .picker-label {
     padding: 1px 5px;
-    color: #6f7782;
     font-size: 12px;
     font-weight: 600;
-    border: 1px solid transparent;
     line-height: @line-height-small;
+    color: #6f7782;
     background: transparent;
+    border: 1px solid transparent;
 
     &:hover,
     &:active,
     &.active {
-      background: #E9ECEE;
+      background: #e9ecee;
     }
   }
 }
@@ -1045,6 +1069,7 @@ div.aspNetDisabled {
 .badge-bar {
   display: flex;
   align-items: center;
+
   --badge-size: 36px;
 
   .badge {
