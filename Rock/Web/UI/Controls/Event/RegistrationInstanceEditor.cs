@@ -983,14 +983,14 @@ namespace Rock.Web.UI.Controls
                 _nbTimeoutLengthMinutes.ID = ID + "_nbTimeoutLengthMinutes";
                 _nbTimeoutLengthMinutes.Label = "Timeout Length";
                 _nbTimeoutLengthMinutes.AppendText = "minutes";
-                _nbTimeoutLengthMinutes.Help = "If desired, a timeout can be applied to registrations. If applied, then registrants have this amount of time to fill out each page of the registration. Their registration spots are reserved until the timeout elapses, or they advance in the registration process.";
+                _nbTimeoutLengthMinutes.Help = "To help with registrations with limited slots a timeout can be applied to registration sessions. When applied, individuals will have the configured timeout duration to complete each page of the registration. Their spots are reserved until the timeout elapses, or they advance in the registration process.";
                 Controls.Add( _nbTimeoutLengthMinutes );
 
                 _nbTimeoutThreshold = new NumberBox();
                 _nbTimeoutThreshold.ID = ID + "_nbTimeoutThreshold";
                 _nbTimeoutThreshold.Label = "Timeout Threshold";
                 _nbTimeoutThreshold.AppendText = "registrants";
-                _nbTimeoutThreshold.Help = "If a timeout length is set, then this threshold is the lower limit of available registrant slots before the timeout is enforced. Registrants will be unaware that a timeout exists if they apply before this threshold is hit. Using this setting allows for early registrants to have a lower stress experience.";
+                _nbTimeoutThreshold.Help = "The use of registration sessions can add stress to the registration experience. The Timeout Threshold determines the lower limit of spots available before the session feature is enabled. This allows early registrations to proceed without worrying about a session since they are not in danger of being in an oversell situation.";
                 Controls.Add( _nbTimeoutThreshold );
 
                 _htmlRegistrationInstructions = new HtmlEditor();
@@ -1251,7 +1251,7 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalConfirmationDetails.RenderControl( writer );
             } );
 
-            RockControlHelper.RenderSection( "Registration Session Timeout", CssClass, writer, ( HtmlTextWriter ) =>
+            RockControlHelper.RenderSection( "Registration Session", CssClass, writer, ( HtmlTextWriter ) =>
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
