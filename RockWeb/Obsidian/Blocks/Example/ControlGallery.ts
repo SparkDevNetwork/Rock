@@ -44,6 +44,7 @@ import DropDownList, { DropDownListOption } from '../../Elements/DropDownList';
 import Dialog from '../../Controls/Dialog';
 import CheckBox from '../../Elements/CheckBox';
 import PhoneNumberBox from '../../Elements/PhoneNumberBox';
+import HelpBlock from '../../Elements/HelpBlock';
 
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
@@ -101,6 +102,23 @@ const PhoneNumberBoxGallery = defineComponent( {
     </template>
     <template #result>
         {{phoneNumber}}
+    </template>
+</GalleryAndResult>`
+} );
+
+const HelpBlockGallery = defineComponent( {
+    name: 'HelpBlockGallery',
+    components: {
+        GalleryAndResult,
+        HelpBlock
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        HelpBlock
+    </template>
+    <template #gallery>
+        <HelpBlock text="This is some helpful text that explains something." />
     </template>
 </GalleryAndResult>`
 } );
@@ -287,7 +305,8 @@ export default defineComponent({
         DialogGallery,
         CheckBoxGallery,
         PhoneNumberBoxGallery,
-        DropDownListGallery
+        DropDownListGallery,
+        HelpBlockGallery
     },
     data() {
         return {
@@ -560,6 +579,7 @@ export default defineComponent({
         <CheckBoxGallery />
         <PhoneNumberBoxGallery />
         <DropDownListGallery />
+        <HelpBlockGallery />
     </template>
 </PaneledBlockTemplate>`
 });
