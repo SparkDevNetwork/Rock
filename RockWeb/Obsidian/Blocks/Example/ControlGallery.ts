@@ -46,6 +46,8 @@ import CheckBox from '../../Elements/CheckBox';
 import PhoneNumberBox from '../../Elements/PhoneNumberBox';
 import HelpBlock from '../../Elements/HelpBlock';
 
+/** An inner component that describes the template used for each of the controls
+ *  within this control gallery */
 const GalleryAndResult = defineComponent({
     name: 'GalleryAndResult',
     components: {
@@ -79,6 +81,7 @@ const GalleryAndResult = defineComponent({
 </PanelWidget>`
 } );
 
+/** Demonstrates a phone number box */
 const PhoneNumberBoxGallery = defineComponent( {
     name: 'PhoneNumberBoxGallery',
     components: {
@@ -106,6 +109,7 @@ const PhoneNumberBoxGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a help block */
 const HelpBlockGallery = defineComponent( {
     name: 'HelpBlockGallery',
     components: {
@@ -123,6 +127,7 @@ const HelpBlockGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a drop down list */
 const DropDownListGallery = defineComponent( {
     name: 'DropDownListGallery',
     components: {
@@ -158,6 +163,7 @@ const DropDownListGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a radio button list */
 const RadioButtonListGallery = defineComponent( {
     name: 'RadioButtonListGallery',
     components: {
@@ -200,6 +206,7 @@ const RadioButtonListGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a checkbox */
 const CheckBoxGallery = defineComponent( {
     name: 'CheckBoxGallery',
     components: {
@@ -227,6 +234,7 @@ const CheckBoxGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a modal / dialog / pop-up */
 const DialogGallery = defineComponent( {
     name: 'DialogGallery',
     components: {
@@ -280,6 +288,41 @@ const DialogGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates how rock forms work with rules to produce validation messages */
+const FormRulesGallery = defineComponent( {
+    name: 'FormRulesGallery',
+    components: {
+        GalleryAndResult,
+        RockForm,
+        TextBox,
+        CurrencyBox,
+        RockButton
+    },
+    data ()
+    {
+        return {
+            ruleTestCurrency: 1,
+            ruleTestText: '',
+            rules: 'required'
+        };
+    },
+    template: `
+<GalleryAndResult :splitWidth="false">
+    <template #header>
+        Rules
+    </template>
+    <template #gallery>
+        <TextBox label="Rules" v-model="rules" help="Try 'required', 'gte:1', 'lt:2', and others. Combine rules like this: 'required|lt:7|gt:6'" />
+        <hr />
+        <RockForm>
+            <TextBox label="Text" v-model="ruleTestText" :rules="rules" />
+            <CurrencyBox label="Currency" v-model="ruleTestCurrency" :rules="rules" />
+            <RockButton btnType="primary" type="submit">Test</RockButton>
+        </RockForm>
+    </template>
+</GalleryAndResult>`
+} );
+
 export default defineComponent({
     name: 'Example.ControlGallery',
     components: {
@@ -306,7 +349,8 @@ export default defineComponent({
         CheckBoxGallery,
         PhoneNumberBoxGallery,
         DropDownListGallery,
-        HelpBlockGallery
+        HelpBlockGallery,
+        FormRulesGallery
     },
     data() {
         return {
@@ -342,11 +386,7 @@ export default defineComponent({
                 { Key: '7', Title: 'Step 7', Subtitle: 'The seventh step' },
                 { Key: '8', Title: 'Step 8', Subtitle: 'The eighth step' },
                 { Key: 'F', Title: 'Finish', Subtitle: 'The finish' }
-            ] as ProgressTrackerItem[],
-            ruleTestCurrency: 1,
-            ruleTestText: '',
-            rules: 'required',
-            isDialogVisible: false
+            ] as ProgressTrackerItem[]
         };
     },
     methods: {
@@ -560,20 +600,7 @@ export default defineComponent({
                 <ProgressTracker :items="progressTrackerItems" :currentIndex="progressTrackerIndex" />
             </template>
         </GalleryAndResult>
-        <GalleryAndResult :splitWidth="false">
-            <template #header>
-                Rules
-            </template>
-            <template #gallery>
-                <TextBox label="Rules" v-model="rules" help="Try 'required', 'gte:1', 'lt:2', and others. Combine rules like this: 'required|lt:7|gt:6'" />
-                <hr />
-                <RockForm>
-                    <TextBox label="Text" v-model="ruleTestText" :rules="rules" />
-                    <CurrencyBox label="Currency" v-model="ruleTestCurrency" :rules="rules" />
-                    <RockButton btnType="primary" type="submit">Test</RockButton>
-                </RockForm>
-            </template>
-        </GalleryAndResult>
+        <FormRulesGallery />
         <RadioButtonListGallery />
         <DialogGallery />
         <CheckBoxGallery />

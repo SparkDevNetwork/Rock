@@ -28,48 +28,65 @@ enum ConfigurationValueKey {
     ShowCountDown = 'showcountdown'
 }
 
-export default registerFieldType(fieldTypeGuid, defineComponent({
+export default registerFieldType( fieldTypeGuid, defineComponent( {
     name: 'TextField',
     components: {
         TextBox
     },
     props: getFieldTypeProps(),
-    data() {
+    data ()
+    {
         return {
             internalValue: ''
         };
     },
     computed: {
-        safeValue(): string {
-            return (this.modelValue || '').trim();
+        safeValue (): string
+        {
+            return ( this.modelValue || '' ).trim();
         },
-        configAttributes(): Record<string, number | boolean> {
+        configAttributes (): Record<string, number | boolean>
+        {
             const attributes: Record<string, number | boolean> = {};
 
-            const maxCharsConfig = this.configurationValues[ConfigurationValueKey.MaxCharacters];
-            if (maxCharsConfig && maxCharsConfig.Value) {
-                const maxCharsValue = Number(maxCharsConfig.Value);
+            const maxCharsConfig = this.configurationValues[ ConfigurationValueKey.MaxCharacters ];
+            if ( maxCharsConfig && maxCharsConfig.Value )
+            {
+                const maxCharsValue = Number( maxCharsConfig.Value );
 
-                if (maxCharsValue) {
+                if ( maxCharsValue )
+                {
                     attributes.maxLength = maxCharsValue;
                 }
             }
 
-            const showCountDownConfig = this.configurationValues[ConfigurationValueKey.ShowCountDown];
-            if (showCountDownConfig && showCountDownConfig.Value) {
-                const showCountDownValue = asBooleanOrNull(showCountDownConfig.Value) || false;
+            const showCountDownConfig = this.configurationValues[ ConfigurationValueKey.ShowCountDown ];
+            if ( showCountDownConfig && showCountDownConfig.Value )
+            {
+                const showCountDownValue = asBooleanOrNull( showCountDownConfig.Value ) || false;
 
-                if (showCountDownValue) {
+                if ( showCountDownValue )
+                {
                     attributes.showCountDown = showCountDownValue;
                 }
             }
 
             return attributes;
+        },
+        isPassword (): boolean
+        {
+            const isPasswordConfig = this.configurationValues[ ConfigurationValueKey.IsPassword ];
+            return asBooleanOrNull( isPasswordConfig?.Value ) || false;
+        },
+        passwordDisplay (): string
+        {
+            return this.safeValue ? '********' : '';
         }
     },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
         },
         modelValue: {
             immediate: true,
@@ -80,6 +97,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     template: `
-<TextBox v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" />
+<TextBox v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" :type="isPassword ? 'password' : ''" />
+<span v-else-if="isPassword">{{passwordDisplay}}</span>
 <span v-else>{{ safeValue }}</span>`
-}));
+} ) );

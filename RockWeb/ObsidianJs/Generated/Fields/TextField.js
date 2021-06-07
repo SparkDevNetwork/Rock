@@ -56,6 +56,13 @@ System.register(["vue", "./Index", "../Elements/TextBox", "../Services/Boolean"]
                             }
                         }
                         return attributes;
+                    },
+                    isPassword: function () {
+                        var isPasswordConfig = this.configurationValues[ConfigurationValueKey.IsPassword];
+                        return Boolean_1.asBooleanOrNull(isPasswordConfig === null || isPasswordConfig === void 0 ? void 0 : isPasswordConfig.Value) || false;
+                    },
+                    passwordDisplay: function () {
+                        return this.safeValue ? '********' : '';
                     }
                 },
                 watch: {
@@ -69,7 +76,7 @@ System.register(["vue", "./Index", "../Elements/TextBox", "../Services/Boolean"]
                         }
                     }
                 },
-                template: "\n<TextBox v-if=\"isEditMode\" v-model=\"internalValue\" v-bind=\"configAttributes\" />\n<span v-else>{{ safeValue }}</span>"
+                template: "\n<TextBox v-if=\"isEditMode\" v-model=\"internalValue\" v-bind=\"configAttributes\" :type=\"isPassword ? 'password' : ''\" />\n<span v-else-if=\"isPassword\">{{passwordDisplay}}</span>\n<span v-else>{{ safeValue }}</span>"
             })));
         }
     };

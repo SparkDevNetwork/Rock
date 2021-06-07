@@ -60,6 +60,8 @@ export default defineComponent( {
     watch: {
         formattedValue ()
         {
+            // The value that should be stored for phone number attribute values is the formatted version.
+            // This seems backwards, but actually keeps parity with the web forms functionality.
             this.$emit( 'update:modelValue', this.formattedValue );
         },
         modelValue: {
