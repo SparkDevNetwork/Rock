@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( GroupMember item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring GroupMemberAssignment,GroupMemberId 
  
             if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
             {

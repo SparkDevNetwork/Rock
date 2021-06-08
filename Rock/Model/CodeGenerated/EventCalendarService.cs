@@ -93,6 +93,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
