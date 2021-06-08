@@ -65,14 +65,6 @@ namespace Rock.Apps.StatementGenerator
 
         private ProgressPage ProgressPage { get; set; }
 
-        /// <summary>
-        /// Gets or sets the record count.
-        /// </summary>
-        /// <value>
-        /// The record count.
-        /// </value>
-        private int RecordCount { get; set; }
-
         private bool _cancelRunning = false;
         private bool _cancelled = false;
         private readonly int _maxRenderThreads = Environment.ProcessorCount + 4;
@@ -152,7 +144,7 @@ namespace Rock.Apps.StatementGenerator
         /// Runs the report returning the number of statements that were generated
         /// </summary>
         /// <returns></returns>
-        public int RunReport()
+        public ResultsSummary RunReport()
         {
             InitializeChromeEngine();
 
@@ -241,7 +233,6 @@ namespace Rock.Apps.StatementGenerator
                 SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: false );
             }
 
-            this.RecordCount = recipientList.Count;
             _recordsCompleted = 0;
 
             _renderPdfTasks = new ConcurrentBag<Task>();
@@ -323,29 +314,31 @@ namespace Rock.Apps.StatementGenerator
             if ( _cancelRunning )
             {
                 this._cancelled = true;
-                return ( int ) _recordsCompleted;
+                return new ResultsSummary( recipientList );
             }
 
             SaveRecipientListStatus( recipientList, _currentDayTemporaryDirectory, false );
 
-            this.RecordCount = recipientList.Count( x => x.IsComplete );
-
             var reportCount = this.Options.ReportConfigurationList.Count();
             var reportNumber = 0;
+
+            var resultsSummary = new ResultsSummary( recipientList );
 
             foreach ( var financialStatementReportConfiguration in this.Options.ReportConfigurationList )
             {
                 reportNumber++;
+
                 if ( reportCount == 1 )
                 {
                     UpdateProgress( "Generating Report...", 0, 0 );
                 }
                 else
                 {
-                    UpdateProgress( $"Generating Report {reportNumber}", reportNumber, reportCount );
+                    UpdateProgress( $"Generating Report {reportNumber}", reportNumber-1, reportCount );
                 }
 
-                WriteStatementPDFs( financialStatementReportConfiguration, recipientList );
+                var summary = WriteStatementPDFs( financialStatementReportConfiguration, recipientList );
+                resultsSummary.PaperStatementsSummaryList.Add( summary );
             }
 
             SaveGeneratorConfig( _currentDayTemporaryDirectory, incrementRunAttempts: false, reportsCompleted: true );
@@ -373,13 +366,13 @@ namespace Rock.Apps.StatementGenerator
             _stopwatchAll.Stop();
             var elapsedSeconds = _stopwatchAll.ElapsedMilliseconds / 1000;
             Debug.WriteLine( $"{elapsedSeconds:n0} seconds" );
-            Debug.WriteLine( $"{RecordCount:n0} statements" );
-            if ( RecordCount > 0 )
+            Debug.WriteLine( $"{resultsSummary.StatementCount:n0} statements" );
+            if ( resultsSummary.StatementCount > 0 )
             {
-                Debug.WriteLine( $"{( _stopwatchAll.ElapsedMilliseconds / RecordCount ):n0}ms per statement" );
+                Debug.WriteLine( $"{( _stopwatchAll.ElapsedMilliseconds / resultsSummary.StatementCount ):n0}ms per statement" );
             }
 
-            return this.RecordCount;
+            return resultsSummary;
         }
 
         private string GetStatementGeneratorLocalApplicationDataFolder()
@@ -579,6 +572,9 @@ namespace Rock.Apps.StatementGenerator
 
                     if ( _saveStatementsForIndividualsToDocument )
                     {
+                        // if there is an exception, we'll want to know that the statement wasn't uploaded
+                        recipient.PaperlessStatementUploaded = false;
+
                         FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData = new FinancialStatementGeneratorUploadGivingStatementData
                         {
                             FinancialStatementGeneratorRecipient = recipient,
@@ -589,11 +585,14 @@ namespace Rock.Apps.StatementGenerator
                         RestRequest uploadDocumentRequest = new RestRequest( "api/FinancialGivingStatement/UploadGivingStatementDocument" );
                         uploadDocumentRequest.AddJsonBody( uploadGivingStatementData );
 
-                        var uploadDocumentResponse = _uploadPdfDocumentRestClient.ExecutePostAsync( uploadDocumentRequest ).Result;
+                        IRestResponse<FinancialStatementGeneratorUploadGivingStatementResult> uploadDocumentResponse = _uploadPdfDocumentRestClient.ExecutePostAsync<FinancialStatementGeneratorUploadGivingStatementResult>( uploadDocumentRequest ).Result;
                         if ( uploadDocumentResponse.ErrorException != null )
                         {
                             throw uploadDocumentResponse.ErrorException;
                         }
+
+                        recipient.PaperlessStatementUploaded = uploadDocumentResponse.Data != null;
+                        recipient.PaperlessStatementsIndividualCount = uploadDocumentResponse.Data?.NumberOfIndividuals;
                     }
 
                     recipient.IsComplete = true;
@@ -872,10 +871,10 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
 
             List<string> previousRunFiles = new List<string>();
             var folders = Directory.EnumerateDirectories( reportTemporaryDirectoryPath, "Rock Statement Generator-*", SearchOption.TopDirectoryOnly );
-            foreach( var folder in folders )
+            foreach ( var folder in folders )
             {
                 Directory.EnumerateFiles( folder, "GeneratorConfig.Json" );
-                
+
                 previousRunFiles.AddRange( Directory.EnumerateFiles( folder, "GeneratorConfig.Json", SearchOption.TopDirectoryOnly ).ToList() );
             }
 
@@ -964,14 +963,16 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
         /// </summary>
         /// <param name="financialStatementReportConfiguration">The financial statement report configuration.</param>
         /// <param name="financialStatementGeneratorRecipientResults">The statement generator recipient PDF results.</param>
-        private void WriteStatementPDFs( FinancialStatementReportConfiguration financialStatementReportConfiguration, IEnumerable<FinancialStatementGeneratorRecipient> financialStatementGeneratorRecipientResults )
+        private ReportPaperStatementsSummary WriteStatementPDFs( FinancialStatementReportConfiguration financialStatementReportConfiguration, IEnumerable<FinancialStatementGeneratorRecipient> financialStatementGeneratorRecipientResults )
         {
-            if ( !financialStatementGeneratorRecipientResults.Any() )
-            {
-                return;
-            }
 
             var recipientList = financialStatementGeneratorRecipientResults.Where( a => a.IsComplete ).ToList();
+            ReportPaperStatementsSummary reportPaperStatementsSummary = new ReportPaperStatementsSummary( recipientList, financialStatementReportConfiguration );
+
+            if ( !financialStatementGeneratorRecipientResults.Any() )
+            {
+                return reportPaperStatementsSummary;
+            }
 
             if ( financialStatementReportConfiguration.ExcludeOptedOutIndividuals )
             {
@@ -985,7 +986,13 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
 
             if ( financialStatementReportConfiguration.IncludeInternationalAddresses == false )
             {
+            
                 recipientList = recipientList.Where( a => a.IsInternationalAddress == false ).ToList();
+            }
+
+            if ( financialStatementReportConfiguration.ExcludeRecipientsThatHaveAnIncompleteAddress )
+            {
+                recipientList = recipientList.Where( a => a.HasValidMailingAddress == true ).ToList();
             }
 
             IOrderedEnumerable<FinancialStatementGeneratorRecipient> sortedRecipientList = SortByPrimaryAndSecondaryOrder( financialStatementReportConfiguration, recipientList );
@@ -1030,7 +1037,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 ProgressPage.ShowSaveMergeDocProgress( 0, 1, "Saving Merged Document" );
                 SaveToMergedDocument( singleFileName, recipientList );
                 ProgressPage.ShowSaveMergeDocProgress( 1, 1, "Saving Merged Document" );
-                return;
+                return reportPaperStatementsSummary;
             }
 
             if ( maxStatementsPerChapter.HasValue && !preventSplitting && !splitOnPrimary )
@@ -1038,7 +1045,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 // 1000 per PDF case (last doc might have less than 1000) - Simple
                 // simply break into maxStatementsPerChapter, where the last doc may have less than maxStatementsPerChapter
                 SaveAsChapterDocs( financialStatementReportConfiguration, recipientList, maxStatementsPerChapter.Value );
-                return;
+                return reportPaperStatementsSummary;
             }
 
             if ( splitOnPrimary )
@@ -1048,7 +1055,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                     // One per Sort case ( Split on primary and also prevent splitting (or there isn't a max per chapter) )
                     // This ends up as simple one chapter per Sort (for example, Each Zip Code has it's own file)
                     SaveAsSimpleSplitOnPrimarySort( financialStatementReportConfiguration, recipientList );
-                    return;
+                    return reportPaperStatementsSummary;
                 }
                 else
                 {
@@ -1057,7 +1064,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                     //   - However, don't have more than one sort key per doc.
                     //   - Therefore, each doc would never have more then the max, but could have fewer than the max
                     SaveAsSplitOnPrimarySortWithChapters( financialStatementReportConfiguration, recipientList, maxStatementsPerChapter.Value );
-                    return;
+                    return reportPaperStatementsSummary;
                 }
             }
 
@@ -1066,6 +1073,7 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             //   - Otherwise, limit to an absolute max (a doc may have more than one sort key)
             //   - Therefore, each doc could have more than the max or less than the max
             SaveAsChapterDocsPreventSplitting( financialStatementReportConfiguration, recipientList, maxStatementsPerChapter.Value );
+            return reportPaperStatementsSummary;
         }
 
         /// <summary>

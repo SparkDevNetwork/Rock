@@ -344,6 +344,7 @@
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
 		<row><td>ISO19770_LocalTag</td><td>{36654E44-66D6-46BF-97F0-F8A20C8F8CA3}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>ISO19770_SystemTag</td><td>{A961AE0C-B081-408D-A277-A4A706E5DBBA}</td><td>CommonAppDataFolder</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{D756635C-49FE-40AE-915C-B94977A79465}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>{074F6DC8-A282-4642-8C50-76BE3983EFB6}</td><td>INSTALLDIR</td><td>2</td><td/><td>statementgenerator.primary_o</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>StatementGenerator.Locally_Copied_Items</td><td>{38E6E739-BBA7-49F1-BF41-C24961582A35}</td><td>INSTALLDIR</td><td>2</td><td/><td>statementgenerator.locally_c</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
@@ -1056,8 +1057,7 @@
 	<table name="CreateFolder">
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
-		<row><td>CommonAppDataFolder</td><td>ISO19770_SystemTag</td></row>
-		<row><td>INSTALLDIR</td><td>ISO19770_LocalTag</td></row>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 	</table>
 
 	<table name="CustomAction">
@@ -1875,6 +1875,7 @@
 		<col key="yes" def="s72">Component_</col>
 		<row><td>AlwaysInstall</td><td>ISO19770_LocalTag</td></row>
 		<row><td>AlwaysInstall</td><td>ISO19770_SystemTag</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 		<row><td>AlwaysInstall</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td></row>
 		<row><td>AlwaysInstall</td><td>StatementGenerator.Locally_Copied_Items</td></row>
 	</table>
@@ -1891,6 +1892,8 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
+		<row><td>regid.2021_06.tech.triumph_m</td><td>ISO19770_SystemTag</td><td>REGID2~1.SWI|regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock\Installers\StatementGeneratorInstall\StatementGeneratorInstaller\Express\Interm\regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>1</td><td/></row>
+		<row><td>regid.2021_06.tech.triumph_m1</td><td>ISO19770_LocalTag</td><td>REGID2~1.SWI|regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock\Installers\StatementGeneratorInstall\StatementGeneratorInstaller\Express\Interm\regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>1</td><td/></row>
 		<row><td>statementgenerator.locally_c</td><td>StatementGenerator.Locally_Copied_Items</td><td>StatementGenerator.Locally-Copied Items</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;StatementGenerator&gt;|ReferenceCopyLocalPaths</td><td>3</td><td/></row>
 		<row><td>statementgenerator.primary_o</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>StatementGenerator.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;StatementGenerator&gt;|Built</td><td>3</td><td/></row>
 	</table>
@@ -2038,6 +2041,7 @@
 		<col def="S0">Miscellaneous</col>
 		<row><td>ISO19770_LocalTag</td><td/><td/><td>_B35B4F71_4D4D_4A99_9C1B_E94D93583670_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>ISO19770_SystemTag</td><td/><td/><td>_8496ACFD_D597_4E84_ADA1_77660E514833_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_D2C10F6C_B0C6_49D6_94ED_3B948BBEBF49_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td/><td>_D1F6313F_12EE_4BF3_8945_211BFF450411_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>StatementGenerator.Locally_Copied_Items</td><td/><td/><td>_723087FA_EA2A_418F_B806_776351F85D9C_FILTER</td><td/><td/><td/><td/></row>
 	</table>
@@ -3482,7 +3486,6 @@
 		<row><td>IDS_PROGMSG_XML_UPDATE_FILE</td><td>1033</td><td>Updating XML file %s...</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SETUPEXE_EXPIRE_MSG</td><td>1033</td><td>This setup works until %s. The setup will now exit.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SETUPEXE_LAUNCH_COND_E</td><td>1033</td><td>This setup was built with an evaluation version of InstallShield and can only be launched from setup.exe.</td><td>0</td><td/><td>623370734</td></row>
-		<row><td>IDS_SHORTCUT_DISPLAY_NAME1</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>623340304</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO</td><td>1033</td><td>From the list of servers below, select the database server you would like to target.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO_DB</td><td>1033</td><td>From the list of catalog names below, select the database catalog you would like to target.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO_TEMPLATE</td><td>1033</td><td>[IS_SQLBROWSE_INTRO]</td><td>0</td><td/><td>623370734</td></row>
@@ -3778,6 +3781,9 @@
 		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>-492184018</td></row>
 		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-492184018</td></row>
 		<row><td>ID_STRING3</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>623340304</td></row>
+		<row><td>ID_STRING4</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589950350</td></row>
+		<row><td>ID_STRING5</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator - ToExe</td><td>0</td><td/><td>589900942</td></row>
+		<row><td>ID_STRING6</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589927886</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>623370734</td></row>
 	</table>
 
@@ -3902,6 +3908,9 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
 		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock\Applications\Wpf\StatementGenerator\resources\statement-printer.ico</td><td>0</td></row>
+		<row><td>NewShortcut3_82391FE6762E433EBD497196096F2002.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
+		<row><td>_Built1_64C68A7287D941BBA6F2079F9907E00E.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
+		<row><td>_Built_C5F920F3F3EA40AE9767C99283A2208A.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
 	</table>
 
 	<table name="IniFile">
@@ -4034,7 +4043,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISCompilerOption_WarningsAsErrors</td><td>1</td></row>
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
 		<row><td>ISUpdateNotifications</td><td>0</td></row>
-		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI,viewProject</td></row>
+		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI,viewProject,viewSetupDesign,viewISToday,viewShortcuts</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4413,7 +4422,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]StatementGenerator.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{D40E4125-237C-4379-AF5F-F2883D5E48A2}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Statement Generator</td><td/></row>
-		<row><td>ProductVersion</td><td>1.12.4.1</td><td/></row>
+		<row><td>ProductVersion</td><td>1.12.5.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4491,7 +4500,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="i2">InstallMode</col>
 		<row><td>FileKey1</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>sparkd_1_spark_development_network</td><td>2</td></row>
 		<row><td>FileKey2</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
-		<row><td>_Built</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
+		<row><td>NewShortcut1</td><td>ISX_DEFAULTCOMPONENT1</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
 	</table>
 
 	<table name="RemoveIniFile">
@@ -4577,8 +4586,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">ISComments</col>
 		<col def="S255">ISShortcutName</col>
 		<col def="I4">ISAttributes</col>
-		<row><td>_Built</td><td>rockrm_1_rock_rms_statement_generator</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>NewShortcut1</td><td>rockrm_1_rock_rms_statement_generator</td><td>##ID_STRING4##</td><td>ISX_DEFAULTCOMPONENT1</td><td>[INSTALLDIR]StatementGenerator.exe</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>NewShortcut3</td><td>DesktopFolder</td><td>##ID_STRING6##</td><td>ISX_DEFAULTCOMPONENT1</td><td>[INSTALLDIR]StatementGenerator.exe</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">

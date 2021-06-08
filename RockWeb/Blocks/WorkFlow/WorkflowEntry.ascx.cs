@@ -1425,7 +1425,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 if ( button.CausesValidation )
                 {
-                    Page.Validate();
+                    //Page.Validate();
+                    Page.Validate( this.BlockValidationGroup );
 
                     if ( !Page.IsValid )
                     {

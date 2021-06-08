@@ -76,6 +76,7 @@ namespace Rock.Apps.StatementGenerator
             cbPreventSplittingPrimarySortValuesAcrossChapters.IsChecked = financialStatementReportConfiguration.PreventSplittingPrimarySortValuesAcrossChapters;
             tbMinimumContributionAmount.Text = financialStatementReportConfiguration.MinimumContributionAmount.ToString();
             cbIncludeInternationalAddresses.IsChecked = financialStatementReportConfiguration.IncludeInternationalAddresses;
+            cbDoNotIncludeIncompleteAddresses.IsChecked = financialStatementReportConfiguration.ExcludeRecipientsThatHaveAnIncompleteAddress;
             cbDoNotIncludeStatementsForThoseWhoHaveOptedOut.IsChecked = financialStatementReportConfiguration.ExcludeOptedOutIndividuals;
 
             FinancialStatementReportConfigurationCreateDateTime = financialStatementReportConfiguration.CreatedDateTime;
@@ -98,6 +99,7 @@ namespace Rock.Apps.StatementGenerator
             financialStatementReportConfiguration.PreventSplittingPrimarySortValuesAcrossChapters = cbPreventSplittingPrimarySortValuesAcrossChapters.IsChecked ?? true;
             financialStatementReportConfiguration.MinimumContributionAmount = tbMinimumContributionAmount.Text.AsDecimalOrNull();
             financialStatementReportConfiguration.IncludeInternationalAddresses = cbIncludeInternationalAddresses.IsChecked ?? true;
+            financialStatementReportConfiguration.ExcludeRecipientsThatHaveAnIncompleteAddress = cbDoNotIncludeIncompleteAddresses.IsChecked ?? true;
             financialStatementReportConfiguration.ExcludeOptedOutIndividuals = cbDoNotIncludeStatementsForThoseWhoHaveOptedOut.IsChecked ?? true;
             financialStatementReportConfiguration.CreatedDateTime = FinancialStatementReportConfigurationCreateDateTime ?? DateTime.Now;
             financialStatementReportConfiguration.Guid = FinancialStatementReportConfigurationGuid;
