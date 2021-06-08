@@ -2253,6 +2253,12 @@ namespace Rock.Lava
             }
         }
 
+        /// <inheritdoc cref="Rock.Lava.Filters.TemplateFilters.RandomNumber(object)"/>
+        public static int RandomNumber( object input )
+        {
+            return Rock.Lava.Filters.TemplateFilters.RandomNumber( input );
+        }
+
         #endregion Number Filters
 
         #region Attribute Filters
