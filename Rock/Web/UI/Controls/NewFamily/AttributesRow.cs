@@ -137,7 +137,7 @@ namespace Rock.Web.UI.Controls
                 // Set label/description to empty so that wrapping html will not be generated
                 var attributeControl = attribute.AddControl( Controls, string.Empty, string.Empty, false, true, null, string.Empty, string.Empty );
 
-                // If required, need to set the error message since the name was cleared
+                // If required, need to set the error message since the name was cleared 
                 if ( attribute.IsRequired && attributeControl != null )
                 {
                     var rockControl = attributeControl as IRockControl;
@@ -164,10 +164,8 @@ namespace Rock.Web.UI.Controls
                 writer.Write( PersonName );
                 writer.RenderEndTag();
 
-                int i = 0;
                 foreach ( Control control in Controls )
                 {
-                    writer.AddAttribute( "data-label", AttributeList[i].Name );
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
                     writer.AddAttribute( "class", "form-group" );
@@ -176,7 +174,6 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
 
                     writer.RenderEndTag();
-                    i++;
                 }
 
                 writer.RenderEndTag();

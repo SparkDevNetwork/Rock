@@ -566,5 +566,32 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;Google Heatmap&apos;, N&apos;Add an interactive visualization to depict the intensity of data at geographical points.&apos;, N&apos;&lt;p&gt;
+        ///This shortcode makes it easy to add responsive Heatmaps from Google Maps to your site. And uses similar options to the Google Map shortcode to make things as easy as possible. Let&apos;&apos;s start with a simple example and w [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106081803525_Rollup_0608_LavaHeatMap {
+            get {
+                return ResourceManager.GetString("_202106081803525_Rollup_0608_LavaHeatMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode]
+        ///SET 
+        ///[Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[ trendchart ]}
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;January&apos;&apos; value:&apos;&apos;120&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;February&apos;&apos; value:&apos;&apos;45&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;March&apos;&apos; value:&apos;&apos;38&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;April&apos;&apos; value:&apos;&apos;34&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;May&apos;&apos; value:&apos;&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106081803525_Rollup_0608_UpdateTrendChart {
+            get {
+                return ResourceManager.GetString("_202106081803525_Rollup_0608_UpdateTrendChart", resourceCulture);
+            }
+        }
     }
 }
