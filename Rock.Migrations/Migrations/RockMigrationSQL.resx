@@ -478,4 +478,10 @@
   <data name="_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202106042044568_statementgeneratordefaulttemplateupdate_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202106081803525_Rollup_0608_LavaHeatMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202106081803525_rollup_0608_lavaheatmap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202106081803525_Rollup_0608_UpdateTrendChart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202106081803525_rollup_0608_updatetrendchart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>
