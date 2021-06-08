@@ -1546,7 +1546,7 @@ achieve our mission.  We are so grateful for your commitment.
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html(symbol + totalAmt.toFixed(decimalPlaces));
+            $('.total-amount').html(symbol + totalAmt.toLocaleString(undefined, {{ minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces }}));
             return false;
         }});
 
