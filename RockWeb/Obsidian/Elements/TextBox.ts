@@ -17,7 +17,7 @@
 import { defineComponent, PropType } from 'vue';
 import RockFormField from './RockFormField';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'TextBox',
     components: {
         RockFormField
@@ -46,26 +46,43 @@ export default defineComponent({
         inputClasses: {
             type: String as PropType<string>,
             default: ''
+        },
+        rows: {
+            type: Number as PropType<number>,
+            default: 3
+        },
+        textMode: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
         'update:modelValue'
     ],
-    data: function () {
+    data: function ()
+    {
         return {
             internalValue: this.modelValue
         };
     },
     computed: {
-        charsRemaining(): number {
+        isTextarea (): boolean
+        {
+            return this.textMode?.toLowerCase() === 'multiline';
+        },
+        charsRemaining (): number
+        {
             return this.maxLength - this.modelValue.length;
         },
-        countdownClass(): string {
-            if (this.charsRemaining >= 10) {
+        countdownClass (): string
+        {
+            if ( this.charsRemaining >= 10 )
+            {
                 return 'badge-default';
             }
 
-            if (this.charsRemaining >= 0) {
+            if ( this.charsRemaining >= 0 )
+            {
                 return 'badge-warning';
             }
 
@@ -73,10 +90,12 @@ export default defineComponent({
         }
     },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
         },
-        modelValue() {
+        modelValue ()
+        {
             this.internalValue = this.modelValue;
         }
     },
@@ -92,8 +111,9 @@ export default defineComponent({
     </template>
     <template #default="{uniqueId, field, errors, disabled, tabIndex}">
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
+            <textarea v-if="isTextarea" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
+            <input v-else :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
         </div>
     </template>
 </RockFormField>`
-});
+} );

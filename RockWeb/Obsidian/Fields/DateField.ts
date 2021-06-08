@@ -119,6 +119,17 @@ export default registerFieldType( fieldTypeGuid, defineComponent( {
                 attributes.isCurrentDateOffset = displayCurrent;
             }
 
+            const futureYearConfig = this.configurationValues[ ConfigurationValueKey.FutureYearCount ];
+            if ( futureYearConfig?.Value )
+            {
+                const futureYears = toNumber( futureYearConfig.Value );
+
+                if ( futureYears > 0 )
+                {
+                    attributes.futureYearCount = futureYears;
+                }
+            }
+
             return attributes;
         }
     },

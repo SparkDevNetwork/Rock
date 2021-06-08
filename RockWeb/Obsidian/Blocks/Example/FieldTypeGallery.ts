@@ -199,7 +199,19 @@ export default defineComponent( {
             format: 'MMM yyyy',
             displayDiff: 'true',
             displayCurrentOption: 'true',
-            datePickerControlType: 'Date Parts Picker'
+            datePickerControlType: 'Date Parts Picker',
+            futureYearCount: '2'
+        } ),
+        SingleSelectGallery: GetFieldTypeGalleryComponent( 'SingleSelect', 'pizza', '7525C4CB-EE6B-41D4-9B64-A08048D5A5C0', {
+            repeatColumns: '4',
+            fieldtype: 'rb',
+            values: 'pizza^Pizza,sub^Sub'
+        } ),
+        MemoGallery: GetFieldTypeGalleryComponent( 'Memo', 'This is a memo', 'C28C7BF3-A552-4D77-9408-DEDCF760CED0', {
+            numberofrows: '10',
+            maxcharacters: '100',
+            showcountdown: 'true',
+            allowhtml: 'true'
         } )
     },
     template: `
@@ -211,6 +223,8 @@ export default defineComponent( {
     <template v-slot:default>
         <TextGallery />
         <DateGallery />
+        <SingleSelectGallery />
+        <MemoGallery />
     </template>
 </PaneledBlockTemplate>`
 } );

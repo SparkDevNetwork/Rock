@@ -391,6 +391,35 @@ const DatePartsPickerGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a textbox */
+const TextBoxGallery = defineComponent( {
+    name: 'TextBoxGallery',
+    components: {
+        GalleryAndResult,
+        TextBox
+    },
+    data ()
+    {
+        return {
+            text: 'Some two-way bound text',
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        TextBox
+    </template>
+    <template #gallery>
+        <TextBox label="Text 1" v-model="text" :maxLength="10" showCountDown />
+        <TextBox label="Text 2" v-model="text" />
+        <TextBox label="Memo" v-model="text" textMode="MultiLine" :rows="10" :maxLength="100" showCountDown />
+    </template>
+    <template #result>
+        {{text}}
+    </template>
+</GalleryAndResult>`
+} );
+
 export default defineComponent({
     name: 'Example.ControlGallery',
     components: {
@@ -400,6 +429,7 @@ export default defineComponent({
         CampusPicker,
         GalleryAndResult,
         TextBox,
+        TextBoxGallery,
         CurrencyBox,
         EmailBox,
         DatePickerGallery,
@@ -426,7 +456,6 @@ export default defineComponent({
             definedValueGuid: '',
             campusGuid: '',
             definedValue: null as DefinedValue | null,
-            text: 'Some two-way bound text',
             currency: 1.234,
             email: 'joe@joes.co',
             numberUpDown: 1,
@@ -481,18 +510,7 @@ export default defineComponent({
         Obsidian Control Gallery
     </template>
     <template v-slot:default>
-        <GalleryAndResult>
-            <template #header>
-                TextBox
-            </template>
-            <template #gallery>
-                <TextBox label="Text 1" v-model="text" :maxLength="10" showCountDown />
-                <TextBox label="Text 2" v-model="text" />
-            </template>
-            <template #result>
-                {{text}}
-            </template>
-        </GalleryAndResult>
+        <TextBoxGallery />
         <DatePickerGallery />
         <GalleryAndResult>
             <template #header>

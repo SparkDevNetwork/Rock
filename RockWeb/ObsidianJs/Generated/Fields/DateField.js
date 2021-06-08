@@ -133,6 +133,13 @@ System.register(["vue", "./Index", "../Elements/DatePicker", "../Services/Date",
                             attributes.displayCurrentOption = displayCurrent;
                             attributes.isCurrentDateOffset = displayCurrent;
                         }
+                        var futureYearConfig = this.configurationValues[ConfigurationValueKey.FutureYearCount];
+                        if (futureYearConfig === null || futureYearConfig === void 0 ? void 0 : futureYearConfig.Value) {
+                            var futureYears = Number_1.toNumber(futureYearConfig.Value);
+                            if (futureYears > 0) {
+                                attributes.futureYearCount = futureYears;
+                            }
+                        }
                         return attributes;
                     }
                 },

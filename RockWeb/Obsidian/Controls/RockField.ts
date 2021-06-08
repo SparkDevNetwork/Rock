@@ -27,6 +27,7 @@ import '../Fields/DateField';
 import '../Fields/DefinedValueField';
 import '../Fields/SingleSelect';
 import '../Fields/PhoneNumber';
+import '../Fields/MemoField';
 
 export default defineComponent( {
     name: 'RockField',
