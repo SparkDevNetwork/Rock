@@ -34,7 +34,16 @@ System.register([], function (exports_1, context_1) {
     }
     exports_1("asFormattedString", asFormattedString);
     /**
-     * Get a number value from a formatted string.
+     * Get a number value from a formatted string. If the number cannot be parsed, then zero is returned by default.
+     * Ex: $1,000.20 => 1000.2
+     * @param str
+     */
+    function toNumber(str) {
+        return toNumberOrNull(str) || 0;
+    }
+    exports_1("toNumber", toNumber);
+    /**
+     * Get a number value from a formatted string. If the number cannot be parsed, then null is returned by default.
      * Ex: $1,000.20 => 1000.2
      * @param str
      */

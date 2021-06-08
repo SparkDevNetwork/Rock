@@ -15,82 +15,165 @@
 // </copyright>
 //
 import { defineComponent, PropType } from 'vue';
+import { toNumber } from '../Services/Number';
 import RockDate, { RockDateType } from '../Util/RockDate';
 import RockFormField from './RockFormField';
+import TextBox from './TextBox';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'DatePicker',
     components: {
-        RockFormField
+        RockFormField,
+        TextBox
     },
     props: {
         modelValue: {
             type: String as PropType<RockDateType | null>,
             default: null
+        },
+        displayCurrentOption: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isCurrentDateOffset: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     },
     emits: [
         'update:modelValue'
     ],
-    data: function () {
+    data: function ()
+    {
         return {
-            internalValue: null as string | null
+            internalValue: null as string | null,
+            isCurrent: false,
+            currentDiff: '0'
         };
     },
     computed: {
-        asRockDateOrNull(): RockDateType | null {
-            return this.internalValue ? RockDate.toRockDate(new Date(this.internalValue)) : null;
-        }
-    },
-    methods: {
-        onChange(arg) {
-            console.log('change', arg);
+        asRockDateOrNull (): RockDateType | null
+        {
+            return this.internalValue ? RockDate.toRockDate( new Date( this.internalValue ) ) : null;
+        },
+
+        asCurrentDateValue (): string
+        {
+            const plusMinus = `${toNumber( this.currentDiff )}`
+            return `CURRENT:${plusMinus}`;
+        },
+
+        valueToEmit (): string | RockDateType | null
+        {
+            if ( this.isCurrent )
+            {
+                return this.asCurrentDateValue;
+            }
+
+            return this.asRockDateOrNull;
         }
     },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', this.asRockDateOrNull);
+        isCurrentDateOffset: {
+            immediate: true,
+            handler ()
+            {
+                if ( !this.isCurrentDateOffset )
+                {
+                    this.currentDiff = '0';
+                }
+            }
+        },
+        isCurrent: {
+            immediate: true,
+            handler ()
+            {
+                if ( this.isCurrent )
+                {
+                    this.internalValue = 'Current';
+                }
+            }
+        },
+        valueToEmit ()
+        {
+            this.$emit( 'update:modelValue', this.valueToEmit );
         },
         modelValue: {
             immediate: true,
-            handler() {
-                if (!this.modelValue) {
+            handler ()
+            {
+                if ( !this.modelValue )
+                {
                     this.internalValue = null;
+                    this.isCurrent = false;
+                    this.currentDiff = '0';
                     return;
                 }
 
-                const month = RockDate.getMonth(this.modelValue);
-                const day = RockDate.getDay(this.modelValue);
-                const year = RockDate.getYear(this.modelValue);
+                if ( this.modelValue.indexOf( 'CURRENT' ) === 0 )
+                {
+                    this.isCurrent = true;
+                    const parts = this.modelValue.split( ':' );
+
+                    if ( parts.length === 2 )
+                    {
+                        this.currentDiff = `${toNumber( parts[ 1 ] )}`;
+                    }
+
+                    return;
+                }
+
+                const month = RockDate.getMonth( this.modelValue );
+                const day = RockDate.getDay( this.modelValue );
+                const year = RockDate.getYear( this.modelValue );
                 this.internalValue = `${month}/${day}/${year}`;
             }
         }
     },
-    mounted() {
-        const input = this.$refs['input'] as HTMLInputElement;
+    mounted ()
+    {
+        const input = this.$refs[ 'input' ] as HTMLInputElement;
         const inputId = input.id;
 
-        window['Rock'].controls.datePicker.initialize({
+        window[ 'Rock' ].controls.datePicker.initialize( {
             id: inputId,
             startView: 0,
             showOnFocus: true,
             format: 'mm/dd/yyyy',
             todayHighlight: true,
             forceParse: true,
-            onChangeScript: () => {
-                this.internalValue = input.value;
+            onChangeScript: () =>
+            {
+                if ( !this.isCurrent )
+                {
+                    this.internalValue = input.value;
+                }
             }
-        });
+        } );
     },
     template: `
 <RockFormField formGroupClasses="date-picker" #default="{uniqueId}" name="datepicker" v-model.lazy="internalValue">
     <div class="control-wrapper">
-        <div class="input-group input-width-md js-date-picker date">
-            <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalValue" />
-            <span class="input-group-addon">
-                <i class="fa fa-calendar"></i>
-            </span>
+        <div class="form-control-group">
+            <div class="form-row">
+                <div class="input-group input-width-md js-date-picker date">
+                    <input ref="input" type="text" :id="uniqueId" class="form-control" v-model.lazy="internalValue" :disabled="isCurrent" />
+                    <span class="input-group-addon">
+                        <i class="fa fa-calendar"></i>
+                    </span>
+                </div>
+                <div v-if="displayCurrentOption || isCurrent" class="input-group">
+                    <div class="checkbox">
+                        <label title="">
+                        <input type="checkbox" v-model="isCurrent" />
+                        <span class="label-text">Current Date</span></label>
+                    </div>
+                </div>
+            </div>
+            <div v-if="isCurrent && isCurrentDateOffset" class="form-row">
+                <TextBox label="+- Days" v-model="currentDiff" inputClasses="input-width-md" help="Enter the number of days after the current date to use as the date. Use a negative number to specify days before." />
+            </div>
         </div>
     </div>
 </RockFormField>`
-});
+} );

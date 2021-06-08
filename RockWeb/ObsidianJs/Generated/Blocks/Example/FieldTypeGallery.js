@@ -103,14 +103,11 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Elements/
                     }
                 },
                 computed: {
-                    json: function () {
-                        return JSON.stringify(this.attributeValues.map(function (av) { return ({
-                            Name: av.Attribute.Name,
-                            Value: av.Value
-                        }); }), null, 4);
+                    valuesJson: function () {
+                        return JSON.stringify(this.attributeValues.map(function (av) { return av.Value; }), null, 4);
                     }
                 },
-                template: "\n<PanelWidget>\n    <template #header>{{title}}</template>\n    <div class=\"row\">\n        <div class=\"col-md-6\">\n            <h4>Qualifier Values</h4>\n            <slot />\n            <hr />\n            <h4>Attribute Values Container (edit)</h4>\n            <AttributeValuesContainer :attributeValues=\"attributeValues\" :isEditMode=\"true\" />\n        </div>\n        <div class=\"col-md-6\">\n            <h4>Attribute Values Container (view)</h4>\n            <AttributeValuesContainer :attributeValues=\"attributeValues\" :isEditMode=\"false\" />\n            <hr />\n            <h4>Raw Data</h4>\n            <pre>{{json}}</pre>\n        </div>\n    </div>\n</PanelWidget>"
+                template: "\n<PanelWidget>\n    <template #header>{{title}}</template>\n    <div class=\"row\">\n        <div class=\"col-md-6\">\n            <h4>Qualifier Values</h4>\n            <slot />\n            <hr />\n            <h4>Attribute Values Container (edit)</h4>\n            <AttributeValuesContainer :attributeValues=\"attributeValues\" :isEditMode=\"true\" />\n        </div>\n        <div class=\"col-md-6\">\n            <h4>Attribute Values Container (view)</h4>\n            <AttributeValuesContainer :attributeValues=\"attributeValues\" :isEditMode=\"false\" />\n            <hr />\n            <h4>Raw Values</h4>\n            <pre>{{valuesJson}}</pre>\n        </div>\n    </div>\n</PanelWidget>"
             });
             /**
              * Generate a gallery component for a specific field type
@@ -171,9 +168,15 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Elements/
                         ispassword: 'false',
                         maxcharacters: '10',
                         showcountdown: 'true'
+                    }),
+                    DateGallery: GetFieldTypeGalleryComponent('Date', '2009-02-11', '6B6AA175-4758-453F-8D83-FCD8044B5F36', {
+                        format: 'MMM yyyy',
+                        displayDiff: 'true',
+                        displayCurrentOption: 'true',
+                        datePickerControlType: 'Date Parts Picker'
                     })
                 },
-                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n        <DateGallery />\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

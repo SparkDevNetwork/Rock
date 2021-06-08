@@ -22,10 +22,12 @@ import { Guid } from '../Util/Guid';
 import Alert from '../Elements/Alert';
 
 export type InvokeBlockActionFunc = <T>(actionName: string, data?: HttpBodyData) => Promise<HttpResult<T>>;
+export type BlockHttpGet = <T>( url: string, params?: HttpUrlParams ) => Promise<HttpResult<T>>;
+export type BlockHttpPost = <T>( url: string, params?: HttpUrlParams, data?: HttpBodyData ) => Promise<HttpResult<T>>;
 
 export type BlockHttp = {
-    get: <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
-    post: <T>(url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
+    get: BlockHttpGet;
+    post: BlockHttpPost;
 };
 
 type LogItem = {

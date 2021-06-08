@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-System.register(["vue", "../../../Controls/AddressControl", "../../../Controls/ComponentFromUrl", "../../../Elements/Alert", "../../../Elements/BirthdayPicker", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
+System.register(["vue", "../../../Controls/AddressControl", "../../../Controls/ComponentFromUrl", "../../../Elements/Alert", "../../../Elements/DatePartsPicker", "./RegistrationEntryBlockViewModel"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, AddressControl_1, ComponentFromUrl_1, Alert_1, BirthdayPicker_1, RegistrationEntryBlockViewModel_1;
+    var vue_1, AddressControl_1, ComponentFromUrl_1, Alert_1, DatePartsPicker_1, RegistrationEntryBlockViewModel_1;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -32,8 +32,8 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Controls/C
             function (Alert_1_1) {
                 Alert_1 = Alert_1_1;
             },
-            function (BirthdayPicker_1_1) {
-                BirthdayPicker_1 = BirthdayPicker_1_1;
+            function (DatePartsPicker_1_1) {
+                DatePartsPicker_1 = DatePartsPicker_1_1;
             },
             function (RegistrationEntryBlockViewModel_1_1) {
                 RegistrationEntryBlockViewModel_1 = RegistrationEntryBlockViewModel_1_1;
@@ -136,7 +136,7 @@ System.register(["vue", "../../../Controls/AddressControl", "../../../Controls/C
                             var defaultValue = '';
                             switch (this.field.PersonFieldType) {
                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Birthdate:
-                                    defaultValue = BirthdayPicker_1.getDefaultBirthdayPickerModel();
+                                    defaultValue = DatePartsPicker_1.getDefaultDatePartsPickerModel();
                                     break;
                                 case RegistrationEntryBlockViewModel_1.RegistrationPersonFieldType.Address:
                                     defaultValue = AddressControl_1.getDefaultAddressControlModel();

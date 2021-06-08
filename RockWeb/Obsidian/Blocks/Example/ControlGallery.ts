@@ -30,7 +30,7 @@ import CurrencyBox from '../../Elements/CurrencyBox';
 import PanelWidget from '../../Elements/PanelWidget';
 import DatePicker from '../../Elements/DatePicker';
 import { RockDateType } from '../../Util/RockDate';
-import BirthdayPicker, { BirthdayPickerModel } from '../../Elements/BirthdayPicker';
+import BirthdayPicker from '../../Elements/BirthdayPicker';
 import NumberUpDown from '../../Elements/NumberUpDown';
 import AddressControl, { getDefaultAddressControlModel } from '../../Controls/AddressControl';
 import Toggle from '../../Elements/Toggle';
@@ -45,6 +45,7 @@ import Dialog from '../../Controls/Dialog';
 import CheckBox from '../../Elements/CheckBox';
 import PhoneNumberBox from '../../Elements/PhoneNumberBox';
 import HelpBlock from '../../Elements/HelpBlock';
+import DatePartsPicker, { DatePartsPickerModel } from '../../Elements/DatePartsPicker';
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -323,6 +324,73 @@ const FormRulesGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates date pickers */
+const DatePickerGallery = defineComponent( {
+    name: 'DatePickerGallery',
+    components: {
+        GalleryAndResult,
+        DatePicker
+    },
+    data ()
+    {
+        return {
+            date: null as RockDateType | null,
+            currentDate: 'CURRENT:1'
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DatePicker
+    </template>
+    <template #gallery>
+        <DatePicker label="Date 1" v-model="date" />
+        <DatePicker label="Date 2" v-model="date" />
+        <DatePicker label="Current Date 1" v-model="currentDate" displayCurrentOption isCurrentDateOffset />
+        <DatePicker label="Current Date 2" v-model="currentDate" displayCurrentOption isCurrentDateOffset />
+    </template>
+    <template #result>
+        Date: {{JSON.stringify(date, null, 2)}}
+        <br />
+        Current Date: {{JSON.stringify(currentDate, null, 2)}}
+    </template>
+</GalleryAndResult>`
+} );
+
+/** Demonstrates date part pickers */
+const DatePartsPickerGallery = defineComponent( {
+    name: 'DatePartsPickerGallery',
+    components: {
+        GalleryAndResult,
+        DatePicker,
+        BirthdayPicker,
+        DatePartsPicker
+    },
+    data ()
+    {
+        return {
+            datePartsModel: {
+                Month: 1,
+                Day: 1,
+                Year: 2020
+            } as DatePartsPickerModel
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DatePartsPicker
+    </template>
+    <template #gallery>
+        <DatePartsPicker label="DatePartsPicker 1" v-model="datePartsModel" />
+        <DatePartsPicker label="DatePartsPicker 2" v-model="datePartsModel" />
+    </template>
+    <template #result>
+        {{datePartsModel.Month}} / {{datePartsModel.Day}} / {{datePartsModel.Year}}
+    </template>
+</GalleryAndResult>`
+} );
+
 export default defineComponent({
     name: 'Example.ControlGallery',
     components: {
@@ -334,8 +402,8 @@ export default defineComponent({
         TextBox,
         CurrencyBox,
         EmailBox,
-        DatePicker,
-        BirthdayPicker,
+        DatePickerGallery,
+        DatePartsPickerGallery,
         NumberUpDown,
         AddressControl,
         Toggle,
@@ -361,15 +429,9 @@ export default defineComponent({
             text: 'Some two-way bound text',
             currency: 1.234,
             email: 'joe@joes.co',
-            date: null as RockDateType | null,
             numberUpDown: 1,
             address: getDefaultAddressControlModel(),
             toggle: false,
-            birthday: {
-                Month: 1,
-                Day: 1,
-                Year: 2020
-            } as BirthdayPickerModel,
             prePostHtmlItems: [
                 { PreHtml: '<div class="row"><div class="col-sm-6">', PostHtml: '</div>', SlotName: 'item1' },
                 { PreHtml: '<div class="col-sm-6">', PostHtml: '</div></div>', SlotName: 'item2' }
@@ -431,18 +493,7 @@ export default defineComponent({
                 {{text}}
             </template>
         </GalleryAndResult>
-        <GalleryAndResult>
-            <template #header>
-                DatePicker
-            </template>
-            <template #gallery>
-                <DatePicker label="Date 1" v-model="date" />
-                <DatePicker label="Date 2" v-model="date" />
-            </template>
-            <template #result>
-                {{date === null ? 'null' : date}}
-            </template>
-        </GalleryAndResult>
+        <DatePickerGallery />
         <GalleryAndResult>
             <template #header>
                 CurrencyBox
@@ -467,18 +518,7 @@ export default defineComponent({
                 {{email}}
             </template>
         </GalleryAndResult>
-        <GalleryAndResult>
-            <template #header>
-                BirthdayPicker
-            </template>
-            <template #gallery>
-                <BirthdayPicker label="BirthdayPicker 1" v-model="birthday" />
-                <BirthdayPicker label="BirthdayPicker 2" v-model="birthday" />
-            </template>
-            <template #result>
-                {{birthday.Month}} / {{birthday.Day}} / {{birthday.Year}}
-            </template>
-        </GalleryAndResult>
+        <DatePartsPickerGallery />
         <GalleryAndResult>
             <template #header>
                 Defined Type and Value

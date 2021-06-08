@@ -42,6 +42,10 @@ export default defineComponent({
         placeholder: {
             type: String as PropType<string>,
             default: ''
+        },
+        inputClasses: {
+            type: String as PropType<string>,
+            default: ''
         }
     },
     emits: [
@@ -88,7 +92,7 @@ export default defineComponent({
     </template>
     <template #default="{uniqueId, field, errors, disabled, tabIndex}">
         <div class="control-wrapper">
-            <input :id="uniqueId" :type="type" class="form-control" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
+            <input :id="uniqueId" :type="type" class="form-control" :class="inputClasses" v-bind="field" :disabled="disabled" :maxlength="maxLength" :placeholder="placeholder" :tabindex="tabIndex" />
         </div>
     </template>
 </RockFormField>`

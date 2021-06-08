@@ -37,6 +37,10 @@ System.register(["vue", "./RockFormField"], function (exports_1, context_1) {
                     placeholder: {
                         type: String,
                         default: ''
+                    },
+                    inputClasses: {
+                        type: String,
+                        default: ''
                     }
                 },
                 emits: [
@@ -69,7 +73,7 @@ System.register(["vue", "./RockFormField"], function (exports_1, context_1) {
                         this.internalValue = this.modelValue;
                     }
                 },
-                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    formGroupClasses=\"rock-text-box\"\n    name=\"textbox\">\n    <template #pre>\n        <em v-if=\"showCountDown\" class=\"pull-right badge\" :class=\"countdownClass\">\n            {{charsRemaining}}\n        </em>\n    </template>\n    <template #default=\"{uniqueId, field, errors, disabled, tabIndex}\">\n        <div class=\"control-wrapper\">\n            <input :id=\"uniqueId\" :type=\"type\" class=\"form-control\" v-bind=\"field\" :disabled=\"disabled\" :maxlength=\"maxLength\" :placeholder=\"placeholder\" :tabindex=\"tabIndex\" />\n        </div>\n    </template>\n</RockFormField>"
+                template: "\n<RockFormField\n    v-model=\"internalValue\"\n    formGroupClasses=\"rock-text-box\"\n    name=\"textbox\">\n    <template #pre>\n        <em v-if=\"showCountDown\" class=\"pull-right badge\" :class=\"countdownClass\">\n            {{charsRemaining}}\n        </em>\n    </template>\n    <template #default=\"{uniqueId, field, errors, disabled, tabIndex}\">\n        <div class=\"control-wrapper\">\n            <input :id=\"uniqueId\" :type=\"type\" class=\"form-control\" :class=\"inputClasses\" v-bind=\"field\" :disabled=\"disabled\" :maxlength=\"maxLength\" :placeholder=\"placeholder\" :tabindex=\"tabIndex\" />\n        </div>\n    </template>\n</RockFormField>"
             }));
         }
     };

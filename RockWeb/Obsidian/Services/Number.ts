@@ -36,7 +36,17 @@ export function asFormattedString ( num: number | null, digits = 2 )
 }
 
 /**
- * Get a number value from a formatted string.
+ * Get a number value from a formatted string. If the number cannot be parsed, then zero is returned by default.
+ * Ex: $1,000.20 => 1000.2
+ * @param str
+ */
+export function toNumber ( str: string | null )
+{
+    return toNumberOrNull( str ) || 0;
+}
+
+/**
+ * Get a number value from a formatted string. If the number cannot be parsed, then null is returned by default.
  * Ex: $1,000.20 => 1000.2
  * @param str
  */

@@ -70,3 +70,52 @@ export function asDateString(val: unknown) {
 
     return dateOrNull.toLocaleDateString();
 }
+
+/**
+ * Transforms the date into a human friendly elapsed time string.
+ * Ex: March 4, 2000 => 21yrs
+ * @param dateTime
+ */
+export function asElapsedString ( dateTime: Date )
+{
+    const now = new Date();
+    const msPerHour = 1000 * 60 * 60;
+    const hoursPerDay = 24;
+    const daysPerMonth = 30.4167;
+    const daysPerYear = 365.25;
+
+    const totalMs = Math.abs( now.getTime() - dateTime.getTime() );
+    const totalHours = totalMs / msPerHour;
+    const totalDays = totalHours / hoursPerDay;
+
+    if ( totalDays < 2 )
+    {
+        return '1day';
+    }
+
+    if ( totalDays < 31 )
+    {
+        return `${Math.floor( totalDays )}days`;
+    }
+
+    const totalMonths = totalDays / daysPerMonth;
+
+    if ( totalMonths <= 1 )
+    {
+        return '1mon';
+    }
+
+    if ( totalMonths <= 18 )
+    {
+        return `${Math.round( totalMonths )}mon`;
+    }
+
+    const totalYears = totalDays / daysPerYear;
+
+    if ( totalYears <= 1 )
+    {
+        return '1yr';
+    }
+
+    return `${Math.round( totalYears )}yrs`;
+}

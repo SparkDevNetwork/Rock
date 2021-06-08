@@ -17,21 +17,24 @@
 
 import { toNumberOrNull, zeroPad } from './Number';
 const dateKeyLength = 'YYYYMMDD'.length;
+const dateKeyNoYearLength = 'MMDD'.length;
 
 /**
  * Gets the year value from the date key.
  * Ex: 20210228 => 2021
  * @param dateKey
  */
-export function getYear(dateKey: string | null) {
+export function getYear ( dateKey: string | null )
+{
     const defaultValue = 0;
 
-    if (!dateKey || dateKey.length !== dateKeyLength) {
+    if ( !dateKey || dateKey.length !== dateKeyLength )
+    {
         return defaultValue;
     }
 
-    const asString = dateKey.substring(0, 4);
-    const year = toNumberOrNull(asString) || defaultValue;
+    const asString = dateKey.substring( 0, 4 );
+    const year = toNumberOrNull( asString ) || defaultValue;
     return year;
 }
 
@@ -40,15 +43,28 @@ export function getYear(dateKey: string | null) {
  * Ex: 20210228 => 2
  * @param dateKey
  */
-export function getMonth(dateKey: string | null) {
+export function getMonth ( dateKey: string | null )
+{
     const defaultValue = 0;
 
-    if (!dateKey || dateKey.length !== dateKeyLength) {
+    if ( !dateKey )
+    {
         return defaultValue;
     }
 
-    const asString = dateKey.substring(4, 6);
-    return toNumberOrNull(asString) || defaultValue;
+    if ( dateKey.length === dateKeyLength )
+    {
+        const asString = dateKey.substring( 4, 6 );
+        return toNumberOrNull( asString ) || defaultValue;
+    }
+
+    if ( dateKey.length === dateKeyNoYearLength )
+    {
+        const asString = dateKey.substring( 0, 2 );
+        return toNumberOrNull( asString ) || defaultValue;
+    }
+
+    return defaultValue;
 }
 
 /**
@@ -56,15 +72,28 @@ export function getMonth(dateKey: string | null) {
  * Ex: 20210228 => 28
  * @param dateKey
  */
-export function getDay(dateKey: string | null) {
+export function getDay ( dateKey: string | null )
+{
     const defaultValue = 0;
 
-    if (!dateKey || dateKey.length !== dateKeyLength) {
+    if ( !dateKey )
+    {
         return defaultValue;
     }
 
-    const asString = dateKey.substring(6, 8);
-    return toNumberOrNull(asString) || defaultValue;
+    if ( dateKey.length === dateKeyLength )
+    {
+        const asString = dateKey.substring( 6, 8 );
+        return toNumberOrNull( asString ) || defaultValue;
+    }
+
+    if ( dateKey.length === dateKeyNoYearLength )
+    {
+        const asString = dateKey.substring( 2, 4 );
+        return toNumberOrNull( asString ) || defaultValue;
+    }
+
+    return defaultValue;
 }
 
 /**
@@ -74,29 +103,58 @@ export function getDay(dateKey: string | null) {
  * @param month
  * @param day
  */
-export function toDateKey(year: number | null, month: number | null, day: number | null) {
-    if (!year || year > 9999 || year < 0) {
+export function toDateKey ( year: number | null, month: number | null, day: number | null )
+{
+    if ( !year || year > 9999 || year < 0 )
+    {
         year = 0;
     }
 
-    if (!month || month > 12 || month < 0) {
+    if ( !month || month > 12 || month < 0 )
+    {
         month = 0;
     }
 
-    if (!day || day > 31 || day < 0) {
+    if ( !day || day > 31 || day < 0 )
+    {
         day = 0;
     }
 
-    const yearStr = zeroPad(year, 4);
-    const monthStr = zeroPad(month, 2);
-    const dayStr = zeroPad(day, 2);
+    const yearStr = zeroPad( year, 4 );
+    const monthStr = zeroPad( month, 2 );
+    const dayStr = zeroPad( day, 2 );
 
     return `${yearStr}${monthStr}${dayStr}`;
+}
+
+/**
+ * Gets the datekey constructed from the parts.
+ * Ex: (2, 28) => '0228'
+ * @param month
+ * @param day
+ */
+export function toNoYearDateKey (month: number | null, day: number | null )
+{
+    if ( !month || month > 12 || month < 0 )
+    {
+        month = 0;
+    }
+
+    if ( !day || day > 31 || day < 0 )
+    {
+        day = 0;
+    }
+
+    const monthStr = zeroPad( month, 2 );
+    const dayStr = zeroPad( day, 2 );
+
+    return `${monthStr}${dayStr}`;
 }
 
 export default {
     getYear,
     getMonth,
     getDay,
-    toDateKey
+    toDateKey,
+    toNoYearDateKey
 };

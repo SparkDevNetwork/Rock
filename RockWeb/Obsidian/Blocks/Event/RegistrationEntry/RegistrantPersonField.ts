@@ -19,7 +19,7 @@ import { defineComponent, PropType } from 'vue';
 import { getDefaultAddressControlModel } from '../../../Controls/AddressControl';
 import ComponentFromUrl from '../../../Controls/ComponentFromUrl';
 import Alert from '../../../Elements/Alert';
-import { getDefaultBirthdayPickerModel } from '../../../Elements/BirthdayPicker';
+import { getDefaultDatePartsPickerModel } from '../../../Elements/DatePartsPicker';
 import { Guid } from '../../../Util/Guid';
 import { RegistrationEntryBlockFormFieldViewModel, RegistrationPersonFieldType } from './RegistrationEntryBlockViewModel';
 
@@ -132,7 +132,7 @@ export default defineComponent( {
                 switch ( this.field.PersonFieldType )
                 {
                     case RegistrationPersonFieldType.Birthdate:
-                        defaultValue = getDefaultBirthdayPickerModel();
+                        defaultValue = getDefaultDatePartsPickerModel();
                         break;
                     case RegistrationPersonFieldType.Address:
                         defaultValue = getDefaultAddressControlModel();

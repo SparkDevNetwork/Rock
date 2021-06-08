@@ -63,6 +63,40 @@ System.register(["../Util/RockDate"], function (exports_1, context_1) {
         return dateOrNull.toLocaleDateString();
     }
     exports_1("asDateString", asDateString);
+    /**
+     * Transforms the date into a human friendly elapsed time string.
+     * Ex: March 4, 2000 => 21yrs
+     * @param dateTime
+     */
+    function asElapsedString(dateTime) {
+        var now = new Date();
+        var msPerHour = 1000 * 60 * 60;
+        var hoursPerDay = 24;
+        var daysPerMonth = 30.4167;
+        var daysPerYear = 365.25;
+        var totalMs = Math.abs(now.getTime() - dateTime.getTime());
+        var totalHours = totalMs / msPerHour;
+        var totalDays = totalHours / hoursPerDay;
+        if (totalDays < 2) {
+            return '1day';
+        }
+        if (totalDays < 31) {
+            return Math.floor(totalDays) + "days";
+        }
+        var totalMonths = totalDays / daysPerMonth;
+        if (totalMonths <= 1) {
+            return '1mon';
+        }
+        if (totalMonths <= 18) {
+            return Math.round(totalMonths) + "mon";
+        }
+        var totalYears = totalDays / daysPerYear;
+        if (totalYears <= 1) {
+            return '1yr';
+        }
+        return Math.round(totalYears) + "yrs";
+    }
+    exports_1("asElapsedString", asElapsedString);
     return {
         setters: [
             function (RockDate_1_1) {

@@ -95,12 +95,9 @@ const GalleryAndResult = defineComponent( {
         }
     },
     computed: {
-        json (): string
+        valuesJson (): string
         {
-            return JSON.stringify( this.attributeValues.map( av => ( {
-                Name: av.Attribute.Name,
-                Value: av.Value
-            } ) ), null, 4 );
+            return JSON.stringify( this.attributeValues.map( av => av.Value ), null, 4 );
         }
     },
     template: `
@@ -118,8 +115,8 @@ const GalleryAndResult = defineComponent( {
             <h4>Attribute Values Container (view)</h4>
             <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="false" />
             <hr />
-            <h4>Raw Data</h4>
-            <pre>{{json}}</pre>
+            <h4>Raw Values</h4>
+            <pre>{{valuesJson}}</pre>
         </div>
     </div>
 </PanelWidget>`
@@ -197,6 +194,12 @@ export default defineComponent( {
             ispassword: 'false',
             maxcharacters: '10',
             showcountdown: 'true'
+        } ),
+        DateGallery: GetFieldTypeGalleryComponent( 'Date', '2009-02-11', '6B6AA175-4758-453F-8D83-FCD8044B5F36', {
+            format: 'MMM yyyy',
+            displayDiff: 'true',
+            displayCurrentOption: 'true',
+            datePickerControlType: 'Date Parts Picker'
         } )
     },
     template: `
@@ -207,6 +210,7 @@ export default defineComponent( {
     </template>
     <template v-slot:default>
         <TextGallery />
+        <DateGallery />
     </template>
 </PaneledBlockTemplate>`
 } );
