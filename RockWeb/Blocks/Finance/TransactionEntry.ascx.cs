@@ -3578,7 +3578,7 @@ TransactionAccountDetails: [
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('{3}' + totalAmt.toFixed({7}));
+            $('.total-amount').html('{3}' + totalAmt.toLocaleString(undefined, {{ minimumFractionDigits: {7}, maximumFractionDigits: {7} }}));
             return false;
         }});
 

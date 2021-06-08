@@ -34,7 +34,7 @@
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
                                                 <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
-                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Placeholder="0.00" CssClass="account-amount" />
+                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" CssClass="account-amount" />
                                             </ItemTemplate>
                                         </asp:Repeater>
 

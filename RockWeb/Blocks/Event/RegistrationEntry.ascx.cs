@@ -4542,9 +4542,9 @@ namespace RockWeb.Blocks.Event
     }});
 
     $('#{0}').on('change', function() {{
-        var totalCost = Number($('#{1}').val());
-        var minDue = Number($('#{2}').val());
-        var previouslyPaid = Number($('#{3}').val());
+        var totalCost = parseFloat($('#{1}').val());
+        var minDue = parseFloat($('#{2}').val());
+        var previouslyPaid = parseFloat($('#{3}').val());
         var balanceDue = totalCost - previouslyPaid;
 
         // Format and validate the amount entered
@@ -4562,7 +4562,7 @@ namespace RockWeb.Blocks.Event
         $(this).val(amountPaid.toFixed({16}));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '{6}' + amountRemaining.toFixed({16}) );
+        $('#{4}').text( '{6}' + amountRemaining.toLocaleString(undefined, {{ minimumFractionDigits: {16}, maximumFractionDigits: {16} }}));
     }});
 
     // Detect credit card type

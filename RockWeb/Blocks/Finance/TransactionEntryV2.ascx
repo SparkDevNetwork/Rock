@@ -290,9 +290,15 @@
                     }
                 });
 
-                var feeAmount = (totalAmt * (feePercent / 100)).toFixed(2);
+                var decimalPlaces = $coverTheFeeAmountText.attr('decimal-places');
+                if (!decimalPlaces && decimalPlaces != 0) {
+                    decimalPlaces = 2;
+                }
+                console.log(decimalPlaces);
+                var feeAmount = (totalAmt * (feePercent / 100)).toFixed(decimalPlaces);
+                var displayFeeAmount = (totalAmt * (feePercent / 100)).toLocaleString(undefined, { minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces });
 
-                $coverTheFeeAmountText.html(feeAmount);
+                $coverTheFeeAmountText.html(displayFeeAmount);
                 if (feeAmount > 0) {
                     $coverTheFeeContainer.show();
                 }

@@ -1250,8 +1250,8 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 cbGiveNowCoverTheFee.Text = string.Format(
-                    "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text'></span> to cover processing fee.",
-                    RockCurrencyCodeInfo.GetCurrencySymbol() );
+                    "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text' decimal-places='{1}'></span> to cover processing fee.",
+                    RockCurrencyCodeInfo.GetCurrencySymbol(), RockCurrencyCodeInfo.GetDecimalPlaces() );
             }
 
             pnlGiveNowCoverTheFee.Visible = true;
