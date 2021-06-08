@@ -92,6 +92,8 @@ namespace Rock.Web.UI.Controls
         }
         private List<AttributeCache> _attributeList = null;
 
+        private Dictionary<string, string> _attributeControls = new Dictionary<string, string>();
+
         /// <summary>
         /// Sets the edit values.
         /// </summary>
@@ -136,8 +138,8 @@ namespace Rock.Web.UI.Controls
             {
                 // Set label/description to empty so that wrapping html will not be generated
                 var attributeControl = attribute.AddControl( Controls, string.Empty, string.Empty, false, true, null, string.Empty, string.Empty );
-
-                // If required, need to set the error message since the name was cleared 
+                _attributeControls[attributeControl.ID] = attribute.Name;
+                // If required, need to set the error message since the name was cleared
                 if ( attribute.IsRequired && attributeControl != null )
                 {
                     var rockControl = attributeControl as IRockControl;
@@ -166,6 +168,11 @@ namespace Rock.Web.UI.Controls
 
                 foreach ( Control control in Controls )
                 {
+	                if ( _attributeControls.ContainsKey( control.ID ) )
+                    {
+                        writer.AddAttribute( "data-label", _attributeControls[control.ID] );
+                    }
+
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
                     writer.AddAttribute( "class", "form-group" );
