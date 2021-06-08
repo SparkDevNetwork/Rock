@@ -5,35 +5,34 @@
     <div class="panel-body">
         <div class="row">
             {% for promo in Promos %}
-	            <div class="col-sm-3 col-xs-6">
-		            <div class="packagesummary">
-                        <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
-                            <div class="packagesummary-image">
-                                <img class="img-responsive" src="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x">
+            <div class="col-sm-3 col-xs-6">
+                <div class="packagesummary">
+                    <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
+                        <div class="packagesummary-image">
+                            <img class="img-responsive" src="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x">
+                        </div>
+                        <div class="packagesummary-body">
+                            <h2>{{ promo.PackageName }}</h2>
+                            <p class="vendor">
+                                {{ promo.PackageVendor }}
+                            </p>
+                        </div>
+                        <div class="packagesummary-footer clearfix">
+                            <div class="rating pull-left">
+                                {{ promo.PackageRating | RatingMarkup }}
                             </div>
-                            <div class="packagesummary-body">
-                                <h2>{{ promo.PackageName }}</h2>
-                                <p class="vendor">
-                                  {{ promo.PackageVendor }}
-                                </p>
+                            <div class="cost pull-right">
+                                {% if promo.PackagePrice == 0 %}
+                                    Free
+                                {% else %}
+                                    ${{ promo.PackagePrice }}
+                                {% endif %}
                             </div>
-                            <div class="packagesummary-footer clearfix">
-                                <div class="rating pull-left">
-                                    {{ promo.PackageRating | RatingMarkup }}
-                                </div>
-                                <div class="cost pull-right">
-                                    {% if promo.PackagePrice == 0 %}
-                                        Free
-                                    {% else %}
-                                        ${{ promo.PackagePrice }}
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-	            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
-

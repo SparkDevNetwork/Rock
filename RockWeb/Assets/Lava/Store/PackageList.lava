@@ -1,33 +1,37 @@
-<div class="row">
-{% for package in Packages %}
+<div class="panel panel-block">
+    <div class="panel-body">
+        <div class="row">
+            {% for package in Packages %}
 
-	<div class="col-sm-3 col-xs-6">
-		<div class="packagesummary">
-            <a href="{{ LinkedPages.DetailPage }}?PackageId={{ package.Id }}">
-                <div class="packagesummary-image">
-                    <img class="img-responsive" src="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x">
-                </div>
-                <div class="packagesummary-body">
-                    <h2>{{ package.Name }}</h2>
-                    <p class="vendor">{{ package.Vendor.Name }}</p>
-                </div>
+            <div class="col-sm-3 col-xs-6">
+                <div class="packagesummary">
 
-                <div class="packagesummary-footer clearfix">
-                    <div class="rating pull-left">
-                        {{ package.Rating | RatingMarkup }}
+                    <div class="packagesummary-image">
+                        <img class="img-responsive" src="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ package.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x">
                     </div>
-                    <div class="cost pull-right">
-                        {% if package.Price == 0 %}
+                    <div class="packagesummary-body">
+                        <a href="{{ LinkedPages.DetailPage }}?PackageId={{ package.Id }}" class="stretched-link">
+                            <h2>{{ package.Name }}</h2>
+                        </a>
+                        <p class="vendor text-sm text-muted">{{ package.Vendor.Name }}</p>
+                    </div>
+
+                    <div class="packagesummary-footer clearfix">
+                        <div class="rating text-warning pull-left">
+                            {{ package.Rating | RatingMarkup }}
+                        </div>
+                        <div class="cost text-color pull-right">
+                            {% if package.Price == 0 %}
                             Free
-                        {% else %}
+                            {% else %}
                             ${{ package.Price }}
-                        {% endif %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+            </div>
 
-            </a>
+            {% endfor %}
         </div>
-	</div>
-
-{% endfor %}
+    </div>
 </div>
