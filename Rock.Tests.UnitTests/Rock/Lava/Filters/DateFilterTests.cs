@@ -16,12 +16,17 @@
 //
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 
 namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     public class DateFilterTests : LavaUnitTestBase
     {
+        // Defines the UTC offset for the comparison dates used in unit tests in this class.
+        // Modifying this value simulates executing the test set for a different timezone, but should have no impact on the result.
+        private static TimeSpan _utcBaseOffset = new TimeSpan( 4, 0, 0 );
+
         #region Filter Tests: Date
 
         /*
@@ -50,6 +55,46 @@ namespace Rock.Tests.UnitTests.Lava
                 .Replace( "<inputString>", inputString );
 
             TestHelper.AssertTemplateOutputDate( result, template );
+        }
+
+        /// <summary>
+        /// Using the Date filter to format a DateTimeOffset type should correctly account for the offset in the output.
+        /// </summary>
+        [TestMethod]
+        public void AsDateTime_WithDateTimeOffsetObjectAsInput_AdjustsResultForOffset()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var dateTimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
+
+            // Convert the input time to local server time, which most likely has a different UTC offset to the input date.
+            var serverLocalTimeString = dateTimeInput.ToLocalTime().ToString( "HH:mm" );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInput } };
+
+            // Verify that the Lava Date filter parses the DateTimeOffset value correctly to include the offset, and the result matches the local server time.
+            TestHelper.AssertTemplateOutput( serverLocalTimeString, "{{ dateTimeInput | AsDateTime | Date:'HH:mm' }}", mergeValues );
+        }
+
+        /// <summary>
+        /// Using the Date filter to format a DateTimeOffset type should correctly account for the offset in the output.
+        /// </summary>
+        [TestMethod]
+        public void AsDateTime_WithDateTimeOffsetStringAsInput_AdjustsResultForOffset()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var dateTimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
+
+            var dateTimeInputString = dateTimeInput.ToString();
+
+            // Convert the input time to local server time, which most likely has a different UTC offset to the input date.
+            var serverLocalTimeString = dateTimeInput.ToLocalTime().ToString( "HH:mm" );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInputString } };
+
+            // Verify that the Lava Date filter parses the DateTimeOffset value correctly to include the offset, and the result matches the local server time.
+            TestHelper.AssertTemplateOutput( serverLocalTimeString, "{{ dateTimeInput | AsDateTime | Date:'HH:mm' }}", mergeValues );
         }
 
         /// <summary>
@@ -96,6 +141,71 @@ namespace Rock.Tests.UnitTests.Lava
             var shortTime = new DateTime( 2018, 5, 1, 18, 30, 0 );
 
             TestHelper.AssertTemplateOutput( shortTime.ToShortTimeString(), "{{ '1-May-2018 6:30 PM' | Date:'st' }}" );
+        }
+
+        /// <summary>
+        /// Adding hours to an input date with a time zone that differs from the server time zone should return the correct result for the input time zone.
+        /// </summary>
+        [TestMethod]
+        public void DateAdd_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
+
+            // Convert the input time to local server time, which may have a different UTC offset to the input date.
+            var serverLocalTimeString = datetimeInput.ToLocalTime().AddHours( 1 ).ToString( "HH:mm" );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            // Verify that the Lava Date filter formats the DateTimeOffset value as a local server time.
+            TestHelper.AssertTemplateOutput( serverLocalTimeString, "{{ dateTimeInput | DateAdd:1,'h' | Date:'HH:mm' }}", mergeValues );
+        }
+
+        /// <summary>
+        /// Using the Date filter to format a DateTimeOffset type should correctly account for the offset in the output.
+        /// </summary>
+        [TestMethod]
+        public void Date_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
+
+            // Convert the input time to local server time, which may have a different UTC offset to the input date.
+            var serverLocalTimeString = datetimeInput.ToLocalTime().ToString( "HH:mm" );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            // Verify that the Lava Date filter formats the DateTimeOffset value as a local server time.
+            TestHelper.AssertTemplateOutput( serverLocalTimeString, "{{ dateTimeInput | Date:'HH:mm' }}", mergeValues );
+        }
+
+        /// <summary>
+        /// Create a DateTime for a specific timezone.
+        /// </summary>
+        public struct DateTimeWithZone
+        {
+            private readonly DateTime utcDateTime;
+            private readonly TimeZoneInfo timeZone;
+
+            public DateTimeWithZone( DateTime dateTime, TimeZoneInfo timeZone )
+            {
+                var dateTimeUnspec = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
+                utcDateTime = TimeZoneInfo.ConvertTimeToUtc( dateTimeUnspec, timeZone );
+                this.timeZone = timeZone;
+            }
+
+            public DateTime UniversalTime { get { return utcDateTime; } }
+
+            public TimeZoneInfo TimeZone { get { return timeZone; } }
+
+            public DateTime TimeInOriginalZone { get { return TimeZoneInfo.ConvertTime( utcDateTime, timeZone ); } }
+            public DateTime TimeInLocalZone { get { return TimeZoneInfo.ConvertTime( utcDateTime, TimeZoneInfo.Local ); } }
+            public DateTime TimeInSpecificZone( TimeZoneInfo tz )
+            {
+                return TimeZoneInfo.ConvertTime( utcDateTime, tz );
+            }
         }
 
         #endregion
@@ -224,6 +334,25 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "-32", "{{ '18-Mar-2011 11:30 AM' | DateDiff:'14-Feb-2011 8:00 AM','d' }}" );
         }
 
+        /// <summary>
+        /// Requesting the difference between a target date and a DateTimeOffset should return a result that accounts for the input time zone.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
+
+            // Convert the input time to local server time, which may have a different UTC offset to the input date, then add 7 hours.
+            var serverLocalTimeString = datetimeInput.ToLocalTime().AddHours( 7 ).ToString( "yyyy-MM-dd HH:mm" );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput }, { "serverLocalTime", serverLocalTimeString } };
+
+            // Verify that the difference between the input date and the adjusted local time is 7 hours.
+            TestHelper.AssertTemplateOutput( "7", "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", mergeValues );
+        }
+
         #endregion
 
         #region Filter Tests: DaysFromNow
@@ -293,6 +422,31 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "in 14 days", template );
         }
 
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        public void DaysFromNow_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            // Get a local time of 1:00am tomorrow.
+            var tomorrow = RockDateTime.Now.Date.AddDays( 1 ).AddHours( 1 );
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( tomorrow );
+
+            // First, verify that the Lava filter returns "tomorrow" when the DateTimeOffset resolves to local time 1:00am tomorrow.
+            var datetimeInput = new DateTimeOffset( tomorrow );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "tomorrow", "{{ dateTimeInput | DaysFromNow }}", mergeValues );
+
+            // Now verify that the Lava filter will return "today" if the DateTimeOffset is 11:00pm today.
+            var datetimeInput2 = new DateTimeOffset( tomorrow.Year, tomorrow.Month, tomorrow.Day, tomorrow.Hour, tomorrow.Minute, tomorrow.Second, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
+        }
+
         #endregion
 
         /// <summary>
@@ -303,11 +457,11 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var currentDateTime = RockDateTime.Now;
 
-            var targetDate = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths(1);
+            var targetDate = new DateTime( currentDateTime.Year, currentDateTime.Month, 1 ).AddMonths( 1 );
 
             targetDate = targetDate.AddDays( -1 );
 
-            TestHelper.AssertTemplateOutput(targetDate.Day.ToString(), "{{ 'Now' | DaysInMonth }}" );
+            TestHelper.AssertTemplateOutput( targetDate.Day.ToString(), "{{ 'Now' | DaysInMonth }}" );
         }
 
         /// <summary>
@@ -366,6 +520,20 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Using yesterday's date as a parameter should return a result of one.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "This test fails. A Spark internal issue has been raised to verify the correct operation of this filter." )]
+        public void DaysSince_ComparePreviousDay_YieldsOne()
+        {
+            var template = "{{ '<compareDate>' | DaysSince }}";
+
+            template = template.Replace( "<compareDate>", RockDateTime.Now.Date.AddMinutes( -1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
+
+            TestHelper.AssertTemplateOutput( "1", template );
+        }
+
+        /// <summary>
         /// Using a future date as a parameter should return a negative number of days.
         /// </summary>
         [TestMethod]
@@ -376,6 +544,32 @@ namespace Rock.Tests.UnitTests.Lava
             template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( 3 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "-2", template );
+        }
+
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "This test fails. A Spark internal issue has been raised to verify the correct operation of this filter." )]
+        public void DaysSince_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            // Get a local time of 1:00am two weeks from today.
+            var futureDate = RockDateTime.Now.Date.AddDays( -14 ).AddHours( 1 );
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( futureDate );
+
+            // First, verify that the Lava filter returns "14" when the DateTimeOffset resolves to local time 1:00am two weeks from today.
+            var datetimeInput = new DateTimeOffset( futureDate );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "14", "{{ dateTimeInput | DaysSince }}", mergeValues );
+
+            // Now verify that the Lava filter returns "15" if the DateTimeOffset is increased by 2 hours.
+            var datetimeInput2 = new DateTimeOffset( futureDate.Year, futureDate.Month, futureDate.Day, futureDate.Hour, futureDate.Minute, futureDate.Second, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "15", "{{ dateTimeInput | DaysSince }}", mergeValues2 );
         }
 
         #endregion
@@ -410,6 +604,20 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Using tomorrow's date as a parameter should return a result of one.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "This test fails. A Spark internal issue has been raised to verify the correct operation of this filter." )]
+        public void DaysUntil_CompareNextDay_YieldsOne()
+        {
+            var template = "{{ '<compareDate>' | DaysUntil }}";
+
+            template = template.Replace( "<compareDate>", RockDateTime.Now.Date.AddDays( 1 ).AddMinutes( 1 ).ToString( "dd-MMM-yyyy HH:mm:ss" ) );
+
+            TestHelper.AssertTemplateOutput( "1", template );
+        }
+
+        /// <summary>
         /// Using a past date as a parameter should return a negative number of days.
         /// </summary>
         [TestMethod]
@@ -427,15 +635,51 @@ namespace Rock.Tests.UnitTests.Lava
         #region Filter Tests: HumanizeDateTime
 
         /// <summary>
-        /// Applying the filter without specifying any parameters uses today as the reference date.
+        /// Using the previous day as a parameter should return "yesterday".
         /// </summary>
         [TestMethod]
-        public void HumanizeDateTime_WithNoParameters_UsesCurrentDateTime()
+        public void HumanizeDateTime_CompareDayEarlier_YieldsYesterday()
         {
             var template = "{{ '<compareDate>' | HumanizeDateTime }}";
             template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -1 ).ToString( "dd-MMM-yyyy" ) );
 
             TestHelper.AssertTemplateOutput( "yesterday", template );
+        }
+
+        /// <summary>
+        /// Comparing an input date/time that is X hours earlier than the current date/time should return "X hours ago".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeDateTime_CompareHoursEarlier_YieldsHoursAgo()
+        {
+            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddHours( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss tt" ) );
+
+            TestHelper.AssertTemplateOutput( "2 hours ago", template );
+        }
+
+        /// <summary>
+        /// Comparing an input date/time that is X days earlier than the current date/time should return "X days ago".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeDateTime_CompareDaysEarlier_YieldsDaysAgo()
+        {
+            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddDays( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
+
+            TestHelper.AssertTemplateOutput( "2 days ago", template );
+        }
+
+        /// <summary>
+        /// Comparing an input date/time that is X months earlier than the current date/time should return "X months ago".
+        /// </summary>
+        [TestMethod]
+        public void HumanizeDateTime_CompareMonthsEarlier_YieldsMonthsAgo()
+        {
+            var template = "{{ '<compareDate>' | HumanizeDateTime }}";
+            template = template.Replace( "<compareDate>", RockDateTime.Now.AddMonths( -2 ).ToString( "dd-MMM-yyyy hh:mm:ss" ) );
+
+            TestHelper.AssertTemplateOutput( "2 months ago", template );
         }
 
         /// <summary>
@@ -491,6 +735,30 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '1-May-2020 10:00 PM' | HumanizeDateTime:'1-May-2020 8:00 PM' }}";
 
             TestHelper.AssertTemplateOutput( "2 hours from now", template );
+        }
+
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        public void HumanizeDateTime_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+
+            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "14 days from now", "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", mergeValues );
+
+            // Next, verify that the Lava filter returns the previous day if the DateTimeOffset is increased such that the datetime
+            // crosses the boundary to the previous day when translated to local time.
+            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "13 days from now", "{{ dateTimeInput | HumanizeDateTime:'1-May-2020 1:00 AM' }}", mergeValues2 );
         }
 
         #endregion
@@ -575,6 +843,30 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.AssertTemplateOutputRegex( "[23] days", template );
 
+        }
+
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        public void HumanizeTimeSpan_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+
+            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+
+            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
+            // crosses the boundary to the previous day when translated to local time.
+            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
         }
 
         #endregion
@@ -684,6 +976,30 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "", "{{ '1-May-2018 3:00 PM' | NextDayOfTheWeek:'Tuesday',false,'0' }}" );
         }
 
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        public void NextDayOfTheWeek_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+
+            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+
+            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
+            // crosses the boundary to the previous day when translated to local time.
+            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+        }
+
         #endregion
 
         #region Filter Tests: ToMidnight
@@ -706,6 +1022,30 @@ namespace Rock.Tests.UnitTests.Lava
         {
             TestHelper.AssertTemplateOutputDate( RockDateTime.Now.Date,
                                       "{{ 'Now' | ToMidnight }}" );
+        }
+
+        /// <summary>
+        /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
+        /// </summary>
+        [TestMethod]
+        public void ToMidnight_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
+        {
+            var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
+
+            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( "2020-05-15 00:00:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-dd HH:mm:ss' }}", mergeValues );
+
+            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
+            // crosses the boundary to the previous day when translated to local time.
+            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+
+            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+            TestHelper.AssertTemplateOutput( "2020-05-14 00:00:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-dd HH:mm:ss' }}", mergeValues2 );
         }
 
         #endregion

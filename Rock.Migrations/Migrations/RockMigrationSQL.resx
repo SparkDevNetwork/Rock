@@ -181,4 +181,25 @@
   <data name="_202105251443228_SparklineChart_SparklineUpdate" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 12.0\version 1.12.4\202105251443228_sparklinechart_sparklineupdate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202105280103566_StatementGenerator_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202105280103566_StatementGenerator_RockDefaultTemplateFooter" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatefooter.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202105280103566_StatementGenerator_RockDefaultTemplateLogo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatelogo.data;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 12.0\version 1.12.4\202105280103566_statementgenerator_rockdefaulttemplatereportsettings.json;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202106042044568_statementgeneratordefaulttemplateupdate_rockdefaulttemplate.lava;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202106081803525_Rollup_0608_LavaHeatMap" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202106081803525_rollup_0608_lavaheatmap.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
+  <data name="_202106081803525_Rollup_0608_UpdateTrendChart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202106081803525_rollup_0608_updatetrendchart.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

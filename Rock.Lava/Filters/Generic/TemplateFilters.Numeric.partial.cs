@@ -257,5 +257,25 @@ namespace Rock.Lava.Filters
 
             return inputString.ToQuantity( numericQuantity );
         }
+
+        /// <summary>
+        /// Generates a random number greater than or equal to 0 and less than
+        /// the input as a number.
+        /// </summary>
+        /// <param name="input">The input number to provide the upper range.</param>
+        /// <returns>A random number.</returns>
+        /// <exception cref="Exception">Must provide an integer value as input.</exception>
+        /// <remarks>If you pass in a value of 100 as input, you will get a random number of 0-99.</remarks>
+        public static int RandomNumber( object input )
+        {
+            var number = input.ToStringSafe().AsIntegerOrNull();
+
+            if ( !number.HasValue )
+            {
+                throw new Exception( "Must provide an integer value as input." );
+            }
+
+            return _randomNumberGenerator.Next( number.Value );
+        }
     }
 }

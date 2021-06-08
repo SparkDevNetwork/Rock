@@ -430,8 +430,8 @@ so you can customize this to be exactly what you want.</p>
             // register all the JS and CSS links we need.
             if ( HttpContext.Current != null && HttpContext.Current.Handler is RockPage rockPage )
             {
-                RockPage.AddScriptLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.js", false );
-                RockPage.AddCSSLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.css", false );
+                RockPage.AddScriptLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.js", false );
+                RockPage.AddCSSLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.css", false );
 
                 if ( options.MediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
                 {

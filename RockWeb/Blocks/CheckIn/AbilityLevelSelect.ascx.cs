@@ -76,6 +76,9 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class AbilityLevelSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string FamilyPreviousPage = "FamilyPreviousPage";
@@ -84,7 +87,6 @@ namespace RockWeb.Blocks.CheckIn
             public const string NoOptionCaption = "NoOptionCaption";
             public const string SelectionNoOption = "SelectionNoOption";
             public const string MultiPersonLastPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonLastPage;
-
         }
 
         private string _personAbilityLevelGuid;

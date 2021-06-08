@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
-                    lLavaContent.Text = string.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
+                    lLavaContent.Text = string.Format( "<div class='alert alert-success'>Your scheduled {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
                 }
                 else
                 {

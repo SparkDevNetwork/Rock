@@ -106,12 +106,11 @@
                         </div>
                     </div>
                 
-                    <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
+                    <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="false" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />
                             <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                             <Rock:RockBoundField DataField="ResultSummary" HeaderText="Details" SortExpression="Details" />
-                            <Rock:DeleteField OnClick="gResults_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
                 </Rock:PanelWidget>
@@ -137,6 +136,8 @@
                 </div>
 
                 <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
+
+                <Rock:DynamicPlaceholder id="phResultAttributes" runat="server" />
             </Content>
         </Rock:ModalDialog>
 

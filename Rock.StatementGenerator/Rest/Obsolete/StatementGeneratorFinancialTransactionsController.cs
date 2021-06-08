@@ -463,25 +463,37 @@ namespace Rock.StatementGenerator.Rest
                 var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
                 mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
-                string familyTitle;
-                if ( person != null && person.PrimaryFamilyId == groupId )
+                string salutation;
+                if ( personId.HasValue )
                 {
-                    // this is how familyTitle should able to be determined in most cases
-                    familyTitle = person.PrimaryFamily.GroupSalutation;
+                    // if the person gives as an individual, the salutation should be just the person's name
+                    salutation = person.FullName;
                 }
                 else
                 {
-                    // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
-                    familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                    // if giving as a group, the salutation is family title
+                    string familyTitle;
+                    if ( person != null && person.PrimaryFamilyId == groupId )
+                    {
+                        // this is how familyTitle should able to be determined in most cases
+                        familyTitle = person.PrimaryFamily.GroupSalutation;
+                    }
+                    else
+                    {
+                        // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
+                        familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                    }
+
+                    if ( familyTitle.IsNullOrWhiteSpace() )
+                    {
+                        // shouldn't happen, just in case the familyTitle is blank, just return the person's name
+                        familyTitle = person.FullName;
+                    }
+
+                    salutation = familyTitle;
                 }
 
-                if ( familyTitle.IsNullOrWhiteSpace() )
-                {
-                    // shouldn't happen, just in case the familyTitle is blank, just return the person's name
-                    familyTitle = person.FullName;
-                }
-
-                mergeFields.Add( "Salutation", familyTitle );
+                mergeFields.Add( "Salutation", salutation );
 
                 Location mailingAddress;
 

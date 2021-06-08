@@ -22,8 +22,14 @@
             // Since `verifyTag` is being called by the jQuery lib, `this`
             // is the current TagList DOM element. Get the HTML ID and fetch
             // from the cache.
-            var tagList = exports.tagLists[$(this).attr('id')],
-                restUrl = Rock.settings.get('baseUrl') + 'api/tags';
+            var tagList = exports.tagLists[$(this).attr('id')];
+            if (! /^((?!<)(?!>)(?!%)(?!&).)*$/.test(tagName)) {
+                Rock.dialogs.alert("Invalid characters have been entered for the tag name. Angle brackets, percent, and ampersand are not allowed.");
+                $('#' + tagList.controlId).removeTag(tagName);
+                return;
+            }
+
+            var restUrl = Rock.settings.get('baseUrl') + 'api/tags';
             restUrl += '?entityTypeId=' + tagList.entityTypeId;
             restUrl += '&ownerId=' + tagList.currentPersonId;
             restUrl += '&name=' + encodeURIComponent(tagName);
@@ -57,6 +63,10 @@
                                 }
                             });
                         }
+                    },
+                    403: function () {
+                        Rock.dialogs.alert("Invalid characters have been entered for the tag name. Angle brackets, percent, and ampersand are not allowed.");
+                        $('#' + tagList.controlId).removeTag(tagName);
                     },
                     200: function () {
                         tagList.addTag(tagName);

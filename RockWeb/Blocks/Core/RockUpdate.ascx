@@ -1,38 +1,42 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockUpdate.ascx.cs" Inherits="RockWeb.Blocks.Core.RockUpdate" %>
-<%@ Import namespace="Rock" %>
+<%@ Import Namespace="Rock" %>
 <style>
     /* This is here because it prevents the contents from jumping around when/if
         the user clicks the release notes and the content expands the height of the
         page enough to need the scrollbar.
     */
-    html {overflow-y: scroll;}
+    html {
+        overflow-y: scroll;
+    }
 </style>
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-download"></i> Rock Update</h1>
+                <h1 class="panel-title"><i class="fa fa-cloud-download"></i>Rock Update</h1>
             </div>
             <div class="panel-body">
-                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
+                <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                      <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
                      <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
-                 </Rock:NotificationBox>
-                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
+                </Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
                     <h2><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</h2>
                     <p>
                         As of Rock McKinley v11, Rock requires SQL Server 2014 or greater.
                         You will need to upgrade your database in order to proceed with that update.
                     </p>
-                 </Rock:NotificationBox>
-                 <asp:Panel ID="pnlNoUpdates" runat="server">
+                </Rock:NotificationBox>
+                <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
                         <i class="fa fa-anchor"></i>
-                        <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing or
-                           check out the <a href="https://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
+                        <p>
+                            You run a tight ship, there is nothing to update since
+                            <asp:Literal ID="lNoUpdateVersion" runat="server" />. Check back soon as we're working hard on something amazing or
+                           check out the <a href="http://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
                         </p>
                     </div>
                 </asp:Panel>
@@ -58,21 +62,22 @@
                 <div class="well">
                     <div class="row d-md-flex justify-content-center align-items-center">
                         <div class="col-sm-3 col-md-2 mb-2 mb-md-0 clearfix">
-                            <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:Highlightlabel>
+                            <Rock:HighlightLabel runat="server" ID="hlblEarlyAccess" LabelType="Warning" Text="Early Access: Not Enabled" CssClass="padding-all-sm"></Rock:HighlightLabel>
                         </div>
                         <div class="col-sm-9 col-md-10">
                             <!-- Early Access Not Enabled -->
                             <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true">
                                 <p>
                                     Community Contributors have early access to major releases of Rock. Find out
-                                <a href="https://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
+                                <a href="http://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
 
                                     If you are already a Community Contributor and are having trouble with your access,
-                                    <asp:Hyperlink ID="btnIssues" runat="server">let us know so we can resolve the problem</asp:Hyperlink>.
+                                    <asp:HyperLink ID="btnIssues" runat="server">let us know so we can resolve the problem</asp:HyperLink>.
                                 </p>
                             </asp:Panel>
                             <!-- Early Access is Enabled -->
-                            <asp:Panel runat="server" ID="pnlEarlyAccessEnabled" Visible="false"> Thank you for being a Community Contributor! <a href="https://www.rockrms.com/earlyaccess">Learn more about the Early Access program</a>.
+                            <asp:Panel runat="server" ID="pnlEarlyAccessEnabled" Visible="false">
+                                Thank you for being a Community Contributor! <a href="http://www.rockrms.com/earlyaccess">Learn more about the Early Access program</a>.
                             </asp:Panel>
                         </div>
                     </div>
@@ -91,47 +96,50 @@
                         </div>
                     </div>
 
-                    <asp:Repeater ID="rptPackageVersions" runat="server" Visible="True"  OnItemDataBound="rptPackageVersions_ItemDataBound" OnItemCommand="rptPackageVersions_ItemCommand">
-                            <ItemTemplate>
-                                <div id="divPanel" runat="server" class="panel">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title"><asp:Literal runat="server" Text='<%# GetRockVersion( Eval( "Version" ) )%>' /></h3>
-                                    </div>
-                                    <div class="panel-body">
-                                        <div class="row">
-                                            <div class="col-md-2">
-                                                <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "Version" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
-                                            </div>
-                                            <div class="col-md-10">
-                                                <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Description" ) %>'></asp:Literal>
+                    <asp:Repeater ID="rptPackageVersions" runat="server" Visible="True" OnItemDataBound="rptPackageVersions_ItemDataBound" OnItemCommand="rptPackageVersions_ItemCommand">
+                        <ItemTemplate>
+                            <div id="divPanel" runat="server" class="panel">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        <asp:Literal runat="server" Text='<%# GetRockVersion( Eval( "SemanticVersion" ) )%>' /></h3>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-md-2">
+                                            <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "SemanticVersion" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
+                                        </div>
+                                        <div class="col-md-10">
+                                            <asp:Literal ID="litPackageDescription" runat="server" Text='<%# Eval( "Summary" ) %>'></asp:Literal>
 
-                                                <div class="releasenotes">
-                                                    <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
+                                            <div class="releasenotes">
+                                                <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
 
-                                                    <div class="releasenotes-body" style="display: none">
-                                                        <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
-                                                    </div>
-                                             </div>
+                                                <div class="releasenotes-body" style="display: none">
+                                                    <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </ItemTemplate>
+                            </div>
+                        </ItemTemplate>
                     </asp:Repeater>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlUpdateSuccess" runat="server" Visible="false">
 
-                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available."/>
+                    <Rock:NotificationBox ID="nbMoreUpdatesAvailable" runat="server" NotificationBoxType="Info" Visible="false" Heading="More Updates Available! " Text="There are additional updates available." />
 
                     <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
                         <i class="fa fa-exclamation-triangle"></i>
-                        <p>Update completed successfully... You're now running <asp:Literal ID="lSuccessVersion" runat="server" /> .</p>
+                        <p>Update completed successfully... You're now running
+                            <asp:Literal ID="lSuccessVersion" runat="server" />
+                            .</p>
 
                         <div class="text-left margin-t-md">
                             <strong>Below is a summary of the new toys you have to play with...</strong>
-                                <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
+                            <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
                         </div>
 
                         <button type="button" id="btn-restart" data-loading-text="Restarting..." class="btn btn-success">Restart</button>
@@ -151,9 +159,18 @@
 
                     <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Heading="Here's what happened..." />
                 </asp:Panel>
-            </div>
-        </div>
 
+                <Rock:ModalDialog ID="mdConfirmInstall" runat="server" Title="Please Confirm" SaveButtonText="Yes" OnSaveClick="mdConfirmInstall_SaveClick">
+                    <Content>
+                        <asp:Literal runat="server" ID="litConfirmationMessage" />
+                        <asp:HiddenField runat="server" ID="hdnInstallVersion" />
+                    </Content>
+                </Rock:ModalDialog>
+
+                <a href="/RockUpdateLegacy" class="pull-right">Legacy Updater</a>
+            </div>
+            
+        </div>
     </ContentTemplate>
 </asp:UpdatePanel>
 

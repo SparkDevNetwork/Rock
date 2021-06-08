@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -31,9 +32,6 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class CalendarEventsCommandTests : LavaIntegrationTestBase
     {
-        private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
-        private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
-
         private static string LavaTemplateCalendarEvents = @";
 {% calendarevents {parameters} %}
   {% assign eventScheduledInstanceCount = EventScheduledInstances | Size %}
@@ -42,9 +40,16 @@ namespace Rock.Tests.Integration.Lava
     <<{{ eventScheduledInstance.Name }}|{{ eventScheduledInstance.Date | Date: 'yyyy-MM-dd' }}|{{ eventScheduledInstance.Time }}|{{ eventScheduledInstance.Location }}>>
     <<Calendars: {{ eventScheduledInstance.CalendarNames | Join:', ' }}>>
     <<Audiences: {{ eventScheduledInstance.AudienceNames | Join:', ' }}>>
+    <<Campus: {{ eventScheduledInstance.Campus }}>>
   {% endfor %}
 {% endcalendarevents %}
 ";
+
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            InitializeTestData();
+        }
 
         private string GetTestTemplate( string parameters )
         {
@@ -120,7 +125,7 @@ namespace Rock.Tests.Integration.Lava
             // This filter should return the Warrior Youth Event scheduled once on 2018-05-02.
             var template = GetTestTemplate( "calendarid:'Public' audienceids:'Youth' startdate:'2018-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput("<Audiences: All Church, Adults, Youth>",
+            TestHelper.AssertTemplateOutput( "<Audiences: All Church, Adults, Youth>",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
@@ -168,6 +173,65 @@ namespace Rock.Tests.Integration.Lava
             var template = GetTestTemplate( "calendarid:'Internal' audienceids:'no_audience'" );
 
             TestHelper.AssertTemplateOutput( "Calendar Events not available. Cannot apply an audience filter for the reference \"no_audience\".",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void CalendarEventsCommand_WithCampusAsName_RetrievesEventsWithMatchingCampus()
+        {
+            // This filter should return the Warrior Youth Event scheduled once on 2018-05-02.
+            var template = GetTestTemplate( "calendarid:'Public' campusids:'Main Campus' startdate:'2018-1-1' daterange:'12m' maxoccurrences:2" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        public void CalendarEventsCommand_WithCampusAsMultipleValues_RetrievesEventsWithAnyMatchingCampus()
+        {
+            var template = GetTestTemplate( "calendarid:'Public' campusids:'Main Campus,Stepping Stone' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Stepping Stone>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void CalendarEventsCommand_WithCampusAsId_RetrievesEventsWithMatchingCampus()
+        {
+            var rockContext = new RockContext();
+
+            var campusId = new CampusService( rockContext ).Queryable()
+                .FirstOrDefault().Id;
+
+            var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void CalendarEventsCommand_WithCampusAsGuid_RetrievesEventsWithMatchingCampus()
+        {
+            var template = GetTestTemplate( $"calendarid:'Public' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void CalendarEventsCommand_WithCampusInvalidValue_RendersErrorMessage()
+        {
+            var template = GetTestTemplate( "calendarid:'Internal' campusids:'no_campus'" );
+
+            TestHelper.AssertTemplateOutput( "Calendar Events not available. Cannot apply a campus filter for the reference \"no_campus\".",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
@@ -301,5 +365,99 @@ namespace Rock.Tests.Integration.Lava
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
+
+        #region Test Data
+
+        private static string TestDataForeignKey = "test_data";
+        private static string EventFinancesClassGuid = "6EFC00B0-F5D3-4352-BC3B-F09852FB5788";
+        private static string ScheduleSat1630Guid = "7883CAC8-6E30-482B-95A7-2F0DEE859BE1";
+        private static string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
+        private static string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
+        private static string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
+        private static string InternalCalendarGuidString = "8C7F7F4E-1C51-41D3-9AC3-02B3F4054798";
+        private static string YouthAudienceGuidString = "59CD7FD8-6A62-4C3B-8966-1520E74EED58";
+        private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+        private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
+
+        private static void InitializeTestData()
+        {
+            InitializeEventRockSolidFinancesClassTestData();
+        }
+
+        /// <summary>
+        /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
+        /// </summary>
+        private static void InitializeEventRockSolidFinancesClassTestData()
+        { 
+            var rockContext = new RockContext();
+
+            // Add a new campus
+            var campusService = new CampusService( rockContext );
+
+            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
+
+            if ( campus2 == null )
+            {
+                campus2 = new Campus();
+
+                campusService.Add( campus2 );
+            }
+
+            campus2.Name = "Stepping Stone";
+            campus2.Guid = SecondaryCampusGuidString.AsGuid();
+
+            rockContext.SaveChanges();
+
+            // Get existing schedules.
+            var scheduleService = new ScheduleService( rockContext );
+
+            var scheduleSat1630Id = scheduleService.GetId( ScheduleSat1630Guid.AsGuid() );
+            var scheduleSat1800Id = scheduleService.GetId( ScheduleSun1200Guid.AsGuid() );
+
+            // Get Event "Rock Solid Finances".
+            var eventItemService = new EventItemService( rockContext );
+            var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
+
+            var financeEvent = eventItemService.Get( EventFinancesClassGuid.AsGuid() );
+
+            // Add an occurrence of this event for each Schedule.
+            var financeEvent1 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSat1630Guid.AsGuid() );
+
+            if ( financeEvent1 == null )
+            {
+                financeEvent1 = new EventItemOccurrence();
+            }
+
+            var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
+            var secondCampusId = CampusCache.GetId( SecondaryCampusGuidString.AsGuid() );
+
+            financeEvent1.Location = "Meeting Room 1";
+            financeEvent1.ForeignKey = TestDataForeignKey;
+            financeEvent1.ScheduleId = scheduleSat1630Id;
+            financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
+            financeEvent1.CampusId = mainCampusId;
+
+            financeEvent.EventItemOccurrences.Add( financeEvent1 );
+
+            var financeEvent2 = eventItemOccurrenceService.Get( FinancesClassOccurrenceSun1200Guid.AsGuid() );
+
+            if ( financeEvent2 == null )
+            {
+                financeEvent2 = new EventItemOccurrence();
+            }
+
+            financeEvent2.Location = "Meeting Room 2";
+            financeEvent2.ForeignKey = TestDataForeignKey;
+            financeEvent2.ScheduleId = scheduleSat1800Id;
+            financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
+            financeEvent2.CampusId = secondCampusId;
+
+            financeEvent.EventItemOccurrences.Add( financeEvent2 );
+
+            rockContext.SaveChanges();
+        }
+
+        #endregion
+
     }
 }

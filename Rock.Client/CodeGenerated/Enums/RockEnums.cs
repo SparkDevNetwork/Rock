@@ -299,9 +299,9 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum FinancialStatementIndividualSaveOptionsSaveFor
     {
-        AllActiveAdults = 0x0,
+        AllActiveAdultsInGivingGroup = 0x0,
         PrimaryGiver = 0x1,
-        AllActiveFamilyMembers = 0x2,
+        AllActiveFamilyMembersInGivingGroup = 0x2,
     }
 
     /// <summary>
@@ -435,6 +435,11 @@ namespace Rock.Client.Enums
         Merge = 0x9,
         AddedToGroup = 0xa,
         RemovedFromGroup = 0xb,
+        ConnectionRequestAdded = 0xc,
+        ConnectionRequestConnected = 0xd,
+        ConnectionRequestStatusModify = 0xe,
+        ConnectionRequestStateModify = 0xf,
+        ConnectionRequestDelete = 0x10,
     }
 
     /// <summary>

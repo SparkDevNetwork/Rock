@@ -28,11 +28,11 @@ namespace Rock.Apps.StatementGenerator
         /// The password, stored for the session, but not in the config file
         /// </summary>
         private static string sessionPassword = null;
-        
+
         /// <summary>
         /// The default instance
         /// </summary>
-        private static RockConfig defaultInstance = ( (RockConfig)( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
+        private static RockConfig defaultInstance = ( ( RockConfig ) ( ApplicationSettingsBase.Synchronized( new RockConfig() ) ) );
 
         /// <summary>
         /// Gets the default.
@@ -46,7 +46,7 @@ namespace Rock.Apps.StatementGenerator
             {
                 return defaultInstance;
             }
-        }        
+        }
 
         /// <summary>
         /// Gets or sets the rock base URL.
@@ -54,9 +54,9 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The rock base URL.
         /// </value>
-        [DefaultSettingValueAttribute("")]
+        [DefaultSettingValue( "" )]
         [UserScopedSetting]
-        public string RockBaseUrl 
+        public string RockBaseUrl
         {
             get
             {
@@ -75,7 +75,7 @@ namespace Rock.Apps.StatementGenerator
         /// <value>
         /// The username.
         /// </value>
-        [DefaultSettingValueAttribute( "" )]
+        [DefaultSettingValue( "" )]
         [UserScopedSetting]
         public string Username
         {
@@ -110,36 +110,74 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
+        /// Gets or sets the temporary directory.
+        /// </summary>
+        /// <value>
+        /// The temporary directory.
+        /// </value>
+        [DefaultSettingValue( "" )]
+        [UserScopedSetting]
+        public string TemporaryDirectory
+        {
+            get
+            {
+                return this["TemporaryDirectory"] as string;
+            }
+
+            set
+            {
+                this["TemporaryDirectory"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the individual save options json.
+        /// </summary>
+        /// <value>
+        /// The individual save options json.
+        /// </value>
+        [DefaultSettingValue( "" )]
+        [UserScopedSetting]
+        public string IndividualSaveOptionsJson
+        {
+            get => this["IndividualSaveOptionsJson"] as string;
+            set => this["IndividualSaveOptionsJson"] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the report configuration list json.
+        /// </summary>
+        /// <value>
+        /// The report configuration list json.
+        /// </value>
+        [DefaultSettingValue( "" )]
+        [UserScopedSetting]
+        public string ReportConfigurationListJson
+        {
+            get => this["ReportConfigurationListJson"] as string;
+            set => this["ReportConfigurationListJson"] = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable page count predetermination].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable page count predetermination]; otherwise, <c>false</c>.
+        /// </value>
+        [UserScopedSetting]
+        public bool EnablePageCountPredetermination
+        {
+            get => this["EnablePageCountPredetermination"] as bool? ?? false;
+            set => this["EnablePageCountPredetermination"] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the person selection option.
         /// </summary>
         /// <value>
         /// The person selection option.
         /// </value>
         public PersonSelectionOption PersonSelectionOption { get; set; } = PersonSelectionOption.AllIndividuals;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show tax deductible accounts].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show tax deductible accounts]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowTaxDeductibleAccounts { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show non tax deductible accounts].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show non tax deductible accounts]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowNonTaxDeductibleAccounts { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [show inactive accounts].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show inactive accounts]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ShowInactiveAccounts { get; set; } = false;
 
         /// <summary>
         /// Gets or sets the layout defined value unique identifier.
@@ -149,19 +187,23 @@ namespace Rock.Apps.StatementGenerator
         /// </value>
         [DefaultSettingValueAttribute( "" )]
         [UserScopedSetting]
-        public Guid? LayoutDefinedValueGuid
+        public Guid? FinancialStatementTemplateGuid
         {
             get
             {
-                return this["LayoutDefinedValueGuid"] as Guid?;
+                return this["FinancialStatementTemplateGuid"] as Guid?;
             }
 
             set
             {
-                this["LayoutDefinedValueGuid"] = value;
+                this["FinancialStatementTemplateGuid"] = value;
             }
         }
 
+        /// <summary>
+        /// Loads this instance.
+        /// </summary>
+        /// <returns></returns>
         public static RockConfig Load()
         {
             return RockConfig.Default;

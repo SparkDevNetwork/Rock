@@ -398,7 +398,7 @@ function() {
 
             // Create explicit joins to person alias and person tables so that rendered SQL has an INNER Joins vs OUTER joins on Person and PersonAlias
             var personAliasQry = new PersonAliasService( rockContext ).Queryable();
-            var personQryForJoin = new PersonService( rockContext ).Queryable();
+            var personQryForJoin = new PersonService( rockContext ).Queryable( true );
             var financialTransactionQry = financialTransactionBaseQry
                 .Join( personAliasQry, t => t.AuthorizedPersonAliasId, pa => pa.Id, ( t, pa ) => new
                 {

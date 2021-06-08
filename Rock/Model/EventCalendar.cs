@@ -79,6 +79,15 @@ namespace Rock.Model
             set { _isActive = value; }
         }
         private bool _isActive = true;
+                
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; } = false;
 
         #region Virtual Properties
 

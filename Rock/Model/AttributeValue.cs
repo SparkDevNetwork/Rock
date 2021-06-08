@@ -629,7 +629,12 @@ namespace Rock.Model
             }
 
             var entityTypeId = attributeCache.EntityTypeId.Value;
-            var entityId = EntityId ?? entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+            var entityId = EntityId;
+            if ( !entityId.HasValue && ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted ) )
+            {
+                entityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+            }
+
             var caption = attributeCache.Name;
 
             // Check to see if this attribute is for a person or group, and if so, save to history table

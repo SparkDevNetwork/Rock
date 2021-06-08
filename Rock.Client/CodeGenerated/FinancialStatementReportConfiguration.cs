@@ -38,6 +38,9 @@ namespace Rock.Client
         public bool ExcludeOptedOutIndividuals { get; set; } = true;
 
         /// <summary />
+        public bool ExcludeRecipientsThatHaveAnIncompleteAddress { get; set; } = true;
+
+        /// <summary />
         public string FilenamePrefix { get; set; }
 
         /// <summary />
@@ -75,6 +78,7 @@ namespace Rock.Client
         {
             this.DestinationFolder = source.DestinationFolder;
             this.ExcludeOptedOutIndividuals = source.ExcludeOptedOutIndividuals;
+            this.ExcludeRecipientsThatHaveAnIncompleteAddress = source.ExcludeRecipientsThatHaveAnIncompleteAddress;
             this.FilenamePrefix = source.FilenamePrefix;
             this.IncludeInternationalAddresses = source.IncludeInternationalAddresses;
             this.MaxStatementsPerChapter = source.MaxStatementsPerChapter;

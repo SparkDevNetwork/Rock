@@ -31,11 +31,11 @@
 
     2. CDN Resources
     ------------------
-    5/12/2021 - DSH
+    6/8/2021 - DSH
     The following CDN resources are used by this script and must be included on
     the page in order for this script to work correctly:
-    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.js
-    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.css
+    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.js
+    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.css
     https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js
 
 

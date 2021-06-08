@@ -44,8 +44,8 @@ ORDER BY RC.[Name], A.[Action], A.[Order]
 SELECT DISTINCT
 	'IF NOT EXISTS (SELECT [Id] FROM [RestController] WHERE [ClassName] = ''' + [ClassName] + ''') ' + CHAR(13) + CHAR(9) +
 	'INSERT INTO [RestController] ( [Name], [ClassName], [Guid] )' + CHAR(13) + CHAR(9) + CHAR(9) +
-	'VALUES ( ''' + [Name] + ''', ''' + [ClassName] + ''', NEWID() )' + CHAR(13) 
-FROM [RestController]
+	'VALUES ( ''' + [Name] + ''', ''' + [ClassName] + ''', NEWID() )' + CHAR(13) [Add RestController Script], rcc.Id 
+FROM [RestController] rcc
 WHERE [Id] IN (
 	SELECT DISTINCT RC.[Id]
 	FROM [Auth] A
@@ -58,18 +58,21 @@ WHERE [Id] IN (
 	INNER JOIN [EntityType] ET ON ET.[Id] = A.[EntityTypeId] AND ET.[Guid] = '65CDFD5B-A9AA-48FA-8D22-669612D5EA7D'
 	INNER JOIN [RestController] RC ON RC.[Id] = A.[EntityId]
 )
+order by rcc.Id desc
+
 
 -- SQL to create any actions that are secured
 -- The output of this goes into the migration.  Pre-Beta: Can go to earlier REST migrations and empty them out 
-SELECT DISTINCT
+SELECT 
 	'IF NOT EXISTS (SELECT [Id] FROM [RestAction] WHERE [ApiId] = ''' + RA.[ApiId] + ''') ' + CHAR(13) + CHAR(9) +
 	'INSERT INTO [RestAction] ( [ControllerId], [Method], [ApiId], [Path], [Guid] )' + CHAR(13) + CHAR(9) + CHAR(9) +
 	'SELECT [Id], ''' + RA.[Method] + ''', ''' + RA.[ApiId] + ''', ''' + RA.[Path] + ''', NEWID()' + CHAR(13) + CHAR(9) + CHAR(9) +
-	'FROM [RestController] WHERE [ClassName] = ''' + RC.[ClassName] + '''' + CHAR(13) 
+	'FROM [RestController] WHERE [ClassName] = ''' + RC.[ClassName] + '''' + CHAR(13) [Add Rest Action Script], RC.Id 
 FROM [Auth] A
 INNER JOIN [EntityType] ET ON ET.[Id] = A.[EntityTypeId] AND ET.[Guid] = 'D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D'
 INNER JOIN [RestAction] RA ON RA.[Id] = A.[EntityId]
 INNER JOIN [RestController] RC ON RC.[Id] = RA.[ControllerId]
+ORDER BY RC.Id desc
 
 
 -- SQL to delete all auth rules associated to REST controllers or actions
@@ -97,7 +100,7 @@ SELECT
 	CASE WHEN G.[Id] IS NOT NULL THEN 
 		'(SELECT [Id] FROM [Group] WHERE [Guid] = ''' + 
 		CAST(G.[Guid] AS varchar(64)) + ''')' ELSE 'NULL' END + ', ' + CHAR(13) + CHAR(9) + CHAR(9) +
-	'''' + CAST(A.[Guid] AS varchar(64))+ ''')'  + CHAR(13) + CHAR(13)
+	'''' + CAST(A.[Guid] AS varchar(64))+ ''')'  + CHAR(13) + CHAR(13) [Add RestAction Auth]
 FROM [Auth] A
 INNER JOIN [EntityType] ET ON ET.[Id] = A.[EntityTypeId] AND ET.[Guid] = 'D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D'
 LEFT OUTER JOIN [RestAction] RA ON RA.[Id] = A.[EntityId]
@@ -119,9 +122,10 @@ SELECT
 	CASE WHEN G.[Id] IS NOT NULL THEN 
 		'(SELECT [Id] FROM [Group] WHERE [Guid] = ''' + 
 		CAST(G.[Guid] AS varchar(64)) + ''')' ELSE 'NULL' END + ', ' + CHAR(13) + CHAR(9) + CHAR(9) +
-	'''' + CAST(A.[Guid] AS varchar(64))+ ''')'  + CHAR(13) + CHAR(13)
+	'''' + CAST(A.[Guid] AS varchar(64))+ ''')'  + CHAR(13) + CHAR(13) [Add RestController Auth]
 FROM [Auth] A
 INNER JOIN [EntityType] ET ON ET.[Id] = A.[EntityTypeId] AND ET.[Guid] = '65CDFD5B-A9AA-48FA-8D22-669612D5EA7D'
 LEFT OUTER JOIN [RestController] RC ON RC.[Id] = A.[EntityId]
 LEFT OUTER JOIN [Group] G ON G.[Id] = A.[GroupId]
+ORDER BY RC.Id desc
 

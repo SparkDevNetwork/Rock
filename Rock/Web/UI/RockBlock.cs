@@ -1412,6 +1412,7 @@ namespace Rock.Web.UI
                 {
                     // if this is an IsSystem block, don't render it as an anchor (they shouldn't be able to delete ti)
                     aDeleteBlock = new HtmlGenericControl( "div" );
+                    aDeleteBlock.Attributes.Add( "title", "System blocks cannot be deleted" );
                     aDeleteBlock.Attributes.Add( "class", "delete block-delete disabled js-disabled" );
                     configControls.Add( aDeleteBlock );
                 }

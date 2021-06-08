@@ -94,6 +94,8 @@
                                                 <Rock:RockCheckBox ID="cbShowCommunicate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Communicate" />
                                                 <Rock:RockCheckBox ID="cbShowMergePerson" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Merge Person" />
                                                 <Rock:RockCheckBox ID="cbShowBulkUpdate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Bulk Update" />
+                                                <Rock:RockCheckBox ID="cbShowLaunchWorkflow" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Launch Workflow" />
+
                                                 <Rock:RockCheckBox ID="cbShowExcelExport" runat="server" Text="Excel Export" />
                                                 <Rock:RockCheckBox ID="cbShowMergeTemplate" runat="server" Text="Merge Template" />
                                             </div>
