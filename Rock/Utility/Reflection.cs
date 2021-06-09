@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 #if NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
-using EFDbcontext = System.Data.Entity.DbContext;
+using EFDbContext = System.Data.Entity.DbContext;
 #endif
 
 namespace Rock

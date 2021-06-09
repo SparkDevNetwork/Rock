@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 #endif
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;

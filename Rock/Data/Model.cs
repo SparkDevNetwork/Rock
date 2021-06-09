@@ -23,7 +23,7 @@ using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Data.Service;
+using System.Data.Services;
 #endif
 using System.Linq;
 using System.Runtime.Serialization;

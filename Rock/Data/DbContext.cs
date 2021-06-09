@@ -47,7 +47,7 @@ using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
-using EFEntityEntry = System.Data.Entity.Infrastructure.EntityEntry;
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 #endif
 
 namespace Rock.Data
@@ -663,19 +663,27 @@ namespace Rock.Data
 
             // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
             int minTimeout = 300;
+#if NET5_0_OR_GREATER
             if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > minTimeout )
             {
                 minTimeout = this.Database.GetCommandTimeout().Value;
             }
 
-#if NET5_0_OR_GREATER
             this.BulkInsert( records, options =>
             {
                 options.BatchTimeout = minTimeout;
                 options.IsCheckConstraintOnInsertDisabled = false;
             } );
 #else
-            EntityFramework.Utilties.Configuration.SqlCommandTimeout = minTimeout;
+            if ( this.Database.CommandTimeout.HasValue && this.Database.CommandTimeout.Value > minTimeout )
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.CommandTimeout.Value;
+            }
+            else
+            {
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = minTimeout;
+            }
+
             EntityFramework.Utilities.Configuration.SqlBulkCopyOptions = System.Data.SqlClient.SqlBulkCopyOptions.CheckConstraints;
             EntityFramework.Utilities.EFBatchOperation.For( this, this.Set<T>() ).InsertAll( records );
 #endif

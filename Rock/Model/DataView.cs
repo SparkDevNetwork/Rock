@@ -24,8 +24,8 @@ using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
 #else
 using System.Data.Entity;
-using System.Data.Infrastructure;
-using EFDbContext = System.Dadta.Entity.DbContext;
+using System.Data.Entity.Infrastructure;
+using EFDbContext = System.Data.Entity.DbContext;
 #endif
 using System.Data.Entity.ModelConfiguration;
 using System.Diagnostics;

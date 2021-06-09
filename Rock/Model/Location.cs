@@ -26,7 +26,7 @@ using System.Data.Entity.ModelConfiguration;
 #else
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Spatial;
+using System.Data.Entity.Spatial;
 #endif
 using System.Linq;
 using System.Runtime.Serialization;

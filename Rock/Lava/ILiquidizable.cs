@@ -27,7 +27,7 @@ namespace Rock.Lava
 #if NET5_0_OR_GREATER
     public interface ILiquidizable
 #else
-    public interface ILiquidizable/* : global::DotLiquid.ILiquidizable, global::DotLiquid.IIndexable*/
+    public interface ILiquidizable : global::DotLiquid.ILiquidizable, global::DotLiquid.IIndexable
 #endif
     {
         /// <summary>

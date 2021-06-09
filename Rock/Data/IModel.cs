@@ -21,7 +21,7 @@ using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
 using Microsoft.EntityFrameworkCore;
 #else
 using EFDbContext = System.Data.Entity.DbContext;
-using EFEntityEntry = System.Data.Entity.Infrastructure.EntityEntry;
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 #endif

@@ -30,6 +30,10 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization;
 
+#if !NET5_0_OR_GREATER
+using ImageResizer;
+#endif
+
 using Rock.Data;
 using Rock.Storage;
 using Rock.Web.Cache;
@@ -45,7 +49,7 @@ namespace Rock.Model
     [DataContract]
     public partial class BinaryFile : Model<BinaryFile>
     {
-        #region Entity Properties
+#region Entity Properties
 
         /// <summary>
         /// Gets or sets a flag indicating if this is a temporary file. This property is required.
@@ -209,9 +213,9 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ContentLastModified { get; set; }
 
-        #endregion
+#endregion
 
-        #region Virtual Properties
+#region Virtual Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BinaryFileType"/> of the file.
@@ -333,9 +337,9 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
 
         /// <summary>
@@ -589,10 +593,10 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+#endregion
     }
 
-    #region Entity Configuration
+#region Entity Configuration
 
     /// <summary>
     /// File Configuration class.
@@ -616,5 +620,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+#endregion
 }

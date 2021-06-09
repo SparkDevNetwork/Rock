@@ -17,8 +17,13 @@
 
 using System;
 using System.Collections.Generic;
+#if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
 using EFEntityState = Microsoft.EntityFrameworkCore.EntityState;
+#else
+using System.Data.Entity;
+using EFEntityState = System.Data.Entity.EntityState;
+#endif
 using Rock.Bus.Queue;
 using Rock.Data;
 using Rock.Web.Cache;

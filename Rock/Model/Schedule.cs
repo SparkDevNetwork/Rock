@@ -300,7 +300,7 @@ namespace Rock.Model
 #if NET5_0_OR_GREATER
                 RecurrencePattern rrule = null;
 #else
-                Ical.Net.Interface.DataTypes.IRecurrencePattern rrule = null;
+                Ical.Net.Interfaces.DataTypes.IRecurrencePattern rrule = null;
 #endif
 
                 if ( calEvent != null )
