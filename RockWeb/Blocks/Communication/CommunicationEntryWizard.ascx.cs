@@ -1965,6 +1965,27 @@ function onTaskCompleted( resultData )
             mdEmailPreview.Show();
         }
 
+        /// <summary>
+        /// This special method prevents the CodeEditor from messing with the less than or greater than
+        /// symbols that are inside any Lava "if" statements.  It does this by decoding them from
+        /// <code>&lt;</code> and <code>&gt;</code> back to the < and > characters.
+        /// </summary>
+        /// <param name="encodedString"></param>
+        /// <returns>The string with Lava operators decoded</returns>
+        private static string SpecialLavaDecode( string encodedString )
+        {
+            if ( encodedString == null )
+            {
+                return null;
+            }
+
+            // Look for &lt; inside Lava "if" statements and replace back to <
+            var returnVal = Regex.Replace( encodedString, @"(?<={%\s*if .*)&lt;(?=[^%]*%})", "<" );
+
+            // Look for &gt; inside Lava "if" statements and replace back to >
+            return Regex.Replace( returnVal, @"(?<={%\s*if .*)&gt;(?=[^%]*%})", ">" );
+        }
+
         private string GetEmailPreviewHtml( Rock.Model.Communication communication, Person currentPerson, Dictionary<string, object> mergeFields )
         {
             var emailMediumWithActiveTransport = MediumContainer
@@ -1972,7 +1993,7 @@ function onTaskCompleted( resultData )
                 .Where( a => a.EntityType.Guid == Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )
                 .FirstOrDefault();
 
-            string communicationHtml = hfEmailEditorHtml.Value;
+            string communicationHtml = SpecialLavaDecode( hfEmailEditorHtml.Value );
 
             if ( emailMediumWithActiveTransport != null )
             {
@@ -3131,7 +3152,7 @@ function onTaskCompleted( resultData )
             var details = new CommunicationDetails();
 
             details.Subject = tbEmailSubject.Text;
-            details.Message = hfEmailEditorHtml.Value;
+            details.Message = SpecialLavaDecode( hfEmailEditorHtml.Value );
 
             details.FromName = tbFromName.Text;
             details.FromEmail = ebFromAddress.Text;
