@@ -186,9 +186,24 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Elements/
                         maxcharacters: '100',
                         showcountdown: 'true',
                         allowhtml: 'true'
+                    }),
+                    BooleanGallery: GetFieldTypeGalleryComponent('Boolean', 't', '1EDAFDED-DFE6-4334-B019-6EECBA89E05A', {
+                        truetext: 'This is true',
+                        falsetext: 'This is false',
+                        BooleanControlType: '2'
+                    }),
+                    PhoneNumberGallery: GetFieldTypeGalleryComponent('PhoneNumber', '(321) 456-7890', '6B1908EC-12A2-463A-A7BD-970CE0FAF097', {}),
+                    DefinedValueGallery: GetFieldTypeGalleryComponent('DefinedValue', 'af28af43-8461-41ac-a2c5-85122712be96', '59D5A94C-94A0-4630-B80A-BB25697D74C7', {
+                        definedtype: '92',
+                        allowmultiple: '',
+                        displaydescription: 'true',
+                        enhancedselection: '',
+                        includeInactive: '',
+                        AllowAddingNewValues: '',
+                        RepeatColumns: ''
                     })
                 },
-                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n        <DateGallery />\n        <SingleSelectGallery />\n        <MemoGallery />\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n        <DateGallery />\n        <SingleSelectGallery />\n        <MemoGallery />\n        <BooleanGallery />\n        <PhoneNumberGallery />\n        <DefinedValueGallery />\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };

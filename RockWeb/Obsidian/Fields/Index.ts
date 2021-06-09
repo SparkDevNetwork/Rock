@@ -19,7 +19,8 @@ import { Guid, normalize } from '../Util/Guid';
 
 const fieldTypeComponentPaths: Record<Guid, Component> = {};
 
-export interface ConfigurationValue {
+export interface ConfigurationValue
+{
     Name: string;
     Description: string;
     Value: string;
@@ -27,12 +28,38 @@ export interface ConfigurationValue {
 
 export type ConfigurationValues = Record<string, ConfigurationValue>;
 
+/**
+ * Gets the configuration value's value using the case insensitive key.
+ * @param key
+ * @param configurationValues
+ */
+export function getConfigurationValue ( key: string | null, configurationValues: ConfigurationValues | null ): string
+{
+    key = ( key || '' ).toLowerCase().trim();
+
+    if ( !configurationValues || !key )
+    {
+        return '';
+    }
+
+    const objectKey = Object.keys( configurationValues ).find( k => k.toLowerCase().trim() === key );
+
+    if ( !objectKey )
+    {
+        return '';
+    }
+
+    const configObject = configurationValues[ objectKey ];
+    return configObject?.Value || '';
+}
+
 export type FieldTypeModule = {
     fieldTypeGuid: Guid;
     component: Component;
 };
 
-export function getFieldTypeProps() {
+export function getFieldTypeProps ()
+{
     return {
         modelValue: {
             type: String as PropType<string>,
@@ -44,36 +71,41 @@ export function getFieldTypeProps() {
         },
         configurationValues: {
             type: Object as PropType<ConfigurationValues>,
-            default: () => ({})
+            default: () => ( {} )
         }
     };
 }
 
-export function registerFieldType(fieldTypeGuid: Guid, component: Component) {
-    const normalizedGuid = normalize(fieldTypeGuid)!;
+export function registerFieldType ( fieldTypeGuid: Guid, component: Component )
+{
+    const normalizedGuid = normalize( fieldTypeGuid )!;
 
     const dataToExport: FieldTypeModule = {
         fieldTypeGuid: normalizedGuid,
         component: component
     };
 
-    if (fieldTypeComponentPaths[normalizedGuid]) {
-        console.error(`Field type "${fieldTypeGuid}" is already registered`);
+    if ( fieldTypeComponentPaths[ normalizedGuid ] )
+    {
+        console.error( `Field type "${fieldTypeGuid}" is already registered` );
     }
-    else {
-        fieldTypeComponentPaths[normalizedGuid] = component;
+    else
+    {
+        fieldTypeComponentPaths[ normalizedGuid ] = component;
     }
 
     return dataToExport;
 }
 
-export function getFieldTypeComponent(fieldTypeGuid: Guid): Component | null {
-    const field = fieldTypeComponentPaths[normalize(fieldTypeGuid)!];
+export function getFieldTypeComponent ( fieldTypeGuid: Guid ): Component | null
+{
+    const field = fieldTypeComponentPaths[ normalize( fieldTypeGuid )! ];
 
-    if (field) {
+    if ( field )
+    {
         return field;
     }
 
-    console.error(`Field type "${fieldTypeGuid}" was not found`);
+    console.error( `Field type "${fieldTypeGuid}" was not found` );
     return null;
 }

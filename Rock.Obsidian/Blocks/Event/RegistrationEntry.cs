@@ -2194,7 +2194,7 @@ namespace Rock.Obsidian.Blocks.Event
 
             var transactionDetail = transaction.TransactionDetails?.FirstOrDefault() ?? new FinancialTransactionDetail();
             transactionDetail.Amount = amount;
-            transactionDetail.AccountId = transactionDetail.AccountId == 0 ? context.RegistrationSettings.FinancialAccountId.Value : transactionDetail.AccountId;
+            transactionDetail.AccountId = context.RegistrationSettings.FinancialAccountId ?? transactionDetail.AccountId;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = context.Registration.Id;
             transaction.TransactionDetails.Add( transactionDetail );

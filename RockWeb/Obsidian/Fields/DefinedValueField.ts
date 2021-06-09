@@ -16,54 +16,112 @@
 //
 import { defineComponent } from 'vue';
 import { Guid } from '../Util/Guid';
-import { registerFieldType, getFieldTypeProps } from './Index';
+import { registerFieldType, getFieldTypeProps, getConfigurationValue } from './Index';
 import DefinedValuePicker from '../Controls/DefinedValuePicker';
 import { toNumberOrNull } from '../Services/Number';
 import DefinedType from '../ViewModels/CodeGenerated/DefinedTypeViewModel';
+import DefinedValue from '../ViewModels/CodeGenerated/DefinedValueViewModel';
+import { asBoolean } from '../Services/Boolean';
 
 const fieldTypeGuid: Guid = '59D5A94C-94A0-4630-B80A-BB25697D74C7';
 
 enum ConfigurationValueKey {
-    DefinedType = 'definedtype'
+    DefinedType = 'definedtype',
+    AllowMultiple = 'allowmultiple',
+    DisplayDescription = 'displaydescription',
+    EnhancedSelection = 'enhancedselection',
+    IncludeInactive = 'includeInactive',
+    AllowAddingNewValues = 'AllowAddingNewValues',
+    RepeatColumns = 'RepeatColumns'
 }
 
-export default registerFieldType(fieldTypeGuid, defineComponent({
+export default registerFieldType( fieldTypeGuid, defineComponent( {
     name: 'DefinedValueField',
     components: {
         DefinedValuePicker
     },
     props: getFieldTypeProps(),
-    data() {
+    data ()
+    {
         return {
-            internalValue: this.modelValue
+            definedValues: [] as DefinedValue[],
+            internalValue: ''
         };
     },
     computed: {
-        safeValue(): string {
-            return (this.modelValue || '').trim();
+        selectedDefinedValue (): DefinedValue | null
+        {
+            return this.definedValues.find( dv => dv.Guid === this.internalValue ) || null;
         },
-        configAttributes(): Record<string, unknown> {
+        displayValue (): string
+        {
+            if ( !this.selectedDefinedValue )
+            {
+                return '';
+            }
+
+            if ( this.displayDescription )
+            {
+                return this.selectedDefinedValue.Description || '';
+            }
+
+            return this.selectedDefinedValue.Value || '';
+        },
+        displayDescription (): boolean
+        {
+            const displayDescription = getConfigurationValue( ConfigurationValueKey.DisplayDescription, this.configurationValues );
+            return asBoolean( displayDescription );
+        },
+        configAttributes (): Record<string, unknown>
+        {
             const attributes: Record<string, unknown> = {};
 
-            const definedTypeConfig = this.configurationValues[ConfigurationValueKey.DefinedType];
-            if (definedTypeConfig && definedTypeConfig.Value) {
-                const definedTypeId = toNumberOrNull(definedTypeConfig.Value);
+            const definedType = getConfigurationValue( ConfigurationValueKey.DefinedType, this.configurationValues );
+            if ( definedType )
+            {
+                const definedTypeId = toNumberOrNull( definedType );
 
-                if (definedTypeId) {
-                    const definedType = this.$store.getters['definedTypes/getById'](definedTypeId) as DefinedType | null;
+                if ( definedTypeId )
+                {
+                    const definedType = this.$store.getters[ 'definedTypes/getById' ]( definedTypeId ) as DefinedType | null;
                     attributes.definedTypeGuid = definedType?.Guid || '';
                 }
+            }
+
+            if ( this.displayDescription )
+            {
+                attributes.displayDescriptions = true;
+            }
+
+            const enhancedConfig = getConfigurationValue( ConfigurationValueKey.EnhancedSelection, this.configurationValues );
+            if ( enhancedConfig )
+            {
+                attributes.enhanceForLongLists = asBoolean( enhancedConfig );
             }
 
             return attributes;
         }
     },
+    methods: {
+        receivedDefinedValues ( definedValues: DefinedValue[] )
+        {
+            this.definedValues = definedValues;
+        }
+    },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
+        },
+        modelValue: {
+            immediate: true,
+            handler ()
+            {
+                this.internalValue = this.modelValue || '';
+            }
         }
     },
     template: `
-<DefinedValuePicker v-if="isEditMode" v-model="internalValue" v-bind="configAttributes" />
-<span v-else>{{ safeValue }}</span>`
-}));
+<DefinedValuePicker :show="isEditMode" v-model="internalValue" v-bind="configAttributes" @receivedDefinedValues="receivedDefinedValues" />
+<span v-if="!isEditMode">{{ displayValue }}</span>`
+} ) );

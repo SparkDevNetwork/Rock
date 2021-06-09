@@ -59,7 +59,8 @@ export default defineComponent( {
     {
         return {
             uniqueId: `rock-dropdownlist-${newGuid()}`,
-            internalValue: this.blankValue
+            internalValue: this.blankValue,
+            isMounted: false
         };
     },
     computed: {
@@ -79,26 +80,43 @@ export default defineComponent( {
         getChosenJqueryEl ()
         {
             const jquery = window[ '$' ];
-            const $chosenDropDown = jquery( this.$refs[ 'theSelect' ] );
+            let $chosenDropDown = jquery( this.$refs[ 'theSelect' ] );
+
+            if ( !$chosenDropDown || !$chosenDropDown.length )
+            {
+                $chosenDropDown = jquery( `#${this.uniqueId}` );
+            }
+
             return $chosenDropDown;
         },
 
-        /** Initializes the jQuery control */
-        initializeChosen ()
+        createOrDestroyChosen ()
         {
+            if ( !this.isMounted )
+            {
+                return;
+            }
+
             const $chosenDropDown = this.getChosenJqueryEl();
 
-            $chosenDropDown
-                .chosen( {
-                    width: '100%',
-                    allow_single_deselect: true,
-                    placeholder_text_multiple: ' ',
-                    placeholder_text_single: ' '
-                } )
-                .change( ev =>
-                {
-                    this.internalValue = ev.target.value;
-                } );
+            if ( this.enhanceForLongLists )
+            {
+                $chosenDropDown
+                    .chosen( {
+                        width: '100%',
+                        allow_single_deselect: true,
+                        placeholder_text_multiple: ' ',
+                        placeholder_text_single: ' '
+                    } )
+                    .change( ev =>
+                    {
+                        this.internalValue = ev.target.value;
+                    } );
+            }
+            else
+            {
+                $chosenDropDown.chosen( 'destroy' );
+            }
         },
 
         syncValue ()
@@ -141,14 +159,16 @@ export default defineComponent( {
         internalValue ()
         {
             this.$emit( 'update:modelValue', this.internalValue );
+        },
+        enhanceForLongLists ()
+        {
+            this.createOrDestroyChosen();
         }
     },
     mounted ()
     {
-        if ( this.enhanceForLongLists )
-        {
-            this.initializeChosen();
-        }
+        this.isMounted = true;
+        this.createOrDestroyChosen();
     },
     template: `
 <RockFormField

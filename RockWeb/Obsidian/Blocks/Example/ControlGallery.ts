@@ -212,12 +212,14 @@ const CheckBoxGallery = defineComponent( {
     name: 'CheckBoxGallery',
     components: {
         GalleryAndResult,
-        CheckBox
+        CheckBox,
+        Toggle
     },
     data ()
     {
         return {
-            isChecked: false
+            isChecked: false,
+            inline: true
         };
     },
     template: `
@@ -226,8 +228,9 @@ const CheckBoxGallery = defineComponent( {
         CheckBox
     </template>
     <template #gallery>
-        <CheckBox label="Check 1" v-model="isChecked" />
-        <CheckBox label="Check 2" v-model="isChecked" />
+        <Toggle label="Inline" v-model="inline" />
+        <CheckBox label="Check 1" v-model="isChecked" :inline="inline" />
+        <CheckBox label="Check 2" v-model="isChecked" :inline="inline" />
     </template>
     <template #result>
         {{isChecked}}
@@ -420,12 +423,72 @@ const TextBoxGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a defined type and defined value picker */
+const DefinedTypeAndValueGallery = defineComponent( {
+    name: 'DefinedTypeAndValueGallery',
+    components: {
+        GalleryAndResult,
+        DefinedTypePicker,
+        DefinedValuePicker,
+        Toggle
+    },
+    data ()
+    {
+        return {
+            displayDescriptions: false,
+            definedTypeGuid: '',
+            definedValueGuid: '',
+            definedValue: null as DefinedValue | null
+        };
+    },
+    computed: {
+        definedTypeName (): string
+        {
+            const definedType = store.getters[ 'definedTypes/getByGuid' ]( this.definedTypeGuid ) as DefinedType;
+            return definedType?.Name || '';
+        },
+        definedValueName (): string
+        {
+            return this.definedValue?.Value || '';
+        }
+    },
+    methods: {
+        onDefinedValueChange ( definedValue: DefinedValue | null )
+        {
+            this.definedValue = definedValue;
+        }
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        DefinedTypePicker and DefinedValuePicker
+    </template>
+    <template #gallery>
+        <Toggle label="Use Descriptions" v-model="displayDescriptions" />
+        <DefinedTypePicker v-model="definedTypeGuid" />
+        <DefinedTypePicker v-model="definedTypeGuid" />
+        <DefinedValuePicker v-model="definedValueGuid" :definedTypeGuid="definedTypeGuid" :displayDescriptions="displayDescriptions" />
+        <DefinedValuePicker v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
+    </template>
+    <template #result>
+        <p>
+            <strong>Defined Type Guid</strong>
+            {{definedTypeGuid}}
+            <span v-if="definedTypeName">({{definedTypeName}})</span>
+        </p>
+        <p>
+            <strong>Defined Value Guid</strong>
+            {{definedValueGuid}}
+            <span v-if="definedValueName">({{definedValueName}})</span>
+        </p>
+    </template>
+</GalleryAndResult>`
+} );
+
 export default defineComponent({
     name: 'Example.ControlGallery',
     components: {
         PaneledBlockTemplate,
-        DefinedTypePicker,
-        DefinedValuePicker,
         CampusPicker,
         GalleryAndResult,
         TextBox,
@@ -448,14 +511,13 @@ export default defineComponent({
         PhoneNumberBoxGallery,
         DropDownListGallery,
         HelpBlockGallery,
-        FormRulesGallery
+        FormRulesGallery,
+        DefinedTypeAndValueGallery
     },
     data() {
         return {
-            definedTypeGuid: '',
-            definedValueGuid: '',
+            
             campusGuid: '',
-            definedValue: null as DefinedValue | null,
             currency: 1.234,
             email: 'joe@joes.co',
             numberUpDown: 1,
@@ -480,11 +542,6 @@ export default defineComponent({
             ] as ProgressTrackerItem[]
         };
     },
-    methods: {
-        onDefinedValueChange(definedValue: DefinedValue | null) {
-            this.definedValue = definedValue;
-        }
-    },
     computed: {
         campus(): Campus | null {
             return store.getters['campuses/getByGuid'](this.campusGuid) || null;
@@ -494,13 +551,6 @@ export default defineComponent({
         },
         campusId(): number | null {
             return this.campus ? this.campus.Id : null;
-        },
-        definedTypeName(): string {
-            const definedType = store.getters['definedTypes/getByGuid'](this.definedTypeGuid) as DefinedType;
-            return definedType?.Name || '';
-        },
-        definedValueName(): string {
-            return this.definedValue?.Value || '';
         }
     },
     template: `
@@ -537,27 +587,7 @@ export default defineComponent({
             </template>
         </GalleryAndResult>
         <DatePartsPickerGallery />
-        <GalleryAndResult>
-            <template #header>
-                Defined Type and Value
-            </template>
-            <template #gallery>
-                <DefinedTypePicker v-model="definedTypeGuid" />
-                <DefinedValuePicker v-model="definedValueGuid" @update:model="onDefinedValueChange" :definedTypeGuid="definedTypeGuid" />
-            </template>
-            <template #result>
-                <p>
-                    <strong>Defined Type Guid</strong>
-                    {{definedTypeGuid}}
-                    <span v-if="definedTypeName">({{definedTypeName}})</span>
-                </p>
-                <p>
-                    <strong>Defined Value Guid</strong>
-                    {{definedValueGuid}}
-                    <span v-if="definedValueName">({{definedValueName}})</span>
-                </p>
-            </template>
-        </GalleryAndResult>
+        <DefinedTypeAndValueGallery />
         <GalleryAndResult>
             <template #header>
                 CampusPicker

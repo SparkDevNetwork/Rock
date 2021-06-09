@@ -65,6 +65,14 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                     definedTypeGuid: {
                         type: String,
                         default: ''
+                    },
+                    displayDescriptions: {
+                        type: Boolean,
+                        default: false
+                    },
+                    show: {
+                        type: Boolean,
+                        default: true
                     }
                 },
                 setup: function () {
@@ -74,10 +82,12 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                 },
                 emits: [
                     'update:modelValue',
-                    'update:model'
+                    'update:model',
+                    'receivedDefinedValues'
                 ],
                 data: function () {
                     return {
+                        isInitialLoadDone: false,
                         internalValue: this.modelValue,
                         definedValues: [],
                         isLoading: false
@@ -88,15 +98,16 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                         return !!this.definedTypeGuid && !this.isLoading;
                     },
                     options: function () {
+                        var _this = this;
                         return this.definedValues.map(function (dv) { return ({
                             key: dv.Guid,
                             value: dv.Guid,
-                            text: dv.Value
+                            text: _this.displayDescriptions ? dv.Description : dv.Value
                         }); });
                     }
                 },
                 watch: {
-                    value: function () {
+                    modelValue: function () {
                         this.internalValue = this.modelValue;
                     },
                     definedTypeGuid: {
@@ -117,11 +128,12 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                                             result = _a.sent();
                                             if (result && result.data) {
                                                 this.definedValues = result.data;
+                                                this.$emit('receivedDefinedValues', this.definedValues);
                                             }
                                             this.isLoading = false;
                                             _a.label = 3;
                                         case 3:
-                                            this.internalValue = '';
+                                            this.isInitialLoadDone = true;
                                             return [2 /*return*/];
                                     }
                                 });
@@ -135,7 +147,7 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                         this.$emit('update:model', definedValue);
                     }
                 },
-                template: "\n<DropDownList v-model=\"internalValue\" :disabled=\"!isEnabled\" :label=\"label\" :options=\"options\" />"
+                template: "\n<DropDownList v-if=\"isInitialLoadDone && show\" v-model=\"internalValue\" :disabled=\"!isEnabled\" :label=\"label\" :options=\"options\" />"
             }));
         }
     };

@@ -1,6 +1,6 @@
-System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownList", "../Elements/Toggle"], function (exports_1, context_1) {
+System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownList", "../Elements/Toggle", "../Elements/CheckBox"], function (exports_1, context_1) {
     "use strict";
-    var vue_1, Index_1, Boolean_1, DropDownList_1, Toggle_1, fieldTypeGuid, BooleanControlType, ConfigurationValueKey;
+    var vue_1, Index_1, Boolean_1, DropDownList_1, Toggle_1, CheckBox_1, fieldTypeGuid, BooleanControlType, ConfigurationValueKey;
     var __moduleName = context_1 && context_1.id;
     return {
         setters: [
@@ -18,6 +18,9 @@ System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownL
             },
             function (Toggle_1_1) {
                 Toggle_1 = Toggle_1_1;
+            },
+            function (CheckBox_1_1) {
+                CheckBox_1 = CheckBox_1_1;
             }
         ],
         execute: function () {
@@ -36,7 +39,8 @@ System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownL
                 name: 'BooleanField',
                 components: {
                     DropDownList: DropDownList_1.default,
-                    Toggle: Toggle_1.default
+                    Toggle: Toggle_1.default,
+                    CheckBox: CheckBox_1.default
                 },
                 props: Index_1.getFieldTypeProps(),
                 data: function () {
@@ -47,8 +51,8 @@ System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownL
                 },
                 computed: {
                     booleanControlType: function () {
-                        var controlTypeConfig = this.configurationValues[ConfigurationValueKey.BooleanControlType];
-                        switch (controlTypeConfig === null || controlTypeConfig === void 0 ? void 0 : controlTypeConfig.Value) {
+                        var controlType = Index_1.getConfigurationValue(ConfigurationValueKey.BooleanControlType, this.configurationValues);
+                        switch (controlType) {
                             case '1':
                                 return BooleanControlType.Checkbox;
                             case '2':
@@ -59,25 +63,37 @@ System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownL
                     },
                     trueText: function () {
                         var trueText = Boolean_1.asYesNoOrNull(true);
-                        var trueConfig = this.configurationValues[ConfigurationValueKey.TrueText];
-                        if (trueConfig && trueConfig.Value) {
-                            trueText = trueConfig.Value;
+                        var trueConfig = Index_1.getConfigurationValue(ConfigurationValueKey.TrueText, this.configurationValues);
+                        if (trueConfig) {
+                            trueText = trueConfig;
                         }
                         return trueText || 'Yes';
                     },
                     falseText: function () {
                         var falseText = Boolean_1.asYesNoOrNull(false);
-                        var falseConfig = this.configurationValues[ConfigurationValueKey.FalseText];
-                        if (falseConfig && falseConfig.Value) {
-                            falseText = falseConfig.Value;
+                        var falseConfig = Index_1.getConfigurationValue(ConfigurationValueKey.FalseText, this.configurationValues);
+                        if (falseConfig) {
+                            falseText = falseConfig;
                         }
                         return falseText || 'No';
                     },
                     isToggle: function () {
                         return this.booleanControlType === BooleanControlType.Toggle;
                     },
-                    valueAsYesNoOrNull: function () {
-                        return Boolean_1.asYesNoOrNull(this.modelValue);
+                    isCheckBox: function () {
+                        return this.booleanControlType === BooleanControlType.Checkbox;
+                    },
+                    valueAsBooleanOrNull: function () {
+                        return Boolean_1.asBooleanOrNull(this.modelValue);
+                    },
+                    displayValue: function () {
+                        if (this.valueAsBooleanOrNull === null) {
+                            return '';
+                        }
+                        if (this.valueAsBooleanOrNull) {
+                            return this.trueText;
+                        }
+                        return this.falseText;
                     },
                     toggleOptions: function () {
                         return {
@@ -110,7 +126,7 @@ System.register(["vue", "./Index", "../Services/Boolean", "../Elements/DropDownL
                         }
                     }
                 },
-                template: "\n<Toggle v-if=\"isEditMode && isToggle\" v-model=\"internalBooleanValue\" v-bind=\"toggleOptions\" />\n<DropDownList v-else-if=\"isEditMode\" v-model=\"internalValue\" :options=\"dropDownListOptions\" />\n<span v-else>{{ valueAsYesNoOrNull }}</span>"
+                template: "\n<Toggle v-if=\"isEditMode && isToggle\" v-model=\"internalBooleanValue\" v-bind=\"toggleOptions\" />\n<CheckBox v-else-if=\"isEditMode && isCheckBox\" v-model=\"internalBooleanValue\" :inline=\"false\" />\n<DropDownList v-else-if=\"isEditMode\" v-model=\"internalValue\" :options=\"dropDownListOptions\" />\n<span v-else>{{ displayValue }}</span>"
             })));
         }
     };

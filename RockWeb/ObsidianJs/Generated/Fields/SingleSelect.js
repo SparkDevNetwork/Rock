@@ -83,7 +83,7 @@ System.register(["vue", "./Index", "../Elements/DropDownList", "../Elements/Radi
                         var attributes = {};
                         var fieldTypeConfig = this.configurationValues[ConfigurationValueKey.FieldType];
                         if ((fieldTypeConfig === null || fieldTypeConfig === void 0 ? void 0 : fieldTypeConfig.Value) === 'ddl_enhanced') {
-                            attributes['enhanceForLongLists'] = true;
+                            attributes.enhanceForLongLists = true;
                         }
                         return attributes;
                     },

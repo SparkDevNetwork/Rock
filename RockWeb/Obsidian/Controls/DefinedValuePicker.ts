@@ -19,7 +19,7 @@ import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
 import { BlockHttp } from './RockBlock';
 import DefinedValue from '../ViewModels/CodeGenerated/DefinedValueViewModel';
 
-export default defineComponent({
+export default defineComponent( {
     name: 'DefinedValuePicker',
     components: {
         DropDownList
@@ -36,67 +36,88 @@ export default defineComponent({
         definedTypeGuid: {
             type: String as PropType<string>,
             default: ''
+        },
+        displayDescriptions: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        show: {
+            type: Boolean as PropType<boolean>,
+            default: true
         }
     },
-    setup() {
+    setup ()
+    {
         return {
-            http: inject('http') as BlockHttp
+            http: inject( 'http' ) as BlockHttp
         };
     },
     emits: [
         'update:modelValue',
-        'update:model'
+        'update:model',
+        'receivedDefinedValues'
     ],
-    data() {
+    data ()
+    {
         return {
+            isInitialLoadDone: false,
             internalValue: this.modelValue,
             definedValues: [] as DefinedValue[],
             isLoading: false
         };
     },
     computed: {
-        isEnabled(): boolean {
+        isEnabled (): boolean
+        {
             return !!this.definedTypeGuid && !this.isLoading;
         },
-        options(): DropDownListOption[] {
-            return this.definedValues.map(dv => ({
+        options (): DropDownListOption[]
+        {
+            return this.definedValues.map( dv => ( {
                 key: dv.Guid,
                 value: dv.Guid,
-                text: dv.Value
-            } as DropDownListOption));
+                text: this.displayDescriptions ? dv.Description : dv.Value
+            } as DropDownListOption ) );
         }
     },
     watch: {
-        value: function (): void {
+        modelValue: function (): void
+        {
             this.internalValue = this.modelValue;
         },
         definedTypeGuid: {
             immediate: true,
-            handler: async function (): Promise<void> {
-                if (!this.definedTypeGuid) {
+            handler: async function (): Promise<void>
+            {
+                if ( !this.definedTypeGuid )
+                {
                     this.definedValues = [];
                 }
-                else {
+                else
+                {
                     this.isLoading = true;
-                    const result = await this.http.get<DefinedValue[]>(`/api/obsidian/v1/controls/definedvaluepicker/${this.definedTypeGuid}`);
+                    const result = await this.http.get<DefinedValue[]>( `/api/obsidian/v1/controls/definedvaluepicker/${this.definedTypeGuid}` );
 
-                    if (result && result.data) {
+                    if ( result && result.data )
+                    {
                         this.definedValues = result.data;
+                        this.$emit( 'receivedDefinedValues', this.definedValues );
                     }
 
                     this.isLoading = false;
                 }
 
-                this.internalValue = '';
+                this.isInitialLoadDone = true;
             }
         },
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
 
-            const definedValue = this.definedValues.find(dv => dv.Guid === this.internalValue) || null;
-            this.$emit('update:model', definedValue);
+            const definedValue = this.definedValues.find( dv => dv.Guid === this.internalValue ) || null;
+            this.$emit( 'update:model', definedValue );
         }
     },
     template: `
-<DropDownList v-model="internalValue" :disabled="!isEnabled" :label="label" :options="options" />`
-});
+<DropDownList v-if="isInitialLoadDone && show" v-model="internalValue" :disabled="!isEnabled" :label="label" :options="options" />`
+} );

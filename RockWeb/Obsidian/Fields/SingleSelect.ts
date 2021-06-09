@@ -103,7 +103,7 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
 
             if ( fieldTypeConfig?.Value === 'ddl_enhanced' )
             {
-                attributes[ 'enhanceForLongLists' ] = true;
+                attributes.enhanceForLongLists = true;
             }
 
             return attributes;

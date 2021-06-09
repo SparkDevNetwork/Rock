@@ -2,6 +2,24 @@ System.register(["../Util/Guid"], function (exports_1, context_1) {
     "use strict";
     var Guid_1, fieldTypeComponentPaths;
     var __moduleName = context_1 && context_1.id;
+    /**
+     * Gets the configuration value's value using the case insensitive key.
+     * @param key
+     * @param configurationValues
+     */
+    function getConfigurationValue(key, configurationValues) {
+        key = (key || '').toLowerCase().trim();
+        if (!configurationValues || !key) {
+            return '';
+        }
+        var objectKey = Object.keys(configurationValues).find(function (k) { return k.toLowerCase().trim() === key; });
+        if (!objectKey) {
+            return '';
+        }
+        var configObject = configurationValues[objectKey];
+        return (configObject === null || configObject === void 0 ? void 0 : configObject.Value) || '';
+    }
+    exports_1("getConfigurationValue", getConfigurationValue);
     function getFieldTypeProps() {
         return {
             modelValue: {

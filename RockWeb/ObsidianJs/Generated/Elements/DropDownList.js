@@ -49,7 +49,8 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "./RockFormField.js"
                 data: function () {
                     return {
                         uniqueId: "rock-dropdownlist-" + Guid_js_1.newGuid(),
-                        internalValue: this.blankValue
+                        internalValue: this.blankValue,
+                        isMounted: false
                     };
                 },
                 computed: {
@@ -66,22 +67,32 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "./RockFormField.js"
                     getChosenJqueryEl: function () {
                         var jquery = window['$'];
                         var $chosenDropDown = jquery(this.$refs['theSelect']);
+                        if (!$chosenDropDown || !$chosenDropDown.length) {
+                            $chosenDropDown = jquery("#" + this.uniqueId);
+                        }
                         return $chosenDropDown;
                     },
-                    /** Initializes the jQuery control */
-                    initializeChosen: function () {
+                    createOrDestroyChosen: function () {
                         var _this = this;
+                        if (!this.isMounted) {
+                            return;
+                        }
                         var $chosenDropDown = this.getChosenJqueryEl();
-                        $chosenDropDown
-                            .chosen({
-                            width: '100%',
-                            allow_single_deselect: true,
-                            placeholder_text_multiple: ' ',
-                            placeholder_text_single: ' '
-                        })
-                            .change(function (ev) {
-                            _this.internalValue = ev.target.value;
-                        });
+                        if (this.enhanceForLongLists) {
+                            $chosenDropDown
+                                .chosen({
+                                width: '100%',
+                                allow_single_deselect: true,
+                                placeholder_text_multiple: ' ',
+                                placeholder_text_single: ' '
+                            })
+                                .change(function (ev) {
+                                _this.internalValue = ev.target.value;
+                            });
+                        }
+                        else {
+                            $chosenDropDown.chosen('destroy');
+                        }
                     },
                     syncValue: function () {
                         var _this = this;
@@ -116,12 +127,14 @@ System.register(["../Vendor/Vue/vue.js", "../Util/Guid.js", "./RockFormField.js"
                     },
                     internalValue: function () {
                         this.$emit('update:modelValue', this.internalValue);
+                    },
+                    enhanceForLongLists: function () {
+                        this.createOrDestroyChosen();
                     }
                 },
                 mounted: function () {
-                    if (this.enhanceForLongLists) {
-                        this.initializeChosen();
-                    }
+                    this.isMounted = true;
+                    this.createOrDestroyChosen();
                 },
                 template: "\n<RockFormField\n    :modelValue=\"internalValue\"\n    formGroupClasses=\"rock-drop-down-list\"\n    name=\"dropdownlist\">\n    <template #default=\"{uniqueId, field, errors, disabled}\">\n        <div class=\"control-wrapper\">\n            <select :id=\"uniqueId\" class=\"form-control\" :class=\"compiledFormControlClasses\" :disabled=\"disabled\" v-bind=\"field\" v-model=\"internalValue\" ref=\"theSelect\">\n                <option v-if=\"showBlankItem\" :value=\"blankValue\"></option>\n                <option v-for=\"o in options\" :key=\"o.key\" :value=\"o.value\">{{o.text}}</option>\n            </select>\n        </div>\n    </template>\n</RockFormField>"
             }));

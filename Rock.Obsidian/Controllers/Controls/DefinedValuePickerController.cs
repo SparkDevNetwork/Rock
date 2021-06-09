@@ -71,7 +71,8 @@ namespace Rock.Obsidian.Controllers.Controls
             return viewModels.Select( dv => new DefinedValueViewModel
             {
                 Guid = dv.Guid,
-                Value = dv.Value
+                Value = dv.Value,
+                Description = dv.Description
             } );
         }
 
@@ -89,6 +90,11 @@ namespace Rock.Obsidian.Controllers.Controls
             /// Gets or sets the value.
             /// </summary>
             public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description.
+            /// </summary>
+            public string Description { get; set; }
         }
     }
 }

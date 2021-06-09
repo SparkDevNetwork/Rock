@@ -16,10 +16,11 @@
 //
 import { defineComponent } from 'vue';
 import { Guid } from '../Util/Guid';
-import { getFieldTypeProps, registerFieldType } from './Index';
-import { asYesNoOrNull, asTrueFalseOrNull, asBoolean } from '../Services/Boolean';
+import { getConfigurationValue, getFieldTypeProps, registerFieldType } from './Index';
+import { asYesNoOrNull, asTrueFalseOrNull, asBoolean, asBooleanOrNull } from '../Services/Boolean';
 import DropDownList, { DropDownListOption } from '../Elements/DropDownList';
 import Toggle from '../Elements/Toggle';
+import CheckBox from '../Elements/CheckBox';
 
 const fieldTypeGuid: Guid = '1EDAFDED-DFE6-4334-B019-6EECBA89E05A';
 
@@ -35,23 +36,28 @@ enum ConfigurationValueKey {
     TrueText = 'truetext'
 }
 
-export default registerFieldType(fieldTypeGuid, defineComponent({
+export default registerFieldType( fieldTypeGuid, defineComponent( {
     name: 'BooleanField',
     components: {
         DropDownList,
-        Toggle
+        Toggle,
+        CheckBox
     },
     props: getFieldTypeProps(),
-    data() {
+    data ()
+    {
         return {
             internalBooleanValue: false,
             internalValue: ''
         };
     },
     computed: {
-        booleanControlType(): BooleanControlType {
-            const controlTypeConfig = this.configurationValues[ConfigurationValueKey.BooleanControlType];
-            switch (controlTypeConfig?.Value) {
+        booleanControlType (): BooleanControlType
+        {
+            const controlType = getConfigurationValue( ConfigurationValueKey.BooleanControlType, this.configurationValues );
+
+            switch ( controlType )
+            {
                 case '1':
                     return BooleanControlType.Checkbox;
                 case '2':
@@ -60,41 +66,67 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
                     return BooleanControlType.DropDown;
             }
         },
-        trueText(): string {
-            let trueText = asYesNoOrNull(true);
-            const trueConfig = this.configurationValues[ConfigurationValueKey.TrueText];
+        trueText (): string
+        {
+            let trueText = asYesNoOrNull( true );
+            const trueConfig = getConfigurationValue( ConfigurationValueKey.TrueText, this.configurationValues );
 
-            if (trueConfig && trueConfig.Value) {
-                trueText = trueConfig.Value;
+            if ( trueConfig )
+            {
+                trueText = trueConfig;
             }
 
             return trueText || 'Yes';
         },
-        falseText(): string {
-            let falseText = asYesNoOrNull(false);
-            const falseConfig = this.configurationValues[ConfigurationValueKey.FalseText];
+        falseText (): string
+        {
+            let falseText = asYesNoOrNull( false );
+            const falseConfig = getConfigurationValue( ConfigurationValueKey.FalseText, this.configurationValues );
 
-            if (falseConfig && falseConfig.Value) {
-                falseText = falseConfig.Value;
+            if ( falseConfig )
+            {
+                falseText = falseConfig;
             }
 
             return falseText || 'No';
         },
-        isToggle(): boolean {
+        isToggle (): boolean
+        {
             return this.booleanControlType === BooleanControlType.Toggle;
         },
-        valueAsYesNoOrNull(): string | null {
-            return asYesNoOrNull(this.modelValue);
+        isCheckBox (): boolean
+        {
+            return this.booleanControlType === BooleanControlType.Checkbox;
         },
-        toggleOptions(): Record<string, unknown> {
+        valueAsBooleanOrNull (): boolean | null
+        {
+            return asBooleanOrNull( this.modelValue );
+        },
+        displayValue (): string
+        {
+            if ( this.valueAsBooleanOrNull === null )
+            {
+                return '';
+            }
+
+            if ( this.valueAsBooleanOrNull )
+            {
+                return this.trueText;
+            }
+
+            return this.falseText;
+        },
+        toggleOptions (): Record<string, unknown>
+        {
             return {
                 trueText: this.trueText,
                 falseText: this.falseText
             };
         },
-        dropDownListOptions(): DropDownListOption[] {
-            const trueVal = asTrueFalseOrNull(true);
-            const falseVal = asTrueFalseOrNull(false);
+        dropDownListOptions (): DropDownListOption[]
+        {
+            const trueVal = asTrueFalseOrNull( true );
+            const falseVal = asTrueFalseOrNull( false );
 
             return [
                 { key: falseVal, text: this.falseText, value: falseVal },
@@ -103,23 +135,27 @@ export default registerFieldType(fieldTypeGuid, defineComponent({
         }
     },
     watch: {
-        internalValue() {
-            this.$emit('update:modelValue', this.internalValue);
+        internalValue ()
+        {
+            this.$emit( 'update:modelValue', this.internalValue );
         },
-        internalBooleanValue() {
-            const valueToEmit = asTrueFalseOrNull(this.internalBooleanValue) || '';
-            this.$emit('update:modelValue', valueToEmit);
+        internalBooleanValue ()
+        {
+            const valueToEmit = asTrueFalseOrNull( this.internalBooleanValue ) || '';
+            this.$emit( 'update:modelValue', valueToEmit );
         },
         modelValue: {
             immediate: true,
-            handler() {
-                this.internalValue = asTrueFalseOrNull(this.modelValue) || '';
-                this.internalBooleanValue = asBoolean(this.modelValue);
+            handler ()
+            {
+                this.internalValue = asTrueFalseOrNull( this.modelValue ) || '';
+                this.internalBooleanValue = asBoolean( this.modelValue );
             }
         }
     },
     template: `
 <Toggle v-if="isEditMode && isToggle" v-model="internalBooleanValue" v-bind="toggleOptions" />
+<CheckBox v-else-if="isEditMode && isCheckBox" v-model="internalBooleanValue" :inline="false" />
 <DropDownList v-else-if="isEditMode" v-model="internalValue" :options="dropDownListOptions" />
-<span v-else>{{ valueAsYesNoOrNull }}</span>`
-}));
+<span v-else>{{ displayValue }}</span>`
+} ) );
