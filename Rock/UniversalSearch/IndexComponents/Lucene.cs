@@ -66,7 +66,11 @@ namespace Rock.UniversalSearch.IndexComponents
         private static IndexSearcher _indexSearcher = null;
         private static FSDirectory _directory;
         private static Timer _timer = null;
+#if NET5_0_OR_GREATER
+        private static readonly string _path = "App_Data/LuceneSearchIndex";
+#else
         private static readonly string _path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/LuceneSearchIndex" );
+#endif
         private static readonly object _lockWriter = new object();
         #endregion
 
@@ -854,8 +858,12 @@ namespace Rock.UniversalSearch.IndexComponents
             }
             catch ( Exception ex )
             {
+#if NET5_0_OR_GREATER
+                ExceptionLogService.LogException( ex );
+#else
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
+#endif
             }
         }
 
@@ -917,8 +925,12 @@ namespace Rock.UniversalSearch.IndexComponents
             }
             catch ( Exception ex )
             {
+#if NET5_0_OR_GREATER
+                ExceptionLogService.LogException( ex );
+#else
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( ex, context2 );
+#endif
             }
         }
         #endregion

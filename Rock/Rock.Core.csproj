@@ -104,8 +104,6 @@
     <Compile Remove="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Remove="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Remove="Tasks\ProcessRunJobNow.cs" />
-    <Compile Remove="UniversalSearch\IndexComponents\ElasticSearch.cs" />
-    <Compile Remove="UniversalSearch\IndexComponents\Lucene.cs" />
     <Compile Remove="Utility\DebugHelper.cs" />
     <Compile Remove="Utility\ExcelHelper.cs" />
     <Compile Remove="Utility\ExtensionMethods\ControlExtensions.cs" />
@@ -229,11 +227,18 @@
     <PackageReference Include="Humanizer" Version="2.1.0" />
     <PackageReference Include="Ical.Net" Version="3.0.15" />
     <PackageReference Include="K4os.Hash.xxHash" Version="1.0.6" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Expressions" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Queries" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Sandbox" Version="4.8.0-beta00005" />
     <PackageReference Include="MassTransit" Version="5.5.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
+    <PackageReference Include="NEST" Version="2.5.8" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
@@ -259,7 +264,6 @@
 
   <ItemGroup>
     <Folder Include="Storage\Common\" />
-    <Folder Include="UniversalSearch\IndexComponents\" />
   </ItemGroup>
 
 </Project>
