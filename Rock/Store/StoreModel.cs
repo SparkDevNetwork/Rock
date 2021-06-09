@@ -23,7 +23,11 @@ namespace Rock.Store
     /// <summary>
     /// Base model class for the store 
     /// </summary>
+#if NET5_0_OR_GREATER
+    public class StoreModel : ILavaDataDictionarySource
+#else
     public class StoreModel : DotLiquid.ILiquidizable, ILavaDataDictionarySource
+#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StoreModel"/> class.
@@ -68,6 +72,7 @@ namespace Rock.Store
                     propValue = ( (Guid)propValue ).ToString();
                 }
 
+#if !NET5_0_OR_GREATER
                 if ( LavaService.RockLiquidIsEnabled )
                 {
                     if ( debug && propValue is DotLiquid.ILiquidizable )
@@ -80,6 +85,7 @@ namespace Rock.Store
                     }
                 }
                 else
+#endif
                 {
                     if ( debug && propValue is ILavaDataDictionarySource )
                     {
