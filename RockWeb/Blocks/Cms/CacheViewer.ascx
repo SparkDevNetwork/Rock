@@ -17,13 +17,13 @@
                     <div class="col-sm-6 col-md-3 col-lg-2">
                         <Rock:RockTextBox ID="rtbEntityId" runat="server" Label="Entity Id" />
                     </div>
-                    <div class="actions col-sm-12">
+                </div>
+                <div class="actions">
                         <Rock:BootstrapButton ID="btnRefresh" runat="server" CssClass="btn btn-primary" ToolTip="Refresh" OnClick="btnRefresh_Click">
                             <i class="fa fa-refresh"></i>
                             Load
                         </Rock:BootstrapButton>
                     </div>
-                </div>
                 <hr />
                 <Rock:NotificationBox ID="nbNotification" runat="server" Visible="false" />
                 <pre runat="server" id="preResult"></pre>
