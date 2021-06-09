@@ -136,10 +136,10 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null &&
-                scheduledTransaction.FinancialGateway != null &&
-                scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
             {
+                scheduledTransaction.InactivateDateTime = null;
+
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
                     scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
@@ -148,14 +148,7 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
                 }
             }
 
@@ -171,10 +164,10 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null &&
-                scheduledTransaction.FinancialGateway != null &&
-                scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
             {
+                scheduledTransaction.InactivateDateTime = RockDateTime.Now;
+
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
                     scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
@@ -183,14 +176,7 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
                 }
             }
 

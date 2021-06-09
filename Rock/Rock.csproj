@@ -757,6 +757,7 @@
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
+    <Compile Include="Jobs\PostV125UpdateStepProgramCompletion.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -796,6 +797,7 @@
     <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
     <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\StepProgramCompletionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
@@ -810,6 +812,7 @@
     <Compile Include="Model\MediaFolder.cs" />
     <Compile Include="Model\MediaFolderService.Partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
+    <Compile Include="Model\StepProgramCompletion.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
