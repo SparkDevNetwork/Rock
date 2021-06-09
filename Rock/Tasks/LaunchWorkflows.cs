@@ -28,6 +28,7 @@ namespace Rock.Tasks
 {
     /// <summary>
     /// Launches multiple workflows and optionally sets the entity, name and/or attribute values
+    /// Or to use the Transaction Queue, use <seealso cref="Rock.Transactions.LaunchWorkflowsTransaction" />
     /// </summary>
     public sealed class LaunchWorkflows : BusStartedTask<LaunchWorkflows.Message>
     {
