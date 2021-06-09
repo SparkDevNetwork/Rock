@@ -51,7 +51,7 @@ namespace Rock.Apps.StatementGenerator
             }
             catch
             {
-                // ignore
+                // ignore if the JSON can't be de-serialized. We'll just create a new one instead.
             }
 
             saveOptions = saveOptions ?? new Client.FinancialStatementIndividualSaveOptions();
