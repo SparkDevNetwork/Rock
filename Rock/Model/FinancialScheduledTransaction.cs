@@ -227,6 +227,15 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
         public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactivate date time.
+        /// </summary>
+        /// <value>
+        /// The inactivate date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InactivateDateTime { get; set; }
         #endregion
 
         #region Virtual Properties
