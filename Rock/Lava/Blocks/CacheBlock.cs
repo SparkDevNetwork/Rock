@@ -164,10 +164,6 @@ namespace Rock.Lava.Blocks
             }
 
             result.Write( lavaResults );
-
-
-            // TODO: Removed to fix for DotLiquid implementation - if present, output prints twice.
-            //base.OnRender( context, result );
         }
 
         /// <summary>
