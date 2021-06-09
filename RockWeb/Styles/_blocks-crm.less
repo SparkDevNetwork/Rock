@@ -1057,7 +1057,7 @@ span.field-value {
   margin-top: 0 !important;
 }
 
-@media (max-width: @screen-sm) {
+@media (max-width: @screen-md) {
   /* Force table to not be like tables anymore */
   table.table-groupmembers,
   .table-groupmembers thead,
@@ -1168,8 +1168,12 @@ span.field-value {
     }
   }
 
-  .table-groupcontactinfo {
+  .table-groupcontactinfo,
+  .table-groupmemberattributes {
     margin-bottom: 12px;
+  }
+
+  .table-groupcontactinfo {
 
     /* Hide table headers (but not display: none;, for accessibility) */
     thead tr {

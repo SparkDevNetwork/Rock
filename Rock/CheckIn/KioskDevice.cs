@@ -124,7 +124,7 @@ namespace Rock.CheckIn
             if ( configuredGroupTypes != null )
             {
                 return KioskGroupTypes
-                    .Where( g => configuredGroupTypes.Contains( g.GroupType.Id ) )
+                    .Where( g => configuredGroupTypes.Contains( g.GroupTypeId ) )
                     .ToList();
             }
             else
