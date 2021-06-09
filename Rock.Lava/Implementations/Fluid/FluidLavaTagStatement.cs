@@ -60,7 +60,7 @@ namespace Rock.Lava.Fluid
         private readonly string _attributesMarkup;
         private readonly string _tagName;
 
-        internal FluidLavaTagStatement( LavaFluidParser parser, string tagName, in TextSpan attributesMarkup )
+        internal FluidLavaTagStatement( string tagName, in TextSpan attributesMarkup )
         {
             _tagName = tagName;
 

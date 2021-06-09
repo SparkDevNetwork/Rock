@@ -64,14 +64,15 @@ namespace Rock.Lava.Fluid
         private readonly string _attributesMarkup;
         private readonly string _blockContent;
         private readonly string _tagName;
+
         private readonly LavaFluidParser _parser;
 
-        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, in TextSpan attributesMarkup, TextSpan blockContent )
+        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, in TextSpan attributesMarkup, in TextSpan blockContent )
         {
             _parser = parser;
             _tagName = tagName;
-
             _attributesMarkup = attributesMarkup.ToString() ?? string.Empty;
+
             _blockContent = blockContent.ToString() ?? string.Empty;
         }
 
@@ -98,7 +99,7 @@ namespace Rock.Lava.Fluid
             }
 
             // Parse the block content into tokens.
-            var tokens = _parser.ParseToTokens( _blockContent );
+            var tokens = LavaFluidParser.ParseToTokens( _blockContent );
 
             // Custom Lava blocks expect to be passed a set of tokens for the block that excludes the opening tag and includes the closing tag.
             // This behavior needs to be preserved for compatibility with prior implementations of the Lava library.
@@ -126,7 +127,7 @@ namespace Rock.Lava.Fluid
 
             var parseResult = new ParseResult<List<Statement>>();
 
-            var success = _parser.Grammar.Parse( blockContext, ref parseResult );
+            _ = _parser.Grammar.Parse( blockContext, ref parseResult );
 
             // Execute each of the statements in the block.
             var statements = parseResult.Value;
