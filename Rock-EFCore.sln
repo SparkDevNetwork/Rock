@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Shared.Core", "Ro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.Core", "Rock.Common\Rock.Common.Core.csproj", "{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss.Core", "Rock.DownhillCss\Rock.DownhillCss.Core.csproj", "{D4CF708E-9FCA-4BCC-BC6E-3653646CFDFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss", "Rock.DownhillCss\Rock.DownhillCss.csproj", "{D4CF708E-9FCA-4BCC-BC6E-3653646CFDFF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Version.NG", "Rock.Version\Rock.Version.NG.csproj", "{D9B612E8-32E9-4375-AE2E-F524F1A576DA}"
 EndProject
