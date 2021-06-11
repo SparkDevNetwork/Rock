@@ -807,6 +807,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     transaction.NextPaymentDate = subscription.NextChargeDate;
                     transaction.LastStatusUpdateDateTime = RockDateTime.Now;
 
+                    // NMI doesn't have a field that has the status of a scheduled transaction
+                    transaction.Status = null;
+                    transaction.StatusMessage = null;
+
                     return true;
                 }
             }

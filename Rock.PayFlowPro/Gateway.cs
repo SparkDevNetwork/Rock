@@ -541,6 +541,26 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Gets <see cref="FinancialScheduledTransactionStatus" /> mapped from <seealso cref="SubscriptionStatus"/>
+        /// </summary>
+        /// <returns></returns>
+        private Rock.Model.FinancialScheduledTransactionStatus? GetFinancialScheduledTransactionStatus( RecurringResponse recurringResponse )
+        {
+            var subscriptionStatus = recurringResponse?.Status;
+
+            switch ( subscriptionStatus.ToLower() )
+            {
+                // The PayflowPro documentation doesn't say what the possible status values are. But 'active' is a known value that comes back.
+                case "active":
+                    return Model.FinancialScheduledTransactionStatus.Active;
+                default:
+                    // this will probably return null, but just in case they have a status named
+                    // the same as one of FinancialScheduledTransactionStatus status, this will return the one that matches
+                   return subscriptionStatus?.ConvertToEnumOrNull<FinancialScheduledTransactionStatus>();
+            }
+        }
+
+        /// <summary>
         /// Gets the scheduled payment status.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
@@ -570,6 +590,8 @@ namespace Rock.PayFlowPro
                             transaction.NextPaymentDate = GetDate( recurringResponse.NextPayment ) ?? transaction.NextPaymentDate;
                             transaction.NumberOfPayments = recurringResponse.Term.AsIntegerOrNull() ?? transaction.NumberOfPayments;
                             transaction.LastStatusUpdateDateTime = RockDateTime.Now;
+                            transaction.StatusMessage = recurringResponse.Status;
+                            transaction.Status = GetFinancialScheduledTransactionStatus( recurringResponse );
                             return true;
                         }
                         return true;

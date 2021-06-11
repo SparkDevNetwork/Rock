@@ -93,6 +93,10 @@
     <Compile Include="Migrations\202106091645247_ScheduledTransactionInactiveDateTime.Designer.cs">
       <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.cs" />
+    <Compile Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.Designer.cs">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -566,6 +570,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202106091645247_ScheduledTransactionInactiveDateTime.resx">
       <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.resx">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>

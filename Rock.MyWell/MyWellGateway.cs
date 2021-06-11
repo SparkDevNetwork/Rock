@@ -21,8 +21,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
@@ -501,7 +504,7 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Updates the customer address.
-        /// https://sandbox.gotnpgateway.com/docs/api/#update-a-specific-customer-address
+        /// https://sandbox.gotnpgateway.com/docs/api/#update-address-token-deprecated
         /// </summary>
         /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
@@ -905,6 +908,26 @@ namespace Rock.MyWell
         }
 
         /// <summary>
+        /// Sets the subscription status.
+        /// Undocumented - Email from MyWell on 6/10/2021 told us about it
+        /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="subscriptionId">The subscription identifier.</param>
+        /// <param name="subscriptionStatus">The subscription status.</param>
+        /// <returns></returns>
+        private SubscriptionResponse SetSubscriptionStatus( string gatewayUrl, string apiKey, string subscriptionId, MyWellSubscriptionStatus subscriptionStatus )
+        {
+            var restClient = new RestClient( gatewayUrl );
+            RestRequest restRequest = new RestRequest( $"/api/recurring/subscription/{subscriptionId}/status/{subscriptionStatus.ConvertToString( false )}", Method.GET );
+            restRequest.AddHeader( "Authorization", apiKey );
+
+            var response = restClient.Execute( restRequest );
+
+            return ParseResponse<SubscriptionResponse>( response );
+        }
+
+        /// <summary>
         /// Updates the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#update-a-subscription
         /// </summary>
@@ -1059,7 +1082,7 @@ namespace Rock.MyWell
                 var exception = new MyWellGatewayException( $"Error processing MyWell transaction. Message:  {response.Message}, " +
                     $"processorResponseCode: {response.ProcessorResponseCode}, " +
                     $"processorResponseText: {response.ProcessorResponseText} " );
-                
+
                 ExceptionLogService.LogException( exception );
 
                 return null;
@@ -1286,6 +1309,32 @@ namespace Rock.MyWell
             }
         }
 
+        internal static Rock.Model.FinancialScheduledTransactionStatus? GetFinancialScheduledTransactionStatus( MyWellSubscriptionStatus? subscriptionStatus )
+        {
+            if ( subscriptionStatus == null )
+            {
+                return null;
+            }
+
+            switch ( subscriptionStatus )
+            {
+                case MyWellSubscriptionStatus.active:
+                    return FinancialScheduledTransactionStatus.Active;
+                case MyWellSubscriptionStatus.canceled:
+                    return FinancialScheduledTransactionStatus.Canceled;
+                case MyWellSubscriptionStatus.completed:
+                    return FinancialScheduledTransactionStatus.Completed;
+                case MyWellSubscriptionStatus.failed:
+                    return FinancialScheduledTransactionStatus.Failed;
+                case MyWellSubscriptionStatus.past_due:
+                    return FinancialScheduledTransactionStatus.PastDue;
+                case MyWellSubscriptionStatus.paused:
+                    return FinancialScheduledTransactionStatus.Paused;
+                default:
+                    return subscriptionStatus.ConvertToString( false ).ConvertToEnumOrNull<FinancialScheduledTransactionStatus>();
+            }
+        }
+
         /// <summary>
         /// Updates the scheduled payment.
         /// </summary>
@@ -1337,7 +1386,30 @@ namespace Rock.MyWell
                     subscriptionParameters.Customer = new SubscriptionCustomer { Id = referencedPaymentInfo.GatewayPersonIdentifier };
                 }
 
-                var subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
+                SubscriptionResponse subscriptionResult;
+                var subscriptionStatusResult = this.GetSubscription( gatewayUrl, apiKey, subscriptionId );
+                if ( subscriptionStatusResult?.Data?.SubscriptionStatus != MyWellSubscriptionStatus.active )
+                {
+                    // If subscription isn't active (it might be cancelled due to expired card),
+                    // change the status back to active
+                    var setSubscriptionStatusResult = this.SetSubscriptionStatus( gatewayUrl, apiKey, subscriptionId, MyWellSubscriptionStatus.active );
+
+                    if ( !setSubscriptionStatusResult.IsSuccessStatus() )
+                    {
+                        // Write decline/error as an exception.
+                        // Note: MyWell doesn't include processor errors when creating subscriptions, probably because the processor doesn't do anything until the transactions are charged.
+                        var exception = new MyWellGatewayException( $"Error re-activating MyWell subscription. Message:  {setSubscriptionStatusResult.Message} " );
+
+                        ExceptionLogService.LogException( exception );
+
+                        errorMessage = setSubscriptionStatusResult.Message;
+
+                        return false;
+                    }
+                }
+
+                subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
+
                 if ( !subscriptionResult.IsSuccessStatus() )
                 {
                     // Write decline/error as an exception.
@@ -1348,6 +1420,14 @@ namespace Rock.MyWell
                     errorMessage = subscriptionResult.Message;
 
                     return false;
+                }
+
+                subscriptionId = subscriptionResult?.Data?.Id;
+
+                if ( subscriptionId != scheduledTransaction.GatewayScheduleId )
+                {
+                    referencedPaymentInfo.TransactionCode = subscriptionId;
+                    scheduledTransaction.GatewayScheduleId = subscriptionId;
                 }
             }
             else
@@ -1380,6 +1460,7 @@ namespace Rock.MyWell
 
             scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
             scheduledTransaction.TransactionCode = customerId;
+
             try
             {
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
@@ -1466,6 +1547,8 @@ namespace Rock.MyWell
                 {
                     scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC?.Date;
                     scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = subscriptionInfo.Customer?.Id;
+                    scheduledTransaction.StatusMessage = subscriptionInfo.SubscriptionStatusRaw;
+                    scheduledTransaction.Status = GetFinancialScheduledTransactionStatus( subscriptionInfo.SubscriptionStatus );
                 }
 
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
