@@ -650,6 +650,10 @@ namespace Rock
 
                                 lavaEngineOutput = result.Text;
                             }
+                            catch ( System.Threading.ThreadAbortException )
+                            {
+                                // Ignore abort error caused by Lava PageRedirect filter.
+                            }
                             catch ( Exception ex )
                             {
                                 // Log the exception and continue, because the final render will be performed by RockLiquid.
@@ -659,7 +663,7 @@ namespace Rock
                                 var emptyTemplate = engine.ParseTemplate( string.Empty ).Template;
 
                                 engine.TemplateCacheService.AddTemplate( emptyTemplate, cacheKey );
-                            }                            
+                            }
                         }
                     }
 
@@ -693,7 +697,7 @@ namespace Rock
             }
             catch ( System.Threading.ThreadAbortException )
             {
-                // Do nothing...it's just a Lava PageRedirect that just happened.
+                // Ignore abort error caused by Lava PageRedirect filter.
                 return string.Empty;
             }
             catch ( Exception ex )

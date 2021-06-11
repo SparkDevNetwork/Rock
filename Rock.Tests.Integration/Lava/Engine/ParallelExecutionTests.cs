@@ -15,13 +15,10 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock;
-using Rock.Data;
-using Rock.Model;
 using Rock.Lava;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using System.Threading;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -31,6 +28,50 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class ParallelExecutionTests : LavaIntegrationTestBase
     {
+        /// <summary>
+        /// Verify that when a thread is aborted while the Lava Engine is rendering a template, the ThreadAbortException is propagated correctly.
+        /// </summary>
+        [TestMethod]
+        public void ThreadExecution_ThreadAbortedWhileExecutingRender_PropagatesThreadAbortException()
+        {
+            var template = "{{ 'test' | Abort }}";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var methodInfo = this.GetType().GetMethod( "ThreadAbortFilter" );
+
+                engine.RegisterFilter( methodInfo, "Abort" );
+
+                var renderContext = engine.NewRenderContext( new List<string> { "Sql" } );
+
+                try
+                {
+                    var result = engine.RenderTemplate( template,
+                            new LavaRenderParameters { Context = renderContext, ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
+
+                    Assert.Fail( "ThreadAbortException expected but not encountered." );
+                }
+                catch ( ThreadAbortException )
+                {
+                    // Resetting the abort status is the only method of preventing this exception from being rethrown.
+                    Thread.ResetAbort();
+                }
+            } );
+        }
+
+        /// <summary>
+        /// This filter simulates the effect of executing the PageRedirect filter in the web application.
+        /// A redirect terminates the current thread and starts a new thread to service the redirect page.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string ThreadAbortFilter( string input )
+        {
+            Thread.CurrentThread.Abort();
+
+            return string.Empty;
+        }
+
         [TestMethod]
         public void ParallelExecution_ShortcodeWithParameters_ResolvesParameterCorrectly()
         {
