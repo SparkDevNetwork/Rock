@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            <div class="panel-body treeview js-grouptreeview">
+            <div class="panel-body treeview js-pagestreeview">
                 <!-- Keep the treeview hidden to avoid flashing while the RockTree is being rendered -->
                 <div class="treeview-scroll scroll-container scroll-container-horizontal js-pages-scroll-container" style="visibility: hidden">
 
