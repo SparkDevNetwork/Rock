@@ -9,51 +9,52 @@
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
         <asp:HiddenField ID="hfUsePublicName" runat="server" />
-
-        <div class="panel panel-block">
-            <div class="panel-heading">
-                <h1 class="panel-title">Accounts</h1>
-                <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-plus"></i>
+        <div class="treeview js-accounttreeview">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title">Accounts</h1>
+                    <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li>
+                                    <asp:LinkButton ID="lbAddAccountRoot" OnClick="lbAddAccountRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li>
+                                    <asp:LinkButton ID="lbAddAccountChild" OnClick="lbAddAccountChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
+                        </div>
+                        <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-accounttreeview').find('.js-config-panel').slideToggle()" runat="server">
+                            <i class="fa fa-ellipsis-v"></i>
                         </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <asp:LinkButton ID="lbAddAccountRoot" OnClick="lbAddAccountRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                            <li>
-                                <asp:LinkButton ID="lbAddAccountChild" OnClick="lbAddAccountChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                        </ul>
                     </div>
-                    <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.panel').find('.js-config-panel').slideToggle()" runat="server">
-                        <i class="fa fa-ellipsis-v"></i>
-                    </button>
                 </div>
-            </div>
-            <div class="panel-body treeview js-accounttreeview">
-                <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                    <div class="row">
-                        <div class="col-xs-6">
-                            <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
-                        </div>
-                        <div class="col-xs-6">
-                            <label for="" class="control-label">&nbsp;</label>
-                            <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
-                        </div>
-                    </div>
-                     </div>
-                <div class="treeview-scroll scroll-container scroll-container-horizontal">
-                    <div class="viewport">
-                        <div class="overview">
-                            <div class="treeview-frame">
-                                <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                <div class="panel-body">
+                    <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                            </div>
+                            <div class="col-xs-6">
+                                <label for="" class="control-label">&nbsp;</label>
+                                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
                             </div>
                         </div>
-                    </div>
-                    <div class="scrollbar">
-                        <div class="track">
-                            <div class="thumb">
-                                <div class="end"></div>
+                        </div>
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="treeview-frame">
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
