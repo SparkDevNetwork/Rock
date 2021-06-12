@@ -184,12 +184,14 @@ namespace Rock.Model
         }
 
         private DateTime? _cardExpirationDate = null;
+
         /// <summary>
         /// Gets the card expiration date.
         /// </summary>
         /// <value>
         /// The card expiration date.
         /// </value>
+        [DataMember]
         public DateTime? CardExpirationDate
         {
             get
@@ -355,6 +357,7 @@ namespace Rock.Model
                 return null;
             }
         }
+
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
