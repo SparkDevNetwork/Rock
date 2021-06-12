@@ -714,7 +714,15 @@ namespace Rock.UniversalSearch.IndexComponents
                 returnSize = size.Value;
             }
 
-            OpenReader();
+            try
+            {
+                OpenReader();
+            }
+            catch( IndexNotFoundException lex )
+            {
+                // Issue opening index. Most likely cause is the index is empty so return an empty results set.
+                return new List<IndexModelBase>();
+            }
 
             TopDocs topDocs = null;
             if ( from.HasValue )

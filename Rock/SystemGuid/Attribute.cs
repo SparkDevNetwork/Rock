@@ -206,7 +206,7 @@ namespace Rock.SystemGuid
         public const string PERSON_EQ_SCALES_UNDER_STRESS = "C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED";
 
         /// <summary>
-        /// The person attribute for the Motivator Beliving
+        /// The person attribute for the Motivator Believing
         /// </summary>
         public const string PERSON_MOTIVATOR_BELIVING = "2045D752-2B7F-4314-A58D-AE77AE095CA8";
 
@@ -493,7 +493,7 @@ namespace Rock.SystemGuid
         public const string DEFINED_TYPE_CURRENCY_TYPE_ICONCSSCLASS = "CB1E9401-E1FD-4DBB-B15F-4E6994602723";
 
         /// <summary>
-        /// The Transaction Sourcee DefinedType > IconCssClass DefinedValue Attribute Guid
+        /// The Transaction Source DefinedType > IconCssClass DefinedValue Attribute Guid
         /// </summary>
         public const string DEFINED_TYPE_TRANSACTION_SOURCE_ICONCSSCLASS = "9617D1DC-6561-4314-83EB-7F0ACBA2E259";
 

@@ -95,8 +95,13 @@
                         <div class="row d-flex no-gutters">
                             <div class="col-md-3 d-flex align-items-center panel-sidebar">
                                 <div class="d-flex width-full padding-all-sm">
-                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
-                                    <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
+                                    <div class="resource-search js-resource-search flex-grow-1 input-group">
+                                        <span class="input-group-addon"><i class='fa fa-search'></i></span>
+                                        <Rock:RockTextBox ID="tbSearch" runat="server"  Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
+                                        <span class="input-group-btn">
+                                            <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-9">

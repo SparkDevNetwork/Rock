@@ -650,7 +650,17 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
                             _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
 
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            try
+                            {
+                                _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( new Exception( $"Error inserting Person Analytics value {columnName}. Value: {personAttributeValue}, formatted value: {formattedValue}", ex ) );
+
+                                // Throw the exception since missing any data will not provide accurate analytics.
+                                throw;
+                            }
                         }
                     }
                 }

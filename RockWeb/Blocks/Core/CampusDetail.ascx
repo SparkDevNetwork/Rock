@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upCampusDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
-            
+
             <asp:HiddenField ID="hfCampusId" runat="server" />
 
             <div class="panel-heading">
@@ -28,7 +28,7 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
                             </div>
-                            
+
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                             </div>
@@ -46,7 +46,7 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpCampusType" runat="server" Label="Type" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="CampusTypeValueId" />
-                                <Rock:UrlLinkBox ID="urlCampus" runat="server" Label="Url" />
+                                <Rock:UrlLinkBox ID="urlCampus" runat="server" Label="URL" />
                                 <Rock:PhoneNumberBox ID="pnbPhoneNumber" runat="server" Label="Phone Number" />
                                 <Rock:LocationPicker ID="lpLocation" runat="server" AllowedPickerModes="Named" Required="true" Label="Location" Help="Select a Campus Location" />
                             </div>

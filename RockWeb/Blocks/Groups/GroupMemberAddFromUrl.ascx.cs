@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Adds a person to a group based on inputs from the URL query string." )]
     [GroupField("Default Group", "The default group to use if one is not passed through the query string (optional).", false)]
-    [GroupRoleField("", "Default Group Member Role", "The default role to use if one is not passed through the quert string (optional).", false)]
+    [GroupRoleField("", "Default Group Member Role", "The default role to use if one is not passed through the query string (optional).", false)]
     [CodeEditorField("Success Message", "Lava template to display when person has been added to the group.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>
     {{ Person.NickName }} has been added to the group '{{ Group.Name }}' with the role of {{ Role.Name }}.
 </div>")]

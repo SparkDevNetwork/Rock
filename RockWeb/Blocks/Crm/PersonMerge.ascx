@@ -45,8 +45,8 @@
                         Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
-                    <div class="actions pull-right">
-                        <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary" OnClick="lbMerge_Click" />
+                    <div class="actions">
+                        <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary pull-right" OnClick="lbMerge_Click" />
                     </div>
 
                 </asp:Panel>
