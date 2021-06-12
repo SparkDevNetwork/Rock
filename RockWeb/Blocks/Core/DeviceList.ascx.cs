@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -436,7 +437,7 @@ namespace RockWeb.Blocks.Core
 
         #region Classes
 
-        private class DeviceInfo
+        private class DeviceInfo : ILiquidizable
         {
             public int Id { get; internal set; }
 
@@ -457,6 +458,93 @@ namespace RockWeb.Blocks.Core
             public int DeviceTypeValueId { get; internal set; }
 
             public bool IsActive { get; internal set; }
+
+            public List<string> AvailableKeys
+            {
+                get
+                {
+                    var availableKeys = new List<string> {
+                        "Id",
+                        "Name",
+                        "DeviceTypeName",
+                        "IPAddress",
+                        "PrintToOverride",
+                        "PrinterDeviceName",
+                        "PrinterDeviceTypeId",
+                        "PrintFrom",
+                        "DeviceTypeValueId",
+                        "IsActive",
+                    };
+                    return availableKeys;
+                }
+            }
+
+            public object ToLiquid()
+            {
+                return this;
+            }
+
+            public bool ContainsKey( string key )
+            {
+                var additionalKeys = new List<string> {
+                    "Id",
+                    "Name",
+                    "DeviceTypeName",
+                    "IPAddress",
+                    "PrintToOverride",
+                    "PrinterDeviceName",
+                    "PrinterDeviceTypeId",
+                    "PrintFrom",
+                    "DeviceTypeValueId",
+                    "IsActive",
+                };
+                if (additionalKeys.Contains( key.ToStringSafe() ))
+                {
+                    return true;
+                }
+                return false;
+                }
+
+            public bool ContainsKey( object key )
+            {
+                var additionalKeys = new List<string> {
+                    "Id",
+                    "Name",
+                    "DeviceTypeName",
+                    "IPAddress",
+                    "PrintToOverride",
+                    "PrinterDeviceName",
+                    "PrinterDeviceTypeId",
+                    "PrintFrom",
+                    "DeviceTypeValueId",
+                    "IsActive",
+                };
+                if ( additionalKeys.Contains( key.ToStringSafe() ) )
+                {
+                    return true;
+                }
+                return false;
+                }
+            public object this[object key]
+            {
+                get
+                {
+                    switch (key.ToStringSafe())
+                    {
+                        case "Id": return Id;
+                        case "Name": return Name;
+                        case "DeviceTypeName": return DeviceTypeName;
+                        case "IPAddress": return IPAddress;
+                        case "PrintToOverride": return PrintToOverride;
+                        case "PrinterDeviceName": return PrinterDeviceName;
+                        case "PrinterDeviceTypeId": return PrinterDeviceTypeId;
+                        case "PrintFrom": return PrintFrom;
+                        case "DeviceTypeValueId": return DeviceTypeValueId;
+                        case "IsActive": return IsActive;
+                        default: return Id;
+                    }
+                }
+            }
         }
 
         #endregion Classes
