@@ -296,6 +296,7 @@
     <Compile Include="CodeGenerated\SmsPipeline.cs" />
     <Compile Include="CodeGenerated\Step.cs" />
     <Compile Include="CodeGenerated\StepProgram.cs" />
+    <Compile Include="CodeGenerated\StepProgramCompletion.cs" />
     <Compile Include="CodeGenerated\StepStatus.cs" />
     <Compile Include="CodeGenerated\StepType.cs" />
     <Compile Include="CodeGenerated\StepTypePrerequisite.cs" />
