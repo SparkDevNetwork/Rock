@@ -223,8 +223,8 @@ namespace RockWeb.Blocks.Core
                         entityTypeFriendlyName = cachedEntityType.FriendlyName;
                     }
 
+                    lPanelTitle.Text = entityTypeFriendlyName;
                     lbAddItem.ToolTip = "Add " + entityTypeFriendlyName;
-                    lAddItem.Text = entityTypeFriendlyName;
 
                     string entityTypeQualiferColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
                     string entityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
