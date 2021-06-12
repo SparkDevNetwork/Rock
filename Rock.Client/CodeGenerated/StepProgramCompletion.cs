@@ -27,18 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Step that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for StepProgramCompletion that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class StepEntity
+    public partial class StepProgramCompletionEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
         public int? CampusId { get; set; }
-
-        /// <summary />
-        public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
         public DateTime? EndDateTime { get; set; }
@@ -55,25 +52,13 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Note { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
         public int PersonAliasId { get; set; }
 
         /// <summary />
-        public DateTime? StartDateTime { get; set; }
+        public DateTime StartDateTime { get; set; }
 
         /// <summary />
-        public int? StepProgramCompletionId { get; set; }
-
-        /// <summary />
-        public int? StepStatusId { get; set; }
-
-        /// <summary />
-        public int StepTypeId { get; set; }
+        public int StepProgramId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -102,25 +87,20 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Step object
+        /// Copies the base properties from a source StepProgramCompletion object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Step source )
+        public void CopyPropertiesFrom( StepProgramCompletion source )
         {
             this.Id = source.Id;
             this.CampusId = source.CampusId;
-            this.CompletedDateTime = source.CompletedDateTime;
             this.EndDateTime = source.EndDateTime;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Note = source.Note;
-            this.Order = source.Order;
             this.PersonAliasId = source.PersonAliasId;
             this.StartDateTime = source.StartDateTime;
-            this.StepProgramCompletionId = source.StepProgramCompletionId;
-            this.StepStatusId = source.StepStatusId;
-            this.StepTypeId = source.StepTypeId;
+            this.StepProgramId = source.StepProgramId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -132,48 +112,24 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Step that includes all the fields that are available for GETs. Use this for GETs (use StepEntity for POST/PUTs)
+    /// Client model for StepProgramCompletion that includes all the fields that are available for GETs. Use this for GETs (use StepProgramCompletionEntity for POST/PUTs)
     /// </summary>
-    public partial class Step : StepEntity
+    public partial class StepProgramCompletion : StepProgramCompletionEntity
     {
         /// <summary />
-        public Campus Campus { get; set; }
-
-        /// <summary />
-        public int? CompletedDateKey { get; set; }
-
-        /// <summary />
-        public AnalyticsSourceDate CompletedSourceDate { get; set; }
-
-        /// <summary />
         public int? EndDateKey { get; set; }
-
-        /// <summary />
-        public AnalyticsSourceDate EndSourceDate { get; set; }
-
-        /// <summary />
-        public bool IsComplete { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
 
         /// <summary />
-        public int? StartDateKey { get; set; }
+        public int StartDateKey { get; set; }
 
         /// <summary />
-        public AnalyticsSourceDate StartSourceDate { get; set; }
+        public StepProgram StepProgram { get; set; }
 
         /// <summary />
-        public StepProgramCompletion StepProgramCompletion { get; set; }
-
-        /// <summary />
-        public StepStatus StepStatus { get; set; }
-
-        /// <summary />
-        public StepType StepType { get; set; }
-
-        /// <summary />
-        public ICollection<StepWorkflow> StepWorkflows { get; set; }
+        public ICollection<Step> Steps { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -134,7 +134,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <summary>
         /// Loads the by model.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="eventItem">The event item.</param>
         /// <returns></returns>
         public static EventItemIndex LoadByModel( EventItem eventItem )
         {

@@ -297,6 +297,18 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum FinancialScheduledTransactionStatus
+    {
+        Active = 0x0,
+        Completed = 0x1,
+        Paused = 0x2,
+        Canceled = 0x3,
+        Failed = 0x4,
+        PastDue = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum FinancialStatementIndividualSaveOptionsSaveFor
     {
         AllActiveAdultsInGivingGroup = 0x0,

@@ -91,6 +91,12 @@ namespace Rock.Client
         public DateTime StartDate { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.FinancialScheduledTransactionStatus? Status { get; set; }
+
+        /// <summary />
+        public string StatusMessage { get; set; }
+
+        /// <summary />
         public string Summary { get; set; }
 
         /// <summary />
@@ -153,6 +159,8 @@ namespace Rock.Client
             this.NumberOfPayments = source.NumberOfPayments;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
+            this.Status = source.Status;
+            this.StatusMessage = source.StatusMessage;
             this.Summary = source.Summary;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
