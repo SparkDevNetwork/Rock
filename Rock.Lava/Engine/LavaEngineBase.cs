@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 
 namespace Rock.Lava
 {
@@ -523,13 +524,26 @@ namespace Rock.Lava
 
                 renderResult = RenderTemplate( template, parameters );
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
+            }
             catch ( Exception ex )
             {
                 var lre = GetLavaRenderException( ex, inputTemplate );
 
                 string message;
 
-                ProcessException( lre, exceptionStrategy, out message );
+                if ( ex is System.Threading.ThreadAbortException )
+                {
+                    // If the requesting thread terminated unexpectedly, return an empty string.
+                    // This may happen, for example, when a Lava template triggers a page redirect in a web application.
+                    message = "{Request aborted}";
+                }
+                else
+                { 
+                    ProcessException( lre, exceptionStrategy, out message );
+                }
 
                 renderResult.Error = ex;
                 renderResult.Text = message;
@@ -581,6 +595,11 @@ namespace Rock.Lava
                     result.Error = GetLavaRenderException( result.Error );
                 }
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating and no result is required.
+                result = null;
+            }
             catch ( Exception ex )
             {
                 result = new LavaRenderResult();
@@ -626,6 +645,10 @@ namespace Rock.Lava
             try
             {
                 result.Template = OnParseTemplate( inputTemplate );
+            }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
             }
             catch ( Exception ex )
             {
@@ -754,6 +777,10 @@ namespace Rock.Lava
                 }
 
                 OnRegisterFilter( filterMethod, filterName );
+            }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
             }
             catch ( Exception ex )
             {
