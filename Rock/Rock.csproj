@@ -702,6 +702,8 @@
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
+    <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
