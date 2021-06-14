@@ -2164,9 +2164,8 @@ namespace Rock.Lava
             string rawValue = string.Empty;
             int? entityId = null;
 
-
             // If Input is "Global" then look for a global attribute with key
-            if ( ( input is string ) && input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
+            if ( ( input is string ) && input.ToStringSafe().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
                 var globalAttributeCache = GlobalAttributesCache.Get();
                 attribute = globalAttributeCache.Attributes
@@ -2210,7 +2209,7 @@ namespace Rock.Lava
             */
 
             // If Input is "SystemSetting" then look for a SystemSetting attribute with key
-            else if ( ( input is string ) && input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
+            else if ( ( input is string ) && input.ToStringSafe().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
             {
                 string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
                 if ( theValue.HasMergeFields() )
