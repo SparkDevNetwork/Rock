@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup Condition="$(MSBuildProjectFile.EndsWith('.NG.csproj'))">
+    <BaseOutputPath>bin\NG\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\NG\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>obj\NG\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+</Project>
