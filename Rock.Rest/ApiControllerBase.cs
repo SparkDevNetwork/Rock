@@ -14,9 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Net;
+using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
+
+#if NET5_0_OR_GREATER
+using Microsoft.AspNet.OData;
+using Microsoft.AspNetCore.Mvc;
+#endif
 
 using Rock.Data;
 using Rock.Model;
@@ -35,7 +42,11 @@ namespace Rock.Rest
     /// </summary>
     /// <seealso cref="System.Web.Http.ApiController" />
     [ODataRouting]
+#if NET5_0_OR_GREATER
+    public class ApiControllerBase : ControllerBase
+#else
     public class ApiControllerBase : ApiController
+#endif
     {
         /// <summary>
         /// Gets the currently logged in Person
@@ -53,12 +64,21 @@ namespace Rock.Rest
         /// <returns></returns>
         protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
         {
+#if NET5_0_OR_GREATER
+            if ( HttpContext.Items.ContainsKey( "Person" ) )
+            {
+                return HttpContext.Items["Person"] as Person;
+            }
+
+            var principal = User;
+#else
             if ( Request.Properties.Keys.Contains( "Person" ) )
             {
                 return Request.Properties["Person"] as Person;
             }
 
             var principal = ControllerContext.Request.GetUserPrincipal();
+#endif
             if ( principal != null && principal.Identity != null )
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
@@ -78,13 +98,32 @@ namespace Rock.Rest
                     if ( userLogin != null )
                     {
                         var person = userLogin.Person;
+#if NET5_0_OR_GREATER
+                        HttpContext.Items.Add( "Person", person );
+#else
                         Request.Properties.Add( "Person", person );
+#endif
                         return userLogin.Person;
                     }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Ensures that the HttpContext has a CurrentPerson value.
+        /// </summary>
+        protected virtual void EnsureHttpContextHasCurrentPerson()
+        {
+#if NET5_0_OR_GREATER
+            if ( !HttpContext.Items.ContainsKey( "CurrentPerson" ) )
+            {
+                HttpContext.Items.Add( "CurrentPerson", GetPerson() );
+            }
+#else
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
+#endif
         }
 
         /// <summary>
@@ -131,5 +170,37 @@ namespace Rock.Rest
             var currentPersonAlias = GetPersonAlias( rockContext );
             return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
         }
+
+#if !NET5_0_OR_GREATER
+        /// <summary>
+        /// Creates a response with the NoContent status code.
+        /// </summary>
+        /// <returns>The response.</returns>
+        protected IHttpActionResult NoContent()
+        {
+            return StatusCode( System.Net.HttpStatusCode.NoContent );
+        }
+
+        /// <summary>
+        /// Creates a response with the Accepted status code.
+        /// </summary>
+        /// <typeparam name="T">The type of the content.</typeparam>
+        /// <param name="content">The content.</param>
+        /// <returns>The response</returns>
+        protected IHttpActionResult Accepted<T>( T content )
+        {
+            return Content( HttpStatusCode.Accepted, content );
+        }
+
+        internal IHttpActionResult BadRequest( RockApiError error )
+        {
+            return BadRequest( error.Message );
+        }
+
+        internal IHttpActionResult NotFound( RockApiError error )
+        {
+            return ResponseMessage( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, error.Message ) );
+        }
+#endif
     }
 }
