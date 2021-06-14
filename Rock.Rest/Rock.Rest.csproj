@@ -232,6 +232,7 @@
     <Compile Include="IHasCustomHttpRoutes.cs" />
     <Compile Include="Jwt\JwtHelper.cs" />
     <Compile Include="Jwt\JwtConfig.cs" />
+    <Compile Include="LegacyShims\RockApiError.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />
