@@ -1,0 +1,215 @@
+﻿<Page
+    x:Class="Rock.Apps.StatementGenerator.ReportSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="ReportSettings"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    Style="{StaticResource pageBackground}"
+    mc:Ignorable="d">
+
+    <Border Style="{StaticResource borderStyleMain}">
+
+        <Grid Background="White">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="45" />
+                <RowDefinition />
+                <RowDefinition Height="60" />
+            </Grid.RowDefinitions>
+
+            <Border
+                Grid.Row="0"
+                VerticalAlignment="Top"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+                <StackPanel HorizontalAlignment="Stretch" Background="{StaticResource PanelHeaderBrush}">
+                    <Label
+                        Margin="10"
+                        HorizontalAlignment="Left"
+                        Content="Step 5: Report Settings"
+                        Style="{StaticResource labelStyleStepCaption}" />
+                </StackPanel>
+            </Border>
+
+
+            <StackPanel Grid.Row="1" Margin="10">
+
+                <Label Content="Bulk Reports" Style="{StaticResource labelStyleBold}" />
+                <TextBlock
+                    Margin="5"
+                    Style="{StaticResource textBlockStyle}"
+                    TextWrapping="Wrap">
+                    The settings below determine how statements will be combined to form reports. Settings exist to combine by zip code, page count or last name.
+                </TextBlock>
+
+                <DataGrid
+                    x:Name="grdReportSettings"
+                    Width="Auto"
+                    Height="Auto"
+                    MaxHeight="150"
+                    Margin="0,10,0,0"
+                    AutoGenerateColumns="False"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="0,0,0,0"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    CellStyle="{StaticResource gridCellStyleWhite}"
+                    ColumnWidth="SizeToHeader"
+                    Focusable="False"
+                    FontSize="12"
+                    GridLinesVisibility="None"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                    SelectionMode="Single"
+                    Style="{StaticResource gridStyleWhite}">
+                    <DataGrid.ItemContainerStyle>
+                        <Style TargetType="{x:Type DataGridRow}">
+                            <Setter Property="BorderBrush" Value="#d4d4d4" />
+                            <Setter Property="BorderThickness" Value="0,1,0,0" />
+                            <EventSetter Event="Control.MouseDoubleClick" Handler="grdReportSettings_RowDoubleClick" />
+                        </Style>
+                    </DataGrid.ItemContainerStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn
+                            Width="100"
+                            CanUserResize="True"
+                            CanUserSort="False"
+                            CellStyle="{StaticResource gridCellStyleWhite}"
+                            Header="Sort Order"
+                            HeaderStyle="{StaticResource gridHeaderStyleWhite}">
+                            <DataGridTemplateColumn.CellTemplate>
+
+                                <DataTemplate>
+                                    <TextBlock TextWrapping="Wrap">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} &gt; {1}">
+                                                <Binding Path="PrimarySortOrder" />
+                                                <Binding Path="SecondarySortOrder" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn
+                            Width="*"
+                            CanUserResize="False"
+                            CanUserSort="False"
+                            CellStyle="{StaticResource gridCellStyleWhite}"
+                            Header="File Location"
+                            HeaderStyle="{StaticResource gridHeaderStyleWhite}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DestinationFolder}" TextWrapping="Wrap" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding MaxStatementsPerChapter}"
+                            CanUserResize="False"
+                            CanUserSort="False"
+                            CellStyle="{StaticResource gridCellStyleWhite}"
+                            Header="Chapter Size"
+                            HeaderStyle="{StaticResource gridHeaderStyleWhite}" />
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding SplitFilesOnPrimarySortValue}"
+                            CanUserResize="True"
+                            CanUserSort="False"
+                            CellStyle="{StaticResource gridCellStyleWhite}"
+                            Header="Split on Unique"
+                            HeaderStyle="{StaticResource gridHeaderStyleWhite}" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding PreventSplittingPrimarySortValuesAcrossChapters}"
+                            CanUserResize="True"
+                            CanUserSort="False"
+                            CellStyle="{StaticResource gridCellStyleWhite}"
+                            Header="Prevent Orphans"
+                            HeaderStyle="{StaticResource gridHeaderStyleWhite}" />
+
+                        <DataGridTemplateColumn Width="75">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button
+                                            Name="btnEditReportOption"
+                                            Click="btnEditReportOption_Click"
+                                            Content="&#xf040;"
+                                            Style="{StaticResource buttonStyleGridColumnIcon}" />
+                                        <Button
+                                            Name="btnDeleteReportOption"
+                                            Click="btnDeleteReportOption_Click"
+                                            Content="&#xf00d;"
+                                            Style="{StaticResource buttonStyleGridColumnIcon}" />
+                                    </StackPanel>
+
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+
+                        </DataGridTemplateColumn>
+
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Button
+                    Name="btnShowReportSettingsModal"
+                    Margin="10"
+                    HorizontalAlignment="Right"
+                    Click="btnShowReportSettingsModal_Click"
+                    Content="Add Report Type"
+                    Style="{StaticResource buttonStyleMini}" />
+
+                <Label Content="Enable Page Count Pre-Determination" Style="{StaticResource labelStyleBold}" />
+                <CheckBox
+                    Name="cbEnablePageCountPredetermination"
+                    Height="60"
+                    Margin="4,10,0,0"
+                    IsChecked="False"
+                    Style="{StaticResource checkboxStyle}">
+                    <TextBlock Style="{StaticResource textBlockStyle}" TextWrapping="Wrap">
+                        This will involve
+                        running the statement twice. The first time will get the actual page count. This value will be provided to the
+                        'RenderedPageCount' Lava variable on the second pass to allow the template to modify its logic based on the
+                        value.
+                    </TextBlock>
+                </CheckBox>
+
+            </StackPanel>
+            <Button
+                x:Name="btnPrev"
+                Grid.Row="2"
+                Margin="12"
+                HorizontalAlignment="Left"
+                Click="btnPrev_Click"
+                Style="{StaticResource buttonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="&#xf053;" Style="{StaticResource labelStyleIconLeft}" />
+                    <Label Content="Prev" Style="{StaticResource labelStyleButtonText}" />
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="btnGenerateStatements"
+                Grid.Row="2"
+                Margin="12"
+                HorizontalAlignment="Right"
+                Click="btnGenerateStatements_Click"
+                Style="{StaticResource buttonStylePrimary}">
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Generate Statements" Style="{StaticResource labelStyleButtonTextPrimary}" />
+                    <Label Content="&#xf054;" Style="{StaticResource labelStyleIconPrimaryRight}" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+    </Border>
+</Page>

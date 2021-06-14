@@ -197,7 +197,10 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
-        private static class AttributeKey
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
         {
             public const string DeviceIdList = "DeviceIdList";
 

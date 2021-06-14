@@ -121,10 +121,9 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "yes" )]
         [DataRow( "Y" )]
         [DataRow( "1" )]
-        [Ignore( "Requires a fix for the Fluid library." )]
         public void AsBoolean_Theory_CanConvertCommonTextRepresentationsOfTrue( string input )
         {
-            TestHelper.AssertTemplateOutput( "{{ '" +  input + "' | AsBoolean }}", "true" );
+            TestHelper.AssertTemplateOutput( "true", "{{ '" +  input + "' | AsBoolean }}" );
         }
 
         /// <summary>
@@ -138,10 +137,9 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "N" )]
         [DataRow( "0" )]
         [DataRow( "xyzzy" )]
-        [Ignore( "Requires a fix for the Fluid library." )]
         public void AsBoolean_Theory_CanConvertCommonTextRepresentationsOfFalse( string input )
         {
-            TestHelper.AssertTemplateOutput( "{{ '" + input + "' | AsBoolean }}", "false" );
+            TestHelper.AssertTemplateOutput( "false", "{{ '" + input + "' | AsBoolean }}" );
         }
 
         /// <summary>

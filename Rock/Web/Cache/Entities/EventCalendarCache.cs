@@ -93,6 +93,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public string IconCssClass { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -112,6 +121,7 @@ namespace Rock.Web.Cache
             IconCssClass = eventCalendar.IconCssClass;
             IsActive = eventCalendar.IsActive;
             Name = eventCalendar.Name;
+            IsIndexEnabled = eventCalendar.IsIndexEnabled;
         }
 
         /// <summary>

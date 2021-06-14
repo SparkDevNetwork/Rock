@@ -1392,9 +1392,9 @@ TransactionAccountDetails: [
                                 savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
                                 savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
                                 savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
-                                savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+                                savedAccount.FinancialPaymentDetail.NameOnCard= paymentDetail.NameOnCard;
+                                savedAccount.FinancialPaymentDetail.ExpirationMonth = paymentDetail.ExpirationMonth;
+                                savedAccount.FinancialPaymentDetail.ExpirationYear = paymentDetail.ExpirationYear;
                                 savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
                                 var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
@@ -3587,7 +3587,7 @@ TransactionAccountDetails: [
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('{3}' + totalAmt.toFixed({7}));
+            $('.total-amount').html('{3}' + totalAmt.toLocaleString(undefined, {{ minimumFractionDigits: {7}, maximumFractionDigits: {7} }}));
             return false;
         }});
 

@@ -16,7 +16,7 @@
                 <Rock:RockCheckBox ID="cbIncludeChildGroups" runat="server" Text="Include Child Groups" />
                 <Rock:RockListBox ID="lbSchedules" runat="server" Label="Schedules" ValidationGroup="vgFilterCriteria" />
 
-                <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" Label="Search by Name" />
+                <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="js-search" Label="Search by Name" PrependText="<i class='fa fa-search'></i>" spellcheck="false" onkeydown="javascript:return handleSearchBoxKeyPress(this, event.keyCode);" />
 
                 <div class="actions margin-t-md">
                     <asp:LinkButton ID="btnApplyFilter" runat="server" CssClass="filter btn btn-action btn-xs" Text="Apply Filter" OnClick="btnApplyFilter_Click" ValidationGroup="vgFilterCriteria" CausesValidation="true" />
@@ -63,6 +63,22 @@
 
             </Content>
         </Rock:ModalDialog>
+
+        <script>
+            // handle onkeypress for the search box
+            function handleSearchBoxKeyPress(element, keyCode) {
+                if (keyCode == 13) {
+                    window.location = "javascript:__doPostBack('<%=upnlContent.ClientID %>', 'search')";
+
+                    // prevent double-postback
+                    $(element).prop('disabled', true)
+                        .attr('disabled', 'disabled')
+                        .addClass('disabled');
+
+                    return true;
+                }
+            }
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

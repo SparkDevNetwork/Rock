@@ -60,11 +60,10 @@ namespace Rock.Tests.UnitTests.Lava
                 // Initialize the Rock variant of the DotLiquid Engine
                 var engineOptions = new LavaEngineConfigurationOptions();
 
-                _rockliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
+                _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
 
                 // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
-                _rockliquidEngine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                _rockliquidEngine.RegisterFilters( typeof( global::Rock.Lava.RockFilters ) );
+                RegisterFilters( _rockliquidEngine );
             }
 
             if ( DotLiquidEngineIsEnabled )
@@ -72,13 +71,11 @@ namespace Rock.Tests.UnitTests.Lava
                 // Initialize the DotLiquid Engine
                 var engineOptions = new LavaEngineConfigurationOptions();
 
-                engineOptions.CacheService = new WebsiteLavaTemplateCache();
+                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
 
-                _dotliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance(LavaEngineTypeSpecifier.DotLiquid, engineOptions );
+                _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance(LavaEngineTypeSpecifier.DotLiquid, engineOptions );
 
-                // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
-                _dotliquidEngine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                _dotliquidEngine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
+                RegisterFilters( _dotliquidEngine );
             }
 
             if ( FluidEngineIsEnabled )
@@ -86,14 +83,29 @@ namespace Rock.Tests.UnitTests.Lava
                 // Initialize Fluid Engine
                 var engineOptions = new LavaEngineConfigurationOptions();
 
-                _fluidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
 
-                // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
-                _fluidEngine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                _fluidEngine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
+                _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+
+                RegisterFilters( _fluidEngine );
             }
 
             _instance = new LavaUnitTestHelper();
+        }
+
+        private static void RegisterFilters( ILavaEngine engine )
+        {
+            // Register the common Rock.Lava filters first, then overwrite with the web-specific filters.
+            if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
+                engine.RegisterFilters( typeof( global::Rock.Lava.RockFilters ) );
+            }
+            else
+            {
+                engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
+                engine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
+            }
         }
 
         private ILavaEngine GetEngineInstance( LavaEngineTypeSpecifier engineType )
@@ -117,19 +129,17 @@ namespace Rock.Tests.UnitTests.Lava
         /// <returns></returns>
         public string GetTemplateOutput( LavaEngineTypeSpecifier engineType, string inputTemplate, LavaDataDictionary mergeValues = null )
         {
-            string outputString;
-
             inputTemplate = inputTemplate ?? string.Empty;
-
-            List<Exception> errors;
 
             var engine = GetEngineInstance( engineType );
 
-            var isValidTemplate = engine.TryRenderTemplate( inputTemplate.Trim(), mergeValues, out outputString, out errors );
-            
-            Assert.That.True( isValidTemplate, "Lava Template is invalid." );
+            var context = engine.NewRenderContext( mergeValues );
 
-            return outputString;
+            var result = engine.RenderTemplate( inputTemplate.Trim(), new LavaRenderParameters { Context = context } );
+            
+            Assert.That.IsFalse( result.HasErrors, "Lava Template is invalid." );
+
+            return result.Text;
         }
 
         /// <summary>
@@ -139,16 +149,45 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaDataDictionary mergeValues = null, bool ignoreWhitespace = false )
         {
-            if ( DotLiquidEngineIsEnabled )
-            {
-                AssertTemplateOutput( LavaEngineTypeSpecifier.DotLiquid, expectedOutput, inputTemplate, mergeValues, ignoreWhitespace );
-            }
+            var engines = GetActiveTestEngines();
 
-            if ( FluidEngineIsEnabled )
-            {
-                AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, inputTemplate, mergeValues, ignoreWhitespace );
+            foreach ( var engine in engines )
+            { 
+                AssertTemplateOutput( engine.EngineType, expectedOutput, inputTemplate, mergeValues, ignoreWhitespace );
             }
         }
+
+        #region Active Engines
+
+        private List<ILavaEngine> _activeEngines = null;
+
+        private List<ILavaEngine> GetActiveTestEngines()
+        {
+            if ( _activeEngines == null )
+            {
+                _activeEngines = new List<ILavaEngine>();
+
+                // Test the Fluid engine first, because it is the most likely to fail!
+                if ( FluidEngineIsEnabled )
+                {
+                    _activeEngines.Add( _fluidEngine );
+                }
+
+                if ( DotLiquidEngineIsEnabled )
+                {
+                    _activeEngines.Add( _dotliquidEngine );
+                }
+
+                if ( RockLiquidEngineIsEnabled )
+                {
+                    _activeEngines.Add( _rockliquidEngine );
+                }
+            }
+
+            return _activeEngines;
+        }
+
+        #endregion
 
         /// <summary>
         /// For each of the currently enabled Lava Engines, register a safe type.

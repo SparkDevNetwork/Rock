@@ -884,7 +884,6 @@ namespace Rock.Web.UI.Controls
                 _cbIsActive = new RockCheckBox();
                 _cbIsActive.ID = this.ID + "_cbIsActive";
                 _cbIsActive.Label = "Active";
-                _cbIsActive.Text = "Yes";
                 Controls.Add( _cbIsActive );
 
                 _tbUrlSlug = new RockTextBox();
@@ -949,6 +948,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.ID = this.ID + "_apAccount";
                 _apAccount.Label = "Account";
                 _apAccount.Required = true;
+                _apAccount.DisplayActiveOnly = true;
                 Controls.Add( _apAccount );
 
                 _ppContact = new PersonPicker();

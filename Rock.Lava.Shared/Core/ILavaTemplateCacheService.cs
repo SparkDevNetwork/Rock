@@ -31,11 +31,20 @@ namespace Rock.Lava
         ILavaEngine LavaEngine { get; set; }
 
         /// <summary>
+        /// Adds a compiled template to the cache.
+        /// </summary>
+        /// <param name="template">The template.</param>
+        /// <param name="cacheKey">A key that uniquely identifies the template. If the key exists in the cache, the existing template will be replaced.</param>
+        /// <returns></returns>
+        void AddTemplate( ILavaTemplate template, string cacheKey );
+
+        /// <summary>
         /// Gets a compiled template from cache or adds it to the cache if it does not already exist.
         /// </summary>
         /// <param name="templateContent">The template source text.</param>
+        /// <param name="cacheKey">An optional key that uniquely identifies the template. If not specified, the template source text is used to calculate a key for cache storage and retrieval.</param>
         /// <returns></returns>
-        ILavaTemplate GetOrAddTemplate( string templateContent );
+        ILavaTemplate GetOrAddTemplate( string templateContent, string cacheKey = null );
 
         /// <summary>
         /// Remove all templates from the cache.
@@ -47,7 +56,14 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        bool ContainsTemplate( string content );
+        bool ContainsKey( string content );
+
+        /// <summary>
+        /// Calculates a cache key for the specified template.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        string GetCacheKeyForTemplate( string content );
 
         /// <summary>
         /// Removes the specified template from the cache.

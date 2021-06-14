@@ -1755,9 +1755,9 @@ namespace RockWeb.Blocks.Event
                                     savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
                                     savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
                                     savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
-                                    savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
-                                    savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
-                                    savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+                                    savedAccount.FinancialPaymentDetail.NameOnCard = paymentDetail.NameOnCard;
+                                    savedAccount.FinancialPaymentDetail.ExpirationMonth = paymentDetail.ExpirationMonth;
+                                    savedAccount.FinancialPaymentDetail.ExpirationYear = paymentDetail.ExpirationYear;
                                     savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
                                     var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
@@ -4552,9 +4552,9 @@ namespace RockWeb.Blocks.Event
     }});
 
     $('#{0}').on('change', function() {{
-        var totalCost = Number($('#{1}').val());
-        var minDue = Number($('#{2}').val());
-        var previouslyPaid = Number($('#{3}').val());
+        var totalCost = parseFloat($('#{1}').val());
+        var minDue = parseFloat($('#{2}').val());
+        var previouslyPaid = parseFloat($('#{3}').val());
         var balanceDue = totalCost - previouslyPaid;
 
         // Format and validate the amount entered
@@ -4572,7 +4572,7 @@ namespace RockWeb.Blocks.Event
         $(this).val(amountPaid.toFixed({16}));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '{6}' + amountRemaining.toFixed({16}) );
+        $('#{4}').text( '{6}' + amountRemaining.toLocaleString(undefined, {{ minimumFractionDigits: {16}, maximumFractionDigits: {16} }}));
     }});
 
     // Detect credit card type
@@ -5387,46 +5387,6 @@ namespace RockWeb.Blocks.Event
                     lUpdateEmailWarning.Visible = true;
                 }
 
-                // Build Discount info
-                if ( ShowDiscountCode() )
-                {
-                    divDiscountCode.Visible = true;
-
-                    string discountCode = RegistrationState.DiscountCode;
-                    if ( !string.IsNullOrWhiteSpace( discountCode ) )
-                    {
-                        var discount = RegistrationTemplate.Discounts
-                            .Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) )
-                            .FirstOrDefault();
-
-                        if ( discount == null )
-                        {
-                            nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
-                            nbDiscountCode.Visible = true;
-                        }
-                        else
-                        {
-                            ShowDiscountAppliedNotificationBox( discount );
-                        }
-                    }
-
-                    tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
-
-                    if ( !AllowDiscountCodeEntry() )
-                    {
-                        tbDiscountCode.Enabled = false;
-
-                        // If we cannot edit and there is no existing value then just hide the discount div.
-                        divDiscountCode.Visible = tbDiscountCode.Text.IsNotNullOrWhiteSpace();
-                        lbDiscountApply.Visible = false;
-                    }
-                }
-                else
-                {
-                    divDiscountCode.Visible = false;
-                    tbDiscountCode.Text = RegistrationState.DiscountCode;
-                }
-
                 decimal? minimumInitialPaymentPerRegistrant = RegistrationTemplate.MinimumInitialPayment;
                 if ( RegistrationTemplate.SetCostOnInstance ?? false )
                 {
@@ -5769,6 +5729,8 @@ namespace RockWeb.Blocks.Event
                     pnlCostAndFees.Visible = false;
                     pnlPaymentInfo.Visible = false;
                 }
+
+                ShowDiscountCode();
             }
         }
 
@@ -5795,17 +5757,52 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Determines if the discount code should be displayed.
+        /// Shows or hides the discount code div "divDiscountCode".
+        /// Shows or hides the Apply Discount link button "lbDiscountApply"
+        /// Enables or disables the discount code textbox "tbDiscountCode"
         /// </summary>
         /// <returns></returns>
-        private bool ShowDiscountCode()
+        private void ShowDiscountCode()
         {
             if ( RegistrationTemplate == null || !RegistrationTemplate.Discounts.Any() )
             {
-                return false;
+                divDiscountCode.Visible = false;
+                tbDiscountCode.Text = RegistrationState.DiscountCode;
+                return;
             }
 
-            return true;
+            divDiscountCode.Visible = true;
+            tbDiscountCode.Enabled = true;
+            lbDiscountApply.Visible = true;
+
+            string discountCode = RegistrationState.DiscountCode;
+            if ( !string.IsNullOrWhiteSpace( discountCode ) )
+            {
+                var discount = RegistrationTemplate.Discounts
+                    .Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+
+                if ( discount == null )
+                {
+                    nbDiscountCode.Text = string.Format( "'{1}' is not a valid {1}.", discountCode, DiscountCodeTerm );
+                    nbDiscountCode.Visible = true;
+                }
+                else
+                {
+                    ShowDiscountAppliedNotificationBox( discount );
+                }
+            }
+
+            tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
+
+            if ( !AllowDiscountCodeEntry() )
+            {
+                tbDiscountCode.Enabled = false;
+
+                // If we cannot edit and there is no existing value then just hide the discount div.
+                divDiscountCode.Visible = tbDiscountCode.Text.IsNotNullOrWhiteSpace();
+                lbDiscountApply.Visible = false;
+            }
         }
 
         /// <summary>

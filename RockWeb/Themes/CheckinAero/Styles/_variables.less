@@ -26,6 +26,7 @@
 
 // Theme Controls *show in editor*
 @background-color:                 #7ECDEF; // The background color of the page. #color
+@background-darker:                darken(@background-color, 2); // Lower left corner gradient color. #color
 @brand-primary:                    #88BC5E; // The primary color of buttons. #color
 @checkin-button-background:        #B4D782; // The primary button background color. Additional Checkin Button settings in the Button Styles panel. #color
 @header-text-color:                #FFFFFF; // Color of header text displayed on top of the background color. #color
@@ -50,7 +51,7 @@
 @header-font-weight:    @font-weight-bold; // The header text weight
 
 @subheader-text-color:      @header-text-color; // The sub-header text color #color
-@subheader-font-weight:     400; // The sub-header text weight #color
+@subheader-font-weight:     400; // The sub-header text weight
 
 @link-color:    @text-color; // The link color #color
 // Button Styles *show in editor* *advanced options*
@@ -81,6 +82,8 @@
 @checkin-button-alttext-weight: 400; // The default button alternative text weight (usually lighter)
 
 // Assorted Settings
+@background-gradient:              ~"linear-gradient(215deg, @{background-color} 5%, @{background-darker} 100%) fixed"; // The background
+
 @border-radius-base:        6px;
 @border-radius-large:       8px;
 @border-radius-small:       4px;

@@ -15,19 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -64,6 +54,88 @@ namespace Rock.Apps.StatementGenerator
         {
             OptionsPage optionsPage = new OptionsPage();
             this.NavigationService.Navigate( optionsPage );
+        }
+
+        /// <summary>
+        /// Handles the Loaded event of the startPage control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void startPage_Loaded( object sender, RoutedEventArgs e )
+        {
+            btnStart.Visibility = Visibility.Visible;
+            pnlPromptToResume.Visibility = Visibility.Collapsed;
+            txtIntro.Visibility = Visibility.Visible;
+
+            var lastRunGeneratorConfig = ContributionReport.GetSavedGeneratorConfigFromLastRun();
+            if ( lastRunGeneratorConfig != null )
+            {
+                if ( lastRunGeneratorConfig.ReportsCompleted )
+                {
+                    // last run completed successfully.
+                    return;
+                }
+
+                var lastRunDate = lastRunGeneratorConfig.RunDate;
+
+                ContributionReport.EnsureIncompletedSavedRecipientListCompletedStatus( lastRunDate );
+
+                var savedRecipientList = ContributionReport.GetSavedRecipientList( lastRunDate );
+                if ( savedRecipientList == null )
+                {
+                    return;
+                }
+
+                var lastIncomplete = savedRecipientList.FirstOrDefault( a => a.IsComplete == false );
+                if ( lastIncomplete != null )
+                {
+                    pnlPromptToResume.Visibility = Visibility.Visible;
+                    btnStart.Visibility = Visibility.Hidden;
+                    var fullName = $"{lastIncomplete.NickName} {lastIncomplete.LastName}";
+                    if ( fullName.Trim().IsNullOrWhiteSpace() )
+                    {
+                        fullName = $"GroupId: {lastIncomplete.GroupId}";
+                    }
+                    lblPromptToResume.Text = $"It appears that a previous generation session is active. The last attempted recipient was {fullName}. Do you wish to continue with this session?";
+                    txtIntro.Visibility = Visibility.Collapsed;
+                    return;
+                }
+                else if ( !lastRunGeneratorConfig.ReportsCompleted )
+                {
+                    pnlPromptToResume.Visibility = Visibility.Visible;
+                    btnStart.Visibility = Visibility.Hidden;
+                    lblPromptToResume.Text = $"It appears that a previous generation session has not completed. Do you wish to continue with this session?";
+                    txtIntro.Visibility = Visibility.Collapsed;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnResumeNo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnResumeNo_Click( object sender, RoutedEventArgs e )
+        {
+            pnlPromptToResume.Visibility = Visibility.Collapsed;
+            txtIntro.Visibility = Visibility.Visible;
+            btnStart.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnResumeYes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnResumeYes_Click( object sender, RoutedEventArgs e )
+        {
+            var lastRunGeneratorConfig = ContributionReport.GetSavedGeneratorConfigFromLastRun();
+
+            var nextPage = new ProgressPage( true, lastRunGeneratorConfig.RunDate );
+
+            ReportOptions.LoadFromConfig( lastRunGeneratorConfig );
+            this.NavigationService.Navigate( nextPage );
         }
     }
 }

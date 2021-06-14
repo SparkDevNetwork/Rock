@@ -35,6 +35,7 @@ namespace Rock.Lava
         string _tagName = string.Empty;
         DynamicShortcodeDefinition _shortcode = null;
         StringBuilder _blockMarkup = new StringBuilder();
+        ILavaEngine _engine;
 
         const int _maxRecursionDepth = 10;
 
@@ -49,9 +50,9 @@ namespace Rock.Lava
             //
         }
 
-        public DynamicShortcode( DynamicShortcodeDefinition definition )
+        public DynamicShortcode( DynamicShortcodeDefinition definition, ILavaEngine engine )
         {
-            this.Initialize( definition );
+            Initialize( definition, engine );
 
             AssertShortcodeIsInitialized();
         }
@@ -62,7 +63,7 @@ namespace Rock.Lava
         ///  Initialize this shortcode instance with metadata provided by a shortcode definition.
         /// </summary>
         /// <param name="definition"></param>
-        public void Initialize( DynamicShortcodeDefinition definition )
+        public void Initialize( DynamicShortcodeDefinition definition, ILavaEngine engine )
         {
             if ( _shortcode != null )
             {
@@ -70,6 +71,7 @@ namespace Rock.Lava
             }
 
             _shortcode = definition;
+            _engine = engine;
         }
 
         /// <summary>
@@ -96,18 +98,11 @@ namespace Rock.Lava
         {
             _elementAttributesMarkup = markup;
             _tagName = tagName;
-
-            base.OnInitialize( tagName, markup, tokens );
-        }
-
-        public override void OnParsed( List<string> tokens )
-        {
             _blockMarkup = new StringBuilder();
 
             // Get the block markup. The list of tokens contains all of the lava from the start tag to
             // the end of the template. This will pull out just the internals of the block.
-
-            // We must take into consideration nested tags of the same type
+            // We must take into consideration nested tags of the same type.
 
             var endTagFound = false;
 
@@ -165,6 +160,8 @@ namespace Rock.Lava
             {
                 AssertMissingDelimitation();
             }
+
+            base.OnInitialize( tagName, markup, tokens );
         }
 
         /// <summary>
@@ -223,15 +220,17 @@ namespace Rock.Lava
             var enabledCommands = _shortcode.EnabledLavaCommands ?? new List<string>();
 
             enabledCommands = enabledCommands.Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList();
-            
+
             if ( !enabledCommands.Any() )
             {
                 enabledCommands = context.GetEnabledCommands();
             }
 
-            var shortcodeTemplateContext = LavaEngine.CurrentEngine.NewRenderContext( internalMergeFields, enabledCommands );
+            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, enabledCommands );
 
-            var shortcodeTemplateMarkup = LavaEngine.CurrentEngine.RenderTemplate( _blockMarkup.ToString(), shortcodeTemplateContext );
+            var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
+
+            var shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
 
             // Extract child elements from the shortcode template content.
             // One or more child elements can be added to a shortcode block using the syntax "[[ <childElementName> <paramName1>:value1 <paramName2>:value2 ... ]] ... [[ end<childElementName> ]]",
@@ -269,10 +268,10 @@ namespace Rock.Lava
             // Now ensure there aren't any entity commands in the block that are not allowed.
             // This is necessary because the shortcode may be configured to allow more entities for processing
             // than the source block, template, action, etc. permits.
-            var securityCheck = LavaEngine.CurrentEngine.RenderTemplate( residualMarkup, context );
+            var securityCheckResult = _engine.RenderTemplate( residualMarkup, LavaRenderParameters.WithContext( context ) );
 
             Regex securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
-            Match securityErrorMatch = securityErrorPattern.Match( securityCheck );
+            Match securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
 
             // If the security check failed, return the error message.
             if ( securityErrorMatch.Success )
@@ -283,12 +282,12 @@ namespace Rock.Lava
             }
 
             // Merge the shortcode template in a new context, using the parameters and security allowed by the shortcode.
-            var shortcodeContext = LavaEngine.CurrentEngine.NewRenderContext( parms );
+            var shortcodeContext = _engine.NewRenderContext( parms );
 
             // If the shortcode specifies a set of enabled Lava commands, set these for the current context.
             // If not, use the commands enabled for the current context.
             if ( _shortcode.EnabledLavaCommands != null
-                    &&  _shortcode.EnabledLavaCommands.Any() )
+                 && _shortcode.EnabledLavaCommands.Any() )
             {
                 shortcodeContext.SetEnabledCommands( _shortcode.EnabledLavaCommands );
             }
@@ -297,9 +296,9 @@ namespace Rock.Lava
                 shortcodeContext.SetEnabledCommands( context.GetEnabledCommands() );
             }
 
-            var results = LavaEngine.CurrentEngine.RenderTemplate( _shortcode.TemplateMarkup, shortcodeContext );
+            var results = _engine.RenderTemplate( _shortcode.TemplateMarkup, LavaRenderParameters.WithContext( shortcodeContext ) );
 
-            result.Write( results.Trim() );
+            result.Write( results.Text.Trim() );
         }
 
         #endregion
@@ -324,10 +323,10 @@ namespace Rock.Lava
                 var match = startTagStartExpress.Match( blockContent );
                 if ( match.Success )
                 {
-                    int starTagStartIndex = match.Index;
+                    int startTagStartIndex = match.Index;
 
                     // get the name of the parameter
-                    var parmNameMatch = new Regex( @"[\w-]*" ).Match( blockContent, starTagStartIndex + match.Length );
+                    var parmNameMatch = new Regex( @"[\w-]*" ).Match( blockContent, startTagStartIndex + match.Length );
                     if ( parmNameMatch.Success )
                     {
                         var parmNameStartIndex = parmNameMatch.Index;
@@ -342,7 +341,7 @@ namespace Rock.Lava
 
                         // get the closing tag location
                         var endTagMatchExpression = String.Format( @"\[\[\s*end{0}\s*\]\]", parmName );
-                        var endTagMatch = new Regex( endTagMatchExpression ).Match( blockContent, starTagStartIndex );
+                        var endTagMatch = new Regex( endTagMatchExpression ).Match( blockContent, startTagStartIndex );
 
                         if ( endTagMatch != null )
                         {
@@ -389,7 +388,7 @@ namespace Rock.Lava
                             }
 
                             // pull this tag out of the block content
-                            blockContent = blockContent.Remove( starTagStartIndex, endTagEndIndex - starTagStartIndex );
+                            blockContent = blockContent.Remove( startTagStartIndex, endTagEndIndex - startTagStartIndex );
                         }
                         else
                         {
@@ -424,9 +423,9 @@ namespace Rock.Lava
         private void SetParametersFromElementAttributes( Dictionary<string, object> parameters, string elementAttributesMarkup, ILavaRenderContext context )
         {
             // Resolve any Lava merge fields in the element attributes markup.
-            var resolvedMarkup = LavaEngine.CurrentEngine.RenderTemplate( elementAttributesMarkup, context );
+            var resolvedMarkup = _engine.RenderTemplate( elementAttributesMarkup, LavaRenderParameters.WithContext( context ) );
 
-            var markupItems = Regex.Matches( resolvedMarkup, @"(\S*?:'[^']+')" )
+            var markupItems = Regex.Matches( resolvedMarkup.Text, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -442,7 +441,7 @@ namespace Rock.Lava
             }
 
             // OK, now let's look for any passed variables ala: name:variable
-            var variableTokens = Regex.Matches( resolvedMarkup, @"\w*:\w+" )
+            var variableTokens = Regex.Matches( resolvedMarkup.Text, @"\w*:\w+" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

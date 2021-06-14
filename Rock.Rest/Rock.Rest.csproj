@@ -186,6 +186,7 @@
     <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepProgramCompletionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />

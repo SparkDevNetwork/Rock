@@ -33,17 +33,52 @@ namespace RockWeb.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Displays a list of group types the person is configured to checkin to." )]
 
-    [BooleanField( "Select All and Skip", "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.", false, "", 8, "SelectAll" )]
+    #region Block Attributes
 
-    [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 9 )]
-    [TextField( "Caption", "", false, "Select Area", "Text", 10 )]
-    [TextField( "No Option Message", "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.", false,
-        "Sorry, there are currently not any available areas that {0} can check into at {1}.", "Text", 11 )]
-    [TextField( "No Option After Select Message", "Message to display when there are not any options available after group type is selected. Use {0} for person's name", false,
-        "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
+    [BooleanField( "Select All and Skip",
+        Key = AttributeKey.SelectAll,
+        Description = "Select this option if end-user should never see screen to select group types, all group types will automatically be selected and all the groups in all types will be available.",
+        DefaultBooleanValue = false,
+        Order = 8 )]
+    
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Area",
+        Category = "Text",
+        Order = 9 )]
+
+    [TextField( "No Option Message",
+        Key = AttributeKey.NoOptionMessage,
+        Description = "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.",
+        IsRequired = false,
+        DefaultValue = "Sorry, there are currently not any available areas that {0} can check into at {1}.",
+        Category = "Text",
+        Order = 10 )]
+
+    [TextField( "No Option After Select Message",
+        Key = AttributeKey.NoOptionAfterSelectMessage,
+        Description = "Message to display when there are not any options available after group type is selected. Use {0} for person's name",
+        IsRequired = false,
+        DefaultValue = "Sorry, based on your selection, there are currently not any available times that {0} can check into.",
+        Category = "Text",
+        Order = 11 )]
+
+    #endregion Block Attributes
 
     public partial class GroupTypeSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
+        {
+            public const string SelectAll = "SelectAll";
+            public const string Caption = "Caption";
+            public const string NoOptionMessage = "NoOptionMessage";
+            public const string NoOptionAfterSelectMessage = "NoOptionAfterSelectMessage";
+        }
+
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
@@ -96,7 +131,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
                     else
                     {
-                        bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
+                        bool SelectAll = GetAttributeValue( AttributeKey.SelectAll ).AsBoolean( false );
                         if ( SelectAll )
                         {
                             if ( backingUp )
@@ -163,8 +198,8 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), GetPersonScheduleSubTitle() );
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lTitle.Text = GetTitleText();
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     var schedule = person.CurrentSchedule;
 
@@ -194,7 +229,7 @@ namespace RockWeb.Blocks.CheckIn
                         }
                         else
                         {
-                            bool SelectAll = GetAttributeValue( "SelectAll" ).AsBoolean( false );
+                            bool SelectAll = GetAttributeValue( AttributeKey.SelectAll ).AsBoolean( false );
                             if ( SelectAll )
                             {
                                 if ( UserBackedUp )
@@ -227,7 +262,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptions.Text = string.Format( GetAttributeValue( "NoOptionMessage" ),
+                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ),
                                 person.Person.NickName,
                                 person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
                         }
@@ -253,6 +288,19 @@ namespace RockWeb.Blocks.CheckIn
                         new List<int>();
                 }
             }
+        }
+
+        private string GetTitleText()
+        {
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily?.Group },
+                { LavaMergeFieldName.Individual, CurrentCheckInState.CheckIn.CurrentPerson?.Person },
+                { LavaMergeFieldName.SelectedSchedule, CurrentCheckInState.CheckIn.CurrentPerson.CurrentSchedule?.Schedule }
+            };
+
+            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.GroupTypeSelectHeaderLavaTemplate ?? string.Empty;
+            return personSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -327,7 +375,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( person != null )
             {
-                string msg = string.Format( GetAttributeValue( "NoOptionAfterSelectMessage" ), person.Person.NickName );
+                string msg = string.Format( GetAttributeValue( AttributeKey.NoOptionAfterSelectMessage ), person.Person.NickName );
                 if ( !ProcessSelection(
                     maWarning,
                     () => person.SelectedGroupTypes( schedule )

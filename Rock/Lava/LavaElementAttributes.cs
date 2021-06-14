@@ -33,6 +33,21 @@ namespace Rock.Lava
     /// </summary>
     public class LavaElementAttributes
     {
+        /// <summary>
+        /// Create a new instance from the specified markup.
+        /// </summary>
+        /// <param name="attributesMarkup"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public static LavaElementAttributes NewFromMarkup( string attributesMarkup, ILavaRenderContext context )
+        {
+            var attributes = new LavaElementAttributes();
+
+            attributes.ParseFromMarkup( attributesMarkup, context );
+
+            return attributes;
+        }
+
         private Dictionary<string, string> _settings = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
         /// <summary>

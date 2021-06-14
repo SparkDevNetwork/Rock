@@ -18,11 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 using Rock.Data;
-using Rock.Reporting;
+using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -104,7 +102,7 @@ namespace Rock.Model
                 if ( component is OtherDataViewFilter otherDataViewFilter )
                 {
                     var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
-                    if ( otherDataView == null)
+                    if ( otherDataView == null )
                     {
                         return false;
                     }
@@ -152,7 +150,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Data View and reset the properties that connect it to the permanent store.
-            var newItem = ( DataView )item.Clone( true );
+            var newItem = ( DataView ) item.Clone( true );
 
             newItem.Id = 0;
             newItem.Guid = Guid.NewGuid();
@@ -224,6 +222,7 @@ namespace Rock.Model
         /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
         public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
         {
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
             var updateDataViewStatisticsMsg = new UpdateDataViewStatistics.Message()
             {
                 DataViewId = dataViewId,
@@ -236,17 +235,6 @@ namespace Rock.Model
                 updateDataViewStatisticsMsg.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was
-                 * already evaluated, which in turn already counted the run so we don't want to double count it here.
-                 */
-                updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;
-            }
-
-            if ( persistedLastRunDurationMilliseconds.HasValue )
-            {
-                updateDataViewStatisticsMsg.PersistedLastRefreshDateTime = RockDateTime.Now;
-                updateDataViewStatisticsMsg.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
-                /*
-                 * If the persisted last run duration is set that means this was called after the expression was
                  * already evaluated, which in turn already counted the run so we don't want to double count it here.
                  */
                 updateDataViewStatisticsMsg.ShouldIncrementRunCount = false;

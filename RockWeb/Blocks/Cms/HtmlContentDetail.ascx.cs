@@ -802,7 +802,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( contentHtml != null )
                     {
-                        if ( contentHtml.HasMergeFields() )
+                        if ( LavaHelper.IsLavaTemplate( contentHtml ) )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );
@@ -869,7 +869,7 @@ namespace RockWeb.Blocks.Cms
                     query string. Updated it to also consider the context variable if one exists and
                     the query string did not contain the configured context paramater. This was added
                     to allow having different content for each context object. The specific use case
-                    is when used in conjection with the campus context switcher. This change will allow
+                    is when used in conjunction with the campus context switcher. This change will allow
                     having separate content per campus (without any Lava case statements).  
                 */
                 var entityId = PageParameter( contextParameter );

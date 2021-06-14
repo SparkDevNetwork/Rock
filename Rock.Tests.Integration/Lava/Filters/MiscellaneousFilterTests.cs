@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Lava;
 using Rock.Tests.Shared;
 using Rock.Utility.Settings;
 
@@ -28,7 +30,7 @@ namespace Rock.Tests.Integration.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
-    public class MiscellaneousFilterTests
+    public class MiscellaneousFilterTests : LavaIntegrationTestBase
     {
         #region Debug
 
@@ -37,10 +39,10 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = "{{ 'Lava' | Debug }}";
 
-            var output = template.ResolveMergeFields( null );
-
             // Verify a portion of the expected output.
-            Assert.That.Contains( output, "<li><span class='lava-debug-key'>OrganizationName</span> <span class='lava-debug-value'> - Rock Solid Church</span></li>" );
+            TestHelper.AssertTemplateOutput( "<li><span class='lava-debug-key'>OrganizationName</span> <span class='lava-debug-value'> - Rock Solid Church</span></li>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
 
         #endregion
@@ -92,21 +94,44 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
+        [Ignore( "This test may fail for Fluid if run in series with other tests. Re-test once this bugfix is available: https://github.com/sebastienros/fluid/pull/319" )]
         public void RockInstanceConfigFilter_SystemDateTime_RendersExpectedValue()
         {
             var template = "{{ 'SystemDateTime' | RockInstanceConfig | Date:'yyyy-MM-dd HH:mm:ss' }}";
             var expectedValue = RockInstanceConfig.SystemDateTime;
 
-            var output = template.ResolveMergeFields( null );
-
-            var actualDateTime = output.AsDateTime();
-
-            if ( actualDateTime == null )
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                throw new System.Exception( $"Invalid DateTime - Output = \"{output}\"" );
-            }
+                var result = engine.RenderTemplate( template );
 
-            Assert.That.AreProximate( expectedValue, actualDateTime, new System.TimeSpan( 0, 0, 30 ) );
+                var actualDateTime = result.Text.AsDateTime();
+
+                if ( actualDateTime == null )
+                {
+                    throw new System.Exception( $"Invalid DateTime - Output = \"{result.Text}\"" );
+                }
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+
+                Assert.That.AreProximate( expectedValue, actualDateTime, new System.TimeSpan( 0, 0, 30 ) );
+            } );
+        }
+
+        [TestMethod]
+        public void RockInstanceConfigFilter_LavaEngine_RendersExpectedValue()
+        {
+            var template = "{{ 'LavaEngine' | RockInstanceConfig }}";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var result = engine.RenderTemplate( template );
+
+                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+
+                var expectedOutput = RockInstanceConfig.LavaEngineName;
+
+                Assert.That.AreEqual( expectedOutput, result.Text );
+            } );
         }
 
         [TestMethod]
@@ -117,6 +142,53 @@ namespace Rock.Tests.Integration.Lava
             var output = template.ResolveMergeFields( null );
 
             Assert.That.AreEqual( "Configuration setting \"unknown_setting\" is not available.", output );
+        }
+
+        #endregion
+
+        #region LavaLibraryTestFilters
+
+        /// <summary>
+        /// Registering a filter with an invalid parameter type correctly throws a Lava exception.
+        /// </summary>
+        [TestMethod]
+        public void Fluid_MismatchedFilterParameters_ShowsCorrectErrorMessage()
+        {
+            var inputTemplate = @"
+{{ '1' | AppendValue:'2' }}
+";
+
+            var expectedOutput = @"12";
+
+            var engine = TestHelper.GetEngineInstance( Rock.Lava.LavaEngineTypeSpecifier.Fluid );
+
+            // Filters are registered
+            var filterMethodValid = typeof( TestLavaLibraryFilter ).GetMethod( "AppendString", new System.Type[] { typeof( object ), typeof( string ) } );
+            var filterMethodInvalid = typeof( TestLavaLibraryFilter ).GetMethod( "AppendGuid", new System.Type[] { typeof( object ), typeof( Guid ) } );
+
+            engine.RegisterFilter( filterMethodValid, "AppendValue" );
+
+            // This should render correctly.
+            TestHelper.AssertTemplateOutput( Rock.Lava.LavaEngineTypeSpecifier.Fluid, expectedOutput, inputTemplate );
+
+            // This should throw an exception when attempting to render a template containing the invalid filter.
+            engine.RegisterFilter( filterMethodInvalid, "AppendValue" );
+
+            var result = engine.RenderTemplate( inputTemplate, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
+
+            Assert.That.Contains( result.Error?.Messages().JoinStrings( "//" ), "Parameter type 'Guid' is not supported" );
+        }
+
+        public static class TestLavaLibraryFilter
+        {
+            public static string AppendString( object input, string input1 )
+            {
+                return input.ToString() + input1.ToString();
+            }
+            public static string AppendGuid( object input, Guid input1 )
+            {
+                return input.ToString() + input1.ToString();
+            }
         }
 
         #endregion

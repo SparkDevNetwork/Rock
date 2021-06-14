@@ -141,6 +141,12 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Key = AttributeKey.ShowMergeTemplate )]
 
+    [BooleanField( "Show Launch Workflow",
+        Description = "Show Launch Workflow button in grid footer?",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.ShowLaunchWorkflow )]
+
     [IntegerField( "Timeout",
         Description = "The amount of time in seconds to allow the query to run before timing out.",
         IsRequired = false,
@@ -237,6 +243,7 @@ namespace RockWeb.Blocks.Reporting
             public const string WrapInPanel = "WrapInPanel";
             public const string PanelTitle = "PanelTitle";
             public const string PanelTitleCssClass = "PanelTitleCssClass";
+            public const string ShowLaunchWorkflow = "ShowLaunchWorkflow";
         }
 
         #endregion Keys
@@ -412,6 +419,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.ShowBulkUpdate, ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
             SetAttributeValue( AttributeKey.ShowExcelExport, cbShowExcelExport.Checked.ToString() );
             SetAttributeValue( AttributeKey.ShowMergeTemplate, cbShowMergeTemplate.Checked.ToString() );
+            SetAttributeValue( AttributeKey.ShowLaunchWorkflow, ( cbPersonReport.Checked && cbShowLaunchWorkflow.Checked ).ToString() );
             SetAttributeValue( AttributeKey.ShowGridFilter, cbShowGridFilter.Checked.ToString() );
             SetAttributeValue( AttributeKey.MergeFields, tbMergeFields.Text );
             SetAttributeValue( AttributeKey.EncryptedFields, tbEncryptedFields.Text );
@@ -580,6 +588,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowBulkUpdate.Checked = GetAttributeValue( AttributeKey.ShowBulkUpdate ).AsBoolean();
             cbShowExcelExport.Checked = GetAttributeValue( AttributeKey.ShowExcelExport ).AsBoolean();
             cbShowMergeTemplate.Checked = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
+            cbShowLaunchWorkflow.Checked = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
             cbShowGridFilter.Checked = GetAttributeValue( AttributeKey.ShowGridFilter ).AsBoolean();
             tbMergeFields.Text = GetAttributeValue( AttributeKey.MergeFields );
             tbEncryptedFields.Text = GetAttributeValue( AttributeKey.EncryptedFields );
@@ -655,7 +664,7 @@ namespace RockWeb.Blocks.Reporting
                             return;
                         }
 
-                        if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                        if ( LavaService.RockLiquidIsEnabled )
                         {
                             foreach ( DataTable dataTable in dataSet.Tables )
                             {
@@ -767,7 +776,7 @@ namespace RockWeb.Blocks.Reporting
                                 hPanelTitle.Controls.Add( iPanelHeaderIcon );
                                 hPanelTitle.Controls.Add( spanPanelHeaderText );
                             }
-                            
+
 
                             divPanelBody = new HtmlGenericControl( "div" );
                             divPanelBody.AddCssClass( "panel-body" );
@@ -817,6 +826,7 @@ namespace RockWeb.Blocks.Reporting
                             grid.Actions.ShowBulkUpdate = GetAttributeValue( AttributeKey.ShowBulkUpdate ).AsBoolean();
                             grid.Actions.ShowExcelExport = GetAttributeValue( AttributeKey.ShowExcelExport ).AsBoolean();
                             grid.Actions.ShowMergeTemplate = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
+                            grid.ShowWorkflowOrCustomActionButtons = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
 
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;

@@ -15,11 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.BulkExport;
 using Rock.Data;
+using Rock.SystemKey;
+using Rock.Utility.Settings.GivingAnalytics;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -169,9 +172,9 @@ namespace Rock.Model
                 refundTransaction.FinancialPaymentDetail.BillingLocationId = transaction.FinancialPaymentDetail.BillingLocationId;
                 refundTransaction.FinancialPaymentDetail.CreditCardTypeValueId = transaction.FinancialPaymentDetail.CreditCardTypeValueId;
                 refundTransaction.FinancialPaymentDetail.CurrencyTypeValueId = transaction.FinancialPaymentDetail.CurrencyTypeValueId;
-                refundTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted = transaction.FinancialPaymentDetail.ExpirationMonthEncrypted;
-                refundTransaction.FinancialPaymentDetail.ExpirationYearEncrypted = transaction.FinancialPaymentDetail.ExpirationYearEncrypted;
-                refundTransaction.FinancialPaymentDetail.NameOnCardEncrypted = transaction.FinancialPaymentDetail.NameOnCardEncrypted;
+                refundTransaction.FinancialPaymentDetail.ExpirationMonth = transaction.FinancialPaymentDetail.ExpirationMonth;
+                refundTransaction.FinancialPaymentDetail.ExpirationYear = transaction.FinancialPaymentDetail.ExpirationYear;
+                refundTransaction.FinancialPaymentDetail.NameOnCard = transaction.FinancialPaymentDetail.NameOnCard;
             }
 
             decimal remainingBalance = amount.Value;
@@ -335,6 +338,51 @@ namespace Rock.Model
 
             AttributesExport.LoadAttributeValues( exportOptions, rockContext, financialTransactionsExport.FinancialTransactions, pagedFinancialTransactionQry );
             return financialTransactionsExport;
+        }
+
+        /// <summary>
+        /// Gets the giving analytics (see Giving Analytics job) source transaction query.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetGivingAnalyticsSourceTransactionQuery()
+        {
+            var query = Queryable().AsNoTracking();
+            var settings =
+                Web.SystemSettings.GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION ).FromJsonOrNull<GivingAnalyticsSetting>() ??
+                new GivingAnalyticsSetting();
+
+            // Filter by transaction type (defaults to contributions only)
+            var transactionTypeGuids =
+                settings.TransactionTypeGuids ??
+                new List<Guid> { SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
+            var transactionTypeIds = transactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
+            query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
+
+            // Filter accounts, defaults to tax deductable only
+            var accountGuids = settings.FinancialAccountGuids ?? new List<Guid>();
+
+            if ( !accountGuids.Any() )
+            {
+                query = query.Where( t => t.TransactionDetails.Any( td => td.Account.IsTaxDeductible ) );
+            }
+            else if ( settings.AreChildAccountsIncluded == true )
+            {
+                query = query.Where( t => t.TransactionDetails.Any( td =>
+                    accountGuids.Contains( td.Account.Guid ) ||
+                    accountGuids.Contains( td.Account.ParentAccount.Guid ) ) );
+            }
+            else
+            {
+                query = query.Where( t => t.TransactionDetails.Any( td => accountGuids.Contains( td.Account.Guid ) ) );
+            }
+
+            // Remove transactions that have refunds
+            query = query.Where( t => !t.Refunds.Any() );
+
+            // Remove transactions with $0 or negative amounts
+            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0 );
+
+            return query;
         }
     }
 }

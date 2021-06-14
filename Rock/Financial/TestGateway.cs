@@ -59,6 +59,13 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
+
+    [BooleanField(
+        "Prompt for Name on Card",
+        Description = "This will tell the Gateway to prompt for the name on card.",
+        Key = AttributeKey.PromptForNameOnCard,
+        DefaultBooleanValue = false,
+        Order = 4 )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
@@ -72,6 +79,7 @@ namespace Rock.Financial
             public const string GenerateFakeGetPayments = "GenerateFakeGetPayments";
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
+            public const string PromptForNameOnCard = "PromptForNameOnCard";
         }
 
         #endregion
@@ -152,6 +160,7 @@ namespace Rock.Financial
             return new Payment
             {
                 TransactionCode = transaction.TransactionCode,
+                NameOnCard = $"{paymentInfo.FirstName} {paymentInfo.LastName}",
                 Amount = paymentInfo.Amount
             };
         }
@@ -190,7 +199,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
-            return false;
+            return GetAttributeValue( financialGateway, AttributeKey.PromptForNameOnCard ).AsBoolean();
         }
 
         /// <summary>
@@ -285,6 +294,8 @@ namespace Rock.Financial
                 scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
                 scheduledTransaction.GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
+                scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
+                scheduledTransaction.StatusMessage = "active";
                 return scheduledTransaction;
             }
 

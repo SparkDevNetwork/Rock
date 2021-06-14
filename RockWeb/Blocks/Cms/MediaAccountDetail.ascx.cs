@@ -367,13 +367,22 @@ namespace RockWeb.Blocks.Cms
                 hlLastRefresh.Text = "Last Refreshed: " + refreshTimeSpan.Humanize();
             }
 
-            lMetricData.Text = mediaAccount.GetMediaAccountComponent()?.GetAccountHtmlSummary( mediaAccount );
+            var mediaAccountComponent = mediaAccount.GetMediaAccountComponent();
+            var descriptionList = new DescriptionList();
+
+            if ( mediaAccountComponent != null )
+            {
+                descriptionList.Add( "Type", mediaAccountComponent.EntityType.FriendlyName );
+            }
+
+            lDescription.Text = descriptionList.Html;
+            lMetricData.Text = mediaAccountComponent?.GetAccountHtmlSummary( mediaAccount );
         }
 
         /// <summary>
         /// Renders the component attribute controls.
         /// </summary>
-        private void RenderComponentAttributeControls(MediaAccount mediaAccount, bool setValues )
+        private void RenderComponentAttributeControls( MediaAccount mediaAccount, bool setValues )
         {
             mediaAccount.LoadAttributes();
             avcComponentAttributes.ExcludedAttributes = mediaAccount.Attributes.Values.Where( a => a.Key == "Order" || a.Key == "Active" ).ToArray();

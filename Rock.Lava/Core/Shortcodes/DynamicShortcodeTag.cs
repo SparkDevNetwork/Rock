@@ -29,8 +29,8 @@ namespace Rock.Lava
             //
         }
 
-        public DynamicShortcodeTag( DynamicShortcodeDefinition definition )
-            : base ( definition )
+        public DynamicShortcodeTag( DynamicShortcodeDefinition definition, ILavaEngine engine )
+            : base ( definition, engine )
         {
             //
         }

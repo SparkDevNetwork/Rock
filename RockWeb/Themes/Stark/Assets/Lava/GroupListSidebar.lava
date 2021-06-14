@@ -2,8 +2,8 @@
   <div class="panel-heading">
     {% if ShowInactive -%}{% assign inactiveParamVal = 'Global' | PageParameter:InactiveParameter -%}
     <div class="pull-right btn-group btn-toggle">
-      <a class="btn btn-default btn-xs {% if inactiveParamVal == '0' or InitialActive == 1 and inactiveParamVal == null %}active{% endif %}" href='{{ 'Global=''' | Page:'Path=''' }}?{{ InactiveParameter }}=0'>Active</a>
-      <a class="btn btn-default btn-xs {% if inactiveParamVal == '1' or InitialActive == 0 and PainactiveParamVal == null %}active{% endif %}" href='{{ 'Global=''' | Page:'Path=''' }}?{{ InactiveParameter }}=1'>All</a>
+      <a class="btn btn-default btn-xs {% if inactiveParamVal == '0' or InitialActive == '1' and inactiveParamVal == '' %}active{% endif %}" href="{{ 'Global' | Page:'Path' }}?{{ InactiveParameter }}=0">Active</a>
+      <a class="btn btn-default btn-xs {% if inactiveParamVal == '1' or InitialActive == 0 and inactiveParamVal == '' %}active{% endif %}" href="{{ 'Global' | Page:'Path' }}?{{ InactiveParameter }}=1">All</a>
     </div>
     {% endif -%}
     Groups
@@ -11,11 +11,10 @@
 
   {% assign groupCount = Groups | Size %}
 
-  {% if groupCount == 0 %}
-  <div class="margin-all-md"> No Groups Available To List</div>
-  {% endif %}
-
   <ul class="list-group list-group-panel">
+    {% if groupCount == 0 %}
+    <li class="list-group-item">No Groups Available To List</li>
+    {% endif %}
     {% for group in Groups %}
 
     {% capture isLeaderIcon -%}
@@ -54,11 +53,3 @@
   </ul>
 
 </div>
-
-<script type="text/javascript">
-
-  $( document ).ready(function() {
-  $('.js-group-item').tooltip();
-  });
-
-</script>

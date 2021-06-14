@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Cms
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     var lavaTemplate = GetTemplate();
 
@@ -228,23 +228,23 @@ namespace RockWeb.Blocks.Cms
                 }
                 else
                 {
-                    var lavaTemplate = GetLavaTemplate();
+                    var templateText = GetAttributeValue( AttributeKey.Template );
 
                     // Apply Enabled Lava Commands
-                    var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( pageProperties );
+                    var lavaContext = LavaService.NewRenderContext( pageProperties );
 
                     var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
                     lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
 
-                    List<Exception> errors;
+                    var result = LavaService.RenderTemplate( templateText,
+                        new LavaRenderParameters { Context = lavaContext, CacheKey = CacheKey() } );
 
-                    lavaTemplate.TryRender( lavaContext, out content, out errors );
+                    content = result.Text;
 
-                    // Check for Lava rendering errors.
-                    if ( errors.Any() )
+                    if ( result.HasErrors )
                     {
-                        throw errors.First();
+                        throw result.GetLavaException("PageMenu Block Lava Error");
                     }
                 }
 
@@ -288,14 +288,12 @@ namespace RockWeb.Blocks.Cms
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
+
+            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
+
             return cacheTemplate != null ? cacheTemplate.Template as Template : null;
         }
         #endregion
-
-        private ILavaTemplate GetLavaTemplate()
-        {
-            return LavaEngine.CurrentEngine.TemplateCacheService.GetOrAddTemplate( GetAttributeValue( AttributeKey.Template ) );
-        }
 
         /// <summary>
         /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.

@@ -5,6 +5,12 @@
   {{ ScheduledTransaction.CurrencyType }}
   {% else %}
   {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  {% if ScheduledTransaction.CardIsExpired %}
+      <span class='label label-warning'>Card Expired</span>
+    {% elseif ScheduledTransaction.Status and ScheduledTransaction.Status != 'Active' %}
+      <span class='label label-warning'>{{ ScheduledTransaction.Status }}</span>
+    {% endif %}
+
   {% endif %}<br>
   {{ ScheduledTransaction.FrequencyDescription | downcase }}.
     

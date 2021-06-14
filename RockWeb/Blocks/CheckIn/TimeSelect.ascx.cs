@@ -33,12 +33,23 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of times to checkin for.")]
 
-    [TextField( "Title", "Title to display. Use {0} for family/person name.", false, "{0}", "Text", 5 )]
-    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group/location name.", false, "{0}", "Text", 6 )]
-    [TextField( "Caption", "", false, "Select Time(s)", "Text", 7 )]
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Time(s)",
+        Category = "Text",
+        Order = 5 )]
 
     public partial class TimeSelect : CheckInBlock
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
+        {
+            public const string Caption = "Caption";
+        }
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -84,30 +95,23 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
-
+                        lTitle.Text = GetTitleText();
                         lbSelect.Text = "Next";
                         lbSelect.Attributes.Add( "data-loading-text", "Loading..." );
                     }
                     else
                     { 
-                        CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected )
-                            .SelectMany( f => f.People.Where( p => p.Selected ) )
-                            .FirstOrDefault();
-
+                        CheckInPerson person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People.Where( p => p.Selected ) ).FirstOrDefault();
                         CheckInGroup group = null;
                         CheckInLocation location = null;
 
                         if ( person != null )
                         {
-                            group = person.GroupTypes.Where( t => t.Selected )
-                                    .SelectMany( t => t.Groups.Where( g => g.Selected ) )
-                                    .FirstOrDefault();
+                            group = person.GroupTypes.Where( t => t.Selected ).SelectMany( t => t.Groups.Where( g => g.Selected ) ).FirstOrDefault();
 
                             if ( group != null )
                             {
-                                location = group.Locations.Where( l => l.Selected )
-                                            .FirstOrDefault();
+                                location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
                             }
                         }
 
@@ -116,9 +120,7 @@ namespace RockWeb.Blocks.CheckIn
                             GoBack();
                         }
 
-                        lTitle.Text = string.Format( GetAttributeValue( "Title" ), person.ToString() );
-                        lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle"), string.Format( "{0} - {1}", group.ToString(), location.Location.Name ) );
-
+                        lTitle.Text = GetTitleText();
                         lbSelect.Text = "Check In";
                         lbSelect.Attributes.Add( "data-loading-text", "Printing..." );
 
@@ -126,7 +128,7 @@ namespace RockWeb.Blocks.CheckIn
                         distinctSchedules = personSchedules;
                     }
 
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     if ( distinctSchedules.Count == 1 )
                     {
@@ -199,6 +201,39 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
         }
+
+        private string GetTitleText()
+        {
+            // The checkinPerson, selectedGroup, and selectedLocation are only needed for individual checkins, so no use running the queries if this is a mutli person checkin.
+            var checkinPerson = CurrentCheckInType.TypeOfCheckin == TypeOfCheckin.Individual
+                ? CurrentCheckInState.CheckIn.Families
+                    .Where( f => f.Selected )
+                    .SelectMany( f => f.People.Where( p => p.Selected ) )
+                    .FirstOrDefault()
+                : null;
+
+            var selectedGroup = checkinPerson?.GroupTypes
+                .Where( t => t.Selected )
+                .SelectMany( t => t.Groups.Where( g => g.Selected ) )
+                .FirstOrDefault();
+
+            var selectedLocation = selectedGroup?.Locations.Where( l => l.Selected ).FirstOrDefault()?.Location;
+
+            var selectedIndividuals = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).Select( p => p.Person );
+            
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
+                { LavaMergeFieldName.SelectedIndividuals, selectedIndividuals },
+                { LavaMergeFieldName.CheckinType, CurrentCheckInType.TypeOfCheckin },
+                { LavaMergeFieldName.SelectedGroup, selectedGroup?.Group },
+                { LavaMergeFieldName.SelectedLocation, selectedLocation },
+            };
+
+            var timeSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.TimeSelectHeaderLavaTemplate ?? string.Empty;
+            return timeSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
+        }
+
         protected void lbSelect_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )

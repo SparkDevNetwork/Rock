@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Groups
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
     [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
     [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
-    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
+    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true, "CustomSetting" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
     // Map Settings
@@ -306,6 +306,8 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "DisplayCampusFilter", cbFilterCampus.Checked.ToString() );
             SetAttributeValue( "EnableCampusContext", cbCampusContext.Checked.ToString() );
+            SetAttributeValue( "HideOvercapacityGroups", cbHideOvercapacityGroups.Checked.ToString() );
+            
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
@@ -471,6 +473,7 @@ namespace RockWeb.Blocks.Groups
 
             cbFilterCampus.Checked = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
+            cbHideOvercapacityGroups.Checked = GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean();
 
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
             dvpMapStyle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ).Id;
@@ -1086,13 +1089,17 @@ namespace RockWeb.Blocks.Groups
                     Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                    if ( LavaService.RockLiquidIsEnabled )
                     {
-                        template = DotLiquid.Template.Parse( GetAttributeValue( "MapInfo" ) );
+                        template = Template.Parse( GetAttributeValue( "MapInfo" ) );
+
+                        LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "MapInfo" ) );
                     }
                     else
                     {
-                        lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "MapInfo" ) );
+                        var parseResult = LavaService.ParseTemplate( GetAttributeValue( "MapInfo" ) );
+
+                        lavaTemplate = parseResult.Template;
                     }
 
                     // Add mapitems for all the remaining valid group locations
@@ -1132,9 +1139,9 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                            if ( LavaService.RockLiquidIsEnabled )
                             {
-                                infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );                                
+                                infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
                             }
                             else
                             {

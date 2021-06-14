@@ -26,7 +26,6 @@ using Rock.Blocks;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Obsidian.Util;
 using Rock.Tasks;
 using Rock.ViewModel.Blocks;
 using Rock.ViewModel.Controls;

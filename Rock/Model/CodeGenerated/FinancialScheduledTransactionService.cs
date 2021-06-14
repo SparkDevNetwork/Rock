@@ -182,6 +182,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;
+            target.InactivateDateTime = source.InactivateDateTime;
             target.IsActive = source.IsActive;
             target.LastRemindedDate = source.LastRemindedDate;
             target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
@@ -189,6 +190,8 @@ namespace Rock.Model
             target.NumberOfPayments = source.NumberOfPayments;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.StartDate = source.StartDate;
+            target.Status = source.Status;
+            target.StatusMessage = source.StatusMessage;
             target.Summary = source.Summary;
             target.TransactionCode = source.TransactionCode;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;

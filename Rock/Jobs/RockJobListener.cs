@@ -223,7 +223,7 @@ namespace Rock.Jobs
             {
                 if ( jobException != null )
                 {
-                    if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                    if ( LavaService.RockLiquidIsEnabled )
                     {
                         mergeFields.Add( "Exception", Hash.FromAnonymousObject( jobException ) );
                     }

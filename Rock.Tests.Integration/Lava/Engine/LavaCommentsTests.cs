@@ -24,8 +24,19 @@ namespace Rock.Tests.Integration.Lava
     /// Tests for Lava Template comments.
     /// </summary>
     [TestClass]
-    public class LavaCommentsFilterTests
+    public class LavaCommentsFilterTests : LavaIntegrationTestBase
     {
+        /// <summary>
+        /// Verify that an empty comment block can be parsed correctly.
+        /// This test validates a Rock-specific change to the Fluid Parser.
+        /// </summary>
+        [TestMethod]
+        public void CommentBlock_WithEmptyContent_ParsesCorrectly()
+        {
+            // This Lava template would throw an error in the default Fluid parser, but should process successfully here.
+            TestHelper.AssertTemplateOutput( string.Empty, "{% comment %}{% endcomment %}" );
+        }
+
         [TestMethod]
         public void RemoveLavaCommentsReturnsEmptyStringForNullInput()
         {

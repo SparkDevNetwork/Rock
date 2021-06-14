@@ -135,7 +135,7 @@ namespace Rock.Net
         /// <param name="rockClientType">Type of the rock client.</param>
         internal RockRequestContext( HttpRequest request, RockClientType rockClientType )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = new Uri( request.Url.ToString() );
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
@@ -178,7 +178,7 @@ namespace Rock.Net
         /// <param name="rockClientType">Type of the rock client.</param>
         internal RockRequestContext( HttpRequestMessage request, RockClientType rockClientType )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = request.RequestUri;
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );

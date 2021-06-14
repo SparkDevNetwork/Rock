@@ -308,6 +308,9 @@
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net46\StackExchange.Redis.StrongName.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
@@ -329,21 +332,34 @@
     <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="System.Linq.Dynamic, Version=1.0.5840.25917, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Linq.Dynamic.1.0.6\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.2.9.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.Core.1.2.9\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Management.Automation.6.1.7601.17515\lib\net45\System.Management.Automation.dll</HintPath>
     </Reference>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
@@ -414,6 +430,7 @@
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\CheckinConfigurationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\FinancialStatementTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\LocationListFieldAttribute.cs" />
     <Compile Include="Attribute\RangeSliderAttribute.cs" />
     <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
@@ -545,10 +562,13 @@
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\GivingUnitWasClassifiedMessage.cs" />
     <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
+    <Compile Include="Bus\Queue\GivingEventQueue.cs" />
     <Compile Include="Bus\Queue\TransactionAlertQueue.cs" />
     <Compile Include="CheckIn\RosterAttendeeAttendance.cs" />
     <Compile Include="Communication\VideoEmbed\VideoEmbedContainer.cs" />
@@ -626,6 +646,8 @@
     <Compile Include="Financial\IRedirectionGateway.cs" />
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
+    <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
@@ -658,6 +680,9 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
+    <Compile Include="Media\MediaWatchedInteractionData.cs" />
+    <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="SystemGuid\FinancialGateway.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
@@ -697,6 +722,7 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
@@ -708,15 +734,24 @@
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
     <Compile Include="Field\Types\AttendanceFieldType.cs" />
+    <Compile Include="Field\Types\CaptchaFieldType.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\CheckinConfigurationTypeFieldType.cs" />
+    <Compile Include="Field\Types\FinancialStatementTemplateFieldType.cs" />
     <Compile Include="Field\Types\LocationListFieldType.cs" />
     <Compile Include="Field\Types\MediaElementFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorHelper.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorRecipientRequest.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorUploadGivingStatementData.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorUploadGivingStatementResult.cs" />
     <Compile Include="Financial\IFeeCoverageGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorPledgeSummary.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorOptions.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorRecipient.cs" />
     <Compile Include="Jobs\GivingAnalytics.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
@@ -727,9 +762,11 @@
     <Compile Include="Jobs\PostV122_UpdateInteractionIndex.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\PostV124DataMigrationsUpdateGroupSalutations.cs" />
+    <Compile Include="Jobs\PostV124DataMigrationUnencryptPaymentDetailFields.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
+    <Compile Include="Jobs\PostV125UpdateStepProgramCompletion.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -755,6 +792,7 @@
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
     <Compile Include="Media\MediaElementFileData.cs" />
+    <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
@@ -768,6 +806,7 @@
     <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
     <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\StepProgramCompletionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
@@ -782,6 +821,7 @@
     <Compile Include="Model\MediaFolder.cs" />
     <Compile Include="Model\MediaFolderService.Partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
+    <Compile Include="Model\StepProgramCompletion.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
@@ -824,6 +864,8 @@
     <Compile Include="Security\Authentication\OidcClient.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
+    <Compile Include="SystemGuid\BinaryFile.cs" />
+    <Compile Include="SystemGuid\FinancialStatementTemplate.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Tasks\ProcessTransactionAlertActions.cs" />
@@ -839,7 +881,7 @@
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
-    <Compile Include="Finance\StatementTemplate\ReportSetting.cs" />
+    <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
     <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
@@ -919,6 +961,7 @@
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CacheabilityPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\FinancialStatementTemplatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />

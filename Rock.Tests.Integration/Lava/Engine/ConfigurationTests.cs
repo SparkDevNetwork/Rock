@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
-using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -41,9 +42,9 @@ namespace Rock.Tests.Integration.Lava
                 DefaultEnabledCommands = new List<string> { "Execute" }
             };
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, options );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, options );
 
                 var context = testEngine.NewRenderContext();
 
@@ -57,12 +58,6 @@ namespace Rock.Tests.Integration.Lava
 
         #region Caching
 
-        [TestMethod]
-        public void WebsiteLavaTemplateCacheService_WhitespaceTemplatesWithDifferentLengths_AreCachedIndependently_Pass2()
-        {
-            WebsiteLavaTemplateCacheService_WhitespaceTemplatesWithDifferentLengths_AreCachedIndependently();
-        }
-
         /// <summary>
         /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
         /// </summary>
@@ -71,103 +66,224 @@ namespace Rock.Tests.Integration.Lava
         {
             var options = new LavaEngineConfigurationOptions();
 
-            var cacheService = new WebsiteLavaTemplateCache() as ILavaTemplateCacheService;
-
-            cacheService.ClearCache();
+            ILavaTemplateCacheService cacheService = new WebsiteLavaTemplateCacheService();
 
             options.CacheService = cacheService;
 
-            LavaEngine.Initialize( LavaEngine.CurrentEngine.EngineType, options );
+            TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
+            {
+                // Remove all existing items from the cache.
+                cacheService.ClearCache();
 
-            // Process a zero-length whitespace template - this should be cached separately.
-            var input0 = string.Empty;
+                var engine = LavaService.NewEngineInstance( defaultEngineInstance.EngineType, options );
 
-            // Verify that the template does not initially exist in the cache.
-            var exists = cacheService.ContainsTemplate( input0 );
+                // Process a zero-length whitespace template - this should be cached separately.
+                var input0 = string.Empty;
+                var key0 = cacheService.GetCacheKeyForTemplate( input0 );
 
-            Assert.IsFalse( exists, "String-0 Template found in cache unexpectedly." );
+                // Verify that the template does not initially exist in the cache.
+                var exists = cacheService.ContainsKey( key0 );
 
-            // Render the template, which will automatically add it to the cache.
-            var output0 = LavaEngine.CurrentEngine.RenderTemplate( input0 );
+                Assert.IsFalse( exists, "String-0 Template found in cache unexpectedly." );
 
-            // Verify that the template now exists in the cache.
-            exists = cacheService.ContainsTemplate( input0 );
+                // Render the template, which will automatically add it to the cache.
+                var output0 = engine.RenderTemplate( input0 );
 
-            Assert.IsTrue( exists, "String-0 Template not found in cache." );
+                // Verify that the template now exists in the cache.
+                exists = cacheService.ContainsKey( key0 );
 
-            // Render a whitespace template of a different length - this should be cached separately from the first template.
-            // If not, the caching mechanism would cause some whitespace to be rendered incorrectly.
-            var input1 = new string( ' ', 1 );
+                Assert.IsTrue( exists, "String-0 Template not found in cache." );
 
-            var output1 = LavaEngine.CurrentEngine.RenderTemplate( input1 );
+                // Render a whitespace template of a different length - this should be cached separately from the first template.
+                // If not, the caching mechanism would cause some whitespace to be rendered incorrectly.
+                var input1 = new string( ' ', 1 );
+                var key1 = engine.TemplateCacheService.GetCacheKeyForTemplate( input1 );
 
-            // Verify that the 100-character whitespace template now exists in the cache.
-            exists = cacheService.ContainsTemplate( input1 );
+                var output1 = engine.RenderTemplate( input1 );
 
-            Assert.IsTrue( exists, "String-1 Template not found in cache." );
+                // Verify that the 100-character whitespace template now exists in the cache.
+                exists = cacheService.ContainsKey( key1 );
 
-            // Verify that a whitespace template of some other length is not equated with the whitespace templates we have specifically added.
-            exists = cacheService.ContainsTemplate( new string( ' ', 9 ) );
+                Assert.IsTrue( exists, "String-1 Template not found in cache." );
 
-            Assert.IsFalse( exists, "String-9 Template found in cache unexpectedly." );
+                // Verify that a whitespace template of some other length is not equated with the whitespace templates we have specifically added.
+                var keyX = engine.TemplateCacheService.GetCacheKeyForTemplate( new string( ' ', 9 ) );
+
+                exists = cacheService.ContainsKey( keyX );
+
+                Assert.IsFalse( exists, "String-9 Template found in cache unexpectedly." );
+            } );
         }
 
         /// <summary>
-        /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
+        /// Verify that cached shortcode definitions are refreshed after updates.
         /// </summary>
         [TestMethod]
-        public void ShortcodeCaching_ModifiedShortcode_ReturnsCorrectVersionAfterModification()
+        public void WebsiteLavaShortcodeProvider_ModifiedShortcode_ReturnsCorrectVersionAfterModification()
         {
-            //LavaShortcode lavaShortcode;
+            var options = new LavaEngineConfigurationOptions();
 
-            var rockContext = new RockContext();
-            var lavaShortCodeService = new LavaShortcodeService( rockContext );
+            ILavaTemplateCacheService cacheService = new WebsiteLavaTemplateCacheService();
 
-            // Create a new Shortcode.
-            var shortcodeGuid1 = TestGuids.Shortcodes.ShortcodeTest1.AsGuid();
+            options.CacheService = cacheService;
 
-            var lavaShortcode = lavaShortCodeService.Queryable().FirstOrDefault( x => x.Guid == shortcodeGuid1 );
-
-            if ( lavaShortcode == null )
+            TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                lavaShortcode = new LavaShortcode();
+                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.DotLiquid )
+                {
+                    Debug.Write( "Shortcode caching is not currently implemented for DotLiquid." );
+                    return;
+                }
 
-                lavaShortCodeService.Add( lavaShortcode );
+                var engine = LavaService.NewEngineInstance( defaultEngineInstance.EngineType, options );
+
+                var shortcodeProvider = new TestLavaDynamicShortcodeProvider();
+
+                var rockContext = new RockContext();
+                var lavaShortCodeService = new LavaShortcodeService( rockContext );
+
+                // Create a new Shortcode.
+                var shortcodeGuid1 = TestGuids.Shortcodes.ShortcodeTest1.AsGuid();
+
+                var lavaShortcode = lavaShortCodeService.Queryable().FirstOrDefault( x => x.Guid == shortcodeGuid1 );
+
+                if ( lavaShortcode == null )
+                {
+                    lavaShortcode = new LavaShortcode();
+
+                    lavaShortCodeService.Add( lavaShortcode );
+                }
+
+                lavaShortcode.Guid = shortcodeGuid1;
+                lavaShortcode.TagName = "TestShortcode1";
+                lavaShortcode.Name = "Test Shortcode 1";
+                lavaShortcode.IsActive = true;
+                lavaShortcode.Description = "Test shortcode";
+                lavaShortcode.TagType = TagType.Inline;
+
+                lavaShortcode.Markup = "Hello!";
+
+                rockContext.SaveChanges();
+
+                shortcodeProvider.RegisterShortcode( engine, lavaShortcode );
+
+                // Resolve a template using the new shortcode and verify the result.
+                engine.ClearTemplateCache();
+
+                shortcodeProvider.ClearCache();
+
+                LavaService.SetCurrentEngine( engine );
+
+                TestHelper.AssertTemplateOutput( engine, "Hello!", "{[ TestShortcode1 ]}" );
+
+                lavaShortcode.Markup = "Goodbye!";
+
+                rockContext.SaveChanges();
+
+                shortcodeProvider.ClearCache();
+
+                engine.ClearTemplateCache();
+
+                TestHelper.AssertTemplateOutput( engine, "Goodbye!", "{[ TestShortcode1 ]}" );
+            } );
+        }
+
+        #endregion
+
+        #region Support classes
+
+        /// <summary>
+        /// Returns the definition of Lava shortcodes stored in the current Rock database.
+        /// This implementation uses a website-based data caching model.
+        /// </summary>
+        public class TestLavaDynamicShortcodeProvider
+        {
+            private Dictionary<string, DynamicShortcodeDefinition> _cachedShortcodes = new Dictionary<string, DynamicShortcodeDefinition>( StringComparer.OrdinalIgnoreCase );
+
+            /// <summary>
+            /// Register the specified shortcodes with the Lava Engine.
+            /// </summary>
+            /// <param name="engine"></param>
+            public void RegisterShortcode( ILavaEngine engine, DynamicShortcodeDefinition shortcode )
+            {
+                engine.RegisterShortcode( shortcode.Name, ( shortcodeName ) => GetShortcodeDefinition( shortcodeName ) );
             }
 
-            lavaShortcode.Guid = shortcodeGuid1;
-            lavaShortcode.TagName = "TestShortcode1";
-            lavaShortcode.Name = "Test Shortcode 1";
-            lavaShortcode.IsActive = true;
-            lavaShortcode.Description = "Test shortcode";
-            //lavaShortcode.Documentation = htmlDocumentation.Text;
-            lavaShortcode.TagType = TagType.Inline;
+            /// <summary>
+            /// Register the specified shortcodes with the Lava Engine.
+            /// </summary>
+            /// <param name="engine"></param>
+            public void RegisterShortcode( ILavaEngine engine, LavaShortcode shortcode )
+            {
+                engine.RegisterShortcode( shortcode.TagName, ( shortcodeName ) => GetShortcodeDefinition( shortcodeName ) );
+            }
 
-            lavaShortcode.Markup = "Hello!";
-            //lavaShortcode.Parameters = kvlParameters.Value;
-            //lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
+            /// <summary>
+            /// Clears all of the entries from the shortcode cache.
+            /// </summary>
+            public void ClearCache()
+            {
+                _cachedShortcodes.Clear();
+            }
 
-            rockContext.SaveChanges();
+            /// <summary>
+            /// Gets a shortcode definition for the specified shortcode name.
+            /// </summary>
+            /// <param name="shortcodeName"></param>
+            /// <returns></returns>
+            public DynamicShortcodeDefinition GetShortcodeDefinition( string shortcodeName )
+            {
+                if ( _cachedShortcodes.ContainsKey( shortcodeName ) )
+                {
+                    return _cachedShortcodes[shortcodeName];
+                }
 
-            LavaEngine.CurrentEngine.RegisterDynamicShortcode( "TestShortcode1",
-                ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
+                // Get the shortcode and add it to the cache.
+                var rockContext = new RockContext();
 
-            // Resolve a template using the new shortcode and verify the result.
-            LavaEngine.CurrentEngine.ClearTemplateCache();
+                var lavaShortcodeService = new LavaShortcodeService( rockContext );
 
-            LavaShortcodeCache.Clear();
+                var shortcode = lavaShortcodeService.Queryable().Where( c => c.TagName == shortcodeName ).FirstOrDefault();
 
-            TestHelper.AssertTemplateOutput( "Hello!", "{[ testshortcode1 ]}" );
+                var shortcodeDefinition = GetShortcodeDefinitionFromShortcodeEntity( shortcode );
 
-            lavaShortcode.Markup = "Goodbye!";
+                if ( shortcode != null )
+                {
+                    _cachedShortcodes.Add( shortcode.TagName, shortcodeDefinition );
+                }
 
-            rockContext.SaveChanges();
+                return shortcodeDefinition;
+            }
 
-            LavaShortcodeCache.Clear();
+            private DynamicShortcodeDefinition GetShortcodeDefinitionFromShortcodeEntity( LavaShortcode shortcode )
+            {
+                if ( shortcode == null )
+                {
+                    return null;
+                }
 
-            LavaEngine.CurrentEngine.ClearTemplateCache();
+                var newShortcode = new DynamicShortcodeDefinition();
 
-            TestHelper.AssertTemplateOutput( "Goodbye!", "{[ testshortcode1 ]}" );
+                newShortcode.Name = shortcode.Name;
+                newShortcode.TemplateMarkup = shortcode.Markup;
+
+                var parameters = RockSerializableDictionary.FromUriEncodedString( shortcode.Parameters );
+
+                newShortcode.Parameters = new Dictionary<string, string>( parameters.Dictionary );
+
+                newShortcode.EnabledLavaCommands = shortcode.EnabledLavaCommands.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                if ( shortcode.TagType == TagType.Block )
+                {
+                    newShortcode.ElementType = LavaShortcodeTypeSpecifier.Block;
+                }
+                else
+                {
+                    newShortcode.ElementType = LavaShortcodeTypeSpecifier.Inline;
+                }
+
+                return newShortcode;
+            }
         }
 
         #endregion

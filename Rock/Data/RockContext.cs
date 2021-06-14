@@ -1854,6 +1854,14 @@ namespace Rock.Data
         public DbSet<StepProgram> StepPrograms { get; set; }
 
         /// <summary>
+        /// Gets or sets the step program completions.
+        /// </summary>
+        /// <value>
+        /// The step program completions.
+        /// </value>
+        public DbSet<StepProgramCompletion> StepProgramCompletions { get; set; }
+
+        /// <summary>
         /// Gets or sets the step statuses.
         /// </summary>
         /// <value>

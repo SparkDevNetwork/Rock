@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -260,6 +261,8 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
                 scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Value );
                 scheduleSummary.Add( "FrequencyDescription", transactionSchedule.TransactionFrequencyValue.Description );
+                scheduleSummary.Add( "Status", transactionSchedule.Status );
+                scheduleSummary.Add( "CardIsExpired", transactionSchedule.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now );
 
                 List<Dictionary<string, object>> summaryDetails = new List<Dictionary<string, object>>();
                 decimal totalAmount = 0;
@@ -334,7 +337,7 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     rockContext.SaveChanges();
-                    lLavaContent.Text = string.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
+                    lLavaContent.Text = string.Format( "<div class='alert alert-success'>Your scheduled {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
                 }
                 else
                 {
@@ -435,6 +438,21 @@ namespace RockWeb.Blocks.Finance
                 if ( gatewayFilterGuid != null )
                 {
                     schedules = schedules.Where( s => s.FinancialGateway.Guid == gatewayFilterGuid );
+                }
+
+                foreach ( var schedule in schedules )
+                {
+                    try
+                    {
+                        // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
+                        string errorMessage;
+                        transactionService.GetStatus( schedule, out errorMessage );
+                    }
+                    catch ( Exception ex )
+                    {
+                        // log and ignore
+                        LogException( ex );
+                    }
                 }
 
                 rptScheduledTransactions.DataSource = schedules.ToList();

@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Reporting
 
             }
 
-            BindGrid();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>

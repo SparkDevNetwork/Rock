@@ -54,45 +54,52 @@ Email: ted@rocksolidchurch.com
 
             var options = new LavaTestRenderOptions { MergeFields = mergeValues };
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
-
-                //var lavaContext = testEngine.NewRenderContext( mergeValues );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
                 TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input, options );
             } );
         }
 
         /// <summary>
-        /// Verify that an include file containing Lava syntax that is not Liquid-compatible is rendered correctly.
+        /// Verify that an include file can change the value of an outer scope variable.
+        /// Although this may be somewhat unintuitive, it is a scoping rule observed by Liquid.
         /// </summary>
-//        [TestMethod]
-//        public void IncludeStatement_ForFileContainingLavaSpecificSyntax_ReturnsMergedOutput()
-//        {
-//            var fileSystem = GetMockFileProvider();
+        [TestMethod]
+        public void IncludeStatement_ModifyingLocalVariableSameAsOuterVariable_ModifiesOuterVariable()
+        {
+            var fileSystem = GetMockFileProvider();
 
-//            var input = @"
-//{% include '_lavaSyntax.lava' %}
-//";
+            var input = @"
+{% assign a = 'a' %}
+Outer 'a' = {{ a }}
+{% include '_assign.lava' %}
+Outer 'a' =  {{ a }}
+";
 
-//            var expectedOutput = @"
-//Moderate
-//";
+            var expectedOutputLiquid = @"
+Outer 'a' = a
+Included 'a' = b
+Outer 'a' = b
+";
 
-//            //var mergeValues = new LavaDataDictionary { { "mobilePhone", "(623) 555-3323" }, { "homePhone", "(623) 555-3322" }, { "workPhone", "(623) 555-2444" }, { "email", "ted@rocksolidchurch.com" } };
+            var testEngineDotLiquid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-//            //var options = new LavaTestRenderOptions { MergeFields = mergeValues };
+            TestHelper.AssertTemplateOutput( testEngineDotLiquid, expectedOutputLiquid, input );
 
-//            TestHelper.AssertAction( ( engine ) =>
-//            {
-//                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+            // The behavior in Fluid is different from standard Liquid.
+            // The include file maintains a local scope for new variables.
+            var expectedOutputFluid = @"
+Outer 'a' = a
+Included 'a' = b
+Outer 'a' = a
+";
 
-//                //var lavaContext = testEngine.NewRenderContext( mergeValues );
+            var testEngineFluid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-//                TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input ); //, options );
-//            } );
-//        }
+            TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
+        }
 
         [TestMethod]
         public void IncludeStatement_ForNonexistentFile_ShouldRenderError()
@@ -103,15 +110,16 @@ Email: ted@rocksolidchurch.com
 {% include '_unknown.lava' %}
 ";
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-                var output = testEngine.RenderTemplate( input );
+                var result = testEngine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
 
-                Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
+
+                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
             } );
-
         }
 
         [TestMethod]
@@ -121,13 +129,13 @@ Email: ted@rocksolidchurch.com
 {% include '_template.lava' %}
 ";
 
-            TestHelper.AssertAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaEngine.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
+                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
 
-                var output = testEngine.RenderTemplate( input );
+                var result = testEngine.RenderTemplate( input );
 
-                Assert.That.IsTrue( output.Contains( "File Load Failed." ) );
+                Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
             } );
         }
 
@@ -135,6 +143,7 @@ Email: ted@rocksolidchurch.com
         {
             var fileProvider = new MockFileProvider();
 
+            // Add a lava template that references merge fields from the outer template.
             var contactDetailsTemplate = @"
 Mobile: {{ mobilePhone }}
 Home: {{ homePhone }} 
@@ -157,6 +166,14 @@ Slow
 ";
 
             fileProvider.Add( "_lavasyntax.lava", lavaSyntaxTemplate );
+
+            // Add a lava template that assigns a variable.
+            var assignTemplate = @"
+{% assign a = 'b' %}
+Included 'a' = {{ a }}
+";
+
+            fileProvider.Add( "_assign.lava", assignTemplate );
 
             return fileProvider;
         }

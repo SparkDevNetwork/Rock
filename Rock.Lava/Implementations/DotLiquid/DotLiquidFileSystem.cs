@@ -55,7 +55,7 @@ namespace Rock.Lava
             {
                 var lavaContext = new DotLiquidRenderContext( context );
 
-                // This method is called directly by the Fluid framework.
+                // This method is called directly by the DotLiquid framework.
                 // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the DotLiquid engine.
                 var lavaText = _lavaFileSystem.ReadTemplateFile( lavaContext, templateName );
 

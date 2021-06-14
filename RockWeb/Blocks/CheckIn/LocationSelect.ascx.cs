@@ -33,19 +33,51 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Displays a list of locations a person is able to check into.")]
 
-    [TextField( "Title", "Title to display. Use {0} for person/schedule.", false, "{0}", "Text", 8 )]
-    [TextField( "Sub Title", "Sub-Title to display. Use {0} for selected group name.", false, "{0}", "Text", 9 )]
-    [TextField( "Caption", "", false, "Select Location", "Text", 10 )]
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select Location",
+        Category =  "Text",
+        Order = 8 )]
 
-    [TextField( "No Option Message", "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.", false,
-        "Sorry, there are currently not any available locations that {0} can check into at {1}.", "Text", 11 )]
-    [TextField( "No Option After Select Message", "Message to display when there are not any options available after location is selected. Use {0} for person's name", false,
-        "Sorry, based on your selection, there are currently not any available times that {0} can check into.", "Text", 12 )]
+    [TextField( "No Option Message",
+        Key = AttributeKey.NoOptionMessage,
+        Description = "Message to display when there are not any options available. Use {0} for person's name, and {1} for schedule name.",
+        IsRequired = false,
+        DefaultValue = "Sorry, there are currently not any available locations that {0} can check into at {1}.",
+        Category = "Text",
+        Order = 9 )]
 
-    [CustomDropdownListField( "Sort By", "", "0^Location Name,1^Check-In Group Location Order", false, "0", order: 13 )]
+    [TextField( "No Option After Select Message",
+        Key = AttributeKey.NoOptionAfterSelectMessage,
+        Description = "Message to display when there are not any options available after location is selected. Use {0} for person's name",
+        IsRequired = false,
+        DefaultValue = "Sorry, based on your selection, there are currently not any available times that {0} can check into.",
+        Category = "Text",
+        Order = 10 )]
+
+    [CustomDropdownListField( "Sort By",
+        Key = AttributeKey.SortBy,
+        ListSource = "0^Location Name,1^Check-In Group Location Order",
+        IsRequired = false,
+        DefaultValue = "0",
+        Order = 11 )]
 
     public partial class LocationSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
+        {
+            public const string Caption = "Caption";
+            public const string NoOptionMessage = "NoOptionMessage";
+            public const string NoOptionAfterSelectMessage = "NoOptionAfterSelectMessage";
+            public const string SortBy = "SortBy";
+            public const string MultiPersonFirstPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonFirstPage;
+            public const string MultiPersonDonePage = CheckInBlockMultiPerson.AttributeKey.MultiPersonDonePage;
+        }
+        
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
@@ -178,9 +210,8 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lTitle.Text = string.Format( GetAttributeValue( "Title"),  GetPersonScheduleSubTitle() );
-                    lSubTitle.Text = string.Format( GetAttributeValue( "SubTitle" ), group.ToString() );
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lTitle.Text = GetTitleText();
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     var availLocations = group.GetAvailableLocations( schedule );
                     if ( availLocations.Any() )
@@ -209,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn
                         else
                         {
                             var locations = new List<CheckInLocation>();
-                            int sortBy = GetAttributeValue( "SortBy" ).AsInteger();
+                            int sortBy = GetAttributeValue( AttributeKey.SortBy ).AsInteger();
                             switch ( sortBy )
                             {
                                 case 0: locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
@@ -237,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptions.Text = string.Format( GetAttributeValue( "NoOptionMessage" ), 
+                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ), 
                                 person.Person.NickName,
                                 person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
                         }
@@ -269,6 +300,23 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        private string GetTitleText()
+        {
+            var checkinPerson = CurrentCheckInState.CheckIn.CurrentPerson;
+            var selectedGroup = checkinPerson.SelectedGroupTypes( checkinPerson.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson.CurrentSchedule ).FirstOrDefault()?.Group;
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group },
+                { LavaMergeFieldName.Individual, checkinPerson.Person },
+                { LavaMergeFieldName.SelectedGroup, selectedGroup },
+                { LavaMergeFieldName.SelectedSchedule, checkinPerson.CurrentSchedule?.Schedule }
+            };
+
+            var locationSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.LocationSelectHeaderLavaTemplate ?? string.Empty;
+            return locationSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
         
         /// <summary>
@@ -376,7 +424,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             if ( person != null )
             {
-                string msg = string.Format( GetAttributeValue( "NoOptionAfterSelectMessage" ), person.Person.FullName );
+                string msg = string.Format( GetAttributeValue( AttributeKey.NoOptionAfterSelectMessage ), person.Person.FullName );
                 if ( !ProcessSelection(
                     maWarning,
                     () => person.SelectedGroupTypes( schedule )
@@ -457,24 +505,24 @@ namespace RockWeb.Blocks.CheckIn
 
                 var queryParams = CheckForOverride();
 
-                if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "MultiPersonFirstPage" ) ) )
+                if ( nextPerson != null && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.MultiPersonFirstPage ) ) )
                 {
                     if ( validateSelectionRequired )
                     {
-                        var nextBlock = GetCheckInBlock( "MultiPersonFirstPage" );
+                        var nextBlock = GetCheckInBlock( AttributeKey.MultiPersonFirstPage );
                         if ( nextBlock != null && nextBlock.RequiresSelection( false ) )
                         {
-                            NavigateToLinkedPage( "MultiPersonFirstPage", queryParams );
+                            NavigateToLinkedPage( AttributeKey.MultiPersonFirstPage, queryParams );
                         }
                     }
                     else
                     {
-                        NavigateToLinkedPage( "MultiPersonFirstPage", queryParams );
+                        NavigateToLinkedPage( AttributeKey.MultiPersonFirstPage, queryParams );
                     }
                 }
                 else
                 {
-                    NavigateToLinkedPage( "MultiPersonDonePage", queryParams );
+                    NavigateToLinkedPage( AttributeKey.MultiPersonDonePage, queryParams );
                 }
             }
             else

@@ -23,6 +23,7 @@ using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Data;
+using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -112,7 +113,7 @@ namespace Rock.Rest.Controllers
                 throw new HttpResponseException( errorResponse );
             }
 
-            var data = interaction.InteractionData.FromJsonOrNull<WatchInteractionData>();
+            var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
 
             return new MediaElementInteraction
             {
@@ -208,7 +209,7 @@ namespace Rock.Rest.Controllers
             if ( interaction != null )
             {
                 // Update the interaction data with the new watch map.
-                var data = interaction.InteractionData.FromJsonOrNull<WatchInteractionData>() ?? new WatchInteractionData();
+                var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>() ?? new MediaWatchedInteractionData();
                 data.WatchMap = mediaInteraction.WatchMap;
                 data.WatchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap );
 
@@ -228,7 +229,7 @@ namespace Rock.Rest.Controllers
             else
             {
                 // Generate the interaction data from the watch map.
-                var data = new WatchInteractionData
+                var data = new MediaWatchedInteractionData
                 {
                     WatchMap = mediaInteraction.WatchMap,
                     WatchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap )
@@ -363,24 +364,6 @@ namespace Rock.Rest.Controllers
             /// The related entity identifier.
             /// </value>
             public int? RelatedEntityId { get; set; }
-        }
-
-        /// <summary>
-        /// The custom data object to store in the interaction data for a
-        /// "media watched" interaction. Marked private for now so we can
-        /// move it to a better location later without breaking anything.
-        /// </summary>
-        private class WatchInteractionData
-        {
-            /// <summary>
-            /// Gets or sets the watch map.
-            /// </summary>
-            /// <value>
-            /// The watch map.
-            /// </value>
-            public string WatchMap { get; set; }
-
-            public double WatchedPercentage { get; set; }
         }
     }
 }

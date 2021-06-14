@@ -1163,7 +1163,11 @@ function(item) {
                 dateRange.End = RockDateTime.Now;
             }
             var start = dateRange.Start;
-            var end = dateRange.End;
+            
+            var endTime = dateRange.End.Value;
+            // We need to pass '11/09/2020 11:59:59.000', because SQL Server rounds '11/09/2020 11:59:59.999' up to '11/10/2020 12:00:00.000'.
+            // Since this is used for Sunday Date the milliseconds don't matter
+            var end = new DateTime( endTime.Year, endTime.Month, endTime.Day, endTime.Hour, endTime.Minute, endTime.Second );
 
             // Get the group filter
             var groupIdList = new List<int>();

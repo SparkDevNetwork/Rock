@@ -6,67 +6,62 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
     Title="ProgressPage"
-    d:DesignHeight="500"
+    d:DesignHeight="700"
     d:DesignWidth="800"
-    Background="#efefef"
     Loaded="Page_Loaded"
+    Style="{StaticResource pageBackground}"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
-            <RowDefinition Height="*" />
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
-        </Grid.RowDefinitions>
+    <Border Style="{StaticResource borderStyleMain}">
 
-        <Grid
-            Grid.Row="1"
-            Grid.Column="1"
-            Style="{StaticResource gridPanel}">
+        <Grid Background="White">
+
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
-                <RowDefinition Height="*" />
-                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
+                <RowDefinition Height="45" />
+                <RowDefinition />
+                <RowDefinition Height="60" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="1" Height="Auto">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="48" />
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <StackPanel
+                Grid.Row="1"
+                Width="350"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <rockWpfControls:AlertLabel
+                    x:Name="lblRenderStatementsProgress"
+                    AlertType="Info"
+                    Content="Render Statement Progress"
+                    MouseDoubleClick="lblRenderStatementsProgress_MouseDoubleClick"
+                    Visibility="Visible" />
+                <ProgressBar
+                    x:Name="pgRenderStatementsProgress"
+                    Height="8"
+                    Maximum="100"
+                    Visibility="Visible"
+                    Value="0" />
+                <rockWpfControls:AlertLabel
+                    x:Name="lblSaveMergeDocProgress"
+                    AlertType="Info"
+                    Content="Save Merge Docs Progress"
+                    Visibility="Visible" />
+                <ProgressBar
+                    x:Name="pgSaveMergeDocProgress"
+                    Height="8"
+                    Maximum="100"
+                    Visibility="Visible"
+                    Value="0" />
+                <Label
+                    Name="lblStats"
+                    HorizontalAlignment="Center"
+                    FontFamily="Courier New"
+                    FontSize="14"
+                    Visibility="Hidden" />
+            </StackPanel>
 
-                    <rockWpfControls:AlertLabel
-                        x:Name="lblReportProgress"
-                        AlertType="Info"
-                        Content="Progress"
-                        MouseDoubleClick="lblReportProgress_MouseDoubleClick"
-                        Visibility="Visible" />
-                    <ProgressBar
-                        x:Name="pgReportProgress"
-                        Height="4"
-                        Maximum="100"
-                        Visibility="Collapsed"
-                        Value="0" />
-
-
-                </StackPanel>
-
-            </Grid>
             <Button
                 x:Name="btnPrev"
                 Grid.Row="2"
-                Margin="8,8,8,8"
+                Margin="12"
                 HorizontalAlignment="Left"
                 Click="btnPrev_Click"
                 Style="{StaticResource buttonStyle}">
@@ -75,6 +70,8 @@
                     <Label Content="Prev" Style="{StaticResource labelStyleButtonText}" />
                 </StackPanel>
             </Button>
+
         </Grid>
-    </Grid>
+
+    </Border>
 </Page>

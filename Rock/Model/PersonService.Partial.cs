@@ -4362,6 +4362,23 @@ FROM (
         }
 
         /// <summary>
+        /// Ensures the GivingId is correct for the given Person.Id. Updates via SQL.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void UpdateGivingId( int personId, RockContext rockContext )
+        {
+            var person = new PersonService( rockContext ).Get( personId );
+            var correctGivingId = person.GivingGroupId.HasValue ? $"G{ person.GivingGroupId.Value }" : $"P{ person.Id }";
+
+            // Make sure the GivingId is correct.
+            if ( person.GivingId != correctGivingId )
+            {
+                rockContext.Database.ExecuteSqlCommand( $"UPDATE [Person] SET [GivingId] = '{ correctGivingId }' WHERE [Id] = { personId }" );
+            }
+        }
+
+        /// <summary>
         /// Ensures the GivingId is correct for all person records in the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -4451,41 +4468,48 @@ FROM (
         /// <returns></returns>
         public static int UpdateGroupSalutations( int personId, RockContext rockContext )
         {
-            // use specified rockContext to get Person and Family because rockContext might
-            // might be in a transaction that hasn't been committed yet
             var person = new PersonService( rockContext ).GetInclude( personId, s => s.PrimaryFamily );
 
-            if ( !person.PrimaryFamilyId.HasValue )
+            try
             {
+                // use specified rockContext to get Person and Family because rockContext might
+                // might be in a transaction that hasn't been committed yet
 
-                // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
-                // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
-                return 0;
+                if ( !person.PrimaryFamilyId.HasValue )
+                {
 
+                    // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
+                    // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
+                    return 0;
+
+                }
+
+                var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
+
+                if ( primaryFamily == null )
+                {
+                    // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
+                    return 0;
+                }
+
+                var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
+                var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
+                if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
+                {
+                    primaryFamily.GroupSalutation = groupSalutation;
+                    primaryFamily.GroupSalutationFull = groupSalutationFull;
+
+                    // save changes without pre/post processing so we don't get stuck in recursion
+                    rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                    return 1;
+                }
             }
-
-            var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
-
-            if ( primaryFamily == null )
+            catch ( Exception ex )
             {
-                // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
-                return 0;
-            }
-
-            var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
-            var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
-            if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
-            {
-                primaryFamily.GroupSalutation = groupSalutation;
-                primaryFamily.GroupSalutationFull = groupSalutationFull;
-
-                // save changes without pre/post processing so we don't get stuck in recursion
-                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
-                return 1;
+                ExceptionLogService.LogException( new Exception( $"Error running UpdateGroupSalutations for person {person.FullName}. Check that the Family group has a name.", ex ) );
             }
 
             return 0;
-
         }
 
         #endregion
@@ -4542,6 +4566,42 @@ FROM (
 
         #endregion Anonymous Giver
 
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( RockContext rockContext = null )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var entityTypeId = EntityTypeCache.GetId<Person>();
+            if ( entityTypeId == null )
+            {
+                return null;
+            }
+
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySetService = new EntitySetService( rockContext );
+            var expirationDate = RockDateTime.Now;
+
+            var mergeRequestQry = entitySetService
+                .Queryable()
+                .Where( es => es.EntityTypeId == entityTypeId )
+                .Where( es => es.EntitySetPurposeValueId == definedValueId )
+                .Where( es => es.ExpireDateTime == null || es.ExpireDateTime > expirationDate );
+
+            return mergeRequestQry;
+        }
     }
 
     /// <summary>

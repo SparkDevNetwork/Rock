@@ -25,7 +25,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -411,7 +411,7 @@ namespace Rock.Lava
         {
             return input == null
                 ? input
-                : input.Titleize();
+                : input.ApplyCase( LetterCasing.Title );
         }
 
         /// <summary>
@@ -1143,7 +1143,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            if ( input.ToString() == "Now" )
+            if ( input.ToString().ToLower() == "now" )
             {
                 input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
             }
@@ -1153,30 +1153,36 @@ namespace Rock.Lava
                 return input.ToString();
             }
 
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
             if ( format.Length == 1 )
             {
                 format = " " + format;
             }
 
-            var inputDateTime = input.ToString().AsDateTime();
-
-            // Check for invalid date
-            if ( !inputDateTime.HasValue )
-            {
-                return input.ToString().Trim();
-            }
-
-            // Consider special 'Standard Date' format
+            // Consider special 'Standard Date' and 'Standard Time' formats.
             if ( format == "sd" )
             {
-                return inputDateTime.Value.ToShortDateString();
+                format = "d";
+            }
+            else if ( format == "st" )
+            {
+                format = "t";
             }
 
-            // Consider special 'Standard Time' format
-            if ( format == "st" )
+            // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
+            if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return inputDateTime.Value.ToShortTimeString();
+                return inputDateTimeOffset.ToLocalTime().ToString( format ).Trim();
+            }
+
+            // Convert the input to a valid DateTime if possible.
+            var inputDateTime = input is DateTime time ? time : input.ToString().AsDateTime();
+
+            if ( !inputDateTime.HasValue )
+            {
+                // Not a valid date, so return the input unformatted.
+                return input.ToString().Trim();
             }
 
             return inputDateTime.Value.ToString( format ).Trim();
@@ -1375,6 +1381,8 @@ namespace Rock.Lava
             DateTime dtInput;
             DateTime dtCompare;
 
+            input = GetDateFromObject( input, null );
+
             if ( input != null && input is DateTime )
             {
                 dtInput = ( DateTime ) input;
@@ -1402,7 +1410,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string DaysFromNow( object input )
         {
-            DateTime dtInputDate = GetDateFromObject( input ).Date;
+            DateTime dtInputDate = GetDateFromObject( input, DateTime.MinValue ).Value; //.Date;
             DateTime dtCompareDate = RockDateTime.Now.Date;
 
             int daysDiff = ( dtInputDate - dtCompareDate ).Days;
@@ -1524,8 +1532,8 @@ namespace Rock.Lava
                 return HumanizeTimeSpanWithPrecision( sStartDate, sEndDate, unitOrPrecision.ToString().AsInteger() );
             }
 
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             TimeUnit unitValue = TimeUnit.Day;
 
@@ -1589,8 +1597,8 @@ namespace Rock.Lava
                 precisionUnit = (int)precision;
             }
 
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -1603,13 +1611,14 @@ namespace Rock.Lava
             }
         }
         /// <summary>
-        /// Gets the date from object.
+        /// Gets a date from object.
         /// </summary>
         /// <param name="date">The date.</param>
+        /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private static DateTime GetDateFromObject( object date )
+        private static DateTime? GetDateFromObject( object date, DateTime? defaultValue )
         {
-            DateTime oDateTime = DateTime.MinValue;
+            DateTime oDateTime;
 
             if ( date is String )
             {
@@ -1633,8 +1642,13 @@ namespace Rock.Lava
             {
                 return ( DateTime ) date;
             }
+            else if ( date is DateTimeOffset inputDateTimeOffset )
+            {
+                // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
+                return inputDateTimeOffset.ToLocalTime().DateTime;
+            }
 
-            return DateTime.MinValue;
+            return defaultValue;
         }
 
         /// <summary>
@@ -1646,8 +1660,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            DateTime startDate = GetDateFromObject( sStartDate, DateTime.MinValue ).Value;
+            DateTime endDate = GetDateFromObject( sEndDate, DateTime.MinValue ).Value;
 
             if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
             {
@@ -1703,31 +1717,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public static DateTime? ToMidnight( object input )
         {
-            if ( input == null )
+            var inputDate = GetDateFromObject( input, null );
+
+            if ( inputDate == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                return ( ( DateTime ) input ).Date;
-            }
-
-            if ( input.ToString() == "Now" )
-            {
-                return RockDateTime.Now.Date;
-            }
-            else
-            {
-                DateTime date;
-
-                if ( DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return date.Date;
-                }
-            }
-
-            return null;
+            return inputDate.Value.Date;
         }
 
         /// <summary>
@@ -1815,28 +1812,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static int? DaysUntil( object input )
         {
-            DateTime date;
-
             if ( input == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                date = ( DateTime ) input;
-            }
-            else
-            {
-                DateTime.TryParse( input.ToString(), out date );
-            }
+            var date = GetDateFromObject( input, null );
 
             if ( date == null )
             {
                 return null;
             }
 
-            return ( date - RockDateTime.Now ).Days;
+            return ( date.Value - RockDateTime.Now ).Days;
         }
 
         /// <summary>
@@ -2160,6 +2148,12 @@ namespace Rock.Lava
             {
                 return "Could not convert input to number";
             }
+        }
+
+        /// <inheritdoc cref="Rock.Lava.Filters.TemplateFilters.RandomNumber(object)"/>
+        public static int RandomNumber( object input )
+        {
+            return Rock.Lava.Filters.TemplateFilters.RandomNumber( input );
         }
 
         #endregion Number Filters
@@ -2909,7 +2903,15 @@ namespace Rock.Lava
                 return null;
             }
 
-            return Person.GetFamilySalutation( person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator );
+            var args = new Person.CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalfinalSeparator,
+                Separator = separator
+            };
+
+            return Person.CalculateFamilySalutation( person, args );
         }
 
         /// <summary>
@@ -3801,7 +3803,9 @@ namespace Rock.Lava
                 input = "~/Themes/" + theme + ( input.Length > 2 ? input.Substring( 2 ) : string.Empty );
             }
 
-            return page.ResolveUrl( input );
+            var url = page.ResolveUrl( input );
+
+            return url;
         }
 
         /// <summary>
@@ -4762,6 +4766,15 @@ namespace Rock.Lava
                 result.Add( "Key", key.GetValue( input, null ).ToString() );
                 result.Add( "Value", value.GetValue( input, null ) );
             }
+            else if ( input is List<object> keyValueList )
+            {
+                // If the input value is a list of two items, assume it is a key/value pair.
+                if ( keyValueList.Count == 2 )
+                {
+                    result.Add( "Key", keyValueList[0].ToStringOrDefault( string.Empty ) );
+                    result.Add( "Value", keyValueList[1] );
+                }
+            }
 
             return result;
         }
@@ -5045,6 +5058,10 @@ namespace Rock.Lava
             {
                 return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
             }
+            else if ( valueName == "lavaengine" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+            }
 
             return $"Configuration setting \"{ input }\" is not available.";
         }
@@ -5113,10 +5130,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Where( object input, string filter, object filterValue = null, string comparisonType = null )
         {
-            comparisonType = comparisonType.IsNullOrWhiteSpace() ? "equal" : comparisonType.ToLower();
-            comparisonType = ( comparisonType != "equal" || comparisonType != "notequal" ) ? "equal" : comparisonType;
-
-            if ( filter != null && filterValue != null )
+            if ( filter != null
+                 && filterValue != null )
             {
                 return WhereInternal( input, filter, filterValue, comparisonType );
             }
@@ -5136,71 +5151,67 @@ namespace Rock.Lava
         /// <returns></returns>
         private static object WhereInternal( object input, string filterKey, object filterValue, string comparisonType )
         {
-            if ( input == null )
+            if ( input == null || !( input is IEnumerable ) )
             {
                 return input;
             }
 
-            if ( input is IEnumerable )
+            comparisonType = ( comparisonType ?? "equal" ).ToLower();
+            comparisonType = ( comparisonType == "equal" || comparisonType == "notequal" ) ? comparisonType : "equal";
+
+            var result = new List<object>();
+
+            foreach ( var value in ( (IEnumerable)input ) )
             {
-                var result = new List<object>();
+                ILavaDataDictionary lavaObject = null;
 
-                var engine = LavaEngine.CurrentEngine;
-
-                foreach ( var value in ( (IEnumerable)input ) )
+                if ( value is ILavaDataDictionarySource lavaSource )
                 {
-                    ILavaDataDictionary lavaObject = null;
-
-                    if ( value is ILavaDataDictionarySource lavaSource )
-                    {
-                        lavaObject = lavaSource.GetLavaDataDictionary();
-                    }
-                    else if ( value is ILavaDataDictionary )
-                    {
-                        lavaObject = value as ILavaDataDictionary;
-                    }
-
-                    if ( lavaObject != null )
-                    {
-                        if ( lavaObject.ContainsKey( filterKey )
-                                && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                     || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
-                        {
-                            result.Add( lavaObject );
-                        }
-                    }
-                    else if ( value is IDictionary<string, object> )
-                    {
-                        var dictionaryObject = value as IDictionary<string, object>;
-                        if ( dictionaryObject.ContainsKey( filterKey )
-                                 && ( (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue && comparisonType == "equal"
-                                        || ( (dynamic)dictionaryObject[filterKey] != (dynamic)filterValue && comparisonType == "notequal" ) ) )
-                        {
-                            result.Add( dictionaryObject );
-                        }
-                    }
-                    else if ( value is object )
-                    {
-                        var propertyValue = value.GetPropertyValue( filterKey );
-
-                        // Allow for null checking as an empty string. Could be differing opinions on this...?!
-                        if ( propertyValue.IsNull() )
-                        {
-                            propertyValue = string.Empty;
-                        }
-
-                        if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
-                                || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
-                        {
-                            result.Add( value );
-                        }
-                    }
+                    lavaObject = lavaSource.GetLavaDataDictionary();
+                }
+                else if ( value is ILavaDataDictionary )
+                {
+                    lavaObject = value as ILavaDataDictionary;
                 }
 
-                return result;
+                if ( lavaObject != null )
+                {
+                    if ( lavaObject.ContainsKey( filterKey )
+                            && ( ( comparisonType == "equal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                    {
+                        result.Add( lavaObject );
+                    }
+                }
+                else if ( value is IDictionary<string, object> )
+                {
+                    var dictionaryObject = value as IDictionary<string, object>;
+                    if ( dictionaryObject.ContainsKey( filterKey )
+                             && ( (dynamic)dictionaryObject[filterKey] == (dynamic)filterValue && comparisonType == "equal"
+                                    || ( (dynamic)dictionaryObject[filterKey] != (dynamic)filterValue && comparisonType == "notequal" ) ) )
+                    {
+                        result.Add( dictionaryObject );
+                    }
+                }
+                else if ( value is object )
+                {
+                    var propertyValue = value.GetPropertyValue( filterKey );
+
+                    // Allow for null checking as an empty string. Could be differing opinions on this...?!
+                    if ( propertyValue.IsNull() )
+                    {
+                        propertyValue = string.Empty;
+                    }
+
+                    if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
+                            || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                    {
+                        result.Add( value );
+                    }
+                }
             }
 
-            return input;
+            return result;
         }
 
         /// <summary>
@@ -5217,16 +5228,24 @@ namespace Rock.Lava
 
                 if ( input is List<object> objectList )
                 {
-                    var itemType = objectList.FirstOrDefault().GetType();
+                    if ( objectList.Any() )
+                    {
+                        var itemType = objectList.FirstOrDefault().GetType();
 
-                    enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                        enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                    }
+                    else
+                    {
+                        return new List<object>();
+                    }
                 }
                 else
                 {
                     enumerableInput = (IEnumerable)input;
                 }
 
-                return enumerableInput.Where( filter );
+                // The new System.Linq.Dynamic.Core only works on Queryables
+                return enumerableInput.AsQueryable().Where( filter );
             }
 
             return null;
@@ -5368,12 +5387,21 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( !( input is IList ) )
+            IList inputList;
+
+            if ( ( input is IList ) )
+            {
+                inputList = input as IList;
+            }
+            else if ( ( input is IEnumerable ) )
+            {
+                inputList = ( input as IEnumerable ).Cast<object>().ToList();
+            }
+            else
             {
                 return input;
             }
 
-            var inputList = input as IList;
             var indexInt = index.ToString().AsIntegerOrNull();
             if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
             {
@@ -5400,7 +5428,8 @@ namespace Rock.Lava
                 return input;
             }
 
-            return e.Distinct().Cast<object>().ToList();
+            // The new System.Linq.Dynamic.Core only works on Queryabless
+            return e.AsQueryable().Distinct().Cast<object>().ToList();
         }
 
         /// <summary>

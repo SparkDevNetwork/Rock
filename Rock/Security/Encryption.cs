@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -31,6 +32,65 @@ namespace Rock.Security
     public class Encryption
     {
         private static byte[] _salt = Encoding.ASCII.GetBytes( "rsduYVC2leenXKTLYLkO9qsWU95HGCvWlbXcBTjtrj5dBJ7RPeGYiw7U3lZE+LWkT+jGrLP9deRMc8sUHJtc/wu2l4vANBx5f+p1zpRwQ2bB/E6Ta8k7haPiTRc4wYhrmWMrg8VfQ4MhAsSlijIfT9u+DszEkB2ba2k0FIPMSWk=" );
+
+        // The byte array used for the AES key to encrypt/decrypt a string
+        private static byte[] _dataEncryptionKeyBytes
+        {
+            get
+            {
+                if ( _dataEncryptionKeyBytesBacker == null )
+                {
+                    var encryptionKey = GetDataEncryptionKey();
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( encryptionKey, _salt );
+
+                    // The 32 is the default value for RijndaelManaged.KeySize (256) divided by 8
+                    _dataEncryptionKeyBytesBacker = key.GetBytes( 32 );
+                }
+
+                return _dataEncryptionKeyBytesBacker;
+            }
+        }
+
+        private static byte[] _dataEncryptionKeyBytesBacker;
+
+        // A collection of old keys used to encrypt/descrypt a string. These should only be used for reads if the current key failed.
+        private static Dictionary<string,byte[]> _oldDataEncryptionKeyBytes
+        {
+            get
+            {
+                if ( _oldDataEncryptionKeyBytesBacker.IsNull() )
+                {
+                    /* 2021-06-07 ETD
+                     * Thred safety fix:
+                     * There is a possible edge case where a second call to this prop could occur while the first is still populating the dictionary, which means the second caller would only get an empty or partial list.
+                     * To prevent this the backer has to have all the data once it is no longer null. This prop uses a temp dictionary and populates it once complete the backer is set to the temp dictionary.
+                     * After being set the backer is no longer null and has a complete collection.
+                     * 
+                     * For our edge case scenario the second caller would simply end up duplicating the effort but it would get back the correct data.
+                     */
+                    var tempDictionary = new Dictionary<string, byte[]>();
+
+                    int i = 0;
+                    var appSettingKey = "OldDataEncryptionKey";
+                    var dataEncryptionKey = ConfigurationManager.AppSettings[appSettingKey];
+                    while ( !string.IsNullOrWhiteSpace( dataEncryptionKey ) )
+                    {
+                        Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                        tempDictionary.Add( appSettingKey, key.GetBytes( 32 ) );
+
+                        i++;
+                        appSettingKey = $"OldDataEncryptionKey{i}";
+                        dataEncryptionKey = ConfigurationManager.AppSettings[appSettingKey];
+                    }
+
+                    _oldDataEncryptionKeyBytesBacker = tempDictionary;
+                }
+
+                return _oldDataEncryptionKeyBytesBacker;
+            }
+        }
+
+        private static Dictionary<string, byte[]> _oldDataEncryptionKeyBytesBacker;
 
         /// <summary>
         /// Tries to encrypt the string. Use this in situations where you might just want to skip encryption if it doesn't work.  
@@ -54,7 +114,7 @@ namespace Rock.Security
             {
                 try
                 {
-                    cypherText = EncryptString( plainText, encryptionKey );
+                    cypherText = EncryptString( plainText );
                     return true;
                 }
                 catch
@@ -75,51 +135,66 @@ namespace Rock.Security
         }
 
         /// <summary>
-        /// The _key bytes created new for each Request
-        /// </summary>
-        private static byte[] _keyBytes
-        {
-            get
-            {
-                if ( HttpContext.Current != null )
-                {
-                    return HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] as byte[];
-                }
-
-                return _nonHttpContext_keyBytes;
-            }
-
-            set
-            {
-                if ( HttpContext.Current != null )
-                {
-                    HttpContext.Current.Items[$"{typeof( Encryption ).FullName}:_keyBytes"] = value;
-                }
-                else
-                {
-                    _nonHttpContext_keyBytes = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// The _keyBytes when HttpContext.Current is null
-        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
-        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
-        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
-        /// </summary>
-        [ThreadStatic]
-        private static byte[] _nonHttpContext_keyBytes;
-
-        /// <summary>
         /// Encrypt the given string using AES.  The string can be decrypted using 
         /// DecryptString().  The sharedSecret parameters must match.
         /// </summary>
         /// <param name="plainText">The text to encrypt.</param>
         public static string EncryptString( string plainText )
         {
-            string dataEncryptionKey = Encryption.GetDataEncryptionKey();
-            return EncryptString( plainText, dataEncryptionKey );
+            return EncryptString( plainText, _dataEncryptionKeyBytes );
+        }
+
+        private static string EncryptString( string plainText, byte[] keyBytes )
+        {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return string.Empty;
+            }
+
+            if ( keyBytes.IsNull() || keyBytes.Length == 0 )
+            {
+                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
+            }
+
+            string outStr = null;
+            RijndaelManaged aesAlg = null;
+
+            try
+            {
+                // Create a RijndaelManaged object
+                aesAlg = new RijndaelManaged();
+                aesAlg.Key = keyBytes;
+
+                // Create a decryptor to perform the stream transform.
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor( aesAlg.Key, aesAlg.IV );
+
+                // Create the streams used for encryption.
+                using ( MemoryStream msEncrypt = new MemoryStream() )
+                {
+                    // prepend the IV
+                    msEncrypt.Write( BitConverter.GetBytes( aesAlg.IV.Length ), 0, sizeof( int ) );
+                    msEncrypt.Write( aesAlg.IV, 0, aesAlg.IV.Length );
+                    using ( CryptoStream csEncrypt = new CryptoStream( msEncrypt, encryptor, CryptoStreamMode.Write ) )
+                    {
+                        using ( StreamWriter swEncrypt = new StreamWriter( csEncrypt ) )
+                        {
+                            //Write all data to the stream.
+                            swEncrypt.Write( plainText );
+                        }
+                    }
+
+                    outStr = Convert.ToBase64String( msEncrypt.ToArray() );
+                }
+            }
+            finally
+            {
+                // Clear the RijndaelManaged object.
+                if ( aesAlg != null )
+                    aesAlg.Clear();
+            }
+
+            // Return the encrypted bytes from the memory stream.
+            return outStr;
         }
 
         /// <summary>
@@ -129,6 +204,8 @@ namespace Rock.Security
         /// <param name="dataEncryptionKey">The data encryption key.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        [RockObsolete( "1.13" )]
+        [Obsolete("Do not use this method. Use the override without the dataEncryption key. That method will get the key from the web.config and store the computed key which will make subsequent encrypts faster by 10-15ms. This method will compute the key each time and will be much slower.")]
         public static string EncryptString( string plainText, string dataEncryptionKey )
         {
             if (string.IsNullOrEmpty(plainText))
@@ -150,14 +227,9 @@ namespace Rock.Security
                 aesAlg = new RijndaelManaged();
                 
                 // generate the key from the shared secret and the salt
-                if ( _keyBytes == null )
-                {
-                    // generate a new key for every thread (vs. every call which is slow) 
-                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
-                }
-
-                aesAlg.Key = _keyBytes;
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                var keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
+                aesAlg.Key = keyBytes;
 
                 // Create a decryptor to perform the stream transform.
                 ICryptoTransform encryptor = aesAlg.CreateEncryptor( aesAlg.Key, aesAlg.IV );
@@ -200,39 +272,40 @@ namespace Rock.Security
         /// <param name="cipherText">The text to decrypt.</param>
         public static string DecryptString( string cipherText )
         {
-            string dataEncryptionKey = ConfigurationManager.AppSettings["DataEncryptionKey"];
-            
             string plainText = null;
 
             try
             {
-                plainText = DecryptString( cipherText, dataEncryptionKey );
+                plainText = DecryptString( cipherText, _dataEncryptionKeyBytes );
             }
-            catch { }
+            catch
+            {
+                // Intentionally left blank
+            }
 
             if ( plainText != null )
             {
                 return plainText;
             }
 
-            // Check for any old decryption strings
-            int i = 0;
-            dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
-            while ( !string.IsNullOrWhiteSpace( dataEncryptionKey ) )
+            // Try old decryption keys
+            if ( _oldDataEncryptionKeyBytes.IsNotNull() )
             {
-                try
+                foreach ( var oldDataEncryptionKeyBytes in _oldDataEncryptionKeyBytes )
                 {
-                    plainText = DecryptString( cipherText, dataEncryptionKey );
+                    try
+                    {
+                        plainText = DecryptString( cipherText, oldDataEncryptionKeyBytes.Value );
+                        if ( plainText.IsNotNullOrWhiteSpace() )
+                        {
+                            return plainText;
+                        }
+                    }
+                    catch
+                    {
+                        // Intentionally left blank
+                    }
                 }
-                catch { }
-
-                if ( plainText != null )
-                {
-                    return plainText;
-                }
-
-                i++;
-                dataEncryptionKey = ConfigurationManager.AppSettings["OldDataEncryptionKey" + ( i > 0 ? i.ToString() : "" )];
             }
 
             return null;
@@ -245,6 +318,8 @@ namespace Rock.Security
         /// <param name="dataEncryptionKey">The data encryption key.</param>
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        [Obsolete( "Use the overload without the dataEncryptionKey param. It will cycle through all of the DataEncryptionKeys in the web.config until it works or there are none left and store the computed key which will subsequent decrypts faster by 10-15ms. This method will compute the key each time and will be much slower." )]
+        [RockObsolete( "1.13" )]
         public static string DecryptString( string cipherText, string dataEncryptionKey )
         {
             if ( string.IsNullOrEmpty( cipherText ) )
@@ -267,14 +342,10 @@ namespace Rock.Security
             {
                 // Create a RijndaelManaged object
                 aesAlg = new RijndaelManaged();
-                
+
                 // generate the key from the shared secret and the salt
-                if ( _keyBytes == null )
-                {
-                    // generate a new key for every thread (vs. every call which is slow) 
-                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
-                    _keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
-                }
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes( dataEncryptionKey, _salt );
+                var keyBytes = key.GetBytes( aesAlg.KeySize / 8 );
 
                 // Create the streams used for decryption.                
                 byte[] bytes = Convert.FromBase64String( cipherText );
@@ -283,7 +354,7 @@ namespace Rock.Security
                     // Create a RijndaelManaged object
                     // with the specified key and IV.
                     aesAlg = new RijndaelManaged();
-                    aesAlg.Key = _keyBytes;
+                    aesAlg.Key = keyBytes;
                     // Get the initialization vector from the encrypted stream
                     aesAlg.IV = ReadByteArray( msDecrypt );
                     // Create a decrytor to perform the stream transform.
@@ -303,6 +374,64 @@ namespace Rock.Security
                 // Clear the RijndaelManaged object.
                 if ( aesAlg != null )
                     aesAlg.Clear();
+            }
+
+            return plaintext;
+        }
+
+        /// <summary>
+        /// Decrypts the string.
+        /// </summary>
+        /// <param name="cipherText">The cipher text.</param>
+        /// <param name="keyBytes">The key bytes.</param>
+        /// <returns></returns>
+        /// <exception cref="System.ArgumentNullException">DataEncryptionKey must be specified in configuration file</exception>
+        private static string DecryptString( string cipherText, byte[] keyBytes )
+        {
+            if ( string.IsNullOrEmpty( cipherText ) )
+            {
+                return string.Empty;
+            }
+
+            if ( keyBytes == null || keyBytes.Length == 0 )
+            {
+                throw new ArgumentNullException( "DataEncryptionKey must be specified in configuration file" );
+            }
+
+            string plaintext = null;
+            RijndaelManaged aesAlg = null;
+
+            try
+            {
+                // Create the streams used for decryption.
+                using ( MemoryStream msDecrypt = new MemoryStream( Convert.FromBase64String( cipherText ) ) )
+                {
+                    // Create a RijndaelManaged object with the specified key and the IV from the encrypted stream.
+                    aesAlg = new RijndaelManaged
+                    {
+                        Key = keyBytes,
+                        IV = ReadByteArray( msDecrypt )
+                    };
+
+                    // Create a decryptor to perform the stream transform.
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor( aesAlg.Key, aesAlg.IV );
+
+                    // Read the decrypted bytes from the decrypting stream and place them in a string.
+                    using ( CryptoStream csDecrypt = new CryptoStream( msDecrypt, decryptor, CryptoStreamMode.Read ) )
+                    using ( StreamReader srDecrypt = new StreamReader( csDecrypt ) )
+                    {
+                        plaintext = srDecrypt.ReadToEnd();
+                    }
+                }
+            }
+            catch
+            {
+                // Intentionally ignore so the caller can try another key when it gets a null value back.
+            }
+            finally
+            {
+                // Clear the RijndaelManaged object.
+                aesAlg?.Clear();
             }
 
             return plaintext;

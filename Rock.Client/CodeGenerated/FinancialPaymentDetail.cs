@@ -50,12 +50,16 @@ namespace Rock.Client
         public int? ExpirationMonth { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.12.4"
+        [Obsolete( "Use ExpirationMonth", false )]
         public string ExpirationMonthEncrypted { get; set; }
 
         /// <summary />
         public int? ExpirationYear { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.12.4"
+        [Obsolete( "Use ExpirationYear", false )]
         public string ExpirationYearEncrypted { get; set; }
 
         /// <summary />
@@ -76,9 +80,11 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string NameOnCard { get; set; } = @"";
+        public string NameOnCard { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.12.4"
+        [Obsolete( "Use NameOnCard", false )]
         public string NameOnCardEncrypted { get; set; }
 
         /// <summary>
@@ -119,16 +125,22 @@ namespace Rock.Client
             this.CreditCardTypeValueId = source.CreditCardTypeValueId;
             this.CurrencyTypeValueId = source.CurrencyTypeValueId;
             this.ExpirationMonth = source.ExpirationMonth;
+            #pragma warning disable 612, 618
             this.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            #pragma warning restore 612, 618
             this.ExpirationYear = source.ExpirationYear;
+            #pragma warning disable 612, 618
             this.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            #pragma warning restore 612, 618
             this.FinancialPersonSavedAccountId = source.FinancialPersonSavedAccountId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GatewayPersonIdentifier = source.GatewayPersonIdentifier;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NameOnCard = source.NameOnCard;
+            #pragma warning disable 612, 618
             this.NameOnCardEncrypted = source.NameOnCardEncrypted;
+            #pragma warning restore 612, 618
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -146,6 +158,9 @@ namespace Rock.Client
     {
         /// <summary />
         public Location BillingLocation { get; set; }
+
+        /// <summary />
+        public DateTime? CardExpirationDate { get; set; }
 
         /// <summary />
         public DefinedValue CreditCardTypeValue { get; set; }

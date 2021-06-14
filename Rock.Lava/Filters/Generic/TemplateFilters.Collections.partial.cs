@@ -126,9 +126,11 @@ namespace Rock.Lava.Filters
                 throw new Exception( "Must provide a property to group by." );
             }
 
-            return e.AsQueryable()
+            var groupedList = e.AsQueryable()
                 .GroupBy( x => x.GetPropertyValue( property ) )
                 .ToDictionary( g => g.Key != null ? g.Key.ToString() : string.Empty, g => (object)g.ToList() );
+
+            return groupedList;
         }
 
         /// <summary>
@@ -219,12 +221,21 @@ namespace Rock.Lava.Filters
                 return input;
             }
 
-            if ( !( input is IList ) )
+            IList inputList;
+
+            if ( ( input is IList ) )
+            {
+                inputList = input as IList;
+            }
+            else if ( ( input is IEnumerable ) )
+            {
+                inputList = ( input as IEnumerable ).Cast<object>().ToList();
+            }
+            else
             {
                 return input;
             }
 
-            var inputList = input as IList;
             var indexInt = index.ToString().AsIntegerOrNull();
             if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
             {

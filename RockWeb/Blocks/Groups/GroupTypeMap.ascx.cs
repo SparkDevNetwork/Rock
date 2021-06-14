@@ -221,12 +221,13 @@ namespace RockWeb.Blocks.Groups
                     Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
-                    {
-                        
+                    if ( LavaService.RockLiquidIsEnabled )
+                    {                        
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
                             template = Template.Parse( GetAttributeValue( "InfoWindowContents" ).Trim() );
+
+                            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "InfoWindowContents" ).Trim() );
                         }
                         else
                         {
@@ -235,14 +236,20 @@ namespace RockWeb.Blocks.Groups
                     }
                     else
                     {
+                        string templateContent;
+
                         if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
                         {
-                            lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( "InfoWindowContents" ).Trim() );
+                            templateContent = GetAttributeValue( "InfoWindowContents" ).Trim();
                         }
                         else
                         {
-                            lavaTemplate = LavaEngine.CurrentEngine.ParseTemplate( string.Empty );
+                            templateContent = string.Empty;
                         }
+
+                        var parseResult = LavaService.ParseTemplate( templateContent );
+
+                        lavaTemplate = parseResult.Template;
                     }
 
                     var groupPageRef = new PageReference( GetAttributeValue( "GroupDetailPage" ) );
@@ -386,7 +393,7 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                            if ( LavaService.RockLiquidIsEnabled )
                             {
                                 infoWindow = template.Render( Hash.FromDictionary( groupDict ) ).Replace( "\n", string.Empty );
                             }

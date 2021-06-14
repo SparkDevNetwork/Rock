@@ -54,7 +54,7 @@
         var data = {
             labels: chartLabel,
             datasets: [{
-                fill: false,
+                fill: true,
                 backgroundColor: '#059BFF',
                 borderColor: '#059BFF',
                 borderWidth: 0,
@@ -113,27 +113,27 @@
             </div>
 
             <div class="row">
+                <asp:Panel ID="pnlCheckedInCount" runat="server" CssClass="col-lg-4">
+                    <div class="panel">
+                        <div class="panel-body">
+                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedInPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold">Checked-in</span>
+                        </div>
+                    </div>
+                </asp:Panel>
                 <asp:Panel ID="pnlPresentCount" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
                             <span class="h3 font-weight-bolder"><asp:Literal ID="lPresentPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold"><asp:Literal ID="lPresentPeopleLabel" runat="server" Text="Present People" /> </span>
+                            <span class="d-block small text-muted font-weight-bold">Present</span>
                         </div>
                     </div>
                 </asp:Panel>
-                <asp:Panel ID="pnlPendingCount" runat="server" CssClass="col-lg-4">
+                <asp:Panel ID="pnlTotalCount" runat="server" CssClass="col-lg-4">
                     <div class="panel">
                         <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lPendingPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold"><asp:Literal ID="lPendingPeopleLabel" runat="server" Text="Present People" /> </span>
-                        </div>
-                    </div>
-                </asp:Panel>
-                <asp:Panel ID="pnlCheckedOutCount" runat="server" CssClass="col-lg-4">
-                    <div class="panel">
-                        <div class="panel-body">
-                            <span class="h3 font-weight-bolder"><asp:Literal ID="lCheckedOutPeopleCount" runat="server" /></span>
-                            <span class="d-block small text-muted font-weight-bold">Checked-Out People</span>
+                            <span class="h3 font-weight-bolder"><asp:Literal ID="lTotalPeopleCount" runat="server" /></span>
+                            <span class="d-block small text-muted font-weight-bold">Total</span>
                         </div>
                     </div>
                 </asp:Panel>

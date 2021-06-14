@@ -232,6 +232,7 @@ Update Family Status: {updateFamilyStatus}
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsLastContributionEnabled, settings.LastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedServiceGroup( settings.IsAttendanceInServiceGroupEnabled, settings.AttendanceInServiceGroupPeriod, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoRegisteredForAnyEvent( settings.IsRegisteredInAnyEventEnabled, settings.RegisteredInAnyEventPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsAttendanceInGroupTypeEnabled, settings.AttendanceInGroupType, null, settings.AttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsSiteLoginEnabled, settings.SiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsPrayerRequestEnabled, settings.PrayerRequestPeriod, rockContext ) );
@@ -421,6 +422,7 @@ Update Family Status: {updateFamilyStatus}
 
                     // Get all the person ids with selected activity
                     personIds = GetPeopleWhoContributed( settings.IsNoLastContributionEnabled, settings.NoLastContributionPeriod, rockContext );
+                    personIds.AddRange( GetPeopleWhoRegisteredForAnyEvent( settings.IsNotRegisteredInAnyEventEnabled, settings.NotRegisteredInAnyEventDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsNoAttendanceInGroupTypeEnabled, null, settings.AttendanceInGroupType, settings.NoAttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsNoPrayerRequestEnabled, settings.NoPrayerRequestPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsNoSiteLoginEnabled, settings.NoSiteLoginPeriod, rockContext ) );
@@ -1402,6 +1404,33 @@ Update Family Status: {updateFamilyStatus}
                         a.StartDateTime >= startDate &&
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value == true &&
+                        a.PersonAlias != null )
+                    .Select( a => a.PersonAlias.PersonId )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<int>();
+        }
+
+        /// <summary>
+        /// Gets the people who registered for any event.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetPeopleWhoRegisteredForAnyEvent( bool enabled, int periodInDays, RockContext rockContext )
+        {
+            if ( enabled )
+            {
+                var startDate = RockDateTime.Now.AddDays( -periodInDays );
+
+                return new RegistrationRegistrantService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( a =>
+                        a.CreatedDateTime != null &&
+                        a.CreatedDateTime >= startDate &&
                         a.PersonAlias != null )
                     .Select( a => a.PersonAlias.PersonId )
                     .Distinct()

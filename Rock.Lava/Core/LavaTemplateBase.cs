@@ -25,16 +25,6 @@ namespace Rock.Lava
     public abstract class LavaTemplateBase : ILavaTemplate
     {
         /// <summary>
-        /// Try to render the template.
-        /// Errors will be included in the rendered output.
-        /// </summary>
-        /// <returns></returns>
-        public string Render()
-        {
-            return Render( context:null );
-        }
-
-        /// <summary>
         /// Try to render the template using the provided context values.
         /// Errors will be included in the rendered output.
         /// </summary>
@@ -42,21 +32,11 @@ namespace Rock.Lava
         /// <returns></returns>
         public string Render( IDictionary<string, object> values )
         {
-            string output;
-            List<Exception> errors;
+            var context = LavaService.NewRenderContext( values );
 
-            var isValid = TryRender( values, out output, out errors );
+            var result = Render( new LavaRenderParameters { Context = context } );
 
-            if ( !isValid )
-            {
-                // Append error messages to the output.
-                foreach ( var error in errors )
-                {
-                    output += "\nLava Error: " + error.Message;
-                }
-            }
-
-            return output;
+            return result.Text;
         }
 
         /// <summary>
@@ -67,82 +47,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public string Render( ILavaRenderContext context )
         {
-            string output;
-            List<Exception> errors;
+            var result = Render( new LavaRenderParameters { Context = context } );
 
-            var isValid = TryRender( context, out output, out errors );
-
-            if ( !isValid )
-            {
-                // Append error messages to the output.
-                foreach ( var error in errors )
-                {
-                    output += "\nLava Error: " + error.Message;
-                }
-            }
-
-            return output;
-        }
-
-        /// <summary>
-        /// Try to render the template using the provided merge fields.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
-        public bool TryRender( IDictionary<string, object> values, out string output, out List<Exception> errors )
-        {
-            var context = LavaEngine.CurrentEngine.NewRenderContext( values );
-
-            return TryRender( context, out output, out errors );
-        }
-
-        /// <summary>
-        /// Try to render the template using the provided context.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
-        public bool TryRender( ILavaRenderContext context, out string output, out List<Exception> errors )
-        {
-            var parameters = new LavaRenderParameters { Context = context };
-
-            return TryRender( parameters, out output, out errors );
+            return result.Text;
         }
 
         /// <summary>
         /// Try to render the template using the provided settings.
         /// </summary>
         /// <param name="parameters"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
         /// <returns></returns>
-        public bool TryRender( LavaRenderParameters parameters, out string output, out List<Exception> errors )
+        public LavaRenderResult Render( LavaRenderParameters parameters )
         {
-            if ( parameters == null )
-            {
-                parameters = new LavaRenderParameters();
-            }
-
-            return TryRenderInternal( parameters, out output, out errors );
-        }
-
-        /// <summary>
-        /// Render the template using the Lava Engine.
-        /// </summary>
-        /// <param name="parameters"></param>
-        /// <param name="output"></param>
-        /// <param name="errors"></param>
-        /// <returns></returns>
-        private bool TryRenderInternal( LavaRenderParameters parameters, out string output, out List<Exception> errors )
-        {
-            errors = new List<Exception>();
-
-            var success = LavaEngine.CurrentEngine.TryRenderTemplate( this, parameters, out output, out errors );
-
-            return success;
+            return LavaService.RenderTemplate( this, parameters );
         }
     }
 }

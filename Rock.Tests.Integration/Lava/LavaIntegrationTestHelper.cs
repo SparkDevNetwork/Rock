@@ -60,13 +60,15 @@ namespace Rock.Tests.Integration.Lava
 
             var engineOptions = new LavaEngineConfigurationOptions();
 
-            engineOptions.FileSystem = new MockFileProvider();
             engineOptions.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput;
 
             if ( RockLiquidEngineIsEnabled )
             {
                 // Initialize the Rock variant of the DotLiquid Engine
-                _rockliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
+                engineOptions.FileSystem = new MockFileProvider();
+                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
+
+                _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
 
                 RegisterFilters( _rockliquidEngine );
                 RegisterTags( _rockliquidEngine );
@@ -79,7 +81,10 @@ namespace Rock.Tests.Integration.Lava
             if ( DotLiquidEngineIsEnabled )
             {
                 // Initialize the DotLiquid Engine
-                _dotliquidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
+                engineOptions.FileSystem = new MockFileProvider();
+                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
+
+                _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
 
                 RegisterFilters( _dotliquidEngine );
                 RegisterTags( _dotliquidEngine );
@@ -92,11 +97,14 @@ namespace Rock.Tests.Integration.Lava
             if ( FluidEngineIsEnabled )
             {
                 // Initialize Fluid Engine
-                _fluidEngine = global::Rock.Lava.LavaEngine.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+                engineOptions = new LavaEngineConfigurationOptions();
 
-                // Register the common Rock.Lava filters first, then overwrite with the web-based RockFilters as needed.
-                _fluidEngine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-                _fluidEngine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
+                engineOptions.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput;
+                engineOptions.FileSystem = new MockFileProvider();
+                var cacheService = new WebsiteLavaTemplateCacheService();
+                engineOptions.CacheService = cacheService;
+
+                _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
 
                 RegisterFilters( _fluidEngine );
                 RegisterTags( _fluidEngine );
@@ -109,7 +117,7 @@ namespace Rock.Tests.Integration.Lava
             _instance = new LavaIntegrationTestHelper();
         }
 
-        private ILavaEngine GetEngineInstance( LavaEngineTypeSpecifier engineType )
+        public ILavaEngine GetEngineInstance( LavaEngineTypeSpecifier engineType )
         {
             ILavaEngine engine = null;
 
@@ -126,15 +134,20 @@ namespace Rock.Tests.Integration.Lava
                 engine = _rockliquidEngine;
             }
 
+            if ( engine == null )
+            {
+                throw new Exception( $"Lava Engine instance not available. Engine Type \"{engineType}\" is not configured for this test run." );
+            }
+
             // Set the global instance of the engine to ensure that it is available to Lava components.
-            LavaEngine.CurrentEngine = engine;
+            LavaService.SetCurrentEngine( engine );
 
             return engine;
-            
         }
 
         private static void RegisterFilters( ILavaEngine engine )
         {
+            // Register the common Rock.Lava filters first, then overwrite with the web-specific filters.
             if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
             {
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
@@ -142,8 +155,8 @@ namespace Rock.Tests.Integration.Lava
             }
             else
             {
-                engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
                 engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
+                engine.RegisterFilters( typeof( Rock.Lava.LavaFilters ) );
             }
         }
 
@@ -318,7 +331,7 @@ namespace Rock.Tests.Integration.Lava
                         name = shortcodeType.Name;
                     }
 
-                    engine.RegisterStaticShortcode( name, ( shortcodeName ) =>
+                    engine.RegisterShortcode( name, ( shortcodeName ) =>
                     {
                         var shortcode = Activator.CreateInstance( shortcodeType ) as ILavaShortcode;
 
@@ -371,7 +384,7 @@ namespace Rock.Tests.Integration.Lava
 
             foreach ( var shortcode in shortCodes )
             {
-                engine.RegisterDynamicShortcode( shortcode.TagName, shortCodeFactory );
+                engine.RegisterShortcode( shortcode.TagName, shortCodeFactory );
             }
         }
 
@@ -382,13 +395,23 @@ namespace Rock.Tests.Integration.Lava
         /// <returns></returns>
         public string GetTemplateOutput( LavaEngineTypeSpecifier engineType, string inputTemplate, LavaDataDictionary mergeFields = null )
         {
-            inputTemplate = inputTemplate ?? string.Empty;
-
             var engine = GetEngineInstance( engineType );
 
-            var outputString = engine.RenderTemplate( inputTemplate.Trim(), mergeFields );
+            return GetTemplateOutput( engine, inputTemplate, mergeFields );
+        }
 
-            return outputString;
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( ILavaEngine engine, string inputTemplate, LavaDataDictionary mergeFields = null )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), mergeFields );
+
+            return result.Text;
         }
 
         /// <summary>
@@ -398,13 +421,23 @@ namespace Rock.Tests.Integration.Lava
         /// <returns></returns>
         public string GetTemplateOutput( LavaEngineTypeSpecifier engineType, string inputTemplate, ILavaRenderContext context )
         {
-            inputTemplate = inputTemplate ?? string.Empty;
-
             var engine = GetEngineInstance( engineType );
 
-            var outputString = engine.RenderTemplate( inputTemplate.Trim(), context );
+            return GetTemplateOutput( engine, inputTemplate, context );
+        }
 
-            return outputString;
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( ILavaEngine engine, string inputTemplate, ILavaRenderContext context )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), LavaRenderParameters.WithContext( context ) );
+
+            return result.Text;
         }
 
         /// <summary>
@@ -414,34 +447,83 @@ namespace Rock.Tests.Integration.Lava
         /// <returns></returns>
         public string GetTemplateOutput( LavaEngineTypeSpecifier engineType, string inputTemplate, LavaTestRenderOptions options )
         {
-            inputTemplate = inputTemplate ?? string.Empty;
-
             var engine = GetEngineInstance( engineType );
 
+            return GetTemplateOutput( engine, inputTemplate, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( ILavaEngine engine, string inputTemplate, LavaTestRenderOptions options )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
             var context = engine.NewRenderContext();
+
+            var parameters = LavaRenderParameters.WithContext( context );
 
             if ( options != null )
             {
                 context.SetEnabledCommands( options.EnabledCommands, options.EnabledCommandsDelimiter );
                 context.SetMergeFields( options.MergeFields );
+
+                parameters.ExceptionHandlingStrategy = options.ExceptionHandlingStrategy;
             }
 
-            var outputString = engine.RenderTemplate( inputTemplate.Trim(), context );
+            var result = engine.RenderTemplate( inputTemplate.Trim(), parameters );
 
-            return outputString;
+            return result.Text;
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public LavaRenderResult GetTemplateRenderResult( ILavaEngine engine, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            var context = engine.NewRenderContext();
+
+            if ( parameters == null )
+            {
+                parameters = LavaRenderParameters.WithContext( context );
+            }
+
+            // If options are specified, replace the render parameters.
+            if ( options != null )
+            {
+                context.SetEnabledCommands( options.EnabledCommands, options.EnabledCommandsDelimiter );
+                context.SetMergeFields( options.MergeFields );
+
+                if ( options.ExceptionHandlingStrategy != null )
+                {
+                    parameters.ExceptionHandlingStrategy = options.ExceptionHandlingStrategy;
+                }
+            }
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), parameters );
+
+            return result;
         }
 
         /// <summary>
         /// For each of the currently enabled Lava Engines, process the specified action.
         /// </summary>
         /// <param name="testMethod"></param>
-        public void AssertAction( Action<ILavaEngine> testMethod )
+        public void ExecuteForActiveEngines( Action<ILavaEngine> testMethod )
         {
             var engines = GetActiveTestEngines();
 
+            var exceptions = new List<Exception>();
+
             foreach ( var engine in engines )
             {
-                LavaEngine.CurrentEngine = engine;
+                LavaService.SetCurrentEngine( engine );
 
                 Debug.Print( $"\n**\n** Lava Render Test: {engine.EngineType}\n**\n" );
 
@@ -454,33 +536,42 @@ namespace Rock.Tests.Integration.Lava
                     // Write the error to debug output.
                     Debug.Print( $"\n** ERROR:\n{ex.ToString()}" );
 
-                    throw ex;
+                    exceptions.Add( ex );
                 }
+            }
+
+            if ( exceptions.Any() )
+            {
+                throw new AggregateException( "Test failed for one or more Lava engines.", exceptions );
             }
         }
 
-        private List<ILavaEngine> _activeEngines = null;
+        private static List<ILavaEngine> _activeEngines = null;
+        private static object _activeEnginesLock = new Object();
 
         private List<ILavaEngine> GetActiveTestEngines()
         {
-            if ( _activeEngines == null )
+            lock ( _activeEnginesLock )
             {
-                _activeEngines = new List<ILavaEngine>();
-
-                // Test the Fluid engine first, because it is the most likely to fail!
-                if ( FluidEngineIsEnabled )
+                if ( _activeEngines == null )
                 {
-                    _activeEngines.Add( _fluidEngine );
-                }
+                    _activeEngines = new List<ILavaEngine>();
 
-                if ( DotLiquidEngineIsEnabled )
-                {
-                    _activeEngines.Add( _dotliquidEngine );
-                }
+                    // Test the Fluid engine first, because it is the most likely to fail!
+                    if ( FluidEngineIsEnabled )
+                    {
+                        _activeEngines.Add( _fluidEngine );
+                    }
 
-                if ( RockLiquidEngineIsEnabled )
-                {
-                    _activeEngines.Add( _rockliquidEngine );
+                    if ( DotLiquidEngineIsEnabled )
+                    {
+                        _activeEngines.Add( _dotliquidEngine );
+                    }
+
+                    if ( RockLiquidEngineIsEnabled )
+                    {
+                        _activeEngines.Add( _rockliquidEngine );
+                    }
                 }
             }
 
@@ -494,9 +585,9 @@ namespace Rock.Tests.Integration.Lava
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
         {
-            AssertAction( ( engine ) =>
+            ExecuteForActiveEngines( ( engine ) =>
             {
-                AssertTemplateOutput( engine.EngineType, expectedOutput, inputTemplate, options );
+                AssertTemplateOutput( engine, expectedOutput, inputTemplate, options );
             } );
         }
 
@@ -509,18 +600,23 @@ namespace Rock.Tests.Integration.Lava
         {
             var engine = GetEngineInstance( engineType );
 
-            var context = engine.NewRenderContext();
+            AssertTemplateOutput( engine, expectedOutput, inputTemplate, options );
+        }
 
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( ILavaEngine engine, string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
+        {
             options = options ?? new LavaTestRenderOptions();
 
-            context.SetEnabledCommands( options.EnabledCommands, options.EnabledCommandsDelimiter );
-            context.SetMergeFields( options.MergeFields );
-
-            var outputString = GetTemplateOutput( engineType, inputTemplate, context );
+            var outputString = GetTemplateOutput( engine, inputTemplate, options );
 
             Assert.IsNotNull( outputString, "Template failed to render." );
 
-            DebugWriteRenderResult( engineType, inputTemplate, outputString );
+            DebugWriteRenderResult( engine.EngineType, inputTemplate, outputString );
 
             // If ignoring whitespace, strip it from the input and output.
             if ( options.IgnoreWhiteSpace )
@@ -541,7 +637,6 @@ namespace Rock.Tests.Integration.Lava
                 }
 
                 expectedOutput = Regex.Escape( expectedOutput );
-                expectedOutput = expectedOutput.Replace( "/", @"\/" );
 
                 expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
 
@@ -557,11 +652,11 @@ namespace Rock.Tests.Integration.Lava
                 }
                 else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Contains )
                 {
-                    Assert.That.Contains( expectedOutput, outputString );
+                    Assert.That.Contains( outputString, expectedOutput );
                 }
                 else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
                 {
-                    Assert.That.DoesNotContain( expectedOutput, outputString );
+                    Assert.That.DoesNotContain( outputString, expectedOutput );
                 }
             }
         }
@@ -573,7 +668,7 @@ namespace Rock.Tests.Integration.Lava
         /// <returns></returns>
         public void AssertTemplateIsInvalid( string inputTemplate, LavaDataDictionary mergeFields = null )
         {
-            AssertAction( ( engine ) =>
+            ExecuteForActiveEngines( ( engine ) =>
             {
                 AssertTemplateIsInvalid( engine.EngineType, inputTemplate, mergeFields );
             } );
@@ -586,20 +681,27 @@ namespace Rock.Tests.Integration.Lava
         /// <returns></returns>
         public void AssertTemplateIsInvalid( LavaEngineTypeSpecifier engineType, string inputTemplate, LavaDataDictionary mergeFields = null )
         {
-            string outputString;
-            List<Exception> errors;
-
             inputTemplate = inputTemplate ?? string.Empty;
 
             var engine = GetEngineInstance( engineType );
 
-            var isValid = engine.TryRenderTemplate( inputTemplate.Trim(), mergeFields, out outputString, out errors );
+            Assert.That.ThrowsException<LavaException>(
+            () =>
+            {
+                var renderOptions = new LavaRenderParameters
+                {
+                    Context = engine.NewRenderContext( mergeFields ),
+                    ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
+                };
 
-            Assert.That.IsFalse( isValid, "Invalid template expected." );
+                _ = engine.RenderTemplate( inputTemplate.Trim(), renderOptions );
+            },
+            "Invalid template expected." );
         }
 
         /// <summary>
-        /// Write a rendered template to debug, with some additional configuration details.
+        /// Write the results of template rendering to the debug output, with some additional configuration details.
+        /// Useful to document the result of a test that would otherwise produce no output.
         /// </summary>
         /// <param name="outputString"></param>
         public void DebugWriteRenderResult( LavaEngineTypeSpecifier engineType, string inputString, string outputString )
@@ -618,7 +720,7 @@ namespace Rock.Tests.Integration.Lava
         /// <param name="maximumDelta"></param>
         public void AssertTemplateOutputDate( DateTime? expectedDateTime, string inputTemplate, TimeSpan? maximumDelta = null )
         {
-            AssertAction( ( engine ) =>
+            ExecuteForActiveEngines( ( engine ) =>
             {
                 var outputString = GetTemplateOutput( engine.EngineType, inputTemplate );
 
@@ -750,6 +852,8 @@ namespace Rock.Tests.Integration.Lava
         public List<string> Wildcards = new List<string>();
 
         public LavaTestOutputMatchTypeSpecifier OutputMatchType = LavaTestOutputMatchTypeSpecifier.Equal;
+
+        public ExceptionHandlingStrategySpecifier? ExceptionHandlingStrategy;
     }
 
     public enum LavaTestOutputMatchTypeSpecifier

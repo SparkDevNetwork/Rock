@@ -297,6 +297,45 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum FinancialScheduledTransactionStatus
+    {
+        Active = 0x0,
+        Completed = 0x1,
+        Paused = 0x2,
+        Canceled = 0x3,
+        Failed = 0x4,
+        PastDue = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FinancialStatementIndividualSaveOptionsSaveFor
+    {
+        AllActiveAdultsInGivingGroup = 0x0,
+        PrimaryGiver = 0x1,
+        AllActiveFamilyMembersInGivingGroup = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FinancialStatementOrderBy
+    {
+        PostalCode = 0x0,
+        LastName = 0x1,
+        PageCount = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FinancialStatementTemplatePDFSettingsPaperSize
+    {
+        Letter = 0x0,
+        Legal = 0x1,
+        A4 = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum FollowingSuggestedStatus
     {
         PendingNotification = 0x0,
@@ -408,6 +447,11 @@ namespace Rock.Client.Enums
         Merge = 0x9,
         AddedToGroup = 0xa,
         RemovedFromGroup = 0xb,
+        ConnectionRequestAdded = 0xc,
+        ConnectionRequestConnected = 0xd,
+        ConnectionRequestStatusModify = 0xe,
+        ConnectionRequestStateModify = 0xf,
+        ConnectionRequestDelete = 0x10,
     }
 
     /// <summary>

@@ -1346,14 +1346,12 @@ namespace Rock.Web.UI.Controls
             _cbIsActive = new RockCheckBox();
             _cbIsActive.ID = "_cbIsActive";
             _cbIsActive.Label = "Active";
-            _cbIsActive.Text = "Yes";
             _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
             Controls.Add( _cbIsActive );
 
             _cbIsPublic = new RockCheckBox();
             _cbIsPublic.ID = "_cbIsPublic";
             _cbIsPublic.Label = "Public";
-            _cbIsPublic.Text = "Yes";
             _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts.";
             Controls.Add(_cbIsPublic);
 

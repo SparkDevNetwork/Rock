@@ -49,6 +49,7 @@
   flex-grow: 1;
   align-items: center;
   margin: 0 8px 16px;
+  overflow-y: hidden;
   font-size: 26px;
   color: #aeaeae;
 }
@@ -111,8 +112,6 @@
   vertical-align: top;
 
   .kpi-card & {
-    // display: inline-block;
-    // min-width: fit-content;
     margin-left: 12px;
   }
 
@@ -167,6 +166,33 @@
 }
 
 
+// Firefox does not correctly render.
+@supports not (width: fit-content) {
+  .kpi-lg.has-icon-bg .kpi-icon {
+    min-width: 86px;
+  }
+
+  .has-icon-bg .kpi-icon {
+    min-width: 57px;
+    height: 100%;
+
+    &::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: block;
+      width: 100%;
+      content: " ";
+      background: currentColor;
+      opacity: .2;
+    }
+
+    .svg-placeholder {
+      opacity: 0 !important;
+    }
+  }
+}
+
 .kpi-sm {
   .kpi-icon {
     font-size: 24px;
@@ -184,9 +210,11 @@
   .kpi-stat {
     padding: 16px 10px;
   }
+
   .kpi-label {
     padding: 3px 0;
     font-size: 17px;
+    font-weight: @font-weight-base;
   }
 
   .kpi-icon {
@@ -194,6 +222,12 @@
     font-size: 48px;
     text-align: center;
   }
+}
+
+.kpi-lg-label {
+  &:extend(.kpi-label);
+  &:extend(.kpi-lg .kpi-label);
+  font-size: 17px;
 }
 
 .kpi-xl {

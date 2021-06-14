@@ -118,7 +118,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( Page.IsPostBack )
+            {
+                HandleCustomPostback();
+            }
+            else
             {
                 BindFilter();
                 BindGrid();
@@ -128,6 +132,20 @@ namespace RockWeb.Blocks.CheckIn.Manager
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void HandleCustomPostback()
+        {
+            var eventArg = this.Request.Params["__EVENTARGUMENT"];
+            if ( eventArg == "search" && tbSearch.Text.Length > 2 )
+            {
+                BindGrid();
+            }
+        }
 
         /// <summary>
         /// Handles the BlockUpdated event of the control.

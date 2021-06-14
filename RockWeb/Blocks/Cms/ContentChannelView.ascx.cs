@@ -831,7 +831,7 @@ $(document).ready(function() {
                     }
                 }
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     var template = GetTemplate();
 
@@ -841,11 +841,11 @@ $(document).ready(function() {
                 {
                     var template = GetLavaTemplate();
 
-                    var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( mergeFields );
+                    var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
 
-                    lavaContext.SetEnabledCommands( GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
+                    var renderResult = LavaService.RenderTemplate( template, lavaContext );
 
-                    outputContents = template.Render( lavaContext );
+                    outputContents = renderResult.Text;
                 }
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
@@ -903,7 +903,14 @@ $(document).ready(function() {
 
                 if ( template == null )
                 {
-                    template = LavaEngine.CurrentEngine.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+
+                    if ( parseResult.HasErrors )
+                    {
+                        throw parseResult.GetLavaException();
+                    }
+
+                    template = parseResult.Template;
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
@@ -914,7 +921,9 @@ $(document).ready(function() {
             }
             catch ( Exception ex )
             {
-                template = LavaEngine.CurrentEngine.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+                var parseResult = LavaService.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+
+                template = parseResult.Template;
             }
 
             return template;
@@ -942,6 +951,8 @@ $(document).ready(function() {
                 if ( template == null )
                 {
                     template = Template.Parse( GetAttributeValue( AttributeKey.Template ) );
+
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {

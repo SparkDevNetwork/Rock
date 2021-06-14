@@ -235,9 +235,8 @@ namespace RockWeb.Blocks.Cms
             mediaElement.ThumbnailDataJson = ThumbnailDataState.ToJson();
             mediaElement.FileDataJson = FileDataState.ToJson();
             rockContext.SaveChanges();
-            var qryParams = new Dictionary<string, string>();
-            qryParams[PageParameterKey.MediaFolderId] = mediaElement.MediaFolderId.ToStringSafe();
-            NavigateToParentPage( qryParams );
+
+            ShowDetail( mediaElement.Id );
         }
 
         /// <summary>
@@ -249,14 +248,14 @@ namespace RockWeb.Blocks.Cms
         {
             if ( hfId.Value.Equals( "0" ) )
             {
-                // Cancelling on Add
+                // Canceling on Add
                 Dictionary<string, string> qryString = new Dictionary<string, string>();
                 qryString[PageParameterKey.MediaFolderId] = hfMediaFolderId.Value;
                 NavigateToParentPage( qryString );
             }
             else
             {
-                // Cancelling on Edit
+                // Canceling on Edit
                 var mediaElement = new MediaElementService( new RockContext() ).Get( int.Parse( hfId.Value ) );
                 ShowReadonlyDetails( mediaElement );
             }
@@ -324,7 +323,7 @@ namespace RockWeb.Blocks.Cms
                 mediaElementData.PublicName = tbPublicName.Text;
                 mediaElementData.AllowDownload = cbAllowDownload.Checked;
                 mediaElementData.Link = urlLink.Text;
-                mediaElementData.Quality = tbQuality.Text;
+                mediaElementData.Quality = ddlQuality.SelectedValueAsEnum<MediaElementQuality>( MediaElementQuality.Other );
                 mediaElementData.Format = tbFormat.Text;
                 mediaElementData.Width = nbWidth.Text.AsInteger();
                 mediaElementData.Height = nbHeight.Text.AsInteger();
@@ -504,7 +503,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( mediaElement.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Add( MediaFolder.FriendlyTypeName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( "Media Element" ).FormatAsHtmlTitle();
             }
             else
             {
@@ -587,13 +586,15 @@ namespace RockWeb.Blocks.Cms
         {
             var mediaElementData = FileDataState.FirstOrDefault( l => l.Guid.Equals( mediaFileGuid ) );
 
+            ddlQuality.BindToEnum<MediaElementQuality>( true );
+
             if ( mediaElementData != null )
             {
                 hfMediaElementData.Value = mediaElementData.Guid.ToString();
                 tbPublicName.Text = mediaElementData.PublicName;
                 cbAllowDownload.Checked = mediaElementData.AllowDownload;
                 urlLink.Text = mediaElementData.Link;
-                tbQuality.Text = mediaElementData.Quality;
+                ddlQuality.SetValue( mediaElementData.Quality.ConvertToInt() );
                 tbFormat.Text = mediaElementData.Format;
                 nbWidth.IntegerValue = mediaElementData.Width;
                 nbHeight.IntegerValue = mediaElementData.Height;
@@ -605,7 +606,7 @@ namespace RockWeb.Blocks.Cms
                 hfMediaElementData.Value = Guid.Empty.ToString();
                 tbPublicName.Text = string.Empty;
                 urlLink.Text = string.Empty;
-                tbQuality.Text = string.Empty;
+                ddlQuality.SelectedValue = string.Empty;
                 tbFormat.Text = string.Empty;
                 nbWidth.IntegerValue = null;
                 nbHeight.IntegerValue = null;

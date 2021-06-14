@@ -87,6 +87,13 @@ namespace RockWeb.Blocks.Core
         Order = 6,
         Key = AttributeKey.CategoryFilter )]
 
+    [CustomCheckboxListField(
+        "Hide Columns on Grid",
+        Description = "The grid columns that should be hidden from the user.",
+        ListSource = "Ordering, Id, Category, Qualifier, Value",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.HideColumnsOnGrid )]
 
     public partial class Attributes : RockBlock, ICustomGridColumns
     {
@@ -99,6 +106,7 @@ namespace RockWeb.Blocks.Core
             public const string EntityId = "EntityId";
             public const string EnableShowInGrid = "EnableShowInGrid";
             public const string CategoryFilter = "CategoryFilter";
+            public const string HideColumnsOnGrid = "HideColumnsOnGrid";
         }
 
         #region Fields
@@ -167,60 +175,82 @@ namespace RockWeb.Blocks.Core
                 _entityId = null;
             }
 
+            // Verify block authorization
+            bool canEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
             _canConfigure = IsUserAuthorized( Rock.Security.Authorization.ADMINISTRATE );
-
-
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rGrid.DataKeyNames = new string[] { "Id" };
+            rGrid.Actions.ShowAdd = _canConfigure;
+            rGrid.GridReorder += RGrid_GridReorder;
+            rGrid.Actions.AddClick += rGrid_Add;
+            rGrid.GridRebind += rGrid_GridRebind;
+            rGrid.RowDataBound += rGrid_RowDataBound;
 
-            if ( _canConfigure )
+            var hideColumnsOnGrid = GetAttributeValue( AttributeKey.HideColumnsOnGrid ).Split( ',' );
+            var reOrderField = rGrid.ColumnsOfType<ReorderField>().FirstOrDefault();
+            if ( reOrderField != null )
             {
-                rGrid.DataKeyNames = new string[] { "Id" };
-                rGrid.Actions.ShowAdd = true;
-                rGrid.GridReorder += RGrid_GridReorder;
-                rGrid.Actions.AddClick += rGrid_Add;
-                rGrid.GridRebind += rGrid_GridRebind;
-                rGrid.RowDataBound += rGrid_RowDataBound;
-
-                var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lEntityQualifier" );
-                if ( lEntityQualifierField != null )
-                {
-                    lEntityQualifierField.Visible = !_entityId.HasValue;   // qualifier
-                }
-
-                var rtDefaultValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtDefaultValue" );
-                if ( rtDefaultValueField != null )
-                {
-                    rtDefaultValueField.Visible = !_displayValueEdit; // default value / value
-                }
-
-                var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
-                if ( rtValueField != null )
-                {
-                    rtValueField.Visible = _displayValueEdit; // default value / value
-                }
-
-                var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
-                if ( editField != null )
-                {
-                    editField.Visible = _displayValueEdit; // edit
-                }
-
-                var securityField = rGrid.ColumnsOfType<SecurityField>().FirstOrDefault();
-                if ( securityField != null )
-                {
-                    securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
-                }
-
-                mdAttribute.SaveClick += mdAttribute_SaveClick;
-                mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
-
-                BindFilter();
+                reOrderField.Visible = !hideColumnsOnGrid.Contains( "Ordering" );   // Id
             }
-            else
+
+            var idBoundField = rGrid.ColumnsOfType<RockBoundField>().FirstOrDefault( c => c.DataField == "Id" );
+            if ( idBoundField != null )
             {
-                nbMessage.Text = "You are not authorized to configure this page";
-                nbMessage.Visible = true;
+                idBoundField.Visible = !hideColumnsOnGrid.Contains( "Id" );   // Id
             }
+
+            var rtCategoriesField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( c => c.ID == "rtCategories" );
+            if ( rtCategoriesField != null )
+            {
+                rtCategoriesField.Visible = hideColumnsOnGrid.Contains( "Category" );   // category
+            }
+
+            var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lEntityQualifier" );
+            if ( lEntityQualifierField != null )
+            {
+                lEntityQualifierField.Visible = !_entityId.HasValue && !hideColumnsOnGrid.Contains( "Qualifier" );   // qualifier
+            }
+
+            var rtDefaultValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtDefaultValue" );
+            if ( rtDefaultValueField != null )
+            {
+                rtDefaultValueField.Visible = !_displayValueEdit; // default value / value
+            }
+
+            var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
+            if ( rtValueField != null )
+            {
+                rtValueField.Visible = _displayValueEdit && !hideColumnsOnGrid.Contains( "Value" ); // default value / value
+            }
+
+            var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
+            if ( editField != null )
+            {
+                editField.Visible = _displayValueEdit && _canConfigure; // edit
+            }
+
+            var deleteField = rGrid.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteField != null )
+            {
+                deleteField.Visible = _canConfigure; // edit
+            }
+
+            var securityField = rGrid.ColumnsOfType<SecurityField>().FirstOrDefault();
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
+                securityField.Visible = _canConfigure;
+            }
+
+            if ( _displayValueEdit || _canConfigure || canEdit )
+            {
+                rGrid.RowSelected += rGrid_RowSelected;
+            }
+
+            mdAttribute.SaveClick += mdAttribute_SaveClick;
+            mdAttributeValue.SaveClick += mdAttributeValue_SaveClick;
+
+            BindFilter();
         }
 
         /// <summary>
@@ -231,7 +261,7 @@ namespace RockWeb.Blocks.Core
         {
             if ( !Page.IsPostBack )
             {
-                if ( _canConfigure && IsEntityTypeValid() )
+                if ( IsEntityTypeValid() )
                 {
                     BindGrid();
                 }

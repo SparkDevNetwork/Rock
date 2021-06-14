@@ -313,7 +313,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public int? GivingGroupId { get; set; }
+        public int? GivingGroupId
+        {
+            get
+            {
+                return _givingGroupId;
+            }
+
+            set
+            {
+                _givingGroupId = value;
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
+            }
+        }
+
+        private int? _givingGroupId;
 
         /// <summary>
         /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
@@ -323,21 +337,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId
-        {
-            get
-            {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                return GivingGroupId.HasValue ?
-                    string.Format( "G{0}", GivingGroupId.Value ) :
-                    string.Format( "P{0}", Id );
-            }
-
-            private set
-            {
-                // don't do anything here since EF uses this for loading
-            }
-        }
+        public string GivingId { get; private set; }
 
         /// <summary>
         /// Gets or sets the giving leader's Person Id.
@@ -2016,6 +2016,12 @@ namespace Rock.Model
                 NickName = FirstName;
             }
 
+            // Make sure the GivingId is correct.
+            if ( GivingId != ( GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}" ) )
+            {
+                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+            }
+
             if ( PhotoId.HasValue )
             {
                 var originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
@@ -2211,6 +2217,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;
@@ -2256,6 +2268,12 @@ namespace Rock.Model
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
             PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
+
+            // If the person was just added then update the GivingId to prevent "P0" values
+            if ( this.GivingId == "P0" )
+            {
+                PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
+            }
         }
 
         /// <summary>
@@ -2603,13 +2621,13 @@ namespace Rock.Model
             {
                 var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
 
-                if ( primaryLastName.IsNullOrWhiteSpace() )
-                {
-                    primaryLastName = children.First().LastName;
-                }
-
                 if ( children.Count() > 0 )
                 {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
+
                     foreach ( var child in children )
                     {
                         var firstName = child.NickName;
@@ -3968,6 +3986,79 @@ namespace Rock.Model
             }
 
             return qryWithGradeOffset.Select( a => a.Person );
+        }
+
+        /// <summary>
+        /// Calculates whether the person is in an active merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the person is part of merge request; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsPartOfMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.Any() ?? false;
+        }
+
+        /// <summary>
+        /// Gets the merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntitySet GetMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( this Person person, RockContext rockContext = null )
+        {
+            var mergeRequestQry = PersonService
+                .GetMergeRequestQuery( rockContext )
+                .Where( es => es.Items.Any( esi => esi.EntityId == person.Id ) );
+
+            return mergeRequestQry;
+        }
+
+        /// <summary>
+        /// Creates the merge request.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="masterPerson">The master person.</param>
+        /// <returns></returns>
+        public static EntitySet CreateMergeRequest( this Person namelessPerson, Person masterPerson )
+        {
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySet
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                EntitySetPurposeValueId = definedValueId
+            };
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = namelessPerson.Id
+            } );
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = masterPerson.Id
+            } );
+
+            return entitySet;
         }
     }
 

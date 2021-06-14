@@ -15,10 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Newtonsoft.Json;
 
 namespace Rock.Media
@@ -51,7 +48,7 @@ namespace Rock.Media
         /// <value>
         /// The type of the quality.
         /// </value>
-        public string Quality { get; set; }
+        public MediaElementQuality Quality { get; set; }
 
         /// <summary>
         /// Gets or sets the format.

@@ -461,7 +461,7 @@ namespace Rock.Web.UI.Controls
         {
             get => ViewState["CustomActionConfigs"]
                 .ToStringSafe()
-                .FromJsonOrNull<List<CustomActionConfig>>() ?? 
+                .FromJsonOrNull<List<CustomActionConfig>>() ??
                 new List<CustomActionConfig>();
             set => ViewState["CustomActionConfigs"] = value.ToJson();
         }
@@ -842,7 +842,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the default workflow launch control is visible. 
+        /// Gets or sets a value indicating whether the default workflow launch control is visible.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable default launch workflow]; otherwise, <c>false</c>.
@@ -1192,7 +1192,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <summary>
         /// TODO: Added this override to prevent the default behavior of rending a grid with a table inside
         /// and div element.  The div may be needed for paging when grid is not used in an update panel
-        /// so if wierd errors start happening, this could be the culprit.
+        /// so if weird errors start happening, this could be the culprit.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> used to render the server control content on the client's browser.</param>
         protected override void Render( HtmlTextWriter writer )
@@ -2297,6 +2297,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             continue;
                         }
                     }
+                    else if ( selectedKeys.Any() )
+                    {
+                        // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
+                        gridRowCounter++;
+                        if ( !selectedKeys.Contains( gridRowCounter ) )
+                        {
+                            continue;
+                        }
+                    }
 
                     rowCounter++;
 
@@ -2334,11 +2343,6 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                     if ( dataField is RockTemplateField )
                     {
                         var rockTemplateField = dataField as RockTemplateField;
-                        if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
-                        {
-                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
-                            visibleFields.Add( fieldOrder++, rockTemplateField );
-                        }
 
                         /*
                          * 2020-03-03 - JPH
@@ -2350,11 +2354,29 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                          *
                          * Reason: Issue #3950 (Lava report fields generate two columns in Excel exports)
                          * https://github.com/SparkDevNetwork/Rock/issues/3950
+                         * 
+                         * 2021-05-28 ETD
+                         * Changed to check if this is a LavaField first and then add it to the LavaField list.
+                         * Add it to the Visibility list if it is Visible and ExcelExportBehavior is IncludeIfVisible.
+                         * 
+                         * Reason: This is to ensure that a lava field in a report does get exported.
+                         * https://github.com/SparkDevNetwork/Rock/issues/4673
                          */
                         if ( dataField is LavaField )
                         {
                             var lavaField = dataField as LavaField;
                             lavaFields.Add( lavaField );
+
+                            if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude
+                                || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                            {
+                                visibleFields.Add( fieldOrder++, rockTemplateField );
+                            }
+                        }
+                        else if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
+                        {
+                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
+                            visibleFields.Add( fieldOrder++, rockTemplateField );
                         }
                     }
                 }
@@ -2663,7 +2685,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <returns></returns>
         private List<PropertyInfo> FilterDynamicObjectPropertiesCollection( Type dataSourceObjectType, List<PropertyInfo> additionalMergeProperties )
         {
-            if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+            if ( LavaService.RockLiquidIsEnabled )
             {
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
@@ -3497,6 +3519,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             continue;
                         }
                     }
+                    else if ( selectedKeys.Any() )
+                    {
+                        // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
+                        gridRowCounter++;
+                        if ( !selectedKeys.Contains( gridRowCounter ) )
+                        {
+                            continue;
+                        }
+                    }                    
 
                     var item = new Rock.Model.EntitySetItem();
 

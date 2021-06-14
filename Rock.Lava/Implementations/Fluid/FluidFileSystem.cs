@@ -46,12 +46,18 @@ namespace Rock.Lava
 
         bool ILavaFileSystem.FileExists( string filePath )
         {
-            return _fileSystem.FileExists( filePath );
+            filePath = GetCorrectedFilePath( filePath );
+
+            var exists = _fileSystem.FileExists( filePath );
+
+            return exists;
         }
 
         string ILavaFileSystem.ReadTemplateFile( ILavaRenderContext context, string templateName )
         {
-            return _fileSystem.ReadTemplateFile( context, templateName );
+            var content = _fileSystem.ReadTemplateFile( context, templateName );
+
+            return content;
         }
 
         #endregion
@@ -68,33 +74,31 @@ namespace Rock.Lava
 
         IFileInfo IFileProvider.GetFileInfo( string subpath )
         {
+            var filePath = GetCorrectedFilePath( subpath );
+
             // The Fluid framework forces a ".liquid" extension in the file path.
-            // Most Lava template files use a ".lava" file type, so remove the ".liquid" extension and retry.
-            bool exists = false;
+            // If the file is not found using the corrected file path, retry with the original filepath in case the correction was not needed.
+            var exists = _fileSystem.FileExists( filePath );
 
-            if ( subpath.EndsWith( ".liquid" ) )
+            if ( !exists
+                 && subpath.EndsWith( ".liquid" ) )
             {
-                exists = _fileSystem.FileExists( subpath );
+                filePath = subpath.Substring( 0, subpath.Length - 7 );
 
-                if ( !exists )
-                {
-                    subpath = subpath.Substring( 0, subpath.Length - 7 );
-
-                    exists = _fileSystem.FileExists( subpath );
-                }
+                exists = _fileSystem.FileExists( filePath );
             }
 
             // This method is called directly by the Fluid framework.
             // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the Fluid engine.
-            var lavaText = exists ? _fileSystem.ReadTemplateFile( null, subpath ) : string.Empty;
+            var lavaText = exists ? _fileSystem.ReadTemplateFile( null, filePath ) : string.Empty;
 
             var liquidText = _lavaConverter.ConvertToLiquid( lavaText );
 
-            var fileInfo = new LavaFileInfo( subpath, liquidText, exists );
+            var fileInfo = new LavaFileInfo( filePath, liquidText, exists );
 
             if ( !exists )
             {
-                throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", subpath );
+                throw new LavaException( "File Load Failed. File \"{0}\" could not be accessed.", filePath );
             }
 
             return fileInfo;
@@ -107,6 +111,23 @@ namespace Rock.Lava
         }
 
         #endregion
+
+        private string GetCorrectedFilePath( string filePath )
+        {
+            // The Fluid framework forces a ".liquid" extension in the file path.
+            // Most Lava template files use a ".lava" file type, so if the file is not found remove the ".liquid" extension and retry.
+            if ( !string.IsNullOrEmpty( filePath ) )
+            {
+                filePath = filePath.Trim();
+
+                if ( filePath.EndsWith( ".lava.liquid" ) )
+                {
+                    filePath = filePath.Substring( 0, filePath.Length - 7 );
+                }
+            }
+
+            return filePath;
+        }
     }
 
     #region Support Classes

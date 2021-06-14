@@ -438,7 +438,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 {
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                    transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}" );
+                    transaction.FinancialPaymentDetail.NameOnCard = $"{threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}";
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
@@ -446,8 +446,8 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     string mmyy = threeStepChangeStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
-                        transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
-                        transaction.FinancialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( mmyy.Substring( 2, 2 ) );
+                        transaction.FinancialPaymentDetail.ExpirationMonth = mmyy.Substring( 0, 2 ).AsIntegerOrNull();
+                        transaction.FinancialPaymentDetail.ExpirationYear = mmyy.Substring( 2, 2 ).AsIntegerOrNull();
                     }
                 }
                 else
@@ -690,8 +690,8 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     string mmyy = threeStepSubscriptionStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
-                        scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
-                        scheduledTransaction.FinancialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( mmyy.Substring( 2, 2 ) );
+                        scheduledTransaction.FinancialPaymentDetail.ExpirationMonth = mmyy.Substring( 0, 2 ).AsIntegerOrNull();
+                        scheduledTransaction.FinancialPaymentDetail.ExpirationYear = mmyy.Substring( 2, 2 ).AsIntegerOrNull();
                     }
                 }
                 else
@@ -806,6 +806,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                     transaction.NextPaymentDate = subscription.NextChargeDate;
                     transaction.LastStatusUpdateDateTime = RockDateTime.Now;
+
+                    // NMI doesn't have a field that has the status of a scheduled transaction
+                    transaction.Status = null;
+                    transaction.StatusMessage = null;
 
                     return true;
                 }
@@ -1438,7 +1442,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 // cc payment
                 var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{customerInfo.FirstName} {customerInfo.LastName}" );
+                financialPaymentDetail.NameOnCard = $"{customerInfo.FirstName} {customerInfo.LastName}";
                 financialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
 
                 //// The gateway tells us what the CreditCardType is since it was selected using their hosted payment entry frame.
@@ -1458,8 +1462,8 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 string mmyy = customerInfo.CcExp;
                 if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                 {
-                    financialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
-                    financialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( mmyy.Substring( 2, 2 ) );
+                    financialPaymentDetail.ExpirationMonth = mmyy.Substring( 0, 2 ).AsIntegerOrNull();
+                    financialPaymentDetail.ExpirationYear = mmyy.Substring( 2, 2 ).AsIntegerOrNull();
                 }
             }
             else

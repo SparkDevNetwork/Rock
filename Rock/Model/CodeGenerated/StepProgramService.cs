@@ -55,6 +55,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<StepProgramCompletion>( Context ).Queryable().Any( a => a.StepProgramId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StepProgram.FriendlyTypeName, StepProgramCompletion.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<StepWorkflowTrigger>( Context ).Queryable().Any( a => a.StepProgramId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", StepProgram.FriendlyTypeName, StepWorkflowTrigger.FriendlyTypeName );

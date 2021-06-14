@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.CheckIn
 
         #endregion Attribute Default values
 
-        #region Atrribute Keys
+        #region Attribute Keys
 
         /// <summary>
         /// A defined list of attribute keys used by this block.
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string EnableCategorySelection = "CategorySelection";
         }
 
-        #endregion Atrribute Keys
+        #endregion Attribute Keys
 
         #region Base Method Overrides
 

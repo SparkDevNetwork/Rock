@@ -150,6 +150,14 @@ namespace RockWeb.Blocks.Connection
         IsRequired = true,
         Order = 14 )]
 
+    [LinkedPage(
+        "Connection Request History Page",
+        Description = "Page used to display history details.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
+        Order = 15,
+        Key = AttributeKey.ConnectionRequestHistoryPage )]
+
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
@@ -219,6 +227,7 @@ namespace RockWeb.Blocks.Connection
         {
             public const string WorkflowId = "WorkflowId";
             public const string ConnectionRequestId = "ConnectionRequestId";
+            public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
         }
 
@@ -240,6 +249,8 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
+            public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
+
         }
 
         /// <summary>
@@ -896,7 +907,37 @@ namespace RockWeb.Blocks.Connection
                             !string.IsNullOrWhiteSpace( roleName ) && !string.IsNullOrWhiteSpace( statusName ) ? " " : string.Empty,
                             roleName );
                     }
+
+                    if ( viewModel.PlacementGroupId.HasValue )
+                    {
+                        var groupMember = new GroupMember();
+                        groupMember.Group = connectionRequest.AssignedGroup;
+                        groupMember.GroupId = viewModel.PlacementGroupId.Value;
+                        groupMember.GroupRole = role;
+                        groupMember.GroupRoleId = viewModel.PlacementGroupId.Value;
+                        groupMember.GroupMemberStatus = viewModel.PlacementGroupMemberStatus.Value;
+
+                        groupMember.LoadAttributes();
+
+                        if ( connectionRequest.AssignedGroupMemberAttributeValues.IsNotNullOrWhiteSpace() )
+                        {
+                            var savedValues = JsonConvert.DeserializeObject<Dictionary<string, string>>( connectionRequest.AssignedGroupMemberAttributeValues );
+                            if ( savedValues != null )
+                            {
+                                foreach ( var item in savedValues )
+                                {
+                                    groupMember.SetAttributeValue( item.Key, item.Value );
+                                }
+                            }
+                        }
+
+                        phGroupMemberAttributesView.Controls.Clear();
+                        Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
+                    }
                 }
+
+
+
             }
 
             rightDescList.Add( "Placement Group", placementGroupHtml );
@@ -1227,6 +1268,8 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.LoadAttributes( rockContext );
             avcRequestModalAddEditModeRequest.GetEditValues( connectionRequest );
             connectionRequest.SaveAttributeValues( rockContext );
+
+            _connectionRequest = connectionRequest;
 
             // Add an activity that the connector was assigned (or changed)
             if ( originalConnectorPersonAliasId != newConnectorPersonAliasId )
@@ -2641,6 +2684,13 @@ namespace RockWeb.Blocks.Connection
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
 
+                    if ( connectionRequest.ConnectionOpportunityId == newOpportunityId )
+                    {
+                        nbTranferFailed.Visible = true;
+                        return;
+                    }
+                    nbTranferFailed.Visible = false;
+
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
                     var transferredActivityId = connectionActivityTypeService.Queryable()
                         .Where( t => t.Guid == guid )
@@ -2917,7 +2967,30 @@ namespace RockWeb.Blocks.Connection
 
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_Transfer;
             IsRequestModalAddEditMode = false;
+            nbTranferFailed.Visible = false;
             ShowRequestModal();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRequestViewModeViewHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRequestViewModeViewHistory_Click( object sender, EventArgs e )
+        {
+            if ( !ConnectionRequestId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+            var connectionRequest = connectionRequestService.Get( ConnectionRequestId.Value );
+
+            if ( connectionRequest != null )
+            {
+                NavigateToLinkedPage( AttributeKey.ConnectionRequestHistoryPage, new Dictionary<string, string> { { PageParameterKey.ConnectionRequestGuid, connectionRequest.Guid.ToString() } } );
+            }
         }
 
         /// <summary>

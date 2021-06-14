@@ -15,8 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections;
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -37,7 +35,9 @@ namespace Rock.Lava.Filters
                 return null;
             }
 
-            return LavaEngine.CurrentEngine.RenderTemplate( input.ToString(), context );
+            var result = LavaService.RenderTemplate( input.ToString(), new LavaRenderParameters { Context = context } );
+
+            return result.Text;
         }
     }
 }

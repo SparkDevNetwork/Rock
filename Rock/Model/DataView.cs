@@ -29,6 +29,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -565,7 +566,12 @@ namespace Rock.Model
                 usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( this.Id );
             }
 
-            DataViewService.AddRunDataViewTransaction( Id );
+            // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
+            if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
+            {
+                DataViewService.AddRunDataViewTransaction( Id );
+            }
 
             if ( usePersistedValues )
             {
@@ -633,9 +639,10 @@ namespace Rock.Model
         {
             using ( var dbContext = this.GetDbContext() )
             {
-                Stopwatch persistStopwatch = Stopwatch.StartNew();
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
+                var persistStopwatch = Stopwatch.StartNew();
+                var dataViewFilterOverrides = new DataViewFilterOverrides();
+
+                dataViewFilterOverrides.ShouldUpdateStatics = false;
 
                 // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
                 dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
@@ -668,9 +675,7 @@ namespace Rock.Model
                 var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                 var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
-                stopwatch.Stop();
-
-                int removeCount = persistedValuesToRemove.Count();
+                var removeCount = persistedValuesToRemove.Count();
                 if ( removeCount > 0 )
                 {
                     // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
@@ -694,9 +699,9 @@ namespace Rock.Model
 
                 persistStopwatch.Stop();
 
-                DataViewService.AddRunDataViewTransaction( this.Id,
-                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ),
-                            Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds ) );
+                // Update the Persisted Refresh information.
+                PersistedLastRefreshDateTime = RockDateTime.Now;
+                PersistedLastRunDurationMilliseconds = Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds );
             }
         }
 
