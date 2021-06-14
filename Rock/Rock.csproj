@@ -526,8 +526,12 @@
     <Compile Include="Model\CodeGenerated\AttendanceCheckInSessionService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
+    <Compile Include="Model\DocumentService.Partial.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
+    <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
+    <Compile Include="Plugin\HotFixes\138_MigrationRollupsFor11_4_1.cs" />
+    <Compile Include="Plugin\HotFixes\137_MigrationRollupsFor11_4_0.cs" />
     <Compile Include="Plugin\HotFixes\136_MigrationRollupsFor11_3_0.cs" />
     <Compile Include="Plugin\HotFixes\135_MigrationRollupsFor11_2_0.cs" />
     <Compile Include="Plugin\HotFixes\134_AddDocumentsToPersonMerge.cs" />
@@ -538,6 +542,7 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="Utility\Enums\PushOpenAction.cs" />
+    <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\RockSerializableDictionary.cs" />

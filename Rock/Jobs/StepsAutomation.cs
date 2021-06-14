@@ -53,7 +53,7 @@ namespace Rock.Jobs
         /// <summary>
         /// Attribute Keys
         /// </summary>
-        private static class AttributeKey
+        public static class AttributeKey
         {
             /// <summary>
             /// The duplicate prevention day range
@@ -86,7 +86,8 @@ namespace Rock.Jobs
         {
             // Use concurrent safe data structures to track the count and errors
             var errors = new ConcurrentBag<string>();
-            var results = new ConcurrentBag<int>();
+            var addedResults = new ConcurrentBag<int>();
+            var updatedResults = new ConcurrentBag<int>();
 
             // Get the step type view query
             var stepTypeViews = GetStepTypeViews();
@@ -95,21 +96,22 @@ namespace Rock.Jobs
             var minDaysBetweenSteps = GetDuplicatePreventionDayRange( context );
 
             // Loop through each step type and create steps based on what is in the dataview
-            Parallel.ForEach( stepTypeViews, stepTypeView =>
+            Parallel.ForEach(
+                stepTypeViews,
+                stepTypeView =>
             {
-                var stepsAdded = ProcessStepType( stepTypeView, minDaysBetweenSteps, out var errorsFromThisStepType );
+                ProcessStepType( stepTypeView, minDaysBetweenSteps, addedResults, updatedResults, out var errorsFromThisStepType );
 
                 if ( errorsFromThisStepType != null && errorsFromThisStepType.Any() )
                 {
                     errorsFromThisStepType.ForEach( errors.Add );
                 }
-
-                results.Add( stepsAdded );
             } );
 
             // Set the results for the job log
-            var total = results.Sum();
-            context.Result = $"{total} steps added";
+            var totalAdded = addedResults.Sum();
+            var totalUpdated = updatedResults.Sum();
+            context.Result = $"{totalAdded} step{( totalAdded == 1 ? "" : "s" )} added. {totalUpdated} step{( totalUpdated == 1 ? "" : "s" )} updated.";
 
             if ( errors.Any() )
             {
@@ -121,10 +123,16 @@ namespace Rock.Jobs
         /// Processes the step type. Add steps for everyone in the dataview
         /// </summary>
         /// <param name="stepTypeView">The step type view.</param>
+        /// <param name="minDaysBetweenSteps">The minimum days between steps.</param>
+        /// <param name="addedResults">The added results.</param>
+        /// <param name="updatedResults">The updated results.</param>
         /// <param name="errorMessages">The error message.</param>
-        /// <param name="minDaysBetweenSteps"></param>
-        /// <returns></returns>
-        private int ProcessStepType( StepTypeView stepTypeView, int minDaysBetweenSteps, out List<string> errorMessages )
+        private void ProcessStepType(
+            StepTypeView stepTypeView,
+            int minDaysBetweenSteps,
+            ConcurrentBag<int> addedResults,
+            ConcurrentBag<int> updatedResults,
+            out List<string> errorMessages )
         {
             errorMessages = new List<string>();
             var rockContext = new RockContext();
@@ -135,7 +143,7 @@ namespace Rock.Jobs
             if ( stepStatusId == default )
             {
                 errorMessages.Add( $"The Step Type with id {stepTypeView.StepTypeId} does not have a valid Complete Status to use" );
-                return 0;
+                return;
             }
 
             // Get the dataview configured for the step type
@@ -145,7 +153,7 @@ namespace Rock.Jobs
             if ( dataview == null )
             {
                 errorMessages.Add( $"The dataview {stepTypeView.AutoCompleteDataViewId} for step type {stepTypeView.StepTypeId} did not resolve" );
-                return 0;
+                return;
             }
 
             // We can use the dataview to get the person alias id query
@@ -154,25 +162,25 @@ namespace Rock.Jobs
             if ( dataviewQueryErrors != null && dataviewQueryErrors.Any() )
             {
                 errorMessages.AddRange( dataviewQueryErrors );
-                return 0;
+                return;
             }
 
             if ( dataviewQuery == null )
             {
                 errorMessages.Add( $"Generating a query for dataview {stepTypeView.AutoCompleteDataViewId} for step type {stepTypeView.StepTypeId} was not successful" );
-                return 0;
+                return;
             }
 
             // This query contains person ids in the dataview
             var personIdQuery = dataviewQuery.AsNoTracking().Select( e => e.Id );
 
-            // Get the query for person aliases that cannot get a new step
+            // Get the query for people that cannot get a new step
             var peopleThatCannotGetStepQuery = GetPeopleThatCannotGetStepQuery( rockContext, stepTypeView, minDaysBetweenSteps );
 
             // Subtract the people that cannot get a new step
             personIdQuery = personIdQuery.Except( peopleThatCannotGetStepQuery );
 
-            // If there are prerequisites, then subtract the people that cannot be the step because of unmet prerequisites
+            // If there are prerequisites, then subtract the people that cannot get the step because of unmet prerequisites
             if ( stepTypeView.PrerequisiteStepTypeIds.Any() )
             {
                 var peopleThatHaveMetPrerequisitesQuery = GetPeopleThatHaveMetPrerequisitesQuery( rockContext, stepTypeView );
@@ -181,39 +189,58 @@ namespace Rock.Jobs
 
             // Convert to person aliases ids
             var personAliasService = new PersonAliasService( rockContext );
-            var personAliasIds = personAliasService.Queryable().AsNoTracking()
+            var personAliasIds = personAliasService.GetPrimaryAliasQuery()
+                .AsNoTracking()
                 .Where( pa => personIdQuery.Contains( pa.PersonId ) )
                 .Select( pa => pa.Id )
                 .Distinct()
                 .ToList();
 
-            // Add steps for each of the remaining aliases that have met all the conditions
+            // Add or update steps for each of the remaining aliases that have met all the conditions
             var stepService = new StepService( rockContext );
             var now = RockDateTime.Now;
-            var count = 0;
+            var addedCount = 0;
+            var updatedCount = 0;
+
+            // Query for existing incomplete steps for the people
+            var existingIncompleteSteps = stepService.Queryable()
+                .Where( s =>
+                    s.StepTypeId == stepTypeView.StepTypeId &&
+                    s.PersonAlias.Person.Aliases.Any( pa => personAliasIds.Contains( pa.Id ) ) &&
+                    !s.CompletedDateTime.HasValue )
+                .ToList();
 
             foreach ( var personAliasId in personAliasIds )
             {
-                var step = new Step
+                var exisitingStep = existingIncompleteSteps.FirstOrDefault( s =>
+                    s.PersonAlias.Person.Aliases.Any( pa => pa.Id == personAliasId ) );
+
+                var step = exisitingStep ?? new Step
                 {
                     StepTypeId = stepTypeView.StepTypeId,
-                    CompletedDateTime = now,
                     StartDateTime = now,
-                    StepStatusId = stepStatusId,
                     PersonAliasId = personAliasId
                 };
 
-                stepService.AddWithoutValidation( step );
-                count++;
+                step.CompletedDateTime = now;
+                step.StepStatusId = stepStatusId;
 
-                if ( count % 100 == 0 )
+                if ( exisitingStep == null )
                 {
-                    rockContext.SaveChanges();
+                    stepService.AddWithoutValidation( step );
+                    addedCount++;
                 }
+                else
+                {
+                    updatedCount++;
+                }
+
+                rockContext.SaveChanges();
             }
 
             rockContext.SaveChanges();
-            return count;
+            addedResults.Add( addedCount );
+            updatedResults.Add( updatedCount );
         }
 
         #region Data Helpers
@@ -267,25 +294,27 @@ namespace Rock.Jobs
         /// <returns></returns>
         private IQueryable<int> GetPeopleThatCannotGetStepQuery( RockContext rockContext, StepTypeView stepTypeView, int minDaysBetweenSteps )
         {
-            var stepService = new StepService( rockContext );
-            var minStepDate = DateTime.MinValue;
-
             // We are querying for people that will ultimately be excluded from getting a new
             // step created from this job.
-            // If duplicates are not allowed, then we want to find anyone with a step ever
-            // If duplicates are allowed and a day range is set, then it is within that timeframe.
-            if ( stepTypeView.AllowMultiple && minDaysBetweenSteps >= 1 )
+            var stepService = new StepService( rockContext );
+            var query = stepService.Queryable().AsNoTracking().Where( s => s.StepTypeId == stepTypeView.StepTypeId );
+
+            if ( stepTypeView.AllowMultiple )
             {
-                minStepDate = RockDateTime.Now.AddDays( 0 - minDaysBetweenSteps );
+                // If allow multiple and completed date is within the minDaysBetweenSteps timeframe
+                var minStepDate = minDaysBetweenSteps >= 1 ?
+                    RockDateTime.Now.AddDays( 0 - minDaysBetweenSteps ) :
+                    DateTime.MinValue;
+
+                query = query.Where( s => s.CompletedDateTime.HasValue && s.CompletedDateTime >= minStepDate );
+            }
+            else
+            {
+                // If not allow multiple and has a completed date at all
+                query = query.Where( s => s.CompletedDateTime.HasValue );
             }
 
-            var query = stepService.Queryable().AsNoTracking()
-                .Where( s =>
-                    s.StepTypeId == stepTypeView.StepTypeId &&
-                    ( !s.CompletedDateTime.HasValue || s.CompletedDateTime.Value >= minStepDate ) )
-                .Select( s => s.PersonAlias.PersonId );
-
-            return query;
+            return query.Select( s => s.PersonAlias.PersonId );
         }
 
         /// <summary>

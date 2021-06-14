@@ -91,29 +91,36 @@ namespace Rock.Tests.Integration.Model
         {
             var expectedRecordCount = 15;
             var year = 2015;
-            var rockContext = new RockContext();
-            var connectionRequestService = new ConnectionRequestService( rockContext );
-
-            var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
-            var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
-
-            for ( var i = 0; i < 15; i++ )
+            using ( var rockContext = new RockContext() )
             {
+                var connectionRequestService = new ConnectionRequestService( rockContext );
 
-                var connectionRequest = BuildConnectionRequest( rockContext,
-                    TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+                var minDateValue = TestDataHelper.GetAnalyticsSourceMinDateForYear( rockContext, year );
+                var maxDateValue = TestDataHelper.GetAnalyticsSourceMaxDateForYear( rockContext, year );
 
-                connectionRequestService.Add( connectionRequest );
+                for ( var i = 0; i < 15; i++ )
+                {
+
+                    var connectionRequest = BuildConnectionRequest( rockContext,
+                        TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
+
+                    connectionRequestService.Add( connectionRequest );
+                }
+
+                rockContext.SaveChanges();
             }
 
-            rockContext.SaveChanges();
-
-            var connectionRequests = connectionRequestService.
-                                Queryable( "AnalyticsSourceDate" ).
+            using ( var rockContext = new RockContext() )
+            {
+                var connectionRequestService = new ConnectionRequestService( rockContext );
+                var connectionRequests = connectionRequestService.
+                                Queryable().
                                 Where( i => i.ForeignKey == connectionRequestForeignKey ).
                                 Where( i => i.CreatedSourceDate.CalendarYear == year );
 
-            Assert.AreEqual( expectedRecordCount, connectionRequests.Count() );
+                Assert.AreEqual( expectedRecordCount, connectionRequests.Count() );
+                Assert.IsNotNull( connectionRequests.First().CreatedSourceDate );
+            }
         }
 
         private ConnectionRequest BuildConnectionRequest( RockContext rockContext, DateTime? createdDate )

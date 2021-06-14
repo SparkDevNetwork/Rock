@@ -36,8 +36,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            ItemRestUrlExtraParams = "?getCategorizedItems=true&showUnnamedEntityItems=true&showCategoriesThatHaveNoChildren=false";
-            ItemRestUrlExtraParams += "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.METRICCATEGORY.AsGuid() ).Id;
+            ItemRestUrlExtraParams = "?getCategorizedItems=true"
+                + "&showUnnamedEntityItems=true"
+                + "&showCategoriesThatHaveNoChildren=false"
+                + "&lazyLoad=false"
+                + "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.METRICCATEGORY.AsGuid() ).Id;
+
             this.IconCssClass = "fa fa-bar-chart-o";
             base.OnInit( e );
         }
