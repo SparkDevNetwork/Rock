@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Rock.Lava</RootNamespace>
-    <Version>1.13.0.14</Version>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
@@ -19,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.Core.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj" />
   </ItemGroup>
 
 </Project>

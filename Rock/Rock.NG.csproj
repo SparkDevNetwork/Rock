@@ -136,6 +136,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\Rock.Version\AssemblySharedInfo.cs" Link="Properties\AssemblySharedInfo.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
@@ -258,7 +259,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.NG.csproj" />
-    <ProjectReference Include="..\Rock.Lava\Rock.Lava.Core.csproj" />
+    <ProjectReference Include="..\Rock.Lava\Rock.Lava.NG.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.NG.csproj" />
   </ItemGroup>
 

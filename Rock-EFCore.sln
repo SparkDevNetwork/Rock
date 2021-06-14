@@ -13,15 +13,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppFramework", "TestApp
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TestApp.Shared", "TestApp.Shared\TestApp.Shared.shproj", "{01911862-ECB1-4F51-AF69-CEE52A11BBEE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Core", "Rock.Lava\Rock.Lava.Core.csproj", "{C4D9E8E2-45B1-49A9-B3E3-82721A79A3E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.NG", "Rock.Lava\Rock.Lava.NG.csproj", "{C4D9E8E2-45B1-49A9-B3E3-82721A79A3E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Shared.Core", "Rock.Lava.Shared\Rock.Lava.Shared.Core.csproj", "{073C6A87-15FD-409B-BB85-B13922FB0D72}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Shared.NG", "Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj", "{073C6A87-15FD-409B-BB85-B13922FB0D72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.Core", "Rock.Common\Rock.Common.Core.csproj", "{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Version.NG", "Rock.Version\Rock.Version.NG.csproj", "{0E6036B1-F48E-4B69-83EF-83C709DA8B42}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss.NG", "Rock.DownhillCss\Rock.DownhillCss.NG.csproj", "{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Rest.NG", "Rock.Rest\Rock.Rest.NG.csproj", "{777937EB-1620-43A9-B1B1-F86287D4C9CF}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -66,6 +68,10 @@ Global
 		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{777937EB-1620-43A9-B1B1-F86287D4C9CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{777937EB-1620-43A9-B1B1-F86287D4C9CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{777937EB-1620-43A9-B1B1-F86287D4C9CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{777937EB-1620-43A9-B1B1-F86287D4C9CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

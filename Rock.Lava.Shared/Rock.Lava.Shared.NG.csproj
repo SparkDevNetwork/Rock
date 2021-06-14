@@ -4,7 +4,6 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Rock</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Version>1.13.0.14</Version>
   </PropertyGroup>
 
 </Project>
