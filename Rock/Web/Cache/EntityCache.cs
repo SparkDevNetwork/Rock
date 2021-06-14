@@ -315,7 +315,9 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// If not already populated, recreates the list of keys for every entity using the keyFactory.
+        /// Then returns the list of all items of this type.
+        /// NOTE: This will contain all the items of this type that are in the database.
         /// </summary>
         /// <returns></returns>
         public static List<T> All()
@@ -324,7 +326,9 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// If not already populated, recreates the list of keys for every entity using the keyFactory.
+        /// Then returns the list of all items of this type.
+        /// NOTE: This will contain all the items of this type that are in the database,
         /// </summary>
         /// <returns></returns>
         public static List<T> All( RockContext rockContext )

@@ -240,7 +240,7 @@ namespace Rock.Web.Cache
         /// The abbreviated name of the Attribute.
         /// </value>
         [DataMember]
-        public string  AbbreviatedName { get; private set; }
+        public string AbbreviatedName { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
@@ -295,7 +295,8 @@ namespace Rock.Web.Cache
             {
                 var categories = new List<CategoryCache>();
 
-                if ( CategoryIds == null ) return categories;
+                if ( CategoryIds == null )
+                    return categories;
 
                 foreach ( var id in CategoryIds.ToList() )
                 {
@@ -348,10 +349,56 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead", true )]
+        [Obsolete( "Use SetFromEntity instead", true )]
         public override void CopyFromModel( Data.IEntity model )
         {
             this.SetFromEntity( model );
+        }
+
+        /// <summary>
+        /// WARNING: This will contain all the Attribute records that in the database.
+        /// This could be an expensive call.
+        /// Please use <code> AttributeCache.AllForEntityType(int entityTypeId)</code> if you only need the attributes
+        /// for a specific EntityType. This will be much more efficient.
+        /// </summary>
+        /// <returns></returns>
+        public static new List<AttributeCache> All()
+        {
+            return All( null );
+        }
+
+        /// <summary>
+        /// WARNING: This will contain all the Attribute records that in the database.
+        /// This could be an expensive call.
+        /// Please use <code> AttributeCache.AllForEntityType(int entityTypeId)</code> if you only need the attributes
+        /// for a specific EntityType. This will be much more efficient.
+        /// </summary>
+        /// <returns></returns>
+        public static new List<AttributeCache> All( RockContext rockContext )
+        {
+            return ModelCache<AttributeCache, Model.Attribute>.All( rockContext );
+        }
+
+        /// <summary>
+        /// Gets a list of all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        public static AttributeCache[] AllForEntityType( int entityTypeId )
+        {
+            var attributeIds = AttributeCache.GetByEntity( entityTypeId ).SelectMany( a => a.AttributeIds ).ToList();
+            return attributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
+        }
+
+        /// <summary>
+        /// Gets a list of all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityType.
+        /// </summary>
+        /// <returns></returns>
+        public static AttributeCache[] AllForEntityType<T>()
+        {
+            var entityTypeId = EntityTypeCache.Get<T>()?.Id;
+            return AllForEntityType( entityTypeId ?? 0 );
+            
         }
 
         /// <summary>
@@ -363,7 +410,8 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var attribute = entity as Model.Attribute;
-            if ( attribute == null ) return;
+            if ( attribute == null )
+                return;
 
             var qualifiers = new Dictionary<string, string>();
             if ( attribute.AttributeQualifiers != null )
@@ -517,7 +565,8 @@ namespace Rock.Web.Cache
             bool showPrePostHtml = ( entityType?.AttributesSupportPrePostHtml ?? false ) && ( options?.ShowPrePostHtml ?? true );
 
             var attributeControl = FieldType.Field.EditControl( QualifierValues, options.SetId ? options.AttributeControlId : string.Empty );
-            if ( attributeControl == null ) return null;
+            if ( attributeControl == null )
+                return null;
 
             if ( options.SetId )
             {
@@ -698,7 +747,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static AttributeCache Get( Model.Attribute entity, Dictionary<string, string> qualifiers )
         {
-            if ( entity == null ) return null;
+            if ( entity == null )
+                return null;
 
             var value = new AttributeCache();
             value.SetFromEntity( entity, qualifiers );
@@ -717,7 +767,7 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead", true )]
+        [Obsolete( "Use Get instead", true )]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
             return Get( attributeModel, qualifiers );
@@ -741,7 +791,8 @@ namespace Rock.Web.Cache
             get
             {
                 var propInfo = GetType().GetProperty( key.ToStringSafe() );
-                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() ) return null;
+                if ( propInfo == null || propInfo.GetCustomAttributes( typeof( LavaIgnoreAttribute ) ).Any() )
+                    return null;
 
                 var propValue = propInfo.GetValue( this, null );
 
@@ -823,7 +874,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed", true )]
+        [Obsolete( "No longer needed", true )]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
             //
