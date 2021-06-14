@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Core
 
     [CustomCheckboxListField(
         "Hide Columns on Grid",
-        Description = "The grid columns that should be hidden from the user.",
+        Description = "The grid columns that should be hidden.",
         ListSource = "Ordering, Id, Category, Qualifier, Value",
         IsRequired = false,
         Order = 6,
@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Core
             var rtCategoriesField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( c => c.ID == "rtCategories" );
             if ( rtCategoriesField != null )
             {
-                rtCategoriesField.Visible = hideColumnsOnGrid.Contains( "Category" );   // category
+                rtCategoriesField.Visible = !hideColumnsOnGrid.Contains( "Category" );   // category
             }
 
             var lEntityQualifierField = rGrid.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lEntityQualifier" );
@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Core
             var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
             if ( rtValueField != null )
             {
-                rtValueField.Visible = _displayValueEdit && !hideColumnsOnGrid.Contains( "Value" ); // default value / value
+                rtValueField.Visible = !hideColumnsOnGrid.Contains( "Value" ); // default value / value
             }
 
             var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Core
                 securityField.Visible = _canConfigure;
             }
 
-            if ( _displayValueEdit || _canConfigure || canEdit )
+            if ( _displayValueEdit && ( _canConfigure || canEdit ) )
             {
                 rGrid.RowSelected += rGrid_RowSelected;
             }
