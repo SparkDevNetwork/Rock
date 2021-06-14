@@ -19,6 +19,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+#if NET5_0_OR_GREATER
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Routing;
+using Microsoft.AspNet.OData.Routing.Conventions;
+using Microsoft.AspNetCore.Builder;
+#else
 using System.Web.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.OData.Builder;
@@ -26,6 +33,7 @@ using System.Web.Http.OData.Extensions;
 using System.Web.Http.OData.Routing;
 using System.Web.Http.OData.Routing.Conventions;
 using System.Web.Routing;
+#endif
 
 using Rock;
 using Rock.Tasks;
@@ -41,8 +49,29 @@ namespace Rock.Rest
         /// Maps ODataService Route and registers routes for any controller actions that use a [Route] attribute
         /// </summary>
         /// <param name="config">The configuration.</param>
+#if NET5_0_OR_GREATER
+        public class HttpConfiguration
+        {
+            public Microsoft.AspNetCore.Routing.IRouteBuilder Routes { get; set; }
+        }
+
+        public static void UseRockApi( this IApplicationBuilder app )
+        {
+            app.UseMvc( routeBuilder =>
+            {
+                var config = new HttpConfiguration
+                {
+                    Routes = routeBuilder
+                };
+
+                Register( config );
+            } );
+        }
+#endif
+
         public static void Register( HttpConfiguration config )
         {
+#if !NET5_0_OR_GREATER
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
@@ -58,9 +87,10 @@ namespace Rock.Rest
 
             // register Swagger and its routes first
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
+#endif
 
-            // Add API route for dataviews
-            config.Routes.MapHttpRoute(
+                // Add API route for dataviews
+                config.Routes.MapHttpRoute(
                 name: "DataViewApi",
                 routeTemplate: "api/{controller}/DataView/{id}",
                 defaults: new
@@ -154,8 +184,10 @@ namespace Rock.Rest
                 }
             }
 
+#if !NET5_0_OR_GREATER
             // finds all [Route] attributes on REST controllers and creates the routes
             config.MapHttpAttributeRoutes();
+#endif
 
             // Add any custom api routes
             // OBSOLETE - this foreach block is targeted for removal for v9
@@ -169,7 +201,11 @@ namespace Rock.Rest
                     var controller = ( Rock.Rest.IHasCustomRoutes ) Activator.CreateInstance( type.Value );
                     if ( controller != null )
                     {
+#if NET5_0_OR_GREATER
+                        controller.AddRoutes( config.Routes );
+#else
                         controller.AddRoutes( RouteTable.Routes );
+#endif
                     }
                 }
                 catch
@@ -320,7 +356,11 @@ namespace Rock.Rest
                 } );
 
             // build OData model and create service route (mainly for metadata)
+#if NET5_0_OR_GREATER
+            var builder = new ODataConventionModelBuilder();
+#else
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder( config );
+#endif
 
             var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
                 .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<DataContractAttribute>() != null ) )
@@ -328,7 +368,11 @@ namespace Rock.Rest
 
             foreach ( var entityType in entityTypeList )
             {
+#if NET5_0_OR_GREATER
+                var entityTypeConfig = builder.AddEntityType( entityType );
+#else
                 var entityTypeConfig = builder.AddEntity( entityType );
+#endif
 
                 var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
                 string name;
@@ -341,8 +385,26 @@ namespace Rock.Rest
                     name = entityType.Name.Pluralize();
                 }
 
+#if NET5_0_OR_GREATER
+                foreach ( var ignoredProperties in entityType.GetCustomAttributes<Rock.Data.IgnorePropertiesAttribute>( true ) )
+                {
+                    foreach ( var propertyName in ignoredProperties.Properties )
+                    {
+                        var pi = entityType.GetProperty( propertyName );
+                        if ( pi != null )
+                        {
+                            entityTypeConfig.RemoveProperty( pi );
+                        }
+                    }
+                }
+#endif
+
                 var entitySetConfig = builder.AddEntitySet( name, entityTypeConfig );
             }
+
+#if NET5_0_OR_GREATER
+            config.Routes.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
+#endif
 
             var defaultConventions = ODataRoutingConventions.CreateDefault();
             // Disable the api/$metadata route

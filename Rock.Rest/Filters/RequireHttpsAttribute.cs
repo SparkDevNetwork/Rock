@@ -22,6 +22,7 @@ using System.Web.Http.Filters;
 
 namespace Rock.Rest.Filters
 {
+#if !NET5_0_OR_GREATER
     /// <summary>
     /// 
     /// </summary>
@@ -40,4 +41,5 @@ namespace Rock.Rest.Filters
             }
         }
     }
+#endif
 }

@@ -29,6 +29,10 @@ namespace Rock.Rest
         /// added here will take precedence.
         /// </summary>
         /// <param name="routes">The routes.</param>
+#if NET5_0_OR_GREATER
+        void AddRoutes( Microsoft.AspNetCore.Routing.IRouteBuilder routes );
+#else
         void AddRoutes( HttpRouteCollection routes );
+#endif
     }
 }

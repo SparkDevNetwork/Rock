@@ -20,6 +20,7 @@ using Westwind.Web.WebApi;
 
 namespace System.Web.Http
 {
+#warning AspNetCore: https://www.infostretch.com/blog/harnessing-asp-net-core-mvc-to-create-custom-value-providers-for-encrypted-route-parameters/
     /// <summary>
     /// An attribute that captures the entire content body and stores it
     /// into the parameter of type string or byte[].

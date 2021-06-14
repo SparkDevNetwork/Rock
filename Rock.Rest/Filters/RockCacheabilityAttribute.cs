@@ -23,7 +23,15 @@ using System.Text.RegularExpressions;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+#if !NET5_0_OR_GREATER
 using System.Web.Http.ModelBinding;
+#endif
+
+#if NET5_0_OR_GREATER
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+#endif
 
 using Rock.Data;
 using Rock.Model;
@@ -34,6 +42,26 @@ namespace Rock.Rest.Filters
     /// <summary>
     /// 
     /// </summary>
+#if NET5_0_OR_GREATER
+    public class RockCacheabilityAttribute : System.Attribute, IAsyncActionFilter
+    {
+        public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
+        {
+            await next();
+
+            var reflectedHttpActionDescriptor = ( ControllerActionDescriptor ) actionContext.ActionDescriptor;
+            var actionMethod = actionContext.HttpContext.Request.Method;
+            var controller = reflectedHttpActionDescriptor;
+
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
+            var restActionCache = RestActionCache.Get( apiId );
+            if ( restActionCache != null && restActionCache.CacheControlHeader.IsNotNullOrWhiteSpace() )
+            {
+                actionContext.HttpContext.Response.Headers.Add( "Cache-Control", restActionCache.CacheControlHeader );
+            }
+        }
+    }
+#else
     public class RockCacheabilityAttribute : ActionFilterAttribute
     {
         /// <summary>
@@ -56,4 +84,5 @@ namespace Rock.Rest.Filters
             }
         }
     }
-}
+#endif
+    }

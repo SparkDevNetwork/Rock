@@ -14,26 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.Rest
+namespace System.Web.Http
 {
-    /// <summary>
-    /// Interface for controllers that need to add additional routes beyond the default
-    /// api/{controller}/{id} route.
-    /// </summary>
-    [RockObsolete( "1.9" )]
-    [Obsolete( "Use IHasCustomHttpRoutes instead.", false )]
-    public interface IHasCustomRoutes
+    public static class RouteParameter
     {
-        /// <summary>
-        /// Adds the routes.
-        /// </summary>
-        /// <param name="routes">The routes.</param>
-#if NET5_0_OR_GREATER
-        void AddRoutes( Microsoft.AspNetCore.Routing.IRouteBuilder routes );
-#else
-        void AddRoutes( System.Web.Routing.RouteCollection routes );
-#endif
+        public const string Optional = "__OptionalParameter";
     }
 }

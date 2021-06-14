@@ -22,6 +22,12 @@ using System.ServiceModel.Channels;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
+#if NET5_0_OR_GREATER
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+#endif
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -32,15 +38,25 @@ namespace Rock.Rest.Filters
     /// <summary>
     /// Checks to see if the Logged-In person has authorization View (HttpMethod: GET) or Edit (all other HttpMethods) for the RestController and Controller's associated EntityType
     /// </summary>
-    public class SecuredAttribute : ActionFilterAttribute
+#if NET5_0_OR_GREATER
+    public class SecuredAttribute : System.Attribute, IAsyncActionFilter
     {
+        public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
+#else
+        public class SecuredAttribute : ActionFilterAttribute
+        {
         /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
+#endif
         {
+#if NET5_0_OR_GREATER
+            var principal = actionContext.HttpContext.User;
+#else
             var principal = actionContext.Request.GetUserPrincipal();
+#endif
             Person person = null;
 
             if ( principal != null && principal.Identity != null )
@@ -75,7 +91,11 @@ namespace Rock.Rest.Filters
                             var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
                             if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
                             {
+#if NET5_0_OR_GREATER
+                                actionContext.Result = new Microsoft.AspNetCore.Mvc.ChallengeResult();
+#else
                                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
+#endif
                                 return;
                             }
                         }
@@ -83,11 +103,19 @@ namespace Rock.Rest.Filters
                 }
             }
 
+#if NET5_0_OR_GREATER
+            var reflectedHttpActionDescriptor = ( ControllerActionDescriptor ) actionContext.ActionDescriptor;
+
+            var controller = reflectedHttpActionDescriptor;
+            var controllerClassName = controller.ControllerTypeInfo.FullName;
+            var actionMethod = actionContext.HttpContext.Request.Method;
+#else
             var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionContext.ActionDescriptor;
 
             var controller = actionContext.ActionDescriptor.ControllerDescriptor;
             var controllerClassName = controller.ControllerType.FullName;
             var actionMethod = actionContext.Request.Method.Method;
+#endif
 
             var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
             ISecured item = RestActionCache.Get( apiId );
@@ -102,6 +130,27 @@ namespace Rock.Rest.Filters
                 }
             }
 
+#if NET5_0_OR_GREATER
+            if ( actionContext.HttpContext.Items.ContainsKey( "Person" ) )
+            {
+                person = actionContext.HttpContext.Items["Person"] as Person;
+            }
+            else
+            {
+                actionContext.HttpContext.Items.Add( "Person", person );
+
+                /* 12/12/2019 BJW
+                 *
+                 * Setting this current person item was only done in put, post, and patch in the ApiController
+                 * class. Set it here so that it is always set for all methods, including delete. This enhances
+                 * history logging done in the pre and post save model hooks (when the pre-save event is called
+                 * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
+                 *
+                 * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
+                 */
+                actionContext.HttpContext.Items.AddOrReplace( "CurrentPerson", person );
+            }
+#else
             if ( actionContext.Request.Properties.Keys.Contains( "Person" ) )
             {
                 person = actionContext.Request.Properties["Person"] as Person;
@@ -121,6 +170,7 @@ namespace Rock.Rest.Filters
                  */
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
+#endif
 
             string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
                 Security.Authorization.VIEW : Security.Authorization.EDIT;
@@ -131,12 +181,21 @@ namespace Rock.Rest.Filters
             {
                 authorized = true;
             }
+#if NET5_0_OR_GREATER
+            else if ( actionContext.HttpContext.Request.Headers.ContainsKey( "X-Rock-App-Id" ) && actionContext.HttpContext.Request.Headers.ContainsKey( "X-Rock-Mobile-Api-Key" ) )
+#else
             else if ( actionContext.Request.Headers.Contains( "X-Rock-App-Id" ) && actionContext.Request.Headers.Contains( "X-Rock-Mobile-Api-Key" ) )
+#endif
             {
                 // Normal authorization failed, but this is a Mobile App request so check
                 // if the application itself has been given permission.
+#if NET5_0_OR_GREATER
+                var appId = actionContext.HttpContext.Request.Headers["X-Rock-App-Id"].First().AsIntegerOrNull();
+                var mobileApiKey = actionContext.HttpContext.Request.Headers["X-Rock-Mobile-Api-Key"].First();
+#else
                 var appId = actionContext.Request.Headers.GetValues( "X-Rock-App-Id" ).First().AsIntegerOrNull();
                 var mobileApiKey = actionContext.Request.Headers.GetValues( "X-Rock-Mobile-Api-Key" ).First();
+#endif
 
                 if ( appId.HasValue )
                 {
@@ -152,10 +211,21 @@ namespace Rock.Rest.Filters
                 }
             }
 
+#if NET5_0_OR_GREATER
+            if ( !authorized )
+            {
+                actionContext.Result = new Microsoft.AspNetCore.Mvc.ChallengeResult();
+            }
+            else
+            {
+                await next();
+            }
+#else
             if ( !authorized )
             {
                 actionContext.Response = new HttpResponseMessage( HttpStatusCode.Unauthorized );
             }
+#endif
         }
     }
 }
