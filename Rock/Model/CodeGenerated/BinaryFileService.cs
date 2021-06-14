@@ -118,6 +118,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialStatementTemplate>( Context ).Queryable().Any( a => a.LogoBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialStatementTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );

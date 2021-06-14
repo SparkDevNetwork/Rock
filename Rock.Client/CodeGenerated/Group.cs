@@ -68,6 +68,12 @@ namespace Rock.Client
         public int? GroupCapacity { get; set; }
 
         /// <summary />
+        public string GroupSalutation { get; set; }
+
+        /// <summary />
+        public string GroupSalutationFull { get; set; }
+
+        /// <summary />
         public int GroupTypeId { get; set; }
 
         /// <summary />
@@ -173,6 +179,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupCapacity = source.GroupCapacity;
+            this.GroupSalutation = source.GroupSalutation;
+            this.GroupSalutationFull = source.GroupSalutationFull;
             this.GroupTypeId = source.GroupTypeId;
             this.InactiveDateTime = source.InactiveDateTime;
             this.InactiveReasonNote = source.InactiveReasonNote;

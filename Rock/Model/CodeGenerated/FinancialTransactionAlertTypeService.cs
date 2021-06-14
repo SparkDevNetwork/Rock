@@ -103,6 +103,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FrequencySensitivityScale = source.FrequencySensitivityScale;
+            target.MaximumDaysSinceLastGift = source.MaximumDaysSinceLastGift;
             target.MaximumGiftAmount = source.MaximumGiftAmount;
             target.MaximumMedianGiftAmount = source.MaximumMedianGiftAmount;
             target.MinimumGiftAmount = source.MinimumGiftAmount;

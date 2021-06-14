@@ -172,6 +172,12 @@ namespace Rock.Financial
         public virtual string Comment2 { get; set; }
 
         /// <summary>
+        /// The defined value id for the currency code of the amount field. If this is not the organization's currency then the actual amount
+        /// may be more or less depending on this currency's exchange rate. The actual amount should be returned from the payment processor.
+        /// </summary>
+        public int? AmountCurrencyCodeValueId { get; set; }
+
+        /// <summary>
         /// Gets the formatted value.
         /// </summary>
         /// <value>

@@ -104,14 +104,14 @@ namespace Rock.Badge.Component
                         if(data===0){{
                             opacity = 0.4;
                         }} else {{
-                            opacity = 1;    
+                            opacity = 1;
                         }}
                         var linkUrl = '{detailPageUrl}';
 
                         if (linkUrl != '') {{
-                                badgeContent = '<a href=\'' + linkUrl + '\'><span class=\'badge-content fa-layers fa-fw\' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></span></a>';
+                                badgeContent = '<a href=\'' + linkUrl + '\'><span class=\'badge-content fa-layers fa-fw\' style=\'opacity:'+ opacity +'\'><i class=\'fa {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></span></a>';
                             }} else {{
-                                badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
+                                badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fa {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
                             }}
 
                             $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);

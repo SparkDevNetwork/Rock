@@ -55,7 +55,7 @@ namespace Rock.Apps.StatementGenerator
         {
             if ( SaveChanges( true ) )
             {
-                var nextPage = new SelectAccountsPage();
+                var nextPage = new IndividualSaveSettings();
                 this.NavigationService.Navigate( nextPage );
             }
         }

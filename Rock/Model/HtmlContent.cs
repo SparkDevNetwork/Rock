@@ -27,7 +27,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Html Content POCO Entity.
+    /// HTML Content POCO Entity.
     /// </summary>
     [RockDomain( "CMS" )]
     [Table( "HtmlContent" )]
@@ -138,7 +138,7 @@ namespace Rock.Model
         public virtual Block Block { get; set; }
 
         /// <summary>
-        /// Gets or sets the approved by person alias.
+        /// Gets or sets the approved by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The approved by person alias.
@@ -168,7 +168,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// Html Content Configuration class.
+    /// HTML Content Configuration class.
     /// </summary>
     public partial class HtmlContentConfiguration : EntityTypeConfiguration<HtmlContent>
     {

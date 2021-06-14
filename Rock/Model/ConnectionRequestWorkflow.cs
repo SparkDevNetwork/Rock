@@ -36,7 +36,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection request identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request identifier.
@@ -46,7 +46,7 @@ namespace Rock.Model
         public int ConnectionRequestId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection workflow identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionWorkflow"/> identifier.
         /// </summary>
         /// <value>
         /// The connection workflow identifier.
@@ -56,7 +56,7 @@ namespace Rock.Model
         public int ConnectionWorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow identifier.
+        /// Gets or sets the <see cref="Rock.Model.Workflow"/> identifier.
         /// </summary>
         /// <value>
         /// The workflow identifier.
@@ -88,7 +88,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection request.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/>.
         /// </summary>
         /// <value>
         /// The connection request.
@@ -97,7 +97,7 @@ namespace Rock.Model
         public virtual ConnectionRequest ConnectionRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection workflow.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionWorkflow"/>.
         /// </summary>
         /// <value>
         /// The connection workflow.
@@ -106,7 +106,7 @@ namespace Rock.Model
         public virtual ConnectionWorkflow ConnectionWorkflow { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow.
+        /// Gets or sets the <see cref="Rock.Model.Workflow"/>.
         /// </summary>
         /// <value>
         /// The workflow.

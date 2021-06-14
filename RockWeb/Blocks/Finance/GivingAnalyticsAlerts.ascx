@@ -9,6 +9,11 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment-alt"></i> Giving Alerts</h1>
+                <div class="pull-right d-flex align-items-center">
+                    <asp:LinkButton ID="lbConfig" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConfig_Click" CausesValidation="false">
+                        <i title="Options" class="fa fa-gear"></i>
+                    </asp:LinkButton>
+                </div>
             </div>
             <div class="panel-body">
 
@@ -16,10 +21,11 @@
 
                     <Rock:GridFilter ID="gfAlertFilter" runat="server">
                         <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
-                        <Rock:RockCheckBoxList ID="cblAlertType" runat="server" Label="Alert Type" RepeatDirection="Horizontal" />
+                        <Rock:RockCheckBoxList ID="cblAlertCategory" runat="server" Label="Alert Category" RepeatDirection="Horizontal" />
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
-                        <Rock:NumberRangeEditor ID="nreTransaction" runat="server" Label="Transaction" NumberType="Double" />
+                        <Rock:NumberRangeEditor ID="nreTransactionAmount" runat="server" Label="Transaction Amount" NumberType="Double" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
+                        <Rock:RockCheckBoxList ID="cblAlertTypes" runat="server" Label="Alert Types" RepeatDirection="Horizontal" />
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
@@ -27,14 +33,14 @@
                         <Columns>
                             <Rock:RockLiteralField ID="lStatusIcons" HeaderText="" HeaderStyle-CssClass="w-1" ItemStyle-CssClass="w-1 badge-legend" />
                             <Rock:DateField DataField="AlertDateTime" HeaderText="Alert Date" SortExpression="AlertDateTime" />
-                            <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" />
+                            <Rock:PersonField DataField="PersonAlias.Person" HeaderText="Name" SortExpression="PersonAlias.Person.LastName,PersonAlias.Person.NickName" UrlFormatString="~/Person/{0}/Contributions" />
                             <Rock:RockBoundField DataField="FinancialTransactionAlertType.Campus" HeaderText="Campus" />
                             <Rock:RockBoundField DataField="FinancialTransactionAlertType.Name" HeaderText="Alert Name" SortExpression="FinancialTransactionAlertType.Name" />
-                            <Rock:RockLiteralField ID="lGiftAmount" HeaderText="Gift Amount" SortExpression="Amount" />
-                            <Rock:RockLiteralField ID="lAmountMedian" HeaderText="Amount +/- Median" />
-                            <Rock:RockLiteralField ID="lDaysMean" HeaderText="Days +/- Mean" />
-                            <Rock:RockLiteralField ID="lAmtMeasures" HeaderText="Amt Measures" />
-                            <Rock:RockLiteralField ID="lFreqMeasures" HeaderText="Freq Measures" />
+                            <Rock:RockLiteralField ID="lGiftAmount" HeaderText="Gift Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="right" />
+                            <Rock:RockLiteralField ID="lAmountMedian" HeaderText="Amount ± Median" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="right" />
+                            <Rock:RockLiteralField ID="lDaysMean" HeaderText="Days ± Mean" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="right" />
+                            <Rock:RockLiteralField ID="lAmtMeasures" HeaderText="Amt Measures" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="right" />
+                            <Rock:RockLiteralField ID="lFreqMeasures" HeaderText="Freq Measures" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="right" />
                         </Columns>
                     </Rock:Grid>
 

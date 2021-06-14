@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Finance
             dvpResultType.Required = true;
             dvpResultType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ).Id;
             dtbResultSummary.Text = string.Empty;
-            dtbAmount.Text = string.Empty;
+            dtbAmount.Value = null;
 
             mdAddResult.Show();
         }
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Finance
                 dvpResultType.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) ).Id;
                 dvpResultType.SetValue( resultInfo.ResultTypeValueId );
                 dtbResultSummary.Text = resultInfo.ResultSummary;
-                dtbAmount.Text = resultInfo.Amount.ToString();
+                dtbAmount.Value = resultInfo.Amount;
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
                 mdAddResult.Show();
             }
@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Finance
                 var resultInfo = benevolenceResultInfoViewStateList.FirstOrDefault( r => r.TempGuid == infoGuid );
                 if ( resultInfo != null )
                 {
-                    resultInfo.Amount = dtbAmount.Text.AsDecimalOrNull();
+                    resultInfo.Amount = dtbAmount.Value;
                     resultInfo.ResultSummary = dtbResultSummary.Text;
                     if ( resultType != null )
                     {
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Finance
             {
                 BenevolenceResultInfo benevolenceResultInfo = new BenevolenceResultInfo();
 
-                benevolenceResultInfo.Amount = dtbAmount.Text.AsDecimalOrNull();
+                benevolenceResultInfo.Amount = dtbAmount.Value;
 
                 benevolenceResultInfo.ResultSummary = dtbResultSummary.Text;
                 if ( resultType != null )

@@ -38,10 +38,10 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
-        public string DownloadData { get; set; }
+        public int? DurationSeconds { get; set; }
 
         /// <summary />
-        public decimal? Duration { get; set; }
+        public string FileDataJson { get; set; } = @"[]";
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -50,10 +50,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string MediaElementData { get; set; }
+        public int MediaFolderId { get; set; }
 
         /// <summary />
-        public int MediaFolderId { get; set; }
+        public string MetricData { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -73,13 +73,10 @@ namespace Rock.Client
         public string SourceKey { get; set; }
 
         /// <summary />
-        public string SourceMetric { get; set; }
-
-        /// <summary />
         public DateTime? SourceModifiedDateTime { get; set; }
 
         /// <summary />
-        public string ThumbnailData { get; set; }
+        public string ThumbnailDataJson { get; set; } = @"[]";
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -115,20 +112,19 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Description = source.Description;
-            this.DownloadData = source.DownloadData;
-            this.Duration = source.Duration;
+            this.DurationSeconds = source.DurationSeconds;
+            this.FileDataJson = source.FileDataJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.MediaElementData = source.MediaElementData;
             this.MediaFolderId = source.MediaFolderId;
+            this.MetricData = source.MetricData;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SourceCreatedDateTime = source.SourceCreatedDateTime;
             this.SourceData = source.SourceData;
             this.SourceKey = source.SourceKey;
-            this.SourceMetric = source.SourceMetric;
             this.SourceModifiedDateTime = source.SourceModifiedDateTime;
-            this.ThumbnailData = source.ThumbnailData;
+            this.ThumbnailDataJson = source.ThumbnailDataJson;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

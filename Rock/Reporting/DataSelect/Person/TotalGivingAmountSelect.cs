@@ -119,9 +119,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var globalAttributes = GlobalAttributesCache.Get();
 
-            NumberBox numberBoxAmount = new NumberBox();
-            numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
-            numberBoxAmount.NumberType = ValidationDataType.Currency;
+            CurrencyBox numberBoxAmount = new CurrencyBox();
             numberBoxAmount.ID = parentControl.ID + "_1";
             numberBoxAmount.Label = "Amount";
 
@@ -182,7 +180,7 @@ namespace Rock.Reporting.DataSelect.Person
         public override string GetSelection( Control[] controls )
         {
             string comparisonType = ( ( DropDownList ) controls[0] ).SelectedValue;
-            decimal? amount = ( controls[1] as NumberBox ).Text.AsDecimal();
+            decimal? amount = ( controls[1] as CurrencyBox ).Text.AsDecimal();
 
             var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
@@ -215,7 +213,7 @@ namespace Rock.Reporting.DataSelect.Person
             if ( selectionValues.Length >= 4 )
             {
                 var comparisonControl = controls[0] as DropDownList;
-                var numberBox = controls[1] as NumberBox;
+                var numberBox = controls[1] as CurrencyBox;
                 var accountPicker = controls[2] as AccountPicker;
                 SlidingDateRangePicker slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
                 var cbCombineGiving = controls[4] as RockCheckBox;

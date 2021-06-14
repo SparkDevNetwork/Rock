@@ -70,6 +70,9 @@ namespace Rock.Client
         public int? PersonAliasId { get; set; }
 
         /// <summary />
+        public int? PreferredForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary />
         public string ReferenceNumber { get; set; }
 
         /// <summary />
@@ -119,6 +122,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PersonAliasId = source.PersonAliasId;
+            this.PreferredForeignCurrencyCodeValueId = source.PreferredForeignCurrencyCodeValueId;
             this.ReferenceNumber = source.ReferenceNumber;
             this.TransactionCode = source.TransactionCode;
             this.CreatedDateTime = source.CreatedDateTime;

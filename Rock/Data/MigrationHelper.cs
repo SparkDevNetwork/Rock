@@ -813,7 +813,7 @@ namespace Rock.Data
 
             if ( skipIfAlreadyExists )
             {
-                addPageSQL = $"if not exists (select * from Page where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
+                addPageSQL = $"if not exists (select * from [Page] where [Guid] = '{guid}') begin\n" + addPageSQL + "\nend";
             }
 
             Migration.Sql( addPageSQL );
@@ -4174,7 +4174,7 @@ BEGIN
                             [Guid])
                         VALUES(
                             1,@AttributeId,@DefinedValueId,
-                            '{value.Replace( "'", "''")}',
+                            N'{value.Replace( "'", "''")}',
                             NEWID())
                     END
                 END

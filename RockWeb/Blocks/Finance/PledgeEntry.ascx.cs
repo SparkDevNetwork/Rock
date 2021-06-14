@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Finance
                 financialPledge.AccountId = financialAccount.Id;
             }
 
-            financialPledge.TotalAmount = tbTotalAmount.Text.AsDecimal();
+            financialPledge.TotalAmount = tbTotalAmount.Value ?? 0.0m;
 
             var pledgeFrequencySelection = DefinedValueCache.Get( ddlFrequency.SelectedValue.AsInteger() );
             if ( pledgeFrequencySelection != null )

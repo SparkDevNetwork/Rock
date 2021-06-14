@@ -102,11 +102,11 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbHideNavigationBar" runat="server" Label="Hide Navigation Bar" Help="When enabled the Navigation Bar will be hidden while this page is visible." />
+                            <Rock:RockCheckBox ID="cbHideNavigationBar" runat="server" Label="Hide Navigation Bar" Help="Hides the Navigation Bar and makes the Status Bar background color transparent. Page content will reach to the top edge of the screen." />
                         </div>
 
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbShowFullScreen" runat="server" Label="Show Full Screen" Help="When enabled the page will replace the entire shell to preven the user from navigating via the flyout or tab bar." />
+                            <Rock:RockCheckBox ID="cbShowFullScreen" runat="server" Label="Show Full Screen" Help="When enabled the page will replace the entire shell to prevent the user from navigating via the flyout or tab bar." />
                         </div>
                     </div>
 

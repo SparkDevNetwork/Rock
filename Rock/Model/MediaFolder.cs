@@ -1,12 +1,25 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -52,8 +65,11 @@ namespace Rock.Model
         /// Gets or sets a value indicating if this Media Folder is public.
         /// </summary>
         /// <value>
-        ///  A <see cref="System.Boolean"/> that is <c>true</c> if this Media Folder is public, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean" /> that is <c>true</c> if this Media Folder is public, otherwise <c>false</c>.
         /// </value>
+        /// <remarks>
+        /// This value is synchronized to the provider.
+        /// </remarks>
         [DataMember]
         public bool? IsPublic
         {
@@ -63,28 +79,28 @@ namespace Rock.Model
         private bool? _isPublic = true;
 
         /// <summary>
-        /// Gets or sets the source data.
+        /// Gets or sets the custom provider data for this instance.
         /// </summary>
         /// <value>
-        /// The source data.
+        /// The custom provider data for this instance.
         /// </value>
         [DataMember]
         public string SourceData { get; set; }
 
         /// <summary>
-        /// Gets or sets the metric data.
+        /// Gets or sets the custom provider metric data for this instance.
         /// </summary>
         /// <value>
-        /// The metric data.
+        /// The custom provider metric data for this instance.
         /// </value>
         [DataMember]
         public string MetricData { get; set; }
 
         /// <summary>
-        /// Gets or sets the source key.
+        /// Gets or sets the provider's unique identifier for this instance.
         /// </summary>
         /// <value>
-        /// The source key.
+        /// The provider's unique identifier for this instance.
         /// </value>
         [DataMember]
         [MaxLength( 60 )]
@@ -115,16 +131,29 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of the ContentItem.
         /// </value>
         [DataMember]
-        public ContentChannelItemStatus? Status { get; set; }
+        public ContentChannelItemStatus? ContentChannelItemStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the content channel attribute identifier.
+        /// Gets or sets the synced content channel item attribute identifier
+        /// to store the Guid value into.
         /// </summary>
         /// <value>
-        /// The content channel attribute identifier.
+        /// The synced content channel item attribute identifier.
         /// </value>
         [DataMember]
         public int? ContentChannelAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the workflow type identifier. This workflow is
+        /// launched whenever a new <see cref="MediaElement"/> is added to
+        /// the system. The <see cref="MediaElement"/> is passed as the Entity
+        /// object to the workflow.
+        /// </summary>
+        /// <value>
+        /// The workflow type identifier.
+        /// </value>
+        [DataMember]
+        public int? WorkflowTypeId { get; set; }
 
         #endregion
 
@@ -156,6 +185,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Attribute ContentChannelAttribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the workflow that will be launched when
+        /// a new <see cref="MediaElement"/> is added.
+        /// </summary>
+        /// <value>
+        /// The type of the workflow.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.MediaElement">Elements</see> that belong to this Folder.
@@ -196,9 +235,10 @@ namespace Rock.Model
         /// </summary>
         public MediaFolderConfiguration()
         {
-            this.HasRequired( p => p.MediaAccount ).WithMany( p => p.MediaFolders ).HasForeignKey( p => p.MediaAccountId ).WillCascadeOnDelete( true );
-            this.HasOptional( i => i.ContentChannel ).WithMany().HasForeignKey( i => i.ContentChannelId ).WillCascadeOnDelete( false );
-            this.HasOptional( a => a.ContentChannelAttribute ).WithMany().HasForeignKey( a => a.ContentChannelAttributeId ).WillCascadeOnDelete( false );
+            this.HasRequired( f => f.MediaAccount ).WithMany( a => a.MediaFolders ).HasForeignKey( p => p.MediaAccountId ).WillCascadeOnDelete( true );
+            this.HasOptional( f => f.ContentChannel ).WithMany().HasForeignKey( f => f.ContentChannelId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.ContentChannelAttribute ).WithMany().HasForeignKey( f => f.ContentChannelAttributeId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.WorkflowType ).WithMany().HasForeignKey( f => f.WorkflowTypeId ).WillCascadeOnDelete( false );
         }
     }
 

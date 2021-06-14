@@ -242,6 +242,19 @@ WHERE SundayDate IS NULL
         }
 
         /// <summary>
+        /// Converts the Rock date time to local date time.
+        /// Use this to convert a rock <see cref="DateTime"/> (for example, a
+        /// <see cref="DateTime"/> found in the database) to the local server
+        /// time zone.
+        /// </summary>
+        /// <param name="rockDateTime">The Rock date time.</param>
+        /// <returns>The local <see cref="DateTime"/>.</returns>
+        public static DateTime ConvertRockDateTimeToLocalDateTime( DateTime rockDateTime )
+        {
+            return TimeZoneInfo.ConvertTime( rockDateTime, OrgTimeZoneInfo, TimeZoneInfo.Local );
+        }
+
+        /// <summary>
         /// The Default DayOfWeek that Rock uses if a custom FirstDayOfWeek isn't set
         /// </summary>
         public static DayOfWeek DefaultFirstDayOfWeek = DayOfWeek.Monday;

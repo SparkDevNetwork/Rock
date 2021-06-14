@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -57,6 +58,8 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Properties
+
+        private string RockSiteUrl { get { return ConfigurationManager.AppSettings["RockStoreUrl"].EnsureTrailingForwardslash(); } }
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "UpdateServerUrl" Attribute.
@@ -139,7 +142,7 @@ namespace RockWeb.Blocks.Core
                     {
                         _isEarlyAccessOrganization = CheckEarlyAccess();
 
-                        btnIssues.NavigateUrl = string.Format( "http://www.rockrms.com/earlyaccessissues?RockInstanceId={0}", Rock.Web.SystemSettings.GetRockInstanceId() );
+                        btnIssues.NavigateUrl = string.Format( "{0}earlyaccessissues?RockInstanceId={1}", RockSiteUrl, Rock.Web.SystemSettings.GetRockInstanceId() );
 
                         if ( _isEarlyAccessOrganization )
                         {
@@ -350,7 +353,7 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         private bool CheckEarlyAccess()
         {
-            var client = new RestClient( "http://www.rockrms.com/api/RockUpdate/GetEarlyAccessStatus" );
+            var client = new RestClient( string.Format( "{0}api/RockUpdate/GetEarlyAccessStatus", RockSiteUrl ) );
             var request = new RestRequest( Method.GET );
             request.RequestFormat = DataFormat.Json;
 
@@ -383,7 +386,7 @@ namespace RockWeb.Blocks.Core
                 releaseProgram = ReleaseProgram.BETA;
             }
 
-            var client = new RestClient( "http://www.rockrms.com/api/RockUpdate/GetReleasesList" );
+            var client = new RestClient( string.Format( "{0}/api/RockUpdate/GetReleasesList", RockSiteUrl ) );
             var request = new RestRequest( Method.GET );
             request.RequestFormat = DataFormat.Json;
 
@@ -496,17 +499,17 @@ namespace RockWeb.Blocks.Core
             }
             catch ( OutOfMemoryException ex )
             {
-                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='https://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
                 LogException( ex );
             }
             catch ( System.Xml.XmlException ex )
             {
-                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='https://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
                 LogException( ex );
             }
             catch ( System.IO.IOException ex )
             {
-                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. We were not able to replace an important file ({1}) after the update. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#unabletoreplacefile'>this page for some assistance</a>", version, ex.Message ) } );
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. We were not able to replace an important file ({1}) after the update. Check out <a href='https://www.rockrms.com/Rock/UpdateIssues#unabletoreplacefile'>this page for some assistance</a>", version, ex.Message ) } );
                 LogException( ex );
             }
             catch ( Exception ex )
@@ -829,7 +832,7 @@ namespace RockWeb.Blocks.Core
         ///     * Public Web Address
         ///     * Number of Active Records
         ///
-        /// As per http://www.rockrms.com/Rock/Impact
+        /// As per https://www.rockrms.com/Rock/Impact
         /// </summary>
         /// <param name="version">the semantic version number</param>
         private void SendStatictics( string version )
@@ -913,7 +916,7 @@ namespace RockWeb.Blocks.Core
                 EnvironmentData = environmentData
             };
 
-            var client = new RestClient( "http://www.rockrms.com/api/impacts/save" );
+            var client = new RestClient( string.Format( "{0}/api/impacts/save", RockSiteUrl ) );
             var request = new RestRequest( Method.POST );
             request.RequestFormat = DataFormat.Json;
             request.AddBody( impactStatistic );

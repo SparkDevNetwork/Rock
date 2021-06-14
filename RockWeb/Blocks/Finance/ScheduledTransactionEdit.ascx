@@ -24,11 +24,15 @@
                                 </div>
                                 <div class="panel-body">
                                     <fieldset>
-
+                                        <Rock:DefinedValuePicker ID="dvpForeignCurrencyCode" runat="server" Label="Foreign Currency" AutoPostBack="true" OnSelectedIndexChanged="dvpForeignCurrencyCode_SelectedIndexChanged" />
                                         <asp:Repeater ID="rptAccountList" runat="server">
+                                            <HeaderTemplate>
+                                                <asp:HiddenField ID="hfCurrencySymbol" ClientIDMode="Static" runat="server" Value='<%# CurrencyCodeInfo.IsOrganizationCurrency ? HttpUtility.HtmlDecode(CurrencyCodeInfo.Symbol) : CurrencyCodeInfo.CurrencyCode + " " + HttpUtility.HtmlDecode(CurrencyCodeInfo.Symbol) %>' />
+                                                <asp:HiddenField ID="hfCurrencyDecimals" ClientIDMode="Static" runat="server" Value='<%# CurrencyCodeInfo.DecimalPlaces %>' />
+                                            </HeaderTemplate>
                                             <ItemTemplate>
                                                 <asp:HiddenField ID="hfAccountId" runat="server" Value='<%# Eval("Id") %>' />
-                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Label='<%# Eval("PublicName") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
+                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" CurrencyCodeDefinedValueId='<%# ForeignCurrencyCodeDefinedValueId %>' Label='<%# Eval("PublicName") %>' Value='<%# Eval("Amount") %>' CssClass="account-amount" />
                                             </ItemTemplate>
                                         </asp:Repeater>
                                         <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" Visible="false" Label=" "

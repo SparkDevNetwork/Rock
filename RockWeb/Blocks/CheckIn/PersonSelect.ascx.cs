@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -32,11 +33,30 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Lists people who match the selected family to pick to check-in or check-out.")]
 
-    [TextField( "Title", "Title to display. Use {0} for family name.", false, "{0}", "Text", 8 )]
-    [TextField( "Caption", "", false, "Select Person", "Text", 9 )]
-    [TextField( "No Option Message", "The option to display when there are not any people that match. Use {0} for the current action ('into' or 'out of').", false, "Sorry, there are currently not any available areas that the selected person can check {0}.", "Text", 10 )]
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "Select Person",
+        Category = "Text",
+        Order = 8 )]
+
+    [TextField( "No Option Message",
+        Key = AttributeKey.NoOptionMessage,
+        Description = "The option to display when there are not any people that match. Use {0} for the current action ('into' or 'out of').",
+        IsRequired = false,
+        DefaultValue = "Sorry, there are currently not any available areas that the selected person can check {0}.",
+        Category = "Text",
+        Order = 9 )]
+
     public partial class PersonSelect : CheckInBlock
     {
+        private new static class AttributeKey
+        {
+            public const string Caption = "Caption";
+            public const string NoOptionMessage = "NoOptionMessage";
+        }
+
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -67,8 +87,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lbEditFamily.Visible = CurrentCheckInState.Kiosk.RegistrationModeEnabled;
-                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lTitle.Text = GetTitleText();
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     if ( family.People.Count == 1 && !CurrentCheckInState.Kiosk.RegistrationModeEnabled )
                     {
@@ -110,6 +130,17 @@ namespace RockWeb.Blocks.CheckIn
                     person.Selected = false;
                 }
             }
+        }
+
+        private string GetTitleText()
+        {
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group }
+            };
+
+            var personSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.PersonSelectHeaderLavaTemplate ?? string.Empty;
+            return personSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
@@ -163,7 +194,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void ProcessSelection()
         {
-            string noOption = string.Format( GetAttributeValue( "NoOptionMessage" ), CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckIn ? "into" : "out of" );
+            string noOption = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ), CurrentCheckInState.CheckIn.CurrentFamily.Action == CheckinAction.CheckIn ? "into" : "out of" );
             string msg = string.Format( "<p>{0}</p>", noOption );
             ProcessSelection( 
                 maWarning, 

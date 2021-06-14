@@ -17,19 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.SystemKey;
-using Rock.Utility;
 using Rock.Utility.Settings.GivingAnalytics;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -43,6 +40,19 @@ namespace RockWeb.Blocks.Finance
 
     public partial class GivingAnalyticsConfiguration : Rock.Web.UI.RockBlock
     {
+        #region Constants
+
+        /// <summary>
+        /// The account type: all tax deductable
+        /// </summary>
+        private const string AccountTypes_AllTaxDeductable = "AllTaxDeductable";
+
+        /// <summary>
+        /// The account type: custom
+        /// </summary>
+        private const string AccountTypes_Custom = "Custom";
+
+        #endregion Constants
 
         #region Fields
 
@@ -110,6 +120,16 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the rblAccountTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rblAccountTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            divAccounts.Visible = rblAccountTypes.SelectedValue == AccountTypes_Custom;
+        }
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlConnectionType control.
@@ -265,16 +285,17 @@ namespace RockWeb.Blocks.Finance
             }
 
             financialTransactionAlertType.Name = tbName.Text;
-            financialTransactionAlertType.CampusId = ddlCampus.SelectedValueAsInt();
+            financialTransactionAlertType.CampusId = cpCampus.SelectedCampusId;
             financialTransactionAlertType.AlertType = rblAlertType.SelectedValueAsEnum<AlertType>();
             financialTransactionAlertType.ContinueIfMatched = cbContinueIfMatched.Checked;
             financialTransactionAlertType.RepeatPreventionDuration = nbRepeatPreventionDuration.Text.AsIntegerOrNull();
             financialTransactionAlertType.AmountSensitivityScale = nbAmountSensitivityScale.Text.AsDecimalOrNull();
             financialTransactionAlertType.FrequencySensitivityScale = nbFrequencySensitivityScale.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MinimumGiftAmount = cbMinimumGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MaximumGiftAmount = cbMaximumGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MinimumMedianGiftAmount = cbMinimumMedianGiftAmount.Text.AsDecimalOrNull();
-            financialTransactionAlertType.MaximumMedianGiftAmount = cbMaximumMedianGiftAmount.Text.AsDecimalOrNull();
+            financialTransactionAlertType.MinimumGiftAmount = cbMinimumGiftAmount.Value;
+            financialTransactionAlertType.MaximumGiftAmount = cbMaximumGiftAmount.Value;
+            financialTransactionAlertType.MinimumMedianGiftAmount = cbMinimumMedianGiftAmount.Value;
+            financialTransactionAlertType.MaximumMedianGiftAmount = cbMaximumMedianGiftAmount.Value;
+            financialTransactionAlertType.MaximumDaysSinceLastGift = nbMaxDaysSinceLastGift.IntegerValue;
             financialTransactionAlertType.DataViewId = dvpPersonDataView.SelectedValueAsInt();
             financialTransactionAlertType.SendBusEvent = cbSendBusEvent.Checked;
             financialTransactionAlertType.ConnectionOpportunityId = ddlConnectionOpportunity.SelectedValueAsId();
@@ -300,6 +321,27 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
+            var selectedAccountIds = apAccounts.SelectedIds;
+            var accountGuids = new List<Guid>();
+
+            if ( selectedAccountIds.Any() )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var accountService = new FinancialAccountService( rockContext );
+                    accountGuids = accountService.Queryable()
+                        .AsNoTracking()
+                        .Where( a => selectedAccountIds.Contains( a.Id ) )
+                        .Select( a => a.Guid )
+                        .ToList();
+                }
+            }
+
+            var isCustomAccounts = rblAccountTypes.SelectedValue == AccountTypes_Custom;
+
+            _givingAnalyticsSetting.FinancialAccountGuids = isCustomAccounts ? accountGuids : null;
+            _givingAnalyticsSetting.AreChildAccountsIncluded = isCustomAccounts ? cbIncludeChildAccounts.Checked : ( bool? ) null;
+            _givingAnalyticsSetting.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
             _givingAnalyticsSetting.GivingAnalytics.IsEnabled = cbEnableGivingAnalytics.Checked;
             _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays = dwpDaysToUpdateAnalytics.SelectedDaysOfWeek;
             _givingAnalyticsSetting.Alerting.GlobalRepeatPreventionDurationDays = nbGlobalRepeatPreventionDuration.Text.AsIntegerOrNull();
@@ -331,8 +373,40 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowDetail()
         {
+            var transactionTypes = BindTransactionTypes();
+            BindAccounts();
+
+            // Load values from the system settings
             _givingAnalyticsSetting = Rock.Web.SystemSettings.GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION ).FromJsonOrNull<GivingAnalyticsSetting>() ?? new GivingAnalyticsSetting();
 
+            var savedTransactionTypeGuids =
+                _givingAnalyticsSetting.TransactionTypeGuids ??
+                new List<Guid> { Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
+            var savedTransactionTypeGuidStrings = savedTransactionTypeGuids.Select( g => g.ToString() )
+                .Intersect( transactionTypes.Select( dv => dv.Guid.ToString() ) );
+
+            var savedAccountGuids = _givingAnalyticsSetting.FinancialAccountGuids ?? new List<Guid>();
+            var accounts = new List<FinancialAccount>();
+            var areChildAccountsIncluded = _givingAnalyticsSetting.AreChildAccountsIncluded ?? false;
+
+            if (savedAccountGuids.Any())
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var accountService = new FinancialAccountService( rockContext );
+                    accounts = accountService.Queryable()
+                        .AsNoTracking()
+                        .Where( a => savedAccountGuids.Contains( a.Guid ) )
+                        .ToList();
+                }
+            }
+
+            // Sync the system setting values to the controls
+            divAccounts.Visible = savedAccountGuids.Any();
+            apAccounts.SetValues( accounts );
+            rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductable );
+            cbIncludeChildAccounts.Checked = areChildAccountsIncluded;
+            cblTransactionTypes.SetValues( savedTransactionTypeGuidStrings );
             cbEnableGivingAnalytics.Checked = _givingAnalyticsSetting.GivingAnalytics.IsEnabled;
             dwpDaysToUpdateAnalytics.SelectedDaysOfWeek = _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays;
             nbGlobalRepeatPreventionDuration.Text = _givingAnalyticsSetting.Alerting.GlobalRepeatPreventionDurationDays.ToStringSafe();
@@ -343,10 +417,73 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Binds the accounts.
+        /// </summary>
+        private void BindAccounts()
+        {
+            if ( rblAccountTypes.Items.Count > 0 )
+            {
+                return;
+            }
+
+            rblAccountTypes.DataTextField = "Text";
+            rblAccountTypes.DataValueField = "Value";
+            rblAccountTypes.DataSource = new[] {
+                new {
+                    Text = "All Tax Deductible Accounts",
+                    Value = AccountTypes_AllTaxDeductable
+                },
+                new {
+                    Text ="Custom",
+                    Value = AccountTypes_Custom
+                }
+            };
+            rblAccountTypes.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the transaction types.
+        /// </summary>
+        private List<DefinedValueCache> BindTransactionTypes()
+        {
+            var transactionTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE )
+                .DefinedValues
+                .Where( dv => dv.IsActive )
+                .ToList();
+
+            if ( cblTransactionTypes.Items.Count > 0 )
+            {
+                return transactionTypes;
+            }
+
+            cblTransactionTypes.DataTextField = "Text";
+            cblTransactionTypes.DataValueField = "Value";
+            cblTransactionTypes.DataSource = transactionTypes.Select( dv => new
+            {
+                Text = dv.Value,
+                Value = dv.Guid.ToString()
+            } );
+
+            cblTransactionTypes.DataBind();
+            return transactionTypes;
+        }
+
+        /// <summary>
         /// Binds the alerts.
         /// </summary>
         private void BindAlerts()
         {
+            if ( CampusCache.All().Count == 1 )
+            {
+                // Hide the campus field if there is only one campus in the system
+                var campusField = gAlerts.ColumnsOfType<RockBoundField>().Where( a => a.HeaderText == "Campus" ).FirstOrDefault();
+
+                if ( campusField != null )
+                {
+                    campusField.Visible = false;
+                }
+            }
+
             gAlerts.DataSource = GetFinancialTransactionAlertTypes().ToList();
             gAlerts.DataBind();
         }
@@ -371,16 +508,17 @@ namespace RockWeb.Blocks.Finance
             BindControl();
             tbName.Text = financialTransactionAlertType.Name;
             hfIdValue.Value = financialTransactionAlertType.Id.ToString();
-            ddlCampus.SetValue( financialTransactionAlertType.CampusId );
+            cpCampus.SetValue( financialTransactionAlertType.CampusId );
             rblAlertType.SetValue( ( int ) financialTransactionAlertType.AlertType );
             cbContinueIfMatched.Checked = financialTransactionAlertType.ContinueIfMatched;
             nbRepeatPreventionDuration.Text = financialTransactionAlertType.RepeatPreventionDuration.ToStringSafe();
             nbAmountSensitivityScale.Text = financialTransactionAlertType.AmountSensitivityScale.ToStringSafe();
             nbFrequencySensitivityScale.Text = financialTransactionAlertType.FrequencySensitivityScale.ToStringSafe();
-            cbMinimumGiftAmount.Text = financialTransactionAlertType.MinimumGiftAmount.ToStringSafe();
-            cbMaximumGiftAmount.Text = financialTransactionAlertType.MaximumGiftAmount.ToStringSafe();
-            cbMinimumMedianGiftAmount.Text = financialTransactionAlertType.MinimumMedianGiftAmount.ToStringSafe();
-            cbMaximumMedianGiftAmount.Text = financialTransactionAlertType.MaximumMedianGiftAmount.ToStringSafe();
+            cbMinimumGiftAmount.Value = financialTransactionAlertType.MinimumGiftAmount;
+            cbMaximumGiftAmount.Value = financialTransactionAlertType.MaximumGiftAmount;
+            cbMinimumMedianGiftAmount.Value = financialTransactionAlertType.MinimumMedianGiftAmount;
+            cbMaximumMedianGiftAmount.Value = financialTransactionAlertType.MaximumMedianGiftAmount;
+            nbMaxDaysSinceLastGift.IntegerValue = financialTransactionAlertType.MaximumDaysSinceLastGift;
             dvpPersonDataView.SetValue( financialTransactionAlertType.DataViewId );
             cbSendBusEvent.Checked = financialTransactionAlertType.SendBusEvent;
             wtpLaunchWorkflow.SetValue( financialTransactionAlertType.WorkflowTypeId );
@@ -412,10 +550,6 @@ namespace RockWeb.Blocks.Finance
             var connectionTypeService = new ConnectionTypeService( new RockContext() );
             ddlConnectionType.Items.Add( new ListItem() );
             ddlConnectionType.Items.AddRange( connectionTypeService.Queryable().Select( x => new ListItem { Text = x.Name, Value = x.Id.ToString() } ).ToArray() );
-
-            ddlCampus.DataSource = CampusCache.All();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( "All Campuses", "0" ) );
 
             dvpPersonDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 

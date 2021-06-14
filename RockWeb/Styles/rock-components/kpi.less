@@ -1,27 +1,40 @@
 .kpi-container {
-  --kpi-gap: 16px;
-  --kpi-min-sm: ~"calc(var(--kpi-col-sm, 50%) - var(--kpi-gap))";
-  --kpi-min-md: ~"calc(var(--kpi-col-md, 33.3333%) - var(--kpi-gap))";
-  --kpi-min-lg: ~"calc(var(--kpi-col-lg, 25%) - var(--kpi-gap))";
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 0 -8px;
 
-  display: grid;
-  width: 100%;
-  margin: var(--kpi-gap) 0;
-  overflow: hidden;
-  grid-template-columns: repeat(1, 1fr);
-  grid-auto-rows: 1fr;
-  gap: var(--kpi-gap);
+  > .kpi {
+    min-width: var(--kpi-min-width, 220px);
+    margin: 8px;
+  }
 
   @media (min-width: @screen-sm) {
-    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-sm), 1fr))";
+    > .kpi {
+      max-width: ~"calc(50% - 16px)";
+      max-width: ~"calc(var(--kpi-col-sm, 50%) - 16px)";
+    }
   }
 
   @media (min-width: @screen-md) {
-    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-md), 1fr))";
+    > .kpi {
+      max-width: ~"calc(33.3333% - 16px)";
+      max-width: ~"calc(var(--kpi-col-md, 33.33333%) - 16px)";
+    }
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
   }
 
   @media (min-width: @screen-lg) {
-    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-lg), 1fr))";
+    > .kpi {
+      max-width: ~"calc(25% - 16px)";
+      max-width: ~"calc(var(--kpi-col-lg, 25%) - 16px)";
+    }
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
   }
 }
 
@@ -36,12 +49,9 @@
   flex-grow: 1;
   align-items: center;
   margin: 0 8px 16px;
+  overflow-y: hidden;
   font-size: 26px;
   color: #aeaeae;
-
-  .kpi-container & {
-    margin: 0;
-  }
 }
 
 .kpi-card {
@@ -54,8 +64,13 @@
 
 .kpi-stat {
   flex: 1 1 auto;
-  align-self: center;
+  align-self: flex-start;
   padding: 8px 16px;
+  overflow: hidden;
+
+  .kpi-icon + & {
+    align-self: center;
+  }
 }
 
 .kpi-value {
@@ -90,16 +105,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: max-content;
-  min-width: 60px;
-  max-width: 35%;
+  // min-width: 50px;
+  // max-width: 35%;
   height: 100%;
-  overflow: hidden;
   font-size: 32px;
   vertical-align: top;
 
   .kpi-card & {
-    display: inline-block;
+    margin-left: 12px;
+  }
+
+  .has-icon-bg & {
+    display: block;
+    width: max-content;
+    margin-left: 0;
   }
 
   // Force 48px BG for kpi-sm
@@ -132,18 +151,47 @@
   }
 
 
-  .kpi-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .has-icon-bg & {
+    .kpi-content {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 }
 
+
+// Firefox does not correctly render.
+@supports not (width: fit-content) {
+  .kpi-lg.has-icon-bg .kpi-icon {
+    min-width: 86px;
+  }
+
+  .has-icon-bg .kpi-icon {
+    min-width: 57px;
+    height: 100%;
+
+    &::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: block;
+      width: 100%;
+      content: " ";
+      background: currentColor;
+      opacity: .2;
+    }
+
+    .svg-placeholder {
+      opacity: 0 !important;
+    }
+  }
+}
 
 .kpi-sm {
   .kpi-icon {
@@ -151,7 +199,7 @@
   }
 
   .kpi-stat {
-    padding: 4px 8px 4px 8px;
+    padding: 4px 8px;
   }
 }
 
@@ -162,9 +210,11 @@
   .kpi-stat {
     padding: 16px 10px;
   }
+
   .kpi-label {
     padding: 3px 0;
     font-size: 17px;
+    font-weight: @font-weight-base;
   }
 
   .kpi-icon {
@@ -172,6 +222,12 @@
     font-size: 48px;
     text-align: center;
   }
+}
+
+.kpi-lg-label {
+  &:extend(.kpi-label);
+  &:extend(.kpi-lg .kpi-label);
+  font-size: 17px;
 }
 
 .kpi-xl {
@@ -185,6 +241,6 @@
 .stat-value-lg {
   display: block;
   font-size: 45px;
-  line-height: 1;
   font-weight: 700;
+  line-height: 1;
 }

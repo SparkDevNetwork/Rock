@@ -68,6 +68,24 @@
   opacity: 1;
 }
 
+// Giving Overview Block Inactive Giver
+.inactive-giving {
+  position: relative;
+  opacity: .85;
+
+  &::before {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+    z-index: -10;
+    content: " ";
+    background: fade(@ui-2, 100%);
+    border-radius: @border-radius-base;
+  }
+}
+
 // 2. Scheduled Transactions
 // -------------------------
 .scheduledtransaction-item {
@@ -277,4 +295,25 @@
       font-size: 60px;
     }
   }
+}
+
+.trend-bar {
+  height: 11px;
+  margin-top: 4px;
+}
+
+.trend-bar li {
+  float: left;
+  height: 100%;
+}
+
+.trend-bar li span {
+  display: flex;
+  height: 100%;
+  margin-right: 2px;
+  background: @persondetails-badge-color;
+}
+
+.percentile-giving .stat-label {
+  line-height: 1;
 }

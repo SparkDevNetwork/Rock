@@ -212,9 +212,10 @@ namespace Rock.Utility
 
             reprintLabelOptions = reprintLabelOptions ?? new ReprintLabelOptions();
 
-            // Get the selected attendance records
+            // Get the selected attendance records (but only the ones that have label data)
             var labelDataList = attendanceService
                 .GetByIds( selectedAttendanceIds )
+                .Where( a => a.AttendanceData.LabelData != null )
                 .Select( a => a.AttendanceData.LabelData );
 
             var printFromClient = new List<CheckInLabel>();

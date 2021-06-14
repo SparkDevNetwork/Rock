@@ -83,6 +83,15 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the purpose key.
+        /// </summary>
+        /// <value>
+        /// The purpose key.
+        /// </value>
+        [MaxLength( 100 )]
+        public string PurposeKey { get; set; }
+
+        /// <summary>
         /// Gets or sets a description of the document.
         /// </summary>
         /// <value>

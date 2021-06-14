@@ -33,20 +33,14 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
 
-using Ical.Net;
 using Ical.Net.DataTypes;
-using Calendar = Ical.Net.Calendar;
 
 using DotLiquid;
 using DotLiquid.Util;
-
 using Humanizer;
 using Humanizer.Localisation;
-
 using ImageResizer;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -56,7 +50,6 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-
 using UAParser;
 
 namespace Rock.Lava
@@ -436,7 +429,7 @@ namespace Rock.Lava
         {
             return input == null
                 ? input
-                : input.Titleize();
+                : input.ApplyCase( LetterCasing.Title );
         }
 
         /// <summary>
@@ -1275,17 +1268,16 @@ namespace Rock.Lava
         /// <returns>a list of datetimes</returns>
         private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
-            var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
-            var calendarEvent = calendar.Events[0] as Event;
+            var calendarEvent = InetCalendarHelper.CreateCalendarEvent( iCalString );
             
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.StartTime.Value ).ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
+                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
                 return dates.Select( d => d.Period.EndTime.Value ).ToList();
             }
             else
@@ -1870,7 +1862,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Formats the specified input as currency using the CurrencySymbol from Global Attributes
+        /// Formats the specified input as currency using the Currency Code information from Global Attributes
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -1881,18 +1873,21 @@ namespace Rock.Lava
                 return null;
             }
 
-            if ( input is string )
-            {
-                // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
-                var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-                return string.Format( "{0}{1}", currencySymbol, input );
-            }
-            else
+            var inputAsDecimal = input.ToString().AsDecimalOrNull();
+            if(inputAsDecimal != null )
             {
                 // if the input an integer, decimal, double or anything else that can be parsed as a decimal, format that
-                decimal? inputAsDecimal = input.ToString().AsDecimalOrNull();
                 return inputAsDecimal.FormatAsCurrency();
             }
+
+            // if the input is a string, just append the currency symbol to the front, even if it can't be converted to a number
+            var currencyInfo = new RockCurrencyCodeInfo();
+            if ( currencyInfo.SymbolLocation.Equals( "left", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return string.Format( "{0}{1}", currencyInfo.Symbol, input );
+            }
+
+            return string.Format( "{1}{0}", currencyInfo.Symbol, input );
         }
 
         /// <summary>
@@ -2832,14 +2827,14 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Families the salutation.
+        /// Return's the FamilySalutation for the specified Person
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
         /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
-        /// <param name="finalfinalSeparator">The finalfinal separator.</param>
+        /// <param name="finalfinalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
         public static string FamilySalutation( DotLiquid.Context context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
@@ -2851,7 +2846,36 @@ namespace Rock.Lava
                 return null;
             }
 
-            return Person.GetFamilySalutation( person, includeChildren, includeInactive, useFormalNames, finalfinalSeparator, separator );
+            string familySalutation = string.Empty;
+
+            if ( includeInactive == false && useFormalNames == false && finalfinalSeparator == "&" && separator == "," && person.PrimaryFamilyId.HasValue )
+            {
+                // if default parameters are specified, we can get the family salutation from the GroupSalutionField of the person's PrimaryFamily
+                if ( includeChildren )
+                {
+                    familySalutation = person.PrimaryFamily?.GroupSalutationFull;
+                }
+                else
+                {
+                    familySalutation = person.PrimaryFamily?.GroupSalutation;
+                }
+            }
+
+            if ( familySalutation.IsNotNullOrWhiteSpace())
+            {
+                return familySalutation;
+            }
+
+            // if non-default parameters are specified, we'll have to calculate
+            var args = new Person.CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalfinalSeparator,
+                Separator = separator
+            };
+
+            return Person.CalculateFamilySalutation( person, args );
         }
 
         /// <summary>
@@ -3944,13 +3968,13 @@ namespace Rock.Lava
                     if ( inputAsInt.HasValue )
                     {
                         return modelCacheType
-                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new [] { typeof( int ) }, null )
+                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new[] { typeof( int ) }, null )
                             .Invoke( null, new object[] { inputAsInt.Value } );
                     }
                     else if ( inputAsGuid.HasValue )
                     {
                         return modelCacheType
-                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new [] { typeof( Guid ) }, null )
+                            .GetMethod( "Get", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy, null, new[] { typeof( Guid ) }, null )
                             .Invoke( null, new object[] { inputAsGuid.Value } );
                     }
                     else
@@ -5679,6 +5703,7 @@ namespace Rock.Lava
                 var followed = new FollowingService( rockContext ).Queryable()
                     .Where( f => f.EntityTypeId == followingEntityTypeId && f.EntityId == entity.Id )
                     .Where( f => f.PersonAlias.PersonId == person.Id )
+                    .Where( f => string.IsNullOrEmpty( f.PurposeKey ) )
                     .Any();
 
                 return followed;

@@ -35,7 +35,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -45,7 +45,7 @@ namespace Rock.Model
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -59,7 +59,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.
@@ -68,7 +68,7 @@ namespace Rock.Model
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.

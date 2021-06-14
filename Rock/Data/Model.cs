@@ -117,7 +117,7 @@ namespace Rock.Data
         {
             get
             {
-                if (CreatedByPersonAlias != null)
+                if ( CreatedByPersonAlias != null )
                 {
                     return CreatedByPersonAlias.PersonId;
                 }
@@ -196,7 +196,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        [RockClientInclude("If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true")]
+        [RockClientInclude( "If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true" )]
         public virtual bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="state"></param>
-        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, EntityState state )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
         }
 
@@ -413,7 +413,7 @@ namespace Rock.Data
         /// </returns>
         public virtual bool IsPrivate( string action, Person person )
         {
-            return Authorization.IsPrivate( this, action, person  );
+            return Authorization.IsPrivate( this, action, person );
         }
 
         /// <summary>
@@ -485,9 +485,9 @@ namespace Rock.Data
                 object item = base[key];
                 if ( item == null )
                 {
-                    var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel; 
-                    
-                    if (this.Attributes == null)
+                    var lavaSupportLevel = GlobalAttributesCache.Get().LavaSupportLevel;
+
+                    if ( this.Attributes == null )
                     {
                         this.LoadAttributes();
                     }
@@ -507,7 +507,7 @@ namespace Rock.Data
                     {
                         return null;
                     }
-                    
+
                     if ( this.Attributes != null )
                     {
                         string attributeKey = keyString;
@@ -542,7 +542,7 @@ namespace Rock.Data
 
                                 if ( url && field is Rock.Field.ILinkableFieldType )
                                 {
-                                    return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                    return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
                                 }
 
                                 return field.FormatValue( null, attribute.EntityTypeId, this.Id, value, attribute.QualifierValues, false );
@@ -570,7 +570,7 @@ namespace Rock.Data
         {
             string attributeKey = key.ToStringSafe();
 
-            if ( attributeKey == "AttributeValues")
+            if ( attributeKey == "AttributeValues" )
             {
                 return true;
             }
@@ -668,6 +668,23 @@ namespace Rock.Data
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the value of an attribute by the attribute's Guid.
+        /// </summary>
+        /// <param name="guid">The unique identifier.</param>
+        /// <returns></returns>
+        public string GetAttributeValue( Guid guid )
+        {
+            var attributeCache = AttributeCache.Get( guid );
+
+            if ( attributeCache is null )
+            {
+                return null;
+            }
+
+            return GetAttributeValue( attributeCache.Key );
         }
 
         /// <summary>

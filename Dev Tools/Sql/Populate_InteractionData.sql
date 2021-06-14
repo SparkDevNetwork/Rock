@@ -58,6 +58,8 @@ BEGIN
         from InteractionComponent ic;
     END
 
+    DECLARE @interactionDateTime AS DATETIME = (SELECT DATEADD(DAY, -1 * FLOOR(RAND() * @daySpread + 1), GETDATE()))
+
     INSERT INTO Interaction (
         InteractionComponentId,
         PersonAliasId,
@@ -65,16 +67,18 @@ BEGIN
         Guid,
         ForeignKey,
         CreatedDateTime,
-        CreatedByPersonAliasId
+        CreatedByPersonAliasId,
+        InteractionDateKey
     )
     SELECT
         (SELECT TOP 1 Id FROM @componentIds),
         (SELECT TOP 1 Id FROM @personAliasIds),
-        (SELECT DATEADD(DAY, -1 * FLOOR(RAND() * @daySpread + 1), GETDATE())),
+        @interactionDateTime,
         NEWID(),
         @foreignKey,
         @createdDateTime,
-        @createdByPersonAliasId;
+        @createdByPersonAliasId,
+        CAST(DATEPART(yyyy, @interactionDateTime) AS VARCHAR(4)) + CAST(DATEPART(mm, @interactionDateTime) AS VARCHAR(2)) + CAST(DATEPART(dd, @interactionDateTime) AS VARCHAR(2));
 
     -- Delete top component
     WITH cte AS (

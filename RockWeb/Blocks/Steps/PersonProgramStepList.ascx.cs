@@ -75,6 +75,13 @@ namespace RockWeb.Blocks.Steps
         DefaultBooleanValue = true,
         Order = 5,
         Key = AttributeKey.ShowCampusColumn )]
+
+    [BooleanField(
+        "Show Start Date Column",
+        Description = "Should the step start date be shown on the grid and card display?",
+        DefaultBooleanValue = true,
+        Order = 6,
+        Key = AttributeKey.ShowStartedDateColumn )]
     #endregion Attributes
 
     public partial class PersonProgramStepList : RockBlock
@@ -110,6 +117,11 @@ namespace RockWeb.Blocks.Steps
             /// The show campus column attribute key
             /// </summary>
             public const string ShowCampusColumn = "ShowCampusColumn";
+
+            /// <summary>
+            /// The show started date column
+            /// </summary>
+            public const string ShowStartedDateColumn = "ShowStartedDateColumn";
         }
 
         /// <summary>
@@ -196,6 +208,12 @@ namespace RockWeb.Blocks.Steps
                 campusField.Visible = GetAttributeValue( AttributeKey.ShowCampusColumn ).AsBoolean() && campusCount > 1;
             }
 
+            var startDateField = gStepList.ColumnsOfType<DateField>().Where(c => c.DataField == "StartDateTime" ).FirstOrDefault();
+            if ( startDateField != null )
+            {
+                startDateField.Visible = GetAttributeValue( AttributeKey.ShowStartedDateColumn ).AsBoolean();
+            }
+
             if ( !IsPostBack )
             {
                 SetProgramDetailsOnBlock();
@@ -210,7 +228,10 @@ namespace RockWeb.Blocks.Steps
                 {
                     // use the program's default view setting
                     var program = GetStepProgram();
-                    hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
+                    if ( program != null )
+                    {
+                        hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
+                    }
                 }
             }
 
@@ -1165,7 +1186,8 @@ namespace RockWeb.Blocks.Steps
                 StepTypeIconCssClass = s.StepType.IconCssClass,
                 StepTypeOrder = s.StepType.Order,
                 Summary = string.Empty,
-                Step = s
+                Step = s,
+                StartDateTime = s.StartDateTime
             } );
 
             // Sort the view models
@@ -1294,6 +1316,14 @@ namespace RockWeb.Blocks.Steps
             /// The name of the step type.
             /// </value>
             public string StepTypeName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date time.
+            /// </summary>
+            /// <value>
+            /// The start date time.
+            /// </value>
+            public DateTime? StartDateTime { get; set; }
 
             /// <summary>
             /// Gets or sets the completed date time.

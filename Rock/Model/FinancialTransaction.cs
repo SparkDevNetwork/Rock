@@ -304,12 +304,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the non cash asset type value identifier.
+        /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/> identifier.
         /// </summary>
         /// <value>
         /// The non cash asset type value identifier.
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE )]        
         public int? NonCashAssetTypeValueId { get; set; }
 
         /// <summary>
@@ -343,12 +344,22 @@ namespace Rock.Model
                         SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
+        public int? ForeignCurrencyCodeValueId { get; set; }
         #endregion Entity Properties
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the authorized person alias.
+        /// Gets or sets the authorized <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The authorized person alias.
@@ -366,7 +377,7 @@ namespace Rock.Model
         public virtual FinancialBatch Batch { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway.
+        /// Gets or sets the <see cref="Rock.Model.FinancialGateway">gateway</see>.
         /// </summary>
         /// <value>
         /// The gateway.
@@ -375,7 +386,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial payment detail.
+        /// Gets or sets the <see cref="Rock.Model.FinancialPaymentDetail"/>.
         /// </summary>
         /// <value>
         /// The financial payment detail.
@@ -590,7 +601,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the non cash asset type value.
+        /// Gets or sets the non cash asset type <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
         /// <value>
         /// The non cash asset type value.
@@ -1003,6 +1014,47 @@ namespace Rock.Model
 
                     detail.FeeAmount = apportionedFee;
                     totalFeeRemaining -= apportionedFee;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Distributes the Organization's currency total amount among the details of a transaction according to each detail's
+        /// percent of the total transaction amount.
+        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
+        /// If this method were called with a $11 amount, the detail's amount would be set to $9.9 and $1.1 respectively.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="totalOrganizationCurrencyAmount">The total amount for the transaction in the organization's currency</param>
+        public static void SetApportionedDetailAmounts( this FinancialTransaction transaction, decimal totalOrganizationCurrencyAmount )
+        {
+            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
+            {
+                return;
+            }
+
+            var totalAmount = transaction.TotalAmount;
+            var totalOrganizationCurrencyAmountRemaining = totalOrganizationCurrencyAmount;
+            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
+
+            foreach ( var detail in transaction.TransactionDetails )
+            {
+                numberOfDetailsRemaining--;
+                var isLastDetail = numberOfDetailsRemaining == 0;
+
+                if ( isLastDetail )
+                {
+                    // Ensure that the full amount is retained and some part of it
+                    // is not lost because of rounding
+                    detail.Amount = totalOrganizationCurrencyAmountRemaining;
+                }
+                else
+                {
+                    var percentOfTotal = detail.Amount / totalAmount;
+                    var organizationCurrencyAmount = Math.Round( percentOfTotal * totalOrganizationCurrencyAmount, 2 );
+
+                    detail.Amount = organizationCurrencyAmount;
+                    totalOrganizationCurrencyAmountRemaining -= organizationCurrencyAmount;
                 }
             }
         }

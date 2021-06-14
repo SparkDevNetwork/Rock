@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Rock.Plugin;
 
 namespace Rock.StatementGenerator.Migrations
@@ -22,6 +24,8 @@ namespace Rock.StatementGenerator.Migrations
     /// 
     /// </summary>
     [MigrationNumber( 3, "1.7.4" )]
+    [Obsolete( "Use FinancialStatementTemplate instead" )]
+    [RockObsolete( "12.4" )]
     public class StatementGeneratorMoreOptions : Migration
     {
         /// <summary>

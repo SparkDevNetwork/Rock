@@ -42,15 +42,47 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given metric." )]
 
-    [BooleanField( "Show Chart", DefaultValue = "true" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style", DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK )]
-    [SlidingDateRangeField( "Chart Date Range", key: "SlidingDateRange", defaultValue: "-1||||", enabledSlidingDateRangeTypes: "Last,Previous,Current,DateRange" )]
-    [BooleanField( "Combine Chart Series" )]
+    #region BlockAttributes
+
+    [BooleanField( "Show Chart",
+        Key = AttributeKey.ShowChart,
+        IsRequired = true,
+        DefaultValue = "true",
+        Order = 0 )]
+
+    [DefinedValueField( "Chart Style",
+        Key = AttributeKey.ChartStyle,
+        IsRequired = true,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHART_STYLES,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHART_STYLE_ROCK,
+        Order = 1 )]
+
+    [SlidingDateRangeField( "Chart Date Range",
+        Key = AttributeKey.SlidingDateRange,
+        DefaultValue = "-1||||",
+        EnabledSlidingDateRangeTypes = "Last,Previous,Current,DateRange",
+        Order = 2)]
+
+    [BooleanField( "Combine Chart Series",
+        Key = AttributeKey.CombineChartSeries,
+        Order = 3 )]
+
+    #endregion BlockAttributes
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
+        #region AttributeKey
+        private static class AttributeKey
+        {
+            public const string ShowChart = "ShowChart";
+            public const string ChartStyle = "ChartStyle";
+            public const string SlidingDateRange = "SlidingDateRange";
+            public const string CombineChartSeries = "CombineChartSeries";
+        }
+
+        #endregion AttributeKey
         #region Properties
 
-        private List<MetricPartition> MetricPartitionsState { get; set; }
+        private List<MetricPartition> MetricPartitionsState { get; set; } = new List<MetricPartition>();
 
         #endregion
 
@@ -315,10 +347,12 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             if ( metric.SourceValueTypeId == sourceTypeDataView )
             {
                 metric.DataViewId = dvpDataView.SelectedValueAsId();
+                metric.AutoPartitionOnPrimaryCampus = cbAutoPartionPrimaryCampus.Checked;
             }
             else
             {
                 metric.DataViewId = null;
+                metric.AutoPartitionOnPrimaryCampus = false;
             }
 
             var scheduleSelectionType = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>();
@@ -572,6 +606,8 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 ltLastRunDateTime.Visible = isManual;
                 rcwSchedule.Visible = isManual;
             }
+
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -952,6 +988,10 @@ The Lava can include Lava merge fields:";
 
             BindMetricPartitionsGrid();
 
+            //  and populate it's value, otherwise this prop is not available and should be set to false.
+            ShowHideAutoPartitionPrimaryCampus();
+            cbAutoPartionPrimaryCampus.Checked = cbAutoPartionPrimaryCampus.Visible && metric.AutoPartitionOnPrimaryCampus;
+
             metric.LoadAttributes();
             avcEditAttributeValues.AddEditControls( metric, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
@@ -1164,6 +1204,18 @@ The Lava can include Lava merge fields:";
             }
         }
 
+        /// <summary>
+        /// If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox
+        /// </summary>
+        private void ShowHideAutoPartitionPrimaryCampus()
+        {
+            // If the metric uses a Dataview, there is one partition, and that partition is a campus then show the Auto Partition on Primary Campus checkbox and populate it's value, otherwise this prop is not available and should be set to false.
+            cbAutoPartionPrimaryCampus.Visible = dvpDataView.Visible == true
+                && dvpDataView.SelectedValueAsId() != null
+                && MetricPartitionsState.Count == 1
+                && MetricPartitionsState[0].EntityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.CAMPUS );
+        }
+
         #endregion
 
         #region Series Partitions
@@ -1252,6 +1304,7 @@ The Lava can include Lava merge fields:";
             MetricPartitionsState.RemoveEntity( rowGuid );
 
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
         }
 
         /// <summary>
@@ -1363,8 +1416,8 @@ The Lava can include Lava merge fields:";
             }
 
             MetricPartitionsState.Add( metricPartition );
-
             BindMetricPartitionsGrid();
+            ShowHideAutoPartitionPrimaryCampus();
             mdMetricPartitionDetail.Hide();
         }
 
@@ -1420,5 +1473,10 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
+
+        protected void dvpDataView_SelectItem( object sender, EventArgs e )
+        {
+            ShowHideAutoPartitionPrimaryCampus();
+        }
     }
 }

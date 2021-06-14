@@ -77,17 +77,29 @@ namespace Rock.Workflow.Action.CheckIn
                         groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
                     }
 
-                    var personAttendance = attendanceService
+
+                    var personAttendanceQuery = attendanceService
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.PersonAlias != null &&
                             a.Occurrence.Group != null &&
                             a.Occurrence.Schedule != null &&
                             a.PersonAlias.PersonId == person.Person.Id &&
-                            groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
                             a.StartDateTime >= sixMonthsAgo &&
                             a.DidAttend.HasValue &&
-                            a.DidAttend.Value == true )
+                            a.DidAttend.Value == true );
+
+                    if ( groupTypeIds.Count() == 1 )
+                    {
+                        var groupTypeId = groupTypeIds[0];
+                        personAttendanceQuery = personAttendanceQuery.Where( a => a.Occurrence.Group.GroupTypeId == groupTypeId );
+                    }
+                    else
+                    {
+                        personAttendanceQuery = personAttendanceQuery.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
+                    }
+
+                    var personAttendance = personAttendanceQuery
                         .Select( a => new PersonAttendanceInfo
                         {
                             AttendanceId = a.Id,

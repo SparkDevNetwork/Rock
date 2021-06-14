@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,9 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace Rock
 {
@@ -54,7 +54,7 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static bool IsNotNullOrWhitespace( this string str )
+        public static bool IsNotNullOrWhiteSpace( this string str )
         {
             return !string.IsNullOrWhiteSpace( str );
         }
@@ -371,7 +371,7 @@ namespace Rock
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
             // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray(); 
+            nameValues = nameValues.Select( s => WebUtility.UrlDecode( s ) ).ToArray(); 
             
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
@@ -744,7 +744,6 @@ namespace Rock
             for ( int i = 0; i < str.Length; i += maxChunkSize )
                 yield return str.Substring( i, Math.Min( maxChunkSize, str.Length - i ) );
         }
-
 
         /// <summary>
         /// Removes any carriage return and/or line feed characters.

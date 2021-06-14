@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class Success : CheckInBlock
     {
-        private static class AttributeKey
+        private new static class AttributeKey
         {
             public const string PersonSelectPage = "PersonSelectPage";
             public const string Title = "Title";
