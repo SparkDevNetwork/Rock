@@ -479,6 +479,39 @@ namespace Rock.Tests.Integration.Lava
         }
 
         /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public LavaRenderResult GetTemplateRenderResult( ILavaEngine engine, string inputTemplate, LavaRenderParameters parameters = null, LavaTestRenderOptions options = null )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            var context = engine.NewRenderContext();
+
+            if ( parameters == null )
+            {
+                parameters = LavaRenderParameters.WithContext( context );
+            }
+
+            // If options are specified, replace the render parameters.
+            if ( options != null )
+            {
+                context.SetEnabledCommands( options.EnabledCommands, options.EnabledCommandsDelimiter );
+                context.SetMergeFields( options.MergeFields );
+
+                if ( options.ExceptionHandlingStrategy != null )
+                {
+                    parameters.ExceptionHandlingStrategy = options.ExceptionHandlingStrategy;
+                }
+            }
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), parameters );
+
+            return result;
+        }
+
+        /// <summary>
         /// For each of the currently enabled Lava Engines, process the specified action.
         /// </summary>
         /// <param name="testMethod"></param>

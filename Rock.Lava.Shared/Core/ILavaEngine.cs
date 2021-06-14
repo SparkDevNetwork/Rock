@@ -306,8 +306,15 @@ namespace Rock.Lava
     /// </summary>
     public class LavaRenderResult
     {
-        public string Text;
-        public Exception Error;
+        /// <summary>
+        /// The final output of the render process.
+        /// </summary>
+        public string Text { get; set; }
+
+        /// <summary>
+        /// The top-level exception encountered while processing the render operation, or null if the operation succeeded.
+        /// </summary>
+        public Exception Error { get; set; }
 
         /// <summary>
         /// A flag indicating if the operation encountered any errors.
@@ -349,11 +356,18 @@ namespace Rock.Lava
     }
 
     /// <summary>
-    /// Contains the result of a Lava template rendering operation.
+    /// Contains the result of a Lava template parsing operation.
     /// </summary>
     public class LavaParseResult
     {
+        /// <summary>
+        /// A compiled template object that is the result of the parse process.
+        /// </summary>
         public ILavaTemplate Template;
+
+        /// <summary>
+        /// The top-level exception encountered while processing the parse operation, or null if the operation succeeded.
+        /// </summary>
         public Exception Error;
 
         /// <summary>

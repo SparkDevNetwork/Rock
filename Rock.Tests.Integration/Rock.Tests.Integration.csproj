@@ -153,6 +153,7 @@
     <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
     <Compile Include="Lava\Engine\ConfigurationTests.cs" />
     <Compile Include="Lava\Engine\ParsingTests.cs" />
+    <Compile Include="Lava\Engine\ExceptionHandlingTests.cs" />
     <Compile Include="Lava\Engine\ScopeTests.cs" />
     <Compile Include="Lava\Engine\ParallelExecutionTests.cs" />
     <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
