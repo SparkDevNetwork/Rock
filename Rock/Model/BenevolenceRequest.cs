@@ -383,7 +383,7 @@ namespace Rock.Model
         /// The request source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate RequestSourceDate { get; set; }
+        public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
         #endregion
 
         #region Public Methods

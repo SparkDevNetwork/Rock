@@ -117,6 +117,9 @@
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
+    <Compile Include="Jobs\StepsAutomationJobTests.cs" />
+    <Compile Include="Jobs\TestJobDetail.cs" />
+    <Compile Include="Jobs\TestJobContext.cs" />
     <Compile Include="Lava\RockEntityTests.cs" />
     <Compile Include="Model\IdentityVerificationCodeTests.cs" />
     <Compile Include="Model\IdentityVerificationTests.cs" />
