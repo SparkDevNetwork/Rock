@@ -7,9 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
     <Compile Remove="Implementations\DotLiquid\**" />
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="Implementations\DotLiquid\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="bin\**" />
     <None Remove="Implementations\DotLiquid\**" />
+    <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>
