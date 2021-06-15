@@ -659,6 +659,11 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Data\EntityContextState.cs" />
+    <Compile Include="Data\EntitySaveHook.cs" />
+    <Compile Include="Data\IEntitySaveEntry.cs" />
+    <Compile Include="Data\IEntitySaveHook.cs" />
+    <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Financial\IRedirectionGateway.cs" />
@@ -704,6 +709,14 @@
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
     <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
@@ -742,6 +755,7 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
+    <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
@@ -2104,8 +2118,8 @@
     <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
-    <Compile Include="Model\NoteType.cs" />
-    <Compile Include="Model\NoteTypeService.Partial.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.cs" />
+    <Compile Include="Model\Core\NoteType\NoteTypeService.cs" />
     <Compile Include="Model\NoteWatch.cs" />
     <Compile Include="Model\Notification.cs" />
     <Compile Include="Model\NotificationRecipient.cs" />
@@ -2293,8 +2307,8 @@
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
     <Compile Include="Model\TagService.Partial.cs" />
-    <Compile Include="Model\UserLogin.cs" />
-    <Compile Include="Model\UserLoginService.Partial.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow.cs" />
     <Compile Include="Model\WorkflowAction.cs" />
     <Compile Include="Model\WorkflowActionForm.cs" />

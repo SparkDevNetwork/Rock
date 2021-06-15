@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -102,29 +98,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool UserSelectable { get; set; }
-
-        /// <summary>
-        /// Gets or sets an optional CSS class to include for the note
-        /// </summary>
-        /// <value>
-        /// The CSS class.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
-        [NotMapped]
-        [LavaHidden]
-        public string CssClass
-        {
-            get
-            {
-                return null;
-            }
-
-            set
-            {
-                //
-            }
-        }
 
         /// <summary>
         /// Gets or sets the name of an icon CSS class. 
@@ -259,7 +232,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Note">Notes</see> of this NoteType 
@@ -284,19 +257,6 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve notes." );
-                return supportedActions;
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -305,30 +265,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.Name;
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return NoteTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            NoteTypeCache.UpdateCachedEntity( this.Id, entityState );
-            NoteTypeCache.RemoveEntityNoteTypes();
         }
 
         #endregion

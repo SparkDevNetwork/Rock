@@ -35,3 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.WebStartup" )]

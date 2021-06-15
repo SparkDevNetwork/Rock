@@ -118,6 +118,8 @@ namespace Rock.WebStartup
 
             ShowDebugTimingMessage( "EF Migrations" );
 
+            ConfigureEntitySaveHooks();
+
             // Now that EF Migrations have gotten the Schema in sync with our Models,
             // get the RockContext initialized (which can take several seconds)
             // This will help reduce the chances of multiple instances RockWeb causing problems,
@@ -438,6 +440,36 @@ namespace Rock.WebStartup
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
+        /// that need to be registered in the default save hook provider.
+        /// </summary>
+        private static void ConfigureEntitySaveHooks()
+        {
+            var hookProvider = Rock.Data.DbContext.SharedSaveHookProvider;
+            var entityHookType = typeof( EntitySaveHook<> );
+
+            var hookTypes = Rock.Reflection.FindTypes( typeof( Rock.Data.IEntitySaveHook ) )
+                .Select( a => a.Value )
+                .ToList();
+
+            foreach ( var hookType in hookTypes )
+            {
+                if ( !hookType.IsDescendentOf( entityHookType ) )
+                {
+                    continue;
+                }
+
+                var genericTypes = hookType.GetGenericArgumentsOfBaseType( entityHookType );
+                var entityType = genericTypes[0];
+
+                if ( entityType.Assembly == hookType.Assembly )
+                {
+                    hookProvider.AddHook( entityType, hookType );
+                }
+            }
         }
 
         /// <summary>
