@@ -634,18 +634,6 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Method to run for the dynamic control FieldVisibility.EditValueUpdated event.
-        /// This is to recreate the controls for filter conditions, so it is not used by
-        /// PersonFields.
-        /// </summary>
-        private void DynamicControlPostbackMethod()
-        {
-            BuildWorkflowActionForm( true );
-            //ParseDynamicControls();
-            //ShowFamilyMembersPanel();
-        }
-
-        /// <summary>
         /// Builds the WorkflowActionForm.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
