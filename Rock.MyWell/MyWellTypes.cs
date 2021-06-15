@@ -1800,6 +1800,13 @@ namespace Rock.MyWell
         [JsonProperty( "plan_name" )]
         public string PlanName { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the raw subscription status.
+        /// </summary>
+        /// <value>
+        /// The raw subscription status.
+        /// </value>
         [JsonProperty( "status" )]
         public string SubscriptionStatusRaw { get; set; }
 
@@ -2944,16 +2951,39 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// 
+    /// MyWell Subscription Status Enum
     /// </summary>
     [JsonConverter( typeof(StringEnumConverter) )]
     public enum MyWellSubscriptionStatus
     {
+        /// <summary>
+        /// Active
+        /// </summary>
         active,
+
+        /// <summary>
+        /// Completed
+        /// </summary>
         completed,
+
+        /// <summary>
+        /// Paused
+        /// </summary>
         paused,
+
+        /// <summary>
+        /// canceled
+        /// </summary>
         canceled,
+
+        /// <summary>
+        /// failed
+        /// </summary>
         failed,
+
+        /// <summary>
+        /// Past Due
+        /// </summary>
         past_due
     }
 
@@ -2977,8 +3007,8 @@ namespace Rock.MyWell
 
             if ( value == "cancelled" || value == "canceled" )
             {
-                /// The canceled statuses, MyWell spells it 'cancelled' (British spelling), but just in case they change it to 'canceled'
-                /// https://www.grammarly.com/blog/canceled-vs-cancelled/
+                //// The canceled statuses, MyWell spells it 'cancelled' (British spelling), but just in case they change it to 'canceled'
+                //// https://www.grammarly.com/blog/canceled-vs-cancelled/
                 return MyWellSubscriptionStatus.canceled;
             }
 
