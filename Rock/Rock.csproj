@@ -713,7 +713,6 @@
     <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginWithPlainTextPassword.cs" />
-    <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
