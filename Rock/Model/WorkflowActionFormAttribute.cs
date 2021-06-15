@@ -120,6 +120,15 @@ namespace Rock.Model
         [DataMember]
         public string PostHtml { get; set; }
 
+        /// <summary>
+        /// Gets the field visibility rules json.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules json.
+        /// </value>
+        [DataMember]
+        public string FieldVisibilityRulesJSON { get; private set; }
+
         #endregion
 
         #region Virtual Properties
@@ -141,6 +150,35 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Attribute Attribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field visibility rules.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules.
+        /// </value>
+        [NotMapped]
+        public virtual Field.FieldVisibilityRules FieldVisibilityRules {
+            get
+            {
+                if ( FieldVisibilityRulesJSON.IsNullOrWhiteSpace() )
+                {
+                    return new Field.FieldVisibilityRules();
+                }
+                return FieldVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+            }
+            set
+            {
+                if ( value == null || value.RuleList.Count == 0 )
+                {
+                    FieldVisibilityRulesJSON = null;
+                }
+                else
+                {
+                    FieldVisibilityRulesJSON = value.ToJson();
+                }
+            }
+        }
 
         #endregion
 

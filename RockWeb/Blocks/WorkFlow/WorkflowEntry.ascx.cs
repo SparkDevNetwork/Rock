@@ -199,12 +199,12 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
-            base.LoadViewState( savedState );
-
             if ( HydrateObjects() )
             {
                 BuildWorkflowActionForm( false );
             }
+
+            base.LoadViewState( savedState );
         }
 
         /// <summary>
@@ -634,6 +634,18 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
+        /// Method to run for the dynamic control FieldVisibility.EditValueUpdated event.
+        /// This is to recreate the controls for filter conditions, so it is not used by
+        /// PersonFields.
+        /// </summary>
+        private void DynamicControlPostbackMethod()
+        {
+            BuildWorkflowActionForm( true );
+            //ParseDynamicControls();
+            //ShowFamilyMembersPanel();
+        }
+
+        /// <summary>
         /// Builds the WorkflowActionForm.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
@@ -674,8 +686,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
+                var value = attribute.DefaultValue;
 
-                string value = attribute.DefaultValue;
                 if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                 {
                     // if the key is in the workflow's attributes get the value from that
@@ -687,9 +699,23 @@ namespace RockWeb.Blocks.WorkFlow
                     value = _activity.AttributeValues[attribute.Key].Value;
                 }
 
+                var fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
+                    FormFieldId = formAttribute.AttributeId,
+                    FieldVisibilityRules = formAttribute.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
+                };
+                                
+                phAttributes.Controls.Add( fieldVisibilityWrapper );
+
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )
                 {
-                    phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields( mergeFields ) ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields( mergeFields ) ) );
                 }
 
                 if ( formAttribute.IsReadOnly )
@@ -710,7 +736,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( formAttribute.HideLabel )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formattedValue ) );
+                        fieldVisibilityWrapper.Controls.Add( new LiteralControl( formattedValue ) );
                     }
                     else
                     {
@@ -729,7 +755,7 @@ namespace RockWeb.Blocks.WorkFlow
                             lAttribute.Text = formattedValue;
                         }
 
-                        phAttributes.Controls.Add( lAttribute );
+                        fieldVisibilityWrapper.Controls.Add( lAttribute );
                     }
                 }
                 else
@@ -744,14 +770,26 @@ namespace RockWeb.Blocks.WorkFlow
                         LabelText = formAttribute.HideLabel ? string.Empty : attribute.Name
                     };
 
-                    attribute.AddControl( phAttributes.Controls, attributeControlOptions );
+                    var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, attributeControlOptions );
+                    fieldVisibilityWrapper.EditControl = editControl;
+
+                    var hasDependantVisibilityRule = form.FormAttributes.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == attribute.Guid ) );
+                    if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
+                    {
+                        attribute.FieldType.Field.AddChangeHandler( editControl, () =>
+                        {
+                            fieldVisibilityWrapper.TriggerEditValueUpdated( editControl, new FieldVisibilityWrapper.FieldEventArgs( attribute, editControl ) );
+                        } );
+                    }
                 }
 
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
                 {
-                    phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields ) ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields ) ) );
                 }
             }
+
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {

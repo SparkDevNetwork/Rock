@@ -109,6 +109,10 @@
     <Compile Include="Migrations\202106141518385_Rollup_0614.Designer.cs">
       <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs" />
+    <Compile Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.Designer.cs">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1818,6 +1822,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202106141518385_Rollup_0614.resx">
       <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.resx">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>

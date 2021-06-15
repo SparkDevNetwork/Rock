@@ -4787,7 +4787,7 @@ namespace RockWeb.Blocks.Event
                         value = firstRegistrant.FieldValues[field.Id].FieldValue;
                     }
 
-                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
+                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == field.Guid ) );
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
@@ -4849,7 +4849,7 @@ namespace RockWeb.Blocks.Event
                 var fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
-                    RegistrationTemplateFormFieldId = field.Id,
+                    FormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
@@ -4913,7 +4913,7 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                    RegistrationTemplateFormFieldId = field.Id,
+                    FormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
