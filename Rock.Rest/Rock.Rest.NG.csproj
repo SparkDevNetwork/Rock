@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Binders\NakedBodyAttribute.cs" />
+    <Compile Remove="Binders\NakedBodyParameterBinding.cs" />
     <Compile Remove="Handler\RockApiExceptionHandler.cs" />
     <Compile Remove="Handler\RockApiExceptionLogger.cs" />
     <Compile Remove="Handler\RockAssembliesResolver.cs" />
@@ -39,6 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Binders\" />
     <Folder Include="Handler\" />
     <Folder Include="Utility\" />
   </ItemGroup>
