@@ -823,6 +823,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             formAttribute.HideLabel = editorAttribute.HideLabel;
                             formAttribute.PreHtml = editorAttribute.PreHtml;
                             formAttribute.PostHtml = editorAttribute.PostHtml;
+                            formAttribute.FieldVisibilityRules = editorAttribute.FieldVisibilityRules;
                         }
                     }
                 }
@@ -1698,7 +1699,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     if ( !formAttributes.Select( a => a.Attribute.Guid ).Contains( attribute.Key ) )
                     {
                         var formAttribute = new WorkflowActionFormAttribute();
-                        formAttribute.Attribute = new Rock.Model.Attribute { Guid = attribute.Key, Name = attribute.Value.Name };
+                        formAttribute.Attribute = new Attribute { Guid = attribute.Key, Name = attribute.Value.Name, FieldTypeId = attribute.Value.FieldTypeId };
                         formAttribute.Guid = Guid.NewGuid();
                         formAttribute.Order = formAttributes.Any() ? formAttributes.Max( a => a.Order ) + 1 : 0;
                         formAttribute.IsVisible = false;

@@ -95,7 +95,7 @@ namespace Rock.Communication
                 return sendResult;
             }
 
-            var templateMailMessage = GetTemplateRockEmailMessage( emailMessage, mergeFields, globalAttributes );
+            var templateMailMessage = GetTemplateRockEmailMessage( emailMessage, mergeFields, globalAttributes, mediumAttributes );
             var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
 
             var sendTask = new List<Task<SendMessageResult>>();
@@ -171,7 +171,7 @@ namespace Rock.Communication
 
                 var globalAttributes = GlobalAttributesCache.Get();
 
-                var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes );
+                var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes, mediumAttributes );
                 var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
 
                 var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
@@ -251,7 +251,7 @@ namespace Rock.Communication
                 return false;
             }
 
-            var templateMailMessage = GetTemplateRockEmailMessage( emailMessage, mergeFields, globalAttributes );
+            var templateMailMessage = GetTemplateRockEmailMessage( emailMessage, mergeFields, globalAttributes, mediumAttributes );
             var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
 
             foreach ( var rockMessageRecipient in rockMessage.GetRecipients() )
@@ -323,10 +323,8 @@ namespace Rock.Communication
 
                 var globalAttributes = GlobalAttributesCache.Get();
 
-                var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes );
+                var templateEmailMessage = GetTemplateRockEmailMessage( communication, mergeFields, globalAttributes, mediumAttributes );
                 var organizationEmail = globalAttributes.GetValue( "OrganizationEmail" );
-
-                var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
 
                 var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
                 var communicationEntityTypeId = EntityTypeCache.Get<Model.Communication>().Id;
@@ -576,7 +574,7 @@ namespace Rock.Communication
             return replyToAddress;
         }
 
-        private RockEmailMessage GetTemplateRockEmailMessage( RockMessage rockMessage, Dictionary<string, object> mergeFields, GlobalAttributesCache globalAttributes )
+        private RockEmailMessage GetTemplateRockEmailMessage( RockMessage rockMessage, Dictionary<string, object> mergeFields, GlobalAttributesCache globalAttributes, Dictionary<string, string> mediumAttributes )
         {
             var templateRockEmailMessage = new RockEmailMessage();
 
@@ -590,6 +588,12 @@ namespace Rock.Communication
             templateRockEmailMessage.CurrentPerson = emailMessage.CurrentPerson;
             templateRockEmailMessage.EnabledLavaCommands = emailMessage.EnabledLavaCommands;
             templateRockEmailMessage.CssInliningEnabled = emailMessage.CssInliningEnabled;
+            if ( mediumAttributes.ContainsKey( "CSSInliningEnabled" ) )
+            {
+                var mediumCssInlining = mediumAttributes["CSSInliningEnabled"].AsBoolean();
+                templateRockEmailMessage.CssInliningEnabled = templateRockEmailMessage.CssInliningEnabled || mediumCssInlining;
+            }
+
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
@@ -639,12 +643,17 @@ namespace Rock.Communication
             return templateRockEmailMessage;
         }
 
-        private RockEmailMessage GetTemplateRockEmailMessage( Model.Communication communication, Dictionary<string, object> mergeFields, GlobalAttributesCache globalAttributes )
+        private RockEmailMessage GetTemplateRockEmailMessage( Model.Communication communication, Dictionary<string, object> mergeFields, GlobalAttributesCache globalAttributes, Dictionary<string, string> mediumAttributes )
         {
             var resultEmailMessage = new RockEmailMessage();
 
             var publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
             var cssInliningEnabled = communication.CommunicationTemplate?.CssInliningEnabled ?? false;
+            if ( mediumAttributes.ContainsKey( "CSSInliningEnabled" ) )
+            {
+                var mediumCssInlining = mediumAttributes["CSSInliningEnabled"].AsBoolean();
+                cssInliningEnabled = cssInliningEnabled || mediumCssInlining;
+            }
 
             resultEmailMessage.AppRoot = publicAppRoot;
             resultEmailMessage.CssInliningEnabled = cssInliningEnabled;
@@ -751,6 +760,12 @@ namespace Rock.Communication
             if ( body.IsNotNullOrWhiteSpace() )
             {
                 body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
+
+                if ( emailMessage.CssInliningEnabled )
+                {
+                    // move styles inline to help it be compatible with more email clients
+                    body = body.ConvertHtmlStylesToInlineAttributes();
+                }
             }
 
             recipientEmail.Message = body;
