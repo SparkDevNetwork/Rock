@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E8C5F154-201F-4C67-BCDC-34787DEFFEAE}</ProjectGuid>
+    <ProjectGuid>{DB5882D1-8F05-4CD8-B132-71D9BFB7AC26}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Obsidian</RootNamespace>
@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,9 +38,10 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="System.Web.Http">
+      <HintPath>..\..\chop\church.life.ChurchOnlineWebhook\bin\Debug\System.Web.Http.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,29 +50,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blocks\Crm\AttributeValues.cs" />
-    <Compile Include="Blocks\Event\RegistrationEntry.cs" />
-    <Compile Include="Blocks\Example\FieldTypeGallery.cs" />
-    <Compile Include="Blocks\Example\LargeDatasetGrid.cs" />
-    <Compile Include="Blocks\Finance\TransactionEntry.cs" />
-    <Compile Include="Blocks\Groups\GroupMemberList.cs" />
-    <Compile Include="Blocks\PluginObsidianBlockType.cs" />
-    <Compile Include="Blocks\ObsidianBlockType.cs" />
-    <Compile Include="Blocks\Security\Login.cs" />
-    <Compile Include="Blocks\Example\PersonSecondary.cs" />
-    <Compile Include="Blocks\Example\PersonDetail.cs" />
-    <Compile Include="Blocks\Example\ControlGallery.cs" />
-    <Compile Include="Blocks\Utility\StarkDetail.cs" />
     <Compile Include="Controllers\CommonEntities\CachedModelController.cs" />
     <Compile Include="Controllers\CommonEntities\CampusesController.cs" />
     <Compile Include="Controllers\CommonEntities\DefinedTypesController.cs" />
-    <Compile Include="Controllers\Format\DateController.cs" />
     <Compile Include="Controllers\Controls\SaveFinancialAccountFormController.cs" />
-    <Compile Include="Controllers\Controls\EntityAttributeValuesContainerController.cs" />
     <Compile Include="Controllers\Controls\DefinedValuePickerController.cs" />
     <Compile Include="Controllers\ObsidianController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Util\JavaScript.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -87,12 +71,8 @@
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
-      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
-      <Name>Rock.ViewModel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
+      <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>

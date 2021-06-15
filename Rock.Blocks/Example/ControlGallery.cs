@@ -15,12 +15,23 @@
 // </copyright>
 //
 
-namespace Rock.Obsidian.Controllers.Controls
+using System.ComponentModel;
+using Rock.Attribute;
+using Rock.Model;
+
+namespace Rock.Blocks.Example
 {
     /// <summary>
-    /// EntityAttributeValuesController
+    /// Allows the user to try out various controls.
     /// </summary>
-    public class EntityAttributeValuesController : ObsidianController
+    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+
+    [DisplayName( "Control Gallery" )]
+    [Category( "Obsidian > Example" )]
+    [Description( "Allows the user to try out various controls." )]
+    [IconCssClass( "fa fa-flask" )]
+
+    public class ControlGallery : ObsidianBlockType
     {
     }
 }

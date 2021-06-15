@@ -34,7 +34,6 @@ using Rock.Security;
 using Rock.Web.Cache;
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
 using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
-using Rock.Obsidian.Util;
 
 namespace Rock.MyWell
 {

@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Rock.Obsidian.Util
+namespace Rock.Blocks
 {
     public static class JavaScript
     {

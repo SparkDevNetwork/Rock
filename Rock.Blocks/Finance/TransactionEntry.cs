@@ -20,19 +20,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
-using Rock.Obsidian.Util;
 using Rock.Tasks;
 using Rock.ViewModel;
 using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Obsidian.Blocks.Finance
+namespace Rock.Blocks.Finance
 {
     /// <summary>
     /// Allows the user to try out various controls.
@@ -860,7 +858,7 @@ mission. We are so grateful for your commitment.</p>
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetObsidianConfigurationValues()
+        public override object GetObsidianBlockInitialization()
         {
             return new
             {

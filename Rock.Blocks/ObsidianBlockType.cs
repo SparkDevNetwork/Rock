@@ -16,10 +16,8 @@
 //
 
 using System.Linq;
-using Rock.Blocks;
-using Rock.Obsidian.Util;
 
-namespace Rock.Obsidian.Blocks
+namespace Rock.Blocks
 {
     /// <summary>
     /// Client Block Type
@@ -51,7 +49,7 @@ namespace Rock.Obsidian.Blocks
         #region Methods
 
         /// <summary>
-        /// Returns a page paramter.
+        /// Returns a page parameter.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
@@ -67,11 +65,12 @@ namespace Rock.Obsidian.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetConfigurationValues( RockClientType clientType )
+        public virtual string GetBlockInitialization( RockClientType clientType )
         {
             if ( clientType == RockClientType.Obsidian )
             {
-                return GetObsidianConfigurationValues();
+                var initConfig = GetObsidianBlockInitialization() ?? new object();
+                return JavaScript.ToJavaScriptObject( initConfig );
             }
 
             return null;
@@ -83,7 +82,7 @@ namespace Rock.Obsidian.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetObsidianConfigurationValues()
+        public virtual object GetObsidianBlockInitialization()
         {
             return null;
         }
@@ -105,7 +104,7 @@ Obsidian.whenReady(() => {{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',
-            configurationValues: {JavaScript.ToJavaScriptObject( GetObsidianConfigurationValues() ?? new object() )}
+            configurationValues: {JavaScript.ToJavaScriptObject( GetObsidianBlockInitialization() ?? new object() )}
         }});
     }});
 }});

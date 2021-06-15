@@ -172,9 +172,9 @@ namespace Rock.Obsidian.Controllers.Controls
                         AccountNumberMasked = paymentDetail.AccountNumberMasked,
                         CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId,
                         CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId,
-                        NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted,
-                        ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted,
-                        ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted,
+                        NameOnCard = paymentDetail.NameOnCard,
+                        ExpirationMonth = paymentDetail.ExpirationMonth,
+                        ExpirationYear = paymentDetail.ExpirationYear,
                         BillingLocationId = paymentDetail.BillingLocationId
                     }
                 };

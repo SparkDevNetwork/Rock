@@ -17,14 +17,13 @@
 using System.ComponentModel;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Obsidian.Blocks.Security
+namespace Rock.Blocks.Security
 {
     /// <summary>
     /// Allows the user to authenticate.
@@ -134,7 +133,7 @@ for help. Thank you.",
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetObsidianConfigurationValues()
+        public override object GetObsidianBlockInitialization()
         {
             return new
             {

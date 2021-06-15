@@ -17,8 +17,8 @@
 
 using System.ComponentModel;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Model;
-using Rock.Obsidian.Blocks;
 
 namespace com_rocksolidchurchdemo.PageDebug.Blocks
 {
@@ -32,17 +32,8 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
     [Description( "Shows the page's context group" )]
     [IconCssClass( "fa fa-grin-tongue-squint" )]
 
-    public class ContextGroup : PluginObsidianBlockType
+    public class ContextGroup : ObsidianBlockType
     {
-        /// <summary>
-        /// Gets a value indicating whether the block file is written in TypeScript.
-        /// If false, then JavaScript.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is type script; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsTypeScript => true;
-
         /// <summary>
         /// Gets the block markup file identifier.
         /// </summary>

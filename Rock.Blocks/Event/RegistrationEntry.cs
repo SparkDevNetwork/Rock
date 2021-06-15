@@ -22,7 +22,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
@@ -31,7 +30,7 @@ using Rock.ViewModel.Blocks;
 using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
 
-namespace Rock.Obsidian.Blocks.Event
+namespace Rock.Blocks.Event
 {
     /// <summary>
     /// Registration Entry.
@@ -164,7 +163,7 @@ namespace Rock.Obsidian.Blocks.Event
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetObsidianConfigurationValues()
+        public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = new RockContext() )
             {

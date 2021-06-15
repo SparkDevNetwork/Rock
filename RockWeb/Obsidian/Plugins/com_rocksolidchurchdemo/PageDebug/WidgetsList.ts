@@ -54,7 +54,7 @@ export default defineComponent({
             this.errorMessage = '';
 
             try {
-                const result = await this.invokeBlockAction<PluginWidget[]>('getWidgets');
+                const result = await this.invokeBlockAction<PluginWidget[]>('GetWidgets');
 
                 if (result.data) {
                     this.widgets = result.data;

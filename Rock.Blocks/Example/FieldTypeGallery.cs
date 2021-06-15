@@ -19,19 +19,19 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Model;
 
-namespace Rock.Obsidian.Blocks.Example
+namespace Rock.Blocks.Example
 {
     /// <summary>
-    /// Demonstrates a secondary block.
+    /// Allows the user to try out various field types.
     /// </summary>
     /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
 
-    [DisplayName( "Person Secondary" )]
+    [DisplayName( "Field Type Gallery" )]
     [Category( "Obsidian > Example" )]
-    [Description( "Demonstrates a secondary block." )]
+    [Description( "Allows the user to try out various field types." )]
     [IconCssClass( "fa fa-flask" )]
 
-    public class PersonSecondary : ObsidianBlockType
+    public class FieldTypeGallery : ObsidianBlockType
     {
     }
 }

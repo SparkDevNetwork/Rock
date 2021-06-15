@@ -96,7 +96,7 @@ System.register(["vue", "../../../Elements/Alert", "../../../Templates/PaneledBl
                                         _a.label = 1;
                                     case 1:
                                         _a.trys.push([1, 3, 4, 5]);
-                                        return [4 /*yield*/, this.invokeBlockAction('getWidgets')];
+                                        return [4 /*yield*/, this.invokeBlockAction('GetWidgets')];
                                     case 2:
                                         result = _a.sent();
                                         if (result.data) {

@@ -21,12 +21,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Obsidian.Blocks.Groups
+namespace Rock.Blocks.Groups
 {
     /// <summary>
     /// Allows the user to authenticate.

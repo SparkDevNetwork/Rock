@@ -18,10 +18,9 @@
 using System.ComponentModel;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Model;
 
-namespace Rock.Obsidian.Blocks.Utility
+namespace Rock.Blocks.Utility
 {
     /// <summary>
     /// An example block.
@@ -80,7 +79,7 @@ namespace Rock.Obsidian.Blocks.Utility
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetObsidianConfigurationValues()
+        public override object GetObsidianBlockInitialization()
         {
             return new
             {

@@ -15,16 +15,14 @@
 // </copyright>
 //
 
-using System;
 using System.ComponentModel;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModel;
 
-namespace Rock.Obsidian.Blocks.Example
+namespace Rock.Blocks.Example
 {
     /// <summary>
     /// Demonstrates a detail block.

@@ -20,13 +20,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModel;
 using Rock.Web.Cache;
 
-namespace Rock.Obsidian.Blocks.Crm
+namespace Rock.Blocks.Crm
 {
     /// <summary>
     /// Allows for editing the value(s) of a set of attributes for person.
@@ -112,7 +110,7 @@ namespace Rock.Obsidian.Blocks.Crm
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public override object GetObsidianConfigurationValues()
+        public override object GetObsidianBlockInitialization()
         {
             return new
             {

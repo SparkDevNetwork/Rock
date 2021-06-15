@@ -20,12 +20,11 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using Rock.Attribute;
-using Rock.Blocks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Obsidian.Blocks.Example
+namespace Rock.Blocks.Example
 {
     /// <summary>
     /// Lists attribute values and demonstrates server-side paging and filtering.

@@ -53,11 +53,11 @@ namespace Rock.Blocks
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <returns>A collection of string/object pairs.</returns>
-        public object GetConfigurationValues( RockClientType clientType )
+        public string GetBlockInitialization( RockClientType clientType )
         {
             if ( clientType == RockClientType.Mobile )
             {
-                return GetMobileConfigurationValues();
+                return GetMobileConfigurationValues().ToJson();
             }
 
             return null;
