@@ -19,8 +19,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Common;
-
 namespace Rock.Lava.Filters
 {
     public static partial class TemplateFilters
@@ -285,11 +283,11 @@ namespace Rock.Lava.Filters
             IOrderedQueryable<object> qry;
             if ( orderBy[0].Descending )
             {
-                qry = e.Cast<object>().AsQueryable().OrderByDescending( d => ExtensionMethods.GetPropertyValue( d, orderBy[0].Property ) );
+                qry = e.Cast<object>().AsQueryable().OrderByDescending( d => d.GetPropertyValue( orderBy[0].Property ) );
             }
             else
             {
-                qry = e.Cast<object>().AsQueryable().OrderBy( d => ExtensionMethods.GetPropertyValue( d, orderBy[0].Property ) );
+                qry = e.Cast<object>().AsQueryable().OrderBy( d => d.GetPropertyValue( orderBy[0].Property ) );
             }
 
             //
@@ -301,11 +299,11 @@ namespace Rock.Lava.Filters
 
                 if ( orderBy[i].Descending )
                 {
-                    qry = qry.ThenByDescending( d => ExtensionMethods.GetPropertyValue( d, propertyName ) );
+                    qry = qry.ThenByDescending( d => d.GetPropertyValue( propertyName ) );
                 }
                 else
                 {
-                    qry = qry.ThenBy( d => ExtensionMethods.GetPropertyValue( d, propertyName ) );
+                    qry = qry.ThenBy( d => d.GetPropertyValue( propertyName ) );
                 }
             }
 

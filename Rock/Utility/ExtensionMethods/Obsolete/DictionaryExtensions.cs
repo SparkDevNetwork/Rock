@@ -42,7 +42,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static void AddOrReplace<TKey, TValue>( Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             AddOrReplace( ( IDictionary<TKey, TValue> ) dictionary, key, value );
         }
@@ -55,7 +57,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrReplace<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static void AddOrReplace<TKey, TValue>( IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             if ( !dictionary.ContainsKey( key ) )
             {
@@ -75,7 +79,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        public static void AddOrIgnore<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static void AddOrIgnore<TKey, TValue>( IDictionary<TKey, TValue> dictionary, TKey key, TValue value )
         {
             if ( !dictionary.ContainsKey( key ) )
             {
@@ -90,7 +96,9 @@ namespace Rock
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
         /// <param name="replace">if set to <c>true</c> [replace].</param>
-        public static void AddIfNotBlank( this IDictionary<string, string> dictionary, string key, string value, bool replace = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static void AddIfNotBlank( IDictionary<string, string> dictionary, string key, string value, bool replace = true )
         {
             if ( value.IsNotNullOrWhiteSpace() )
             {
@@ -116,7 +124,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static TValue GetValueOrNull<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TValue GetValueOrNull<TKey, TValue>( IDictionary<TKey, TValue> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -135,7 +145,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static int? GetValueOrNull<TKey>( this IDictionary<TKey, int> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int? GetValueOrNull<TKey>( IDictionary<TKey, int> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -154,7 +166,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static decimal? GetValueOrNull<TKey>( this IDictionary<TKey, decimal> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static decimal? GetValueOrNull<TKey>( IDictionary<TKey, decimal> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -173,7 +187,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static double? GetValueOrNull<TKey>( this IDictionary<TKey, double> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static double? GetValueOrNull<TKey>( IDictionary<TKey, double> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -192,7 +208,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static DateTime? GetValueOrNull<TKey>( this IDictionary<TKey, DateTime> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime? GetValueOrNull<TKey>( IDictionary<TKey, DateTime> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -211,7 +229,9 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public static Guid? GetValueOrNull<TKey>( this IDictionary<TKey, Guid> dictionary, TKey key )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static Guid? GetValueOrNull<TKey>( IDictionary<TKey, Guid> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
             {
@@ -232,7 +252,9 @@ namespace Rock
         /// <param name="key">The key.</param>
         /// <param name="defaultValue">The default value returned if the key does not exist.</param>
         /// <returns></returns>
-        public static TValue GetValueOrDefault<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TValue GetValueOrDefault<TKey, TValue>( IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
         {
             if ( dictionary.ContainsKey( key ) )
             {

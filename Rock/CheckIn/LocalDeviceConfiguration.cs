@@ -148,7 +148,7 @@ namespace Rock.CheckIn
         /// </summary>
         public void SaveToCookie()
         {
-            var localDeviceConfigValue = this.ToJson( Newtonsoft.Json.Formatting.None );
+            var localDeviceConfigValue = this.ToJson( indentOutput: false );
             var encryptedValue = Encryption.EncryptString( localDeviceConfigValue );
 
             RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, encryptedValue, RockDateTime.Now.AddYears( 1 ) );

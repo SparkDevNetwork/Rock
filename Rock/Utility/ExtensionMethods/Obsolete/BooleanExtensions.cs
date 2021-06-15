@@ -30,7 +30,9 @@ namespace Rock
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static int Bit( this Boolean field )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int Bit( Boolean field )
         {
             return field ? 1 : 0;
         }
@@ -40,7 +42,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
-        public static string ToYesNo( this bool value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToYesNo( bool value )
         {
             return value ? "Yes" : "No";
         }
@@ -50,7 +54,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
-        public static string ToTrueFalse( this bool value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToTrueFalse( bool value )
         {
             return value ? "True" : "False";
         }
@@ -60,9 +66,11 @@ namespace Rock
         /// </summary>
         /// <param name="value">if set to <c>true</c> [value].</param>
         /// <returns></returns>
-        public static string ToJavaScriptValue(this bool value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToJavaScriptValue( bool value )
         {
-            return value.ToTrueFalse().ToLower();
+            return ToTrueFalse( value ).ToLower();
         }
 
         #endregion Boolean Extensions

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 using Humanizer;
 
 namespace Rock
@@ -30,7 +32,9 @@ namespace Rock
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns></returns>
-        public static string FixCase( this string text )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string FixCase( string text )
         {
             if ( !string.IsNullOrWhiteSpace( text ) )
             {

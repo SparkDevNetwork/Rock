@@ -472,7 +472,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     try
                     {
-                        RockDateTime.UpdateSundayDateData();
+                        RockDateTimeHelper.UpdateSundayDateData();
                     }
                     catch ( Exception ex )
                     {

@@ -20,7 +20,6 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Compilation;
 using DotLiquid;
-using Rock.Common;
 
 namespace Rock.Lava.DotLiquid
 {

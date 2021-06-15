@@ -34,7 +34,9 @@ namespace Rock
         /// <param name="enumValue">The enumValue.</param>
         /// <param name="splitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static string ConvertToStringSafe( this Enum enumValue, bool splitCase = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ConvertToStringSafe( Enum enumValue, bool splitCase = true )
         {
             if ( enumValue == null )
             {
@@ -50,7 +52,9 @@ namespace Rock
         /// <param name="enumValue">The enumValue.</param>
         /// <param name="splitCase">if set to <c>true</c> [split case].</param>
         /// <returns></returns>
-        public static string ConvertToString( this Enum enumValue, bool splitCase = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ConvertToString( Enum enumValue, bool splitCase = true )
         {
             if ( splitCase )
             {
@@ -68,7 +72,9 @@ namespace Rock
         /// <typeparam name="TAttribute">The type of the <see cref="System.Attribute"/>.</typeparam>
         /// <param name="value">The value.</param>
         /// <returns>The <see cref="System.Attribute"/>s of the specified type, or an empty array if <paramref name="value"/> is a valid Enum but no matching <see cref="System.Attribute"/>s are found, or <see langword="null"/> if <paramref name="value"/> is not a valid Enum.</returns>
-        public static TAttribute[] GetAttributes<TAttribute>( this Enum value ) where TAttribute : class
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TAttribute[] GetAttributes<TAttribute>( Enum value ) where TAttribute : class
         {
             TAttribute[] attrs = null;
 
@@ -93,7 +99,9 @@ namespace Rock
         /// <typeparam name="TAttribute">The type of the <see cref="System.Attribute"/>.</typeparam>
         /// <param name="value">The value.</param>
         /// <returns>The first <see cref="System.Attribute"/> of the specified type, or <see langword="null"/> if <paramref name="value"/> is not a valid Enum or no matching <see cref="System.Attribute"/>s are found.</returns>
-        public static TAttribute GetAttribute<TAttribute>( this Enum value ) where TAttribute : class
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TAttribute GetAttribute<TAttribute>( Enum value ) where TAttribute : class
         {
             return GetAttributes<TAttribute>( value )?.FirstOrDefault();
         }
@@ -103,7 +111,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string GetDescription( this Enum value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string GetDescription( Enum value )
         {
             var attr = GetAttribute<DescriptionAttribute>( value );
 
@@ -120,7 +130,9 @@ namespace Rock
         /// </summary>
         /// <param name="eff">The eff.</param>
         /// <returns></returns>
-        public static int ConvertToInt( this Enum eff )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int ConvertToInt( Enum eff )
         {
             return Convert.ToInt32( eff );
         }
@@ -132,7 +144,9 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <param name="defaultValue">The default value to use if the value cannot be parsed. Leave null to throw an exception if the value cannot be parsed. </param>
         /// <returns></returns>
-        public static T ConvertToEnum<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T ConvertToEnum<T>( string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T? result = ConvertToEnumOrNull<T>( enumValue, defaultValue );
             if ( result.HasValue )
@@ -152,7 +166,9 @@ namespace Rock
         /// <param name="enumValue">The enum value.</param>
         /// <param name="defaultValue">The default value.</param>
         /// <returns></returns>
-        public static T? ConvertToEnumOrNull<T>( this string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T? ConvertToEnumOrNull<T>( string enumValue, T? defaultValue = null ) where T : struct // actually limited to enum, but struct is the closest we can do
         {
             T result;
             if ( Enum.TryParse<T>( ( enumValue ?? "" ).Replace( " ", "" ), out result ) && Enum.IsDefined( typeof( T ), result ) )
@@ -184,7 +200,9 @@ namespace Rock
         /// <typeparam name="T">The Enum type of enumValue.</typeparam>
         /// <param name="enumValue">The enum value whose flags should be retrieved.</param>
         /// <returns>An enumerable collection of the individual flag values.</returns>
-        public static IEnumerable<T> GetFlags<T>( this Enum enumValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static IEnumerable<T> GetFlags<T>( Enum enumValue )
         {
             foreach ( var value in Enum.GetValues( enumValue.GetType() ).Cast<T>() )
             {

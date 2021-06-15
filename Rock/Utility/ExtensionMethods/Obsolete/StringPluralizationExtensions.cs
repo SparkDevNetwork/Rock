@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Globalization;
 
@@ -29,7 +30,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string to pluralize.</param>
         /// <returns></returns>
-        public static string Pluralize( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Pluralize( string str )
         {
             // Pluralization services handles most words, but there are some exceptions (i.e. campus)
             switch ( str )
@@ -53,7 +56,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="condition">if set to <c>true</c> [condition].</param>
         /// <returns></returns>
-        public static string PluralizeIf( this string str, bool condition )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string PluralizeIf( string str, bool condition )
         {
             if ( condition )
             {
@@ -70,7 +75,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string to singularize.</param>
         /// <returns></returns>
-        public static string Singularize( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Singularize( string str )
         {
             var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
             return pluralizationService.Singularize( str );
@@ -81,7 +88,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string ToPossessive( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToPossessive( string str )
         {
             if ( str == null )
             {

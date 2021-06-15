@@ -4143,7 +4143,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson( Formatting.Indented, ignoreErrors: true );
+            return input.ToJson( indentOutput: true, ignoreErrors: true );
         }
 
         /// <summary>

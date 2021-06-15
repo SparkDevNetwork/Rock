@@ -101,6 +101,8 @@ namespace Rock.WebStartup
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
 
+            InitializeRockOrgTimeZone();
+
             StartDateTime = RockDateTime.Now;
 
             // If there are Task.Runs that don't handle their exceptions, this will catch those
@@ -129,6 +131,10 @@ namespace Rock.WebStartup
                 new AttributeService( rockContext ).Get( 0 );
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
+
+            // Configure the values for RockDateTime.
+            RockDateTime.FirstDayOfWeek = Rock.Web.SystemSettings.StartDayOfWeek;
+            InitializeRockGraduationDate();
 
             if ( runMigrationFileInfo.Exists )
             {
@@ -201,6 +207,48 @@ namespace Rock.WebStartup
             // Start stage 2 of the web farm
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
+        }
+
+        /// <summary>
+        /// Initializes the Rock organization time zone.
+        /// </summary>
+        private static void InitializeRockOrgTimeZone()
+        {
+            string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
+
+            if ( string.IsNullOrWhiteSpace( orgTimeZoneSetting ) )
+            {
+                RockDateTime.Initialize( TimeZoneInfo.Local );
+            }
+            else
+            {
+                // if Web.Config has the OrgTimeZone set to the special "Local" (intended for Developer Mode), just use the Local DateTime. However, a production install of Rock will always have a real Time Zone string
+                if ( orgTimeZoneSetting.Equals( "Local", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    RockDateTime.Initialize( TimeZoneInfo.Local );
+                }
+                else
+                {
+                    RockDateTime.Initialize( TimeZoneInfo.FindSystemTimeZoneById( orgTimeZoneSetting ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes the rock graduation date.
+        /// </summary>
+        private static void InitializeRockGraduationDate()
+        {
+            var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+            if ( graduationDateWithCurrentYear < RockDateTime.Today )
+            {
+                // if the graduation date already occurred this year, return next year' graduation date
+                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
+            }
+            else
+            {
+                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear;
+            }
         }
 
         /// <summary>

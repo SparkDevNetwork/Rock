@@ -757,6 +757,11 @@
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHtmlExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -1336,17 +1341,15 @@
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
     <Compile Include="Utility\EnumOrderAttribute.cs" />
-    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DictionaryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
     <Compile Include="Mobile\MobileHelper.cs" />
     <Compile Include="Utility\JsonInterfaceContractResolver.cs" />
     <Compile Include="Utility\DynamicPropertyMapContractResolver.cs" />
-    <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
-    <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
@@ -2745,15 +2748,15 @@
     <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\ExpressionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\AttributesExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\BooleanExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\BooleanExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ControlExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DateTimeExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DateTimeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DecimalExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DefinedValueExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\EnumExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\EnumExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\JsonExtensions.cs" />
@@ -2765,13 +2768,13 @@
     <Compile Include="Utility\ExtensionMethods\ReportingExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringPluralizationExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHumanizerExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
     <Compile Include="Utility\IRockStartup.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\Reflection.cs" />
-    <Compile Include="Utility\RockDateTime.cs" />
+    <Compile Include="Utility\RockDateTimeHelper.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextReader.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
@@ -3312,6 +3315,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>

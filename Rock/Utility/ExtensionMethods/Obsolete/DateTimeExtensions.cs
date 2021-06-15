@@ -31,10 +31,12 @@ namespace Rock
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTime? start )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int Age( DateTime? start )
         {
             if ( start.HasValue )
-                return start.Value.Age();
+                return Age( start.Value );
             else
                 return 0;
         }
@@ -44,7 +46,9 @@ namespace Rock
         /// </summary>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static int Age( this DateTime start )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int Age( DateTime start )
         {
             var now = RockDateTime.Today;
             int age = now.Year - start.Year;
@@ -62,7 +66,9 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalMonths( this DateTime end, DateTime start )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int TotalMonths( DateTime end, DateTime start )
         {
             return ( end.Year * 12 + end.Month ) - ( start.Year * 12 + start.Month );
         }
@@ -73,7 +79,9 @@ namespace Rock
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         /// <returns></returns>
-        public static int TotalYears( this DateTime end, DateTime start )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int TotalYears( DateTime end, DateTime start )
         {
             return ( end.Year ) - ( start.Year );
         }
@@ -85,7 +93,9 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTime? dateTime, bool condensed = false, bool includeTime = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToElapsedString( DateTime? dateTime, bool condensed = false, bool includeTime = true )
         {
             if ( dateTime.HasValue )
             {
@@ -102,7 +112,9 @@ namespace Rock
         /// <param name="condensed">if set to <c>true</c> [condensed].</param>
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <returns></returns>
-        public static string ToElapsedString( this DateTime dateTime, bool condensed = false, bool includeTime = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToElapsedString( DateTime dateTime, bool condensed = false, bool includeTime = true )
         {
             DateTime start = dateTime;
             DateTime end = RockDateTime.Now;
@@ -142,14 +154,14 @@ namespace Rock
                     duration = string.Format( "1{0}", condensed ? "day" : " Day" );
                 else if ( timeSpan.TotalDays < 31 )
                     duration = string.Format( "{0:N0}{1}", Math.Truncate( timeSpan.TotalDays ), condensed ? "days" : " Days" );
-                else if ( end.TotalMonths( start ) <= 1 )
+                else if ( TotalMonths( end, start ) <= 1 )
                     duration = string.Format( "1{0}", condensed ? "mon" : " Month" );
-                else if ( end.TotalMonths( start ) <= 18 )
-                    duration = string.Format( "{0:N0}{1}", end.TotalMonths( start ), condensed ? "mon" : " Months" );
-                else if ( end.TotalYears( start ) <= 1 )
+                else if ( TotalMonths( end, start ) <= 18 )
+                    duration = string.Format( "{0:N0}{1}", TotalMonths( end, start ), condensed ? "mon" : " Months" );
+                else if ( TotalYears( end, start ) <= 1 )
                     duration = string.Format( "1{0}", condensed ? "yr" : " Year" );
                 else
-                    duration = string.Format( "{0:N0}{1}", end.TotalYears( start ), condensed ? "yrs" : " Years" );
+                    duration = string.Format( "{0:N0}{1}", TotalYears( end, start ), condensed ? "yrs" : " Years" );
             }
 
             return duration + ( condensed ? "" : direction );
@@ -162,11 +174,13 @@ namespace Rock
         /// <param name="dateTime">the DateTime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
         /// <returns></returns>
-        public static string ToRelativeDateString( this DateTime? dateTime, int? maxDays = null )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToRelativeDateString( DateTime? dateTime, int? maxDays = null )
         {
             if ( dateTime.HasValue )
             {
-                return dateTime.Value.ToRelativeDateString( maxDays );
+                return ToRelativeDateString( dateTime.Value, maxDays );
             }
             else
             {
@@ -179,7 +193,7 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToShortDateString( this DateTime? dateTime )
+        public static string ToShortDateString( DateTime? dateTime )
         {
             if ( dateTime.HasValue )
             {
@@ -196,11 +210,13 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToISO8601DateString( this DateTime? dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToISO8601DateString( DateTime? dateTime )
         {
             if ( dateTime.HasValue )
             {
-                return dateTime.Value.ToISO8601DateString();
+                return ToISO8601DateString( dateTime.Value );
             }
             else
             {
@@ -213,7 +229,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToISO8601DateString( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToISO8601DateString( DateTime dateTime )
         {
             return dateTime.ToString( "o" ) ?? string.Empty;
         }
@@ -226,7 +244,9 @@ namespace Rock
         /// <param name="dateTime">the DateTime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in long format (ex. November 5, 2011 at 1:57pm) </param>
         /// <returns></returns>
-        public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToRelativeDateString( DateTime dateTime, int? maxDays = null )
         {
             try
             {
@@ -327,7 +347,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static long ToJavascriptMilliseconds( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static long ToJavascriptMilliseconds( DateTime dateTime )
         {
             return ( long ) ( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }
@@ -337,7 +359,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToMonthDayString( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToMonthDayString( DateTime dateTime )
         {
             var dateTimeFormat = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
             string mdp = dateTimeFormat.ShortDatePattern;
@@ -351,7 +375,9 @@ namespace Rock
         /// </summary>
         /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
-        public static DateTime StartOfMonth( this DateTime dt )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime StartOfMonth( DateTime dt )
         {
             return new DateTime( dt.Year, dt.Month, 1 );
         }
@@ -362,7 +388,9 @@ namespace Rock
         /// </summary>
         /// <param name="dt">The DateTime</param>
         /// <returns></returns>
-        public static DateTime EndOfMonth( this DateTime dt )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime EndOfMonth( DateTime dt )
         {
             return new DateTime( dt.Year, dt.Month, 1 ).AddMonths( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
         }
@@ -374,7 +402,9 @@ namespace Rock
         /// <param name="dt">The DateTime.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
-        public static DateTime StartOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime StartOfWeek( DateTime dt, DayOfWeek startOfWeek )
         {
             int diff = dt.DayOfWeek - startOfWeek;
             if ( diff < 0 )
@@ -393,7 +423,9 @@ namespace Rock
         /// <param name="dt">The DateTime.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
-        public static DateTime EndOfWeek( this DateTime dt, DayOfWeek startOfWeek )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime EndOfWeek( DateTime dt, DayOfWeek startOfWeek )
         {
             return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
         }
@@ -403,7 +435,9 @@ namespace Rock
         /// </summary>
         /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
-        public static DateTime SundayDate( this DateTime dt )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime SundayDate( DateTime dt )
         {
             return RockDateTime.GetSundayDate( dt );
         }
@@ -416,7 +450,7 @@ namespace Rock
         /// <returns></returns>
         [Obsolete( "Use GetSundayDate without the firstDayOfWeek parameter" )]
         [RockObsolete("1.10")]
-        public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
+        public static DateTime SundayDate( DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {
             return RockDateTime.GetSundayDate( dt );
         }
@@ -431,12 +465,14 @@ namespace Rock
         /// <remarks>
         /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
         /// </remarks>
-        public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int GetWeekOfMonth( DateTime dateTime, DayOfWeek firstDayOfWeek )
         {
             DateTime firstDayOfMonth = new DateTime( dateTime.Year, dateTime.Month, 1 );
 
             // note: CalendarWeekRule doesn't matter since we are subtracting
-            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - firstDayOfMonth.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
+            return GetWeekOfYear( dateTime, CalendarWeekRule.FirstDay, firstDayOfWeek ) - GetWeekOfYear( firstDayOfMonth, CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
         }
 
         /// <summary>
@@ -456,7 +492,9 @@ namespace Rock
         /// <remarks>
         /// from http://stackoverflow.com/a/2136549/1755417, but with an option to specify the FirstDayOfWeek (for example RockDateTime.FirstDayOfWeek)
         /// </remarks>
-        public static int GetWeekOfYear( this DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int GetWeekOfYear( DateTime dateTime, CalendarWeekRule calendarWeekRule, DayOfWeek firstDayOfWeek )
         {
             return _gregorianCalendar.GetWeekOfYear( dateTime, calendarWeekRule, firstDayOfWeek );
         }
@@ -466,7 +504,9 @@ namespace Rock
         /// </summary>
         /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
-        public static string ToShortDateTimeString( this DateTime dt )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToShortDateTimeString( DateTime dt )
         {
             return dt.ToShortDateString() + " " + dt.ToShortTimeString();
         }
@@ -477,7 +517,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToRfc822DateTime( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToRfc822DateTime( DateTime dateTime )
         {
             int offset = TimeZone.CurrentTimeZone.GetUtcOffset( DateTime.Now ).Hours;
             string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );
@@ -498,7 +540,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The BirthDate.</param>
         /// <returns></returns>
-        public static string GetFormattedAge( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string GetFormattedAge( DateTime dateTime )
         {
             DateTime today = RockDateTime.Today;
             int age = today.Year - dateTime.Year;
@@ -546,7 +590,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns>true if the value is in the future, false if not.</returns>
-        public static bool IsFuture( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsFuture( DateTime dateTime )
         {
             return dateTime > RockDateTime.Now;
         }
@@ -556,7 +602,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns>true if the value is in the past, false if not.</returns>
-        public static bool IsPast( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsPast( DateTime dateTime )
         {
             return dateTime < RockDateTime.Now;
         }
@@ -566,7 +614,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns>true if the value is in the past, false if not.</returns>
-        public static bool IsToday( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsToday( DateTime dateTime )
         {
             return dateTime.Date == RockDateTime.Today;
         }
@@ -577,7 +627,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static int AsDateKey( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int AsDateKey( DateTime dateTime )
         {
             return dateTime.ToString( "yyyyMMdd" ).AsInteger();
         }
@@ -588,7 +640,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static DateTime StartOfDay( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime StartOfDay( DateTime dateTime )
         {
             return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day );
         }
@@ -600,7 +654,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static DateTime EndOfDay( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime EndOfDay( DateTime dateTime )
         {
             return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day ).AddDays( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
         }
@@ -611,7 +667,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static DateTime EndOfYear( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime EndOfYear( DateTime dateTime )
         {
             return new DateTime( dateTime.Year, 1, 1 ).AddYears( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
         }
@@ -622,7 +680,9 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static DateTime StartOfYear( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime StartOfYear( DateTime dateTime )
         {
             return new DateTime( dateTime.Year, 1, 1 );
         }
@@ -634,7 +694,9 @@ namespace Rock
         /// <param name="dateTime">The date time.</param>
         /// <param name="day">The day.</param>
         /// <returns></returns>
-        public static DateTime GetNextWeekday( this DateTime dateTime, DayOfWeek day)
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime GetNextWeekday( DateTime dateTime, DayOfWeek day)
         {
             // The (... + 7) % 7 ensures we end up with a value in the range [0, 6]
             int daysToAdd = ((int) day - (int) dateTime.DayOfWeek + 7) % 7;
@@ -647,7 +709,9 @@ namespace Rock
         /// <param name="dateTime">The Rock date time.</param>
         /// <returns>The <see cref="DateTimeOffset"/> instance that specifies the same point in time.</returns>
         /// </summary>
-        public static DateTimeOffset ToRockDateTimeOffset( this DateTime dateTime )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTimeOffset ToRockDateTimeOffset( DateTime dateTime )
         {
             // We can only apply a time zone offset to an unspecified type.
             var unspecifiedDateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
@@ -665,7 +729,9 @@ namespace Rock
         /// </summary>
         /// <param name="timespan">The timespan.</param>
         /// <returns></returns>
-        public static string ToTimeString( this TimeSpan timespan )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToTimeString( TimeSpan timespan )
         {
             // since the comments on this say HH:MM AM/PM, make sure to return the time in that format
             return RockDateTime.Today.Add( timespan ).ToString( "h:mm tt", System.Globalization.CultureInfo.InvariantCulture );
@@ -683,7 +749,9 @@ namespace Rock
         /// <param name="roundingInterval">The rounding interval.</param>
         /// <param name="roundingType">Type of the rounding.</param>
         /// <returns></returns>
-        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TimeSpan Round( TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType )
         {
             return new TimeSpan(
                 Convert.ToInt64( Math.Round(
@@ -704,7 +772,9 @@ namespace Rock
         /// <param name="time">The time.</param>
         /// <param name="roundingInterval">The rounding interval.</param>
         /// <returns></returns>
-        public static TimeSpan Round( this TimeSpan time, TimeSpan roundingInterval )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TimeSpan Round( TimeSpan time, TimeSpan roundingInterval )
         {
             return Round( time, roundingInterval, MidpointRounding.ToEven );
         }
@@ -720,9 +790,11 @@ namespace Rock
         /// <param name="datetime">The DateTime.</param>
         /// <param name="roundingInterval">The rounding interval.</param>
         /// <returns></returns>
-        public static DateTime Round( this DateTime datetime, TimeSpan roundingInterval )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static DateTime Round( DateTime datetime, TimeSpan roundingInterval )
         {
-            return new DateTime( ( datetime - DateTime.MinValue ).Round( roundingInterval ).Ticks );
+            return new DateTime( Round( datetime - DateTime.MinValue, roundingInterval ).Ticks );
         }
 
         #endregion Time/Date Rounding 

@@ -18,7 +18,6 @@ using System;
 using System.Globalization;
 using Humanizer;
 using Humanizer.Localisation;
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -31,7 +30,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string AsDateTime( object input )
         {
-            var result = ExtensionMethods.AsDateTime( input.ToStringSafe() );
+            var result = input.ToStringSafe().AsDateTime();
 
             return result.ToStringSafe();
         }

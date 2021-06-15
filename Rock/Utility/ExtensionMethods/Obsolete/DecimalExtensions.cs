@@ -28,7 +28,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static int GetDecimalPrecision( this decimal value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int GetDecimalPrecision( decimal value )
         {
             return BitConverter.GetBytes( decimal.GetBits( value )[3] )[2];
         }
@@ -39,7 +41,9 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <param name="precision">The precision.</param>
         /// <returns></returns>
-        public static decimal? Floor( this decimal? value, int precision = 0 )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static decimal? Floor( decimal? value, int precision = 0 )
         {
             if ( !value.HasValue )
             {
@@ -58,7 +62,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string FormatAsPercent( this decimal value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string FormatAsPercent( decimal value )
         {
             return $"{( ( int ) Math.Round( value *= 100 ) ).ToString()}%";
         }

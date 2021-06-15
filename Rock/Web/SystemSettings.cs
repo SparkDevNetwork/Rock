@@ -181,6 +181,11 @@ namespace Rock.Web
 
             // NOTE: Service Layer will automatically update this Cache (see Attribute.cs UpdateCache)
             rockContext.SaveChanges();
+
+            if ( key == Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK )
+            {
+                RockDateTime.FirstDayOfWeek = value.ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
+            }
         }
 
         /// <summary>

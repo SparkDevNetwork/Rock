@@ -207,7 +207,7 @@ namespace Rock.Lava.Fluid
                 return obj;
             }
 
-            var value = Rock.Common.ExtensionMethods.GetPropertyValue( obj, propertyPath );
+            var value = obj.GetPropertyValue( propertyPath );
 
             return value;
         }

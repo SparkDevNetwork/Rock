@@ -15,17 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
 namespace Rock
 {
     /// <summary>
-    /// Extension methods for <see cref="object"/>.
+    /// Object and Stream Extensions that don't require any nuget packages
     /// </summary>
-    public static class ObjectExtensions
+    public static partial class ExtensionMethods
     {
         #region Object Extensions
 
@@ -38,7 +36,9 @@ namespace Rock
         ///   <c>true</c> if the specified value is not null; otherwise, <c>false</c>.
         /// </returns>
         /// https://github.com/aljazsim/defensive-programming-framework-for-net
-        public static bool IsNotNull<T>( this T value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsNotNull<T>( T value )
             where T : class
         {
             return !value.IsNull();
@@ -53,19 +53,22 @@ namespace Rock
         ///   <c>true</c> if the specified value is null; otherwise, <c>false</c>.
         /// </returns>
         /// https://github.com/aljazsim/defensive-programming-framework-for-net
-        public static bool IsNull<T>( this T value ) where T : class
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsNull<T>( T value ) where T : class
         {
             return value == null;
         }
 
         /// <summary>
         /// Gets the property Value of the object's property as specified by propertyPathName.
-        /// If the object is a dictionary, retrieves the value associated with the matching key.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
         /// <param name="propertyPathName">Name of the property path.</param>
         /// <returns></returns>
-        public static object GetPropertyValue( this object rootObj, string propertyPathName )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static object GetPropertyValue( object rootObj, string propertyPathName )
         {
             var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
@@ -74,29 +77,17 @@ namespace Rock
 
             while ( propPath.Any() && obj != null )
             {
-                if ( obj is IDictionary dictionary )
+                PropertyInfo property = objType.GetProperty( propPath.First() );
+                if ( property != null )
                 {
-                    obj = dictionary[propPath.First()];
-                }
-                else if ( obj is IDictionary<string, object> stringDictionary )
-                {
-                    obj = stringDictionary[propPath.First()];
+                    obj = property.GetValue( obj );
+                    objType = property.PropertyType;
+                    propPath = propPath.Skip( 1 ).ToList();
                 }
                 else
                 {
-                    PropertyInfo property = objType.GetProperty( propPath.First() );
-                    if ( property != null )
-                    {
-                        obj = property.GetValue( obj );
-                        objType = property.PropertyType;
-                    }
-                    else
-                    {
-                        obj = null;
-                    }
+                    obj = null;
                 }
-
-                propPath = propPath.Skip( 1 ).ToList();
             }
 
             return obj;
@@ -108,7 +99,9 @@ namespace Rock
         /// <param name="rootType">Type of the root.</param>
         /// <param name="propertyPathName">Name of the property path.</param>
         /// <returns></returns>
-        public static Type GetPropertyType( this Type rootType, string propertyPathName )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static Type GetPropertyType( Type rootType, string propertyPathName )
         {
             var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
@@ -147,7 +140,9 @@ namespace Rock
         /// </summary>
         /// <param name="obj">an object</param>
         /// <returns>The ToString or the empty string if the item is null.</returns>
-        public static string ToStringSafe( this object obj )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToStringSafe( object obj )
         {
             if ( obj != null )
             {
@@ -162,7 +157,9 @@ namespace Rock
         /// <param name="obj">an object</param>
         /// <param name="defaultValue"></param>
         /// <returns>A string representation of the object, or the default value if the representation is null or whitespace.</returns>
-        public static string ToStringOrDefault( this object obj, string defaultValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToStringOrDefault( object obj, string defaultValue )
         {
             if ( obj != null )
             {
@@ -178,34 +175,15 @@ namespace Rock
         }
 
         /// <summary>
-        /// Safely attempt to convert any object to an integer value, or return a default value if unsuccessful.
-        /// </summary>
-        /// <param name="obj">an object</param>
-        /// <param name="defaultValue">the value to return if the conversion is unsuccessful</param>
-        /// <returns>The ToString or the empty string if the item is null.</returns>
-        public static int ToIntSafe( this object obj, int defaultValue = 0 )
-        {
-            if ( obj != null )
-            {
-                int value;
-
-                if ( int.TryParse( obj.ToString(), out value ) )
-                {
-                    return value;
-                }
-            }
-
-            return defaultValue;
-        }
-
-        /// <summary>
         /// Gets the data annotation attribute from. http://stackoverflow.com/questions/7027613/how-to-retrieve-data-annotations-from-code-programmatically
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="instance">The instance.</param>
         /// <param name="propertyName">Name of the property.</param>
         /// <returns></returns>
-        public static T GetAttributeFrom<T>( this object instance, string propertyName ) where T : System.Attribute
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T GetAttributeFrom<T>( object instance, string propertyName ) where T : System.Attribute
         {
             var attrType = typeof( T );
             var property = instance.GetType().GetProperty( propertyName );
@@ -213,5 +191,68 @@ namespace Rock
         }
 
         #endregion
+
+        #region Stream extension methods
+
+        /// <summary>
+        /// Reads entire stream and converts to byte array.
+        /// </summary>
+        /// <param name="stream">The stream.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static byte[] ReadBytesToEnd( System.IO.Stream stream )
+        {
+            long originalPosition = 0;
+
+            if ( stream.CanSeek )
+            {
+                originalPosition = stream.Position;
+                stream.Position = 0;
+            }
+
+            try
+            {
+                byte[] readBuffer = new byte[4096];
+
+                int totalBytesRead = 0;
+                int bytesRead;
+
+                while ( ( bytesRead = stream.Read( readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead ) ) > 0 )
+                {
+                    totalBytesRead += bytesRead;
+
+                    if ( totalBytesRead == readBuffer.Length )
+                    {
+                        int nextByte = stream.ReadByte();
+                        if ( nextByte != -1 )
+                        {
+                            byte[] temp = new byte[readBuffer.Length * 2];
+                            Buffer.BlockCopy( readBuffer, 0, temp, 0, readBuffer.Length );
+                            Buffer.SetByte( temp, totalBytesRead, ( byte ) nextByte );
+                            readBuffer = temp;
+                            totalBytesRead++;
+                        }
+                    }
+                }
+
+                byte[] buffer = readBuffer;
+                if ( readBuffer.Length != totalBytesRead )
+                {
+                    buffer = new byte[totalBytesRead];
+                    Buffer.BlockCopy( readBuffer, 0, buffer, 0, totalBytesRead );
+                }
+                return buffer;
+            }
+            finally
+            {
+                if ( stream.CanSeek )
+                {
+                    stream.Position = originalPosition;
+                }
+            }
+        }
+
+        #endregion Stream extension methods
     }
 }

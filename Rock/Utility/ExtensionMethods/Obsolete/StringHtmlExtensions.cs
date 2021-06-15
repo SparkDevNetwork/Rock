@@ -17,22 +17,22 @@
 using System;
 using System.Text;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    /// Encoding Extensions
+    /// String extensions for HTML things
     /// </summary>
     public static partial class ExtensionMethods
     {
-        #region Encoding Extensions
-
         /// <summary>
         /// Turns a string into a properly XML Encoded string.
         /// </summary>
         /// <param name="str">Plain text to convert to XML Encoded string</param>
         /// <param name="isAttribute">If <c>true</c> then additional encoding is done to ensure proper use in an XML attribute value.</param>
         /// <returns>XML encoded string</returns>
-        public static string EncodeXml( this string str, bool isAttribute = false )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string EncodeXml( string str, bool isAttribute = false )
         {
             var sb = new StringBuilder( str.Length );
 
@@ -78,7 +78,5 @@ namespace Rock.Common
 
             return sb.ToString();
         }
-
-        #endregion Encoding Extensions
     }
 }

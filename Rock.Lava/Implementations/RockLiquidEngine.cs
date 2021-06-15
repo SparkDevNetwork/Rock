@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using DotLiquid;
-using Rock.Common;
 using Rock.Lava.DotLiquid;
 
 namespace Rock.Lava.RockLiquid

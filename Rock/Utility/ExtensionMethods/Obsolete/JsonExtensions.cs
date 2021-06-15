@@ -24,49 +24,59 @@ using Newtonsoft.Json.Converters;
 namespace Rock
 {
     /// <summary>
-    /// Extension methods related to converting things to and from JSON.
+    /// JSON Extensions
     /// </summary>
-    public static class JsonExtensions
+    public static partial class ExtensionMethods
     {
         #region JSON Extensions
 
         /// <summary>
-        /// Converts object to JSON string. The output is not indented.
+        /// Converts object to JSON string.
         /// </summary>
         /// <remarks>
         /// Public properties are serialized, but public fields are ignored.
         /// </remarks>
         /// <param name="obj">Object.</param>
         /// <returns></returns>
-        public static string ToJson( this object obj )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToJson( object obj )
         {
-            return ToJson( obj, false, false );
+            return JsonConvert.SerializeObject( obj, Formatting.None,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
         }
 
         /// <summary>
         /// Converts object to JSON string
         /// </summary>
         /// <param name="obj">Object.</param>
-        /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
+        /// <param name="format">The format.</param>
         /// <returns></returns>
-        public static string ToJson( this object obj, bool indentOutput )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToJson( object obj, Formatting format )
         {
-            return ToJson( obj, indentOutput, false );
+            return ToJson( obj, format, false );
         }
 
         /// <summary>
         /// Converts object to JSON string with an option to ignore errors
         /// </summary>
         /// <param name="obj">Object.</param>
-        /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
-        /// <param name="ignoreErrors">if set to <c>true</c> errors will be ignored.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="ignoreErrors">if set to <c>true</c> [ignore errors].</param>
         /// <returns></returns>
-        public static string ToJson( this object obj, bool indentOutput, bool ignoreErrors )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ToJson( object obj, Formatting format, bool ignoreErrors )
         {
             var settings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                Formatting = indentOutput ? Formatting.Indented : Formatting.None
+                Formatting = format
             };
 
             if ( ignoreErrors )
@@ -86,7 +96,9 @@ namespace Rock
         /// <typeparam name="T"></typeparam>
         /// <param name="val">The value.</param>
         /// <returns></returns>
-        public static T FromJsonOrNull<T>( this string val )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T FromJsonOrNull<T>( string val )
         {
             try
             {
@@ -105,7 +117,9 @@ namespace Rock
         /// <typeparam name="T"></typeparam>
         /// <param name="val">The value.</param>
         /// <returns></returns>
-        public static T FromJsonOrThrow<T>( this string val )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T FromJsonOrThrow<T>( string val )
         {
             try
             {
@@ -129,7 +143,9 @@ namespace Rock
         /// </summary>
         /// <param name="val">The value.</param>
         /// <returns></returns>
-        public static object FromJsonDynamicOrNull( this string val )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static object FromJsonDynamicOrNull( string val )
         {
             try
             {
@@ -147,7 +163,9 @@ namespace Rock
         /// </summary>
         /// <param name="val">The value.</param>
         /// <returns></returns>
-        public static object FromJsonDynamic( this string val )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static object FromJsonDynamic( string val )
         {
             var converter = new ExpandoObjectConverter();
             object dynamicObject = null;

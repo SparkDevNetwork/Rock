@@ -23,12 +23,18 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
+/*
+ * 2020-11-16 ETD
+ * IMPORTANT!
+ * This class is used by the CheckScanner which does not have the Rock dll. This file cannot contain any dependencies on that assembly or NuGet packages.
+ */
+
 namespace Rock
 {
     /// <summary>
     /// Handy string extensions that don't require any NuGet packages or Rock references
     /// </summary>
-    public static class StringExtensions
+    public static partial class ExtensionMethods
     {
         #region String Extensions
 
@@ -37,7 +43,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string Md5Hash( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Md5Hash( string str )
         {
             using ( var crypt = MD5.Create() )
             {
@@ -58,7 +66,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string Sha1Hash( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Sha1Hash( string str )
         {
             using ( var crypt = new SHA1Managed() )
             {
@@ -80,7 +90,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string Sha256Hash( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Sha256Hash( string str )
         {
             using ( var crypt = new System.Security.Cryptography.SHA256Managed() )
             {
@@ -102,7 +114,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="keyString">The key.</param>
         /// <returns></returns>
-        public static string HmacSha1Hash( this string str, string keyString )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string HmacSha1Hash( string str, string keyString )
         {
             var key = Encoding.ASCII.GetBytes( keyString );
 
@@ -121,7 +135,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="keyString">The key string.</param>
         /// <returns></returns>
-        public static string HmacSha256Hash( this string str, string keyString )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string HmacSha256Hash( string str, string keyString )
         {
             var key = Encoding.ASCII.GetBytes( keyString );
 
@@ -139,7 +155,9 @@ namespace Rock
         /// Accepts an encoded string and returns an encoded string
         /// </summary>
         /// <param name="encodedString"></param>
-        public static string ScrubEncodedStringForXSSObjects( this string encodedString )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ScrubEncodedStringForXSSObjects( string encodedString )
         {
             // Characters used by DOM Objects; javascript, document, window and URLs
             char[] badCharacters = new char[] { '<', '>', ':', '*' };
@@ -160,7 +178,9 @@ namespace Rock
         /// <param name="source">The source.</param>
         /// <param name="separator">The separator.</param>
         /// <returns>Concatencated string.</returns>
-        public static string JoinStrings( this IEnumerable<string> source, string separator )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string JoinStrings( IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
         }
@@ -170,7 +190,9 @@ namespace Rock
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns>Concatenated string.</returns>
-        public static string JoinStringsWithCommaAnd( this IEnumerable<String> source )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string JoinStringsWithCommaAnd( IEnumerable<String> source )
         {
             if ( source == null || source.Count() == 0 )
             {
@@ -201,7 +223,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
-        public static string RemoveSpecialCharacters( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveSpecialCharacters( string str )
         {
             StringBuilder sb = new StringBuilder();
             foreach ( char c in str )
@@ -221,7 +245,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="replacementCharacters">The characters to replace special character(s) with. No restrictions or validation.</param>
         /// <returns></returns>
-        public static string ReplaceSpecialCharacters( this string str, string replacementCharacters )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceSpecialCharacters( string str, string replacementCharacters )
         {
             StringBuilder sb = new StringBuilder();
             foreach ( char c in str )
@@ -244,7 +270,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string RemoveAllNonAlphaNumericCharacters( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveAllNonAlphaNumericCharacters( string str )
         {
             return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
         }
@@ -254,7 +282,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string RemoveAllNonNumericCharacters( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveAllNonNumericCharacters( string str )
         {
             Regex digitsOnly = new Regex( @"[^\d]" );
 
@@ -274,7 +304,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static bool IsNotNullOrWhiteSpace( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsNotNullOrWhiteSpace( string str )
         {
             return !string.IsNullOrWhiteSpace( str );
         }
@@ -285,7 +317,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static bool IsNullOrWhiteSpace( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsNullOrWhiteSpace( string str )
         {
             return string.IsNullOrWhiteSpace( str );
         }
@@ -296,7 +330,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="length">The length.</param>
         /// <returns></returns>
-        public static string Right( this string str, int length )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Right( string str, int length )
         {
             if ( str == null )
             {
@@ -311,7 +347,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string StripHtml( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string StripHtml( string str )
         {
             return str.IsNullOrWhiteSpace()
                 ? str
@@ -323,7 +361,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static bool IsDigitsOnly( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsDigitsOnly( string str )
         {
             foreach ( char c in str )
             {
@@ -341,7 +381,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static int WordCount( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int WordCount( string str )
         {
             // Attribution (aka future blame): https://stackoverflow.com/questions/8784517/counting-number-of-words-in-c-sharp
             char[] delimiters = new char[] { ' ', '\r', '\n' };
@@ -356,7 +398,9 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if valid mac address otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsValidMacAddress( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsValidMacAddress( string str )
         {
             Regex regex = new Regex( "^([0-9a-fA-F]{2}(?:[:-]?[0-9a-fA-F]{2}){5})$" );
             return regex.IsMatch( str );
@@ -369,7 +413,9 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if [is valid URL] [the specified string]; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsValidUrl( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsValidUrl( string str )
         {
             Uri uriResult;
             return Uri.TryCreate( str, UriKind.Absolute, out uriResult )
@@ -381,7 +427,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string RemoveInvalidReservedUrlChars( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveInvalidReservedUrlChars( string str )
         {
             return str.Replace( " ", string.Empty )
                 .Replace( ";", string.Empty )
@@ -412,7 +460,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static IEnumerable<int> StringToIntList( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static IEnumerable<int> StringToIntList( string str )
         {
             // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
 
@@ -436,7 +486,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static long MakeInt64HashCode( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static long MakeInt64HashCode( string str )
         {
             // http://www.codeproject.com/Articles/34309/Convert-String-to-64bit-Integer
             long hashCode = 0;
@@ -463,7 +515,9 @@ namespace Rock
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public static string MakeValidFileName( this string name )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string MakeValidFileName( string name )
         {
             string invalidChars = Regex.Escape( new string( System.IO.Path.GetInvalidFileNameChars() ) );
             string invalidReStr = string.Format( @"[{0}]+", invalidChars );
@@ -476,7 +530,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The identifier.</param>
         /// <returns></returns>
-        public static string SplitCase( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string SplitCase( string str )
         {
             if ( str == null )
             {
@@ -492,7 +548,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="whitespace">if set to <c>true</c> whitespace will be treated as a delimiter</param>
         /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str, bool whitespace = true )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string[] SplitDelimitedValues( string str, bool whitespace = true )
         {
             if ( str == null )
             {
@@ -511,7 +569,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="delimiter">The delimiter string.</param>
         /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str, string delimiter )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string[] SplitDelimitedValues( string str, string delimiter )
         {
             return SplitDelimitedValues( str, delimiter, StringSplitOptions.None );
         }
@@ -523,7 +583,9 @@ namespace Rock
         /// <param name="delimiter">The delimiter string.</param>
         /// <param name="options">The split options.</param>
         /// <returns></returns>
-        public static string[] SplitDelimitedValues( this string str, string delimiter, StringSplitOptions options )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string[] SplitDelimitedValues( string str, string delimiter, StringSplitOptions options )
         {
             if ( str == null )
             {
@@ -547,7 +609,9 @@ namespace Rock
         /// <param name="oldValue">The value to replace.</param>
         /// <param name="newValue">The value to insert.</param>
         /// <returns></returns>
-        public static string ReplaceCaseInsensitive( this string str, string oldValue, string newValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceCaseInsensitive( string str, string oldValue, string newValue )
         {
             if ( str == null )
             {
@@ -597,7 +661,9 @@ namespace Rock
         /// <param name="oldValue">The value to replace.</param>
         /// <param name="newValue">The value to insert.</param>
         /// <returns>System.String.</returns>
-        public static string ReplaceWhileExists( this string str, string oldValue, string newValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceWhileExists( string str, string oldValue, string newValue )
         {
             string newstr = str;
 
@@ -617,7 +683,9 @@ namespace Rock
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static string EscapeQuotes( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string EscapeQuotes( string str )
         {
             if ( str == null )
             {
@@ -632,7 +700,9 @@ namespace Rock
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static string StandardizeQuotes( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string StandardizeQuotes( string str )
         {
             if ( str == null )
             {
@@ -648,7 +718,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="quoteChar">The quote character.</param>
         /// <returns></returns>
-        public static string Quoted( this string str, string quoteChar = "'" )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Quoted( string str, string quoteChar = "'" )
         {
             var result = quoteChar + str.EscapeQuotes() + quoteChar;
             return result;
@@ -660,7 +732,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="length">The desired length.</param>
         /// <returns></returns>
-        public static string Left( this string str, int length )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Left( string str, int length )
         {
             if ( str == null )
             {
@@ -682,7 +756,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="length">The length.</param>
         /// <returns></returns>
-        public static string LeftWithEllipsis( this string str, int length )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string LeftWithEllipsis( string str, int length )
         {
             if ( str.Length <= length )
             {
@@ -700,8 +776,8 @@ namespace Rock
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
-        [RockObsolete( "1.12" )]
-        public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        [RockObsolete("1.12")]
+        public static string SafeSubstring( string str, int startIndex, int maxLength )
         {
             return str.SubstringSafe( startIndex, maxLength );
         }
@@ -713,7 +789,9 @@ namespace Rock
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        public static string SubstringSafe( this string str, int startIndex, int maxLength )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string SubstringSafe( string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
             {
@@ -729,7 +807,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <returns></returns>
-        public static string SubstringSafe( this string str, int startIndex )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string SubstringSafe( string str, int startIndex )
         {
             if ( str == null )
             {
@@ -745,7 +825,9 @@ namespace Rock
         /// <param name="str"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public static string Truncate( this string str, int maxLength )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Truncate( string str, int maxLength )
         {
             return Truncate( str, maxLength, true );
         }
@@ -757,7 +839,9 @@ namespace Rock
         /// <param name="maxLength">The maximum length of the return value, including the ellipsis if added.</param>
         /// <param name="addEllipsis">if set to <c>true</c> add an ellipsis to the end of the truncated string.</param>
         /// <returns></returns>
-        public static string Truncate( this string str, int maxLength, bool addEllipsis )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Truncate( string str, int maxLength, bool addEllipsis )
         {
             if ( str == null )
             {
@@ -787,7 +871,9 @@ namespace Rock
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static string AsNumeric( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string AsNumeric( string str )
         {
             return Regex.Replace( str, @"[^0-9]", string.Empty );
         }
@@ -799,7 +885,9 @@ namespace Rock
         /// <param name="find">The search parameter.</param>
         /// <param name="replace">The replacement parameter.</param>
         /// <returns></returns>
-        public static string ReplaceLastOccurrence( this string source, string find, string replace )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceLastOccurrence( string source, string find, string replace )
         {
             int place = source.LastIndexOf( find );
             return place > 0 ? source.Remove( place, find.Length ).Insert( place, replace ) : source;
@@ -812,7 +900,9 @@ namespace Rock
         /// <param name="suffix">The suffix.</param>
         /// <param name="replacement">The replacement.</param>
         /// <returns></returns>
-        public static string ReplaceIfEndsWith( this string content, string suffix, string replacement )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceIfEndsWith( string content, string suffix, string replacement )
         {
             if ( content.EndsWith( suffix ) )
             {
@@ -836,7 +926,9 @@ namespace Rock
         /// <param name="resultIfNullOrEmpty">if set to <c>true</c> [result if null or empty].</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static bool AsBoolean( this string str, bool resultIfNullOrEmpty = false )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool AsBoolean( string str, bool resultIfNullOrEmpty = false )
         {
             if ( string.IsNullOrWhiteSpace( str ) )
             {
@@ -851,7 +943,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static bool? AsBooleanOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool? AsBooleanOrNull( string str )
         {
             string[] trueStrings = new string[] { "true", "yes", "t", "y", "1" };
 
@@ -864,81 +958,14 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
-        /// </summary>
-        /// <param name="monthDayString">The month day string.</param>
-        /// <returns></returns>
-        public static DateTime? MonthDayStringAsDateTime( this string monthDayString )
-        {
-            if ( !string.IsNullOrEmpty( monthDayString ) )
-            {
-                if ( monthDayString.Length <= 5 )
-                {
-                    if ( monthDayString.Contains( '/' ) )
-                    {
-                        DateTime value;
-                        var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
-                        if ( DateTime.TryParseExact(
-                                monthDayYearString,
-                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" },
-                                CultureInfo.InvariantCulture,
-                                DateTimeStyles.AllowWhiteSpaces,
-                                out value ) )
-                        {
-                            return value;
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
-        /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
-        /// However, in those cases, it would be better to use <seealso cref="MonthDayStringAsDateTime(string)"/>
-        /// Non-ASCI and control characters are stripped from the string to prevent invisible control characters from causing a null to return.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <returns></returns>
-        [System.Diagnostics.DebuggerStepThrough]
-        public static DateTime? AsDateTime( this string str )
-        {
-            if ( str == null )
-            {
-                return null;
-            }
-
-            // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
-            // This will correct the error and any other caused by non-ASCI & control characters.
-            str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
-
-            DateTime value;
-            DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
-
-            // first check if this is a "MM/dd", "M/dd", "M/d" or "MM/d" string ( We want Rock to treat "MM/dd", "M/dd", "M/d" or "MM/d" strings consistently regardless of culture )
-            if ( valueFromMMDD.HasValue )
-            {
-                return valueFromMMDD;
-            }
-            else if ( DateTime.TryParse( str, out value ) )
-            {
-                return value;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Attempts to convert string to integer.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static int AsInteger( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int AsInteger( string str )
         {
             return str.AsIntegerOrNull() ?? 0;
         }
@@ -949,7 +976,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static int? AsIntegerOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static int? AsIntegerOrNull( string str )
         {
             int value;
             if ( int.TryParse( str, out value ) )
@@ -968,7 +997,9 @@ namespace Rock
         /// <param name="str">The STR.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static Guid AsGuid( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static Guid AsGuid( string str )
         {
             return str.AsGuidOrNull() ?? Guid.Empty;
         }
@@ -979,7 +1010,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static Guid? AsGuidOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static Guid? AsGuidOrNull( string str )
         {
             Guid value;
             if ( Guid.TryParse( str, out value ) )
@@ -997,7 +1030,9 @@ namespace Rock
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
-        public static bool IsEmpty( this Guid guid )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static bool IsEmpty( Guid guid )
         {
             return guid.Equals( Guid.Empty );
         }
@@ -1007,7 +1042,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static decimal AsDecimal( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static decimal AsDecimal( string str )
         {
             return str.AsDecimalOrNull() ?? 0;
         }
@@ -1017,7 +1054,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static decimal? AsDecimalOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static decimal? AsDecimalOrNull( string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -1041,7 +1080,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static decimal? AsDecimalInvariantCultureOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static decimal? AsDecimalInvariantCultureOrNull( string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -1065,7 +1106,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static double AsDouble( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static double AsDouble( string str )
         {
             return str.AsDoubleOrNull() ?? 0;
         }
@@ -1075,7 +1118,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static double? AsDoubleOrNull( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static double? AsDoubleOrNull( string str )
         {
             if ( !string.IsNullOrWhiteSpace( str ) )
             {
@@ -1099,7 +1144,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static TimeSpan? AsTimeSpan( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static TimeSpan? AsTimeSpan( string str )
         {
             TimeSpan value;
             if ( TimeSpan.TryParse( str, out value ) )
@@ -1118,7 +1165,9 @@ namespace Rock
         /// <typeparam name="T"></typeparam>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static T AsType<T>( this string value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static T AsType<T>( string value )
         {
             var converter = TypeDescriptor.GetConverter( typeof( T ) );
             return converter.IsValid( value )
@@ -1132,7 +1181,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string Masked( this string value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Masked( string value )
         {
             return value.Masked( false );
         }
@@ -1144,7 +1195,9 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <param name="preserveLength">if set to <c>true</c> [preserve length]. If false, always put 12 *'s as the prefix</param>
         /// <returns></returns>
-        public static string Masked( this string value, bool preserveLength )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string Masked( string value, bool preserveLength )
         {
             if ( value != null && value.Length > 4 )
             {
@@ -1162,7 +1215,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string EnsureTrailingBackslash( this string value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string EnsureTrailingBackslash( string value )
         {
             return value.TrimEnd( new char[] { '\\', '/' } ) + "\\";
         }
@@ -1172,7 +1227,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string EnsureTrailingForwardslash( this string value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string EnsureTrailingForwardslash( string value )
         {
             return value.TrimEnd( new char[] { '\\', '/' } ) + "/";
         }
@@ -1182,7 +1239,9 @@ namespace Rock
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static string RemoveLeadingForwardslash( this string value )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveLeadingForwardslash( string value )
         {
             return value.TrimStart( new char[] { '/' } );
         }
@@ -1193,7 +1252,9 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <param name="nullValue">The null value.</param>
         /// <returns></returns>
-        public static string IfEmpty( this string value, string nullValue )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string IfEmpty( string value, string nullValue )
         {
             return !string.IsNullOrWhiteSpace( value ) ? value : nullValue;
         }
@@ -1205,7 +1266,9 @@ namespace Rock
         /// </summary>
         /// <param name="text">The text.</param>
         /// <returns></returns>
-        public static string ReplaceWordChars( this string text )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string ReplaceWordChars( string text )
         {
             var s = text;
 
@@ -1241,7 +1304,9 @@ namespace Rock
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static List<KeyValuePair<string, object>> ToKeyValuePairList( this string input )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static List<KeyValuePair<string, object>> ToKeyValuePairList( string input )
         {
             List<KeyValuePair<string, object>> keyPairs = new List<KeyValuePair<string, object>>();
 
@@ -1267,7 +1332,9 @@ namespace Rock
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static string RemoveSpaces( this string input )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveSpaces( string input )
         {
             return input.Replace( " ", string.Empty );
         }
@@ -1277,7 +1344,9 @@ namespace Rock
         /// </summary>
         /// <param name="input">The input string.</param>
         /// <returns></returns>
-        public static string RemoveWhiteSpace( this string input )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveWhiteSpace( string input )
         {
             return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
         }
@@ -1289,7 +1358,9 @@ namespace Rock
         /// <param name="str">The string.</param>
         /// <param name="maxChunkSize">Maximum size of the chunk.</param>
         /// <returns></returns>
-        public static IEnumerable<string> SplitIntoChunks( this string str, int maxChunkSize )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static IEnumerable<string> SplitIntoChunks( string str, int maxChunkSize )
         {
             for ( int i = 0; i < str.Length; i += maxChunkSize )
             {
@@ -1302,7 +1373,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static string RemoveCrLf( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string RemoveCrLf( string str )
         {
             return str.Replace( Environment.NewLine, " " ).Replace( "\x0A", " " );
         }
@@ -1312,7 +1385,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static System.IO.MemoryStream ToMemoryStream( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static System.IO.MemoryStream ToMemoryStream( string str )
         {
             var stream = new System.IO.MemoryStream();
             var writer = new System.IO.StreamWriter( stream );
@@ -1327,7 +1402,9 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static System.IO.StreamReader ToStreamReader( this string str )
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static System.IO.StreamReader ToStreamReader( string str )
         {
             var stream = new System.IO.MemoryStream();
             var writer = new System.IO.StreamWriter( stream );
@@ -1338,56 +1415,15 @@ namespace Rock
         }
 
         /// <summary>
-        /// Turns a string into a properly XML Encoded string.
+        /// A string extension method that escape XML.
         /// </summary>
-        /// <param name="str">Plain text to convert to XML Encoded string</param>
-        /// <param name="isAttribute">If <c>true</c> then additional encoding is done to ensure proper use in an XML attribute value.</param>
-        /// <returns>XML encoded string</returns>
-        public static string EncodeXml( this string str, bool isAttribute = false )
+        /// <param name="str">The string.</param>
+        /// <returns>A string.</returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use the extension methods in the Rock.Common assembly instead." )]
+        public static string EscapeXml( string str )
         {
-            var sb = new StringBuilder( str.Length );
-
-            foreach ( var chr in str )
-            {
-                if ( chr == '<' )
-                {
-                    sb.Append( "&lt;" );
-                }
-                else if ( chr == '>' )
-                {
-                    sb.Append( "&gt;" );
-                }
-                else if ( chr == '&' )
-                {
-                    sb.Append( "&amp;" );
-                }
-                else if ( isAttribute && chr == '\"' )
-                {
-                    sb.Append( "&quot;" );
-                }
-                else if ( isAttribute && chr == '\'' )
-                {
-                    sb.Append( "&apos;" );
-                }
-                else if ( chr == '\n' )
-                {
-                    sb.Append( isAttribute ? "&#xA;" : "\n" );
-                }
-                else if ( chr == '\r' )
-                {
-                    sb.Append( isAttribute ? "&#xD;" : "\r" );
-                }
-                else if ( chr == '\t' )
-                {
-                    sb.Append( isAttribute ? "&#x9;" : "\t" );
-                }
-                else
-                {
-                    sb.Append( chr );
-                }
-            }
-
-            return sb.ToString();
+            return str.Replace( "&", "&amp;" ).Replace( "<", "&lt;" ).Replace( ">", "&gt;" ).Replace( "\"", "&quot;" ).Replace( "'", "&apos;" );
         }
 
         #endregion String Extensions
