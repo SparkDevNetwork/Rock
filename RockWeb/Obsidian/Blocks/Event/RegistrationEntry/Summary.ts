@@ -134,6 +134,11 @@ export default defineComponent( {
                     {
                         location.href = redirectUrl;
                     }
+                    else
+                    {
+                        // Error is shown by getPaymentRedirect method
+                        this.loading = false;
+                    }
                 }
                 else
                 {

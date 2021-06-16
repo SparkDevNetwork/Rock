@@ -40,7 +40,7 @@ namespace Rock.Blocks
             {
                 var type = GetType();
                 var lastNamespace = type.Namespace.Split( '.' ).Last();
-                return $"/ObsidianJs/Generated/Blocks/{lastNamespace}/{type.Name}";
+                return $"/Obsidian/Blocks/{lastNamespace}/{type.Name}";
             }
         }
 
@@ -99,7 +99,7 @@ namespace Rock.Blocks
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
 Obsidian.whenReady(() => {{
-    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+    System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializeBlock({{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),

@@ -95,9 +95,13 @@ const GalleryAndResult = defineComponent( {
         }
     },
     computed: {
-        valuesJson (): string
+        value1Json (): string
         {
-            return JSON.stringify( this.attributeValues.map( av => av.Value ), null, 4 );
+            return JSON.stringify( this.attributeValues[ 0 ].Value, null, 4 );
+        },
+        value2Json (): string
+        {
+            return JSON.stringify( this.attributeValues[ 1 ].Value, null, 4 );
         }
     },
     template: `
@@ -115,8 +119,15 @@ const GalleryAndResult = defineComponent( {
             <h4>Attribute Values Container (view)</h4>
             <AttributeValuesContainer :attributeValues="attributeValues" :isEditMode="false" />
             <hr />
-            <h4>Raw Values</h4>
-            <pre>{{valuesJson}}</pre>
+            <h4>Values</h4>
+            <p>
+                <strong>Value 1</strong>
+                <pre>{{value1Json}}</pre>
+            </p>
+            <p>
+                <strong>Value 2</strong>
+                <pre>{{value2Json}}</pre>
+            </p>
         </div>
     </div>
 </PanelWidget>`
@@ -220,7 +231,7 @@ export default defineComponent( {
         } ),
         PhoneNumberGallery: GetFieldTypeGalleryComponent( 'PhoneNumber', '(321) 456-7890', '6B1908EC-12A2-463A-A7BD-970CE0FAF097', {
         } ),
-        DefinedValueGallery: GetFieldTypeGalleryComponent( 'DefinedValue', 'af28af43-8461-41ac-a2c5-85122712be96', '59D5A94C-94A0-4630-B80A-BB25697D74C7', {
+        DefinedValueGallery: GetFieldTypeGalleryComponent( 'DefinedValue (WIP)', 'af28af43-8461-41ac-a2c5-85122712be96', '59D5A94C-94A0-4630-B80A-BB25697D74C7', {
             definedtype: '92',
             allowmultiple: '',
             displaydescription: 'true',

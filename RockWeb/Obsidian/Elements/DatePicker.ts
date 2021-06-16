@@ -20,6 +20,14 @@ import RockDate, { RockDateType } from '../Util/RockDate';
 import RockFormField from './RockFormField';
 import TextBox from './TextBox';
 
+type Rock = {
+    controls: {
+        datePicker: {
+            initialize: ( args: Record<string, unknown> ) => void;
+        }
+    }
+};
+
 export default defineComponent( {
     name: 'DatePicker',
     components: {
@@ -134,8 +142,9 @@ export default defineComponent( {
     {
         const input = this.$refs[ 'input' ] as HTMLInputElement;
         const inputId = input.id;
+        const Rock = ( window[ 'Rock' ] as unknown ) as Rock;
 
-        window[ 'Rock' ].controls.datePicker.initialize( {
+        Rock.controls.datePicker.initialize( {
             id: inputId,
             startView: 0,
             showOnFocus: true,

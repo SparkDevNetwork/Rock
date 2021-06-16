@@ -20,10 +20,10 @@ import Alert from '../../../Elements/Alert';
 import NumberUpDown from '../../../Elements/NumberUpDown';
 import RockButton from '../../../Elements/RockButton';
 import { toTitleCase, pluralConditional } from '../../../Services/String';
-import { areEqual, newGuid } from '../../../Util/Guid';
+import { areEqual } from '../../../Util/Guid';
 import Person from '../../../ViewModels/CodeGenerated/PersonViewModel';
 import { getDefaultRegistrantInfo, getForcedFamilyGuid, RegistrationEntryState } from '../RegistrationEntry';
-import { RegistrantsSameFamily, RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
+import { RegistrationEntryBlockViewModel } from './RegistrationEntryBlockViewModel';
 
 export default defineComponent( {
     name: 'Event.RegistrationEntry.Intro',
@@ -38,7 +38,7 @@ export default defineComponent( {
 
         return {
             /** The number of registrants that this registrar is going to input */
-            numberOfRegistrants: registrationEntryState.Registrants.length || 1,
+            numberOfRegistrants: registrationEntryState.Registrants.length,
 
             /** The shared state among all the components that make up this block */
             registrationEntryState,

@@ -46,7 +46,7 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockFileUrl => $"/ObsidianJs/Generated/Plugins/com_rocksolidchurchdemo/PageDebug/WidgetsList";
+        public override string BlockFileUrl => $"/Plugins/com_rocksolidchurchdemo/PageDebug/WidgetsList";
 
         /// <summary>
         /// Gets the widgets.

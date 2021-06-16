@@ -135,7 +135,7 @@ namespace Rock.MyWell
         /// </value>
         public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         {
-            return "/ObsidianJs/Generated/Controls/MyWellGatewayControl.js";
+            return "/Obsidian/Controls/MyWellGatewayControl.js";
         }
 
         /// <summary>

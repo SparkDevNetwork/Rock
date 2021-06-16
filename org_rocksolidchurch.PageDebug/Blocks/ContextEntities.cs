@@ -40,6 +40,6 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
         /// <value>
         /// The block markup file identifier.
         /// </value>
-        public override string BlockFileUrl => $"/ObsidianJs/PluginsJs/com_rocksolidchurchdemo/PageDebug/ContextEntities";
+        public override string BlockFileUrl => $"/Plugins/com_rocksolidchurchdemo/PageDebug/ContextEntities";
     }
 }

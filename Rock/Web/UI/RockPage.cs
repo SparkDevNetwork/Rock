@@ -1143,11 +1143,11 @@ Rock.settings.initialize({{
 <script type=""systemjs-importmap"">
 {{
     ""imports"": {{
-        ""vue"": ""/ObsidianJs/Generated/Vendor/Vue/vue.js"",
-        ""vuex"": ""/ObsidianJs/Generated/Vendor/Vuex/index.js"",
-        ""vee-validate"": ""/ObsidianJs/Generated/Vendor/VeeValidate/vee-validate.js"",
-        ""axios"": ""/ObsidianJs/Generated/Vendor/Axios/index.js"",
-        ""mitt"": ""/ObsidianJs/Generated/Vendor/Mitt/index.js""
+        ""vue"": ""/ObsidianJs/SystemJsVendor/Vue/vue.js"",
+        ""vuex"": ""/ObsidianJs/SystemJsVendor/Vuex/index.js"",
+        ""vee-validate"": ""/ObsidianJs/SystemJsVendor/VeeValidate/vee-validate.js"",
+        ""axios"": ""/ObsidianJs/SystemJsVendor/Axios/index.js"",
+        ""mitt"": ""/ObsidianJs/SystemJsVendor/Mitt/index.js""
     }}
 }}
 </script>";
@@ -1159,7 +1159,7 @@ Rock.settings.initialize({{
                     {
                         var script = $@"
 Obsidian.whenReady(() => {{
-    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+    System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializePage({{
             executionStartTime: new Date(),
             pageId: {_pageCache.Id},
@@ -1664,7 +1664,7 @@ Obsidian.whenReady(() => {{
                 {
                     var script = $@"
 Obsidian.whenReady(() => {{
-    System.import('/ObsidianJs/Generated/Index.js').then(indexModule => {{
+    System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
             debugTimingViewModels: { _debugTimingViewModels.ToJson() }
