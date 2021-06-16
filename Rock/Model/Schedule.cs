@@ -601,7 +601,13 @@ namespace Rock.Model
                 }
             }
 
-            return (EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
+            // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
+            if ( EffectiveEndDate == null && !adjustEffectiveDateForLastOccurrence )
+            {
+                EffectiveEndDate = EffectiveStartDate;
+            }
+
+            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
         }
 
         /// <summary>
