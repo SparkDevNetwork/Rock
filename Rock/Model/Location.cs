@@ -77,29 +77,28 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that is used to identify the type of <see cref="Rock.Model.Location"/>
-        /// that this is.
+        /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue" /> that is used to identify the type of <see cref="Rock.Model.Location" />
+        /// that this is. Examples: Campus, Building, Room, etc
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> referencing the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that identifies the type of group location that this is.
-        /// If a LocationType <see cref="Rock.Model.DefinedValue"/> is not associated with this GroupLocation this value will be null.
+        /// The location type value identifier.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.LOCATION_TYPE )]
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GeoPoint (geolocation) for the location
+        /// Gets or sets the GeoPoint (GeoLocation) for the location
         /// </summary>
         /// <value>
-        /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the geolocation of the Location.
+        /// A <see cref="System.Data.Entity.Spatial.DbGeography"/> object that represents the GeoLocation of the Location.
         /// </value>
         [DataMember]
         [Newtonsoft.Json.JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
-        /// Gets or sets the geographic parameter around the a Location's Geopoint. This can also be used to define a large area
+        /// Gets or sets the geographic parameter around the a Location's GeoPoint. This can also be used to define a large area
         /// like a neighborhood.  
         /// </summary>
         /// <remarks>
@@ -671,23 +670,55 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Return this location as a string. Set preferName to true
+        /// to return this location.Name (if it has one). Otherwise,
+        /// it will try to show the Full Address first.
+        /// </summary>
+        /// <param name="preferName">if set to <c>true</c> [prefer name].</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public string ToString( bool preferName )
+        {
+            if ( preferName && this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
+            }
+
+            return this.ToString();
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> containing the Location's address that represents this instance.
+        /// If this location has a street address, that will be returned, otherwise the Name will be returned.
+        /// Use <see cref="ToString(bool)"/> to prefer returning the location's name vs address
         /// </summary>
         /// <returns>
         /// A <see cref="System.String"/> containing the Location's address that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            if ( this.Name.IsNotNullOrWhiteSpace() )
-            {
-                return this.Name;
-            }
-
             string fullAddress = GetFullStreetAddress();
 
             if ( fullAddress.IsNotNullOrWhiteSpace() )
             {
+                /* 
+                    02/05/2021 MDP 
+
+                    Even if Location.Name has a value, return the Full Street Address
+                    for ToString() if there is a full address. This way to don't change
+                    the behavior of how this has worked before.
+
+                    UIs, etc, that should be showing Location.Name should use Location.Name instead
+                    of relying on ToString().
+                 */
+
                 return fullAddress;
+            }
+
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                return this.Name;
             }
 
             if ( this.GeoPoint != null )

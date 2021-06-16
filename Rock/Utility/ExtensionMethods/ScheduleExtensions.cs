@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rock.Model;
@@ -30,12 +31,34 @@ namespace Rock
         /// </summary>
         /// <param name="scheduleList">The schedule list.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use OrderByOrderAndNextScheduledDateTime instead" )]
         public static List<Schedule> OrderByNextScheduledDateTime( this List<Schedule> scheduleList )
         {
             // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
             var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
             List<Schedule> sortedScheduleList = scheduleList
                 .OrderBy( a => a.GetNextStartDateTime( occurrenceDate ) )
+                .ThenBy( a => a.Name )
+                .ThenBy( a => a.Id )
+                .ToList();
+
+            return sortedScheduleList;
+        }
+
+        /// <summary>
+        /// Orders the schedules by <seealso cref="Schedule.Order" /> and then sorts the list of Schedules by the day/time they are scheduled for the current Sunday week
+        /// For example: Saturday 4pm, Saturday 6pm, Sunday 9am, Sunday 11am, Sunday 1pm
+        /// </summary>
+        /// <param name="scheduleList">The schedule list.</param>
+        /// <returns></returns>
+        public static List<Schedule> OrderByOrderAndNextScheduledDateTime( this List<Schedule> scheduleList )
+        {
+            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+            List<Schedule> sortedScheduleList = scheduleList
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.GetNextStartDateTime( occurrenceDate ) )
                 .ThenBy( a => a.Name )
                 .ThenBy( a => a.Id )
                 .ToList();

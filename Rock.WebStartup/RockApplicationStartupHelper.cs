@@ -30,12 +30,14 @@ using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
+using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.WebFarm;
 
 namespace Rock.WebStartup
 {
@@ -77,7 +79,7 @@ namespace Rock.WebStartup
 
             StartDateTime = RockDateTime.Now;
 
-            RockApplicationStartupHelper.LogStartupMessage( "Application Starting" );
+            LogStartupMessage( "Application Starting" );
 
             var runMigrationFileInfo = new FileInfo( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
 
@@ -133,6 +135,23 @@ namespace Rock.WebStartup
                 ShowDebugTimingMessage( "Send Version Update Notifications" );
             }
 
+            // Start the message bus
+            RockMessageBus.StartAsync().Wait();
+            var busTransportName = RockMessageBus.GetTransportName();
+
+            if ( busTransportName.IsNullOrWhiteSpace() )
+            {
+                ShowDebugTimingMessage( "Message Bus" );
+            }
+            else
+            {
+                ShowDebugTimingMessage( $"Message Bus ({busTransportName})" );
+            }
+
+            // Start stage 1 of the web farm
+            RockWebFarm.StartStage1();
+            ShowDebugTimingMessage( "Web Farm (stage 1)" );
+
             RegisterHttpModules();
 
             // Get Lava set up
@@ -147,6 +166,10 @@ namespace Rock.WebStartup
                 StartJobScheduler();
                 ShowDebugTimingMessage( "Start Job Scheduler" );
             }
+
+            // Start stage 2 of the web farm
+            RockWebFarm.StartStage2();
+            ShowDebugTimingMessage( "Web Farm (stage 2)" );
         }
 
         /// <summary>
@@ -344,7 +367,9 @@ namespace Rock.WebStartup
             var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
             var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
 
-            // now look in __MigrationHistory table to see what the last migration that ran was
+            // Now look in __MigrationHistory table to see what the last migration that ran was.
+            // Note that if you accidentally run an older branch (v11.1) against a database that was created from a newer branch (v12), it'll think you need to run migrations.
+            // But it will end up figuring that out when we ask it to run migrations
             var lastDbMigrationId = DbService.ExecuteScaler( "select max(MigrationId) from __MigrationHistory" ) as string;
 
             // if they aren't the same, run EF Migrations
@@ -373,8 +398,8 @@ namespace Rock.WebStartup
 
                 var lastMigration = pendingMigrations.Last();
 
-                // create a logger, but don't enable any of the logs
-                var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = false, LogWarning = false };
+                // create a logger, and enable the migration output to go to a file
+                var migrationLogger = new Rock.Migrations.RockMigrationsLogger() { LogVerbose = false, LogInfo = true, LogWarning = false };
 
                 var migratorLoggingDecorator = new MigratorLoggingDecorator( migrator, migrationLogger );
 

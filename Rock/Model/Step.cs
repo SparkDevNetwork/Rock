@@ -35,6 +35,17 @@ namespace Rock.Model
     [DataContract]
     public partial class Step : Model<Step>, IOrdered
     {
+        /* Custom Indexes:
+         *
+         * PersonAliasId, StepTypeId
+         *      Includes CompletedDateTime
+         *      This was added for Step Program Achievement
+         *      
+         *  StepTypeId, PersonAliasId
+         *      Includes CompletedDateTime
+         *      This was added for Step Program Achievement
+         */
+
         #region Entity Properties
 
         /// <summary>

@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web.Routing;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Services.NuGet;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -192,8 +193,11 @@ namespace RockWeb.Blocks.Administration
                         tbContext.ID = string.Format( "context_{0}", context.EntityTypeName.Replace( '.', '_' ) );
                         tbContext.Required = false;
                         tbContext.Label = context.EntityTypeFriendlyName + " Parameter Name";
-                        tbContext.Help = string.Format( "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
-                            "block".PluralizeIf( context.BlockList.Count > 1 ), string.Join( ", ", context.BlockList ) );
+                        tbContext.Help = string.Format(
+                            "The page parameter name that contains the id of this context entity. This parameter will be used by the following {0}: {1}",
+                            "block".PluralizeIf( context.BlockList.Count > 1 ),
+                            string.Join( ", ", context.BlockList ) );
+
                         if ( pageCache.PageContexts.ContainsKey( context.EntityTypeName ) )
                         {
                             tbContext.Text = pageCache.PageContexts[context.EntityTypeName];
@@ -351,9 +355,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMedianTimeDetails_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.MedianTimeDetailPage, new Dictionary<string, string> {
-                { PageParamKey.Page, hfPageId.Value }
-            } );
+            NavigateToLinkedPage(
+                AttributeKey.MedianTimeDetailPage,
+                new Dictionary<string, string> { { PageParamKey.Page, hfPageId.Value } } );
         }
 
         /// <summary>
@@ -425,7 +429,7 @@ namespace RockWeb.Blocks.Administration
             btnSecurity.Visible = page.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
             btnSecurity.Title = page.InternalName;
             btnSecurity.EntityId = page.Id;
-            
+
             aChildPages.HRef = string.Format( "javascript: Rock.controls.modal.show($(this), '/pages/{0}?t=Child Pages&amp;pb=&amp;sb=Done')", page.Id );
 
             // this will be true when used in the Page Builder page, and false when used in the System Dialog
@@ -546,7 +550,7 @@ namespace RockWeb.Blocks.Administration
             cbPageIcon.Checked = page.PageDisplayIcon;
             cbPageDescription.Checked = page.PageDisplayDescription;
 
-            ddlMenuWhen.SelectedValue = ( (int)page.DisplayInNavWhen ).ToString();
+            ddlMenuWhen.SelectedValue = ( ( int ) page.DisplayInNavWhen ).ToString();
             cbMenuDescription.Checked = page.MenuDisplayDescription;
             cbMenuIcon.Checked = page.MenuDisplayIcon;
             cbMenuChildPages.Checked = page.MenuDisplayChildPages;
@@ -558,7 +562,19 @@ namespace RockWeb.Blocks.Administration
             cbEnableViewState.Checked = page.EnableViewState;
             cbIncludeAdminFooter.Checked = page.IncludeAdminFooter;
             cbAllowIndexing.Checked = page.AllowIndexing;
-            tbCacheDuration.Text = page.OutputCacheDuration.ToString();
+
+            if ( page.CacheControlHeaderSettings != null )
+            {
+                cpCacheSettings.CurrentCacheability = JsonConvert.DeserializeObject<RockCacheability>( page.CacheControlHeaderSettings );
+            }
+            else
+            {
+                cpCacheSettings.CurrentCacheability = new RockCacheability
+                {
+                    RockCacheablityType = RockCacheablityType.Private
+                };
+            }
+
             tbDescription.Text = page.Description;
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
@@ -587,7 +603,7 @@ namespace RockWeb.Blocks.Administration
             Page.Validate( BlockValidationGroup );
             if ( !Page.IsValid )
             {
-                throw new Exception("Page is not valid");
+                throw new Exception( "Page is not valid" );
             }
 
             var rockContext = new RockContext();
@@ -752,7 +768,9 @@ namespace RockWeb.Blocks.Administration
             page.EnableViewState = cbEnableViewState.Checked;
             page.IncludeAdminFooter = cbIncludeAdminFooter.Checked;
             page.AllowIndexing = cbAllowIndexing.Checked;
-            page.OutputCacheDuration = tbCacheDuration.Text.AsIntegerOrNull() ?? 0;
+
+            page.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
+
             page.Description = tbDescription.Text;
             page.HeaderContent = ceHeaderContent.Text;
 
@@ -941,7 +959,8 @@ namespace RockWeb.Blocks.Administration
             var seconds = !page.MedianPageLoadTimeDurationSeconds.HasValue ? "Not Measured" :
                 string.Format( "{0:n2}s", page.MedianPageLoadTimeDurationSeconds.Value );
 
-            lMedianTime.Text = string.Format( "<span class='label label-{0} padding-l-md padding-r-md'>{1}</span>",
+            lMedianTime.Text = string.Format(
+                "<span class='label label-{0} padding-l-md padding-r-md'>{1}</span>",
                 cssClass,
                 seconds );
         }
@@ -1189,7 +1208,7 @@ namespace RockWeb.Blocks.Administration
             }
             catch
             {
-                //Left empty, error displyed in UI.
+                // Left empty, error displyed in UI.
             }
         }
 

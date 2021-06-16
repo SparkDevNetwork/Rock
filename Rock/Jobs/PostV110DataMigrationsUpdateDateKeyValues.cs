@@ -26,11 +26,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// A run once job for V10.0
+    /// A run once job for V11.0
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [DisplayName( "Populates the new DateKey fields with data." )]
+    [DisplayName( "Rock Update Helper v11.0 - Populates the new DateKey fields with data." )]
     [Description( "This job will populate the new DateKey fields on the Interaction, FinancialTransaction, AttendanceOccurence, Communication, MetricValue tables which were added as part of v11.0. After all the operations are done, this job will delete itself." )]
 
     [IntegerField(

@@ -186,7 +186,13 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var dataView = new DataViewService( new RockContext() ).Get( ItemId.AsInteger() );
+            var dataViewId = ItemId.AsIntegerOrNull();
+            DataView dataView = null;
+            if ( dataViewId.HasValue && dataViewId > 0 )
+            {
+                dataView = new DataViewService( new RockContext() ).Get( ItemId.AsInteger() );
+            }
+
             SetValue( dataView );
         }
 
@@ -195,7 +201,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var dataViews = new DataViewService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            var dataViewIds = ItemIds.AsIntegerList().Where( a => a > 0 ).ToList();
+
+            var dataViews = new DataViewService( new RockContext() ).Queryable().Where( g => dataViewIds.Contains( g.Id ) );
             this.SetValues( dataViews );
         }
     }

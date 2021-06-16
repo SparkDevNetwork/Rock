@@ -186,7 +186,7 @@ namespace Rock.Model
         {
             get
             {
-                return (this.ActivityType?.IsActive ?? true) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+                return ( this.ActivityType?.IsActive ?? true ) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
             private set { }
         }
@@ -321,7 +321,7 @@ namespace Rock.Model
 
             AddLogEntry( "Processing Complete" );
 
-            if (!this.ActiveActions.Any())
+            if ( !this.ActiveActions.Any() )
             {
                 MarkComplete();
             }
@@ -340,7 +340,7 @@ namespace Rock.Model
             if ( this.Workflow != null )
             {
                 var workflowType = this.Workflow.WorkflowTypeCache;
-                if( force || (
+                if ( force || (
                     workflowType != null && (
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
@@ -441,8 +441,8 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities ).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );

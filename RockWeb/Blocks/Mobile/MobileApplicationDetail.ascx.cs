@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -27,16 +28,17 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile;
-using Rock.Common.Mobile.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
@@ -440,9 +442,11 @@ namespace RockWeb.Blocks.Mobile
             rblEditAndroidTabLocation.SetValue( ( int? ) additionalSettings.TabLocation ?? ( int ) TabLocation.Bottom );
             ddlEditLockPhoneOrientation.SetValue( ( int ) additionalSettings.LockedPhoneOrientation );
             ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
-            
+
+            cbEnableNotificationsAutomatically.Checked = additionalSettings.EnableNotificationsAutomatically;
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
             ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
+            ceEditHomepageRoutingLogic.Text = additionalSettings.HomepageRoutingLogic;
 
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
 
@@ -452,6 +456,7 @@ namespace RockWeb.Blocks.Mobile
 
             ppEditLoginPage.SetValue( site.LoginPageId );
             ppEditProfilePage.SetValue( additionalSettings.ProfilePageId );
+            ppCommunicationViewPage.SetValue( additionalSettings.CommunicationViewPageId );
 
             //
             // Set the API Key.
@@ -519,34 +524,7 @@ namespace RockWeb.Blocks.Mobile
         private string GenerateApiKey()
         {
             // Generate a unique random 12 digit api key
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var key = string.Empty;
-            var isGoodKey = false;
-
-            while ( isGoodKey == false )
-            {
-                StringBuilder sb = new StringBuilder();
-                Random rnd = new Random();
-                char[] codeCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray(); ;
-                int poolSize = codeCharacters.Length;
-
-                for ( int i = 0; i < 24; i++ )
-                {
-                    sb.Append( codeCharacters[rnd.Next( poolSize )] );
-                }
-
-                key = sb.ToString();
-
-                var userLogins = userLoginService.Queryable().Where( a => a.ApiKey == key );
-                if ( userLogins.Count() == 0 )
-                {
-                    // no other user login has this key.
-                    isGoodKey = true;
-                }
-            }
-
-            return key;
+            return Rock.Utility.KeyHelper.GenerateKey( ( RockContext rockContext, string key ) => new UserLoginService( rockContext ).Queryable().Any( a => a.ApiKey == key ) );
         }
 
         /// <summary>
@@ -799,11 +777,14 @@ namespace RockWeb.Blocks.Mobile
             
             additionalSettings.PersonAttributeCategories = cpEditPersonAttributeCategories.SelectedValues.AsIntegerList();
             additionalSettings.ProfilePageId = ppEditProfilePage.PageId;
+            additionalSettings.CommunicationViewPageId = ppCommunicationViewPage.PageId;
+            additionalSettings.EnableNotificationsAutomatically = cbEnableNotificationsAutomatically.Checked;
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
             additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
+            additionalSettings.HomepageRoutingLogic = ceEditHomepageRoutingLogic.Text;
 
             //
             // Save the image.
@@ -1016,31 +997,68 @@ namespace RockWeb.Blocks.Mobile
                 var site = new SiteService( rockContext ).Get( applicationId );
                 var binaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.MOBILE_APP_BUNDLE.AsGuid() );
 
+                // Enable this once the shell updates have been installed.
+                var enableCompression = false;
+                var mimeType = enableCompression ? "application/gzip" : "application/json";
+                var filenameExtension = enableCompression ? "json.gz" : "json";
+
                 //
                 // Prepare the phone configuration file.
                 //
+                Stream phoneJsonStream;
+                if ( enableCompression )
+                {
+                    phoneJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( phoneJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( phoneJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    phoneJsonStream.Position = 0;
+                }
+                else
+                {
+                    phoneJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) );
+                }
+
                 var phoneFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = phoneJson.Length,
-                    FileName = "phone.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( phoneJson ) )
+                    FileName = "phone." + filenameExtension,
+                    ContentStream = phoneJsonStream
                 };
                 binaryFileService.Add( phoneFile );
 
                 //
                 // Prepare the tablet configuration file.
                 //
+                Stream tabletJsonStream;
+                if ( enableCompression )
+                {
+                    tabletJsonStream = new MemoryStream();
+                    using ( var gzipStream = new GZipStream( tabletJsonStream, CompressionMode.Compress, true ) )
+                    {
+                        var bytes = Encoding.UTF8.GetBytes( tabletJson );
+                        gzipStream.Write( bytes, 0, bytes.Length );
+                    }
+                    tabletJsonStream.Position = 0;
+                }
+                else
+                {
+                    tabletJsonStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) );
+                }
+
                 var tabletFile = new BinaryFile
                 {
                     IsTemporary = false,
                     BinaryFileTypeId = binaryFileType.Id,
-                    MimeType = "application/json",
+                    MimeType = mimeType,
                     FileSize = tabletJson.Length,
-                    FileName = "tablet.json",
-                    ContentStream = new MemoryStream( Encoding.UTF8.GetBytes( tabletJson ) )
+                    FileName = "tablet." + filenameExtension,
+                    ContentStream = tabletJsonStream
                 };
                 binaryFileService.Add( tabletFile );
 

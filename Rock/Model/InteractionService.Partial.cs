@@ -451,6 +451,21 @@ namespace Rock.Model
                     interactionImport.InteractionChannelId = InteractionChannelCache.Get( interactionImport.InteractionChannelId.Value )?.Id;
                 }
 
+                // Determine which Channel Type Medium this should be set to
+                if ( interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    // make sure it is a valid Id
+                    interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.Get( interactionImport.InteractionChannelChannelTypeMediumValueId.Value )?.Id;
+                }
+
+                if ( !interactionImport.InteractionChannelChannelTypeMediumValueId.HasValue )
+                {
+                    if ( interactionImport.InteractionChannelChannelTypeMediumValueGuid.HasValue )
+                    {
+                        interactionImport.InteractionChannelChannelTypeMediumValueId = DefinedValueCache.GetId( interactionImport.InteractionChannelChannelTypeMediumValueGuid.Value );
+                    }
+                }
+
                 if ( !interactionImport.InteractionChannelId.HasValue )
                 {
                     if ( interactionImport.InteractionChannelGuid.HasValue )
@@ -461,7 +476,7 @@ namespace Rock.Model
                     // if InteractionChannelId is still null, lookup (or create) an InteractionChannel from InteractionChannelForeignKey (if it is specified) 
                     if ( interactionImport.InteractionChannelId == null && interactionImport.InteractionChannelForeignKey.IsNotNullOrWhiteSpace() )
                     {
-                        interactionImport.InteractionChannelId = InteractionChannelCache.GetChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName );
+                        interactionImport.InteractionChannelId = InteractionChannelCache.GetCreateChannelIdByForeignKey( interactionImport.InteractionChannelForeignKey, interactionImport.InteractionChannelName, interactionImport.InteractionChannelChannelTypeMediumValueId );
                     }
                     else
                     {
@@ -583,7 +598,7 @@ namespace Rock.Model
             // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
             // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit, so update the streak using a task.
-            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i ) ) );
+            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
         }
     }
 

@@ -82,8 +82,29 @@ namespace RockWeb.Blocks.Prayer
 " )]
     [BooleanField( "Display Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true,category: "Filtering", order: 6 )]
     [BooleanField( "Public Only", "If selected, all non-public prayer request will be excluded.", false, "", 7 )]
+    [BooleanField( "Create Interactions for Prayers",
+        Description = "If enabled then this block will record an Interaction whenever somebody prays for a prayer request.",
+        DefaultBooleanValue = true,
+        IsRequired = true,
+        Key = AttributeKey.CreateInteractionsForPrayers,
+        Order = 8 )]
     public partial class PrayerSession : RockBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute keys for the <see cref="PrayerSession"/> block.
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The create interactions for prayers key.
+            /// </summary>
+            public const string CreateInteractionsForPrayers = "CreateInteractionsForPrayers";
+        }
+
+        #endregion
+
         #region Fields
 
         private const string CAMPUS_PREFERENCE = "prayer-session-{0}-campus";
@@ -561,6 +582,11 @@ namespace RockWeb.Blocks.Prayer
             }
 
             CurrentPrayerRequestId = prayerRequest.Id;
+
+            if ( GetAttributeValue( AttributeKey.CreateInteractionsForPrayers ).AsBoolean() )
+            {
+                PrayerRequestService.EnqueuePrayerInteraction( prayerRequest, CurrentPerson, PageCache.Layout.Site.Name, Request.UserAgent, RockPage.GetClientIpAddress(), RockPage.Session["RockSessionId"]?.ToString().AsGuidOrNull() );
+            }
 
             try
             {

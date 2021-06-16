@@ -570,6 +570,24 @@ namespace Rock.Model
         [DataMember]
         public RegistrarOption RegistrarOption { get; set; }
 
+        /// <summary>
+        /// Gets or sets the payment redirect vendor.
+        /// </summary>
+        /// <value>
+        /// The payment redirect vendor.
+        /// </value>
+        [DataMember]
+        public PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is registration metering enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is registration metering enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsRegistrationMeteringEnabled { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
@@ -868,6 +886,17 @@ namespace Rock.Model
         /// For example, if EmailAddress wasn't known, Email would be prompted vs readonly.
         /// </summary>
         UseLoggedInPerson = 3
+    }
+
+    /// <summary>
+    /// Payment processor vendors which handle payment directly through a redirect.
+    /// </summary>
+    public enum PaymentRedirectVendor
+    {
+        /// <summary>
+        /// Pushpay
+        /// </summary>
+        Pushpay = 1
     }
 
     #endregion

@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void PopulateEditDocumentTypeDropDownList( bool isNew = false )
         {
-            var filteredDocumentTypes = GetFilteredDocumentTypes();
+            var filteredDocumentTypes = GetFilteredDocumentTypes( true );
 
             /*
                SK 20120-10-10
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Crm
         /// <summary>
         /// Get filtered document Types
         /// </summary>
-        private IEnumerable<DocumentTypeCache> GetFilteredDocumentTypes()
+        private IEnumerable<DocumentTypeCache> GetFilteredDocumentTypes( bool considerMaxDocumentsPerEntity = false )
         {
             var contextEntity = this.ContextEntity();
             if ( contextEntity == null )
@@ -306,6 +306,15 @@ namespace RockWeb.Blocks.Crm
             }
             var entityTypeId = contextEntity.TypeId;
             List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, true );
+            if ( considerMaxDocumentsPerEntity )
+            {
+                var rockContext = new RockContext();
+                var documentQry = new DocumentService( rockContext ).Queryable().Where( a => a.EntityId == contextEntity.Id );
+                documentypesForContextEntityType = documentypesForContextEntityType
+                    .Where( a => !a.MaxDocumentsPerEntity.HasValue
+                         || documentQry.Where( b => b.DocumentTypeId == a.Id ).Count() < a.MaxDocumentsPerEntity.Value )
+                         .ToList();
+            }
 
             // Get the document types allowed from the block settings and only have those in the list of document types for the entity
             if ( GetAttributeValue( AttributeKeys.DocumentTypes ).IsNotNullOrWhiteSpace() )
@@ -405,16 +414,19 @@ namespace RockWeb.Blocks.Crm
                     .Where( d => d.DocumentType.EntityTypeId == entityTypeId )
                     .Where( d => d.EntityId == contextEntity.Id );
 
-                if ( ddlDocumentType.SelectedIndex > 0 )
+                var filteredDocumentTypeIds = new List<int>();
+                var filteredDocumentTypes = GetFilteredDocumentTypes();
+                if ( filteredDocumentTypes.Any() )
                 {
-                    int filterDocumentTypeId = ddlDocumentType.SelectedValueAsInt().Value;
-                    documents = documents.Where( d => d.DocumentTypeId == filterDocumentTypeId );
+                    filteredDocumentTypeIds = filteredDocumentTypes.Select( a => a.Id ).ToList();
                 }
 
-                if ( GetAttributeValue( AttributeKeys.DocumentTypes ).IsNotNullOrWhiteSpace() )
+                documents = documents.Where( d => filteredDocumentTypeIds.Contains( d.DocumentTypeId ) );
+
+                if ( ddlDocumentType.SelectedIndex > 0 )
                 {
-                    var filteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
-                    documents = documents.Where( d => filteredDocumentTypes.Contains( d.DocumentTypeId ) );
+                    var filterDocumentTypeId = ddlDocumentType.SelectedValueAsInt().Value;
+                    documents = documents.Where( d => d.DocumentTypeId == filterDocumentTypeId );
                 }
 
                 gFileList.DataSource = documents.ToList();

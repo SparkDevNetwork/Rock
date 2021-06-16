@@ -63,7 +63,7 @@ namespace Rock.Model
         public int? GroupLocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the the group's location type name at this point in history (Group.GroupLocation.GroupLocationTypeValue.Value)
+        /// Gets or sets the group's location type name at this point in history (Group.GroupLocation.GroupLocationTypeValue.Value)
         /// </summary>
         /// <value>
         /// The name of the group location type.
@@ -187,7 +187,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static GroupLocationHistorical CreateCurrentRowFromGroupLocation( GroupLocation groupLocation, DateTime effectiveDateTime )
         {
-            var locationName = groupLocation.Location?.ToString();
+            var locationName = groupLocation.Location?.ToString( true );
 
             var groupLocationHistoricalCurrent = new GroupLocationHistorical
             {

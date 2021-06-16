@@ -1,0 +1,14 @@
+
+## NOTE: this isn't documentated at https://sandbox.gotnpgateway.com/docs/api/ 
+
+POST https://sandbox.gotnpgateway.com/api/recurring/subscription/search  HTTP/1.1
+content-type: application/json
+Authorization: api_1D4yJCYJNXV3MqnOmAlEMHmYYeg
+
+{
+    "created_at": {
+      "start_date": "2020-07-01T00:00:00Z",
+      "end_date": "2020-11-30T00:00:00Z"
+    },
+    "limit": 0
+}

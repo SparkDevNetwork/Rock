@@ -92,6 +92,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            target.AttendanceTypeValueId = source.AttendanceTypeValueId;
             target.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             target.DeclineReasonValueIds = source.DeclineReasonValueIds;
             target.DidNotOccur = source.DidNotOccur;

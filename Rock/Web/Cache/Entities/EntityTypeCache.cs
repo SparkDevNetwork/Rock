@@ -179,6 +179,24 @@ namespace Rock.Web.Cache
         public bool IsIndexingEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance has achievements enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is achievements enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsAchievementsEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is message bus event publish enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is message bus event publish enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessageBusEventPublishEnabled { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
         /// </summary>
         /// <value>
@@ -405,6 +423,8 @@ namespace Rock.Web.Cache
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;
+            IsAchievementsEnabled = entityType.IsAchievementsEnabled;
+            IsMessageBusEventPublishEnabled = entityType.IsMessageBusEventPublishEnabled;
             AttributesSupportPrePostHtml = entityType.AttributesSupportPrePostHtml;
             IsIndexingSupported = entityType.IsIndexingSupported;
             IndexResultTemplate = entityType.IndexResultTemplate;

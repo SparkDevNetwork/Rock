@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
+
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -395,7 +395,17 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IQueryable<T> GetByIds( List<int> ids )
         {
-            return Queryable().Where( t => ids.Contains( t.Id ) );
+            if ( ids.Count == 1 )
+            {
+                // if we only have 1 Id in our list, we don't have to use Contains
+                // Contains is less efficient, since Linq has to Recompile the SQL everytime. See https://docs.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper#41-using-ienumerabletcontainstt-value
+                int id = ids[0];
+                return Queryable().Where( t => t.Id == id );
+            }
+            else
+            {
+                return Queryable().Where( t => ids.Contains( t.Id ) );
+            }
         }
 
         /// <summary>
@@ -406,7 +416,17 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual IQueryable<T> GetByGuids( List<Guid> guids )
         {
-            return Queryable().Where( t => guids.Contains( t.Guid ) );
+            if ( guids.Count == 1 )
+            {
+                // if we only have 1 Guid in our list, we don't have to use Contains
+                // Contains is less efficient, since Linq has to Recompile the SQL everytime. See https://docs.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper#41-using-ienumerabletcontainstt-value
+                Guid guid = guids[0];
+                return Queryable().Where( t => t.Guid == guid );
+            }
+            else
+            {
+                return Queryable().Where( t => guids.Contains( t.Guid ) );
+            }
         }
 
 
@@ -548,9 +568,13 @@ namespace Rock.Data
 
                 items.RemoveAt( oldIndex );
                 if ( newIndex >= items.Count )
+                {
                     items.Add( movedItem );
+                }
                 else
+                {
                     items.Insert( newIndex, movedItem );
+                }
 
                 int order = 0;
                 foreach ( T item in items )

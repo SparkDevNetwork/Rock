@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -124,7 +122,7 @@ namespace Rock.Web.Cache
         internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, Func<List<string>> keyFactory = null )
         {
             string qualifiedKey = QualifiedKey( key );
-            var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
+            var value = RockCacheManager<T>.Instance.Get( qualifiedKey );
 
             if ( value != null )
             {
@@ -171,7 +169,7 @@ namespace Rock.Web.Cache
         internal static void AddToAllIds( string key, Func<List<string>> keyFactory = null )
         {
             // Get the list of all item ids
-            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
+            var allKeys = RockCacheManager<List<string>>.Instance.Get( AllKey, _AllRegion );
             if ( allKeys != null && allKeys.Contains( key ) )
             {
                 // already has it so no need to update the cache
@@ -210,7 +208,7 @@ namespace Rock.Web.Cache
         /// <param name="keyFactory">All keys factory.</param>
         internal protected static List<string> GetOrAddKeys( Func<List<string>> keyFactory )
         {
-            var value = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
+            var value = RockCacheManager<List<string>>.Instance.Get( AllKey, _AllRegion );
             if ( value != null )
             {
                 return value;
@@ -294,7 +292,7 @@ namespace Rock.Web.Cache
         {
             var qualifiedKey = QualifiedKey( key );
 
-            RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+            RockCacheManager<T>.Instance.Remove( qualifiedKey );
         }
 
         /// <summary>
@@ -302,7 +300,7 @@ namespace Rock.Web.Cache
         /// </summary>
         internal static void FlushAllItems()
         {
-            var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
+            var allIds = RockCacheManager<List<string>>.Instance.Get( AllKey, _AllRegion ) ?? new List<string>();
             foreach( var id in allIds )
             {
                 FlushItem( id );
@@ -317,9 +315,11 @@ namespace Rock.Web.Cache
         {
             FlushItem( key );
 
-            var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
+            var allIds = RockCacheManager<List<string>>.Instance.Get( AllKey, _AllRegion ) ?? new List<string>();
             if ( !allIds.Contains( key ) )
+            {
                 return;
+            }
 
             lock ( _obj )
             {
@@ -341,10 +341,10 @@ namespace Rock.Web.Cache
             }
             else
             {
-                RockCacheManager<T>.Instance.Cache.Clear();
+                RockCacheManager<T>.Instance.Clear();
             }
             
-            RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
+            RockCacheManager<List<string>>.Instance.Remove( AllKey, _AllRegion );
         }
 
 

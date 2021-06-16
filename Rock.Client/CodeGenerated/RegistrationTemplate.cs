@@ -103,6 +103,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public bool IsRegistrationMeteringEnabled { get; set; }
+
+        /// <summary />
         public bool LoginRequired { get; set; }
 
         /// <summary />
@@ -121,6 +124,9 @@ namespace Rock.Client
 
         /// <summary />
         public Rock.Client.Enums.RegistrationNotify Notify { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
 
         /// <summary />
         public string PaymentReminderEmailTemplate { get; set; }
@@ -266,12 +272,14 @@ namespace Rock.Client
             this.GroupMemberStatus = source.GroupMemberStatus;
             this.GroupTypeId = source.GroupTypeId;
             this.IsActive = source.IsActive;
+            this.IsRegistrationMeteringEnabled = source.IsRegistrationMeteringEnabled;
             this.LoginRequired = source.LoginRequired;
             this.MaxRegistrants = source.MaxRegistrants;
             this.MinimumInitialPayment = source.MinimumInitialPayment;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Notify = source.Notify;
+            this.PaymentRedirectVendor = source.PaymentRedirectVendor;
             this.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             this.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             this.PaymentReminderFromName = source.PaymentReminderFromName;

@@ -32,7 +32,7 @@ namespace Rock.Net
     /// <summary>
     /// Provides an abstraction from user-code and the incoming request. The user code (such as
     /// a block, page or API callback) does not need to interact directly with any low-level
-    /// request objects. This allos for easier testing as well as adding new request types.
+    /// request objects. This allows for easier testing as well as adding new request types.
     /// </summary>
     public class RockRequestContext
     {
@@ -207,7 +207,7 @@ namespace Rock.Net
                 }
 
                 //
-                // Determine the the entity type in question.
+                // Determine the entity type in question.
                 //
                 var entityName = kvp.Key.Substring( 16 );
                 var type = EntityTypeCache.All()
@@ -248,6 +248,40 @@ namespace Rock.Net
 
                     return entity;
                 } ) );
+            }
+        }
+
+        /// <summary>
+        /// Adds the context entities for page.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        internal virtual void AddContextEntitiesForPage( PageCache pageCache )
+        {
+            foreach ( var pageContext in pageCache.PageContexts )
+            {
+                var entityType = EntityTypeCache.Get( pageContext.Key )?.GetEntityType();
+                if ( entityType == null )
+                {
+                    continue;
+                }
+
+                int? contextId = GetPageParameter( pageContext.Value ).AsIntegerOrNull();
+                if ( contextId.HasValue )
+                {
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        return Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+                    } ) );
+                }
+
+                Guid? contextGuid = GetPageParameter( pageContext.Value ).AsGuidOrNull();
+                if ( contextGuid.HasValue )
+                {
+                    ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
+                    {
+                        return Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+                    } ) );
+                }
             }
         }
 

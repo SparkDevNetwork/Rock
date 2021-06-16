@@ -38,7 +38,13 @@
           <tr>
             <td data-dateformat="M/D/YY">{{ action.Activity.Workflow.CreatedDateTime | Date:'M/d/yy' }}</td>
             <td>
-              <a href='/{% if Role == '0' %}WorkflowEntry/{{ action.Activity.Workflow.WorkflowTypeId }}{% else %}Workflow{% endif %}/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}{% if role == '0' %} ({{ action.Activity.ActivityType.Name }}){% endif %}</a>
+              {% if Role == 0 %}
+                {%- comment -%}Role is 'Assigned To', go to WorkflowEntry page {%- endcomment -%}
+                <a href='/WorkflowLaunch/{{ action.Activity.Workflow.WorkflowTypeId }}/{{ action.Activity.Workflow.Guid }}'>{{ action.Activity.Workflow.Name }} ({{ action.Activity.ActivityType.Name }})</a>
+              {% else %}
+                {%- comment -%}Role is 'Initiated', go to Workflow Detail page {%- endcomment -%}
+                <a href='/Workflow/{{ action.Activity.Workflow.Id }}'>{{ action.Activity.Workflow.Name }}</a>
+              {% endif %}
               {% if action.Activity.Workflow.Status != 'Active' %}
               <span class='label label-info'>{{ action.Activity.Workflow.Status }}</span>
               {% endif %}

@@ -70,6 +70,30 @@ namespace Rock.Data
         #region Models
 
         /// <summary>
+        /// Gets or sets the AchievementAttempts.
+        /// </summary>
+        /// <value>
+        /// The AchievementAttempts.
+        /// </value>
+        public DbSet<AchievementAttempt> AchievementAttempts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the AchievementTypes.
+        /// </summary>
+        /// <value>
+        /// The AchievementTypes.
+        /// </value>
+        public DbSet<AchievementType> AchievementTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<AchievementTypePrerequisite> AchievementTypePrerequisites { get; set; }
+
+        /// <summary>
         /// Gets or sets the analytics dim attendance locations.
         /// </summary>
         /// <value>
@@ -342,12 +366,36 @@ namespace Rock.Data
         public DbSet<AuditDetail> AuditDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the Auth Clients.
+        /// </summary>
+        /// <value>
+        /// the Auth Clients.
+        /// </value>
+        public DbSet<AuthClient> AuthClients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Claim.
+        /// </summary>
+        /// <value>
+        /// The Auth Claim.
+        /// </value>
+        public DbSet<AuthClaim> AuthClaims { get; set; }
+                
+        /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
         /// <value>
         /// the Auths.
         /// </value>
         public DbSet<Auth> Auths { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Auth Scope.
+        /// </summary>
+        /// <value>
+        /// The Auth Scope.
+        /// </value>
+        public DbSet<AuthScope> AuthScopes { get; set; }
 
         /// <summary>
         /// Gets or sets the background checks.
@@ -460,6 +508,14 @@ namespace Rock.Data
         /// The communication recipients.
         /// </value>
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication response attachments.
+        /// </summary>
+        /// <value>
+        /// The communication response attachments.
+        /// </value>
+        public DbSet<CommunicationResponseAttachment> CommunicationResponseAttachments { get; set; }
 
         /// <summary>
         /// Gets or sets the communication responses.
@@ -878,6 +934,22 @@ namespace Rock.Data
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlert> FinancialTransactionAlerts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The type of the financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlertType> FinancialTransactionAlertTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
@@ -1214,6 +1286,30 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the media accounts.
+        /// </summary>
+        /// <value>
+        /// The media accounts.
+        /// </value>
+        public DbSet<MediaAccount> MediaAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media elements.
+        /// </summary>
+        /// <value>
+        /// The media elements.
+        /// </value>
+        public DbSet<MediaElement> MediaElements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media folders.
+        /// </summary>
+        /// <value>
+        /// The media folders.
+        /// </value>
+        public DbSet<MediaFolder> MediaFolders { get; set; }
+
+        /// <summary>
         /// Gets or sets the merge templates.
         /// </summary>
         /// <value>
@@ -1542,6 +1638,14 @@ namespace Rock.Data
         public DbSet<RegistrationRegistrantFee> RegistrationRegistrantFees { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration sessions.
+        /// </summary>
+        /// <value>
+        /// The registration sessions.
+        /// </value>
+        public DbSet<RegistrationSession> RegistrationSessions { get; set; }
+
+        /// <summary>
         /// Gets or sets the registration templates.
         /// </summary>
         /// <value>
@@ -1790,36 +1894,12 @@ namespace Rock.Data
         public DbSet<Streak> Streaks { get; set; }
 
         /// <summary>
-        /// Gets or sets the StreakAchievementAttempts.
-        /// </summary>
-        /// <value>
-        /// The StreakAchievementAttempts.
-        /// </value>
-        public DbSet<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
-
-        /// <summary>
         /// Gets or sets the StreakTypes.
         /// </summary>
         /// <value>
         /// The StreakTypes.
         /// </value>
         public DbSet<StreakType> StreakTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the StreakTypeAchievementTypes.
-        /// </summary>
-        /// <value>
-        /// The StreakTypeAchievementTypes.
-        /// </value>
-        public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the streak type achievement type prerequisites.
-        /// </summary>
-        /// <value>
-        /// The streak type achievement type prerequisites.
-        /// </value>
-        public DbSet<StreakTypeAchievementTypePrerequisite> StreakTypeAchievementTypePrerequisites { get; set; }
 
         /// <summary>
         /// Gets or sets the StreakTypeExclusions.
@@ -1870,6 +1950,30 @@ namespace Rock.Data
         /// the Users.
         /// </value>
         public DbSet<UserLogin> UserLogins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm nodes.
+        /// </summary>
+        /// <value>
+        /// The web farm nodes.
+        /// </value>
+        public DbSet<WebFarmNode> WebFarmNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node logs.
+        /// </summary>
+        /// <value>
+        /// The web farm node logs.
+        /// </value>
+        public DbSet<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.
@@ -1976,7 +2080,7 @@ namespace Rock.Data
 
         /// <summary>
         /// This method is called when the context has been initialized, but
-        /// before the model has been locked down and used to initialize the context. 
+        /// before the model has been locked down and used to initialize the context.
         /// </summary>
         /// <param name="modelBuilder">The builder that defines the model for the context being created.</param>
         protected override void OnModelCreating( DbModelBuilder modelBuilder )
@@ -2037,7 +2141,7 @@ namespace Rock.Data
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class ContextHelper
     {
@@ -2047,6 +2151,7 @@ namespace Rock.Data
         /// <param name="modelBuilder">The model builder.</param>
         public static void AddConfigurations( DbModelBuilder modelBuilder )
         {
+            modelBuilder.Conventions.Add<DecimalPrecisionAttributeConvention>();
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly( typeof( RockContext ).Assembly );
         }

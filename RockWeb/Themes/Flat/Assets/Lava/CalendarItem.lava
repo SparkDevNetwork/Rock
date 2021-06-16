@@ -80,6 +80,8 @@
       {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
       {% if eventItemOccurrenceLinkagesCount > 0 %}
         {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+          {% if eventItemOccurrenceLinkage.RegistrationInstance == null %}
+
             {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
             {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
             {% assign showRegistration = true %}
@@ -108,14 +110,14 @@
                 {% if eventItemOccurrenceLinkagesCount == 1 %}
                   {% assign registrationButtonText = statusLabel %}
                 {% else %}
-                  {% assign registrationButtonText = statusLabel | Plus:' for ' | Plus:eventItemOccurrenceLinkage.PublicName %}
+                  {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
                 {% endif %}
 
                 {% if statusLabel == 'Full' %}
                     {% if eventItemOccurrenceLinkagesCount == 1 %}
                       {% assign registrationButtonText = 'Registration Full' %}
                     {% else %}
-                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Plus: ' (Registration Full) ' %}
+                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Append:' (Registration Full) ' %}
                     {% endif %}
                     <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
                 {% else %}
@@ -128,6 +130,7 @@
             {% else %}
               <p>{{ registrationMessage }}</p>
             {% endif %}
+          {% endif %}
         {% endfor %}
       {% endif %}
     </div>

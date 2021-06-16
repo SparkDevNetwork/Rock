@@ -22,6 +22,26 @@ namespace Rock.SystemGuid
     public static class EntityType
     {
         /// <summary>
+        /// The achievement attempt
+        /// </summary>
+        public const string ACHIEVEMENT_ATTEMPT = "5C144B51-3D2E-4BC2-B6C7-7E4CB890E15F";
+
+        /// <summary>
+        /// The achievement type
+        /// </summary>
+        public const string ACHIEVEMENT_TYPE = "0E99356C-0DEA-4F24-944E-21CD5FA83B9E";
+
+        /// <summary>
+        /// The achievement type prerequisite
+        /// </summary>
+        public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Attendance entity.
+        /// </summary>
+        public const string ATTENDANCE = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E";
+
+        /// <summary>
         /// The guid for the Rock.Model.Attribute entity.
         /// </summary>
         public const string ATTRIBUTE = "5997C8D3-8840-4591-99A5-552919F90CBD";
@@ -188,6 +208,11 @@ namespace Rock.SystemGuid
         public const string HTTP_MODULE_COMPONENT = "EDE69F48-5E05-4260-B360-DA37DFD1AB83";
 
         /// <summary>
+        /// The guid for <see cref="Rock.Model.Interaction"/>
+        /// </summary>
+        public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
+
+        /// <summary>
         /// The guid for the Rock.Model.MetricCategory entity
         /// </summary>
         public const string METRICCATEGORY = "3D35C859-DF37-433F-A20A-0FFD0FCB9862";
@@ -243,6 +268,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CMS_HERO_BLOCK_TYPE = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView
+        /// </summary>
+        public const string MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
         /// </summary>
         public const string MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9";
@@ -253,9 +283,24 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE = "5A26F32F-892E-4E76-B64A-0F54A77C863D";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
+        /// </summary>
+        public const string MOBILE_EVENTS_CALENDAREVENTITEMOCCURRENCEVIEW_BLOCK_TYPE = "04C43693-C524-4679-9F65-047F94A74CAB";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CommunicationListSubscribe
         /// </summary>
         public const string MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE = "C4B81A58-6380-4C38-85E8-0536E584310E";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.EventItemOccurrenceListByAudienceLava
+        /// </summary>
+        public const string MOBILE_EVENTS_EVENTITEMOCCURRENCELISTBYAUDIENCELAVA_BLOCK_TYPE = "95BAF1B3-5B4B-430C-BDCC-268142C708BD";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSession
@@ -301,6 +346,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE = "F8E56BC0-E9D1-44A4-9900-46589A1FB784";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Security.OnboardPerson"/>.
+        /// </summary>
+        public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
         /// The guid for the Rock.Model.Note entity
@@ -378,6 +428,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
 
         /// <summary>
+        /// The guid for <see cref="Rock.Model.Streak"/>
+        /// </summary>
+        public const string STREAK = "D953B0A5-0065-4624-8844-10010DE01E5C";
+
+        /// <summary>
         /// The guid for the system communication entity
         /// </summary>
         public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
@@ -442,5 +497,10 @@ namespace Rock.SystemGuid
         /// The SMS Conversation Action
         /// </summary>
         public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
+
+        /// <summary>
+        /// Rock.Model.Site EntityType guid
+        /// </summary>
+        public const string SITE = "7244C10B-5D87-467B-A7F5-12DC29910CA8";
     }
 }

@@ -16,9 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-
 using CacheManager.Core;
 using CacheManager.Core.Internal;
+using Rock.Bus.Message;
 
 namespace Rock.Web.Cache
 {
@@ -78,7 +78,17 @@ namespace Rock.Web.Cache
         /// <value>
         /// The cache.
         /// </value>
-        public BaseCacheManager<T> Cache
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Do not access the cache manager directly. Instead use the method available on this class." )]
+        public BaseCacheManager<T> Cache => CacheManager;
+
+        /// <summary>
+        /// Gets the cache.
+        /// </summary>
+        /// <value>
+        /// The cache.
+        /// </value>
+        private BaseCacheManager<T> CacheManager
         {
             get
             {
@@ -100,20 +110,30 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
+            bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean()?? false;
+
             bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean()?? false;
             if ( redisEnabled == false )
             {
-                return new ConfigurationBuilder( "InProcess" )
-                .WithDictionaryHandle()
-                .EnableStatistics()
-                .Build();
+                var config = new ConfigurationBuilder( "InProcess" )
+                .WithDictionaryHandle();
+                if ( cacheStatisticsEnabled )
+                {
+                    config = config.EnableStatistics().EnablePerformanceCounters();
+                }
+                else
+                {
+                    config = config.DisablePerformanceCounters().DisableStatistics();
+                }
+
+                return config.Build();
             }
 
             string redisPassword = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_PASSWORD ) ?? string.Empty;
             string[] redisEndPointList = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENDPOINT_LIST )?.Split( ',' );
             int redisDbIndex = Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_DATABASE_NUMBER )?.AsIntegerOrNull() ?? 0;
 
-            return new ConfigurationBuilder( "InProcess With Redis Backplane" )
+            var cacheConfig = new ConfigurationBuilder( "InProcess With Redis Backplane" )
                 .WithJsonSerializer()
                 .WithDictionaryHandle()
                 .And
@@ -142,9 +162,18 @@ namespace Rock.Web.Cache
                 .WithMaxRetries( 100 )
                 .WithRetryTimeout( 10 )
                 .WithRedisBackplane( "redis" )
-                .WithRedisCacheHandle( "redis", true )
-                .EnableStatistics()
-                .Build();
+                .WithRedisCacheHandle( "redis", true );
+
+            if ( cacheStatisticsEnabled )
+            {
+                cacheConfig = cacheConfig.EnableStatistics().EnablePerformanceCounters();
+            }
+            else
+            {
+                cacheConfig = cacheConfig.DisablePerformanceCounters().DisableStatistics();
+            }
+
+            return cacheConfig.Build();
         }
 
         /// <summary>
@@ -191,28 +220,51 @@ namespace Rock.Web.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? CacheManager.GetCacheItem( key, region ) : CacheManager.GetCacheItem( key );
                 if ( cacheItem != null )
                 {
-                    Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
+                    CacheManager.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
                 }
                 else
                 {
                     cacheItem = region.IsNotNullOrWhiteSpace() ?
                         new CacheItem<T>( key, region, updateValue, ExpirationMode.Absolute, expiration ) :
                         new CacheItem<T>( key, updateValue, ExpirationMode.Absolute, expiration );
-                    Cache.Add( cacheItem );
+                    CacheManager.Add( cacheItem );
                 }
             }
 
             if ( region.IsNotNullOrWhiteSpace() )
             {
-                Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, region, updateValue, v => updateValue );
+                UpdateCacheReferences( key, region, updateValue );
             }
             else
             {
-                Cache.AddOrUpdate( key, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, updateValue, v => updateValue );
+                UpdateCacheReferences( key, region, updateValue );
             }
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T Get( string key )
+        {
+            return CacheManager.Get( key );
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and region and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public T Get( string key, string region )
+        {
+            return CacheManager.Get( key, region );
         }
 
         /// <summary>
@@ -220,7 +272,58 @@ namespace Rock.Web.Cache
         /// </summary>
         public void Clear()
         {
-            Cache.Clear();
+            CacheWasUpdatedMessage.Publish<T>();
+        }
+
+        /// <summary>
+        /// Receives the clear message from the message bus.
+        /// </summary>
+        internal void ReceiveClearMessage()
+        {
+            CacheManager.Clear();
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool Remove( string key )
+        {
+            CacheWasUpdatedMessage.Publish<T>( key );
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key and region.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public bool Remove( string key, string region )
+        {
+            CacheWasUpdatedMessage.Publish<T>( key, region );
+            return true;
+        }
+
+        /// <summary>
+        /// Receives the remove message from the bus.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        internal void ReceiveRemoveMessage( string key )
+        {
+            CacheManager.Remove( key );
+        }
+
+        /// <summary>
+        /// Receives the remove message from the bus.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        internal void ReceiveRemoveMessage( string key, string region )
+        {
+            CacheManager.Remove( key, region );
         }
 
         /// <summary>
@@ -242,7 +345,7 @@ namespace Rock.Web.Cache
 
             //var cacheStatistics = new CacheItemStatistics( typeof( T ).Name );
 
-            foreach ( var handle in Cache.CacheHandles )
+            foreach ( var handle in CacheManager.CacheHandles )
             {
                 var handleStatistics = new CacheHandleStatistics( handle.Configuration.HandleType.Name );
                 cacheStatistics.HandleStats.Add( handleStatistics );
@@ -256,6 +359,27 @@ namespace Rock.Web.Cache
 
             return cacheStatistics;
         }
+
+        #region Private Methods
+        /// <summary>
+        /// Updates the cache references for lists of strings and objects. This allows us to retrieve all items from the cache.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <param name="item">Type of the item.</param>
+        private void UpdateCacheReferences( string key, string region, T item )
+        {
+            if ( item is List<string> )
+            {
+                RockCache.StringCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+
+            if ( item is List<object> )
+            {
+                RockCache.ObjectCacheKeyReferences.Add( new RockCache.CacheKeyReference { Key = key, Region = region } );
+            }
+        }
+        #endregion
     }
 
     /// <summary>

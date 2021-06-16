@@ -11,6 +11,9 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AchievementAttempt.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AchievementType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AchievementTypePrerequisite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimAttendanceLocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimCampus.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsDimFamilyCurrent.cs" />
@@ -49,6 +52,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Audit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuditDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Auth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuthClaim.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuthClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AuthScope.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Badge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BenevolenceRequest.cs" />
@@ -65,6 +71,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponseAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
@@ -118,6 +125,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlertType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetailExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionExport.cs" />
@@ -154,6 +163,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\GroupTypeRole.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\History.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\HtmlContent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\IdentityVerification.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\IdentityVerificationCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Interaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionChannel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\InteractionComponent.cs" />
@@ -208,6 +219,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationInstance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationRegistrant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationRegistrantFee.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFee.cs" />
@@ -241,10 +253,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepWorkflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepWorkflowTrigger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Streak.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakAchievementAttempt.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeAchievementType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StreakTypeExclusion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemCommunication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SystemEmail.cs" />
@@ -253,6 +262,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\TaggedItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLogin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNodeLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNodeMetric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Workflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionForm.cs" />

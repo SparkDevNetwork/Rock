@@ -290,10 +290,10 @@ namespace Rock.Model
                     if ( !string.IsNullOrWhiteSpace( groupSchedule.iCalendarContent ) )
                     {
                         // If schedule has an iCal schedule, get all the past occurrences 
-                        foreach ( var occurrence in groupSchedule.GetOccurrences( startDate, endDate ) )
+                        foreach ( var occurrence in groupSchedule.GetICalOccurrences( startDate, endDate ) )
                         {
                             var scheduleOccurrence = new ScheduleOccurrence(
-                                occurrence.Period.StartTime.Date, occurrence.Period.StartTime.TimeOfDay, groupSchedule.Id, groupSchedule.Name );
+                                occurrence.Period.StartTime.Date, occurrence.Period.StartTime.Value.TimeOfDay, groupSchedule.Id, groupSchedule.Name );
                             if ( !existingDates.Contains( scheduleOccurrence.Date ) )
                             {
                                 newOccurrences.Add( scheduleOccurrence );

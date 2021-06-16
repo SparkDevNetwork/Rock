@@ -38,7 +38,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
+using static Rock.Security.Authorization;
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -722,6 +722,18 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
+            /*  
+                2/16/2021 - JME
+                The code below provides the opportunity for an external system to disable
+                partial postbacks. This was put in place to allow dynamic language translation
+                tools to be able to proxy Rock requests and translate the output. Partial postbacks
+                were not able to be translated.
+            */
+            if ( Request.Headers["Disable_Postbacks"].AsBoolean() )
+            {
+                _scriptManager.EnablePartialRendering = false;
+            }
+
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -919,7 +931,9 @@ namespace Rock.Web.UI
                     // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
-                    Response.Cookies[sidCookieName].Expires = DateTime.Now.AddDays( -1 );
+                    var cookie = Response.Cookies[sidCookieName];
+                    cookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
@@ -1037,6 +1051,12 @@ namespace Rock.Web.UI
                                 {
                                     ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextId.Value ) );
                                 }
+
+                                Guid? contextGuid = PageParameter( type.Name + "Guid" ).AsGuidOrNull();
+                                if ( contextGuid.HasValue )
+                                {
+                                    ModelContext.AddOrReplace( modelContextName, new Data.KeyEntity( contextGuid.Value ) );
+                                }
                             }
                         }
 
@@ -1047,6 +1067,12 @@ namespace Rock.Web.UI
                             if ( contextId.HasValue )
                             {
                                 ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextId.Value ) );
+                            }
+
+                            Guid? contextGuid = PageParameter( pageContext.Value ).AsGuidOrNull();
+                            if ( contextGuid.HasValue )
+                            {
+                                ModelContext.AddOrReplace( pageContext.Key, new Data.KeyEntity( contextGuid.Value ) );
                             }
                         }
 
@@ -1351,6 +1377,19 @@ namespace Rock.Web.UI
                         phLoadStats = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadStats );
 
+                        var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+                        var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+                        var cacheIndicator = isCacheEnabled ? "text-success" : "text-danger";
+                        var cacheEnabled = isCacheEnabled ? "enabled" : "disabled";
+
+                        var lbCacheControl = new LinkButton();
+                        lbCacheControl.Click += lbCacheControl_Click;
+                        lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
+                        lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
+                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
+                        adminFooter.Controls.Add( lbCacheControl );
+
                         // If the current user is Impersonated by another user, show a link on the admin bar to login back in as the original user
                         var impersonatedByUser = Session["ImpersonatedByUser"] as UserLogin;
                         var currentUserIsImpersonated = ( HttpContext.Current?.User?.Identity?.Name ?? string.Empty ).StartsWith( "rckipid=" );
@@ -1468,11 +1507,9 @@ namespace Rock.Web.UI
                     // Check to see if page output should be cached.  The RockRouteHandler
                     // saves the PageCacheData information for the current page to memorycache
                     // so it should always exist
-                    if ( _pageCache.OutputCacheDuration > 0 )
+                    if ( _pageCache.CacheControlHeader != null )
                     {
-                        Response.Cache.SetCacheability( System.Web.HttpCacheability.Public );
-                        Response.Cache.SetExpires( RockDateTime.Now.AddSeconds( _pageCache.OutputCacheDuration ) );
-                        Response.Cache.SetValidUntilExpires( true );
+                        _pageCache.CacheControlHeader.SetupHttpCachePolicy( Response.Cache );
                     }
                 }
 
@@ -1530,54 +1567,26 @@ namespace Rock.Web.UI
                     Page.Form.Controls.Add( new Label
                     {
                         ID = "lblShowDebugTimings",
-                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
+                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped debug-timings' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
                     } );
                 }
             }
         }
 
-
         /// <summary>
-        /// The verify block type instance properties lock object
-        /// </summary>
-        private static readonly object _verifyBlockTypeInstancePropertiesLockObj = new object();
-
-        /// <summary>
-        /// Verifies the block type instance properties.
+        /// Verifies the block type instance properties to make sure they are compiled and have the attributes updated.
         /// </summary>
         private void VerifyBlockTypeInstanceProperties()
         {
-            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id ).ToList();
-            foreach ( int blockTypeId in blockTypesIdToVerify )
+            var blockTypesIdToVerify = _pageCache.Blocks.Select( a => a.BlockType ).Distinct().Where( a => a.IsInstancePropertiesVerified == false ).Select( a => a.Id );
+
+            if ( !blockTypesIdToVerify.Any() )
             {
-                Page.Trace.Warn( "\tCreating block attributes" );
-
-                try
-                {
-                    if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                    {
-                        // make sure that only one thread is trying to compile block properties so that we don't get collisions and unneeded compiler overhead
-                        lock ( _verifyBlockTypeInstancePropertiesLockObj )
-                        {
-                            if ( BlockTypeCache.Get( blockTypeId )?.IsInstancePropertiesVerified == false )
-                            {
-                                using ( var rockContext = new RockContext() )
-                                {
-                                    var blockTypeCache = BlockTypeCache.Get( blockTypeId );
-                                    Type blockCompiledType = blockTypeCache.GetCompiledType();
-
-                                    bool attributesUpdated = RockBlock.CreateAttributes( rockContext, blockCompiledType, blockTypeId );
-                                    BlockTypeCache.Get( blockTypeId )?.MarkInstancePropertiesVerified( true );
-                                }
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // ignore if the block couldn't be compiled, it'll get logged and shown when the page tries to load the block into the page
-                }
+                return;
             }
+
+            Page.Trace.Warn( "\tCreating block attributes" );
+            BlockTypeService.VerifyBlockTypeInstanceProperties( blockTypesIdToVerify.ToArray() );
         }
 
         /// <summary>
@@ -1803,7 +1812,7 @@ namespace Rock.Web.UI
                     this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
-                string showTimingsUrl = this.Request.Url.ToString();
+                string showTimingsUrl = this.Request.UrlProxySafe().ToString();
                 if ( !showTimingsUrl.Contains( "ShowDebugTimings" ) )
                 {
                     if ( showTimingsUrl.Contains( "?" ) )
@@ -2147,7 +2156,7 @@ Sys.Application.add_load(function () {
                 return string.Format( "{0}://{1}{2}", protocol, Context.Request.UrlProxySafe().Authority, virtualPath );
             }
 
-            return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
+            return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();
         }
 
         /// <summary>
@@ -2205,9 +2214,9 @@ Sys.Application.add_load(function () {
                 {
                     if ( entity.Name.Equals( "Rock.Model.Person", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                        if ( keyModel.Id.HasValue || keyModel.Guid.HasValue )
                         {
-                            keyModel.Entity = new PersonService( new RockContext() )
+                            var qry = new PersonService( new RockContext() )
                                 .Queryable( true, true )
                                 .Include( p => p.MaritalStatusValue )
                                 .Include( p => p.ConnectionStatusValue )
@@ -2218,10 +2227,20 @@ Sys.Application.add_load(function () {
                                 .Include( p => p.TitleValue )
                                 .Include( p => p.GivingGroup )
                                 .Include( p => p.Photo )
-                                .Include( p => p.Aliases )
-                                .Where( p => p.Id == keyModel.Id ).FirstOrDefault();
+                                .Include( p => p.Aliases );
+
+                            if ( keyModel.Id.HasValue )
+                            {
+                                qry = qry.Where( p => p.Id == keyModel.Id.Value );
+                            }
+                            else
+                            {
+                                qry = qry.Where( p => p.Guid == keyModel.Guid.Value );
+                            }
+
+                            keyModel.Entity = qry.FirstOrDefault();
                         }
-                        else
+                        else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                         {
                             keyModel.Entity = new PersonService( new RockContext() ).GetByPublicKey( keyModel.Key );
                         }
@@ -2248,12 +2267,17 @@ Sys.Application.add_load(function () {
                             System.Data.Entity.DbContext dbContext = Reflection.GetDbContextForEntityType( modelType );
                             IService serviceInstance = Reflection.GetServiceForEntityType( modelType, dbContext );
 
-                            if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
+                            if ( keyModel.Id.HasValue )
                             {
                                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                             }
-                            else
+                            else if ( keyModel.Guid.HasValue )
+                            {
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                                keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Guid } ) as Rock.Data.IEntity;
+                            }
+                            else if ( keyModel.Key.IsNotNullOrWhiteSpace() )
                             {
                                 MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetByPublicKey" );
                                 keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
@@ -2300,7 +2324,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2333,7 +2357,7 @@ Sys.Application.add_load(function () {
             contextCookie.Values[entityType.FullName] = null;
             contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
 
-            Response.Cookies.Add( contextCookie );
+            AddOrUpdateCookie( contextCookie );
 
             if ( refreshPage )
             {
@@ -2391,7 +2415,9 @@ Sys.Application.add_load(function () {
                 HttpCookie httpCookie = Request.Cookies["rock_wifi"];
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
-                    Response.Cookies["rock_wifi"].Expires = DateTime.Now.AddDays( -1 );
+                    var wiFiCookie = Response.Cookies["rock_wifi"];
+                    wiFiCookie.Expires = DateTime.Now.AddDays( -1 );
+                    AddOrUpdateCookie( wiFiCookie );
                 }
             }
         }
@@ -2404,6 +2430,67 @@ Sys.Application.add_load(function () {
         public string GetContextCookieName( bool pageSpecific )
         {
             return "Rock_Context" + ( pageSpecific ? ( ":" + PageId.ToString() ) : "" );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="expirationDate">The expiration date.</param>
+        public static void AddOrUpdateCookie( string name, string value, DateTime? expirationDate )
+        {
+            var cookie = new HttpCookie( name )
+            {
+                Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                Value = value
+            };
+
+            AddOrUpdateCookie( cookie );
+        }
+
+        /// <summary>
+        /// Creates/Overwrites the specified cookie using the global default for the SameSite setting.
+        /// This method creates a new cookie using a deep clone of the provided cookie to ensure a cookie written to the response
+        /// does not contain properties that are not compatible with .Net 4.5.2 (e.g. SameSite).
+        /// Removes the cookie from the Request and Response using the cookie name, then adds the cloned clean cookie to the Response.
+        /// </summary>
+        /// <param name="cookie">The cookie.</param>
+        public static void AddOrUpdateCookie( HttpCookie cookie )
+        {
+            // If the samesite setting is not in the Path then add it
+            if ( cookie.Path.IsNullOrWhiteSpace() || !cookie.Path.Contains( "SameSite" ) )
+            {
+                SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+
+                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+                cookie.Path += sameSiteCookieValue;
+            }
+
+            // Clone the cookie to prevent the SameSite property from making an appearence in our response.
+            var responseCookie = new HttpCookie( cookie.Name )
+            {
+                Domain = cookie.Domain,
+                Expires = cookie.Expires,
+                HttpOnly = cookie.HttpOnly,
+                Path = cookie.Path,
+                Secure = cookie.Secure,
+                Value = cookie.Value
+            };
+
+            HttpContext.Current.Request.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Remove( responseCookie.Name );
+            HttpContext.Current.Response.Cookies.Add( responseCookie );
+        }
+
+        /// <summary>
+        /// Gets the specified cookie. If the cookie is not found in the Request then it checks the Response, otherwise it will return null.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        public HttpCookie GetCookie( string name )
+        {
+            return Request.Cookies[name] ?? Response.Cookies[name] ?? null;
         }
 
         /// <summary>
@@ -2740,6 +2827,32 @@ Sys.Application.add_load(function () {
             {
                 parameters.Add( key, Page.RouteData.Values[key] );
             }
+
+            foreach ( string param in Request.QueryString.Keys )
+            {
+                if ( param != null )
+                {
+                    /*
+                        2021-01-07 ETD
+                        It is possible to get a route included in the list of QueryString.Keys when using a Page Route and the PageParameterFilter block.
+                        When this occurs then the Dictionary.Add() will get a duplicate key exception. Since this is a route we should keep it as such
+                        and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
+                        Route Key and QueryString Key the Route will take precedence.
+                    */
+                    parameters.AddOrIgnore( param, Request.QueryString[param] );
+                }
+            }
+
+            return parameters;
+        }
+
+        /// <summary>
+        /// Gets the page route and query string parameters.
+        /// </summary>
+        /// <returns>A case-insensitive <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string values, where the Key is the parameter name and the object is the value.</returns>
+        public Dictionary<string, object> QueryParameters()
+        {
+            var parameters = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
 
             foreach ( string param in Request.QueryString.Keys )
             {
@@ -3431,6 +3544,35 @@ Sys.Application.add_load(function () {
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
+        /// <summary>
+        /// Handles the Click event of the lbCacheControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbCacheControl_Click( object sender, EventArgs e )
+        {
+            var cacheControlCookie = Request.Cookies[RockCache.CACHE_CONTROL_COOKIE];
+            var isCacheEnabled = cacheControlCookie == null || cacheControlCookie.Value.AsBoolean();
+
+            if ( cacheControlCookie == null )
+            {
+                cacheControlCookie = new HttpCookie( RockCache.CACHE_CONTROL_COOKIE );
+            }
+
+            cacheControlCookie.Value = ( !isCacheEnabled ).ToString();
+
+            AddOrUpdateCookie( cacheControlCookie );
+
+            if ( PageReference != null )
+            {
+                string pageUrl = PageReference.BuildUrl();
+                if ( !string.IsNullOrWhiteSpace( pageUrl ) )
+                {
+                    Response.Redirect( pageUrl, false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+            }
+        }
         #endregion
     }
 

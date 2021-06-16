@@ -431,6 +431,8 @@ namespace RockWeb.Blocks.Connection
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
                     connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
                     connectionType.EnableRequestSecurity = cbEnableRequestSecurity.Checked;
+                    connectionType.ConnectionRequestDetailPageId = ppConnectionRequestDetail.PageId;
+                    connectionType.ConnectionRequestDetailPageRouteId = ppConnectionRequestDetail.PageRouteId;
 
                     foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
@@ -1027,6 +1029,29 @@ namespace RockWeb.Blocks.Connection
         #region ConnectionStatus Events
 
         /// <summary>
+        /// Handles the GridReorder event of the gStatuses control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gStatuses_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var movedItem = StatusesState.ElementAtOrDefault( e.OldIndex );
+
+            if ( movedItem != null )
+            {
+                StatusesState.RemoveAt( e.OldIndex );
+                StatusesState.Insert( e.NewIndex, movedItem );
+
+                for ( var i = 0; i < StatusesState.Count; i++ )
+                {
+                    StatusesState[i].Order = i;
+                }
+            }
+
+            BindConnectionStatusesGrid();
+        }
+
+        /// <summary>
         /// Handles the Delete event of the gStatuses control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1052,10 +1077,13 @@ namespace RockWeb.Blocks.Connection
                 connectionStatus = StatusesState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
+            bool isNew = false;
             if ( connectionStatus == null )
             {
                 connectionStatus = new ConnectionStatus();
+                isNew = true;
             }
+
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -1069,18 +1097,23 @@ namespace RockWeb.Blocks.Connection
             connectionStatus.IsActive = cbConnectionStatusIsActive.Checked;
             connectionStatus.IsDefault = cbIsDefault.Checked;
             connectionStatus.IsCritical = cbIsCritical.Checked;
+            connectionStatus.HighlightColor = cpStatus.Text;
             connectionStatus.AutoInactivateState = cbAutoInactivateState.Checked;
             if ( !connectionStatus.IsValid )
             {
                 return;
             }
 
-            if ( StatusesState.Any( a => a.Guid.Equals( connectionStatus.Guid ) ) )
+            
+            if ( isNew )
             {
-                StatusesState.RemoveEntity( connectionStatus.Guid );
+               /*
+                 SK - 22 Feb 2020
+                 Avoid removing and then adding Connection Type's Statuses on edit as it causes them to reorder
+               */
+                StatusesState.Add( connectionStatus );
             }
 
-            StatusesState.Add( connectionStatus );
             BindConnectionStatusesGrid();
             HideDialog();
         }
@@ -1131,18 +1164,19 @@ namespace RockWeb.Blocks.Connection
                 cbIsDefault.Checked = connectionStatus.IsDefault;
                 cbIsCritical.Checked = connectionStatus.IsCritical;
                 cbAutoInactivateState.Checked = connectionStatus.AutoInactivateState;
+                cpStatus.Value = connectionStatus.HighlightColor.IsNullOrWhiteSpace() ?
+                    ConnectionStatus.DefaultHighlightColor :
+                    connectionStatus.HighlightColor;
             }
             else
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    tbConnectionStatusName.Text = string.Empty;
-                    tbConnectionStatusDescription.Text = string.Empty;
-                    cbConnectionStatusIsActive.Checked = true;
-                    cbIsDefault.Checked = false;
-                    cbIsCritical.Checked = false;
-                    cbAutoInactivateState.Checked = false;
-                }
+                tbConnectionStatusName.Text = string.Empty;
+                tbConnectionStatusDescription.Text = string.Empty;
+                cbConnectionStatusIsActive.Checked = true;
+                cbIsDefault.Checked = false;
+                cbIsCritical.Checked = false;
+                cbAutoInactivateState.Checked = false;
+                cpStatus.Value = ConnectionStatus.DefaultHighlightColor;
             }
             hfConnectionTypeAddConnectionStatusGuid.Value = connectionStatusGuid.ToString();
             ShowDialog( "ConnectionStatuses", connectionStatus != null );
@@ -1153,8 +1187,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectionStatusesGrid()
         {
-            SetConnectionStatusListOrder( StatusesState );
-            gStatuses.DataSource = StatusesState.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name ).ToList();
+            gStatuses.DataSource = StatusesState.ToList();
             gStatuses.DataBind();
         }
 
@@ -1177,22 +1210,6 @@ namespace RockWeb.Blocks.Connection
         {
             int order = 0;
             itemList.OrderBy( a => a.Order ).ToList().ForEach( a => a.Order = order++ );
-        }
-
-
-        /// <summary>
-        /// Sets the attribute list order.
-        /// </summary>
-        /// <param name="attributeList">The attribute list.</param>
-        private void SetConnectionStatusListOrder( List<ConnectionStatus> connectionStatusList )
-        {
-            if ( connectionStatusList != null )
-            {
-                if ( connectionStatusList.Any() )
-                {
-                    connectionStatusList.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name ).ToList();
-                }
-            }
         }
 
         #endregion
@@ -1561,9 +1578,27 @@ namespace RockWeb.Blocks.Connection
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
+            if ( connectionType.ConnectionRequestDetailPageRoute != null )
+            {
+                ppConnectionRequestDetail.SetValue( connectionType.ConnectionRequestDetailPageRoute );
+            }
+            else
+            {
+                ppConnectionRequestDetail.SetValue( connectionType.ConnectionRequestDetailPage );
+            }
+
             ActivityTypesState = connectionType.ConnectionActivityTypes.ToList();
             WorkflowsState = connectionType.ConnectionWorkflows.ToList();
-            StatusesState = connectionType.ConnectionStatuses.ToList();
+            StatusesState = connectionType.ConnectionStatuses
+                .OrderBy( cs => cs.Order )
+                .ThenByDescending( cs => cs.IsDefault )
+                .ThenBy( cs => cs.Name )
+                .ToList();
+
+            for ( var i = 0; i < StatusesState.Count; i++ )
+            {
+                StatusesState[i].Order = i;
+            }
 
             var qualifierValue = connectionType.Id.ToString();
             var rockContext = new RockContext();

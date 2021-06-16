@@ -92,10 +92,13 @@ namespace Rock.Jobs
             }
 
             // Get the set of entity key values returned by the Data View.
-            var errorMessages = new List<string>();
-
             Stopwatch stopwatch = Stopwatch.StartNew();
-            var qry = dataView.GetQuery( null, rockContext, null, out errorMessages );
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
+            {
+                DbContext = rockContext
+            };
+
+            var qry = dataView.GetQuery( dataViewGetQueryArgs );
 
             var modelType = dataView.EntityType.GetType();
 

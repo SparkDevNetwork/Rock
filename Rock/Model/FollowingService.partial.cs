@@ -29,6 +29,38 @@ namespace Rock.Model
     public partial class FollowingService
     {
         /// <summary>
+        /// If the person is following, then removes the follow. If the person is not following, then adds. The value
+        /// returned indicates if the person is now following.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        public bool ToggleFollowing( int entityTypeId, int entityId, int personAliasId )
+        {
+            var followings = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == personAliasId )
+                .ToList();
+
+            if ( followings.Any() )
+            {
+                DeleteRange( followings );
+                return false;
+            }
+
+            Add( new Following
+            {
+                EntityTypeId = entityTypeId,
+                EntityId = entityId,
+                PersonAliasId = personAliasId
+            } );
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the entity query
         /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following
         /// </summary>

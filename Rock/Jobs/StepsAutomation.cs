@@ -65,7 +65,7 @@ namespace Rock.Jobs
 
         #region Constructors
 
-        /// <summary> 
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -157,11 +157,20 @@ namespace Rock.Jobs
             }
 
             // We can use the dataview to get the person alias id query
-            var dataviewQuery = dataview.GetQuery( null, rockContext, null, out var dataviewQueryErrors );
-
-            if ( dataviewQueryErrors != null && dataviewQueryErrors.Any() )
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                errorMessages.AddRange( dataviewQueryErrors );
+                DbContext = rockContext
+            };
+
+            IQueryable<IEntity> dataviewQuery;
+            try
+            {
+                dataviewQuery = dataview.GetQuery( dataViewGetQueryArgs );
+            }
+            catch ( Exception ex )
+            {
+                errorMessages.Add( ex.Message );
+                ExceptionLogService.LogException( ex );
                 return;
             }
 

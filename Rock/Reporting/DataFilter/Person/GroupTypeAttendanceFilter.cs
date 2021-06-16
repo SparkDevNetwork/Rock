@@ -208,7 +208,7 @@ namespace Rock.Reporting.DataFilter.Person
             var slidingDateRangePicker = controls[4] as SlidingDateRangePicker;
 
             // Row 1
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-6" );
@@ -219,7 +219,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             // Row 2
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-6" );
@@ -230,7 +230,7 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             // Row 3
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row form-row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "col-md-4" );
@@ -366,7 +366,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 if ( includeChildGroupTypes )
                 {
-                    var childGroupTypes = groupTypeService.GetAllAssociatedDescendents( groupType.Guid );
+                    var childGroupTypes = groupTypeService.GetCheckinAreaDescendants( groupType.Id );
                     if ( childGroupTypes.Any() )
                     {
                         groupTypeIds.AddRange( childGroupTypes.Select( a => a.Id ) );

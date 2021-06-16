@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Web.Utilities;
 
 namespace Rock.Utility.Settings
 {
@@ -80,6 +81,34 @@ namespace Rock.Utility.Settings
                             ?? AppDomain.CurrentDomain.BaseDirectory;
 
                 return path;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the machine.
+        /// </summary>
+        /// <value>
+        /// The name of the machine.
+        /// </value>
+        public string MachineName
+        {
+            get
+            {
+                return System.Environment.MachineName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public string AspNetVersion
+        {
+            get
+            {
+                return RockUpdateHelper.GetDotNetVersion();
             }
         }
 

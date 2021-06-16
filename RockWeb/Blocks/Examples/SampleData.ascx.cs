@@ -1555,6 +1555,10 @@ namespace RockWeb.Blocks.Examples
                 foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
                 {
                     attendance.PersonAliasId = aliasKeyValue.Value;
+
+                    // make sure the attendance has a unique guid
+                    attendance.Guid = Guid.NewGuid();
+
                     attendanceService.Add( attendance );
                 }
             }
@@ -2672,7 +2676,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( scheduleId, schedule.GetCalendarEvent().DTStart.Value );
+                    _scheduleTimes.Add( scheduleId, schedule.GetICalEvent().DtStart.Value );
                 }
             }
 
@@ -2689,7 +2693,7 @@ namespace RockWeb.Blocks.Examples
                         return;
                     }
 
-                    _scheduleTimes.Add( altScheduleId, schedule.GetCalendarEvent().DTStart.Value );
+                    _scheduleTimes.Add( altScheduleId, schedule.GetICalEvent().DtStart.Value );
                 }
             }
 
@@ -3190,7 +3194,6 @@ namespace RockWeb.Blocks.Examples
             {
                 byte[] imageData = webClient.DownloadData( imageUrl );
                 stopwatch.Stop();
-                Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 

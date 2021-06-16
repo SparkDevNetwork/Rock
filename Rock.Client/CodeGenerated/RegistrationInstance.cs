@@ -65,6 +65,12 @@ namespace Rock.Client
         public DateTime? EndDateTime { get; set; }
 
         /// <summary />
+        public int? ExternalGatewayFundId { get; set; }
+
+        /// <summary />
+        public int? ExternalGatewayMerchantId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -88,7 +94,13 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string PaymentRedirectData { get; set; }
+
+        /// <summary />
         public string RegistrationInstructions { get; set; }
+
+        /// <summary />
+        public int? RegistrationMeteringThreshold { get; set; }
 
         /// <summary />
         public int RegistrationTemplateId { get; set; }
@@ -148,6 +160,8 @@ namespace Rock.Client
             this.DefaultPayment = source.DefaultPayment;
             this.Details = source.Details;
             this.EndDateTime = source.EndDateTime;
+            this.ExternalGatewayFundId = source.ExternalGatewayFundId;
+            this.ExternalGatewayMerchantId = source.ExternalGatewayMerchantId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
@@ -155,7 +169,9 @@ namespace Rock.Client
             this.MinimumInitialPayment = source.MinimumInitialPayment;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PaymentRedirectData = source.PaymentRedirectData;
             this.RegistrationInstructions = source.RegistrationInstructions;
+            this.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
             this.RegistrationWorkflowTypeId = source.RegistrationWorkflowTypeId;
             this.ReminderSent = source.ReminderSent;

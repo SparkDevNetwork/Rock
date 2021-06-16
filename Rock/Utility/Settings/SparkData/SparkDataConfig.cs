@@ -37,9 +37,18 @@ namespace Rock.Utility.Settings.SparkData
 
         /// <summary>
         /// The spark server
+        /// 
+        /// rockrms.com now redirects to use SSL. I changed the address below to be HTTPS instead of
+        /// HTTP. Using HTTP was causing a redirect response for each request made. Requests that were
+        /// GETs worked fine. POSTs did not work because .NET redirect handling changes the request
+        /// method to GET. This caused the request to be a GET to an endpoint programmed to only accept
+        /// POST and thus it failed.
+        /// 
+        /// See note by gregmac on Nov 15, 2017 about 302s:
+        /// https://github.com/restsharp/RestSharp/issues/562
         /// </summary>
         [JsonIgnore]
-        public static readonly string SPARK_SERVER = "http://www.rockrms.com";
+        public static readonly string SPARK_SERVER = "https://www.rockrms.com";
         //public static readonly string SPARK_SERVER = "http://localhost:57822";
 
         /// <summary>

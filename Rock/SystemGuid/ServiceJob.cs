@@ -97,6 +97,26 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_110_POPULATE_RELATED_DATAVIEW_ID = "C3882742-714B-4E82-8894-4B944142CDC7";
 
         /// <summary>
+        /// The Job to run Post v12 to update interaction indexes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES = "090CB437-F74B-49B0-8B51-BF2A491DD36D";
+
+        /// <summary>
+        /// The data migrations 120 add communication recipient index
+        /// </summary>
+        public const string DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX = "AD7CAEAC-6C84-4B55-9E5A-FEE085C270E4";
+
+        /// <summary>
+        /// The data migrations 120 add communication get queued index
+        /// </summary>
+        public const string DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX = "BF3AADCC-B2A5-4EB9-A365-08C3F052A551";
+
+        /// <summary>
+        /// The Job to run Post v12.2 Data Migrations for adding PersonalDeviceId to Interaction index
+        /// </summary>
+        public const string DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID = "6BEDCC6F-620B-4DE0-AE9F-F6DB0E0153E4";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -146,5 +166,10 @@ namespace Rock.SystemGuid
         /// A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer.
         /// </summary>
         public const string POST_INSTALL_DATA_MIGRATIONS = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3";
+
+        /// <summary>
+        /// The Job to execute giving analytics logic
+        /// </summary>
+        public const string GIVING_ANALYTICS = "B6DE0544-8C91-444E-B911-453D4CE71515";
     }
 }

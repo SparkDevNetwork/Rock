@@ -61,66 +61,63 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            Guid? interactionChannelGuid = GetAttributeValue( badge, "InteractionChannel" ).AsGuid();
-            string badgeColor = GetAttributeValue( badge, "BadgeColor" );
-            
-            if ( interactionChannelGuid.HasValue && !String.IsNullOrEmpty( badgeColor ) )
+            writer.Write( $"<div class='badge badge-interactioninrange badge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( "</div>" );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            if ( Person == null )
             {
-                string dateRange = GetAttributeValue( badge, "DateRange" );
-                string badgeIcon = GetAttributeValue( badge, "BadgeIconCss" );
-
-                var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid.Value );
-
-                string detailPageUrl = string.Empty;
-
-                if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DetailPage" ) ) )
-                {
-                    int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DetailPage" ) ) ).Id;
-
-                    detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?ChannelId={interactionChannel.Id}" );
-                }
-
-
-                writer.Write( $"<div class='badge badge-interactioninrange badge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
-
-                writer.Write( "</div>" );
-
-                writer.Write($@"
-                <script>
-                    Sys.Application.add_load(function () {{
-                                                
-                        $.ajax({{
-                                type: 'GET',
-                                url: Rock.settings.get('baseUrl') + 'api/Badges/InteractionsInRange/{Person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode(dateRange)}' ,
-                                statusCode: {{
-                                    200: function (data, status, xhr) {{
-                                    
-                                var interactionCount = data;
-                                var opacity = 0;
-                                if(data===0){{
-                                    opacity = 0.4;
-                                }} else {{
-                                    opacity = 1;    
-                                }}
-                                var linkUrl = '{detailPageUrl}';
-
-                                 if (linkUrl != '') {{
-                                                badgeContent = '<a href=\'' + linkUrl + '\'><span class=\'badge-content fa-layers fa-fw\' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></span></a>';
-                                            }} else {{
-                                                badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
-                                            }}
-
-                                            $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);
-                                        }}
-                                }},
-                        }});
-                    }});
-                </script>
-                
-            " );
-
+                return null;
             }
 
+            var interactionChannelGuid = GetAttributeValue( badge, "InteractionChannel" ).AsGuidOrNull();
+            var badgeColor = GetAttributeValue( badge, "BadgeColor" );
+
+            if ( !interactionChannelGuid.HasValue || string.IsNullOrEmpty( badgeColor ) )
+            {
+                return null;
+            }
+
+            var dateRange = GetAttributeValue( badge, "DateRange" );
+            var badgeIcon = GetAttributeValue( badge, "BadgeIconCss" );
+
+            var pageId = PageCache.Get( GetAttributeValue( badge, "DetailPage" ).AsGuid() )?.Id;
+            var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid.Value );
+            var detailPageUrl = VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?ChannelId={interactionChannel?.Id}" );
+
+            return $@"
+                $.ajax({{
+                    type: 'GET',
+                    url: Rock.settings.get('baseUrl') + 'api/Badges/InteractionsInRange/{Person.Id}/{interactionChannel.Id}/{HttpUtility.UrlEncode( dateRange )}' ,
+                    statusCode: {{
+                        200: function (data, status, xhr) {{
+
+                        var interactionCount = data;
+                        var opacity = 0;
+                        if(data===0){{
+                            opacity = 0.4;
+                        }} else {{
+                            opacity = 1;    
+                        }}
+                        var linkUrl = '{detailPageUrl}';
+
+                        if (linkUrl != '') {{
+                                badgeContent = '<a href=\'' + linkUrl + '\'><span class=\'badge-content fa-layers fa-fw\' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></span></a>';
+                            }} else {{
+                                badgeContent = '<div class=\'badge-content fa-layers \' style=\'opacity:'+ opacity +'\'><i class=\'fas {badgeIcon} badge-icon\' style=\'color: {badgeColor}\'></i><span class=\'fa-layers-counter\'>'+ interactionCount +'</span></div>';
+                            }}
+
+                            $('.badge-interactioninrange.badge-id-{badge.Id}').html(badgeContent);
+                        }}
+                    }},
+                }});";
         }
     }
 }

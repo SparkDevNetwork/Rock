@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         public const string GLOBAL_GOOGLE_RECAPTCHA_SECRET_KEY = "D36E5760-05FF-479F-AD1D-C048AE2E99E9";
 
         /// <summary>
+        /// The Google reCaptcha secret key
+        /// </summary>
+        public const string GLOBAL_PUBLIC_APPLICATION_ROOT = "49AD7AD6-9BAC-4743-B1E8-B917F6271924";
+
+        /// <summary>
         /// The Facebook link attribute
         /// </summary>
         public const string PERSON_FACEBOOK = "2B8A03D3-B7DC-4DA3-A31E-826D655435D5";
@@ -84,7 +89,7 @@ namespace Rock.SystemGuid
         public const string PERSON_ALLERGY = "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31";
 
         /// <summary>
-        /// The person attribute for the the person's giving envelope number
+        /// The person attribute for the person's giving envelope number
         /// </summary>
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
@@ -477,6 +482,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEFINED_TYPE_TEMPLATE_ICON = "831403EB-262E-4BC5-8B5E-F16153493BF5";
 
+        /// <summary>
+        /// The Currency type DefinedType > IconCssClass DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_CURRENCY_TYPE_ICONCSSCLASS = "CB1E9401-E1FD-4DBB-B15F-4E6994602723";
+
+        /// <summary>
+        /// The Transaction Sourcee DefinedType > IconCssClass DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TRANSACTION_SOURCE_ICONCSSCLASS = "9617D1DC-6561-4314-83EB-7F0ACBA2E259";
+
         #endregion
 
         #region Device Type Attributes
@@ -721,5 +736,115 @@ namespace Rock.SystemGuid
         /// The phone number text message template
         /// </summary>
         public const string PHONE_NUMBER_TEXT_MESSAGE_TEMPLATE = "7F12E9B4-0CD1-42C8-AE68-457212B0B459";
+
+        /// <summary>
+        /// The oidc scope list detail page
+        /// </summary>
+        public const string OIDC_SCOPE_LIST_DETAIL_PAGE = "4F4943D5-80D7-4472-B1D6-0AEA14B13CE1";
+
+        /// <summary>
+        /// The oidc client list detail page
+        /// </summary>
+        public const string OIDC_CLIENT_LIST_DETAIL_PAGE = "B889F2F5-800B-455C-A6E3-28E1AB6BE7BA";
+
+        /// <summary>
+        /// The oidc client list scope page
+        /// </summary>
+        public const string OIDC_CLIENT_LIST_SCOPE_PAGE = "EF07798E-48D4-4261-97B2-501A8AD54E15";
+
+        /// <summary>
+        /// The Content Channel View Enable Archive Summary Attribute
+        /// </summary>
+        public const string ENABLE_ARCHIVE_SUMMARY = "753217FB-D519-44CC-83FC-C451E37E553F";
+
+        #region Group Attendance Detail
+        /// <summary>
+        /// The attendance type label
+        /// </summary>
+        public const string ATTENDANCE_TYPE_LABEL = "6916359C-C168-4DBA-A893-365526C9F4C4";
+        /// <summary>
+        /// The configured attendance types
+        /// </summary>
+        public const string CONFIGURED_ATTENDANCE_TYPES = "2CD11610-775B-44D4-BC0C-063563AC07E5";
+        #endregion
+
+        #region Group Attendance List
+        /// <summary>
+        /// The display attendance type
+        /// </summary>
+        public const string DISPLAY_ATTENDANCE_TYPE = "41D650B3-78B8-4F02-AD58-B914914A72AE";
+        #endregion
+
+        #region Attendance Self Entry
+        /// <summary>
+        /// The configured attendance type
+        /// </summary>
+        public const string CONFIGURED_ATTENDANCE_TYPE = "D449AC5B-AC7A-457C-AD0F-D1DB1F73FC19";
+        #endregion
+
+        #region Giving Analytics
+
+        /// <summary>
+        /// Preferred Currency - Defined Type
+        /// </summary>
+        public const string PERSON_GIVING_PREFERRED_CURRENCY = "77A5F7DE-9096-45C8-9051-9D8EE50E3C2F";
+
+        /// <summary>
+        /// Preferred Source - Defined Type
+        /// </summary>
+        public const string PERSON_GIVING_PREFERRED_SOURCE = "0567B279-1F4D-4573-9AA7-927A7278443E";
+
+        /// <summary>
+        /// Frequency Label - Single Select (1^Weekly, 2^Bi-Weekly, 3^Monthly, 4^Quarterly, 5^Erratic, 6^Undetermined)
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_LABEL = "1A58F7AA-238B-46E5-B1DC-0A5BC1F213A5";
+
+        /// <summary>
+        /// Percent of Gifts Scheduled - Number
+        /// </summary>
+        public const string PERSON_GIVING_PERCENT_SCHEDULED = "98373264-0E65-4C79-B75B-4F8477AA647E";
+
+        /// <summary>
+        /// Gift Amount: Median - Currency
+        /// </summary>
+        public const string PERSON_GIVING_AMOUNT_MEDIAN = "327F1CFF-A013-42B5-80A7-5922A40480EC";
+
+        /// <summary>
+        /// Gift Amount: IQR - Currency
+        /// </summary>
+        public const string PERSON_GIVING_AMOUNT_IQR = "CE129112-4BA9-4FC1-A67C-2A5C69140DA7";
+
+        /// <summary>
+        /// Gift Frequency Days: Mean -  Number
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_MEAN_DAYS = "88E59B38-044C-4AE4-A455-A0D3A33DDEDA";
+
+        /// <summary>
+        /// Gift Frequency Days: Standard Deviation - Number
+        /// </summary>
+        public const string PERSON_GIVING_FREQUENCY_STD_DEV_DAYS = "1D5E4356-DC66-4067-BEF1-3560E61150BD";
+
+        /// <summary>
+        /// Giving Bin - Number
+        /// </summary>
+        public const string PERSON_GIVING_BIN = "7FBB63CC-F4FC-4F7E-A8C5-44DC3D0F0720";
+
+        /// <summary>
+        /// Giving Percentile - Number - This will be rounded to the nearest percent and stored as a whole number (15 vs .15)
+        /// </summary>
+        public const string PERSON_GIVING_PERCENTILE = "D03ACAB8-EB0C-4835-A04C-4C357014D935";
+
+        /// <summary>
+        /// Next Expected Gift Date - Date
+        /// </summary>
+        public const string PERSON_GIVING_NEXT_EXPECTED_GIFT_DATE = "65D7CF79-BD80-44B2-9F5F-96D81B9B4990";
+
+        /// <summary>
+        /// Last Classification Run Date Time - Date - sets the date time of then the giving unit was last classified.
+        /// Classification is updated after each new gift, but if they stop giving we’ll use this to occassionally update the classification. 
+        /// </summary>
+        public const string PERSON_GIVING_LAST_CLASSIFICATION_DATE = "7220B230-03CE-4D1E-985B-26AA28BE06F8";
+
+        #endregion Giving Analytics
     }
 }

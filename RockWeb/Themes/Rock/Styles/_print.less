@@ -33,6 +33,7 @@
     display: none;
   }
 
+
   // don't show URLs after links
   a[href]::after {
     content: "" !important;
@@ -46,6 +47,12 @@
   // style the grid
   .table {
     overflow: hidden;
+  }
+
+  .grid .grid-actions,
+  .grid .grid-filter {
+    display: none;
+    visibility: hidden;
   }
 
   .table td,

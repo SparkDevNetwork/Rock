@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
-using System.Net.Http;
-using System.Security.Claims;
 using System.Web.Http;
-using Microsoft.IdentityModel.Tokens;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -38,7 +35,7 @@ namespace Rock.Rest.Controllers
         /// <exception cref="System.Web.Http.HttpResponseException"></exception>
         [HttpPost]
         [System.Web.Http.Route( "api/Auth/Login" )]
-        public void Login( [FromBody]LoginParameters loginParameters )
+        public void Login( [FromBody] LoginParameters loginParameters )
         {
             if ( !IsLoginValid( loginParameters ) )
             {
@@ -70,6 +67,15 @@ namespace Rock.Rest.Controllers
                 {
                     return false;
                 }
+            }
+
+            var pinAuthentication = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+
+            // Don't allow PIN authentications.
+            var userLoginEntityType = EntityTypeCache.Get( userLogin.EntityTypeId.Value );
+            if ( userLoginEntityType != null && userLoginEntityType.Id == pinAuthentication.EntityType.Id )
+            {
+                return false;
             }
 
             var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );

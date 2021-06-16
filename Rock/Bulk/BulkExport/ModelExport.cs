@@ -130,15 +130,15 @@ namespace Rock.BulkExport
             var dataView = new DataViewService( rockContext ).GetNoTracking( dataViewId );
             if ( dataView != null )
             {
-                List<string> errorMessages = null;
-                entityQuery = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<T>;
+                var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                {
+                    DbContext = rockContext
+                };
+
+                entityQuery = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<T>;
                 if ( entityQuery == null )
                 {
                     throw new Exception( "Invalid DataView EntityType" );
-                }
-                else if ( errorMessages.Any() )
-                {
-                    throw new AggregateException( errorMessages.Select( a => new Exception( a ) ) );
                 }
             }
             else

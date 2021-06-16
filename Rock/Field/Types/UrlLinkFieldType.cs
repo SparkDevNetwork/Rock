@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-
+using System.Collections.Generic;
+using System.Web.UI;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -27,6 +28,110 @@ namespace Rock.Field.Types
     [Serializable]
     public class UrlLinkFieldType : FieldType
     {
+        /// <summary>
+        /// URL Link FieldType Configuration Keys
+        /// </summary>
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The key for should require a trailing forward slash.
+            /// </summary>
+            public const string ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash";
+
+            /// <summary>
+            /// The key for should always show condensed.
+            /// </summary>
+            public const string ShouldAlwaysShowCondensed = "ShouldAlwaysShowCondensed";
+        }
+
+        #region Configuration
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            return new List<string>
+            {
+                ConfigurationKey.ShouldRequireTrailingForwardSlash,
+                ConfigurationKey.ShouldAlwaysShowCondensed
+            };
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            var controls = new List<Control>();
+
+            var cbShouldRequireTrailingForwardSlash = new RockCheckBox();
+            controls.Add( cbShouldRequireTrailingForwardSlash );
+            cbShouldRequireTrailingForwardSlash.AutoPostBack = true;
+            cbShouldRequireTrailingForwardSlash.Label = "Ensure Trailing Forward Slash";
+            cbShouldRequireTrailingForwardSlash.Help = "When set, the URL must end with a forward slash (/) to be valid.";
+
+            var cbShouldAlwaysShowCondensed = new RockCheckBox();
+            controls.Add( cbShouldAlwaysShowCondensed );
+            cbShouldAlwaysShowCondensed.AutoPostBack = true;
+            cbShouldAlwaysShowCondensed.Label = "Should Always Show Condensed";
+            cbShouldAlwaysShowCondensed.Help = "When set, the URL will always be returned as a raw value.";
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( ConfigurationKey.ShouldRequireTrailingForwardSlash, new ConfigurationValue( "Ensure Trailing Forward Slash",
+                "When set, the URL must end with a forward slash (/) to be valid.", "false" ) );
+
+            configurationValues.Add( ConfigurationKey.ShouldAlwaysShowCondensed,
+                new ConfigurationValue( "Should Always Show Condensed", "When set, the URL will always be returned as a raw value.", "false" ) );
+
+            if ( controls != null && controls.Count == 2 )
+            {
+                var cbShouldRequireTrailingForwardSlash = controls[0] as RockCheckBox;
+                configurationValues[ConfigurationKey.ShouldRequireTrailingForwardSlash].Value = cbShouldRequireTrailingForwardSlash.Checked.ToString();
+
+                var cbShouldAlwaysShowCondensed = controls[1] as RockCheckBox;
+                configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed].Value = cbShouldAlwaysShowCondensed.Checked.ToString();
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            {
+                var cbShouldRequireTrailingForwardSlash = controls[0] as RockCheckBox;
+
+                if ( configurationValues.ContainsKey( ConfigurationKey.ShouldRequireTrailingForwardSlash ) )
+                {
+                    cbShouldRequireTrailingForwardSlash.Checked = configurationValues[ConfigurationKey.ShouldRequireTrailingForwardSlash].Value.AsBoolean();
+                }
+
+                var cbShouldAlwaysShowCondensed = controls[1] as RockCheckBox;
+
+                if ( configurationValues.ContainsKey( ConfigurationKey.ShouldAlwaysShowCondensed ) )
+                {
+                    cbShouldAlwaysShowCondensed.Checked = configurationValues[ConfigurationKey.ShouldAlwaysShowCondensed].Value.AsBoolean();
+                }
+            }
+        }
+        #endregion
 
         #region Formatting
 
@@ -40,13 +145,15 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+            var shouldAlwaysShowCondensed = configurationValues.GetValueOrNull( ConfigurationKey.ShouldAlwaysShowCondensed ).AsBoolean();
+
             if ( string.IsNullOrWhiteSpace( value ) )
             {
                 return string.Empty;
             }
             else
             {
-                if ( condensed )
+                if ( condensed || shouldAlwaysShowCondensed )
                 {
                     return value;
                 }
@@ -71,7 +178,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new UrlLinkBox { ID = id }; 
+            var shouldRequireTrailingForwardSlash = configurationValues.GetValueOrNull( ConfigurationKey.ShouldRequireTrailingForwardSlash )?.AsBoolean();
+
+            return new UrlLinkBox { ID = id, ShouldRequireTrailingForwardSlash = shouldRequireTrailingForwardSlash ?? false };
         }
 
         /// <summary>

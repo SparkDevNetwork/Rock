@@ -110,6 +110,20 @@ namespace Rock.SystemKey
 
         #endregion Registration Specific
 
+        #region Checkin
+
+        /// <summary>
+        /// Attribute key for GroupTypes that allow checkout
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";
+
+        /// <summary>
+        /// Attribute key for GroupTypes that have presence enabled
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ENABLE_PRESENCE = "core_checkin_EnablePresence";
+
+        #endregion
+
         #region Display
 
         /// <summary>
@@ -123,6 +137,11 @@ namespace Rock.SystemKey
         public const string CHECKIN_FAMILYSELECT_LAVA_TEMPLATE = "core_checkin_FamilyLavaTemplate";
 
         /// <summary>
+        /// The GroupType attribute key for the checkin PersonSelect lava template.
+        /// </summary>
+        public const string CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE = "core_checkin_PersonSelectAdditionalInformationLavaTemplate";
+
+        /// <summary>
         /// The grouptype attribute key for the checkin success lava template
         /// </summary>
         public const string CHECKIN_SUCCESS_LAVA_TEMPLATE = "core_checkin_SuccessLavaTemplate";
@@ -130,7 +149,7 @@ namespace Rock.SystemKey
         #endregion Display
 
         /// <summary>
-        /// Attribute key to filter the the GroupTypes available for the defined values of the "Inactive Group Reasons" defined type
+        /// Attribute key to filter the GroupTypes available for the defined values of the "Inactive Group Reasons" defined type
         /// </summary>
         public const string INACTIVE_REASONS_GROUPTYPE_FILTER = "core_InactiveReasonsGroupTypeFilter";
     }

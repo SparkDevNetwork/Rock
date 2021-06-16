@@ -13,7 +13,7 @@ namespace Rock.Tests.Shared
     public static partial class AssertExtensions
     {
         /// <summary>
-        /// Asserts that the two string can be considered equivalent regardless of newlines.
+        /// Asserts that the two strings can be considered equivalent regardless of newlines.
         /// </summary>
         /// <param name="expected">The expected string.</param>
         /// <param name="actual">The actual sting.</param>
@@ -35,6 +35,30 @@ namespace Rock.Tests.Shared
             Assert.AreEqual( expected.Trim().ToStripNewlines(), actual.Trim().ToStripNewlines() );
         }
 
+        /// <summary>
+        /// Asserts that the two strings can be considered equivalent regardless of whitespace.
+        /// </summary>
+        /// <param name="expected">The expected string.</param>
+        /// <param name="actual">The actual sting.</param>
+        public static void AreEqualIgnoreWhitespace( this Assert assert, string expected, string actual )
+        {
+            if ( expected == null
+                 && actual == null )
+            {
+                return;
+            }
+            else if ( expected == null )
+            {
+                throw new NullReferenceException( "The expected string was null" );
+            }
+            else if ( actual == null )
+            {
+                throw new NullReferenceException( "The actual string was null" );
+            }
+
+            Assert.AreEqual( expected.ToStripNewlines().RemoveSpaces(), actual.ToStripNewlines().RemoveSpaces() );
+        }
+
         public static void AreEqual<T>( this Assert assert, T expected, T actual )
         {
             Assert.AreEqual( expected, actual );
@@ -44,9 +68,27 @@ namespace Rock.Tests.Shared
             Assert.AreEqual( expected, actual, ignoreCase );
         }
 
-        public static void Contains( this Assert assert, System.String value, System.String substring)
+        public static void Contains( this Assert assert, System.String value, System.String substring )
         {
-            StringAssert.Contains( value, substring);
+            StringAssert.Contains( value, substring );
+        }
+
+        public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
+        {
+            if ( value == null && substring == null )
+            {
+                throw new NullReferenceException( "Null value is unexpected." );
+            }
+            else if ( value == null )
+            {
+                return;
+            }
+            else if ( substring == null )
+            {
+                return;
+            }
+
+            Assert.IsFalse( value.Contains( substring ) );
         }
 
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
@@ -254,6 +296,25 @@ namespace Rock.Tests.Shared
             Assert.ThrowsException<T>( action, message, parameters );
         }
 
+        public static void ThrowsExceptionWithMessage<T>( this Assert assert, Action action, string expectedMessage )
+            where T : Exception
+        {
+            try
+            {
+                action();
+            }
+            catch ( T ex )
+            {
+                if ( !ex.Message.Equals( expectedMessage, StringComparison.InvariantCultureIgnoreCase ) )
+                {
+                    Assert.Fail( $"Excepted error message to be {expectedMessage}, but it was ${ex.Message}" );
+                }
+                return;
+            }
+
+            Assert.Fail( $"A ${typeof( T )} exception was expected but was not thrown." );
+        }
+
         #region Empty Assertions
 
         public static void IsEmpty( this Assert assert, string input )
@@ -300,5 +361,6 @@ namespace Rock.Tests.Shared
             return s.Replace( "\r", "" ).Replace( "\n", "" ).ToString( CultureInfo.InvariantCulture );
         }
         #endregion
+
     }
 }

@@ -204,6 +204,17 @@
                             </div>
                         </Rock:PanelWidget>
 
+                        <Rock:PanelWidget ID="wpAdvancedSettings" runat="server" Title="Advanced Settings">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbShowStatusOnTransfer" runat="server" Label="Show Status On Transfer" Help="When enabled, the status field will be shown. Otherwise, the status will not be changeable and will remain the same after the transfer. This allows for workflow logic to change the status and not allow the individual to change it."/>
+                                    <Rock:RockCheckBox ID="cbShowCampusOnTransfer" runat="server" Label="Show Campus On Transfer" Help="When enabled, a campus dropdown will be shown."/>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbShowConnectButton" runat="server" Label="Show Connect Button" Help="When enabled, the Connect button will be shown. Hiding the connect button allows for the connection process to be automated using workflows or for use cases where the concept of 'connection' doesn't make sense."/>
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                             <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

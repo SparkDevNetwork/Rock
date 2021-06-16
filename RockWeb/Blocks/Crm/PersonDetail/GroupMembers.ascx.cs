@@ -620,8 +620,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns>a link to the profile page of the given person</returns>
         protected string FormatPersonLink( string personId )
         {
+            var currentPersonId = Person.Id.ToString();
+
+            if ( PageCache.PageContexts.ContainsKey( Person.TypeName ) )
+            {
+                currentPersonId = PageParameter( PageCache.PageContexts[Person.TypeName] );
+            }
+
             // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
-            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format( "~/Person/{0}", Person.Id ) ), "" );
+            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format( "~/Person/{0}", currentPersonId ) ), "" );
 
             // If the path is different, then append it onto the link
             if ( subpageRoute != Request.Url.AbsolutePath )

@@ -40,33 +40,34 @@
                 <asp:ValidationSummary ID="valStepProgramDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
+                    <h3 class="mt-1">
+                        <asp:Literal ID="lStepProgramName" runat="server" />
+                        Step Program
+                    </h3>
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lStepProgramDescription" runat="server"></asp:Literal>
+                        <div class="col-sm-12 col-md-6 col-lg-7">
+                            <asp:Literal ID="lStepProgramDescription" runat="server" />
                         </div>
-                    </div>
-
-                    <%-- Steps Activity Summary --%>
-                    <div id="pnlActivitySummary" runat="server">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <h5 class="margin-t-none">Steps Activity Summary</h5>
-                            </div>
-                            <div class="col-sm-6">
-
-                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
-
+                        <div class="col-sm-12 col-md-6 col-lg-5">
+                            <div class="flex-grow-1 d-flex justify-content-end">
                                 <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
                                             runat="server"
                                             EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
                                             EnabledSlidingDateRangeUnits="Week, Month, Year"
                                             SlidingDateRangeMode="Current"
                                             TimeUnit="Year"
-                                            CssClass="pull-right" Label="" />
+                                            Label=""
+                                            FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
 
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
+                    </div>
+                    <asp:Literal ID="lKpi" runat="server" />
+
+                    <%-- Steps Activity Summary --%>
+                    <div id="pnlActivitySummary" runat="server">
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
                         <div id="pnlActivityChart" runat="server" class="chart-banner" >
@@ -85,7 +86,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>
                 </div>

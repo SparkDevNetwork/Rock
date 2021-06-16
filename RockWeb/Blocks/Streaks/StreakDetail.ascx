@@ -40,7 +40,6 @@
                             <h4 class="margin-b-lg"><asp:Literal ID="lPersonHtml" runat="server" /></h4>
                         </div>
                         <div class="col-md-6 text-right margin-t-md">
-                            <asp:LinkButton ID="btnAttempts" runat="server" CssClass="btn btn-default" OnClick="btnAttempts_Click" CausesValidation="false"></asp:LinkButton>
                             <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger" Text="Rebuild" />
                         </div>
                     </div>

@@ -70,7 +70,7 @@ namespace Rock.Model
         /// A <see cref="System.Decimal"/> representing the total amount of the transaction detail.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -112,6 +112,16 @@ namespace Rock.Model
         [IncludeAsEntityProperty]
         public decimal? FeeAmount { get; set; }
 
+        /// <summary>
+        /// Gets or sets the fee coverage amount.
+        /// </summary>
+        /// <value>
+        /// The fee coverage amount.
+        /// </value>
+        [DataMember]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision(18, 2)]
+        public decimal? FeeCoverageAmount { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -209,6 +219,8 @@ namespace Rock.Model
                         }
 
                         History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["Amount"].ToStringSafe().AsDecimal().FormatAsCurrency(), Amount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeAmount.FormatAsCurrency() );
+                        History.EvaluateChange( HistoryChangeList, acct, entry.OriginalValues["FeeCoverageAmount"].ToStringSafe().AsDecimal().FormatAsCurrency(), FeeCoverageAmount.FormatAsCurrency() );
 
                         break;
                     }

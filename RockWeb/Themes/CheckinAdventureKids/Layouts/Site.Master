@@ -28,40 +28,44 @@
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
     </form>
-
     <script>
+        // Init sounds
+        var tapSound = new Howl({
+            src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
+            volume: 0.4
+        });
+
+        var successSound = new Howl({
+            src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+            volume: 0.8
+        });
+
+        // Apply Rock Fade in With Document Ready for Modal Compatibility
+        $(document).ready(function() {
+            // add quick fade-in effect to the page
+            $('body').rockFadeIn();
+        });
+
+        // Use add_load to fire with page load and postbacks
+        Sys.Application.add_load(function() {
+            checkinSounds();
+        });
+
         function checkinSounds() {
-            var tapSound = new Howl({
-                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
-                volume: 0.4
-            });
-
-            var successSound = new Howl({
-                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
-                volume: 0.8
-            });
-
+            // Play success sound when visible.
             if ($('.block-instance.success').length){
                 successSound.play();
             }
 
-            $("a, button").on("click", function(){
-                tapSound.play();
+            // Listen for clicks to play tap sound.
+            // Since add_load can fire multiple times, make sure we aren't already listening.
+            $(document).off('mousedown.sound').on('mousedown.sound', 'a, button', function (event) {
+                // Only fire for left clicks
+                if (event.which === 1) {
+                    tapSound.play();
+                }
             });
         }
-
-        // add quick fade-in effect to the page
-        $(document).ready(function () {
-            $("body").rockFadeIn();
-
-            checkinSounds();
-
-            $(document).on("shown.bs.modal", function (event) {
-                checkinSounds();
-            });
-        });
     </script>
-
-
 </body>
 </html>

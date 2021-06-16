@@ -23,8 +23,10 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using DDay.iCal;
-using DDay.iCal.Serialization.iCalendar;
+using Ical.Net;
+using Ical.Net.Serialization.iCalendar.Serializers;
+using Ical.Net.DataTypes;
+using Calendar = Ical.Net.Calendar;
 
 namespace Rock.Web.UI.Controls
 {
@@ -738,9 +740,9 @@ END:VCALENDAR
                 }
             }
 
-            DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
-            calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
-            calendarEvent.DTStart.HasTime = true;
+            var calendarEvent = new Event();
+            calendarEvent.DtStart = new CalDateTime( _dpStartDateTime.SelectedDateTime.Value );
+            calendarEvent.DtStart.HasTime = true;
 
             int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 0 );
             int durationMins = TextBoxToPositiveInteger( _tbDurationMinutes, 0 );
@@ -765,7 +767,7 @@ END:VCALENDAR
 
                     foreach ( var datetime in specificDateTimes )
                     {
-                        recurrenceDates.Add( new iCalDateTime( datetime ) );
+                        recurrenceDates.Add( new CalDateTime( datetime ) );
                     }
 
                     calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -889,7 +891,7 @@ END:VCALENDAR
 
             if ( calendarEvent.RecurrenceRules.Count > 0 )
             {
-                IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                var rrule = calendarEvent.RecurrenceRules[0];
 
                 // Continue Until
                 if ( _radEndByNone.Checked )
@@ -925,7 +927,7 @@ END:VCALENDAR
                             DateTime dateToAdd = beginDate.Date;
                             while ( dateToAdd <= endDate )
                             {
-                                Period periodToAdd = new Period( new iCalDateTime( dateToAdd ) );
+                                var periodToAdd = new Period( new CalDateTime( dateToAdd ) );
                                 if ( !exceptionDates.Contains( periodToAdd ) )
                                 {
                                     exceptionDates.Add( periodToAdd );
@@ -943,19 +945,19 @@ END:VCALENDAR
                 calendarEvent.ExceptionDates.Add( exceptionDates );
             }
 
-            DDay.iCal.iCalendar calendar = new iCalendar();
+            var calendar = new Calendar();
             calendar.Events.Add( calendarEvent );
 
-            iCalendarSerializer iCalendarSerializer = new iCalendarSerializer( calendar );
+            var iCalendarSerializer = new CalendarSerializer( calendar );
 
             return iCalendarSerializer.SerializeToString( calendar );
         }
 
         /// <summary>
-        /// Gets or sets the content of the i calendar.
+        /// Gets or sets the content of the iCalendar.
         /// </summary>
         /// <value>
-        /// The content of the i calendar.
+        /// The content of the iCalendar.
         /// </value>
         public string iCalendarContent
         {
@@ -987,21 +989,21 @@ END:VCALENDAR
                 _tbDailyEveryXDays.Text = "1";
 
                 StringReader stringReader = new StringReader( string.IsNullOrWhiteSpace( value ) ? iCalendarContentEmptyEvent : value );
-                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-                DDay.iCal.Event calendarEvent = null;
-                DDay.iCal.iCalendar calendar = null;
+                var calendarList = Calendar.LoadFromStream( stringReader );
+                Event calendarEvent = null;
+                Calendar calendar = null;
                 if ( calendarList.Count > 0 )
                 {
-                    calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    calendar = calendarList[0] as Calendar;
                 }
 
                 // just in case we couldn't get a schedule out of it, load the default
                 if ( calendar == null )
                 {
-                    calendarList = DDay.iCal.iCalendar.LoadFromStream( new StringReader( iCalendarContentEmptyEvent ) );
+                    calendarList = Calendar.LoadFromStream( new StringReader( iCalendarContentEmptyEvent ) );
                     if ( calendarList.Count > 0 )
                     {
-                        calendar = calendarList[0] as DDay.iCal.iCalendar;
+                        calendar = calendarList[0] as Calendar;
                     }
                 }
 
@@ -1011,11 +1013,11 @@ END:VCALENDAR
                     return;
                 }
 
-                calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                calendarEvent = calendar.Events[0] as Event;
 
-                if ( calendarEvent.DTStart != null )
+                if ( calendarEvent.DtStart != null )
                 {
-                    _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
+                    _dpStartDateTime.SelectedDateTime = calendarEvent.DtStart.Value;
                     int hours = ( calendarEvent.Duration.Days * 24 ) + calendarEvent.Duration.Hours;
                     _tbDurationHours.Text = hours.ToString();
                     _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
@@ -1042,7 +1044,7 @@ END:VCALENDAR
 
                 if ( _radRecurring.Checked )
                 {
-                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                    var rrule = calendarEvent.RecurrenceRules[0];
                     switch ( rrule.Frequency )
                     {
                         case FrequencyType.Daily:
@@ -1147,9 +1149,9 @@ END:VCALENDAR
                     if ( calendarEvent.ExceptionDates.Count > 0 )
                     {
                         // convert individual ExceptionDates into a list of Date Ranges
-                        List<Period> exDateRanges = new List<Period>();
-                        List<IDateTime> dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
-                        IDateTime previousDate = dates[0].AddDays( -1 );
+                        var exDateRanges = new List<Period>();
+                        var dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
+                        var previousDate = dates[0].AddDays( -1 );
                         var dateRange = new Period { StartTime = dates[0] };
                         foreach ( var date in dates )
                         {
@@ -1182,8 +1184,8 @@ END:VCALENDAR
                         _radEndByNone.Checked = true;
                         _radEndByDate.Checked = false;
                         _radEndByOccurrenceCount.Checked = false;
-                        IPeriodList dates = calendarEvent.RecurrenceDates[0];
-                        _hfSpecificDateListValues.Value = dates.Select( a => new iCalDateTime( a.StartTime.Date ) ).ToList().AsDelimited( "," ).Replace( " UTC", "" );
+                        var dates = calendarEvent.RecurrenceDates[0];
+                        _hfSpecificDateListValues.Value = dates.Select( a => new CalDateTime( a.StartTime.Date ) ).ToList().AsDelimited( "," ).Replace( " UTC", "" );
                     }
 
                     _radEndByNone.Checked = true;

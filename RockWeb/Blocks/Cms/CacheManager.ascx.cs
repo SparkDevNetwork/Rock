@@ -81,6 +81,8 @@ namespace RockWeb.Blocks.Cms
                 PopulateDdlCacheTypes();
                 PopulateCacheStatistics();
                 PopulateRedisView();
+
+                rcbEnableStatistics.Checked = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS ).AsBoolean();
             }
         }
 
@@ -224,6 +226,9 @@ namespace RockWeb.Blocks.Cms
 
         #region Redis
 
+        /// <summary>
+        /// Populates the Redis View.
+        /// </summary>
         protected void PopulateRedisView()
         {
             // clear and hide edit
@@ -262,7 +267,10 @@ namespace RockWeb.Blocks.Cms
             lblPassword.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_PASSWORD ).IsNullOrWhiteSpace() ? string.Empty : "***********";
             lblDatabaseNumber.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
         }
-        
+
+        /// <summary>
+        /// Populates the Redis Edit view.
+        /// </summary>
         protected void PopulateRedisEdit()
         {
             ClearAndHideRedisView();
@@ -286,6 +294,9 @@ namespace RockWeb.Blocks.Cms
             tbDatabaseNumber.Text = SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_DATABASE_NUMBER );
         }
 
+        /// <summary>
+        /// Clears and hides the Redis Edit view.
+        /// </summary>
         protected void ClearAndHideRedisEdit()
         {
             redisEdit.Visible = false;
@@ -295,6 +306,9 @@ namespace RockWeb.Blocks.Cms
             tbDatabaseNumber.Text = string.Empty;
         }
 
+        /// <summary>
+        /// Clears and hides the Redis View.
+        /// </summary>
         protected void ClearAndHideRedisView()
         {
             redisView.Visible = false;
@@ -304,11 +318,21 @@ namespace RockWeb.Blocks.Cms
             lblDatabaseNumber.Text = string.Empty;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnEditRedis control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEditRedis_Click( object sender, EventArgs e )
         {
             PopulateRedisEdit();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSaveRedis control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveRedis_Click( object sender, EventArgs e )
         {
             string serverList = string.Empty;
@@ -348,6 +372,11 @@ namespace RockWeb.Blocks.Cms
             Response.Redirect( Request.RawUrl );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancelRedis control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelRedis_Click( object sender, EventArgs e )
         {
             ClearAndHideRedisEdit();
@@ -509,6 +538,20 @@ namespace RockWeb.Blocks.Cms
             PopulateCacheStatistics();
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the rcbEnableStatistics control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rcbEnableStatistics_CheckedChanged(object sender, EventArgs e)
+        {
+            // Save updated value.
+            SystemSettings.SetValueToWebConfig( Rock.SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS, rcbEnableStatistics.Checked.ToString() );
+
+            // Reload this page to trigger application restart due to modification of web.config.
+            Response.Redirect( Request.RawUrl );
+        }
+
         #endregion
 
         #region Add Tag Modal
@@ -582,6 +625,9 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Saves a new tag.
+        /// </summary>
         private void SaveNewTag()
         {
             int cachedTagDefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CACHE_TAGS ).Id;
@@ -606,6 +652,10 @@ namespace RockWeb.Blocks.Cms
             rockContext.SaveChanges();
         }
 
+        /// <summary>
+        /// Updates and exsiting tag.
+        /// </summary>
+        /// <param name="cacheTagId">The Id of the tag.</param>
         private void UpdateExistingTag(int cacheTagId )
         {
             using ( var rockContext = new RockContext() )
@@ -633,8 +683,11 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
-        #endregion
-
+        /// <summary>
+        /// Handles the RowSelected event of the gCacheTagList_RowSelected control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gCacheTagList_RowSelected( object sender, RowEventArgs e )
         {
             var definedValueId = e.RowKeyId;
@@ -647,5 +700,8 @@ namespace RockWeb.Blocks.Cms
             tbTagName.Enabled = false;
             dlgAddTag.Show();
         }
+
+        #endregion
+
     }
 }

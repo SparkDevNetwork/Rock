@@ -4,6 +4,10 @@
 <asp:UpdatePanel runat="server" ID="upnlHtmlContentView" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbApprovalRequired" runat="server" NotificationBoxType="Info" Text="Your changes will not be visible until they are reviewed and approved." Visible="false" />
+
+        <%-- Note: hfSecondaryBlockState is only Visible (rendered) if this is a secondary block  --%>
+        <asp:HiddenField ID="hfSecondaryBlockState" runat="server" Visible="false" />
+
         <%--<div class="html-content-view">--%><asp:Literal ID="lHtmlContent" runat="server" EnableViewState="false" /><%--</div>--%>
     </ContentTemplate>
 </asp:UpdatePanel>
@@ -60,8 +64,7 @@
 
                                 <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Display from" />
 
-                                <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="140" />
-                                
+                                <Rock:HtmlEditor ID="htmlEditor" runat="server" ResizeMaxWidth="720" Height="380" />
                                 <Rock:RockCheckBox ID="cbOverwriteVersion" runat="server" Text="Don't save as a new version" />
 
                             </asp:Panel>

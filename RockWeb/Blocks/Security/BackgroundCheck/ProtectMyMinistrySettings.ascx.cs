@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
                     SetSettingValue( rockContext, settings, "Password", tbPasswordNew.Text, true );
 
                     string defaultReturnUrl = string.Format( "{0}Webhooks/ProtectMyMinistry.ashx",
-                        GlobalAttributesCache.Value( "PublicApplicationRoot" ).EnsureTrailingForwardslash() );
+                        GlobalAttributesCache.Value( "PublicApplicationRoot" ) );
                     SetSettingValue( rockContext, settings, "ReturnURL", defaultReturnUrl );
 
                     rockContext.SaveChanges();

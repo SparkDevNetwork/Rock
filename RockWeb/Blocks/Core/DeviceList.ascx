@@ -26,14 +26,14 @@
                         </Rock:RockDropDownList>
                     </Rock:GridFilter>
         
-                    <Rock:Grid ID="gDevice" runat="server" AllowSorting="true" OnRowSelected="gDevice_Edit">
+                    <Rock:Grid ID="gDevice" runat="server" RowItemText="Device" AllowSorting="true" OnRowSelected="gDevice_Edit" OnRowDataBound="gDevice_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="DeviceTypeName" HeaderText="Device Type" SortExpression="DeviceTypeName" />
                             <Rock:RockBoundField DataField="IPAddress" HeaderText="IP Address / Hostname" SortExpression="IPAddress"/>
-                            <Rock:EnumField DataField="PrintToOverride" HeaderText="Print To" SortExpression="PrintToOverride" />
-                            <Rock:EnumField DataField="PrintFrom" HeaderText="Print From" SortExpression="PrintFrom" />
-                            <Rock:RockBoundField DataField="PrinterDeviceName" HeaderText="Printer" SortExpression="PrinterDeviceName" />
+                            <Rock:RockLiteralField ID="lPrintToOverride" HeaderText="Print To" SortExpression="PrintToOverride" />
+                            <Rock:RockLiteralField ID="lPrintFrom" HeaderText="Print From" SortExpression="PrintFrom" />
+                            <Rock:RockLiteralField ID="lPrinterDeviceName" HeaderText="Printer" SortExpression="PrinterDeviceName" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                         </Columns>
                     </Rock:Grid>

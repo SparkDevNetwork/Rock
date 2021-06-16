@@ -232,6 +232,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MediaAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
@@ -348,9 +354,11 @@ namespace Rock.Model
             target.FriendlyName = source.FriendlyName;
             target.IndexDocumentUrl = source.IndexDocumentUrl;
             target.IndexResultTemplate = source.IndexResultTemplate;
+            target.IsAchievementsEnabled = source.IsAchievementsEnabled;
             target.IsCommon = source.IsCommon;
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;
+            target.IsMessageBusEventPublishEnabled = source.IsMessageBusEventPublishEnabled;
             target.IsSecured = source.IsSecured;
             target.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;

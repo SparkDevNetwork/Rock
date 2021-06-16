@@ -1,0 +1,190 @@
+.kpi-container {
+  --kpi-gap: 16px;
+  --kpi-min-sm: ~"calc(var(--kpi-col-sm, 50%) - var(--kpi-gap))";
+  --kpi-min-md: ~"calc(var(--kpi-col-md, 33.3333%) - var(--kpi-gap))";
+  --kpi-min-lg: ~"calc(var(--kpi-col-lg, 25%) - var(--kpi-gap))";
+
+  display: grid;
+  width: 100%;
+  margin: var(--kpi-gap) 0;
+  overflow: hidden;
+  grid-template-columns: repeat(1, 1fr);
+  grid-auto-rows: 1fr;
+  gap: var(--kpi-gap);
+
+  @media (min-width: @screen-sm) {
+    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-sm), 1fr))";
+  }
+
+  @media (min-width: @screen-md) {
+    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-md), 1fr))";
+  }
+
+  @media (min-width: @screen-lg) {
+    grid-template-columns: ~"repeat(auto-fill, minmax(var(--kpi-min-lg), 1fr))";
+  }
+}
+
+.kpi-title {
+  margin-top: 0;
+  font-weight: @font-weight-semibold;
+}
+
+.kpi {
+  display: flex;
+  flex-basis: 100%;
+  flex-grow: 1;
+  align-items: center;
+  margin: 0 8px 16px;
+  font-size: 26px;
+  color: #aeaeae;
+
+  .kpi-container & {
+    margin: 0;
+  }
+}
+
+.kpi-card {
+  color: #c0cbd1;
+  background: @white;
+  border: 1px solid #000;
+  border-color: currentColor;
+  border-radius: 4px;
+}
+
+.kpi-stat {
+  flex: 1 1 auto;
+  align-self: center;
+  padding: 8px 16px;
+}
+
+.kpi-value {
+  display: block;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-subvalue {
+  padding-left: .4em;
+  font-size: .6em;
+  font-weight: @font-weight-normal;
+  color: #9f9f9f;
+}
+
+.kpi-label,
+.kpi-secondary-label {
+  display: block;
+  font-size: .538em;
+  line-height: 1.1;
+  color: @text-muted;
+}
+
+.kpi-secondary-label {
+  font-size: 12px;
+  line-height: 12px;
+  opacity: .7;
+}
+
+.kpi-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 60px;
+  max-width: 35%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 32px;
+  vertical-align: top;
+
+  .kpi-card & {
+    display: inline-block;
+  }
+
+  // Force 48px BG for kpi-sm
+  .has-icon-bg.kpi-sm > & {
+    display: flex;
+    flex-grow: 1;
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+  }
+
+  .svg-placeholder {
+    display: none;
+    width: 2em;
+    height: auto;
+    background: currentColor;
+    border-radius: 4px;
+    opacity: 0;
+
+    .kpi-card > & {
+      width: auto;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .has-icon-bg & {
+      display: block;
+      opacity: .2;
+    }
+  }
+
+
+  .kpi-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+
+.kpi-sm {
+  .kpi-icon {
+    font-size: 24px;
+  }
+
+  .kpi-stat {
+    padding: 4px 8px 4px 8px;
+  }
+}
+
+.kpi-lg,
+.kpi-xl {
+  font-size: 30px;
+
+  .kpi-stat {
+    padding: 16px 10px;
+  }
+  .kpi-label {
+    padding: 3px 0;
+    font-size: 17px;
+  }
+
+  .kpi-icon {
+    overflow: visible;
+    font-size: 48px;
+    text-align: center;
+  }
+}
+
+.kpi-xl {
+  font-size: 48px;
+
+  .kpi-icon {
+    font-size: 54px;
+  }
+}
+
+.stat-value-lg {
+  display: block;
+  font-size: 45px;
+  line-height: 1;
+  font-weight: 700;
+}

@@ -47,7 +47,7 @@ namespace Rock.Model
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this Workflow instance is executing.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the WorkflowTypeId fo the <see cref="Rock.Model.WorkflowType"/> that is being executed.
+        /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is being executed.
         /// </value>
         [DataMember]
         public int WorkflowTypeId { get; set; }
@@ -555,36 +555,35 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
-            if ( _logEntries != null )
+            var rockContext = dbContext as RockContext;
+            if ( rockContext != null )
             {
-                if ( _logEntries.Any() )
+                if ( _logEntries?.Any() == true )
                 {
-                    if ( dbContext is RockContext )
+                    var workflowLogs = rockContext.WorkflowLogs;
+
+                    foreach ( var logEntry in _logEntries )
                     {
-                        var workflowLogService = new WorkflowLogService( ( dbContext as RockContext ) );
-                        foreach ( var logEntry in _logEntries )
-                        {
-                            workflowLogService.Add( new WorkflowLog { LogDateTime = logEntry.LogDateTime, LogText = logEntry.LogText, WorkflowId = this.Id } );
-                        }
-
-                        _logEntries.Clear();
+                        workflowLogs.Add( new WorkflowLog { LogDateTime = logEntry.LogDateTime, LogText = logEntry.LogText, WorkflowId = this.Id } );
                     }
+
+                    _logEntries.Clear();
                 }
-            }
 
-            // Set the workflow number
-            if ( state == EntityState.Added )
-            {
-                int maxNumber = new WorkflowService( dbContext as RockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( w => w.WorkflowTypeId == this.WorkflowTypeId )
-                    .Max( w => (int?)w.WorkflowIdNumber ) ?? 0;
-                this.WorkflowIdNumber = maxNumber + 1;
-            }
+                // Set the workflow number
+                if ( state == EntityState.Added )
+                {
+                    int maxNumber = new WorkflowService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( w => w.WorkflowTypeId == this.WorkflowTypeId )
+                        .Max( w => (int?)w.WorkflowIdNumber ) ?? 0;
+                    this.WorkflowIdNumber = maxNumber + 1;
+                }
 
-            if ( state == EntityState.Deleted )
-            {
-                DeleteConnectionRequestWorkflows( dbContext );
+                if ( state == EntityState.Deleted )
+                {
+                    DeleteConnectionRequestWorkflows( rockContext );
+                }
             }
 
             base.PreSaveChanges( dbContext, state );
@@ -628,20 +627,19 @@ namespace Rock.Model
             errorMessages = new List<string>();
             return false;
         }
-        
+
         /// <summary>
         /// Deletes any connection request workflows tied to this workflow.
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        private void DeleteConnectionRequestWorkflows( Data.DbContext dbContext )
+        /// <param name="rockContext">The rock context.</param>
+        private void DeleteConnectionRequestWorkflows( RockContext rockContext )
         {
-            var rockContext = ( RockContext ) dbContext;
             var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
             var connectionRequestWorkflows = connectionRequestWorkflowService.Queryable().Where( c => c.WorkflowId == this.Id );
 
             if ( connectionRequestWorkflows.Any() )
             {
-                dbContext.BulkDelete( connectionRequestWorkflows );
+                rockContext.BulkDelete( connectionRequestWorkflows );
             }
         }
 

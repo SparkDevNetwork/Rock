@@ -46,5 +46,18 @@ namespace Rock
 
             return enumFieldsOrder.OrderBy( f => f.Value ).ThenBy( f => f.Key ).Select( a => a.Key ).ToList();
         }
+
+
+        /// <summary>
+        /// Only check for the value if the source enumerable is not null or empty.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerable">The enumerable.</param>
+        /// <param name="value">The value.</param>
+        /// <returns>true if the enumerable is null, empty, or if the value is found in the list.</returns>
+        public static bool ContainsOrEmpty<T>( this IEnumerable<T> enumerable, T value )
+        {
+            return enumerable == null || enumerable.Any() == false || enumerable.Contains( value );
+        }
     }
 }

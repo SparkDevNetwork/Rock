@@ -48,6 +48,27 @@
   }
 }
 
+.panel-section {
+  border-width: 0;
+  box-shadow: none !important;
+
+  > .panel-heading {
+    background: @panel-section-heading-bg;
+    &::after {
+      position: absolute;
+      right: 25px;
+      left: 25px;
+      margin-top: 12px;
+      content: "";
+      border-bottom: 1px solid @input-border;
+    }
+  }
+
+  > .panel-body {
+    background: @panel-section-body-bg;
+  }
+}
+
 // Fancy Scrollbars
 
 .styled-scroll {
@@ -78,7 +99,7 @@
 
   .panel-body {
     padding: 0;
-    background-color: #fff;
+    background-color: @white;
   }
 
   .panel-heading {
@@ -150,8 +171,8 @@
   }
 
   &-xl {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
   }
 
   &-lg {
@@ -321,6 +342,17 @@
     p {
       margin: 0;
     }
+
+    .note-attributes {
+      padding: 8px 0 0;
+      margin: 24px 0 0;
+      border-top: 1px solid fade(@panel-border, 60%);
+    }
+
+    .note-attribute {
+      margin: @form-group-margin-bottom 0 0;
+      font-size: @font-size-small;
+    }
   }
 
   .note-footer {
@@ -394,24 +426,8 @@
 }
 
 .note-editor {
-  margin: 8px 0;
-
   .meta-body {
     border: 1px solid @input-border;
-    &:focus,
-    &:focus-within,
-    &.focus-within {
-      border: var(--focus-state-border);
-      box-shadow: var(--focus-state-shadow);
-    }
-  }
-
-  .noteentry-control .form-control {
-    border: 0;
-    &:focus {
-      border: 0;
-      box-shadow: none;
-    }
   }
 
   .settings {
@@ -422,9 +438,8 @@
       float: left;
 
       .date-time-picker {
-        margin-bottom: 0;
-
-        .input-group {
+        .input-group,
+        & {
           margin-bottom: 0;
         }
 
@@ -459,13 +474,17 @@
       max-width: 200px;
       height: 30px;
       font-size: 12px;
-      line-height: 30px;
     }
+
     .checkbox {
       float: left;
       margin: 3px 5px 0 10px !important;
       font-size: 12px;
       line-height: 24px;
+    }
+
+    .hidden + .checkbox {
+      margin-left: 0 !important;
     }
 
     .commands {
@@ -476,6 +495,40 @@
       }
     }
   }
+}
+
+.note-editor-standard {
+  // Add custom focus state only for standard notes.
+  .meta-body {
+    &:focus,
+    &:focus-within,
+    &.focus-within {
+      border: var(--focus-state-border);
+      box-shadow: var(--focus-state-shadow);
+    }
+  }
+
+  // Disable primary note field border and focus states
+  .noteentry-control .form-control {
+    border: 0;
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.note-editor-attributes {
+  .noteentry-control {
+    padding: 18px 24px 0;
+  }
+
+  .settings {
+    padding: 6px 24px;
+  }
+}
+
+.note-editor.note-frame {
+  margin: 0;
 }
 
 // Fixes note-editor name conflict with Summernote and Timeline note
@@ -567,12 +620,12 @@
 .workflow-activities-readonly-header {
   top: auto;
   left: auto;
-  padding-top: 8px;
-  padding-right: 8px;
-  padding-bottom: 8px;
-  color: #515151;
+  padding: 8px 0 8px 8px;
+  color: @text-color;
 
-  &:hover {
+  &:hover,
+  &:active,
+  &:focus {
     color: inherit;
     text-decoration: none;
   }

@@ -16,11 +16,14 @@
 //
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepType" )]
     [DataContract]
-    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag
+    public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants
 
@@ -172,6 +175,15 @@ namespace Rock.Model
         [DataMember]
         public string MergeTemplateDescriptor { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this step requires a date.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is date required; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsDateRequired { get; set; }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag
@@ -193,6 +205,29 @@ namespace Rock.Model
         public int Order { get; set; }
 
         #endregion IOrdered
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StepTypeCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StepTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
 
         #region Virtual Properties
 
@@ -271,18 +306,18 @@ namespace Rock.Model
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
 
         /// <summary>
-        /// Gets or sets the streak type achievement types.
+        /// Gets or sets the achievement types.
         /// </summary>
         /// <value>
         /// The streak type achievement types.
         /// </value>
         [DataMember]
-        public virtual ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes
+        public virtual ICollection<AchievementType> AchievementTypes
         {
-            get => _streakTypeAchievementTypes ?? ( _streakTypeAchievementTypes = new Collection<StreakTypeAchievementType>() );
-            set => _streakTypeAchievementTypes = value;
+            get => _achievementTypes ?? ( _achievementTypes = new Collection<AchievementType>() );
+            set => _achievementTypes = value;
         }
-        private ICollection<StreakTypeAchievementType> _streakTypeAchievementTypes;
+        private ICollection<AchievementType> _achievementTypes;
 
         #endregion Virtual Properties
 

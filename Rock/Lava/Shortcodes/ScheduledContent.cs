@@ -242,7 +242,7 @@ namespace Rock.Lava.Shortcodes
                 if ( nextSchedule.WasScheduleActive( now ) )
                 {
                     isLive = true;
-                    var occurrences = nextSchedule.GetOccurrences( now, now.AddDays( lookAheadDays ) ).Take(2);
+                    var occurrences = nextSchedule.GetICalOccurrences( now, now.AddDays( lookAheadDays ) ).Take(2);
                     var activeOccurrence = occurrences.FirstOrDefault();
                     occurrenceEndDateTime = (DateTime) activeOccurrence.Period.EndTime.Value;
 

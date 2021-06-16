@@ -49,10 +49,40 @@ namespace Rock.Extension
     ///     string licenseKey = AttributeValues["LicenseKey"].Value;
     /// </code>
     /// </summary>
-    [IntegerField( "Order", "The order that this service should be used (priority)" )]
-    [BooleanField( "Active", "Should Service be used?", false, "", 0)]
-    public abstract class Component : Attribute.IHasAttributes, ISecured
+
+    [IntegerField(
+        "Order",
+        Description = "The order that this service should be used (priority)",
+        Key = BaseAttributeKey.Order )]
+
+    [BooleanField(
+        "Active",
+        Description = "Should Service be used?",
+        DefaultBooleanValue =false,
+        Key = BaseAttributeKey.Active )]
+
+    public abstract class Component : IHasAttributes, ISecured
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Component Attributes
+        /// </summary>
+        public static class BaseAttributeKey
+        {
+            /// <summary>
+            /// The order
+            /// </summary>
+            public const string Order = "Order";
+
+            /// <summary>
+            /// Is Active?
+            /// </summary>
+            public const string Active = "Active";
+        }
+
+        #endregion Attribute Keys
+
         /// <summary>
         /// Gets the id.
         /// </summary>
@@ -184,21 +214,21 @@ namespace Rock.Extension
         {
             get
             {
-                int order = 0;
+                var value = GetAttributeValue( BaseAttributeKey.Order );
 
-                string value = GetAttributeValue( "Order" );
-                if ( int.TryParse( value, out order ) )
+                if ( int.TryParse( value, out var order ) )
                 {
                     return order;
                 }
 
-                if (Attributes.ContainsKey("Order"))
+                if ( Attributes.ContainsKey( BaseAttributeKey.Order ) )
                 {
-                    if ( int.TryParse( Attributes["Order"].DefaultValue, out order ) )
+                    if ( int.TryParse( Attributes[BaseAttributeKey.Order].DefaultValue, out order ) )
                     {
                         return order;
                     }
                 }
+
                 return order;
             }
         }
@@ -213,20 +243,20 @@ namespace Rock.Extension
         {
             get
             {
-                bool isActive = false;
+                var isActive = false;
+                var value = GetAttributeValue( BaseAttributeKey.Active );
 
-                string value = GetAttributeValue("Active");
-                if (value != null)
+                if ( value != null )
                 {
-                    if ( Boolean.TryParse( value, out isActive ) )
+                    if ( bool.TryParse( value, out isActive ) )
                     {
                         return isActive;
                     }
                 }
 
-                if (Attributes.ContainsKey("Active"))
+                if ( Attributes.ContainsKey( BaseAttributeKey.Active ) )
                 {
-                    if ( Boolean.TryParse( Attributes["Active"].DefaultValue, out isActive ) )
+                    if ( bool.TryParse( Attributes[BaseAttributeKey.Active].DefaultValue, out isActive ) )
                     {
                         return isActive;
                     }

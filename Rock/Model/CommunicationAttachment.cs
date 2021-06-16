@@ -43,7 +43,7 @@ namespace Rock.Model
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
+        /// Gets or sets the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/>.

@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public static class PageRoute
     {
         /// <summary>
+        /// The CheckinManager route guid
+        /// </summary>
+        public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
+
+        /// <summary>
         /// Gets the Campus Detail > Group Member Detail page route guid
         /// </summary>
         public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "9660B9FB-C90F-4AFE-9D58-C0EC271C1377";
@@ -45,5 +50,20 @@ namespace Rock.SystemGuid
         /// The phone number lookup
         /// </summary>
         public const string PHONE_NUMBER_LOOKUP = "1FB5A224-9E26-47E6-9A20-5B5A59B5C7CF";
+
+        /// <summary>
+        /// The oidc authorize route.
+        /// </summary>
+        public const string OIDC_AUTHORIZE = "E35CD82E-C162-444E-AC5F-E42F20DA79F3";
+
+        /// <summary>
+        /// The oidc logout route.
+        /// </summary>
+        public const string OIDC_LOGOUT = "5137F15D-61EA-4935-A9E1-16534959AEFA";
+
+        /// <summary>
+        /// The edit person route '/Person/{PersonId}/Edit'
+        /// </summary>
+        public const string EDIT_PERSON_ROUTE = "FCC0CCFF-8E18-48D8-A5EB-3D0F81D68280";
     }
 }

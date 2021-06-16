@@ -48,7 +48,7 @@ namespace Rock.Web.Cache
         /// The entity attributes.
         /// </value>
         [DataMember]
-        public List<EntityAttributes> EntityAttributes { get; set; }
+        public List<EntityAttributes> EntityAttributes { get; private set; }
 
         /// <summary>
         /// Gets or sets the entity attributes by entity type identifier.
@@ -57,7 +57,7 @@ namespace Rock.Web.Cache
         /// The entity attributes by entity type identifier.
         /// </value>
         [DataMember]
-        public Dictionary<int, List<EntityAttributes>> EntityAttributesByEntityTypeId { get; set; }
+        public Dictionary<int, List<EntityAttributes>> EntityAttributesByEntityTypeId { get; private set; }
 
         #region Public Methods
 

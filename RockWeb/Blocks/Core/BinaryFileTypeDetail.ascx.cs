@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Core
 
             if ( binaryFileType.CacheControlHeaderSettings != null )
             {
-                cpCacheSettings.CurrentCacheablity = JsonConvert.DeserializeObject<RockCacheability>( binaryFileType.CacheControlHeaderSettings );
+                cpCacheSettings.CurrentCacheability = JsonConvert.DeserializeObject<RockCacheability>( binaryFileType.CacheControlHeaderSettings );
             }
 
             cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Core
             binaryFileType.Description = tbDescription.Text;
             binaryFileType.IconCssClass = tbIconCssClass.Text;
             binaryFileType.CacheToServerFileSystem = cbCacheToServerFileSystem.Checked;
-            binaryFileType.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheablity.ToJson();
+            binaryFileType.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
             binaryFileType.MaxWidth = nbMaxWidth.Text.AsInteger();
             binaryFileType.MaxHeight = nbMaxHeight.Text.AsInteger();
@@ -362,7 +362,6 @@ namespace RockWeb.Blocks.Core
 
                 // SaveAttributeValues for the BinaryFileType
                 binaryFileType.SaveAttributeValues( rockContext );
-
             } );
 
             NavigateToParentPage();

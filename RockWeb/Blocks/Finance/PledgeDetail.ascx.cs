@@ -39,6 +39,20 @@ namespace RockWeb.Blocks.Finance
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a list of groups that pledge can be associated to for selected user", false, "", "", 1 )]
     public partial class PledgeDetail : RockBlock, IDetailBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Page Param Keys
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string PledgeId = "PledgeId";
+
+            public const string PersonGuid = "PersonGuid";
+        }
+
+        #endregion Keys
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -49,7 +63,7 @@ namespace RockWeb.Blocks.Finance
 
             nbInvalid.Visible = false;
 
-            var pledgeId = PageParameter( "PledgeId" ).AsInteger();
+            var pledgeId = PageParameter( PageParameterKey.PledgeId ).AsInteger();
             if ( !IsPostBack )
             {
                 ShowDetail( pledgeId );
@@ -174,7 +188,14 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    ppPerson.SetValue( null );
+                    Person person = null;
+                    var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
+                    if ( personGuid.HasValue )
+                    {
+                        person = new PersonService( rockContext ).Get( personGuid.Value );
+                    }
+
+                    ppPerson.SetValue( person );
                 }
                 ppPerson.Enabled = !isReadOnly;
 

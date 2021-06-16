@@ -48,6 +48,12 @@ namespace Rock.SystemGuid
         public const string ACCOUNTS = "2B630A3B-E081-4204-A3E4-17BB3A5F063D";
 
         /// <summary>
+        /// Gets the Achievement Type page guid
+        /// ParentPage: <see cref="ENGAGEMENT"/>
+        /// </summary>
+        public const string ACHIEVEMENT_TYPES = "FCE0D006-F854-4107-9298-667563FA8D77";
+
+        /// <summary>
         /// Gets the Add Transaction page guid
         /// ParentPage: Contributions
         /// </summary>
@@ -192,6 +198,24 @@ namespace Rock.SystemGuid
         public const string BUSINESSES = "F4DF4899-2D44-4997-BA9B-9D2C64958A20";
 
         /// <summary>
+        /// Gets the bus page guid
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string BUS = "0FF43CC8-1C29-4882-B2F6-7B6F4C25FE41";
+
+        /// <summary>
+        /// Gets the Transport page guid
+        /// ParentPage: Bus
+        /// </summary>
+        public const string BUS_QUEUE = "45E865C0-CD2D-43CD-AA8A-BF5DBF537587";
+
+        /// <summary>
+        /// Gets the Transport page guid
+        /// ParentPage: Bus
+        /// </summary>
+        public const string BUS_TRANSPORT = "10E34A5D-D967-457D-9DF1-A1D33DA9D100";
+
+        /// <summary>
         /// Gets the Calendars page guid
         /// ParentPage: Website
         /// </summary>
@@ -246,9 +270,61 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_MANAGER = "A4DCE339-9C11-40CA-9A02-D2FE64EA164B";
 
         /// <summary>
+        /// The check in manager attendance detail
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ATTENDANCE_DETAIL = "758ECFCD-9E20-48B5-827B-973492E39C0D";
+
+        /// <summary>
+        /// The Check-in Manager Live Metrics page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_LIVE_METRICS = "04F70D50-5D27-4C12-A76D-B25E6E4CB177";
+
+        /// <summary>
+        /// The Login page under the Check-in Manager page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_LOGIN = "31F51DBB-AC84-4724-9219-B46FADAB9CB2";
+
+        /// <summary>
+        /// The Logout page under the Check-in Manager page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_LOGOUT = "9762DE9F-F431-4108-9F1A-AE88DFEB3289";
+
+        /// <summary>
+        /// The Settings page under the Check-in Manager page (Where Check-in Configuration is selected)
+        /// </summary>
+        public const string CHECK_IN_MANAGER_SETTINGS = "62C70118-0A6F-432A-9D84-A5296655CB9E";
+
+        /// <summary>
+        /// The Check-in Manager search page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_SEARCH = "5BB14114-BE20-4330-943A-5BC7E367116E";
+
+        /// <summary>
+        /// The check in manager room list page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ROOM_LIST = "CF03D854-AC02-412C-9B21-FB27B9F56BAB";
+
+        /// <summary>
+        /// The Check-in Manager room manager page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ROOM_MANAGER = "CECB1460-10D4-4054-B5C3-903991CA40AB";
+
+        /// <summary>
+        /// The Check-in Manager room settings page (Where rooms can be open/closed)
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ROOM_SETTINGS = "0416FF62-3252-4A84-85DB-79F4CAE82C75";
+
+        /// <summary>
+        /// The Check-in Manager roster page
+        /// </summary>
+        public const string CHECK_IN_MANAGER_ROSTER = "BA04BF01-5244-4637-B12D-7A962D2A9E77";
+
+        /// <summary>
         /// Gets the Check-in Type page guid
         /// ParentPage: 
         /// </summary>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use CHECK_IN_MANAGER_SETTINGS instead (same guid)" )]
         public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
 
         #region Check-In Pages
@@ -337,7 +413,7 @@ namespace Rock.SystemGuid
         /// Gets the Success page guid
         /// ParentPage: Check-in
         /// </summary>
-        [RockObsolete("1.11")]
+        [RockObsolete( "1.11" )]
         [Obsolete( "Use CHECKIN_SUCCESS instead" )]
         public const string SUCCESS = "E08230B8-35A4-40D6-A0BB-521418314DA9";
 
@@ -487,7 +563,7 @@ namespace Rock.SystemGuid
         public const string CMS_CONFIGURATION = "B4A24AB7-9369-4055-883F-4F4892C39AE3";
 
         /// <summary>
-        /// Gets the Communication page guid
+        /// Gets the Communication page guid (stock external page)
         /// ParentPage: Support Pages
         /// </summary>
         public const string COMMUNICATION = "60002BC0-790A-4052-8F8D-B08C2C5D261C";
@@ -547,8 +623,21 @@ namespace Rock.SystemGuid
         public const string CONFIRM = "D73F83B4-E20E-4F95-9A2C-511FB669F44C";
 
         /// <summary>
-        /// Gets the Connections page guid
-        /// ParentPage: Manage
+        /// Gets the Connections board page guid.
+        /// ParentPage: Connections opportunity select
+        /// </summary>
+        public const string CONNECTIONS_BOARD = "4FBCEB52-8892-4035-BDEA-112A494BE81F";
+
+        /// <summary>
+        /// Gets the Connections opportunity select page guid.
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_SELECT = "2A0C135A-8421-4125-A484-83C8B4FB3D34";
+
+        /// <summary>
+        /// Gets the Connections page guid. This was the original connections root page that was replaced by
+        /// the connection opportunity select.
+        /// ParentPage: Connections opportunity select
         /// </summary>
         public const string CONNECTIONS = "530860ED-BC73-4A43-8E7C-69533EF2B6AD";
 
@@ -556,6 +645,12 @@ namespace Rock.SystemGuid
         /// The connection request detail page guid
         /// </summary>
         public const string CONNECTION_REQUEST_DETAIL = "50f04e77-8d3b-4268-80ab-bc15dd6cb262";
+
+        /// <summary>
+        /// Connection Type Config Page
+        /// ParentPage: Connections
+        /// </summary>
+        public const string CONNECTION_TYPES = "9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6";
 
         /// <summary>
         /// Gets the Contact Us page guid
@@ -731,6 +826,12 @@ namespace Rock.SystemGuid
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
+        /// Gets the Mass Push Notifications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string MASS_PUSH_NOTIFICATIONS = "3D97725E-5E17-411F-856C-F4B79B9BFF15";
+
+        /// <summary>
         /// Gets the Email Preference page guid
         /// ParentPage: Support Pages
         /// </summary>
@@ -898,6 +999,18 @@ namespace Rock.SystemGuid
         /// ParentPage: 
         /// </summary>
         public const string EXTERNAL_HOMEPAGE = "85F25819-E948-4960-9DDF-00F54D32444E";
+
+        /// <summary>
+        /// The web farm
+        /// Parent page: System settings
+        /// </summary>
+        public const string WEB_FARM = "249BE98D-9DDE-4B19-9D97-9C76D9EA3056";
+
+        /// <summary>
+        /// The web farm node
+        /// Parent page: Web Farm
+        /// </summary>
+        public const string WEB_FARM_NODE = "63698D5C-7C73-44A4-A27D-A7EB777EB2A2";
 
         /// <summary>
         /// Gets the File Storage Providers page guid
@@ -1378,7 +1491,7 @@ namespace Rock.SystemGuid
         public const string PERSON_PAGES = "BF04BB7E-BE3A-4A38-A37C-386B55496303";
 
         /// <summary>
-        /// Gets the Person Profile page guid
+        /// Gets the Person Profile page guid that is under Check-in Manager
         /// ParentPage: Check-in Manager
         /// </summary>
         public const string PERSON_PROFILE_CHECK_IN_MANAGER = "F3062622-C6AD-48F3-ADD7-7F58E4BD4EF3";
@@ -1628,6 +1741,13 @@ namespace Rock.SystemGuid
         public const string SEARCH_SERVICES = "1719F597-5BA9-458D-9362-9C3E558E5C82";
 
         /// <summary>
+        /// Gets the Search Type page guid
+        /// </summary>
+        [Obsolete]
+        [RockObsolete( "1.11" )]
+        public const string SEARCH_TYPE = "3E0327B1-EE0E-41DC-87DB-C4C14922A7CA";
+
+        /// <summary>
         /// Gets the Security page guid
         /// ParentPage: Admin Tools
         /// </summary>
@@ -1685,8 +1805,8 @@ namespace Rock.SystemGuid
         /// Gets the SMS Phone Numbers page guid
         /// ParentPage: Communications
         /// </summary>
-        [Obsolete("Use SMS_PHONE_NUMBERS instead")]
-        [RockObsolete("1.9")]
+        [Obsolete( "Use SMS_PHONE_NUMBERS instead" )]
+        [RockObsolete( "1.9" )]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>
@@ -1942,5 +2062,35 @@ namespace Rock.SystemGuid
         /// The phone number lookup page.
         /// </summary>
         public const string PHONE_NUMBER_LOOKUP = "9F8D906F-ADB6-42AC-9777-D9712A5D097F";
+
+        /// <summary>
+        /// The oidc scopes page.
+        /// </summary>
+        public const string OIDC_SCOPE_LIST = "06FA872A-18B0-431A-917E-6F7B2EA8ED95";
+
+        /// <summary>
+        /// The oidc clients page.
+        /// </summary>
+        public const string OIDC_CLIENT_LIST = "0A18B520-915E-429B-AC49-7A7F73B19BAA";
+
+        /// <summary>
+        /// The oidc give permission page.
+        /// </summary>
+        public const string OIDC_GIVE_PERMISSION = "73941D90-4CA1-46F8-A5D1-5B4BD2E53B3D";
+
+        /// <summary>
+        /// The oidc logout page.
+        /// </summary>
+        public const string OIDC_LOGOUT = "FC20F56F-A7FB-4B89-9C66-98BC43816C8F";
+
+        /// <summary>
+        /// The oidc scope detail page.
+        /// </summary>
+        public const string OIDC_SCOPE_DETAIL = "55E70873-B882-4864-8B97-66F8ED3588C7";
+
+        /// <summary>
+        /// The oidc client detail page.
+        /// </summary>
+        public const string OIDC_CLIENT_DETAIL = "41E6A833-1697-4463-9962-01DFD123D4C9";
     }
 }

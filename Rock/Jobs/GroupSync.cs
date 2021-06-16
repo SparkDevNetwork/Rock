@@ -139,26 +139,38 @@ namespace Rock.Jobs
                             continue;
                         }
 
-                        List<string> syncErrors = new List<string>();
-
                         dataViewName = sync.SyncDataView.Name;
                         groupName = sync.Group.Name;
 
                         Stopwatch stopwatch = Stopwatch.StartNew();
+
                         // Get the person id's from the data view (source)
-                        var dataViewQry = sync.SyncDataView.GetQuery( null, rockContext, commandTimeout, out syncErrors );
-                        var sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
+                        var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                        {
+                            DbContext = rockContext,
+                            DatabaseTimeoutSeconds = commandTimeout
+                        };
+
+                        List<int> sourcePersonIds;
+
+                        try
+                        {
+                            var dataViewQry = sync.SyncDataView.GetQuery( dataViewGetQueryArgs );
+                            sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
+                        }
+                        catch ( Exception ex )
+                        {
+                            // If any error occurred trying get the 'where expression' from the sync-data-view,
+                            // just skip trying to sync that particular group's Sync Data View for now.
+                            var errorMessage = $"An error occurred while trying to GroupSync group '{groupName}' and data view '{dataViewName}' so the sync was skipped. Error: {ex.Message}";
+                            errors.Add( errorMessage );
+                            ExceptionLogService.LogException( new Exception( errorMessage , ex ) );
+                            continue;
+                        }
+
                         stopwatch.Stop();
                         DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id,
                                                         Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
-                        // If any error occurred trying get the 'where expression' from the sync-data-view,
-                        // just skip trying to sync that particular group's Sync Data View for now.
-                        if ( syncErrors.Count > 0 )
-                        {
-                            errors.AddRange( syncErrors );
-                            ExceptionLogService.LogException( new Exception( string.Format( "An error occurred while trying to GroupSync group '{0}' and data view '{1}' so the sync was skipped. Error: {2}", groupName, dataViewName, String.Join( ",", syncErrors ) ) ) );
-                            continue;
-                        }
 
                         // Get the person id's in the group (target) for the role being synced.
                         // Note: targetPersonIds must include archived group members

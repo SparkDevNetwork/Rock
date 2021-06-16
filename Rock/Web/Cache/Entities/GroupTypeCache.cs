@@ -318,6 +318,67 @@ namespace Rock.Web.Cache
         public DefinedValueCache GroupTypePurposeValue => GroupTypePurposeValueId.HasValue ? DefinedValueCache.Get( GroupTypePurposeValueId.Value ) : null;
 
         /// <summary>
+        /// If this GroupType is a Checkin Area, returns the Check-in Configuration (Weekly Service Check-in, Volunteer Check-in, etc) associated with this GroupType
+        /// </summary>
+        /// <returns></returns>
+        public GroupTypeCache GetCheckInConfigurationType()
+        {
+            return GetParentWithGroupTypePurpose( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+        }
+
+        /// <summary>
+        /// If this GroupType is a Checkin Area, returns the specified attribute value for the Check-in Configuration (Weekly Service Check-in, Volunteer Check-in, etc) associated with this GroupType
+        /// </summary>
+        /// <returns></returns>
+        public string GetCheckInConfigurationAttributeValue( string attributeKey )
+        {
+            return GetCheckInConfigurationType()?.GetAttributeValue( attributeKey );
+        }
+
+        /// <summary>
+        /// Gets the parent with group type purpose.
+        /// </summary>
+        /// <param name="purposeGuid">The purpose unique identifier.</param>
+        /// <returns></returns>
+        private GroupTypeCache GetParentWithGroupTypePurpose( Guid purposeGuid )
+        {
+            return GetParentPurposeGroupType( this, purposeGuid );
+        }
+
+        /// <summary>
+        /// Gets the type of the parent purpose group.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="purposeGuid">The purpose unique identifier.</param>
+        /// <returns></returns>
+        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid )
+        {
+            if ( groupType != null &&
+                groupType.GroupTypePurposeValue != null &&
+                groupType.GroupTypePurposeValue.Guid.Equals( purposeGuid ) )
+            {
+                return groupType;
+            }
+
+            foreach ( var parentGroupType in groupType.ParentGroupTypes )
+            {
+                // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
+                if ( groupType.Id == parentGroupType.Id )
+                {
+                    continue;
+                }
+
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid );
+                if ( testGroupType != null )
+                {
+                    return testGroupType;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to ignore person inactivated.
         /// By default group members are inactivated in their group whenever the person
         /// is inactivated. If this value is set to true, members in groups of this type
@@ -391,7 +452,7 @@ namespace Rock.Web.Cache
         /// The RSVP reminder system communication identifier.
         /// </value>
         [DataMember]
-        public int? RSVPReminderSystemCommunicationId { get; set; }
+        public int? RSVPReminderSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
@@ -400,7 +461,7 @@ namespace Rock.Web.Cache
         /// The number of days.
         /// </value>
         [DataMember]
-        public int? RSVPReminderOffsetDays { get; set; }
+        public int? RSVPReminderOffsetDays { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
@@ -610,6 +671,10 @@ namespace Rock.Web.Cache
         /// </value>
         public List<GroupTypeCache> ChildGroupTypes
         {
+            /* 2020-09-02 MDP
+             * ChildGroupTypes are used in two different ways, see engineering notes for ChildGroupTypes in Rock.Model.GroupType 
+             */
+
             get
             {
                 var childGroupTypes = new List<GroupTypeCache>();

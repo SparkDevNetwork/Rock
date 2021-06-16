@@ -29,6 +29,8 @@ namespace Rock.Tests.Integration.RockTests.Model
 
         /// <summary>
         /// Creates the test people.
+        /// 3 people are included in a dataview because of their middle name.
+        /// 1 person (part of the 3 in the dataview) has multiple person aliases.
         /// </summary>
         private static void CreateTestPeople()
         {
@@ -36,6 +38,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             var personService = new PersonService( rockContext );
             var personAliasService = new PersonAliasService( rockContext );
 
+            // Create 4 people. 3 are part of a dataview because of their middle name
             var personSimonSands = new Person
             {
                 FirstName = "Simon",
@@ -54,6 +57,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                 MiddleName = DataViewMiddleName
             };
 
+            // Not in the dataview
             var personKathyKole = new Person
             {
                 FirstName = "Kathy",
@@ -78,6 +82,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             personService.Add( personBarryBop );
             rockContext.SaveChanges();
 
+            // Add multiple aliases for Jerry
             personAliasService.Add( new PersonAlias
             {
                 ForeignKey = ForeignKey,
@@ -164,7 +169,13 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         /// <summary>
-        /// Creates the test steps.
+        /// Creates the test step program.
+        /// There are 2 step statuses: 1 complete and 1 in-progress
+        /// There are 4 step types:
+        ///     1) Allow multiple with an auto-complete dataview
+        ///     2) Allow multiple without an autocomplete dataview
+        ///     3) No multiple with an auto-complete dataview
+        ///     4) No multiple with no auto-complete dataview
         /// </summary>
         private static void CreateTestStepProgram()
         {
@@ -275,7 +286,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         /// <summary>
-        /// Test Cleanup
+        /// Test Cleanup.
         /// </summary>
         [TestCleanup]
         public void TestCleanup()
@@ -290,6 +301,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestInitialize]
         public void TestInitialize()
         {
+            // Reset the data before each test so each test does not affect another
             DeleteTestData();
             CreateTestData();
         }
@@ -319,16 +331,19 @@ namespace Rock.Tests.Integration.RockTests.Model
             {
                 if ( stepType.AutoCompleteDataViewId.HasValue )
                 {
+                    // The three people in the dataview should have completed steps
                     Assert.AreEqual( 3, stepType.Steps.Count );
 
                     foreach ( var step in stepType.Steps )
                     {
                         Assert.IsTrue( step.IsComplete );
                         Assert.IsTrue( step.StepStatus.IsCompleteStatus );
+                        Assert.IsNotNull( step.CompletedDateTime );
                     }
                 }
                 else
                 {
+                    // No steps should exist for a step type with no auto-complete dataview
                     Assert.AreEqual( 0, stepType.Steps.Count );
                 }
             }
@@ -341,6 +356,7 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void Execute_CompletesExistingStep()
         {
+            // Add an in-progress step that should be made complete by the job
             var stepGuid = Guid.NewGuid();
 
             using ( var rockContext = new RockContext() )
@@ -386,12 +402,14 @@ namespace Rock.Tests.Integration.RockTests.Model
                 {
                     if ( stepType.AutoCompleteDataViewId.HasValue )
                     {
+                        // The 3 people of the dataview should have a completed step
                         Assert.AreEqual( 3, stepType.Steps.Count );
 
                         foreach ( var step in stepType.Steps )
                         {
                             if ( step.Guid == stepGuid )
                             {
+                                // We need to ensure that the original step (was in-progress) still exists
                                 foundOriginalStep = true;
                             }
 
@@ -402,6 +420,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                     }
                     else
                     {
+                        // No steps should exist for a type with no auto-complete dataview
                         Assert.AreEqual( 0, stepType.Steps.Count );
                     }
                 }
@@ -416,7 +435,9 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void Execute_RespectsAllowMultipleFalse()
         {
+            // Create a complete step for a step type that does not allow multiple for a person in the dataview
             var stepGuid = Guid.NewGuid();
+            var stepCompletedDateTime = new DateTime( 2000, 1, 1 );
 
             using ( var rockContext = new RockContext() )
             {
@@ -431,7 +452,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                     ForeignKey = ForeignKey,
                     StepTypeId = stepProgram.StepTypes.FirstOrDefault( st => st.AutoCompleteDataViewId.HasValue && !st.AllowMultiple ).Id,
                     StepStatus = stepProgram.StepStatuses.FirstOrDefault( ss => ss.IsCompleteStatus ),
-                    CompletedDateTime = new DateTime( 2000, 1, 1 ),
+                    CompletedDateTime = stepCompletedDateTime,
                     PersonAlias = personAliasService.Queryable().FirstOrDefault( pa =>
                         pa.ForeignKey == ForeignKey &&
                         pa.Person.MiddleName == DataViewMiddleName ),
@@ -461,13 +482,17 @@ namespace Rock.Tests.Integration.RockTests.Model
                 {
                     if ( stepType.AutoCompleteDataViewId.HasValue )
                     {
+                        // 3 people in the dataview should have a completed step
                         Assert.AreEqual( 3, stepType.Steps.Count );
 
                         foreach ( var step in stepType.Steps )
                         {
+                            // One of the 3 steps should be the original with an unmodified completed date
                             if ( step.Guid == stepGuid )
                             {
                                 foundOriginalStep = true;
+                                Assert.IsNotNull( step.CompletedDateTime );
+                                Assert.AreEqual( stepCompletedDateTime, step.CompletedDateTime.Value );
                             }
 
                             Assert.IsTrue( step.IsComplete );
@@ -477,6 +502,7 @@ namespace Rock.Tests.Integration.RockTests.Model
                     }
                     else
                     {
+                        // No steps should exist for a type with no auto-complete dataview
                         Assert.AreEqual( 0, stepType.Steps.Count );
                     }
                 }
@@ -491,7 +517,10 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void Execute_RespectsAllowMultipleTrue()
         {
+            // Create a complete step for a step type that does allow multiple for a person in the dataview
             var stepGuid = Guid.NewGuid();
+            var stepCompletedDateTime = new DateTime( 2000, 1, 1 );
+            int stepTypeId;
 
             using ( var rockContext = new RockContext() )
             {
@@ -500,13 +529,14 @@ namespace Rock.Tests.Integration.RockTests.Model
                 var stepService = new StepService( rockContext );
 
                 var stepProgram = stepProgramService.Queryable( "StepTypes.Steps.StepStatus" ).FirstOrDefault( sp => sp.ForeignKey == ForeignKey );
+                stepTypeId = stepProgram.StepTypes.FirstOrDefault( st => st.AutoCompleteDataViewId.HasValue && st.AllowMultiple ).Id;
 
                 stepService.Add( new Step
                 {
                     ForeignKey = ForeignKey,
-                    StepTypeId = stepProgram.StepTypes.FirstOrDefault( st => st.AutoCompleteDataViewId.HasValue && st.AllowMultiple ).Id,
+                    StepTypeId = stepTypeId,
                     StepStatus = stepProgram.StepStatuses.FirstOrDefault( ss => ss.IsCompleteStatus ),
-                    CompletedDateTime = new DateTime( 2000, 1, 1 ),
+                    CompletedDateTime = stepCompletedDateTime,
                     PersonAlias = personAliasService.Queryable().FirstOrDefault( pa =>
                         pa.ForeignKey == ForeignKey &&
                         pa.Person.MiddleName == DataViewMiddleName ),
@@ -534,17 +564,20 @@ namespace Rock.Tests.Integration.RockTests.Model
 
                 foreach ( var stepType in stepProgram.StepTypes )
                 {
-                    if ( stepType.AutoCompleteDataViewId.HasValue )
+                    if ( stepType.Id == stepTypeId )
                     {
-                        Assert.AreEqual( stepType.AllowMultiple ? 4 : 3, stepType.Steps.Count );
+                        // This is the allow multiple type with an autocomplete dataview
+                        // There should be the original step and now also 3 new ones.
+                        Assert.AreEqual( 4, stepType.Steps.Count );
 
                         foreach ( var step in stepType.Steps )
                         {
+                            // The original step should be found and the completed datetime should not have changed
                             if ( step.Guid == stepGuid )
                             {
                                 foundOriginalStep = true;
                                 Assert.IsTrue( step.CompletedDateTime.HasValue );
-                                Assert.AreEqual( 2000, step.CompletedDateTime.Value.Year );
+                                Assert.AreEqual( stepCompletedDateTime, step.CompletedDateTime.Value );
                             }
 
                             Assert.IsTrue( step.IsComplete );
@@ -552,8 +585,21 @@ namespace Rock.Tests.Integration.RockTests.Model
                             Assert.IsNotNull( step.CompletedDateTime );
                         }
                     }
+                    else if ( stepType.AutoCompleteDataViewId.HasValue )
+                    {
+                        // There should be a completed step for each person in the dataview
+                        Assert.AreEqual( 3, stepType.Steps.Count );
+
+                        foreach ( var step in stepType.Steps )
+                        {
+                            Assert.IsTrue( step.IsComplete );
+                            Assert.IsTrue( step.StepStatus.IsCompleteStatus );
+                            Assert.IsNotNull( step.CompletedDateTime );
+                        }
+                    }
                     else
                     {
+                        // No steps for types with no dataview
                         Assert.AreEqual( 0, stepType.Steps.Count );
                     }
                 }

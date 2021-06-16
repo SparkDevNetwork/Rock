@@ -131,8 +131,8 @@ namespace Rock.Web.UI.Controls
         public Grid ParentGrid { get; internal set; }
 
         /// <summary>
-        /// When exporting a grid with an Export source of ColumnOutput, this property controls whether a column is included
-        /// in the export or not
+        /// When exporting a grid to Excel, this property controls whether a column is included
+        /// in the export. See <seealso cref="ExcelExportBehavior" />.
         /// </summary>
         public override ExcelExportBehavior ExcelExportBehavior
         {
@@ -202,6 +202,7 @@ namespace Rock.Web.UI.Controls
                 LinkButtonField = linkButtonField;
                 ParentGrid = linkButtonField.ParentGrid;
                 LinkButton linkButton = new LinkButton();
+                linkButton.ID = linkButtonField.ID;
                 linkButton.CausesValidation = false;
                 linkButton.CssClass = linkButtonField.CssClass;
                 linkButton.Text = linkButtonField.Text;

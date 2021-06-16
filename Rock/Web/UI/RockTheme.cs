@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web;
 
 using dotless.Core;
@@ -199,6 +200,18 @@ namespace Rock.Web.UI
         /// <returns></returns>
         public static bool CompileAll( out string messages )
         {
+            CancellationToken cancellationToken;
+            return CompileAll( out messages, cancellationToken );
+        }
+
+        /// <summary>
+        /// Compiles all themes.
+        /// </summary>
+        /// <param name="messages">The messages.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
+        public static bool CompileAll( out string messages, CancellationToken cancellationToken )
+        {
             messages = string.Empty;
             bool allCompiled = true;
 
@@ -207,6 +220,12 @@ namespace Rock.Web.UI
 
             foreach ( var theme in allThemes )
             {
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    messages = "Canceled compile themes";
+                    return false;
+                }
+
                 string themeMessage = string.Empty;
                 bool themeSuccess = theme.Compile( out themeMessage );
 

@@ -94,7 +94,7 @@ BEGIN
         Email
         ,PersonAliasId
         )
-    SELECT [e].[Email] [Email]
+   SELECT [e].[Email] [Email]
         ,[pa].[Id] [PersonAliasId]
     FROM (
         SELECT [a].[Email]
@@ -197,7 +197,7 @@ BEGIN
                 ,[pn].[Extension]
                 ,[pn].[CountryCode]
                 ,[pn].[NumberTypeValueId]
-             ,[p].[Gender]
+           ,[p].[Gender]
             ) [a]
         WHERE [a].[MatchCount] > 1
         ) [m]
@@ -270,8 +270,8 @@ BEGIN
                     JOIN [Group] [g] ON [gm].[GroupId] = [g].[Id]
                     JOIN [GroupLocation] [gl] ON [gl].[GroupId] = [g].[id]
                     JOIN [Location] [l] ON [l].[Id] = [gl].[LocationId]
-     WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
-                    AND [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
+					WHERE [g].[GroupTypeId] = @cGROUPTYPE_FAMILY_ID
+						AND [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
                     GROUP BY [gl].[LocationID]
                         ,[gm].[GroupRoleId]
                     ) [a]
@@ -284,6 +284,7 @@ BEGIN
             JOIN [Person] [p] ON [p].[Id] = [pa].[PersonId]
             WHERE [m].[GroupRoleId] = [gm].[GroupRoleId] -- only consider it a potential duplicate person if the gender,role and location are the same (to reduce false matches due to married couples)
                 AND [pa].[AliasPersonId] = [pa].[PersonId] -- limit to only the primary alias
+				AND [gl].[GroupLocationTypeValueId] = @cLOCATION_TYPE_HOME_ID
                 AND @compareByAddress = 1
             ) [a]
         GROUP BY [PersonAliasId]

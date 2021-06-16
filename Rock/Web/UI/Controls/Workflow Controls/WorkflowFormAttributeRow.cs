@@ -308,9 +308,10 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();      // A
                 writer.RenderEndTag();      // Td
 
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "px-0 py-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-pre-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row mb-2 js-form-attribute-pre-html" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPreHtml.Checked ? "block" : "none" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );
@@ -319,7 +320,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
@@ -333,32 +334,32 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbHideLabel.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPreHtml.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPostHtml.RenderControl( writer );
                 writer.RenderEndTag();
@@ -369,7 +370,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();      // row
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row js-form-attribute-post-html" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row mt-2 js-form-attribute-post-html" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Style, "display:" + ( _cbPostHtml.Checked ? "block" : "none" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-12" );

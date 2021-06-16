@@ -494,6 +494,12 @@ namespace Rock.Field.Types
 
             var filterCompareValues = filterValues[1].FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
 
+            if ( !filterCompareValues.Any() )
+            {
+                // if there aren't any filterCompareValues specified, interpret that as 'don't filter'
+                return Expression.Constant( true );
+            }
+
             var configurationJSON = configurationValues.GetValueOrNull( ConfigurationKey.ConfigurationJSON );
             List<ConditionalScaleRangeRule> conditionalScaleRangeRuleList = configurationJSON.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
 

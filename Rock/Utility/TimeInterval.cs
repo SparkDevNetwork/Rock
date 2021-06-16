@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 
 namespace Rock.Utility
@@ -21,6 +22,7 @@ namespace Rock.Utility
     /// <summary>
     /// Time Interval represents the unit and value of time.
     /// </summary>
+    [Serializable]
     public class TimeInterval
     {
         private readonly Dictionary<TimeIntervalUnit, int> _secondsMultiplier = new Dictionary<TimeIntervalUnit, int>

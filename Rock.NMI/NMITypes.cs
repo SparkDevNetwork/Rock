@@ -24,7 +24,7 @@ using Rock.Utility;
 namespace Rock.NMI
 {
     /// <summary>
-    /// 
+    /// 'card' or 'ach'
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum NMIPaymentType
@@ -805,6 +805,7 @@ namespace Rock.NMI
         /// The subscription list.
         /// </value>
         [JsonProperty( "subscription" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<Subscription> ) )]
         public Subscription[] SubscriptionList { get; set; }
     }
 
@@ -1242,6 +1243,7 @@ namespace Rock.NMI
         /// The transaction list.
         /// </value>
         [JsonProperty( "transaction" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<Transaction> ) )]
         public Transaction[] TransactionList { get; set; }
 
         /// <summary>

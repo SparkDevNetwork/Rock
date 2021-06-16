@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 using Rock.Data;
+using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Web.Cache;
 
@@ -63,41 +64,12 @@ namespace Rock.Model
         public List<int> GetIds( int dataViewId )
         {
             var dataView = Queryable().AsNoTracking().FirstOrDefault( d => d.Id == dataViewId );
-            if ( dataView != null && dataView.EntityTypeId.HasValue )
+            var dataViewGetQueryArgs = new DataViewGetQueryArgs
             {
-                var cachedEntityType = EntityTypeCache.Get( dataView.EntityTypeId.Value );
-                if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
-                {
-                    Type entityType = cachedEntityType.GetEntityType();
+                DatabaseTimeoutSeconds = 180,
+            };
 
-                    if ( entityType != null )
-                    {
-                        System.Data.Entity.DbContext reportDbContext = Reflection.GetDbContextForEntityType( entityType );
-                        if ( reportDbContext != null )
-                        {
-                            reportDbContext.Database.CommandTimeout = 180;
-                            IService serviceInstance = Reflection.GetServiceForEntityType( entityType, reportDbContext );
-                            if ( serviceInstance != null )
-                            {
-                                var errorMessages = new List<string>();
-                                ParameterExpression paramExpression = serviceInstance.ParameterExpression;
-                                Expression whereExpression = dataView.GetExpression( serviceInstance, paramExpression, out errorMessages );
-
-                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ) } );
-                                if ( getMethod != null )
-                                {
-                                    var getResult = getMethod.Invoke( serviceInstance, new object[] { paramExpression, whereExpression } );
-                                    var qry = getResult as IQueryable<IEntity>;
-
-                                    return qry.Select( t => t.Id ).ToList();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return dataView.GetQuery( dataViewGetQueryArgs ).Select( a => a.Id ).ToList();
         }
 
         /// <summary>
@@ -110,23 +82,55 @@ namespace Rock.Model
         /// </returns>
         public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
         {
-            var dataViewFilterEntityId = new EntityTypeService( ( RockContext ) this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
-
-            return IsViewInFilter( dataViewId, filter, dataViewFilterEntityId );
+            var dataView = Get( dataViewId );
+            return IsViewInFilter( dataView, filter );
         }
 
-        private bool IsViewInFilter( int dataViewId, DataViewFilter filter, int dataViewFilterEntityId )
+        /// <summary>
+        /// Determines whether [is view in filter] [the specified data view].
+        /// </summary>
+        /// <param name="dataView">The data view.</param>
+        /// <param name="filter">The filter.</param>
+        /// <returns>
+        ///   <c>true</c> if [is view in filter] [the specified data view]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsViewInFilter( DataView dataView, DataViewFilter filter )
         {
-            if ( filter.EntityTypeId == dataViewFilterEntityId )
+            if ( filter.EntityTypeId.HasValue )
             {
-                var filterDataViewId = filter.Selection.AsIntegerOrNull();
-                if ( filterDataViewId == dataViewId )
+                var entityType = EntityTypeCache.Get( filter.EntityTypeId.Value );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
+                if ( component is OtherDataViewFilter otherDataViewFilter )
+                {
+                    var otherDataView = otherDataViewFilter.GetSelectedDataView( filter.Selection );
+                    if ( otherDataView == null)
+                    {
+                        return false;
+                    }
+
+                    if ( otherDataView.Id == dataView.Id )
+                    {
+                        // if we discover that this DataView is also used in one of its child views, we've got infinite recursion
+                        return true;
+                    }
+                    else
+                    {
+                        // dig down recursively thru the *other* DataView's child filters to see if any of it's child filters is using this dataview
+                        return IsViewInFilter( dataView, otherDataView.DataViewFilter );
+                    }
+                }
+            }
+
+            foreach ( var childFilter in filter.ChildFilters )
+            {
+                // dig down recursively thru *this* DataView's child filters 
+                if ( IsViewInFilter( dataView, childFilter ) )
                 {
                     return true;
                 }
             }
 
-            return filter.ChildFilters.Any( childFilter => IsViewInFilter( dataViewId, childFilter, dataViewFilterEntityId ) );
+            return false;
         }
 
 

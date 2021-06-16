@@ -2,6 +2,7 @@
 /bin/*.dll
 !/bin/roslyn/*.dll
 !/bin/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+!/bin/Rock.Common.Mobile.dll
 
 /bin/*.pdb
 /bin/*.xml
@@ -10,3 +11,4 @@
 /*.user
 /Test.aspx
 /Test.aspx.cs
+/vwd.webinfo

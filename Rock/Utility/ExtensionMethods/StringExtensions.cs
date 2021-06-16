@@ -17,17 +17,22 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
+/*
+ * 2020-11-16 ETD
+ * IMPORTANT!
+ * This class is used by the CheckScanner which does not have the Rock dll. This file cannot contain any dependencies on that assembly or NuGet packages.
+ */
+
 namespace Rock
 {
     /// <summary>
-    /// Handy string extensions that don't require any nuget packages or Rock references
+    /// Handy string extensions that don't require any NuGet packages or Rock references
     /// </summary>
     public static partial class ExtensionMethods
     {
@@ -143,7 +148,7 @@ namespace Rock
         public static string ScrubEncodedStringForXSSObjects( string encodedString )
         {
             // Characters used by DOM Objects; javascript, document, window and URLs
-            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+            char[] badCharacters = new char[] { '<', '>', ':', '*' };
 
             if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
             {
@@ -173,7 +178,7 @@ namespace Rock
         /// <returns>Concatenated string.</returns>
         public static string JoinStringsWithCommaAnd( this IEnumerable<String> source )
         {
-            if ( source == null || source.Count() == 0  )
+            if ( source == null || source.Count() == 0 )
             {
                 return string.Empty;
             }
@@ -413,7 +418,8 @@ namespace Rock
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static IEnumerable<int> StringToIntList( this string str ) {
+        public static IEnumerable<int> StringToIntList( this string str )
+        {
             // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
 
             if ( String.IsNullOrEmpty( str ) )
@@ -421,7 +427,8 @@ namespace Rock
                 yield break;
             }
 
-            foreach(var s in str.Split(',')) {
+            foreach ( var s in str.Split( ',' ) )
+            {
                 int num;
                 if ( int.TryParse( s, out num ) )
                 {
@@ -532,7 +539,7 @@ namespace Rock
             // Replace the custom delimiter string with a single unprintable character that will not appear in the target string, then use the default string split function.
             var newDelimiter = new char[] { '\x0001' };
 
-            var replaceString = str.Replace( delimiter, new string( newDelimiter) )
+            var replaceString = str.Replace( delimiter, new string( newDelimiter ) )
                                    .Split( newDelimiter, options );
 
             return replaceString;
@@ -627,6 +634,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Standardize quotes in a string. It replaces curly single quotes into the standard single quote character (ASCII 39).
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string StandardizeQuotes( this string str )
+        {
+            if ( str == null )
+            {
+                return null;
+            }
+
+            return str.Replace( "’", "'" );
+        }
+
+        /// <summary>
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -668,26 +690,54 @@ namespace Rock
         /// <returns></returns>
         public static string LeftWithEllipsis( this string str, int length )
         {
-            return Left( str, length ) + (char)8230;
+            return Left( str, length ) + ( char ) 8230;
         }
 
         /// <summary>
-        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
+        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
+        [RockObsolete("1.12")]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        {
+            return str.SubstringSafe( startIndex, maxLength );
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns></returns>
+        public static string SubstringSafe( this string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
             {
                 return string.Empty;
             }
-            else
+
+            return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <returns></returns>
+        public static string SubstringSafe( this string str, int startIndex )
+        {
+            if ( str == null )
             {
-                return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
+                return string.Empty;
             }
+
+            return str.SubstringSafe( startIndex, Math.Max( str.Length - startIndex, 0 ) );
         }
 
         /// <summary>
@@ -1028,7 +1078,7 @@ namespace Rock
         {
             var converter = TypeDescriptor.GetConverter( typeof( T ) );
             return converter.IsValid( value )
-                ? (T)converter.ConvertFrom( value )
+                ? ( T ) converter.ConvertFrom( value )
                 : default( T );
         }
 

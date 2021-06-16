@@ -59,7 +59,13 @@ namespace Rock.Client
         public string IconCssClass { get; set; }
 
         /// <summary />
+        public bool IsImage { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public int? MaxDocumentsPerEntity { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -116,7 +122,9 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
+            this.IsImage = source.IsImage;
             this.IsSystem = source.IsSystem;
+            this.MaxDocumentsPerEntity = source.MaxDocumentsPerEntity;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;

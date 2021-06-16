@@ -54,6 +54,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AlertType
+    {
+        Gratitude = 0x0,
+        FollowUp = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AssessmentRequestStatus
     {
         Pending = 0x0,
@@ -203,6 +211,37 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ConnectionRequestViewModelSortProperty
+    {
+        Requestor = 0x0,
+        RequestorDesc = 0x1,
+        Connector = 0x2,
+        ConnectorDesc = 0x3,
+        DateAdded = 0x4,
+        DateAddedDesc = 0x5,
+        LastActivity = 0x6,
+        LastActivityDesc = 0x7,
+        Order = 0x8,
+        Campus = 0x9,
+        CampusDesc = 0xa,
+        Group = 0xb,
+        GroupDesc = 0xc,
+        Status = 0xd,
+        StatusDesc = 0xe,
+        State = 0xf,
+        StateDesc = 0x10,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConnectionTypeViewMode
+    {
+        List = 0x0,
+        Board = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ContentChannelDateType
     {
         SingleDate = 0x1,
@@ -331,6 +370,17 @@ namespace Rock.Client.Enums
         MemberRoleChanged = 0x3,
         MemberAttendedGroup = 0x4,
         MemberPlacedElsewhere = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum GroupSchedulerResourceListSourceType
+    {
+        GroupMembers = 0x0,
+        GroupMatchingPreference = 0x1,
+        AlternateGroup = 0x2,
+        ParentGroup = 0x3,
+        DataView = 0x4,
     }
 
     /// <summary>
@@ -481,6 +531,13 @@ namespace Rock.Client.Enums
     {
         Agreement = 0x0,
         Frequency = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PaymentRedirectVendor
+    {
+        Pushpay = 0x1,
     }
 
     /// <summary>
@@ -657,6 +714,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ScheduledAttendanceItemMatchesPreference
+    {
+        MatchesPreference = 0x0,
+        NotMatchesPreference = 0x1,
+        NoPreference = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ScheduledAttendanceItemStatus
     {
         Pending = 0x0,
@@ -699,6 +765,24 @@ namespace Rock.Client.Enums
     {
         All = 0x0,
         Any = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SessionStatus
+    {
+        Transient = 0x0,
+        PaymentPending = 0x1,
+        Completed = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SeverityLevel
+    {
+        Info = 0x0,
+        Warning = 0x1,
+        Critical = 0x2,
     }
 
     /// <summary>
@@ -779,6 +863,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum TypeOfMetric
+    {
+        CpuUsagePercent = 0x0,
+        MemoryUsageMegabytes = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum UpdatedAddressType
     {
         None = 0x0,
@@ -792,6 +884,15 @@ namespace Rock.Client.Enums
     {
         Cards = 0x0,
         Grid = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum WorkflowActionFormPersonEntryOption
+    {
+        Hidden = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
     }
 
     /// <summary>
