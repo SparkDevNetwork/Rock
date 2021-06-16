@@ -46,6 +46,12 @@ namespace RockWeb.Blocks.Examples
     [KeyValueListField( "Category Icons", "The Icon Class to use for each category.", false, "", "Category", "Icon Css Class" )]
     public partial class ModelMap : RockBlock
     {
+        #region Fields
+
+        private const string DEFINED_TYPE_ROUTE = "/admintools/general/defined-type/";
+
+        #endregion Fields
+
         #region Properties
 
         protected List<MCategory> EntityCategories { get; set; }
@@ -377,8 +383,9 @@ namespace RockWeb.Blocks.Examples
                                 {
                                     property.KeyValues = new Dictionary<string, string>();
                                     var definedTypeGuid = definedValueAttribute.DefinedTypeGuid.Value;
-                                    var definedValues = DefinedTypeCache.Get( definedTypeGuid ).DefinedValues;
-                                    foreach ( var definedValue in definedValues )
+                                    var definedType = DefinedTypeCache.Get( definedTypeGuid );
+                                    property.DefinedTypeId = definedType.Id;
+                                    foreach ( var definedValue in definedType.DefinedValues )
                                     {
                                         property.KeyValues.AddOrReplace( string.Format( "{0} = {1}", definedValue.Id, definedValue.Value ), definedValue.Description );
                                     }
@@ -473,7 +480,7 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         sb.AppendFormat(
-                            "<tr data-id='p{0}' {11}><td class='d-block d-sm-table-cell'>{8}<tt class='cursor-default font-weight-bold {3}' title='{6}'>{1}</tt> {4}{5}</td><td class='d-block d-sm-table-cell'>{9}{2}{10}</td></tr>{7}",
+                            "<tr data-id='p{0}' {11}><td class='d-block d-sm-table-cell'>{8}<tt class='cursor-default font-weight-bold {3}' title='{6}'>{1}</tt> {4}{5}</td><td class='d-block d-sm-table-cell'>{9}{2}{12}{10}</td></tr>{7}",
                             property.Id, // 0
                             HttpUtility.HtmlEncode( property.Name ), // 1
                             ( property.Comment != null && !string.IsNullOrWhiteSpace( property.Comment.Summary ) ) ? " " + property.Comment.Summary : string.Empty, // 2
@@ -485,7 +492,8 @@ namespace RockWeb.Blocks.Examples
                             property.NotMapped || property.IsVirtual ? "<i class='fa fa-square fa-fw o-20'></i> " : "<i class='fa fa-database fa-fw'></i> ", // 8
                             property.IsObsolete ? "<i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i> <span class='small text-danger'>" + property.ObsoleteMessage + " </span> " : string.Empty, // 9
                             ( property.IsEnum || property.IsDefinedValue ) && property.KeyValues != null ? GetStringFromKeyValues( property.KeyValues ) : string.Empty, /*10*/
-                            property.IsObsolete ? "class='o-50' title='Obsolete'" : "class=''"
+                            property.IsObsolete ? "class='o-50' title='Obsolete'" : "class=''",
+                            ( property.IsEnum || property.IsDefinedValue ) ? GetStringForEnumOrDefinedType( property ) : string.Empty
                             );
                     }
 
@@ -686,6 +694,22 @@ namespace RockWeb.Blocks.Examples
             return string.Empty;
         }
 
+        private string GetStringForEnumOrDefinedType( MProperty property )
+        {
+            var value = string.Empty;
+            if ( property.IsEnum )
+            {
+                value = " This is a hard coded list of values defined in the code as an enumeration.";
+            }
+            else if ( property.DefinedTypeId.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( property.DefinedTypeId.Value );
+                value = $" These are found in the \"<a href=\"{DEFINED_TYPE_ROUTE}{definedType.Id}\">{definedType.Name}</a>\" Defined Type.";
+            }
+
+            return value;
+        }
+
         private string GetStringFromKeyValues( Dictionary<string, string> keyValues )
         {
             var value = string.Empty;
@@ -772,6 +796,8 @@ namespace RockWeb.Blocks.Examples
         public bool IsEnum { get; set; }
 
         public bool IsDefinedValue { get; set; }
+
+        public int? DefinedTypeId { get; set; }
 
         public Dictionary<string, string> KeyValues { get; set; }
 
