@@ -74,7 +74,7 @@
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTwitterTitleAttribute" Label="Twitter Title Attribute" Help="If you don't want to use the post title for sharing the post on Twitter but instead want another title." runat="server" />
                                 <Rock:RockDropDownList ID="ddlTwitterDescriptionAttribute" Label="Twitter Description Attribute" Help="If you don't want to use the meta description for sharing the post on Twitter but instead want another title." runat="server" />
-                                <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image Attribute" Help="If you want to override the image used on Facebook for this post." runat="server" />
+                                <Rock:RockDropDownList ID="ddlTwitterImageAttribute" Label="Twitter Image Attribute" Help="If you want to override the image used on Twitter for this post." runat="server" />
                                 <Rock:RockDropDownList ID="ddlTwitterCard" Label="Twitter Card Type" runat="server">
                                     <asp:ListItem Text="" Value="none" />
                                     <asp:ListItem Text="Summary" Value="summary" />

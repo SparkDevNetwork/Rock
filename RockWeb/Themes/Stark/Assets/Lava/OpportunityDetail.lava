@@ -17,16 +17,16 @@
 	        <strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
         {% endfor %}
 
-        <p class="margin-t-lg">
-          {% if LinkedPages.SignupPage != '' %}
-          {% if Opportunity.IsActive %}
-          <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
-          {% else %}
-          <a href="#" class="btn btn-primary disabled">Connect</a>
-          <div class="alert alert-info">This opportunity is no longer available.</div>
-          {% endif %}
-          {% endif %}
-        </p>
+        {% if LinkedPages.SignupPage != null %}
+            <p class="margin-t-lg">
+            {% if Opportunity.IsActive %}
+            <a href="{{ LinkedPages.SignupPage }}?OpportunityId={{ Opportunity.Id }}" class="btn btn-primary">Connect</a>
+            {% else %}
+            <a href="#" class="btn btn-primary disabled">Connect</a>
+            <div class="alert alert-info">This opportunity is no longer available.</div>
+            {% endif %}
+            </p>
+        {% endif %}
 
     </div>
 </div>

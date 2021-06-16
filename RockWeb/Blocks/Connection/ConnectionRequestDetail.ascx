@@ -103,6 +103,7 @@
                                 <div class="col-sm-12 col-md-3 text-left text-md-right mb-3">
                                     <Rock:RockLiteral ID="lRequestDate" runat="server" Label="Request Date" />
                                     <Rock:RockLiteral ID="lPlacementGroup" runat="server" Label="Placement Group" />
+                                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
                                 </div>
                             </div>
 
@@ -225,8 +226,15 @@
             <asp:Panel ID="pnlTransferDetails" runat="server" Visible="false">
 
                 <div class="panel-body">
-
                     <div class="row">
+                        <div class="col-md-12">
+                            <Rock:NotificationBox
+                                runat="server"
+                                ID="nbTranferFailed"
+                                Text="You must select a new opportunity to transfer this request."
+                                Visible="false"
+                                NotificationBoxType="Warning"></Rock:NotificationBox>
+                        </div>
                         <div class="col-md-6">
 
                             <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="Opportunity">

@@ -111,11 +111,9 @@ namespace Rock.Workflow.Action
                 int? birthMonth = GetAttributeValue( action, BIRTH_MONTH_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
                 int? birthYear = GetAttributeValue( action, BIRTH_YEAR_KEY, true ).ResolveMergeFields( mergeFields ).AsIntegerOrNull();
 
-                if ( string.IsNullOrWhiteSpace( firstName ) ||
-                    string.IsNullOrWhiteSpace( lastName ) ||
-                    ( string.IsNullOrWhiteSpace( email ) && string.IsNullOrWhiteSpace( mobileNumber ) ) )
+                if ( string.IsNullOrWhiteSpace( firstName ) || string.IsNullOrWhiteSpace( lastName ) )
                 {
-                    errorMessages.Add( "First Name, Last Name, and either Email or Mobile Number are required. One or more of these values was not provided!" );
+                    errorMessages.Add( "First Name and Last Name are required. One or more of these values was not provided!" );
                 }
                 else
                 {

@@ -26,6 +26,13 @@ namespace Rock.Field.Types
     /// </summary>
     public class CurrencyFieldType : DecimalFieldType
     {
+        /// <summary>
+        /// Gets or sets the currency code defined value id.
+        /// </summary>
+        /// <value>
+        /// The currency code defined value identifier.
+        /// </value>
+        public int? CurrencyCodeDefinedValueId { get; set; }
 
         #region Formatting
 
@@ -52,7 +59,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                return value.AsDecimal().FormatAsCurrency();
+                return value.AsDecimal().FormatAsCurrency( CurrencyCodeDefinedValueId );
             }
 
             return base.FormatValue( parentControl, value, null, condensed );
@@ -70,7 +77,7 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl(System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id)
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             return new CurrencyBox { ID = id };
         }

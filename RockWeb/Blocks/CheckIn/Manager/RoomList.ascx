@@ -34,7 +34,7 @@
                             <Rock:RockLiteralField ID="lGroupNameAndPath" HeaderText="Group" />
                             <Rock:RockLiteralField ID="lCheckedInCount" HeaderText="Checked-in" HeaderStyle-CssClass="text-nowrap" />
                             <Rock:RockLiteralField ID="lPresentCount" HeaderText="Present" />
-                            <Rock:RockLiteralField ID="lCheckedOutCount" HeaderText="Out" />
+                            <Rock:RockLiteralField ID="lCheckedOutCount" HeaderText="Checked-out" />
                         </Columns>
                     </Rock:Grid>
                 </div>

@@ -443,7 +443,7 @@
   }
 }
 
-.attendance-chart {
+.trend-chart {
   //http://codepen.io/Victa/pen/xDqbf
   display: -ms-flexbox;
   display: flex;
@@ -479,9 +479,10 @@
     flex-basis: 0;
     flex-grow: 1;
     max-width: 100%;
+    margin-right: 2px;
+    overflow: hidden;
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
-    overflow: hidden;
 
     &:hover {
       opacity: .85;
@@ -495,8 +496,7 @@
       position: absolute;
       bottom: 0;
       display: block;
-      width: 8px;
-      width: ~"calc(100% - 2px)";
+      width: 100%;
       min-width: 2px;
       min-height: 1px;
       max-height: 100%;
@@ -508,6 +508,12 @@
         -o-animation: bar-grow 1s ease-in-out;
         animation: bar-grow 1s ease-in-out;
       }
+    }
+  }
+
+  &-gap {
+    li {
+      margin-right: 5px;
     }
   }
 }
@@ -1559,11 +1565,14 @@ tr.inactive {
   .likert {
     .radio-inline {
       padding: 5px @padding-base-horizontal 7px (@custom-control-indicator-size + @padding-base-horizontal + 4px);
-      margin-right: @padding-base-horizontal;
-      margin-left: -@padding-base-horizontal;
       cursor: pointer;
       background-clip: padding-box;
       border-radius: 4px;
+
+      @media (min-width: @likert-screen-column-min) {
+        margin-right: @padding-base-horizontal;
+        margin-left: -@padding-base-horizontal;
+      }
 
       &:hover {
         background-color: @gray-lighter;
@@ -1657,6 +1666,7 @@ tr.inactive {
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
+  margin-bottom: 15px;
 
   @media (min-width: @steps-breakpoint) {
     width: 100%;
@@ -1666,8 +1676,8 @@ tr.inactive {
 
 .step-card {
   position: relative;
-  height: 260px;
-  margin-bottom: 15px;
+  height: 100%;
+  min-height: 260px;
   overflow: hidden;
   text-align: center;
   border: 1px solid @panel-border;
@@ -1681,46 +1691,50 @@ tr.inactive {
     display: flex;
     -ms-flex-direction: column;
     flex-direction: column;
+    -ms-flex-pack: center;
+    justify-content: center;
     height: 100%;
-    padding: 12px 0;
+    padding: 12px;
     text-align: center;
     transition-duration: .25s;
     will-change: transform;
   }
 
   .step-status {
-    margin: 12px 0 0;
+    margin: 0;
   }
 
   .step-name {
     display: -webkit-box;
-    margin: 0 0 12px;
+    margin: 0;
     overflow: hidden;
+    line-height: 1.3;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    line-height: 1.3;
   }
 
   @media (min-width: @steps-breakpoint) {
     .card-info {
-      -ms-flex-pack: center;
-      justify-content: center;
       padding: 0;
     }
 
     .card-top {
       display: -ms-flexbox;
+      display: -webkit-box;
       display: flex;
-      -ms-flex-align: end;
+      -ms-flex-align: center;
       -ms-flex-pack: center;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
+      -webkit-box-align: center;
+      -webkit-box-pack: center;
     }
 
     .card-top,
     .card-bottom {
       -ms-flex: 1 1 50%;
       flex: 1 1 50%;
+      margin: 16px 0;
     }
   }
 
@@ -1791,8 +1805,8 @@ tr.inactive {
     display: block;
   }
 
-  .card-add-step-button > span {
-    transform: none;
+  .card-add-step-button {
+    height: 50%;
   }
 }
 

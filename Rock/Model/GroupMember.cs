@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -69,7 +70,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is reprensented by the GroupMember.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is represented by the GroupMember.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -176,7 +177,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -186,7 +187,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>
         /// </summary>
         /// <value>
         /// The schedule template identifier.
@@ -195,7 +196,7 @@ namespace Rock.Model
         public int? ScheduleTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule start date.
@@ -266,7 +267,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -275,7 +276,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member requirements.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberRequirement">group member requirements</see>.
         /// </summary>
         /// <value>
         /// The group member requirements.
@@ -284,7 +285,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
 
         /// <summary>
-        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>. 
         /// </summary>
         /// <value>
         /// The schedule template.
@@ -302,7 +303,7 @@ namespace Rock.Model
         private List<HistoryItem> HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member assignments.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment">group member assignments</see>.
         /// </summary>
         /// <value>
         /// The group member assignments.
@@ -682,7 +683,8 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
-            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily is updated
+            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
+            // GivingLeadId, and GroupSalution is updated
             // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
             var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
             if ( groupTypeFamilyRoleIds?.Any() == true )
@@ -692,6 +694,9 @@ namespace Rock.Model
                     PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
                     PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
+
+                    // NOTE, make sure to do this after UpdatePrimaryFamily
+                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
                 }
             }
         }

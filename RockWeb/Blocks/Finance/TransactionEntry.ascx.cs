@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -963,27 +964,19 @@ TransactionAccountDetails: [
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
-                    var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                    var accountAmount = item.FindControl( "txtAccountAmount" ) as CurrencyBox;
                     if ( accountAmount != null )
                     {
                         if ( SelectedAccounts.Count > item.ItemIndex )
                         {
-                            decimal amount = decimal.MinValue;
-                            if ( decimal.TryParse( accountAmount.Text, out amount ) )
-                            {
-                                SelectedAccounts[item.ItemIndex].Amount = amount;
-                            }
-                            else
-                            {
-                                SelectedAccounts[item.ItemIndex].Amount = default( decimal );
-                            }
+                            SelectedAccounts[item.ItemIndex].Amount = accountAmount.Value ?? 0.0M;
                         }
                     }
                 }
             }
 
             // Update the total amount
-            lblTotalAmount.Text = GlobalAttributesCache.Value( "CurrencySymbol" ) + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).FormatAsCurrency();
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -1394,9 +1387,9 @@ TransactionAccountDetails: [
                                 savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
                                 savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
                                 savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
-                                savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+                                savedAccount.FinancialPaymentDetail.NameOnCard= paymentDetail.NameOnCard;
+                                savedAccount.FinancialPaymentDetail.ExpirationMonth = paymentDetail.ExpirationMonth;
+                                savedAccount.FinancialPaymentDetail.ExpirationYear = paymentDetail.ExpirationYear;
                                 savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
                                 var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
@@ -2689,7 +2682,7 @@ TransactionAccountDetails: [
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
 
-            tdTotalConfirm.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalConfirm.Description = paymentInfo.Amount.FormatAsCurrency();
 
             if ( !_using3StepGateway )
             {
@@ -3436,7 +3429,7 @@ TransactionAccountDetails: [
             rptAccountListReceipt.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListReceipt.DataBind();
 
-            tdTotalReceipt.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalReceipt.Description = paymentInfo.Amount.FormatAsCurrency();
 
             tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
 
@@ -3577,7 +3570,7 @@ TransactionAccountDetails: [
                     else {{
                         $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
-                        $(this).val(num.toFixed(2));
+                        $(this).val(num.toFixed({7}));
                         totalAmt = totalAmt + num;
                     }}
                 }}
@@ -3585,7 +3578,7 @@ TransactionAccountDetails: [
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('{3}' + totalAmt.toFixed(2));
+            $('.total-amount').html('{3}' + totalAmt.toFixed({7}));
             return false;
         }});
 
@@ -3641,15 +3634,17 @@ TransactionAccountDetails: [
         }});
     }});
 ";
+            var currencyCodeInfo = new RockCurrencyCodeInfo();
             string script = string.Format(
                 scriptFormat,
                 divCCPaymentInfo.ClientID,      // {0}
                 hfPaymentTab.ClientID,          // {1}
                 oneTimeFrequencyId,             // {2}
-                GlobalAttributesCache.Value( "CurrencySymbol" ), // {3)
+                currencyCodeInfo.Symbol,      // {3)
                 rblSavedAccount.ClientID,       // {4}
                 rblSavedAccount.UniqueID,       // {5}
-                divNewPayment.ClientID          // {6}
+                divNewPayment.ClientID,         // {6}
+                currencyCodeInfo.DecimalPlaces // {7}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
@@ -3699,14 +3694,14 @@ TransactionAccountDetails: [
 
                 if ( accountItem.Amount != 0 )
                 {
-                    txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                    txtAccountAmount.Value = accountItem.Amount;
                 }
 
                 if ( !accountItem.Enabled )
                 {
                     txtAccountAmountLiteral.Visible = true;
                     txtAccountAmountLiteral.Label = txtAccountAmount.Label;
-                    txtAccountAmountLiteral.Text = string.Format( "${0}", txtAccountAmount.Text );
+                    txtAccountAmountLiteral.Text = txtAccountAmount.Value.FormatAsCurrency();
 
                     // Javascript  needs the textbox, so disable it and hide it with CSS.
                     txtAccountAmount.Label = string.Empty;

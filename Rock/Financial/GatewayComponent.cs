@@ -458,5 +458,28 @@ namespace Rock.Financial
 
             return null;
         }
+
+        /// <summary>
+        /// Determines whether [is currency supported] [the specified currency code].
+        /// </summary>
+        /// <param name="currencyCode">The currency code.</param>
+        /// <param name="creditCardType">Type of the credit card.</param>
+        /// <returns>
+        ///   <c>true</c> if [is currency supported] [the specified currency code]; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsCurrencyCodeSupported( DefinedValueCache currencyCode, DefinedValueCache creditCardType )
+        {
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var organizationCurrencyCodeGuid = globalAttributesCache.GetValue( SystemKey.SystemSetting.ORGANIZATION_CURRENCY_CODE ).AsGuidOrNull();
+
+            if ( organizationCurrencyCodeGuid == null || currencyCode == null )
+            {
+                return false;
+            }
+
+            var organizationCurrencyCode = DefinedValueCache.Get( organizationCurrencyCodeGuid.Value )?.Value;
+
+            return currencyCode.Value.Equals( organizationCurrencyCode, StringComparison.InvariantCultureIgnoreCase );
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -45,7 +45,7 @@ namespace Rock.Model
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> identifier.
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -55,7 +55,7 @@ namespace Rock.Model
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member role identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupTypeRole">group member role</see> identifier.
         /// </summary>
         /// <value>
         /// The group member role identifier.
@@ -64,7 +64,7 @@ namespace Rock.Model
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member status.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberStatus"/>.
         /// </summary>
         /// <value>
         /// The group member status.
@@ -87,7 +87,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.
@@ -96,7 +96,7 @@ namespace Rock.Model
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -105,7 +105,7 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member role.
+        /// Gets or sets the <see cref="Rock.Model.GroupTypeRole">group member role</see>.
         /// </summary>
         /// <value>
         /// The group member role.

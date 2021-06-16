@@ -69,7 +69,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the financial transaction.
+        /// Gets or sets the <see cref="Rock.Model.FinancialTransaction"/>.
         /// </summary>
         /// <value>
         /// The financial transaction.
@@ -78,7 +78,7 @@ namespace Rock.Model
         public virtual FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary>
-        /// Gets or sets the original transaction.
+        /// Gets or sets the original <see cref="Rock.Model.FinancialTransaction">transaction</see>.
         /// </summary>
         /// <value>
         /// The original transaction.

@@ -36,7 +36,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets or sets the event item identifier.
+        /// Gets or sets the <see cref="Rock.Model.EventItem"/> identifier.
         /// </summary>
         /// <value>
         /// The event item identifier.
@@ -46,7 +46,7 @@ namespace Rock.Model
         public int EventItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> identifier.
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -66,7 +66,7 @@ namespace Rock.Model
         public string Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule identifier.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -127,7 +127,7 @@ namespace Rock.Model
         public virtual EventItem EventItem { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -154,7 +154,7 @@ namespace Rock.Model
         public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the linkages.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceGroupMap">linkages</see>.
         /// </summary>
         /// <value>
         /// The linkages.
@@ -188,7 +188,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the content channel items.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceChannelItem">content channel items</see>.
         /// </summary>
         /// <value>
         /// The content channel items.

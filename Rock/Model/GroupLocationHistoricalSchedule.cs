@@ -43,7 +43,7 @@ namespace Rock.Model
         public int GroupLocationHistoricalId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule id of this group's location's schedule[n] at this point in history (Group.GroupLocation.Schedules[n].Id)
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> id of this group's location's schedule[n] at this point in history (Group.GroupLocation.Schedules[n].Id)
         /// </summary>
         /// <value>
         /// The location identifier.
@@ -74,7 +74,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group for this group historical record
+        /// Gets or sets the <see cref="Rock.Model.GroupLocationHistorical"/> for this group historical schedule record
         /// </summary>
         /// <value>
         /// The group.
@@ -83,7 +83,7 @@ namespace Rock.Model
         public virtual GroupLocationHistorical GroupLocationHistorical { get; set; }
 
         /// <summary>
-        /// Gets or sets the group for this group historical record
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> for this group historical schedule record
         /// </summary>
         /// <value>
         /// The group.

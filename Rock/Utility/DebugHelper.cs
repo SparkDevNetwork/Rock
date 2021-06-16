@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+
 using Rock.Data;
 
 namespace Rock
@@ -47,6 +48,24 @@ namespace Rock
         /// Just output timings, don't include the SQL or Stack trace
         /// </summary>
         public static bool TimingsOnly = false;
+
+        private static string SessionId = null;
+
+        /// <summary>
+        /// Limits Debug Output to the current asp.net SessionId
+        /// </summary>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        public static void LimitToSessionId( bool enable = true)
+        {
+            if ( enable )
+            {
+                SessionId = System.Web.HttpContext.Current?.Session?.SessionID;
+            }
+            else
+            {
+                SessionId = null;
+            }
+        }
 
         /// <summary>
         /// The summary only
@@ -159,6 +178,14 @@ namespace Rock
                 if ( !interceptionContext.DbContexts.Any( a => this.DbContextList.Contains( a ) || this.EnableForAllDbContexts ) )
                 {
                     return;
+                }
+
+                if ( SessionId.IsNotNullOrWhiteSpace() )
+                {
+                    if ( System.Web.HttpContext.Current?.Session?.SessionID != SessionId )
+                    {
+                        return;
+                    }
                 }
 
                 var incrementedCallCount = Interlocked.Increment( ref DebugHelper._callCounts );

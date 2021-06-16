@@ -270,12 +270,10 @@ namespace RockWeb.Blocks.Event
         /// <param name="report"></param>
         private void PopulateTotals( List<TemplateDiscountReport> report )
         {
-            var currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
-
-            lTotalTotalCost.Text = string.Format( currencySymbol + "{0:#,##0.00}", report.Sum( r => r.TotalCost ) );
-            lTotalDiscountQualifiedCost.Text = string.Format( currencySymbol + "{0:#,##0.00}", report.Sum( r => r.DiscountQualifiedCost ) );
-            lTotalDiscounts.Text = string.Format( currencySymbol + "{0:#,##0.00}", report.Sum( r => r.TotalDiscount ) );
-            lTotalRegistrationCost.Text = string.Format( currencySymbol + "{0:#,##0.00}", report.Sum( r => r.RegistrationCost ) );
+            lTotalTotalCost.Text = report.Sum( r => r.TotalCost ).FormatAsCurrency();
+            lTotalDiscountQualifiedCost.Text = report.Sum( r => r.DiscountQualifiedCost ).FormatAsCurrency();
+            lTotalDiscounts.Text = report.Sum( r => r.TotalDiscount ).FormatAsCurrency();
+            lTotalRegistrationCost.Text = report.Sum( r => r.RegistrationCost ).FormatAsCurrency();
             lTotalRegistrations.Text = report.Count().ToString();
             lTotalRegistrants.Text = report.Sum( r => r.RegistrantCount ).ToString();
         }

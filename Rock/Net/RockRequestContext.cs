@@ -106,9 +106,9 @@ namespace Rock.Net
         /// </summary>
         internal RockRequestContext()
         {
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
-            Headers = new Dictionary<string, IEnumerable<string>>();
+            Headers = new Dictionary<string, IEnumerable<string>>( StringComparer.InvariantCultureIgnoreCase );
             RootUrlPath = string.Empty;
         }
 
@@ -118,7 +118,7 @@ namespace Rock.Net
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         internal RockRequestContext( HttpRequest request )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = new Uri( request.Url.ToString() );
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
@@ -128,7 +128,7 @@ namespace Rock.Net
             //
             // Setup the page parameters.
             //
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var key in request.QueryString.AllKeys )
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
@@ -146,7 +146,7 @@ namespace Rock.Net
                 .ToDictionary( kvp => kvp.Key, kvp => kvp.Value, StringComparer.InvariantCultureIgnoreCase );
 
             //
-            // Todo: Setup the ContextEntities somehow. Probably from an additional paramter of the page cache object.
+            // Initialize any context entities found.
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders();
@@ -158,7 +158,7 @@ namespace Rock.Net
         /// <param name="request">The request from an API call that we will initialize from.</param>
         internal RockRequestContext( HttpRequestMessage request )
         {
-            CurrentUser = UserLoginService.GetCurrentUser( false );
+            CurrentUser = UserLoginService.GetCurrentUser( true );
 
             var uri = request.RequestUri;
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped );
@@ -169,7 +169,7 @@ namespace Rock.Net
             // Setup the page parameters, only use query string for now. Route
             // parameters don't make a lot of sense with an API call.
             //
-            PageParameters = new Dictionary<string, string>();
+            PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var kvp in request.GetQueryNameValuePairs() )
             {
                 PageParameters.AddOrReplace( kvp.Key, kvp.Value );

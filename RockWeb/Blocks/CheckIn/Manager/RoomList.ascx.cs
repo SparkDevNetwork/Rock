@@ -396,7 +396,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 GroupTypeId = a.Occurrence.Group.GroupTypeId,
                 StartDateTime = a.StartDateTime,
                 EndDateTime = a.EndDateTime,
-                Schedule = a.Occurrence.Schedule,
+                ScheduleId = a.Occurrence.ScheduleId.Value,
                 PresentDateTime = a.PresentDateTime,
                 PersonId = a.PersonAlias.PersonId
             } ).ToList();
@@ -406,7 +406,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Where( a => a != null )
                 .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
                 .Select( a => a.Id )
-                .Distinct();
+                .Distinct().ToList();
 
             var groupTypeIdsWithEnablePresence = selectedGroupTypeIds
                 .Select( a => GroupTypeCache.Get( a ) )
@@ -414,6 +414,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() )
                 .Select( a => a.Id )
                 .Distinct();
+
+            var scheduleIds = attendanceCheckinTimeInfoList.Select( a => a.ScheduleId ).Distinct().ToList();
+            var scheduleList = new ScheduleService( rockContext ).GetByIds( scheduleIds ).ToList();
+            var scheduleIdsWasScheduleOrCheckInActiveForCheckOut = new HashSet<int>( scheduleList.Where( a => a.WasScheduleOrCheckInActiveForCheckOut( currentDateTime ) ).Select( a => a.Id ).ToList() );
 
             attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.Where( a =>
             {
@@ -431,7 +435,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         'Checking-out' Attendees in the case that the parents are running late in picking them up.
                     */
 
-                    return a.Schedule.WasScheduleOrCheckInActiveForCheckOut( currentDateTime );
+                    return scheduleIdsWasScheduleOrCheckInActiveForCheckOut.Contains( a.ScheduleId );
                 }
                 else
                 {
@@ -848,8 +852,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime StartDateTime { get; internal set; }
 
             public DateTime? EndDateTime { get; internal set; }
-
-            public Schedule Schedule { get; internal set; }
+            
+            public int ScheduleId { get; internal set; }
 
             public DateTime? PresentDateTime { get; internal set; }
 

@@ -33,21 +33,21 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepWorkflowTrigger"/> by which this Workflow was triggered. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepWorkflowTrigger"/> by which this Workflow was triggered. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
         public int StepWorkflowTriggerId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Workflow"/> that was triggered. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Workflow"/> that was triggered. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
         public int WorkflowId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Step"/> that triggered the workflow. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Step"/> that triggered the workflow. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -58,19 +58,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Step Workflow Trigger.
+        /// Gets or sets the <see cref="Rock.Model.StepWorkflowTrigger"/>.
         /// </summary>
         [DataMember]
         public virtual StepWorkflowTrigger StepWorkflowTrigger { get; set; }
 
         /// <summary>
-        /// Gets or sets the Step.
+        /// Gets or sets the <see cref="Rock.Model.Step"/>.
         /// </summary>
         [DataMember]
         public virtual Step Step { get; set; }
 
         /// <summary>
-        /// Gets or sets the Workflow.
+        /// Gets or sets the <see cref="Rock.Model.Workflow"/>.
         /// </summary>
         [DataMember]
         public virtual Workflow Workflow { get; set; }

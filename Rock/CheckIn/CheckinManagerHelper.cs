@@ -16,8 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -117,7 +119,8 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Sets the selected location
+        /// Sets the selected location.
+        /// Note this will redirect to the current page to include a LocationId query parameter if a LocationId parameter in the URL is missing or doesn't match.
         /// </summary>
         /// <param name="rockBlock">The rock block.</param>
         /// <param name="lpLocation">The lp location.</param>
@@ -139,10 +142,9 @@ namespace Rock.CheckIn
 
                 using ( var rockContext = new RockContext() )
                 {
-                    Location location = new LocationService( rockContext ).Get( locationId.Value );
-                    if ( location != null )
+                    if ( locationId.HasValue )
                     {
-                        lpLocation.Location = location;
+                        lpLocation.SetNamedLocation( NamedLocationCache.Get( locationId.Value ) );
                     }
                 }
             }
@@ -166,9 +168,7 @@ namespace Rock.CheckIn
             lpLocation.NamedPickerRootLocationId = campus.LocationId.GetValueOrDefault();
 
             // Check the LocationPicker for the Location ID.
-            int locationId = lpLocation.Location != null
-                ? lpLocation.Location.Id
-                : 0;
+            int locationId = lpLocation.NamedLocation?.Id ?? 0;
 
             if ( locationId > 0 )
             {
@@ -180,14 +180,11 @@ namespace Rock.CheckIn
 
             if ( locationId > 0 )
             {
-                // If the Page parameter was set, make sure it's valid for the selected Campus.
-                using ( var rockContext = new RockContext() )
+                // double check the locationId in the URL is valid for the Campus (just in case it was altered or is no longer valid for the campus)
+                var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
+                if ( locationCampusId != campus.Id )
                 {
-                    var locationCampusId = new LocationService( rockContext ).GetCampusIdForLocation( locationId );
-                    if ( locationCampusId != campus.Id )
-                    {
-                        locationId = 0;
-                    }
+                    locationId = 0;
                 }
             }
 
@@ -199,6 +196,16 @@ namespace Rock.CheckIn
             {
                 // If still not defined, check for cookie setting.
                 locationId = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LocationIdFromSelectedCampusId.GetValueOrNull( campus.Id ) ?? 0;
+                
+                if ( locationId > 0 )
+                {
+                    // double check the locationId in the cookie is valid for the Campus (just in case it was altered or is no longer valid for the campus)
+                    var locationCampusId = NamedLocationCache.Get( locationId ).CampusId;
+                    if ( locationCampusId != campus.Id )
+                    {
+                        locationId = 0;
+                    }
+                }
 
                 if ( locationId <= 0 )
                 {
@@ -350,24 +357,41 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Filters the by active check-ins.
+        /// </summary>
+        /// <param name="currentDateTime">The current date time.</param>
+        /// <param name="attendanceList">The attendance list.</param>
+        /// <returns></returns>
+        [RockObsolete( "12.4" )]
+        [Obsolete( "No longer supported. Use FilterByActiveCheckins RosterAttendeeAttendance instead", error: true )]
+        public static List<Attendance> FilterByActiveCheckins( DateTime currentDateTime, List<Attendance> attendanceList )
+        {
+            return null;
+        }
+
+        /// <summary>
         /// If an attendance's GroupType' AllowCheckout is false, remove all Attendees whose schedules are not currently active.
         /// </summary>
         /// <param name="currentDateTime">The current date time.</param>
         /// <param name="attendanceList">The attendance list.</param>
         /// <returns></returns>
-        public static List<Attendance> FilterByActiveCheckins( DateTime currentDateTime, List<Attendance> attendanceList )
+        public static List<RosterAttendeeAttendance> FilterByActiveCheckins( DateTime currentDateTime, List<RosterAttendeeAttendance> attendanceList )
         {
-            var groupTypeIds = attendanceList.Select( a => a.Occurrence.Group.GroupTypeId ).Distinct().ToList();
+            var groupTypeIds = attendanceList.Select( a => a.GroupTypeId ).Distinct().ToList();
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) );
-            var groupTypeIdsWithAllowCheckout = groupTypes
+            var groupTypeIdsWithAllowCheckout = new HashSet<int>( groupTypes
                 .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
                 .Where( a => a != null )
                 .Select( a => a.Id )
-                .Distinct();
+                .Distinct().ToList() );
+
+            var scheduleList = attendanceList.Select( a => a.Schedule ).Where( a => a != null ).Distinct().ToList();
+            var scheduleIdsWasScheduleOrCheckInActiveForCheckOut =
+                new HashSet<int>( scheduleList.Where( a => a.WasScheduleOrCheckInActiveForCheckOut( currentDateTime ) ).Select( a => a.Id ).ToList() );
 
             attendanceList = attendanceList.Where( a =>
             {
-                var allowCheckout = groupTypeIdsWithAllowCheckout.Contains( a.Occurrence.Group.GroupTypeId );
+                var allowCheckout = groupTypeIdsWithAllowCheckout.Contains( a.GroupTypeId );
                 if ( !allowCheckout )
                 {
                     /* 
@@ -380,13 +404,14 @@ namespace Rock.CheckIn
                        Attendee leaves the room, in order to keep the list of 'Present' Attendees in order. This will also allow the volunteers to continue
                        'Checking-out' Attendees in the case that the parents are running late in picking them up.
                    */
-                    return a.Occurrence.Schedule.WasScheduleOrCheckInActiveForCheckOut( currentDateTime );
+                    return a.ScheduleId.HasValue && scheduleIdsWasScheduleOrCheckInActiveForCheckOut.Contains( a.ScheduleId.Value );
                 }
                 else
                 {
                     return true;
                 }
             } ).ToList();
+
             return attendanceList;
         }
 
@@ -402,7 +427,7 @@ namespace Rock.CheckIn
                 If StatusFilter == All, no further filtering is needed.
                 If StatusFilter == Checked-in, only retrieve records that have neither a EndDateTime nor a PresentDateTime value.
                 If StatusFilter == Present, only retrieve records that have a PresentDateTime value but don't have a EndDateTime value.
-                If StatusFilter == Checked-Out, only retrieve records that have an EndDateTime
+                If StatusFilter == Checked-out, only retrieve records that have an EndDateTime
             */
             switch ( rosterStatusFilter )
             {
@@ -442,16 +467,19 @@ namespace Rock.CheckIn
         /// <summary>
         /// Status filter not set to anything yet
         /// </summary>
+        [Description( "Unknown" )]
         Unknown = 0,
 
         /// <summary>
         /// Don't filter
         /// </summary>
+        [Description( "All" )]
         All = 1,
 
         /// <summary>
         /// Only show attendees that are checked-in, but haven't been marked present
         /// </summary>
+        [Description( "Checked-in" )]
         CheckedIn = 2,
 
         /// <summary>
@@ -459,11 +487,13 @@ namespace Rock.CheckIn
         /// Note that if Presence is NOT enabled, the attendance records will automatically marked as Present.
         /// So this would be the default filter mode when Presence is not enabled
         /// </summary>
+        [Description( "Present" )]
         Present = 3,
 
         /// <summary>
         /// Only show attendees that are checked-out.
         /// </summary>
+        [Description( "Checked-out" )]
         CheckedOut = 4
     }
 

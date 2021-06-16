@@ -46,7 +46,6 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [MemoField( "Instruction Text",
         Description = "Instructions to help the individual know how to use the block.",
-        DefaultValue = "Praying for others is part of what transforms a community into a family. Please select the categories of prayer you would like to pray for.",
         IsRequired = false,
         Key = AttributeKeys.InstructionText,
         Order = 1 )]
@@ -209,13 +208,13 @@ namespace Rock.Blocks.Types.Mobile.Events
             // Create control
             if ( this.TitleText.IsNotNullOrWhiteSpace() )
             {
-                title = $@"<Label StyleClass=""h2"" Text=""{this.TitleText}"" />";
+                title = $@"<Label StyleClass=""h2,title-text"" Text=""{this.TitleText}"" />";
             }
 
             // Create instructions
             if ( this.InstructionText.IsNotNullOrWhiteSpace() )
             {
-                instructions = $@"<Rock:ParagraphText>{this.InstructionText}</Rock:ParagraphText>";
+                instructions = $@"<Rock:ParagraphText StyleClass=""instruction-text"">{this.InstructionText}</Rock:ParagraphText>";
             }
 
             if ( ShowCampusFilter && ( RequestContext.CurrentPerson?.PrimaryCampusId.HasValue ?? false ) )

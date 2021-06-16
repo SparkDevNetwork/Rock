@@ -108,6 +108,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the person identifier for the specified PersonAliasGuid
+        /// </summary>
+        /// <param name="personAliasGuid">The person alias unique identifier.</param>
+        /// <returns></returns>
+        public virtual int? GetPersonId( Guid personAliasGuid )
+        {
+            return this.GetSelect( personAliasGuid, s => s.PersonId );
+        }
+
+        /// <summary>
         /// Gets the PersonAlias the by AliasPersonId
         /// </summary>
         /// <param name="aliasPersonId">The alias person identifier.</param>

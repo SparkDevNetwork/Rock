@@ -60,6 +60,9 @@ namespace Rock.Client
         /// <summary />
         public string Name { get; set; }
 
+        /// <summary />
+        public string PurposeKey { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -101,6 +104,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.PurposeKey = source.PurposeKey;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

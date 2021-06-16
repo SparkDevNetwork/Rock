@@ -15,7 +15,7 @@
                 <h1 class="panel-title"><i class="fa fa-cloud-download"></i> Rock Update</h1>
             </div>
             <div class="panel-body">
-                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Danger" Visible="false">
+                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                      <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
                      <p>As of Rock McKinley v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
@@ -32,7 +32,7 @@
                         <h1>Everything Is Shipshape</h1>
                         <i class="fa fa-anchor"></i>
                         <p>You run a tight ship, there is nothing to update since <asp:Literal id="lNoUpdateVersion" runat="server"/>. Check back soon as we're working hard on something amazing or
-                           check out the <a href="http://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
+                           check out the <a href="https://www.rockrms.com/Rock/ReleaseNotes">release notes</a>.
                         </p>
                     </div>
                 </asp:Panel>
@@ -65,14 +65,14 @@
                             <asp:Panel runat="server" ID="pnlEarlyAccessNotEnabled" Visible="true">
                                 <p>
                                     Community Contributors have early access to major releases of Rock. Find out
-                                <a href="http://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
+                                <a href="https://www.rockrms.com/earlyaccess">how to get early access to releases as a Community Contributor</a>.
 
                                     If you are already a Community Contributor and are having trouble with your access,
                                     <asp:Hyperlink ID="btnIssues" runat="server">let us know so we can resolve the problem</asp:Hyperlink>.
                                 </p>
                             </asp:Panel>
                             <!-- Early Access is Enabled -->
-                            <asp:Panel runat="server" ID="pnlEarlyAccessEnabled" Visible="false"> Thank you for being a Community Contributor! <a href="http://www.rockrms.com/earlyaccess">Learn more about the Early Access program</a>.
+                            <asp:Panel runat="server" ID="pnlEarlyAccessEnabled" Visible="false"> Thank you for being a Community Contributor! <a href="https://www.rockrms.com/earlyaccess">Learn more about the Early Access program</a>.
                             </asp:Panel>
                         </div>
                     </div>
