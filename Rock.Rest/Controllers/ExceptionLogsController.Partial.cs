@@ -38,24 +38,31 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/ExceptionLogs/GetChartData" )]
         public IEnumerable<IChartData> GetChartData()
         {
-            var exceptionList = this.Get().Where( x => x.HasInnerException == false && x.CreatedDateTime != null )
-            .GroupBy( x => DbFunctions.TruncateTime( x.CreatedDateTime.Value ) )
+            // Load data into a List so we can so all the aggregate calculations in C# instead making the Database do it
+            var exceptionList = this.Get()
+                .Where( x => x.HasInnerException == false && x.CreatedDateTime != null ).Select( s => new
+                {
+                    s.CreatedDateTime,
+                    s.ExceptionType
+                } ).ToList();
+
+            var exceptionSummaryList = exceptionList.GroupBy( x => x.CreatedDateTime.Value.Date )
             .Select( eg => new
             {
-                DateValue = eg.Key.Value,
+                DateValue = eg.Key,
                 ExceptionCount = eg.Count(),
                 UniqueExceptionCount = eg.Select( y => y.ExceptionType ).Distinct().Count()
             } )
             .OrderBy( eg => eg.DateValue ).ToList();
 
-            var allCountsQry = exceptionList.Select( c => new ExceptionChartData
+            var allCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
                 YValue = c.ExceptionCount,
                 SeriesName = "Total Exceptions"
             } );
 
-            var uniqueCountsQry = exceptionList.Select( c => new ExceptionChartData
+            var uniqueCountsQry = exceptionSummaryList.Select( c => new ExceptionChartData
             {
                 DateTimeStamp = c.DateValue.ToJavascriptMilliseconds(),
                 YValue = c.UniqueExceptionCount,

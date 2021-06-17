@@ -55,7 +55,9 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
-                SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
+                SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

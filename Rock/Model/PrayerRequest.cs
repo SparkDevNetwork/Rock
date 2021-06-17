@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date that this prayer request was entered.
         /// </value>
         [DataMember]
-        public DateTime EnteredDateTime { get; set; }
+        public DateTime EnteredDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>
         /// Gets or sets the date that the prayer request expires. 
@@ -257,7 +258,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -275,7 +276,7 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>

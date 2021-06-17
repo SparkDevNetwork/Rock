@@ -55,7 +55,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration template identifier.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/> identifier.
         /// </summary>
         /// <value>
         /// The registration template identifier.
@@ -271,7 +271,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the registration template.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
         /// </summary>
         /// <value>
         /// The registration template.
@@ -280,7 +280,7 @@ namespace Rock.Model
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the account.
+        /// Gets or sets the <see cref="Rock.Model.FinancialAccount">account</see>.
         /// </summary>
         /// <value>
         /// The account.
@@ -298,7 +298,7 @@ namespace Rock.Model
         public virtual PersonAlias ContactPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow type to launch at end of registration.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> to launch at end of registration.
         /// </summary>
         /// <value>
         /// The Workflow Type.
@@ -307,7 +307,7 @@ namespace Rock.Model
         public virtual WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the registrations.
+        /// Gets or sets the <see cref="Rock.Model.Registration">registrations</see>.
         /// </summary>
         /// <value>
         /// The registrations.
@@ -320,7 +320,7 @@ namespace Rock.Model
         private ICollection<Registration> _registrations;
 
         /// <summary>
-        /// Gets or sets the linkages.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceGroupMap">linkages</see>.
         /// </summary>
         /// <value>
         /// The linkages.

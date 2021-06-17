@@ -38,7 +38,7 @@
                             <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
-                               <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                               <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
                     </div>
 
@@ -107,7 +107,7 @@
                                 <Rock:RockCheckBox ID="cbEnablePageViews" runat="server" Label="Log Page Views" AutoPostBack="true" OnCheckedChanged="cbEnablePageViews_CheckedChanged" CausesValidation="false" />
                                 <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
                                 <Rock:DataTextBox ID="tbAllowedFrameDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AllowedFrameDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Allowed Frame Domain(s)"
-                                    Help="A space delimited list of domain values that are allowed to embed this site (via an iframe). The value you enter here will be used for the &lt;source&gt; as described in [Content-Security-Policy frame-ancestors directive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors#Syntax). Be sure to include your own server domain(s) in the list to prevent locking yourself out from modal use.  If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding and it will use a frame-ancestors value of 'self'." />
+                                    Help="A list of domain values that are allowed to embed this site (via an iframe).  This list may be delimited with spaces or commas, or you may enter item per line. The value you enter here will be used for the &lt;source&gt; as described in [Content-Security-Policy frame-ancestors directive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors#Syntax). Be sure to include your own server domain(s) in the list to prevent locking yourself out from modal use.  If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding and it will use a frame-ancestors value of 'self'." />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />

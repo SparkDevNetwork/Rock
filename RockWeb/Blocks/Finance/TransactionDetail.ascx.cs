@@ -48,8 +48,29 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Carry Over Account", "Keep Last Used Account when adding multiple transactions in the same session.", true, "", 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Types", "The type of location type to display for person (if none are selected all addresses will be included ).", false, true, order: 5 )]
     [BooleanField( "Transaction Source Required", "Determine if Transaction Source should be required.", false, "", 6 )]
+
+    [BooleanField( "Enable Foreign Currency",
+        Description = "Shows the transaction's currency code field if enabled.",
+        DefaultBooleanValue = false,
+        Order = 6,
+        Key = AttributeKey.EnableForeignCurrency )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
+        #region Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The enable foreign currency
+            /// </summary>
+            public const string EnableForeignCurrency = "EnableForeignCurrency";
+        }
+
+        #endregion Keys
+
         #region Constants
 
         /// <summary>
@@ -60,11 +81,28 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        string _foreignCurrencySymbol = string.Empty;
+        string _foreignCurrencyCode = string.Empty;
+        int _foreignCurrencyCodeDefinedValueId;
+
         #region Properties
 
         private Control _focusControl = null;
 
         private List<FinancialTransactionDetail> TransactionDetailsState { get; set; }
+
+        private string ForeignCurrencyDisplay
+        {
+            get
+            {
+                return string.Format( "{0} {1}", _foreignCurrencyCode, _foreignCurrencySymbol );
+            }
+        }
+
+        private bool ShowForeignCurrencyFields
+        {
+            get { return GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() && _foreignCurrencyCodeDefinedValueId != 0; }
+        }
 
         private List<int> TransactionImagesState { get; set; }
 
@@ -131,6 +169,8 @@ namespace RockWeb.Blocks.Finance
             {
                 TransactionImagesState = new List<int>();
             }
+
+            _foreignCurrencyCodeDefinedValueId = ( int ) ViewState["ForeignCurrencyCodeDefinedValueId"];
         }
 
         /// <summary>
@@ -226,6 +266,8 @@ namespace RockWeb.Blocks.Finance
                         txn.FinancialPaymentDetail = new FinancialPaymentDetail();
                     }
 
+                    GetForeignCurrencyFields( txn );
+
                     // it is possible that an existing transaction doesn't have a FinancialPaymentDetail (usually because it was imported), so create it if is doesn't exist
                     if ( txn.FinancialPaymentDetail == null )
                     {
@@ -250,6 +292,23 @@ namespace RockWeb.Blocks.Finance
             txnDetail.LoadAttributes();
             phAccountAttributeEdits.Controls.Clear();
             Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
+        }
+
+        private void GetForeignCurrencyFields( FinancialTransaction txn )
+        {
+            if ( txn == null || txn.ForeignCurrencyCodeValueId == null || !GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() )
+            {
+                return;
+            }
+
+            var currencyCodeDefinedValueCache = DefinedValueCache.Get( txn.ForeignCurrencyCodeValueId.Value );
+            if ( currencyCodeDefinedValueCache != null )
+            {
+                var currencySymbol = currencyCodeDefinedValueCache.GetAttributeValue( "Symbol" );
+                _foreignCurrencySymbol = currencySymbol;
+                _foreignCurrencyCode = currencyCodeDefinedValueCache.Value;
+                _foreignCurrencyCodeDefinedValueId = currencyCodeDefinedValueCache.Id;
+            }
         }
 
         /// <summary>
@@ -283,6 +342,7 @@ namespace RockWeb.Blocks.Finance
             ViewState["TransactionDetailsState"] = JsonConvert.SerializeObject( TransactionDetailsState, Formatting.None, jsonSetting );
             ViewState["TransactionImagesState"] = TransactionImagesState;
 
+            ViewState["ForeignCurrencyCodeDefinedValueId"] = _foreignCurrencyCodeDefinedValueId;
             return base.SaveViewState();
         }
 
@@ -415,17 +475,22 @@ namespace RockWeb.Blocks.Finance
 
                 txn.FinancialPaymentDetail.CreditCardTypeValueId = dvpCreditCardType.SelectedValueAsInt();
 
+                if ( GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() )
+                {
+                    txn.ForeignCurrencyCodeValueId = dvpForeignCurrencyCode.SelectedValue.AsIntegerOrNull();
+                }
+
                 txn.Summary = tbSummary.Text;
-                var singleAccountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Text.AsDecimalOrNull();
-                var feeCoverageAmount = tbSingleAccountFeeCoverageAmount.Text.AsDecimalOrNull();
+                var singleAccountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value;
+                var feeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
                 decimal totalAmount;
-                if ( tbSingleAccountAmountMinusFeeCoverageAmount.Text.IsNullOrWhiteSpace() )
+                if ( tbSingleAccountAmountMinusFeeCoverageAmount.Value == null )
                 {
                     totalAmount = TransactionDetailsState.Select( d => d.Amount ).ToList().Sum();
                 }
                 else
                 {
-                    totalAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Text.AsDecimal() + tbSingleAccountFeeCoverageAmount.Text.AsDecimal();
+                    totalAmount = ( tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M ) + ( tbSingleAccountFeeCoverageAmount.Value ?? 0.0M );
                 }
 
                 if ( cbIsRefund.Checked && totalAmount > 0 )
@@ -498,17 +563,28 @@ namespace RockWeb.Blocks.Finance
 
                         if ( UseSimpleAccountMode )
                         {
-                            var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Text.AsDecimal();
-                            var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Text.AsDecimalOrNull();
+                            var accountAmountMinusFeeCoverageAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M;
+                            var accountAmountFeeCoverageAmount = tbSingleAccountFeeCoverageAmount.Value;
                             txnDetail.Amount = accountAmountMinusFeeCoverageAmount + ( accountAmountFeeCoverageAmount ?? 0.00M );
+
+                            if ( ShowForeignCurrencyFields )
+                            {
+                                txnDetail.ForeignCurrencyAmount = tbSingleAccountForeignCurrencyAmount.Value;
+                            }
+                            else
+                            {
+                                txnDetail.ForeignCurrencyAmount = null;
+                            }
+
                             txnDetail.FeeCoverageAmount = accountAmountFeeCoverageAmount;
-                            txnDetail.FeeAmount = tbSingleAccountFeeAmount.Text.AsDecimalOrNull();
+                            txnDetail.FeeAmount = tbSingleAccountFeeAmount.Value;
                         }
                         else
                         {
                             txnDetail.Amount = editorTxnDetail.Amount;
                             txnDetail.FeeAmount = editorTxnDetail.FeeAmount;
                             txnDetail.FeeCoverageAmount = editorTxnDetail.FeeCoverageAmount;
+                            txnDetail.ForeignCurrencyAmount = editorTxnDetail.ForeignCurrencyAmount;
                         }
 
                         txnDetail.Summary = editorTxnDetail.Summary;
@@ -612,6 +688,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( isValid )
             {
+                _foreignCurrencyCodeDefinedValueId = 0;
                 ShowDetail( 0, hfBatchId.Value.AsIntegerOrNull() );
             }
         }
@@ -713,9 +790,9 @@ namespace RockWeb.Blocks.Finance
         {
             if ( TransactionDetailsState.Count() == 1 )
             {
-                var accountAmount = tbSingleAccountAmountMinusFeeCoverageAmount.Text.AsDecimal() + tbSingleAccountFeeCoverageAmount.Text.AsDecimal();
+                var accountAmount = ( tbSingleAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M ) + ( tbSingleAccountFeeCoverageAmount.Value ?? 0.0M );
                 TransactionDetailsState.First().Amount = accountAmount;
-                tbSingleAccountAmountMinusFeeCoverageAmount.Text = string.Empty;
+                tbSingleAccountAmountMinusFeeCoverageAmount.Value = null;
                 UseSimpleAccountMode = false;
                 BindAccounts();
             }
@@ -905,9 +982,10 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 txnDetail.AccountId = apAccount.SelectedValue.AsInteger();
-                var feeCoverageAmount = tbAccountFeeCoverageAmount.Text.AsDecimalOrNull();
-                txnDetail.Amount = tbAccountAmountMinusFeeCoverageAmount.Text.AsDecimal() + ( feeCoverageAmount ?? 0.00M );
-                txnDetail.FeeAmount = tbAccountFeeAmount.Text.AsDecimalOrNull();
+                var feeCoverageAmount = tbAccountFeeCoverageAmount.Value;
+                txnDetail.Amount = ( tbAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M ) + ( feeCoverageAmount ?? 0.00M );
+                txnDetail.ForeignCurrencyAmount = tbAccountForeignCurrencyAmount.Value;
+                txnDetail.FeeAmount = tbAccountFeeAmount.Value;
                 txnDetail.FeeCoverageAmount = feeCoverageAmount;
                 txnDetail.Summary = tbAccountSummary.Text;
 
@@ -939,7 +1017,7 @@ namespace RockWeb.Blocks.Finance
                 string errorMessage = string.Empty;
                 bool process = cbProcess.Visible && cbProcess.Checked;
 
-                var refundTxn = txnService.ProcessRefund( txn, tbRefundAmount.Text.AsDecimal(), dvpRefundReason.SelectedValueAsInt(), tbRefundSummary.Text, process, GetAttributeValue( "RefundBatchNameSuffix" ), out errorMessage );
+                var refundTxn = txnService.ProcessRefund( txn, tbRefundAmount.Value ?? 0.0M, dvpRefundReason.SelectedValueAsInt(), tbRefundSummary.Text, process, GetAttributeValue( "RefundBatchNameSuffix" ), out errorMessage );
                 if ( refundTxn != null )
                 {
                     rockContext.SaveChanges();
@@ -1235,6 +1313,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
+                GetForeignCurrencyFields( txn );
                 gpPaymentGateway.Visible = true;
 
                 if ( txn.Batch != null && txn.Batch.Status == BatchStatus.Closed )
@@ -1323,19 +1402,10 @@ namespace RockWeb.Blocks.Finance
 
                 string rockUrlRoot = ResolveRockUrl( "/" );
 
-                lAuthorizedPerson.Text = new DescriptionList().Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty ).Html;
+                lAuthorizedPerson.Text = new DescriptionList().Add( "Person", ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null ) ? Person.GetPersonPhotoImageTag( txn.AuthorizedPersonAlias, className: "person-photo" ) + " " + txn.AuthorizedPersonAlias.Person.GetAnchorTag( rockUrlRoot ) : string.Empty ).Html;
 
                 var detailsLeft = new DescriptionList()
                     .Add( "Date/Time", txn.TransactionDateTime.HasValue ? txn.TransactionDateTime.Value.ToString( "g" ) : string.Empty );
-
-                if ( txn.Batch != null )
-                {
-                    var qryParam = new Dictionary<string, string>();
-                    qryParam.Add( "BatchId", txn.Batch.Id.ToString() );
-                    string url = LinkedPageUrl( "BatchDetailPage", qryParam );
-                    detailsLeft.Add( "Batch",
-                        !string.IsNullOrWhiteSpace( url ) ? string.Format( "<a href='{0}'>{1}</a>", url, txn.Batch.Name ) : txn.Batch.Name );
-                }
 
                 if ( txn.NonCashAssetTypeValue != null )
                 {
@@ -1379,23 +1449,28 @@ namespace RockWeb.Blocks.Finance
                     if ( currencyType.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ) )
                     {
                         // Credit Card
-                        paymentMethodDetails.Add( "Type", currencyType.Value + ( txn.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + txn.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty ) );
-                        paymentMethodDetails.Add( "Name on Card", txn.FinancialPaymentDetail.NameOnCard.ToStringSafe().Trim() );
-                        paymentMethodDetails.Add( "Account Number", txn.FinancialPaymentDetail.AccountNumberMasked );
-                        paymentMethodDetails.Add( "Expires", txn.FinancialPaymentDetail.ExpirationDate );
+                        paymentMethodDetails.Add( string.Empty, currencyType.Value + ( txn.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + txn.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty ) );
+                        paymentMethodDetails.Add( "Name on Card:", txn.FinancialPaymentDetail.NameOnCard.ToStringSafe().Trim() );
+                        paymentMethodDetails.Add( "Account Number:", txn.FinancialPaymentDetail.AccountNumberMasked );
+                        paymentMethodDetails.Add( "Expires:", txn.FinancialPaymentDetail.ExpirationDate );
                     }
                     else
                     {
                         // ACH
-                        paymentMethodDetails.Add( "Type", currencyType.Value );
-                        paymentMethodDetails.Add( "Account Number", txn.FinancialPaymentDetail.AccountNumberMasked );
+                        paymentMethodDetails.Add( string.Empty, currencyType.Value );
+                        paymentMethodDetails.Add( "Account Number:", txn.FinancialPaymentDetail.AccountNumberMasked );
                     }
 
-                    detailsLeft.Add( "Payment Method", paymentMethodDetails.GetFormattedList( "{0}: {1}" ).AsDelimited( "<br/>" ) );
+                    detailsLeft.Add( "Payment Method", paymentMethodDetails.GetFormattedList( "{0} {1}" ).AsDelimited( "<br/>" ) );
                 }
                 else
                 {
                     detailsLeft.Add( "Payment Method", "<div class='alert alert-warning'>No Payment Information found. This could be due to transaction that was imported from external system.</div>" );
+                }
+
+                if ( ShowForeignCurrencyFields )
+                {
+                    detailsLeft.Add( "Foreign Currency", ForeignCurrencyDisplay );
                 }
 
                 var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
@@ -1470,7 +1545,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var modified = new StringBuilder();
-                
+
                 if ( txn.CreatedByPersonAlias != null && txn.CreatedByPersonAlias.Person != null && txn.CreatedDateTime.HasValue )
                 {
                     modified.AppendFormat( "Created by {0} on {1} at {2}<br/>", txn.CreatedByPersonAlias.Person.GetAnchorTag( rockUrlRoot ),
@@ -1496,7 +1571,6 @@ namespace RockWeb.Blocks.Finance
                 var authorizedPerson = txn.AuthorizedPersonAlias != null ? txn.AuthorizedPersonAlias.Person : null;
                 if ( authorizedPerson != null )
                 {
-                    var campusDescription = new DescriptionList();
                     var associatedCampusIds = authorizedPerson.GetCampusIds();
                     if ( associatedCampusIds.Any() )
                     {
@@ -1508,16 +1582,11 @@ namespace RockWeb.Blocks.Finance
                                 .Where( r =>
                                     associatedCampusIds.Contains( r.Id ) ) )
                             {
-                                campusNames.Add( campus.Name );
+                                campusNames.Add( string.Format( "<span class=\"label label-campus pull-right\">{0}</span>", campus.Name ) );
                             }
                         }
 
-                        if ( campusNames.Any() )
-                        {
-                            campusDescription.Add( "Campus".PluralizeIf( campusNames.Count > 1 ), campusNames.AsDelimited( "<br/>" ) );
-                        }
-
-                        lCampus.Text = campusDescription.Html;
+                        lCampus.Text = campusNames.JoinStrings( " " );
                     }
 
                     var addressDescription = new DescriptionList();
@@ -1546,13 +1615,15 @@ namespace RockWeb.Blocks.Finance
 
                 var hasFeeInfo = totalFeeAmount.HasValue;
                 var hasFeeCoverageInfo = totalFeeCoverageAmount.HasValue;
+                var totalForeignCurrencyAmount = accounts.Sum( a => a.ForeignCurrencyAmount );
 
                 accounts.Add( new FinancialTransactionDetail
                 {
                     AccountId = TotalRowAccountId,
                     FeeAmount = totalFeeAmount,
                     FeeCoverageAmount = totalFeeCoverageAmount,
-                    Amount = txn.TotalAmount
+                    Amount = txn.TotalAmount,
+                    ForeignCurrencyAmount = totalForeignCurrencyAmount
                 } );
 
                 var feeColumn = GetFeeColumn( gAccountsView );
@@ -1560,6 +1631,10 @@ namespace RockWeb.Blocks.Finance
 
                 var feeCoverageColumn = GetFeeCoverageColumn( gAccountsView );
                 feeCoverageColumn.Visible = hasFeeCoverageInfo;
+
+                var foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsView, "ForeignCurrencyAmount" );
+                foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+                foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
 
                 gAccountsView.DataSource = accounts;
                 gAccountsView.DataBind();
@@ -1695,6 +1770,8 @@ namespace RockWeb.Blocks.Finance
 
             });", true );
 
+            GetForeignCurrencyFields( txn );
+
             if ( txn != null )
             {
                 hfTransactionId.Value = txn.Id.ToString();
@@ -1732,6 +1809,16 @@ namespace RockWeb.Blocks.Finance
 
                 dvpCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : ( int? ) null );
                 SetCreditCardVisibility();
+
+                dvpForeignCurrencyCode.SetValue( txn.ForeignCurrencyCodeValueId );
+                SetForeignCurrencyCodeVisibility( txn );
+
+                var foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsEdit, "ForeignCurrencyAmount" );
+                foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+                if ( ShowForeignCurrencyFields )
+                {
+                    foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+                }
 
                 if ( txn.Id == 0 )
                 {
@@ -1838,6 +1925,7 @@ namespace RockWeb.Blocks.Finance
             dvpSourceType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ).Id;
             dvpCurrencyType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ).Id;
             dvpCreditCardType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ).Id;
+            dvpForeignCurrencyCode.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE.AsGuid(), rockContext ).Id;
             dvpRefundReasonEdit.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ).Id;
             dvpRefundReason.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_REFUND_REASON.AsGuid(), rockContext ).Id;
         }
@@ -1850,6 +1938,11 @@ namespace RockWeb.Blocks.Finance
             int? currencyType = dvpCurrencyType.SelectedValueAsInt();
             var creditCardCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
             dvpCreditCardType.Visible = currencyType.HasValue && currencyType.Value == creditCardCurrencyType.Id;
+        }
+
+        private void SetForeignCurrencyCodeVisibility( FinancialTransaction txn )
+        {
+            dvpForeignCurrencyCode.Visible = GetAttributeValue( AttributeKey.EnableForeignCurrency ).AsBoolean() && ( txn == null || txn.Id == 0 || txn.ForeignCurrencyCodeValueId != null );
         }
 
         /// <summary>
@@ -1869,6 +1962,10 @@ namespace RockWeb.Blocks.Finance
             var feeColumn = GetFeeColumn( gAccountsEdit );
             var feeCoverageColumn = GetFeeCoverageColumn( gAccountsEdit );
 
+            var foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsEdit, "ForeignCurrencyAmount" );
+            foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+
             if ( UseSimpleAccountMode )
             {
                 var txnDetail = TransactionDetailsState.FirstOrDefault();
@@ -1881,6 +1978,8 @@ namespace RockWeb.Blocks.Finance
                 SetAccountAmountMinusFeeCoverageTextboxText( tbSingleAccountAmountMinusFeeCoverageAmount, txnDetail );
                 SetAccountFeeAmountTextboxText( tbSingleAccountFeeAmount, txnDetail );
                 SetAccountFeeCoverageAmountTextboxText( tbSingleAccountFeeCoverageAmount, txnDetail );
+                SetAccountForeignCurrencyAmountTextboxText( tbSingleAccountForeignCurrencyAmount, txnDetail );
+
                 feeColumn.Visible = txnDetail.FeeAmount.HasValue;
                 feeCoverageColumn.Visible = txnDetail.FeeCoverageAmount.HasValue;
             }
@@ -1893,6 +1992,7 @@ namespace RockWeb.Blocks.Finance
                 var totalFeeCoverageAmount = 0m;
                 var hasFeeInfo = false;
                 var hasFeeCoverageInfo = false;
+                var totalForeignCurrencyAmount = 0m;
 
                 foreach ( var detail in accounts )
                 {
@@ -1909,6 +2009,11 @@ namespace RockWeb.Blocks.Finance
                         hasFeeCoverageInfo = true;
                         totalFeeCoverageAmount += detail.FeeCoverageAmount.Value;
                     }
+
+                    if ( detail.ForeignCurrencyAmount.HasValue )
+                    {
+                        totalForeignCurrencyAmount += detail.ForeignCurrencyAmount.Value;
+                    }
                 }
 
                 accounts.Add( new FinancialTransactionDetail
@@ -1916,7 +2021,8 @@ namespace RockWeb.Blocks.Finance
                     AccountId = TotalRowAccountId,
                     FeeAmount = hasFeeInfo ? totalFeeAmount : ( decimal? ) null,
                     FeeCoverageAmount = hasFeeCoverageInfo ? totalFeeCoverageAmount : ( decimal? ) null,
-                    Amount = totalAmount
+                    Amount = totalAmount,
+                    ForeignCurrencyAmount = totalForeignCurrencyAmount
                 } );
 
                 feeColumn.Visible = hasFeeInfo;
@@ -1950,7 +2056,7 @@ namespace RockWeb.Blocks.Finance
                 apAccount.SetValue( txnDetail.AccountId );
 
                 SetAccountAmountMinusFeeCoverageTextboxText( tbAccountAmountMinusFeeCoverageAmount, txnDetail );
-
+                SetAccountForeignCurrencyAmountTextboxText( tbAccountForeignCurrencyAmount, txnDetail );
                 SetAccountFeeAmountTextboxText( tbAccountFeeAmount, txnDetail );
                 SetAccountFeeCoverageAmountTextboxText( tbAccountFeeCoverageAmount, txnDetail );
                 tbAccountSummary.Text = txnDetail.Summary;
@@ -1963,13 +2069,15 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 apAccount.SetValue( null );
-                tbAccountAmountMinusFeeCoverageAmount.Text = string.Empty;
-                tbAccountFeeAmount.Text = string.Empty;
-                tbAccountFeeCoverageAmount.Text = string.Empty;
+                tbAccountAmountMinusFeeCoverageAmount.Value = null;
+                tbAccountForeignCurrencyAmount.Value = null;
+                tbAccountFeeAmount.Value = null;
+                tbAccountFeeCoverageAmount.Value = null;
                 tbAccountSummary.Text = string.Empty;
 
                 tbAccountFeeAmount.Visible = TransactionDetailsState.Any( a => a.FeeAmount.HasValue );
                 tbAccountFeeCoverageAmount.Visible = TransactionDetailsState.Any( a => a.FeeCoverageAmount.HasValue );
+                tbAccountForeignCurrencyAmount.Visible = ShowForeignCurrencyFields;
 
                 txnDetail = new FinancialTransactionDetail();
                 txnDetail.LoadAttributes();
@@ -2028,7 +2136,7 @@ namespace RockWeb.Blocks.Finance
                             tbRefundAmount.MaximumValue = totalAmount.ToString();
                         }
 
-                        tbRefundAmount.Text = ( totalAmount > 0.0m ? totalAmount : 0.0m ).ToString( "N2" );
+                        tbRefundAmount.Value = ( totalAmount > 0.0m ? totalAmount : 0.0m );
                         dvpRefundReason.SelectedIndex = -1;
                         tbRefundSummary.Text = string.Empty;
 
@@ -2198,28 +2306,13 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Take a fee and return empty string if null or the formatted currency amount
-        /// </summary>
-        /// <param name="fee"></param>
-        /// <returns></returns>
-        private static string GetFeeAsText( decimal? fee )
-        {
-            if ( fee.HasValue )
-            {
-                return fee.Value.ToString( "N2" );
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Sets the account fee amount textbox text.
         /// </summary>
         /// <param name="tbAccountFeeAmount">The tb account fee amount.</param>
         /// <param name="transactionDetail">The transaction detail.</param>
         private static void SetAccountFeeAmountTextboxText( CurrencyBox tbAccountFeeAmount, FinancialTransactionDetail transactionDetail )
         {
-            tbAccountFeeAmount.Text = GetFeeAsText( transactionDetail.FeeAmount );
+            tbAccountFeeAmount.Value = transactionDetail.FeeAmount;
             tbAccountFeeAmount.Visible = transactionDetail.FeeAmount.HasValue;
         }
 
@@ -2230,8 +2323,21 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transactionDetail">The transaction detail.</param>
         private static void SetAccountFeeCoverageAmountTextboxText( CurrencyBox tbAccountFeeCoverageAmount, FinancialTransactionDetail transactionDetail )
         {
-            tbAccountFeeCoverageAmount.Text = GetFeeAsText( transactionDetail.FeeCoverageAmount );
+            tbAccountFeeCoverageAmount.Value = transactionDetail.FeeCoverageAmount;
             tbAccountFeeCoverageAmount.Visible = transactionDetail.FeeCoverageAmount.HasValue;
+        }
+
+        private void SetAccountForeignCurrencyAmountTextboxText( CurrencyBox tbForeignCurrencyAmount, FinancialTransactionDetail transactionDetail )
+        {
+            if ( !ShowForeignCurrencyFields )
+            {
+                tbForeignCurrencyAmount.Visible = false;
+                return;
+            }
+
+            tbForeignCurrencyAmount.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            tbForeignCurrencyAmount.Value = transactionDetail.ForeignCurrencyAmount;
+            tbForeignCurrencyAmount.Visible = ShowForeignCurrencyFields;
         }
 
         /// <summary>
@@ -2258,11 +2364,11 @@ namespace RockWeb.Blocks.Finance
             var accountAmount = transactionDetail.Amount;
             if ( feeCoverageAmount.HasValue )
             {
-                tbAccountAmountMinusFeeCoverageAmount.Text = ( accountAmount - feeCoverageAmount.Value ).ToString( "N2" );
+                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount - feeCoverageAmount.Value;
             }
             else
             {
-                tbAccountAmountMinusFeeCoverageAmount.Text = accountAmount.ToString( "N2" );
+                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount;
             }
         }
 
@@ -2273,7 +2379,7 @@ namespace RockWeb.Blocks.Finance
         {
             var hasFeeInfo = TransactionDetailsState.Any( d => d.FeeAmount.HasValue );
             field.Visible = hasFeeInfo;
-            field.Text = transactionDetail == null ? string.Empty : GetFeeAsText( transactionDetail.FeeAmount );
+            field.Value = transactionDetail.FeeAmount;
         }
 
         /// <summary>
@@ -2291,6 +2397,31 @@ namespace RockWeb.Blocks.Finance
             return grid.ColumnsOfType<CurrencyField>().First( c => c.DataField == "FeeCoverageAmount" );
         }
 
+        private static CurrencyField GetForeignCurrencyColumn( Grid grid, string dataField )
+        {
+            return grid.ColumnsOfType<CurrencyField>().First( c => c.DataField == dataField );
+        }
         #endregion
+
+        protected void dvpForeignCurrencyCode_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            _foreignCurrencyCodeDefinedValueId = dvpForeignCurrencyCode.SelectedValue.AsInteger();
+
+            tbAccountForeignCurrencyAmount.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            tbAccountForeignCurrencyAmount.Visible = ShowForeignCurrencyFields;
+
+            tbSingleAccountForeignCurrencyAmount.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            tbSingleAccountForeignCurrencyAmount.Visible = ShowForeignCurrencyFields;
+
+            var foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsEdit, "ForeignCurrencyAmount" );
+            foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+
+            foreignCurrencyColumn = GetForeignCurrencyColumn( gAccountsView, "ForeignCurrencyAmount" );
+            foreignCurrencyColumn.CurrencyCodeDefinedValueId = _foreignCurrencyCodeDefinedValueId;
+            foreignCurrencyColumn.Visible = ShowForeignCurrencyFields;
+
+            BindAccounts();
+        }
     }
 }

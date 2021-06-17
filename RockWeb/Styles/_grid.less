@@ -212,19 +212,14 @@ td.wrap-contents {
     color: @grid-column-header-text-color;
     &::after {
       display: inline;
-      width: 15px;
       padding-left: 5px;
+      margin-right: -14px;
       font-family: @fa-font-face;
       font-weight: @fa-theme-weight;
-      color: #8c9ba5;
+      color: fade(@grid-column-header-text-color, 35%);
       text-decoration: none;
       content: @fa-var-caret-down;
       opacity: 0;
-    }
-
-    &:active,
-    &:active::after {
-      color: @link-color;
     }
   }
 
@@ -259,6 +254,7 @@ td.wrap-contents {
   padding: 5px 0;
 
   .grid-pager {
+    float: right;
     margin-top: 0;
     margin-bottom: 0;
 
@@ -283,10 +279,6 @@ td.wrap-contents {
         border-color: @grid-pager-button-active-border;
       }
     }
-  }
-
-  .grid-pager {
-    float: right;
   }
 
   .grid-pagesize {

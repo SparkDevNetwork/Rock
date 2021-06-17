@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Assessment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\AssessmentType.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationResponseAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ConnectionActivityType.cs" />
@@ -123,7 +125,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialPledge.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialStatementTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionAlertType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionDetailExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\FinancialTransactionExport.cs" />
@@ -175,6 +180,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Location.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LocationExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\LoginParameters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MediaFolder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MergeTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaFirstNameGenderLookup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\MetaLastNameLookup.cs" />
@@ -216,6 +224,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationInstance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationRegistrant.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationRegistrantFee.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFee.cs" />
@@ -258,6 +267,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\TaggedItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLogin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNodeLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WebFarmNodeMetric.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Workflow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowAction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\WorkflowActionForm.cs" />

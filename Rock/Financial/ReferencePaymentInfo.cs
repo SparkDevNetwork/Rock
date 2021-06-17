@@ -58,7 +58,20 @@ namespace Rock.Financial
         /// <value>
         /// The initial currency type value.
         /// </value>
-        public DefinedValueCache InitialCurrencyTypeValue { get; set; }
+        public DefinedValueCache InitialCurrencyTypeValue
+        {
+            get
+            {
+                return initialCurrencyTypeValueId.HasValue ? DefinedValueCache.Get( initialCurrencyTypeValueId.Value ) : null;
+            }
+
+            set
+            {
+                initialCurrencyTypeValueId = value?.Id;
+            }
+        }
+
+        private int? initialCurrencyTypeValueId = null;
 
         /// <summary>
         /// Gets or sets the initial credit card type value id.
@@ -66,7 +79,20 @@ namespace Rock.Financial
         /// <value>
         /// The initial credit card type value id.
         /// </value>
-        public DefinedValueCache InitialCreditCardTypeValue { get; set; }
+        public DefinedValueCache InitialCreditCardTypeValue
+        {
+            get
+            {
+                return initialCreditCardTypeValueId.HasValue ? DefinedValueCache.Get( initialCreditCardTypeValueId.Value ) : null;
+            }
+
+            set
+            {
+                initialCreditCardTypeValueId = value?.Id;
+            }
+        }
+
+        private int? initialCreditCardTypeValueId = null;
 
         /// <summary>
         /// Gets or sets the Gateway Person Identifier.

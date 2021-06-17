@@ -668,19 +668,20 @@ function onTaskCompleted( resultData )
         /// <summary>
         /// Loads the communication types that are configured for this block
         /// </summary>
-        private List<CommunicationType> GetAllowedCommunicationTypes()
+        private List<CommunicationType> GetAllowedCommunicationTypes(bool forSelector = false)
         {
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
-            if ( communicationTypes.Any() )
+            if ( !forSelector && communicationTypes.Contains( "Recipient Preference" ) )
             {
-                // Recipient Preference,Email,SMS
-                if ( communicationTypes.Contains( "Recipient Preference" ) )
-                {
-                    result.Add( CommunicationType.RecipientPreference );
-                }
-
+                result.Add( CommunicationType.RecipientPreference );
+                result.Add( CommunicationType.Email );
+                result.Add( CommunicationType.SMS );
+                result.Add( CommunicationType.PushNotification );
+            }
+            else if ( communicationTypes.Any() )
+            {
                 if ( communicationTypes.Contains( "Email" ) )
                 {
                     result.Add( CommunicationType.Email );
@@ -695,6 +696,11 @@ function onTaskCompleted( resultData )
                 {
                     result.Add( CommunicationType.PushNotification );
                 }
+
+                if ( communicationTypes.Contains( "Recipient Preference" ) )
+                {
+                    result.Add( CommunicationType.RecipientPreference );
+                }
             }
             else
             {
@@ -703,6 +709,7 @@ function onTaskCompleted( resultData )
                 result.Add( CommunicationType.SMS );
                 result.Add( CommunicationType.PushNotification );
             }
+
 
             return result;
         }
@@ -1165,7 +1172,7 @@ function onTaskCompleted( resultData )
             }
 
             // See what is allowed by the block settings
-            var allowedCommunicationTypes = GetAllowedCommunicationTypes();
+            var allowedCommunicationTypes = GetAllowedCommunicationTypes(true);
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
@@ -1188,7 +1195,7 @@ function onTaskCompleted( resultData )
             }
 
             // Only add recipient preference if at least two options exists.
-            if ( rblCommunicationMedium.Items.Count > 1 && recipientPreferenceEnabled )
+            if ( recipientPreferenceEnabled )
             {
                 rblCommunicationMedium.Items.Add( new ListItem( "Recipient Preference", CommunicationType.RecipientPreference.ConvertToInt().ToString() ) );
             }
@@ -1196,7 +1203,7 @@ function onTaskCompleted( resultData )
             rblCommunicationMedium.Visible = rblCommunicationMedium.Items.Count > 1;
 
             // make sure that either EMAIL, SMS, or PUSH is enabled
-            if ( !( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) )
+            if ( !( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled || recipientPreferenceEnabled ) )
             {
                 nbNoCommunicationTransport.Text = "There are no active Email, SMS, or Push communication transports configured.";
                 nbNoCommunicationTransport.Visible = true;

@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -37,7 +38,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -48,7 +49,7 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> identifier.
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -93,25 +94,25 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group requirement.
+        /// Gets or sets the <see cref="Rock.Model.GroupRequirementType">type</see> of the group requirement.
         /// </summary>
         /// <value>
         /// The type of the group requirement.
@@ -120,12 +121,12 @@ namespace Rock.Model
         public virtual GroupRequirementType GroupRequirementType { get; set; }
 
         /// <summary>
-        /// The specific Group Role that this requirement is for. NULL means this requirement applies to all roles.
+        /// The specific <see cref="Rock.Model.GroupTypeRole">Group Role</see> that this requirement is for. NULL means this requirement applies to all roles.
         /// </summary>
         /// <value>
         /// The group type role.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupTypeRole GroupRole { get; set; }
 
         #endregion
@@ -156,7 +157,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a list of each person and their GroupRequiremnt status for this group requirement
+        /// Returns a list of each person and their GroupRequirement status for this group requirement
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personQry">The person qry.</param>

@@ -990,7 +990,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string groupMembersHtml = string.Empty;
                 foreach ( var groupMember in sortedGroupMembers )
                 {
-                    string maritalStatusValue = "Unknown Martial Status";
+                    string maritalStatusValue = "Unknown Marital Status";
                     if ( groupMember.Person.MaritalStatusValue != null )
                     {
                         maritalStatusValue = groupMember.Person.MaritalStatusValue.Value;
@@ -1308,7 +1308,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         var sortedGroupsList = groupsAtLocationList.Select( a => new GroupAtLocationInfo
                         {
                             Id = a.Id,
-                            GroupTitle = _isFamilyGroupType ? RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, a.Id, null, true ) : a.Name,
+                            GroupTitle = _isFamilyGroupType ? a.GroupSalutation : a.Name,
                             GroupLocation = a.GroupLocations.Where( gl => gl.LocationId == locationId ).FirstOrDefault(),
                             GroupMembers = a.Members
                         } ).OrderBy( a => a.GroupMembers.AsQueryable().HeadOfHousehold().LastName ).ToList();

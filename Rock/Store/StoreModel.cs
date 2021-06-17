@@ -16,19 +16,26 @@
 //
 using System;
 using System.Collections.Generic;
+using Rock.Lava;
 
 namespace Rock.Store
 {
     /// <summary>
     /// Base model class for the store 
     /// </summary>
-    public class StoreModel : DotLiquid.ILiquidizable
+    public class StoreModel : DotLiquid.ILiquidizable, ILavaDataDictionarySource
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="StoreModel"/> class.
         /// </summary>
         public StoreModel() { }
+
+        ILavaDataDictionary ILavaDataDictionarySource.GetLavaDataDictionary()
+        {
+            var dictionary = this.ToLiquid( false ) as Dictionary<string, object>;
+
+            return new LavaDataDictionary( dictionary );
+        }
 
         /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
@@ -38,13 +45,13 @@ namespace Rock.Store
         {
             return this.ToLiquid( false );
         }
-        
+
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current store model.
+        /// Creates a Lava compatible dictionary that represents the current store model.
         /// </summary>
         /// <param name="debug">if set to <c>true</c> the entire object tree will be parsed immediately.</param>
         /// <returns>
-        /// DotLiquid compatible dictionary.
+        /// A Lava compatible dictionary.
         /// </returns>
         public virtual object ToLiquid( bool debug )
         {
@@ -54,23 +61,36 @@ namespace Rock.Store
 
             foreach ( var propInfo in entityType.GetProperties() )
             {
-                
                 object propValue = propInfo.GetValue( this, null );
 
                 if ( propValue is Guid )
                 {
-                    propValue = ((Guid)propValue).ToString();
+                    propValue = ( (Guid)propValue ).ToString();
                 }
 
-                if ( debug && propValue is DotLiquid.ILiquidizable )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
-                    dictionary.Add( propInfo.Name, ((DotLiquid.ILiquidizable)propValue).ToLiquid() );
+                    if ( debug && propValue is DotLiquid.ILiquidizable )
+                    {
+                        dictionary.Add( propInfo.Name, ( (DotLiquid.ILiquidizable)propValue ).ToLiquid() );
+                    }
+                    else
+                    {
+                        dictionary.Add( propInfo.Name, propValue );
+                    }
                 }
                 else
                 {
-                    dictionary.Add( propInfo.Name, propValue );
+                    if ( debug && propValue is ILavaDataDictionarySource )
+                    {
+                        dictionary.Add( propInfo.Name, ( (ILavaDataDictionarySource)propValue ).GetLavaDataDictionary() );
+                    }
+                    else
+                    {
+                        dictionary.Add( propInfo.Name, propValue );
+                    }
                 }
-                
+
             }
 
             return dictionary;

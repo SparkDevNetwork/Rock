@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Rock.Lava;
 
 namespace Rock.CheckIn
 {
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.Lava.ILiquidizable" />
     [DataContract]
-    public class CheckInMessage : Lava.ILiquidizable
+    public class CheckInMessage : ILavaDataDictionary, ILiquidizable
     {
         /// <summary>
         /// Gets or sets the message text.
@@ -50,7 +51,20 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [Rock.Data.LavaIgnore]
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
         public object this[object key]
         {
             get
@@ -70,7 +84,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The available keys.
         /// </value>
-        [Rock.Data.LavaIgnore]
+        [LavaHidden]
         public List<string> AvailableKeys
         {
             get
@@ -85,7 +99,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public bool ContainsKey( object key )
+        public bool ContainsKey( string key )
         {
             var additionalKeys = new List<string> { "MessageText", "MessageType" };
             if (additionalKeys.Contains( key.ToStringSafe() ))
@@ -93,6 +107,37 @@ namespace Rock.CheckIn
                 return true;
             }
             return false;
+        }
+
+        #region ILiquidizable
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool ContainsKey( object key )
+        {
+            var additionalKeys = new List<string> { "MessageText", "MessageType" };
+            if ( additionalKeys.Contains( key.ToStringSafe() ) )
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
+        public object GetValue( object key )
+        {
+            return this[key];
         }
 
         /// <summary>
@@ -104,6 +149,8 @@ namespace Rock.CheckIn
         {
             return this;
         }
+
+        #endregion
     }
 
     /// <summary>

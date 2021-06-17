@@ -262,9 +262,9 @@
 @grid-footer-font-size:       10px;
 @grid-footer-font-weight:     300;
 //--
-@grid-footer-button-bg:                 darken(@grid-footer-bg, 5%);
-@grid-footer-button-text-color:         @text-color;
-@grid-footer-button-border:             darken(@grid-footer-bg, 20%);
+@grid-footer-button-bg:                 @btn-default-bg;
+@grid-footer-button-text-color:         @btn-default-color;
+@grid-footer-button-border:             @btn-default-border;
 
 // Person Profile
 //// Bio Bar
@@ -357,6 +357,16 @@
 @input-focus-rgba:            fade(@input-border-focus, 60%);
 @input-focus-box-shadow:      ~"0 0 0 3px @{input-focus-rgba}";
 @input-focus-transition:      ~"border-color .15s ease-in-out, box-shadow .15s ease-in-out";
+
+@form-section-margin-bottom: 64px;
+
+// Rock Input Widths
+@input-width-xs: 60px;
+@input-width-sm: 90px;
+@input-width-md: 150px;
+@input-width-lg: 210px;
+@input-width-xl: 270px;
+@input-width-xxl: 530px;
 
 //** Small `.form-control` height
 @input-height-xs:             (floor(@font-size-small * @line-height-small) + (@padding-xs-vertical * 2) + 2);
@@ -475,6 +485,7 @@
 
 // Max size before likert moves to columns
 @likert-screen-column: @screen-md-max;
+@likert-screen-column-min: (@likert-screen-column - 1);
 
 // Bootstrap 4 Variables
 // Used when @enable-flexbox: true;

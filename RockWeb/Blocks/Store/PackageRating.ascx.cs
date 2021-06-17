@@ -17,21 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
+using System.Configuration;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Store;
 using Rock.Utility;
 using Rock.VersionInfo;
-using System.Text;
 
 namespace RockWeb.Blocks.Store
 {
@@ -86,7 +81,7 @@ namespace RockWeb.Blocks.Store
             if ( !Page.IsPostBack )
             {
                 ShowPackage();
-                
+
             }
         }
 
@@ -126,7 +121,7 @@ namespace RockWeb.Blocks.Store
         {
             // get package id
             int packageId = -1;
-            
+
             if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
             {
                 packageId = Convert.ToInt32( PageParameter( "PackageId" ) );
@@ -146,7 +141,7 @@ namespace RockWeb.Blocks.Store
         private void ShowPackage()
         {
             string errorResponse = string.Empty;
-            
+
             // get package id
             int packageId = -1;
 
@@ -186,7 +181,7 @@ namespace RockWeb.Blocks.Store
             if ( package.Versions.Count > 0 )
             {
                 RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
-                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending(v => v.Id).FirstOrDefault();
+                latestVersion = package.Versions.Where( v => v.RequiredRockSemanticVersion <= rockVersion ).OrderByDescending( v => v.Id ).FirstOrDefault();
             }
 
             // determine the state of the install button (install, update, buy or installed)
@@ -206,11 +201,11 @@ namespace RockWeb.Blocks.Store
                     if ( package.IsPurchased )
                     {
                         lbInstall.Text = "Install";
-                        lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString());
-                        
+                        lInstallNotes.Text = string.Format( "<small>Purchased {0}</small>", package.PurchasedDate.ToShortDateString() );
+
                         // set rating link button
                         lbRate.Visible = true;
-                        lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}", storeKey, packageId.ToString());
+                        lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), null );
                     }
                     else
                     {
@@ -230,18 +225,18 @@ namespace RockWeb.Blocks.Store
 
                     // set rating link button
                     lbRate.Visible = true;
-                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+                    lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
 
                 }
                 else
                 {
                     // have a previous version installed
                     lbInstall.Text = "Update";
-                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel);
+                    lInstallNotes.Text = string.Format( "<small>You have {0} installed</small>", installedPackage.VersionLabel );
 
                     // set rating link button
                     lbRate.Visible = true;
-                    lbRate.PostBackUrl = string.Format( "http://www.rockrms.com/Store/Rate?OrganizationKey={0}&PackageId={1}&InstalledVersionId={2}", storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
+                    lbRate.PostBackUrl = GetRockPostbackUrl( storeKey, packageId.ToString(), installedPackage.VersionId.ToString() );
 
                 }
             }
@@ -251,7 +246,7 @@ namespace RockWeb.Blocks.Store
 
                 rptScreenshots.DataSource = latestVersion.Screenshots;
                 rptScreenshots.DataBind();
-                
+
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
                 lLatestVersionDescription.Text = latestVersion.Description;
 
@@ -265,9 +260,9 @@ namespace RockWeb.Blocks.Store
                 }
 
                 lLastUpdate.Text = latestVersion.AddedDate.ToShortDateString();
-                lRequiredRockVersion.Text = string.Format("v{0}.{1}", 
+                lRequiredRockVersion.Text = string.Format( "v{0}.{1}",
                                                 latestVersion.RequiredRockSemanticVersion.Minor.ToString(),
-                                                latestVersion.RequiredRockSemanticVersion.Patch.ToString());
+                                                latestVersion.RequiredRockSemanticVersion.Patch.ToString() );
                 lDocumenationLink.Text = string.Format( "<a href='{0}'>Support Link</a>", latestVersion.DocumentationUrl );
 
                 // fill in previous version info
@@ -284,7 +279,7 @@ namespace RockWeb.Blocks.Store
             {
                 // hide install button
                 lbInstall.Visible = false;
-                
+
                 // display info on what Rock version you need to be on to run this package
                 if ( package.Versions.Count > 0 )
                 {
@@ -306,22 +301,33 @@ namespace RockWeb.Blocks.Store
                                                     lastVersion.RequiredRockSemanticVersion.Patch.ToString() );
                     }
                 }
-                
+
             }
         }
 
-        private string CreateRatingStars(int rating )
+        private string GetRockPostbackUrl( string storeKey, string packageId, string installedVersionId )
+        {
+            var baseUrl = ConfigurationManager.AppSettings["RockStoreUrl"].EnsureTrailingForwardslash();
+
+            if ( installedVersionId.IsNullOrWhiteSpace() )
+            {
+                return string.Format( "{0}Store/Rate?OrganizationKey={1}&PackageId={2}", baseUrl, storeKey, packageId );
+            }
+            return string.Format( "{0}Store/Rate?OrganizationKey={1}&PackageId={2}&InstalledVersionId={3}", baseUrl, storeKey, packageId, installedVersionId );
+        }
+
+        private string CreateRatingStars( int rating )
         {
             var starCounter = 0;
             StringBuilder starMarkup = new StringBuilder();
 
-            for (int i = 0; i < rating; i++ )
+            for ( int i = 0; i < rating; i++ )
             {
                 starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
                 starCounter++;
             }
 
-            for (int i = starCounter; i <= 5; i++ )
+            for ( int i = starCounter; i <= 5; i++ )
             {
                 starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
             }

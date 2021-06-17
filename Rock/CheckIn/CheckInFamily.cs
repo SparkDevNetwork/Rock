@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Rock.Utility;
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -27,7 +27,7 @@ namespace Rock.CheckIn
     /// A family option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInFamily : DotLiquid.Drop
+    public class CheckInFamily : RockDynamic
     {
         /// <summary>
         /// A list of <see cref="Rock.Model.Attendance"/> records for the family check-in 

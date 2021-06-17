@@ -527,6 +527,11 @@
                         <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
                     </div>
 
+                    <a id="MediaElementPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" />
+                    </div>
+
                     <h2>Groups and Group Types</h2>
 
                     <a id="GroupPicker"></a>
@@ -537,6 +542,11 @@
                     <a id="GroupPicker2"></a>
                     <div runat="server" class="r-example">
                         <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
+                    </div>
+
+                    <a id="GroupPicker FullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="gpExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:GroupPicker (FullWidth)" AllowMultiSelect="true" />
                     </div>
 
                     <a id="GroupTypePicker"></a>
@@ -602,6 +612,11 @@
                     <a id="PersonPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
+                    </div>
+
+                    <a id="PersonPickerFullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:PersonPicker ( FullWidth )" />
                     </div>
 
                     <a id="PersonAndBusinessPicker"></a>

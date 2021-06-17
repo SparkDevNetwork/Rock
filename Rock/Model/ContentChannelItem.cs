@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -202,7 +203,7 @@ namespace Rock.Model
         /// <value>
         /// The approved by person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
@@ -212,7 +213,7 @@ namespace Rock.Model
         /// The primary alias.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string PrimarySlug
         {
             get
@@ -227,16 +228,16 @@ namespace Rock.Model
         /// <value>
         /// The content channel item slugs.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannelItemSlug> ContentChannelItemSlugs { get; set; }
 
         /// <summary>
-        /// Gets or sets the child items.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItemAssociation">child items</see>.
         /// </summary>
         /// <value>
         /// The child items.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannelItemAssociation> ChildItems
         {
             get { return _childItems ?? ( _childItems = new Collection<ContentChannelItemAssociation>() ); }
@@ -250,7 +251,7 @@ namespace Rock.Model
         /// <value>
         /// The parent items.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannelItemAssociation> ParentItems
         {
             get { return _parentItems ?? ( _parentItems = new Collection<ContentChannelItemAssociation>() ); }
@@ -259,7 +260,7 @@ namespace Rock.Model
         private ICollection<ContentChannelItemAssociation> _parentItems;
 
         /// <summary>
-        /// Gets or sets the content channel items.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceChannelItem">event item occurrence channel items</see>.
         /// </summary>
         /// <value>
         /// The content channel items.

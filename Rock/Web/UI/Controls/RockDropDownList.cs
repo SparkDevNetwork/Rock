@@ -262,6 +262,42 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the prepend text.
+        /// </summary>
+        /// <value>
+        /// The prepend text.
+        /// </value>
+        [
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Text that appears prepended to the front of the text box." )
+        ]
+        public string PrependText
+        {
+            get { return ViewState["PrependText"] as string ?? string.Empty; }
+            set { ViewState["PrependText"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the append text.
+        /// </summary>
+        /// <value>
+        /// The append text.
+        /// </value>
+        [
+        Bindable( false ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "Text that appears appended to the end of the text box." )
+        ]
+        public string AppendText
+        {
+            get { return ViewState["AppendText"] as string ?? string.Empty; }
+            set { ViewState["AppendText"] = value; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
         /// </summary>
         public RockDropDownList()
@@ -300,11 +336,37 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            ( (WebControl)this ).AddCssClass( "form-control" );
+            var renderInputGroup = PrependText.IsNotNullOrWhiteSpace() || AppendText.IsNotNullOrWhiteSpace();
+            string cssClass = this.CssClass;
+
+            if ( renderInputGroup )
+            {
+                writer.AddAttribute( "class", "input-group " + cssClass );
+                if ( this.Style[HtmlTextWriterStyle.Display] == "none" )
+                {
+                    // render the display:none in the inputgroup div instead of the control itself
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                    this.Style[HtmlTextWriterStyle.Display] = string.Empty;
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                this.CssClass = string.Empty;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PrependText ) )
+            {
+                writer.AddAttribute( "class", "input-group-addon" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( PrependText );
+                writer.RenderEndTag();
+            }
+
+            ( ( WebControl ) this ).AddCssClass( "form-control" );
 
             if ( EnhanceForLongLists )
             {
-                ( (WebControl)this ).AddCssClass( "chosen-select" );
+                ( ( WebControl ) this ).AddCssClass( "chosen-select" );
 
                 if ( DisplayEnhancedAsAbsolute )
                 {
@@ -313,6 +375,20 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
+
+            if ( !string.IsNullOrWhiteSpace( AppendText ) )
+            {
+                writer.AddAttribute( "class", "input-group-addon" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( AppendText );
+                writer.RenderEndTag();
+            }
+
+            if ( renderInputGroup )
+            {
+                writer.RenderEndTag();  // input-group
+                this.CssClass = cssClass;
+            }
 
             RenderDataValidator( writer );
         }

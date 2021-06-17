@@ -67,8 +67,9 @@
                 {% endif %}
 
                 <div id="fixed-header" class="header-content flex-grow-1" role="navigation">
-
-                        <span class="site-name d-none d-sm-flex align-items-center">{{ CurrentPage.Layout.Site.Name }}</span>
+                        {% assign checkinManagerCookieData = 'CheckinManager.CheckinManagerConfiguration' | ReadCookie | FromJSON %}
+                        {% assign checkinAreaType = checkinManagerCookieData.CheckinAreaGuid | FromCache:'GroupType' %}
+                        <span class="site-name d-none d-sm-flex align-items-center">{{ checkinAreaType.Name | Default:CurrentPage.Layout.Site.Name }}</span>
                     </Rock:Lava>
                     <Rock:Zone Name="Header" runat="server" CssClass="navbar-zone-header" />
                     <Rock:Zone Name="Login" runat="server" CssClass="navbar-zone-login" />

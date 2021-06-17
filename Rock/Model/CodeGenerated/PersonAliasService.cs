@@ -1198,6 +1198,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialStatementTemplate>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialStatementTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialStatementTemplate>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialStatementTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.AuthorizedPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
@@ -1753,6 +1765,42 @@ namespace Rock.Model
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Location.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaElement>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaElement.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaElement>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaElement.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaFolder.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, MediaFolder.FriendlyTypeName );
                 return false;
             }  
  

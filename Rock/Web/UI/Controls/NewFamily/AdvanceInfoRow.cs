@@ -113,7 +113,7 @@ namespace Rock.Web.UI.Controls
         {
             _tbAlternateId = new RockTextBox();
             _lbGenerate = new LinkButton();
-            _lbGenerate.Text = "<i class='fas fa-barcode text-color'></i>";
+            _lbGenerate.Text = "<i class='fa fa-barcode text-color'></i>";
             _lbGenerate.Click += lbGenerate_Click;
         }
 

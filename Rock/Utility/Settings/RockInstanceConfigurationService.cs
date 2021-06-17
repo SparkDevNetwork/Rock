@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Lava;
 using Rock.Web.Utilities;
 
 namespace Rock.Utility.Settings
@@ -128,6 +129,33 @@ namespace Rock.Utility.Settings
             get
             {
                 return Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER ).AsBooleanOrNull() ?? false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public string LavaEngineName
+        {
+            get
+            {
+                var engine = LavaService.GetCurrentEngine();
+
+                if ( engine == null )
+                {
+                    return "DotLiquid";
+                }
+                else
+                {
+                    var engineName = engine.EngineName;
+
+                    if ( LavaService.RockLiquidIsEnabled )
+                    {
+                        engineName = $"DotLiquid (with {engineName} verification)";
+                    }
+
+                    return engineName;
+                }
             }
         }
     }

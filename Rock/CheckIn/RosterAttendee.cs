@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -47,16 +48,7 @@ namespace Rock.CheckIn
         /// <param name="person">The person.</param>
         public RosterAttendee( Rock.Model.Person person )
         {
-            person.LoadAttributes();
-
             _person = person;
-            if ( person.AgeClassification != AgeClassification.Adult )
-            {
-                ParentNames = Rock.Model.Person.GetFamilySalutation( person, finalSeparator: "and" );
-            }
-
-            HasHealthNote = GetHasHealthNote( person );
-            HasLegalNote = GetHasLegalNote( person );
         }
 
         #region Properties
@@ -91,7 +83,7 @@ namespace Rock.CheckIn
         /// <value>
         /// The attendances.
         /// </value>
-        private List<Attendance> Attendances { get; set; } = new List<Attendance>();
+        private List<RosterAttendeeAttendance> Attendances { get; set; } = new List<RosterAttendeeAttendance>();
 
         /// <summary>
         /// Gets the person's full name.
@@ -117,13 +109,26 @@ namespace Rock.CheckIn
         /// </value>
         public string LastName => _person.LastName;
 
+        private string _parentsNames = null;
+
         /// <summary>
         /// Gets the parent names (if attendee is a child)
         /// </summary>
         /// <value>
         /// The parent names.
         /// </value>
-        public string ParentNames { get; private set; }
+        public string ParentNames
+        {
+            get
+            {
+                if ( _person.AgeClassification == AgeClassification.Adult)
+                {
+                    return null;
+                }
+
+                return _parentsNames;
+            }
+        }
 
         /// <summary>
         /// Gets the photo identifier.
@@ -251,12 +256,20 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Gets the current status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        public RosterAttendeeStatus Status => GetCurrentStatus();
+
+        /// <summary>
         /// Gets the status.
         /// </summary>
         /// <value>
         /// The status.
         /// </value>
-        public RosterAttendeeStatus Status { get; private set; }
+        private RosterAttendeeStatus[] Statuses { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this attendee's room has Enable Presence;
@@ -305,12 +318,21 @@ namespace Rock.CheckIn
         public int? GroupTypeId { get; private set; }
 
         /// <summary>
-        /// Gets the ScheduleId for the attendance's occurrence
+        /// Gets the ScheduleId for the attendee's (Most Recent) occurrence
         /// </summary>
         /// <value>
         /// The schedule identifier.
         /// </value>
         public int ScheduleId { get; private set; }
+
+        /// <summary>
+        /// The list of schedules that the person is currently attending.
+        /// This is useful if a person is checked into multiple services.
+        /// </summary>
+        /// <value>
+        /// The schedule ids.
+        /// </value>
+        public int[] ScheduleIds { get; private set; }
 
         /// <summary>
         /// Gets the name of the room (Occurrence Location.Name)
@@ -329,12 +351,52 @@ namespace Rock.CheckIn
         public string GroupName { get; private set; }
 
         /// <summary>
+        /// Gets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; internal set; }
+
+        /// <summary>
         /// Gets the group type path ( Area1 > Area2 > Area51 )
         /// </summary>
         /// <value>
         /// The group type path.
         /// </value>
         public string GroupTypePath { get; private set; }
+
+        /// <summary>
+        /// Gets the parent group identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group identifier.
+        /// </value>
+        public int? ParentGroupId { get; internal set; }
+
+        /// <summary>
+        /// Gets the name of the parent group.
+        /// </summary>
+        /// <value>
+        /// The name of the parent group.
+        /// </value>
+        public string ParentGroupName { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group's group type identifier.
+        /// </summary>
+        /// <value>
+        /// The parent group group's type identifier.
+        /// </value>
+        public int? ParentGroupGroupTypeId { get; internal set; }
+
+        /// <summary>
+        /// Gets the parent group's group type path.
+        /// </summary>
+        /// <value>
+        /// The parent group's group type path.
+        /// </value>
+        public string ParentGroupGroupTypePath { get; private set; }
 
         #endregion Properties
 
@@ -358,9 +420,29 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public string GetStatusIconHtmlTag( bool isMobile )
         {
+            RosterAttendeeStatus currentStatus = GetCurrentStatus();
+
+            var statusBuilder = new StringBuilder();
+            foreach ( var status in this.Statuses.Distinct() )
+            {
+                statusBuilder.Append( GetStatusIconHtmlTagForStatus( isMobile, status ) );
+            }
+
+            return statusBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Gets the status icon HTML tag for status.
+        /// </summary>
+        /// <param name="isMobile">if set to <c>true</c> [is mobile].</param>
+        /// <param name="currentStatus">The current status.</param>
+        /// <returns></returns>
+        private string GetStatusIconHtmlTagForStatus( bool isMobile, RosterAttendeeStatus currentStatus )
+        {
             string statusClass = string.Empty;
             string mobileIcon = string.Empty;
-            switch ( this.Status )
+
+            switch ( currentStatus )
             {
                 case RosterAttendeeStatus.CheckedIn:
                     statusClass = "warning";
@@ -382,8 +464,40 @@ namespace Rock.CheckIn
             }
             else
             {
-                return $"<span class='badge badge-{statusClass}'>{StatusString}</span>";
+                return $"<span class='badge badge-{statusClass}'>{currentStatus.GetDescription()}</span>";
             }
+        }
+
+        /// <summary>
+        /// Gets the current status.
+        /// As determined in precendance 
+        /// </summary>
+        /// <returns></returns>
+        private RosterAttendeeStatus GetCurrentStatus()
+        {
+            RosterAttendeeStatus matchingStatus;
+
+            // The attendee might be in multiple statuses, pick the status that makes the most sense, which would be based on the precedence:
+            // Present, Checked In, Checked Out
+            if ( Statuses.Contains( RosterAttendeeStatus.Present ) )
+            {
+                matchingStatus = RosterAttendeeStatus.Present;
+            }
+            else if ( Statuses.Contains( RosterAttendeeStatus.CheckedIn ) )
+            {
+                matchingStatus = RosterAttendeeStatus.CheckedIn;
+            }
+            else if ( Statuses.Contains( RosterAttendeeStatus.CheckedOut ) )
+            {
+                matchingStatus = RosterAttendeeStatus.CheckedOut;
+            }
+            else
+            {
+                // shouldn't happen because RosterAttendeeStatus only has the above as possible values , but just in case
+                matchingStatus = RosterAttendeeStatus.CheckedOut;
+            }
+
+            return matchingStatus;
         }
 
         /// <summary>
@@ -463,6 +577,15 @@ namespace Rock.CheckIn
             return $@"<div class='group-name'>{this.GroupName}</div> <div class='small text-muted text-wrap'>{this.GroupTypePath}</div>";
         }
 
+        /// <summary>
+        /// Gets the parent group's name and path HTML. Parent Group's Name with GroupType Path underneath.
+        /// </summary>
+        /// <returns></returns>
+        public string GetParentGroupNameAndPathHtml()
+        {
+            return $@"<div class='group-name'>{this.ParentGroupName}</div> <div class='small text-muted text-wrap'>{this.ParentGroupGroupTypePath}</div>";
+        }
+
         #endregion HTML
 
         #region Private methods
@@ -472,13 +595,13 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="attendance">The attendance.</param>
         /// <param name="checkinAreaPathsLookup">The checkin area paths lookup.</param>
-        private void SetAttendanceInfo( Attendance attendance, Dictionary<int, CheckinAreaPath> checkinAreaPathsLookup )
+        private void SetAttendanceInfo( RosterAttendeeAttendance attendance, Dictionary<int, CheckinAreaPath> checkinAreaPathsLookup )
         {
             // Keep track of each Attendance ID tied to this Attendee so we can manage them all as a group.
             this.Attendances.Add( attendance, true );
 
             // Tag(s).
-            string tag = attendance.AttendanceCode?.Code;
+            string tag = attendance.AttendanceCode;
 
             if ( tag.IsNotNullOrWhiteSpace() && !this.UniqueTags.Contains( tag, StringComparer.OrdinalIgnoreCase ) )
             {
@@ -486,7 +609,7 @@ namespace Rock.CheckIn
             }
 
             // Service Time(s).
-            string serviceTime = attendance.Occurrence?.Schedule?.Name;
+            string serviceTime = attendance.Schedule?.Name;
 
             if ( serviceTime.IsNotNullOrWhiteSpace() && !this.UniqueServiceTimes.Contains( serviceTime, StringComparer.OrdinalIgnoreCase ) )
             {
@@ -494,28 +617,45 @@ namespace Rock.CheckIn
             }
 
             // Status: if this Attendee has multiple AttendanceOccurrences, the highest AttendeeStatus value among them wins.
-            var latestAttendance = this.Attendances.OrderByDescending( a => a.StartDateTime ).First();
+            var latestAttendance = this.Attendances
+                .OrderByDescending( a => a.StartDateTime )
+                .First();
 
-            this.Status = GetRosterAttendeeStatus( latestAttendance.EndDateTime, latestAttendance.PresentDateTime );
+            this.Statuses = this.Attendances.Select( s => GetRosterAttendeeStatus( s.EndDateTime, s.PresentDateTime ) ).ToArray();
 
             // Check-in Time: if this Attendee has multiple AttendanceOccurrences, the latest StartDateTime value among them wins.
             this.CheckInTime = latestAttendance.StartDateTime;
 
-            this.GroupTypeId = latestAttendance.Occurrence?.Group?.GroupTypeId;
+            this.GroupTypeId = latestAttendance.GroupTypeId;
 
-            this.GroupName = latestAttendance.Occurrence?.Group?.Name;
+            this.GroupName = latestAttendance.GroupName;
+
+            // GroupId should have a value, but just in case, we'll do some null safety.
+            this.GroupId = latestAttendance.GroupId ?? 0;
 
             if ( GroupTypeId.HasValue )
             {
                 this.GroupTypePath = checkinAreaPathsLookup.GetValueOrNull( GroupTypeId.Value )?.Path;
             }
 
+            this.ParentGroupId = latestAttendance.ParentGroupId;
+            this.ParentGroupName = latestAttendance.ParentGroupName;
+            this.ParentGroupGroupTypeId = latestAttendance.ParentGroupGroupTypeId;
+            if ( this.ParentGroupGroupTypeId.HasValue )
+            {
+                this.ParentGroupGroupTypePath = checkinAreaPathsLookup.GetValueOrNull( ParentGroupGroupTypeId.Value )?.Path;
+            }
+
             this.IsFirstTime = latestAttendance?.IsFirstTime ?? false;
 
             // ScheduleId should have a value, but just in case, we'll do some null safety.
-            this.ScheduleId = latestAttendance.Occurrence?.ScheduleId ?? 0;
+            this.ScheduleId = latestAttendance.ScheduleId ?? 0;
 
-            this.RoomName = latestAttendance.Occurrence?.Location?.Name;
+            this._parentsNames = latestAttendance.ParentsNames;
+
+            this.ScheduleIds = this.Attendances.Select( a => a.ScheduleId ?? 0 ).Distinct().ToArray();
+
+            this.RoomName = NamedLocationCache.Get( latestAttendance.LocationId ?? 0 )?.Name;
         }
 
         /// <summary>
@@ -541,20 +681,44 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Returns true if this record meets the specified RosterStatusFilter criteria
+        /// Determines if Attendance the meets roster status filter.
+        /// </summary>
+        /// <param name="attendance">The attendance.</param>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <returns></returns>
+        public static bool AttendanceMeetsRosterStatusFilter( RosterAttendeeAttendance attendance, RosterStatusFilter rosterStatusFilter )
+        {
+            RosterAttendeeStatus rosterAttendeeStatus = GetRosterAttendeeStatus( attendance.EndDateTime, attendance.PresentDateTime );
+
+            return AppliesToRosterStatusFilter( rosterAttendeeStatus, rosterStatusFilter );
+        }
+
+        /// <summary>
+        /// Returns true if any of this Attendee's current <see cref="Attendances"/> meets the specified RosterStatusFilter criteria
         /// </summary>
         /// <param name="rosterStatusFilter">The roster status filter.</param>
         /// <returns></returns>
-        public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter)
+        public bool MeetsRosterStatusFilter( RosterStatusFilter rosterStatusFilter )
+        {
+            return this.Statuses.Any( x => AppliesToRosterStatusFilter( x, rosterStatusFilter ) );
+        }
+
+        /// <summary>
+        /// Returns true if the rosterAttendeeStatus meets the rosterStatusFilter
+        /// </summary>
+        /// <param name="rosterAttendeeStatus">The roster attendee status.</param>
+        /// <param name="rosterStatusFilter">The roster status filter.</param>
+        /// <returns></returns>
+        private static bool AppliesToRosterStatusFilter( RosterAttendeeStatus rosterAttendeeStatus, RosterStatusFilter rosterStatusFilter )
         {
             switch ( rosterStatusFilter )
             {
                 case RosterStatusFilter.CheckedIn:
-                    return Status == RosterAttendeeStatus.CheckedIn;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.CheckedIn;
                 case RosterStatusFilter.CheckedOut:
-                    return Status == RosterAttendeeStatus.CheckedOut;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.CheckedOut;
                 case RosterStatusFilter.Present:
-                    return Status == RosterAttendeeStatus.Present;
+                    return rosterAttendeeStatus == RosterAttendeeStatus.Present;
                 case RosterStatusFilter.All:
                     return true;
                 default:
@@ -562,40 +726,36 @@ namespace Rock.CheckIn
             }
         }
 
-        /// <summary>
-        /// Gets whether the person has a health note.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        private bool GetHasHealthNote( Rock.Model.Person person )
-        {
-            const string Person_Allergy = "Allergy";
-            string attributeValue = person.GetAttributeValue( Person_Allergy );
-            return attributeValue.IsNotNullOrWhiteSpace();
-        }
-
-        /// <summary>
-        /// Gets whether the person has a legal note.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        private bool GetHasLegalNote( Rock.Model.Person person )
-        {
-            const string Person_LegalNotes = "LegalNotes";
-            string attributeValue = person.GetAttributeValue( Person_LegalNotes );
-            return attributeValue.IsNotNullOrWhiteSpace();
-        }
-
         #endregion Private methods
 
         #region Static methods
 
         /// <summary>
-        /// Returns a list of <see cref="RosterAttendee"/> from the attendance list
+        /// Returns a list of <see cref="RosterAttendee" /> from the attendance list.
         /// </summary>
         /// <param name="attendanceList">The attendance list.</param>
         /// <returns></returns>
-        public static IList<RosterAttendee> GetFromAttendanceList( IList<Attendance> attendanceList )
+        public static IList<RosterAttendee> GetFromAttendanceList( IList<RosterAttendeeAttendance> attendanceList )
         {
-            var groupTypeIds = attendanceList.Select( a => a.Occurrence.Group.GroupTypeId ).Distinct();
+            return GetFromAttendanceList( attendanceList, null );
+        }
+
+        /// <summary>
+        /// Returns a list of <see cref="RosterAttendee" /> from the attendance list,`
+        /// With an option to specify the selected Checkin Area so that the Group Type Path logic can deal
+        /// with situations where an area is part of more than one checkin area type.
+        /// </summary>
+        /// <param name="attendanceList">The attendance list.</param>
+        /// <param name="selectedCheckinArea">The selected checkin area (or null for all areas).</param>
+        /// <returns></returns>
+        public static IList<RosterAttendee> GetFromAttendanceList( IList<RosterAttendeeAttendance> attendanceList, GroupTypeCache selectedCheckinArea )
+        {
+            if ( !attendanceList.Any() )
+            {
+                return new List<RosterAttendee>();
+            }
+
+            var groupTypeIds = attendanceList.Select( a => a.GroupTypeId ).Distinct();
             var groupTypes = groupTypeIds.Select( a => GroupTypeCache.Get( a ) ).Where( a => a != null );
 
             var groupTypeIdsWithAllowCheckout = groupTypes
@@ -608,23 +768,65 @@ namespace Rock.CheckIn
                 .Select( a => a.Id )
                 .Distinct();
 
-            var checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths().ToDictionary( k => k.GroupTypeId, v => v );
+            Dictionary<int, CheckinAreaPath> checkinAreaPathsLookup;
+
+            if ( selectedCheckinArea != null )
+            {
+                // If there is a checkin area filter, limit to group types within the selected check-in area.
+                // this will help get the best path if a checkin area belongs to more than one checkin type
+                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetCheckinAreaDescendantsPath( selectedCheckinArea.Id )
+                    .ToDictionary( k => k.GroupTypeId, v => v );
+            }
+            else
+            {
+                checkinAreaPathsLookup = new GroupTypeService( new Rock.Data.RockContext() ).GetAllCheckinAreaPaths()
+                    .ToDictionary( k => k.GroupTypeId, v => v );
+            }
+
+            var personIds = attendanceList.Select( a => a.PersonId ).Distinct().ToList();
+
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>() ?? 0;
+            const string Person_Allergy = "Allergy";
+            const string Person_LegalNotes = "LegalNotes";
+            Dictionary<int, List<string>> allergyLegalNoteAttributeValuesByPersonId;
+            if ( personIds.Any() )
+            {
+                allergyLegalNoteAttributeValuesByPersonId = new AttributeValueService( new RockContext() ).Queryable()
+                    .Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson
+                        && ( a.Attribute.Key == Person_Allergy || a.Attribute.Key == Person_LegalNotes )
+                        && a.EntityId.HasValue
+                        && personIds.Contains( a.EntityId.Value )
+                        && a.Value != null && a.Value != "" )
+                    .Select( a => new
+                    {
+                        PersonId = a.EntityId.Value,
+                        AttributeKey = a.Attribute.Key,
+                    } ).ToList()
+                    .GroupBy( a => a.PersonId )
+                    .ToDictionary( k => k.Key, v => v.Select( a => a.AttributeKey ).ToList() );
+            }
+            else
+            {
+                allergyLegalNoteAttributeValuesByPersonId = new Dictionary<int, List<string>>();
+            }
 
             var attendees = new List<RosterAttendee>();
             foreach ( var attendance in attendanceList )
             {
                 // Create an Attendee for each unique Person within the Attendance records.
-                var person = attendance.PersonAlias.Person;
+                var person = attendance.Person;
 
                 RosterAttendee attendee = attendees.FirstOrDefault( a => a.PersonGuid == person.Guid );
                 if ( attendee == null )
                 {
                     attendee = new RosterAttendee( person );
+                    attendee.HasHealthNote = allergyLegalNoteAttributeValuesByPersonId.GetValueOrNull( person.Id )?.Contains( Person_Allergy ) ?? false;
+                    attendee.HasLegalNote = allergyLegalNoteAttributeValuesByPersonId.GetValueOrNull( person.Id )?.Contains( Person_LegalNotes ) ?? false;
                     attendees.Add( attendee );
                 }
 
-                attendee.RoomHasAllowCheckout = groupTypeIdsWithAllowCheckout.Contains( attendance.Occurrence.Group.GroupTypeId );
-                attendee.RoomHasEnablePresence = groupTypeIdsWithEnablePresence.Contains( attendance.Occurrence.Group.GroupTypeId );
+                attendee.RoomHasAllowCheckout = groupTypeIdsWithAllowCheckout.Contains( attendance.GroupTypeId );
+                attendee.RoomHasEnablePresence = groupTypeIdsWithEnablePresence.Contains( attendance.GroupTypeId );
 
                 // Add the attendance-specific property values.
                 attendee.SetAttendanceInfo( attendance, checkinAreaPathsLookup );

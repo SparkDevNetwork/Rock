@@ -29,6 +29,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -117,7 +118,7 @@ namespace Rock.Model
         /// <value>
         /// The parent DataViewFilter.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>
@@ -661,6 +662,14 @@ namespace Rock.Model
                 return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether stats for this dataview filter should be logged].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [should log statics]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldUpdateStatics { get; set; } = true;
     }
 
     /// <summary>

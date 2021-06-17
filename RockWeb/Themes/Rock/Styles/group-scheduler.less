@@ -21,18 +21,19 @@
 @grid-height: 51px;
 
 .panel-body-parent {
-  height: ~"calc(100vh - 290px)";
-  min-height: 200px;
-  overflow: hidden;
-}
-
-.board-scroll {
-  width: 100%;
+  position: relative;
   height: 100%;
-  padding: 8px 0;
-  overflow-x: auto;
-  overflow-y: scroll;
-  //background-color: @panel-heading-bg;
+  min-height: 500px;
+  min-height: ~"var(--block-min-height, calc(100vh - 290px))";
+  overflow: auto;
+
+  > .panel-body {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
 }
 
 .group-scheduler {
@@ -41,14 +42,6 @@
     border-right: 1px solid @panel-default-border;
   }
 
-  .panel.panel-block {
-
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    border: 1px solid @panel-default-border;
-  }
 
   .panel.panel-block > .panel-heading {
     display: inherit;
@@ -59,8 +52,7 @@
   }
 
   .panel.panel-groupscheduler > .panel-body {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
   }
 
   .panel-block > .panel-heading {
@@ -77,6 +69,29 @@
   .panel-block > .panel-heading > .pull-right {
     margin-left: auto;
     text-align: right;
+  }
+}
+
+.panel-groupscheduler {
+  .panel.panel-block {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-bottom: 24px;
+    border: 1px solid @panel-default-border;
+  }
+}
+
+.board-scroll {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 8px 0;
+  overflow-x: auto;
+  overflow-y: scroll;
+  .panel.panel-block {
+    height: auto;
   }
 }
 
@@ -119,6 +134,7 @@
     }
 
     .resource-container {
+      min-height: 100%;
       padding: 12px;
     }
   }
@@ -220,7 +236,9 @@
 
   .resource-name {
     margin-right: 20px;
+    overflow: hidden;
     font-weight: @font-weight-semibold;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -381,7 +399,7 @@
 
 .resource-member-role,
 .resource-lastattendeddate {
-  font-size: 80%;
+  font-size: 75%;
 }
 
 .resource-note {

@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Connection
         #region Attribute Default values
 
         private const string StatusTemplateDefaultValue = @"
-<div class='badge-legend expand-on-hover padding-r-md'>
+<div class='badge-legend expand-on-hover mr-3'>
     <span class='badge badge-info badge-circle js-legend-badge'>Assigned To You</span>
     <span class='badge badge-warning badge-circle js-legend-badge'>Unassigned Item</span>
     <span class='badge badge-critical badge-circle js-legend-badge'>Critical Status</span>
@@ -364,7 +364,8 @@ namespace RockWeb.Blocks.Connection
                 .AsNoTracking()
                 .Where( f =>
                     f.PersonAliasId == CurrentPersonAliasId &&
-                    f.EntityTypeId == opportunityEntityTypeId )
+                    f.EntityTypeId == opportunityEntityTypeId &&
+                    string.IsNullOrEmpty( f.PurposeKey ) )
                 .Select( f => f.EntityId )
                 .ToList();
 
@@ -435,8 +436,7 @@ namespace RockWeb.Blocks.Connection
                         .ToList();
                 }
 
-                var canView = canEdit ||
-                                opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                var canView = opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
                                 ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
 
                 // Is user is authorized to view this opportunity type...

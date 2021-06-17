@@ -48,7 +48,7 @@
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.RegistrationTemplate" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
                     </div>
                     <div class="row">
@@ -152,7 +152,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
-                                        Help="The financial gateway to use for processing registration payments." ShowAll="false" />
+                                        Help="The financial gateway to use for processing registration payments." ShowAll="false" AutoPostBack="true" OnSelectedIndexChanged="fgpFinancialGateway_SelectedIndexChanged" />
                                     <Rock:RockTextBox ID="txtBatchNamePrefix" runat="server" Label="Batch Prefix" Help="Optional prefix to add the the financial batches. If left blank the prefix from the registration block will be used." />
                                 </div>
                             </div>

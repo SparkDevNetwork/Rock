@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Web.Cache;
 using Rock.Workflow;
 
@@ -96,7 +97,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivity"/> that contains this WorkflowAction.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActivity Activity { get; set; }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActionType"/> that is being executed.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActionType ActionType { get; set; }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace Rock.Model
         /// <value>
         /// The action type cache.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActionTypeCache ActionTypeCache
         {
             get
@@ -506,7 +507,7 @@ namespace Rock.Model
         /// The form attributes.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual List<LiquidFormAttribute> FormAttributes
         {
             get
@@ -625,6 +626,7 @@ namespace Rock.Model
         /// Special class for adding form attributes to liquid
         /// </summary>
         [DotLiquid.LiquidType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
+        [LavaType( "Name", "Key", "Value", "IsVisible", "IsReadOnly", "IsRequired", "HideLabel", "PreHtml", "PostHtml", "Url" )]
         public class LiquidFormAttribute
         {
             /// <summary>

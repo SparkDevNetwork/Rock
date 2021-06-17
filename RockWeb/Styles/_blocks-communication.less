@@ -175,8 +175,20 @@ iframe.email-body {
 // 5. SMS Conversations
 // -------------------------
 
-.sms-conversations-container {
+.sms-conversations-parent {
   position: relative;
+  height: 100%;
+  min-height: 500px;
+  min-height: ~"var(--block-min-height, calc(100vh - 200px))";
+  overflow: auto;
+}
+
+.sms-conversations-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
@@ -210,7 +222,7 @@ iframe.email-body {
     position: relative;
     flex-grow: 0;
     min-width: 100%;
-    height: ~"calc(100vh - 200px)";
+    height: 100%;
     min-height: 300px;
     border-right: 1px solid rgba(0,0,0, .2);
 
@@ -301,26 +313,26 @@ iframe.email-body {
     overflow-y: scroll;
   }
 
+  .note-editor {
+    padding: 8px 12px;
+    border-top: 1px solid @panel-border;
+  }
+
   .footer {
+    position: relative;
     flex-shrink: 0;
     border-top: 1px solid @panel-border;
     -ms-flex-negative: 0;
 
     .form-control {
-      padding: 18px 86px 18px 12px;
+      padding: 18px 162px 18px 12px;
       resize: none;
       border: 0;
     }
 
-    .send-button {
+    .actions {
       position: absolute;
       right: 12px;
-      bottom: 10px;
-    }
-
-    .image-button {
-      position: absolute;
-      right: 84px;
       bottom: 10px;
     }
   }
@@ -338,7 +350,7 @@ iframe.email-body {
     flex-direction: column;
     flex-grow: 1;
     min-width: 0;
-    height: ~"calc(100vh - 200px)";
+    height: 100%;
     min-height: 300px;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -366,13 +378,18 @@ iframe.email-body {
 
     .sms-image-uploader-container {
       position: absolute;
-      right: 0;
-      bottom: 0;
-      width: 280px;
+      right: -1px;
+      bottom: -1px;
+      width: 220px;
       max-width: 100%;
       padding: 8px;
       margin: 0;
       background: @well-bg;
+      border: 1px solid @panel-border;
+
+      .close {
+        font-size: 18px;
+      }
     }
   }
 

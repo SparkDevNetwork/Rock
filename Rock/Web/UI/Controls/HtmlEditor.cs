@@ -648,17 +648,7 @@ namespace Rock.Web.UI.Controls
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
-
-            //TODO: Look for a valid asset manager and disable the control if one is not found
-
-
-
-            var globalAttributesCache = GlobalAttributesCache.Get();
-
-            string imageFileTypeWhiteList = globalAttributesCache.GetValue( "ContentImageFiletypeWhitelist" );
-            string fileTypeBlackList = globalAttributesCache.GetValue( "ContentFiletypeBlacklist" );
-            string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
-
+            
             string documentFolderRoot = this.DocumentFolderRoot;
             string imageFolderRoot = this.ImageFolderRoot;
             if ( this.UserSpecificRoot )
@@ -738,10 +728,7 @@ $(document).ready( function() {{
         rockFileBrowserOptions: {{
             enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
             documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}',
-            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
-            imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
-            fileTypeBlackList: '{fileTypeBlackList}',
-            fileTypeWhiteList: '{fileTypeWhiteList}'
+            imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}'
         }},
 
         rockAssetManagerOptions: {{

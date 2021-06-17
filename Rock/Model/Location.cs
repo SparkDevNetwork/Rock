@@ -28,6 +28,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -338,7 +339,7 @@ namespace Rock.Model
         [DataMember]
         public int? FirmRoomThreshold { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
         #region Virtual Properties
 
@@ -348,7 +349,7 @@ namespace Rock.Model
         /// <value>
         /// A Location object representing the parent location of the current location. If this Location does not have a parent Location, this value will be null.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Location ParentLocation { get; set; }
 
         /// <summary>
@@ -397,7 +398,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupLocation"/> entities that reference this Location.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupLocation> GroupLocations
         {
             get { return _groupLocations ?? ( _groupLocations = new Collection<GroupLocation>() ); }
@@ -429,7 +430,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedAddress
         {
             get { return GetFullStreetAddress(); }
@@ -441,7 +442,7 @@ namespace Rock.Model
         /// <value>
         /// The formatted HTML address.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FormattedHtmlAddress
         {
             get { return FormattedAddress.ConvertCrLfToHtmlBr(); }
@@ -506,7 +507,7 @@ namespace Rock.Model
         /// <value>
         /// The campus identifier.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int? CampusId
         {
             get
@@ -568,15 +569,15 @@ namespace Rock.Model
         /// <value>
         /// The polygon for google maps.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual string GooglePolygon
         {
             get { return EncodeGooglePolygon(); }
         }
 
-        #endregion
+        #endregion Virtual Properties
 
-        #region overrides
+        #region Override IsValid
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
@@ -614,7 +615,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Override IsValid
 
         #region Public Methods
 
@@ -864,12 +865,21 @@ namespace Rock.Model
             _distance = distance;
         }
 
+        #endregion Public Methods
+
+        #region ICacheable
+
         /// <summary>
         /// Gets the cache object associated with this Entity
         /// </summary>
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
+            if (this.Name.IsNotNullOrWhiteSpace())
+            {
+                return NamedLocationCache.Get( this.Id );
+            }
+
             return null;
         }
 
@@ -883,6 +893,8 @@ namespace Rock.Model
             // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
             var campusId = this.GetCampusId( dbContext as RockContext );
 
+            NamedLocationCache.FlushItem( this.Id );
+
             // CampusCache has a CampusLocation that could get stale when Location changes, so refresh the CampusCache for this location's Campus
             if ( this.CampusId.HasValue )
             {
@@ -895,6 +907,10 @@ namespace Rock.Model
                 CampusCache.UpdateCachedEntity( campus.Id, EntityState.Detached );
             }
         }
+
+        #endregion ICacheable
+
+        #region 
 
         /// <summary>
         /// Gets the <see cref="System.Object"/> with the specified key.
@@ -958,8 +974,6 @@ namespace Rock.Model
         public const double MilesPerMeter = 1 / MetersPerMile;
 
         #endregion
-
-
     }
 
     #region Entity Configuration

@@ -618,7 +618,10 @@
                         var groupId = $group.find('.js-placement-group-id').val();
                         var registrationInstanceId = parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null;
 
-                        Rock.dialogs.confirm('Are you sure you want to detach this placement group?', function () {
+                        Rock.dialogs.confirm('Are you sure you want to detach this placement group?', function (result) {
+                            if (!result) {
+                                return;
+                            }
                             var detachPlacementGroupUrl = Rock.settings.get('baseUrl') + 'api/RegistrationTemplatePlacements/DetachPlacementGroup';
                             detachPlacementGroupUrl += '?groupId=' + groupId;
                             detachPlacementGroupUrl += '&registrationTemplatePlacementId=' + self.registrationTemplatePlacementId;
@@ -641,7 +644,10 @@
                     else if ($(this).hasClass('js-delete-group')) {
                         var $group = $(this).closest('.js-placement-group');
                         var groupId = $group.find('.js-placement-group-id').val();
-                        Rock.dialogs.confirm('Are you sure you want to delete this group?', function () {
+                        Rock.dialogs.confirm('Are you sure you want to delete this group?', function (result) {
+                            if (!result) {
+                                return;
+                            }
                             var deleteGroupUrl = Rock.settings.get('baseUrl') + 'api/Groups?Id=' + groupId;
                             $.ajax({
                                 method: "DELETE",

@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -32,14 +36,42 @@ namespace RockWeb.Blocks.CheckIn.Manager
     [DisplayName( "Attendance Detail" )]
     [Category( "Check-in > Manager" )]
     [Description( "Block to show details of a person's attendance" )]
+
+    [LinkedPage(
+        "Profile Page",
+        Description = "The page to go back to after deleting this attendance.",
+        Key = AttributeKey.PersonProfilePage,
+        DefaultValue = Rock.SystemGuid.Page.PERSON_PROFILE_CHECK_IN_MANAGER,
+        IsRequired = false,
+        Order = 6
+        )]
     public partial class AttendanceDetail : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string PersonProfilePage = "PersonProfilePage";
+        }
+
+        #endregion
+
         #region PageParameterKeys
 
         private static class PageParameterKey
         {
             public const string AttendanceGuid = "Attendance";
             public const string AttendanceId = "AttendanceId";
+
+            /// <summary>
+            /// The person Guid
+            /// </summary>
+            public const string PersonGuid = "Person";
+
+            /// <summary>
+            /// The person identifier
+            /// </summary>
+            public const string PersonId = "PersonId";
         }
 
         #endregion PageParameterKeys
@@ -68,7 +100,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( GetAttendanceGuid() );
+                ShowDetail( GetAttendanceId() );
             }
         }
 
@@ -86,47 +118,276 @@ namespace RockWeb.Blocks.CheckIn.Manager
             NavigateToCurrentPageReference();
         }
 
+
+        #region Move Person
+
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            var attendanceId = GetAttendanceId();
+            if ( !attendanceId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+
+            var scheduleService = new ScheduleService( rockContext );
+            var groupLocationQuery = new GroupLocationService( rockContext ).Queryable();
+
+            // Limit to active,named check-in schedules, ones that associated with a Group/Location.
+            // NOTE: The Move Room feature should not be filtered by selected Checkin-Area (they should be able to moved to
+            // a room in a different Checkin-Configuration (Area)).
+            var scheduleQry = scheduleService.Queryable().Where( a =>
+                a.IsActive
+                && groupLocationQuery.Any( x => x.Schedules.Any( s => s.Id == a.Id ) )
+                && a.CheckInStartOffsetMinutes != null
+                && a.Name != null
+                && a.Name != string.Empty ).ToList();
+
+            var scheduleList = scheduleQry.ToList();
+
+            // Limit to schedules for the current day.
+            scheduleList = scheduleList
+                .Where( a => a.GetNextCheckInStartTime( RockDateTime.Today ) < RockDateTime.Today.AddDays( 1 ) )
+                .ToList();
+
+            var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
+            ddlMovePersonSchedule.Items.Clear();
+
+            foreach ( var schedule in sortedScheduleList )
+            {
+                ddlMovePersonSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+            }
+
+            if ( !attendanceId.HasValue )
+            {
+                return;
+            }
+
+            var occurrence = new AttendanceService( new RockContext() ).GetSelect( attendanceId.Value, s => s.Occurrence );
+            if ( occurrence == null )
+            {
+                return;
+            }
+
+            ddlMovePersonSchedule.SetValue( occurrence.ScheduleId );
+            lpMovePersonLocation.SetValueFromLocationId( occurrence.LocationId );
+
+            UpdateMovePersonGroupList();
+            ddlMovePersonGroup.SetValue( occurrence.GroupId );
+
+            UpdateMovePersonGroupList();
+
+            mdMovePerson.Show();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlMovePersonSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlMovePersonSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateMovePersonGroupList();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the lpMovePersonLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lpMovePersonLocation_SelectItem( object sender, EventArgs e )
+        {
+            // just in case a location warning is showing, we can hide if they are selecting a different location
+            nbMovePersonLocationFull.Visible = false;
+
+            UpdateMovePersonGroupList();
+        }
+
+        /// <summary>
+        /// Uploads the staying group list.
+        /// </summary>
+        protected void UpdateMovePersonGroupList()
+        {
+            var currentlySelectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+            ddlMovePersonGroup.Items.Clear();
+            var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
+            var selectedScheduleId = ddlMovePersonSchedule.SelectedValueAsId();
+            if ( !selectedLocationId.HasValue || !selectedScheduleId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var availableGroupQuery = new GroupLocationService( rockContext ).Queryable()
+                .Where( a => a.LocationId == selectedLocationId
+                    && a.Schedules.Any( s => s.Id == selectedScheduleId ) );
+
+            var groupsQuery = new GroupService( rockContext ).Queryable();
+            var availableGroupList = groupsQuery
+                .Include( a => a.ParentGroup )
+                .Where( g => g.IsActive
+                    && !g.IsArchived
+                    && availableGroupQuery.Any( x => x.GroupId == g.Id ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .AsNoTracking()
+                .ToList();
+
+            foreach ( var group in availableGroupList )
+            {
+                if ( group.ParentGroup != null )
+                {
+                    ddlMovePersonGroup.Items.Add( new ListItem( $"{group.ParentGroup.Name} > {group.Name}", group.Id.ToString() ) );
+                }
+                else
+                {
+                    ddlMovePersonGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                }
+            }
+
+            ddlMovePersonGroup.SetValue( currentlySelectedGroupId );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMovePerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdMovePerson_SaveClick( object sender, EventArgs e )
+        {
+            var attendanceId = GetAttendanceId();
+            if ( attendanceId == null )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+            var attendance = attendanceService.Get( attendanceId.Value );
+            if ( attendance == null )
+            {
+                return;
+            }
+
+            var selectedOccurrenceDate = attendance.Occurrence.OccurrenceDate;
+            var selectedScheduleId = ddlMovePersonSchedule.SelectedValueAsId();
+            var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
+            var selectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+            if ( !selectedLocationId.HasValue || !selectedGroupId.HasValue || !selectedScheduleId.HasValue )
+            {
+                return;
+            }
+
+            var location = NamedLocationCache.Get( selectedLocationId.Value );
+
+            var locationFirmRoomThreshold = location?.FirmRoomThreshold;
+            if ( locationFirmRoomThreshold.HasValue )
+            {
+                // The totalAttended is the number of people still checked in (not people who have been checked-out)
+                // not counting the current person who may already be checked in,
+                // + the person we are trying to move
+                var locationCount = attendanceService.GetByDateOnLocationAndSchedule( selectedOccurrenceDate, selectedLocationId.Value, selectedScheduleId.Value )
+                                            .Where( a => a.EndDateTime == null && a.PersonAlias.PersonId != attendance.PersonAlias.PersonId ).Count();
+
+                if ( ( locationCount + 1 ) >= locationFirmRoomThreshold.Value )
+                {
+                    nbMovePersonLocationFull.Text = $"The {location} has reached its hard threshold capacity and cannot be used for check-in.";
+                    nbMovePersonLocationFull.Visible = true;
+                    return;
+                }
+            }
+
+            var newRoomsOccurrence = attendanceOccurrenceService.GetOrAdd( selectedOccurrenceDate, selectedGroupId, selectedLocationId, selectedScheduleId );
+            attendance.OccurrenceId = newRoomsOccurrence.Id;
+            rockContext.SaveChanges();
+
+            mdMovePerson.Hide();
+            ShowDetail( GetAttendanceId() );
+        }
+
+        #endregion Move Person
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var service = new AttendanceService( rockContext );
+
+                var attendanceId = GetAttendanceId();
+
+                if ( attendanceId == null )
+                {
+                    return;
+                }
+
+                var attendance = service.Get( attendanceId.Value );
+                if ( attendance == null )
+                {
+                    return;
+                }
+
+                var personGuid = attendance.PersonAlias.Person?.Guid;
+
+                service.Delete( attendance );
+                rockContext.SaveChanges();
+
+                var queryParams = new Dictionary<string, string>();
+
+                queryParams.Add( PageParameterKey.PersonGuid, personGuid.ToString() );
+
+                NavigateToLinkedPage( AttributeKey.PersonProfilePage, queryParams );
+            }
+        }
+
         #endregion
 
         #region Methods
 
-        private Guid? _attendanceGuid;
-
         /// <summary>
-        /// Gets the attendance unique identifier based on what was passed into the page parameters
+        /// Gets the attendance id based on what was passed into the page parameters
         /// </summary>
-        private Guid? GetAttendanceGuid()
+        private int? GetAttendanceId()
         {
-            if ( _attendanceGuid.HasValue )
-            {
-                return _attendanceGuid.Value;
-            }
-
-            Guid? attendanceGuid = PageParameter( PageParameterKey.AttendanceGuid ).AsGuidOrNull();
-            if ( attendanceGuid.HasValue )
-            {
-                return attendanceGuid.Value;
-            }
-
             int? attendanceId = PageParameter( PageParameterKey.AttendanceId ).AsIntegerOrNull();
             if ( attendanceId.HasValue )
             {
+                return attendanceId;
+            }
+
+            Guid? attendanceGuid = PageParameter( PageParameterKey.AttendanceGuid ).AsGuidOrNull();
+
+            if ( attendanceGuid.HasValue )
+            {
                 using ( var rockContext = new RockContext() )
                 {
-                    _attendanceGuid = new AttendanceService( rockContext ).GetGuid( attendanceId.Value );
+                    attendanceId = new AttendanceService( rockContext ).GetId( attendanceGuid.Value );
                 }
             }
 
-            return _attendanceGuid;
+            return attendanceId;
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="attendanceGuid">The attendance unique identifier.</param>
-        private void ShowDetail( Guid? attendanceGuid )
+        private void ShowDetail( int? attendanceId )
         {
-            if ( !attendanceGuid.HasValue )
+            if ( !attendanceId.HasValue )
             {
                 return;
             }
@@ -136,7 +397,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             // Fetch the attendance record and include all the details that we'll be displaying.
             var attendance = attendanceService.Queryable()
-                .Where( a => a.Guid == attendanceGuid.Value && a.PersonAliasId.HasValue )
+                .Where( a => a.Id == attendanceId.Value && a.PersonAliasId.HasValue )
                 .Include( a => a.PersonAlias.Person )
                 .Include( a => a.Occurrence.Group )
                 .Include( a => a.Occurrence.Schedule )
@@ -153,19 +414,28 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
 
             ShowAttendanceDetails( attendance );
+
+            btnEdit.Enabled = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            btnDelete.Enabled = this.IsUserAuthorized( Rock.Security.Authorization.EDIT );
         }
 
         /// <summary>
-        /// Sets the checkin person label (Name, PhoneNumber, etc)
+        /// Sets the checkin label (Time, Name, PhoneNumber, etc)
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
         /// <param name="rockLiteral">The rock literal.</param>
-        private static void SetCheckinPersonLabel( RockContext rockContext, int? personAliasId, RockLiteral rockLiteral )
+        private static void SetCheckinInfoLabel( RockContext rockContext, DateTime? dateTime, int? personAliasId, RockLiteral rockLiteral )
         {
-            if ( !personAliasId.HasValue )
+            if ( dateTime == null )
             {
                 rockLiteral.Visible = false;
+            }
+
+            rockLiteral.Text = dateTime.Value.ToShortDateTimeString();
+
+            if ( !personAliasId.HasValue )
+            {
                 return;
             }
 
@@ -174,15 +444,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             if ( person == null )
             {
-                rockLiteral.Visible = false;
                 return;
             }
 
-            rockLiteral.Visible = true;
-
             var checkedInByPersonName = person.FullName;
             var checkedInByPersonPhone = person.GetPhoneNumber( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-            rockLiteral.Text = string.Format( "{0} {1}", checkedInByPersonName, checkedInByPersonPhone );
+            rockLiteral.Text = string.Format( "{0 } by {1} {2}", dateTime.Value.ToShortDateTimeString(), checkedInByPersonName, checkedInByPersonPhone );
         }
 
         /// <summary>
@@ -192,6 +459,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private void ShowAttendanceDetails( Attendance attendance )
         {
             var occurrence = attendance.Occurrence;
+
+            btnDelete.Attributes["onclick"] = $"javascript: return Rock.dialogs.confirmDelete(event, 'Check-in for {attendance.PersonAlias}');";
 
             var groupType = GroupTypeCache.Get( occurrence.Group.GroupTypeId );
             var rockContext = new RockContext();
@@ -213,14 +482,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 lScheduleName.Text = occurrence.Schedule.Name;
             }
 
-            SetCheckinPersonLabel( rockContext, attendance.CheckedInByPersonAliasId, lCheckinByPerson );
-            lCheckinTime.Text = attendance.StartDateTime.ToString();
+            SetCheckinInfoLabel( rockContext, attendance.StartDateTime, attendance.CheckedInByPersonAliasId, lCheckinTime );
 
             if ( attendance.PresentDateTime.HasValue )
             {
-                lPresentTime.Visible = true;
-                lPresentTime.Text = attendance.PresentDateTime.ToString();
-                SetCheckinPersonLabel( rockContext, attendance.PresentByPersonAliasId, lPresentByPerson );
+                SetCheckinInfoLabel( rockContext, attendance.PresentDateTime, attendance.PresentByPersonAliasId, lPresentTime );
             }
             else
             {
@@ -231,8 +497,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             if ( attendance.EndDateTime.HasValue )
             {
                 lCheckedOutTime.Visible = true;
-                lCheckedOutTime.Text = attendance.EndDateTime.ToString();
-                SetCheckinPersonLabel( rockContext, attendance.CheckedOutByPersonAliasId, lCheckedOutByPerson );
+                SetCheckinInfoLabel( rockContext, attendance.EndDateTime, attendance.CheckedOutByPersonAliasId, lCheckedOutTime );
             }
             else
             {
@@ -242,5 +507,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         }
 
         #endregion Methods
+
+
     }
 }

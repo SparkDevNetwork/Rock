@@ -20,13 +20,14 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection opportunity connector groups
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunityConnectorGroup" )]
     [DataContract]
     public partial class ConnectionOpportunityConnectorGroup : Model<ConnectionOpportunityConnectorGroup>
@@ -35,7 +36,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/> identifier.
         /// </summary>
         /// <value>
         /// The connection opportunity identifier.
@@ -45,7 +46,7 @@ namespace Rock.Model
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> identifier.
         /// </summary>
         /// <value>
         /// The campus identifier.
@@ -54,7 +55,7 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector group identifier.
+        /// Gets or sets the connector <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The connector group identifier.
@@ -68,16 +69,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the connection opportunity.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunity"/>.
         /// </summary>
         /// <value>
         /// The connection opportunity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/>.
         /// </summary>
         /// <value>
         /// The campus.
@@ -86,7 +87,7 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the connector group.
+        /// Gets or sets the connector <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The connector group.

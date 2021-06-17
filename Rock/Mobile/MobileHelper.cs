@@ -209,7 +209,7 @@ namespace Rock.Mobile
                 RockDateTime.Now,
                 RockDateTime.Now.Add( System.Web.Security.FormsAuthentication.Timeout ),
                 true,
-                false.ToString() );
+                username.StartsWith( "rckipid=" ).ToString() );
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
         }
@@ -352,6 +352,13 @@ namespace Rock.Mobile
             // Run Lava on CSS to enable color utilities
             cssStyles = cssStyles.ResolveMergeFields(Lava.LavaHelper.GetCommonMergeFields(null, null, new Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false }));
 
+            // Get the Rock organization time zone. If not found back to the
+            // OS time zone. If not found just use Greenwich.
+            var timeZoneMapping = NodaTime.TimeZones.TzdbDateTimeZoneSource.Default.WindowsMapping.PrimaryMapping;
+            var timeZoneName = timeZoneMapping.GetValueOrNull( RockDateTime.OrgTimeZoneInfo.Id )
+                ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
+                ?? "GMT";
+
             //
             // Initialize the base update package settings.
             //
@@ -365,7 +372,9 @@ namespace Rock.Mobile
                 PhoneFormats = phoneFormats,
                 DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom,
-                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic
+                HomepageRoutingLogic = additionalSettings.HomepageRoutingLogic,
+                DoNotEnableNotificationsAtLaunch = !additionalSettings.EnableNotificationsAutomatically,
+                TimeZone = timeZoneName
             };
 
             //
@@ -487,6 +496,14 @@ namespace Rock.Mobile
                         mobileCampus.PostalCode = campus.Location.PostalCode;
                     }
                 }
+
+                // Get the campus time zone, If not found try the Rock
+                // organization time zone. If not found back to the
+                // OS time zone. If not found just use Greenwich.
+                mobileCampus.TimeZone = timeZoneMapping.GetValueOrNull( campus.TimeZoneId ?? string.Empty )
+                    ?? timeZoneMapping.GetValueOrNull( RockDateTime.OrgTimeZoneInfo.Id )
+                    ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
+                    ?? "GMT";
 
                 package.Campuses.Add( mobileCampus );
             }

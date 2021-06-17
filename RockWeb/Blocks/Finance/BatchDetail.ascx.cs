@@ -249,12 +249,12 @@ namespace RockWeb.Blocks.Finance
                 History.EvaluateChange( changes, "End Date/Time", batch.BatchEndDateTime, endDateTime );
                 batch.BatchEndDateTime = endDateTime;
 
-                decimal controlAmount = tbControlAmount.Text.AsDecimal();
+                decimal controlAmount = tbControlAmount.Value ?? 0.0m;
                 History.EvaluateChange( changes, "Control Amount", batch.ControlAmount.FormatAsCurrency(), controlAmount.FormatAsCurrency() );
                 batch.ControlAmount = controlAmount;
 
                 int? controlItemCount = nbControlItemCount.Text.AsIntegerOrNull();
-                History.EvaluateChange( changes, "Control Item Count", batch.ControlItemCount.FormatAsCurrency(), controlItemCount.FormatAsCurrency() );
+                History.EvaluateChange( changes, "Control Item Count", batch.ControlItemCount, controlItemCount );
                 batch.ControlItemCount = controlItemCount;
 
                 History.EvaluateChange( changes, "Accounting System Code", batch.AccountingSystemCode, tbAccountingCode.Text );
@@ -616,7 +616,7 @@ namespace RockWeb.Blocks.Finance
                     campCampus.SetValue( batch.CampusId.Value );
                 }
 
-                tbControlAmount.Text = batch.ControlAmount.ToString( "N2" );
+                tbControlAmount.Value = batch.ControlAmount;
                 nbControlItemCount.Text = batch.ControlItemCount.ToString();
 
                 dtpStart.SelectedDateTime = batch.BatchStartDateTime;

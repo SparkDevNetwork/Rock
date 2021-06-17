@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -31,10 +32,21 @@ namespace RockWeb.Blocks.CheckIn
     [Category("Check-in")]
     [Description("Lists people who match the selected family and provides option of selecting multiple people to check-out.")]
 
-    [TextField( "Title", "Title to display. Use {0} for family name", false, "{0} Check Out", "Text", 5 )]
-    [TextField( "Caption", "", false, "Select People", "Text", 6 )]
+    [TextField( "Caption",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        DefaultValue = "Select People",
+        Category = "Text",
+        Order = 5 )]
+
     public partial class CheckOutPersonSelect : CheckInBlock
     {
+
+        private new static class AttributeKey
+        {
+            public const string Caption = "Caption";
+        }
+
         bool _hidePhotos = false;
 
         protected override void OnInit( EventArgs e )
@@ -97,23 +109,14 @@ namespace RockWeb.Blocks.CheckIn
                         GoBack();
                     }
 
-                    lTitle.Text = string.Format( GetAttributeValue( "Title" ), family.ToString() );
-                    lCaption.Text = GetAttributeValue( "Caption" );
+                    lTitle.Text = GetTitleText();
+                    lCaption.Text = GetAttributeValue( AttributeKey.Caption );
 
                     _hidePhotos = CurrentCheckInState.CheckInType.TypeOfCheckin == TypeOfCheckin.Individual || CurrentCheckInState.CheckInType.HidePhotos;
 
                     rSelection.DataSource = family.CheckOutPeople;
                     rSelection.DataBind();
                 }
-            }
-        }
-
-        private void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                var pnlPhoto = e.Item.FindControl( "pnlPhoto" ) as Panel;
-                pnlPhoto.Visible = !_hidePhotos;
             }
         }
 
@@ -128,6 +131,26 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     person.Selected = true;
                 }
+            }
+        }
+
+        private string GetTitleText()
+        {
+            var mergeFields = new Dictionary<string, object>
+            {
+                { LavaMergeFieldName.Family, CurrentCheckInState.CheckIn.CurrentFamily.Group }
+            };
+
+            var checkoutPersonSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.CheckoutPersonSelectHeaderLavaTemplate ?? string.Empty;
+            return checkoutPersonSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
+        }
+
+        private void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var pnlPhoto = e.Item.FindControl( "pnlPhoto" ) as Panel;
+                pnlPhoto.Visible = !_hidePhotos;
             }
         }
 

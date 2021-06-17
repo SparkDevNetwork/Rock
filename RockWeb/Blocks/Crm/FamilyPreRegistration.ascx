@@ -19,11 +19,21 @@
                     </div>
                     <div class="panel-body">
                         <div class="row">
-                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlCampus">
-                                <Rock:CampusPicker ID="cpCampus" runat="server" CssClass="input-width-lg" Label="Campus" />
+                            <asp:Panel CssClass="col-md-4" runat="server" ID="pnlCampus">
+                                <Rock:CampusPicker ID="cpCampus" runat="server" CssClass="input-width-lg" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="true" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlPlannedDate">
+                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlPlannedDate" Visible="true">
                                 <Rock:DatePicker ID="dpPlannedDate" runat="server" Label="Planned Visit Date" AllowPastDateSelection="false" />
+                            </asp:Panel>
+                            <asp:Panel CssClass="col-md-7" runat="server" ID="pnlPlannedSchedule" Visible="false">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <Rock:RockDropDownList ID="ddlScheduleDate" runat="server" Label="Planned Visit Date" OnSelectedIndexChanged="ddlScheduleDate_SelectedIndexChanged" AutoPostBack="true"></Rock:RockDropDownList>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <Rock:RockDropDownList ID="ddlScheduleTime" runat="server" Label="Planned Visit Time"></Rock:RockDropDownList>
+                                    </div>
+                                </div>
                             </asp:Panel>
                         </div>
                     </div>
@@ -41,6 +51,10 @@
 
                         <h4>First Adult</h4>
                         <div class="row">
+                            <%-- Special input with rock-fullname class --%>
+                            <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                            <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
+
                             <div class="<%= GetColumnStyle(3) %>">
                                 <Rock:DataTextBox ID="tbFirstName1" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" />
                             </div>

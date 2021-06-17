@@ -1244,6 +1244,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     ///
     /// </summary>
+    [RockClientInclude( "Search result item from api/People/Search" )]
     public class PersonSearchResult
     {
         /// <summary>

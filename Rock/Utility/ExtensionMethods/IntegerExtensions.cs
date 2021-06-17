@@ -120,7 +120,7 @@ namespace Rock
         /// <param name="value">The value.</param>
         /// <param name="decimalPlaces">The decimal places.</param>
         /// <returns></returns>
-        public static string FormatAsMemorySize( this int value, int decimalPlaces = 0)
+        public static string FormatAsMemorySize( this int value, int decimalPlaces = 0 )
         {
             if ( decimalPlaces < 0 )
             {
@@ -199,6 +199,48 @@ namespace Rock
             return string.Format( "{0:n" + decimalPlaces + "} {1}",
                 adjustedSize,
                 SizeSuffixes[mag] );
+        }
+
+        /// <summary>
+        /// Returns a formatted string of the duration.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>A friendly time duration such as '1h 44m' or '5m 22s'</returns>
+        public static string ToFriendlyDuration( this int? value )
+        {
+            if ( !value.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var totalSeconds = value;
+            // Format the results
+            TimeSpan timeSpan = TimeSpan.FromSeconds( value.Value );
+            var formattedTime = string.Empty;
+            if ( timeSpan.Days != default( int ) )
+            {
+                totalSeconds -= timeSpan.Days * 24 * 60 * 60;
+                formattedTime = string.Format( "{0}d ", timeSpan.Days );
+            }
+
+            if ( timeSpan.Hours != default( int ) || ( totalSeconds > 0 && formattedTime.IsNotNullOrWhiteSpace() ) )
+            {
+                totalSeconds -= timeSpan.Hours * 60 * 60;
+                formattedTime += string.Format( "{0}h ", timeSpan.Hours );
+            }
+
+            if ( timeSpan.Minutes != default( int ) || ( totalSeconds > 0 && formattedTime.IsNotNullOrWhiteSpace() ) )
+            {
+                totalSeconds -= timeSpan.Minutes * 60;
+                formattedTime += string.Format( "{0}m ", timeSpan.Minutes );
+            }
+
+            if ( timeSpan.Seconds != default( int ) )
+            {
+                formattedTime += string.Format( "{0}s", timeSpan.Seconds );
+            }
+
+            return formattedTime;
         }
 
         /// <summary>

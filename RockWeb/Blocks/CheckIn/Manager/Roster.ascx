@@ -84,10 +84,10 @@
 
                                 <Rock:LinkButtonField ID="btnCancel" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-danger btn-square js-cancel-checkin" Text="<i class='fa fa-times'></i>" ToolTip="Cancel" OnClick="btnCancel_Click" OnDataBound="btnCancel_DataBound" />
                                 <Rock:LinkButtonField ID="btnPresent" ItemStyle-CssClass="grid-columnaction d-print-none" CssClass="btn btn-success btn-square js-mark-present" Text="<i class='fa fa-user-check'></i>" ToolTip="Mark Present" OnClick="btnPresent_Click" OnDataBound="btnPresent_DataBound" />
-
-                                <Rock:LinkButtonField ID="btnCheckOut" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-primary btn-square" Text="<i class='fa fa-user-minus'></i>" ToolTip="Check out" OnClick="btnCheckOut_Click" OnDataBound="btnCheckOut_DataBound" />
+                                
                                 <Rock:LinkButtonField ID="btnStaying" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-user-clock'></i>" ToolTip="Staying" OnClick="btnStaying_Click" />
-                                <Rock:LinkButtonField ID="btnNotPresent" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-external-link-alt'></i>" ToolTip="Not Present" OnClick="btnNotPresent_Click" OnDataBound="btnNotPresent_DataBound" />
+                                <Rock:LinkButtonField ID="btnNotPresent" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-default btn-square" Text="<i class='fa fa-user-slash'></i>" ToolTip="Not Present" OnClick="btnNotPresent_Click" OnDataBound="btnNotPresent_DataBound" />
+                                <Rock:LinkButtonField ID="btnCheckOut" ItemStyle-CssClass="grid-columnaction" CssClass="btn btn-primary btn-square" Text="<i class='fa fa-user-minus'></i>" ToolTip="Check out" OnClick="btnCheckOut_Click" OnDataBound="btnCheckOut_DataBound" />
                             </Columns>
                         </Rock:Grid>
                     </div>
@@ -104,11 +104,20 @@
                 </Content>
             </Rock:ModalDialog>
 
-            <!-- Confirm Checkout modal -->
+            <!-- Confirm Checkout All modal -->
             <Rock:ModalDialog ID="mdConfirmCheckoutAll" runat="server" Title="Confirm" ValidationGroup="vgConfirmCheckoutAll" SaveButtonText="Check Out" OnSaveClick="mdConfirmCheckoutAll_SaveClick">
                 <Content>
                     <asp:Literal ID="lConfirmCheckoutAll" runat="server" Text="Which schedules would you like to check out for:" />
                     <Rock:RockCheckBoxList ID="cblSchedulesCheckoutAll" runat="server" Label="Schedules" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmCheckoutAll" />
+                </Content>
+            </Rock:ModalDialog>
+
+            <!-- Confirm Checkout Attendee modal -->
+            <Rock:ModalDialog ID="mdConfirmCheckoutAttendee" runat="server" Title="Confirm" ValidationGroup="vgConfirmCheckoutAttendee" SaveButtonText="Check Out" OnSaveClick="mdConfirmCheckoutAttendee_SaveClick" >
+                <Content>
+                    <asp:HiddenField ID="hfConfirmCheckoutAttendeeAttendanceIds" runat="server" />
+                    <asp:Literal ID="lConfirmCheckoutAttendee" runat="server" Text="Which schedules would you like to check out for:" />
+                    <Rock:RockCheckBoxList ID="cblSchedulesCheckoutAttendee" runat="server" Label="Schedules" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmCheckoutAttendee" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

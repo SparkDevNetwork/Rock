@@ -101,8 +101,7 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
             gDataViewResults.GridRebind += gDataViewResults_GridRebind;
 
-            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
-            //// note: this only makes a difference on Postback, not on the initial page visit
+            //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
             if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
@@ -265,40 +264,22 @@ namespace RockWeb.Blocks.Reporting
 
             var enableCountingDataViewStatistics = this.GetAttributeValue( AttributeKey.EnableCountingDataViewStatistics ).AsBooleanOrNull() ?? true;
 
-            DataView dataViewForGrid;
-
-            if ( !enableCountingDataViewStatistics )
-            {
-                // Making an unsaved copy of the DataView so the runs do not get counted.
-                dataViewForGrid = new DataView
-                {
-                    Name = dataView.Name,
-                    TransformEntityTypeId = dataView.TransformEntityTypeId,
-                    TransformEntityType = dataView.TransformEntityType,
-                    EntityTypeId = dataView.EntityTypeId,
-                    EntityType = dataView.EntityType,
-                    DataViewFilterId = dataView.DataViewFilterId,
-                    DataViewFilter = dataView.DataViewFilter,
-                    IncludeDeceased = dataView.IncludeDeceased
-                };
-            }
-            else
-            {
-                dataViewForGrid = dataView;
-            }
-
             try
             {
                 gDataViewResults.CreatePreviewColumns( dataViewEntityTypeType );
-                var dbContext = dataViewForGrid.GetDbContext();
+                var dbContext = dataView.GetDbContext();
                 var dataViewGetQueryArgs = new DataViewGetQueryArgs
                 {
                     SortProperty = gDataViewResults.SortProperty,
                     DbContext = dbContext,
-                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
+                    DataViewFilterOverrides = new DataViewFilterOverrides
+                    {
+                        ShouldUpdateStatics = enableCountingDataViewStatistics
+                    }
                 };
 
-                var qry = dataViewForGrid.GetQuery( dataViewGetQueryArgs );
+                var qry = dataView.GetQuery( dataViewGetQueryArgs );
 
                 gDataViewResults.SetLinqDataSource( qry.AsNoTracking() );
                 gDataViewResults.DataBind();

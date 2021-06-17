@@ -3,7 +3,7 @@
     <ul class="nav nav-stacked navbar-side">
 		{%- for childPage in Page.Pages -%}
 				<li class="{%- if childPage.Current or childPage.IsParentOfCurrent -%}current{%- endif -%}{% if forloop.first %} my-4{% endif %}{% if forloop.last %} mt-auto{% endif %}">
-                {%- comment -%}Link to the First Child of the Room Manager{%- endcomment -%}
+                {% comment %}Link to the First Child of the Room Manager{% endcomment %}
                 {%- if childPage.Title == "Room Manager" and childPage.Pages != empty -%}
                     {%- assign menuUrl = childPage.Pages[0].Url -%}
                 {% else %}

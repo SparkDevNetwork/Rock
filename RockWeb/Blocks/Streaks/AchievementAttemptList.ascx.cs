@@ -425,11 +425,11 @@ namespace RockWeb.Blocks.Streaks
 
             var rockContext = GetRockContext();
             var achievementType = GetAchievementTypeCache();
-            var achievementTypes = AchievementTypeCache.All().Where( at => at.IsActive );
+            var achievementTypes = AchievementTypeCache.All();
 
             if ( achievementType != null )
             {
-                achievementTypes = achievementTypes.Where( at => at.Id == achievementType.Id );
+                achievementTypes = achievementTypes.Where( at => at.Id == achievementType.Id ).ToList();
             }
 
             var subQueries = new List<IQueryable<AchieverAttemptItem>>();
@@ -447,7 +447,10 @@ namespace RockWeb.Blocks.Streaks
                 subQueries.Add( componentQuery );
             }
 
-            _attemptsQuery = subQueries.DefaultIfEmpty().Aggregate( ( a, b ) => a.Union( b ) );
+            _attemptsQuery = subQueries.Any() ?
+                subQueries.Aggregate( ( a, b ) => a.Union( b ) ) :
+                new List<AchieverAttemptItem>().AsQueryable();
+
             return _attemptsQuery;
         }
         private IQueryable<AchieverAttemptItem> _attemptsQuery = null;

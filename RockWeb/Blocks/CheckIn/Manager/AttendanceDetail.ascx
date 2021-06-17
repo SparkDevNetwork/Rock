@@ -18,33 +18,42 @@
 
             <hr />
 
-            <asp:Panel ID="pnlCheckinTimeDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckinTime" runat="server" Label="Check-in" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckinByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlCheckinTimeDetails" runat="server">
+                <Rock:RockLiteral ID="lCheckinTime" runat="server" Label="Check-in" />
             </asp:Panel>
 
-            <asp:Panel ID="pnlPresentDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lPresentTime" runat="server" Label="Present" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lPresentByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlPresentDetails" runat="server">
+                <Rock:RockLiteral ID="lPresentTime" runat="server" Label="Present" />
             </asp:Panel>
 
-            <asp:Panel ID="pnlCheckedOutDetails" runat="server" CssClass="row">
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckedOutTime" runat="server" Label="Checked-out" />
-                </div>
-                <div class="col-sm-6">
-                    <Rock:RockLiteral ID="lCheckedOutByPerson" runat="server" Label=" " />
-                </div>
+            <asp:Panel ID="pnlCheckedOutDetails" runat="server">
+                <Rock:RockLiteral ID="lCheckedOutTime" runat="server" Label="Checked-out" />
             </asp:Panel>
+
+            <div class="actions">
+                <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
+            </div>
+
         </div>
 
+        <Rock:ModalDialog ID="mdMovePerson" runat="server" Title="Move Person" SaveButtonText="Move" OnSaveClick="mdMovePerson_SaveClick">
+            <Content>
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlMovePersonSchedule" runat="server" Label="Service" OnSelectedIndexChanged="ddlMovePersonSchedule_SelectedIndexChanged" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:LocationItemPicker ID="lpMovePersonLocation" runat="server" Label="Location" OnSelectItem="lpMovePersonLocation_SelectItem" EnableFullWidth="true" />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" />
+                    </div>
+                </div>
+
+                <Rock:NotificationBox ID="nbMovePersonLocationFull" runat="server" NotificationBoxType="Warning" />
+
+            </Content>
+        </Rock:ModalDialog>
     </ContentTemplate>
 </asp:UpdatePanel>

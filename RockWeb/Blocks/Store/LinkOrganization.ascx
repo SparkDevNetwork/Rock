@@ -22,7 +22,7 @@
                 <asp:Panel ID="pnlAuthenicate" runat="server">
                     <div class="alert alert-info">
                         <strong>Which Password?</strong> Use the username and password below that you created
-                        on the <a href="http://www.rockrms.com">Rock RMS website</a>.
+                        on the <a href="https://www.rockrms.com">Rock RMS website</a>.
                     </div>
 
                     <Rock:RockTextBox ID="txtUsername" runat="server" Label="Rock RMS Username" />

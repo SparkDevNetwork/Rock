@@ -50,7 +50,7 @@ main {
 h3,
 h4,
 legend {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 b,
@@ -112,6 +112,10 @@ textarea,
 }
 
 .btn-square {
+  width: @input-height-base;
+  height: @input-height-base;
+  padding: @padding-base-vertical 0;
+
   &.btn-xs {
     width: 25px;
     height: 25px;
@@ -119,9 +123,9 @@ textarea,
   }
 
   &.btn-sm {
-    width: 33px;
-    height: 33px;
-    padding: 5px 8px;
+    width: @input-height-small;
+    height: @input-height-small;
+    padding: @padding-small-vertical 0;
   }
 
   i.fa {
@@ -208,7 +212,7 @@ textarea,
 
     // Active state, and its :hover to override normal :hover
     &.active > a {
-      font-weight: bold;
+      font-weight: 700;
       color: @gray-dark;
       &,
       &:hover,
@@ -356,6 +360,11 @@ textarea,
     padding: 18px 0 18px 12px;
     vertical-align: middle;
 
+    // Remove padding offset on right
+    &[align="right"] {
+      padding-right: 17px;
+    }
+
     // Remove padding offset on center
     &[align="center"] {
       padding: 18px 6px;
@@ -371,7 +380,7 @@ textarea,
       padding-top: 18px;
     }
     &.grid-row-header {
-      font-weight: bold;
+      font-weight: 700;
       border-right: 1px solid @table-border-color;
     }
 
@@ -443,7 +452,7 @@ textarea,
 
 .badge-circle {
   width: @line-height-computed;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .grid-select-cell .status-list .badge {
@@ -547,14 +556,11 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
     align-items: center;
+    border-bottom: 1px solid @panel-border;
 
     .row {
       width: 100%;
@@ -572,6 +578,15 @@ textarea,
     > .pull-right {
       margin-left: auto;
       text-align: right;
+    }
+
+    > .panel-labels {
+      margin-top: -8px;
+      margin-bottom: -8px;
+
+      .btn {
+        vertical-align: baseline;
+      }
     }
 
     > .description {
@@ -610,8 +625,9 @@ textarea,
   padding: 0;
 
   &::before {
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 100%;
   }
 }
@@ -1149,40 +1165,6 @@ body.nav-open {
         }
       }
 
-      &.open {
-        background-color: @navbarside-sub-bg;
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-
-        @media @sm {
-          &::before {
-            position: absolute;
-            top: -(ceil(@navbarside-width * .35));
-            right: 0;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-
-          &::after {
-            position: absolute;
-            right: 0;
-            bottom: -(ceil(@navbarside-width * .35));
-            z-index: 1;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-        }
-      }
-
-      &.current,
-      &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-        > i {
-          color: @white;
-        }
-      }
-
       .nav-childpages {
         position: fixed;
         top: 0;
@@ -1296,14 +1278,45 @@ body.nav-open {
           border-radius: 10px;
         }
       }
-    }
 
-    > li.open {
-      .nav-childpages {
-        display: inline-block;
+      &.open {
+        background-color: @navbarside-sub-bg;
 
-        li.header {
-          padding-left: 0;
+        .nav-childpages {
+          display: inline-block;
+
+          li.header {
+            padding-left: 0;
+          }
+        }
+
+        @media @sm {
+          &::before {
+            position: absolute;
+            top: -(ceil(@navbarside-width * .35));
+            right: 0;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+
+          &::after {
+            position: absolute;
+            right: 0;
+            bottom: -(ceil(@navbarside-width * .35));
+            z-index: 1;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+        }
+      }
+
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-primary;
+        > i {
+          color: @white;
         }
       }
     }
@@ -1577,33 +1590,24 @@ body.navbar-side-open {
 }
 
 .picker-menu {
-  animation-name: css-1, css-13;
+  animation-name: picker-animation;
   animation-duration: .367s;
   animation-timing-function: cubic-bezier(.1, .9, .2, 1);
   animation-fill-mode: both;
 }
 
-@keyframes css-1 {
+@keyframes picker-animation {
   0% {
     opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes css-13 {
-
-  0% {
     transform: translate3d(0, -10px, 0);
   }
 
   100% {
+    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
-
 }
+
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {

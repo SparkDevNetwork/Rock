@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -626,7 +627,8 @@ namespace RockWeb.Blocks.Cms
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
+
+                if ( LavaHelper.IsLavaDataObject( contextEntity ) )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                     if ( type != null )
@@ -800,7 +802,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( contentHtml != null )
                     {
-                        if ( contentHtml.HasMergeFields() )
+                        if ( LavaHelper.IsLavaTemplate( contentHtml ) )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );

@@ -22,7 +22,6 @@ using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic;
-using Lucene.Net.Support;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -270,14 +269,8 @@ namespace Rock.Achievement.Component
             // Get all of the attempts for this interaction and achievement combo, ordered by start date DESC so that
             // the most recent attempts can be found with FirstOrDefault
             var achievementAttemptService = new AchievementAttemptService( rockContext );
-            var attempts = achievementAttemptService.Queryable()
-                .Where( aa =>
-                    aa.AchievementTypeId == achievementTypeCache.Id &&
-                    aa.AchieverEntityId == interaction.PersonAliasId.Value )
-                .ToList()
-                .OrderByDescending( aa => aa.AchievementAttemptStartDateTime )
-                .ToList();
-
+            var attempts = achievementAttemptService.GetOrderedAchieverAttempts( achievementAttemptService.Queryable(), achievementTypeCache, interaction.PersonAliasId.Value );
+            
             var mostRecentSuccess = attempts.FirstOrDefault( saa => saa.AchievementAttemptEndDateTime.HasValue && saa.IsSuccessful );
             var overachievementPossible = achievementTypeCache.AllowOverAchievement && mostRecentSuccess != null && !mostRecentSuccess.IsClosed;
             var successfulAttemptCount = attempts.Count( saa => saa.IsSuccessful );
@@ -413,7 +406,7 @@ namespace Rock.Achievement.Component
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
             // Get the interaction dates
-            var interactionDates = GetInteractionDates( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
+            var interactionDates = GetInteractionDatesByPerson( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
             var newCount = interactionDates.Count();
             var lastInteractionDate = interactionDates.LastOrDefault();
             var progress = CalculateProgress( newCount, numberToAccumulate );
@@ -454,7 +447,7 @@ namespace Rock.Achievement.Component
             ComputedStreak accumulation = null;
 
             // Get the interaction dates and begin calculating attempts
-            var interactionDates = GetInteractionDates( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
+            var interactionDates = GetInteractionDatesByPerson( achievementTypeCache, interaction.PersonAliasId.Value, minDate, maxDate );
 
             foreach ( var interactionDate in interactionDates )
             {
@@ -544,16 +537,25 @@ namespace Rock.Achievement.Component
         /// <param name="minDate">The minimum date.</param>
         /// <param name="maxDate">The maximum date.</param>
         /// <returns></returns>
-        private List<DateTime> GetInteractionDates( AchievementTypeCache achievementTypeCache, int personAliasId, DateTime minDate, DateTime maxDate )
+        private List<DateTime> GetInteractionDatesByPerson( AchievementTypeCache achievementTypeCache, int personAliasId, DateTime minDate, DateTime maxDate )
         {
             var rockContext = new RockContext();
             var query = GetSourceEntitiesQuery( achievementTypeCache, rockContext ) as IQueryable<Interaction>;
             var dayAfterMaxDate = maxDate.AddDays( 1 );
 
+            var personAliasService = new PersonAliasService( rockContext );
+            var personAliasQuery = personAliasService
+                .Queryable()
+                .AsNoTracking()
+                .Where( pa => pa.Id == personAliasId )
+                .SelectMany( pa => pa.Person.Aliases )
+                .Select( pa => pa.Id );
+
             return query
                 .AsNoTracking()
                 .Where( i =>
-                    i.PersonAliasId == personAliasId &&
+                    i.PersonAliasId.HasValue &&
+                    personAliasQuery.Contains(i.PersonAliasId.Value) &&
                     i.InteractionDateTime >= minDate &&
                     i.InteractionDateTime < dayAfterMaxDate )
                 .Select( i => i.InteractionDateTime )

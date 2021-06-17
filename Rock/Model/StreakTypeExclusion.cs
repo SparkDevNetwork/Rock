@@ -38,14 +38,14 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StreakType"/> to which this exclusion map belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StreakType"/> to which this exclusion map belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
         public int StreakTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location identifier by which the streak type's exclusions will be associated.
+        /// Gets or sets the <see cref="Rock.Model.Location"/>  identifier by which the streak type's exclusions will be associated.
         /// </summary>
         [DataMember]
         public int? LocationId { get; set; }
@@ -62,13 +62,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Sequence.
+        /// Gets or sets the Sequence <see cref="Rock.Model.StreakType"/> .
         /// </summary>
         [DataMember]
         public virtual StreakType StreakType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Location.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> .
         /// </summary>
         [DataMember]
         public virtual Location Location { get; set; }

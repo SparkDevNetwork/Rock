@@ -26,13 +26,12 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using DotLiquid;
-using DotLiquid.Tags;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -63,7 +62,7 @@ namespace RockWeb.Blocks.Groups
     [TextField( "ScheduleFilters", "", false, "", "CustomSetting" )]
     [BooleanField( "Display Campus Filter", "", false, "CustomSetting" )]
     [BooleanField( "Enable Campus Context", "", false, "CustomSetting" )]
-    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true )]
+    [BooleanField( "Hide Overcapacity Groups", "When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden.", true, "CustomSetting" )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "Attribute Filters", "", false, true, "", "CustomSetting" )]
 
     // Map Settings
@@ -73,7 +72,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Fence", "", false, "CustomSetting" )]
     [ValueListField( "Polygon Colors", "", false, "#f37833|#446f7a|#afd074|#649dac|#f8eba2|#92d0df|#eaf7fc", "#ffffff", null, null, "CustomSetting" )]
     [CodeEditorField( "Map Info", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
-<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
+<h4 class='margin-t-none'>{{ Group.Name }}</h4>
 
 <div class='margin-b-sm'>
 {% for attribute in Group.AttributeValues %}
@@ -82,7 +81,7 @@ namespace RockWeb.Blocks.Groups
 </div>
 
 <div class='margin-v-sm'>
-{% if Location.FormattedHtmlAddress && Location.FormattedHtmlAddress != '' %}
+{% if Location.FormattedHtmlAddress and Location.FormattedHtmlAddress != '' %}
 	{{ Location.FormattedHtmlAddress }}
 {% endif %}
 </div>
@@ -307,6 +306,8 @@ namespace RockWeb.Blocks.Groups
 
             SetAttributeValue( "DisplayCampusFilter", cbFilterCampus.Checked.ToString() );
             SetAttributeValue( "EnableCampusContext", cbCampusContext.Checked.ToString() );
+            SetAttributeValue( "HideOvercapacityGroups", cbHideOvercapacityGroups.Checked.ToString() );
+
             SetAttributeValue( "AttributeFilters", cblAttributes.Items.Cast<ListItem>().Where( i => i.Selected ).Select( i => i.Value ).ToList().AsDelimited( "," ) );
 
             SetAttributeValue( "ShowMap", cbShowMap.Checked.ToString() );
@@ -472,6 +473,7 @@ namespace RockWeb.Blocks.Groups
 
             cbFilterCampus.Checked = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
             cbCampusContext.Checked = GetAttributeValue( "EnableCampusContext" ).AsBoolean();
+            cbHideOvercapacityGroups.Checked = GetAttributeValue( "HideOvercapacityGroups" ).AsBoolean();
 
             cbShowMap.Checked = GetAttributeValue( "ShowMap" ).AsBoolean();
             dvpMapStyle.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MAP_STYLES.AsGuid() ).Id;
@@ -618,7 +620,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    // Hide the search button and show the results immediately since there is 
+                    // Hide the search button and show the results immediately since there is
                     // no filter criteria to be entered
                     phFilterControls.Visible = false;
                     btnSearch.Visible = GetAttributeValue( "DisplayCampusFilter" ).AsBoolean();
@@ -640,7 +642,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeFilters = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( "AttributeFilters" ).SplitDelimitedValues() )
             {
@@ -655,7 +657,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AttributeColumns = new List<AttributeCache>();
             foreach ( string attr in GetAttributeValue( "AttributeColumns" ).SplitDelimitedValues() )
             {
@@ -1084,7 +1086,21 @@ namespace RockWeb.Blocks.Groups
                 // If a map is to be shown
                 if ( showMap && groups.Any() )
                 {
-                    Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
+                    Template template = null;
+                    ILavaTemplate lavaTemplate = null;
+
+                    if ( LavaService.RockLiquidIsEnabled )
+                    {
+                        template = Template.Parse( GetAttributeValue( "MapInfo" ) );
+
+                        LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "MapInfo" ) );
+                    }
+                    else
+                    {
+                        var parseResult = LavaService.ParseTemplate( GetAttributeValue( "MapInfo" ) );
+
+                        lavaTemplate = parseResult.Template;
+                    }
 
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
@@ -1121,7 +1137,16 @@ namespace RockWeb.Blocks.Groups
                             securityActions.Add( "Administrate", group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
                             mergeFields.Add( "AllowedActions", securityActions );
 
-                            string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
+                            string infoWindow;
+
+                            if ( LavaService.RockLiquidIsEnabled )
+                            {
+                                infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
+                            }
+                            else
+                            {
+                                infoWindow = lavaTemplate.Render( mergeFields );
+                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1333,7 +1358,9 @@ namespace RockWeb.Blocks.Groups
             if ( dvcMapStyle != null )
             {
                 styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
-                markerColors = dvcMapStyle.GetAttributeValue( "Colors" )
+
+                var colorsSetting = dvcMapStyle.GetAttributeValue( "Colors" ) ?? string.Empty;
+                markerColors = colorsSetting
                     .Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
                     .ToList();
                 markerColors.ForEach( c => c = c.Replace( "#", string.Empty ) );
@@ -1365,7 +1392,7 @@ namespace RockWeb.Blocks.Groups
 
         var locationData = {0};
         var fenceData = {1};
-        var groupData = {2}; 
+        var groupData = {2};
 
         var allMarkers = [];
 
@@ -1446,7 +1473,7 @@ namespace RockWeb.Blocks.Groups
 
             var items = [];
 
-            if (mapItem.Point) {{ 
+            if (mapItem.Point) {{
 
                 var position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
                 bounds.extend(position);
@@ -1474,11 +1501,11 @@ namespace RockWeb.Blocks.Groups
                     info_window: mapItem.InfoWindow,
                     label: String.fromCharCode(9679)
                 }});
-    
+
                 items.push(marker);
                 allMarkers.push(marker);
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(marker, 'click', (function (marker, i) {{
                         return function () {{
                             openInfoWindow(marker);
@@ -1486,7 +1513,7 @@ namespace RockWeb.Blocks.Groups
                     }})(marker, i));
                 }}
 
-                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
+                if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{
                     google.maps.event.addListener(marker, 'mouseover', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
@@ -1531,7 +1558,7 @@ namespace RockWeb.Blocks.Groups
                     polyBounds.extend(polygonPoints[j]);
                 }}
 
-                if ( mapItem.InfoWindow != null ) {{ 
+                if ( mapItem.InfoWindow != null ) {{
                     google.maps.event.addListener(polygon, 'click', (function (polygon, i) {{
                         return function () {{
                             infoWindow.setContent( mapItem.InfoWindow );
@@ -1545,7 +1572,7 @@ namespace RockWeb.Blocks.Groups
             return items;
 
         }}
-        
+
         function setAllMap(markers, map) {{
             for (var i = 0; i < markers.length; i++) {{
                 markers[i].setMap(map);
@@ -1571,7 +1598,7 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function adjustOverlappedMarkers() {{
-            
+
             if (allMarkers.length > 1) {{
                 for(i=0; i < allMarkers.length-1; i++) {{
                     var marker1 = allMarkers[i];

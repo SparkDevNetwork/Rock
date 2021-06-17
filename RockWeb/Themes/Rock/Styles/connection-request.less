@@ -18,6 +18,8 @@
 }
 
 .panel-collapsible {
+  // Put toolbar shadow in front of grid.
+  z-index: 1;
   box-shadow: 0 1px 3px 0 rgba(21, 27, 38, .15);
 
   .panel-drawer {
@@ -25,8 +27,24 @@
   }
 }
 
+.drag-scroll-zone-container {
+  position: relative;
+  height: 100%;
+  min-height: 500px;
+  min-height: ~"var(--block-min-height, calc(100vh - 370px))";
+  overflow: auto;
+
+  > .panel-body {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+
 .overflow-scroll {
-  height: ~"calc(100vh - 290px)";
+  height: 100%;
   min-height: 200px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -53,22 +71,31 @@
   border-radius: 6px;
 }
 
-.board-heading {
-  padding: 0 1rem;
-  margin-top: 1rem;
-}
-
 .board-column-title {
   font-weight: @font-weight-semibold;
 }
 
-.board-heading-pill {
-  height: 4px;
-  margin-top: .5rem;
-  margin-bottom: 1rem;
-  border-radius: 2px;
+.board-count {
+  font-size: 14px;
+  color: @text-muted;
 }
 
+.board-heading {
+  padding: 0 16px;
+  margin: 16px 0 0;
+}
+
+.board-heading-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.board-heading-pill {
+  height: 4px;
+  margin: 8px 0 16px;
+  border-radius: 2px;
+}
 
 .board-cards {
   flex-grow: 1;
@@ -111,6 +138,9 @@
 }
 
 .board-column-sentry {
+  padding: 16px;
+  font-size: 87%;
+  color: @text-muted;
   background: @panel-heading-bg;
 }
 
@@ -145,11 +175,13 @@
 }
 
 .board-card-name {
-  font-weight: 18px;
+  font-size: 18px;
 }
 
 .board-card-assigned {
+  display: block;
   font-size: floor(@font-size-base * .75);
+  color: @text-muted;
 }
 
 .board-card-pills {
@@ -178,10 +210,15 @@
   margin-top: 0;
 }
 
+.board-card-main {
+  display: flex;
+}
+
 .board-card-meta {
   display: flex;
   justify-content: space-between;
   font-size: 11px;
+  color: @text-muted;
 }
 
 .dropdown-menu-mega {

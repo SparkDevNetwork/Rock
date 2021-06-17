@@ -282,7 +282,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             var selectedGroupTypeIds = checkinAreaPaths.Select( a => a.GroupTypeId ).Distinct().ToArray();
 
             var groupLocationService = new GroupLocationService( rockContext );
-            var groupLocationsQuery = groupLocationService.Queryable().Where( gl => selectedGroupTypeIds.Contains( gl.Group.GroupTypeId ) );
+            var groupLocationsQuery = groupLocationService.Queryable()
+                    .Where( gl => selectedGroupTypeIds.Contains( gl.Group.GroupTypeId ) && gl.Group.IsActive && ( !gl.Group.IsArchived ) );
 
             var parentLocationIdParameter = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull();
             var locationIdParameter = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
@@ -395,7 +396,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 GroupTypeId = a.Occurrence.Group.GroupTypeId,
                 StartDateTime = a.StartDateTime,
                 EndDateTime = a.EndDateTime,
-                Schedule = a.Occurrence.Schedule,
+                ScheduleId = a.Occurrence.ScheduleId.Value,
                 PresentDateTime = a.PresentDateTime,
                 PersonId = a.PersonAlias.PersonId
             } ).ToList();
@@ -405,7 +406,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Where( a => a != null )
                 .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean() )
                 .Select( a => a.Id )
-                .Distinct();
+                .Distinct().ToList();
 
             var groupTypeIdsWithEnablePresence = selectedGroupTypeIds
                 .Select( a => GroupTypeCache.Get( a ) )
@@ -413,6 +414,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Where( gt => gt.GetCheckInConfigurationAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean() )
                 .Select( a => a.Id )
                 .Distinct();
+
+            var scheduleIds = attendanceCheckinTimeInfoList.Select( a => a.ScheduleId ).Distinct().ToList();
+            var scheduleList = new ScheduleService( rockContext ).GetByIds( scheduleIds ).ToList();
+            var scheduleIdsWasScheduleOrCheckInActiveForCheckOut = new HashSet<int>( scheduleList.Where( a => a.WasScheduleOrCheckInActiveForCheckOut( currentDateTime ) ).Select( a => a.Id ).ToList() );
 
             attendanceCheckinTimeInfoList = attendanceCheckinTimeInfoList.Where( a =>
             {
@@ -430,7 +435,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         'Checking-out' Attendees in the case that the parents are running late in picking them up.
                     */
 
-                    return a.Schedule.WasScheduleOrCheckInActiveForCheckOut( currentDateTime );
+                    return scheduleIdsWasScheduleOrCheckInActiveForCheckOut.Contains( a.ScheduleId );
                 }
                 else
                 {
@@ -519,7 +524,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
         private void AddToRoomList( List<RoomInfo> roomList, GroupLocationInfo groupLocation )
         {
             Dictionary<int, List<AttendanceCheckinTimeInfo>> attendancesForLocationByGroupId = _attendancesByLocationIdAndGroupId.GetValueOrNull( groupLocation.LocationId );
-            
+
             List<AttendanceCheckinTimeInfo> attendancesForLocationAndGroup;
             if ( attendancesForLocationByGroupId != null )
             {
@@ -527,10 +532,14 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( attendancesForLocationAndGroup != null )
                 {
-                    // if the same person is attending this location and group multiple times, just take the most recent one
+                    // if the same person is attending this location and group multiple times,
+                    // choose the one that is Present (if there is one). Otherwise, choose the most recent one.
                     attendancesForLocationAndGroup = attendancesForLocationAndGroup
                         .GroupBy( a => a.PersonId )
-                        .Select( s => s.OrderByDescending( x => x.StartDateTime ).FirstOrDefault() ).ToList();
+                        .Select( s =>
+                               s.OrderByDescending( x => RosterAttendee.GetRosterAttendeeStatus( x.EndDateTime, x.PresentDateTime ) == RosterAttendeeStatus.Present )
+                              .ThenByDescending(( x => x.StartDateTime ) )
+                        .FirstOrDefault() ).ToList();
                 }
                 else
                 {
@@ -542,7 +551,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             {
                 // no attendances for this Location (Room)
                 attendancesForLocationByGroupId = new Dictionary<int, List<AttendanceCheckinTimeInfo>>();
-                attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>(); 
+                attendancesForLocationAndGroup = new List<AttendanceCheckinTimeInfo>();
             }
 
             var roomCounts = new RoomCounts
@@ -843,8 +852,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public DateTime StartDateTime { get; internal set; }
 
             public DateTime? EndDateTime { get; internal set; }
-
-            public Schedule Schedule { get; internal set; }
+            
+            public int ScheduleId { get; internal set; }
 
             public DateTime? PresentDateTime { get; internal set; }
 

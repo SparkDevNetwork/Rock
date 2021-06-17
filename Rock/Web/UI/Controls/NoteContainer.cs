@@ -88,6 +88,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.NoteLabel;
             }
+
             set
             {
                 this.NoteOptions.NoteLabel = value;
@@ -157,6 +158,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.AddAlwaysVisible;
             }
+
             set
             {
                 this.NoteOptions.AddAlwaysVisible = value;
@@ -175,6 +177,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.DisplayNoteTypeHeading;
             }
+
             set
             {
                 this.NoteOptions.DisplayNoteTypeHeading = value;
@@ -193,6 +196,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.DisplayType;
             }
+
             set
             {
                 this.NoteOptions.DisplayType = value;
@@ -211,6 +215,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowAlertCheckBox;
             }
+
             set
             {
                 this.NoteOptions.ShowAlertCheckBox = value;
@@ -219,6 +224,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the NoteOptions indicating whether [show create date input].
+        /// Set this to true to allow the create date time to be editable.
+        /// For example, when Back-Dating Notes is allowed.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
@@ -229,6 +236,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowCreateDateInput;
             }
+
             set
             {
                 this.NoteOptions.ShowCreateDateInput = value;
@@ -247,6 +255,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowPrivateCheckBox;
             }
+
             set
             {
                 this.NoteOptions.ShowPrivateCheckBox = value;
@@ -265,6 +274,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.ShowSecurityButton;
             }
+
             set
             {
                 this.NoteOptions.ShowSecurityButton = value;
@@ -283,6 +293,7 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.NoteLabel;
             }
+
             set
             {
                 this.NoteOptions.NoteLabel = value;
@@ -301,17 +312,16 @@ namespace Rock.Web.UI.Controls
             {
                 return this.NoteOptions.UsePersonIcon;
             }
+
             set
             {
                 this.NoteOptions.UsePersonIcon = value;
             }
         }
 
-
         #endregion Note Options
 
         #region Properties
-
 
         /// <summary>
         /// Returns the ViewState StateBag of the NoteContainer
@@ -340,7 +350,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                _noteOptions = _noteOptions ?? new NoteOptions(this);
+                _noteOptions = _noteOptions ?? new NoteOptions( this );
                 return _noteOptions;
             }
 
@@ -545,17 +555,34 @@ namespace Rock.Web.UI.Controls
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, true );
                             break;
+
                         case "DenyApproveNote":
                             noteId = parameters.AsIntegerOrNull();
                             ApproveNote( noteId, false );
                             break;
+
                         case "WatchNote":
                             noteId = parameters.AsIntegerOrNull();
                             WatchNote( noteId, true );
                             break;
+
                         case "UnwatchNote":
                             noteId = parameters.AsIntegerOrNull();
                             WatchNote( noteId, false );
+                            break;
+
+                        case "EditNote":
+                            noteId = parameters.AsIntegerOrNull();
+                            EditNote( noteId );
+                            break;
+
+                        case "ReplyToNote":
+                            var parentNoteId = parameters.AsIntegerOrNull();
+                            ReplyToNote( parentNoteId );
+                            break;
+
+                        case "AddNote":
+                            AddNote();
                             break;
                     }
                 }
@@ -652,7 +679,7 @@ namespace Rock.Web.UI.Controls
                     if ( note != null && note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         string errorMessage;
-                        if ( service.CanDeleteChildNotes(note, currentPerson, out errorMessage) && service.CanDelete( note, out errorMessage ) )
+                        if ( service.CanDeleteChildNotes( note, currentPerson, out errorMessage ) && service.CanDelete( note, out errorMessage ) )
                         {
                             service.Delete( note, true );
                             rockContext.SaveChanges();
@@ -704,6 +731,50 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds the note.
+        /// </summary>
+        private void AddNote()
+        {
+            var note = new Note();
+            note.CreatedByPersonAlias = this.RockBlock()?.CurrentPersonAlias;
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
+        }
+
+        /// <summary>
+        /// Edits the note.
+        /// </summary>
+        /// <param name="noteId">The note identifier.</param>
+        private void EditNote( int? noteId )
+        {
+            if ( !noteId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var noteService = new NoteService( rockContext );
+            var note = noteService.Get( noteId.Value );
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
+        }
+
+        /// <summary>
+        /// Replies to note.
+        /// </summary>
+        /// <param name="parentNoteId">The parent note identifier.</param>
+        private void ReplyToNote( int? parentNoteId )
+        {
+            var note = new Note();
+            note.ParentNoteId = parentNoteId;
+
+            _noteEditor.IsEditing = true;
+            _noteEditor.SetNote( note );
         }
 
         /// <summary>
@@ -869,10 +940,10 @@ namespace Rock.Web.UI.Controls
         #region Events
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyMember control.
+        /// Handles the SaveButtonClick event of the note control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="NoteEventArgs"/> instance containing the event data.</param>
         protected void note_SaveButtonClick( object sender, NoteEventArgs e )
         {
             EnsureChildControls();

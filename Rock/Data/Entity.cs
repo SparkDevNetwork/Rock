@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.Web.Cache;
@@ -34,7 +35,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, Lava.ILiquidizable
+    public abstract class Entity<T> : IEntity, ILavaDataDictionary, Lava.ILiquidizable
         where T : Entity<T>, new()
     {
         #region Entity Properties
@@ -118,7 +119,7 @@ namespace Rock.Data
         /// <value>
         /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual int TypeId
         {
             get
@@ -135,7 +136,7 @@ namespace Rock.Data
         /// The name of the entity type.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string TypeName
         {
             get
@@ -226,7 +227,7 @@ namespace Rock.Data
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string UrlEncodedKey
         {
             get
@@ -244,7 +245,7 @@ namespace Rock.Data
         /// The entity string value.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string EntityStringValue
         {
             get
@@ -344,21 +345,12 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
-        /// </summary>
-        /// <returns>DotLiquid compatible dictionary.</returns>
-        public object ToLiquid()
-        {
-            return this;
-        }
-
-        /// <summary>
         /// Gets the available keys (for debugging info).
         /// </summary>
         /// <value>
         /// The available keys.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual List<string> AvailableKeys
         {
             get
@@ -396,7 +388,20 @@ namespace Rock.Data
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaIgnore]
+        public object GetValue( string key )
+        {
+            return this[key];
+        }
+
+        /// <summary>
+        /// Gets the <see cref="System.Object"/> with the specified key.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.Object"/>.
+        /// </value>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [LavaHidden]
         public virtual object this[object key]
         {
             get
@@ -441,7 +446,7 @@ namespace Rock.Data
         /// The additional Lava fields.
         /// </value>
         //[LavaIgnore]
-        [LavaIgnore]
+        [LavaHidden]
         public virtual Dictionary<string, object> AdditionalLavaFields { get; set; }
 
         /// <summary>
@@ -449,7 +454,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public virtual bool ContainsKey( object key )
+        public virtual bool ContainsKey( string key )
         {
             string propertyKey = key.ToStringSafe();
             var propInfo = GetBaseType().GetProperty( propertyKey );
@@ -571,6 +576,41 @@ namespace Rock.Data
 
         #endregion
 
+        #region ILiquidizable
+
+        /// <summary>
+        /// Determines whether the specified key contains key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        [Obsolete("Use ContainsKey(string) instead.")]
+        [RockObsolete( "13.0" )]
+        public virtual bool ContainsKey( object key )
+        {
+            string propertyKey = key.ToStringSafe();
+            var propInfo = GetBaseType().GetProperty( propertyKey );
+            if ( propInfo != null && LiquidizableProperty( propInfo ) )
+            {
+                return true;
+            }
+            else if ( this.AdditionalLavaFields != null && this.AdditionalLavaFields.ContainsKey( propertyKey ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
+        /// </summary>
+        /// <returns>DotLiquid compatible dictionary.</returns>
+        public object ToLiquid()
+        {
+            return this;
+        }
+
+        #endregion
     }
 
     #region KeyEntity

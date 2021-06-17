@@ -274,6 +274,7 @@
   .setInfix(@breakpoint);
 }
 
+// stylelint-disable declaration-block-single-line-max-declarations
 .display-spacing-margin(@infix) {
   .m@{infix}-0 { margin: 0 !important; }
   .m@{infix}-1 { margin: @spacer * @spacing-1 !important; }
@@ -382,3 +383,4 @@
   .pl@{infix}-4 { padding-left: @spacer * @spacing-4 !important; }
   .pl@{infix}-5 { padding-left: @spacer * @spacing-5 !important; }
 }
+// stylelint-enable declaration-block-single-line-max-declarations

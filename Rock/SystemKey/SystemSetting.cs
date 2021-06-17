@@ -100,6 +100,11 @@ namespace Rock.SystemKey
         public const string ENABLE_MULTI_TIME_ZONE_SUPPORT = "core_EnableMultiTimeZoneSupport";
 
         /// <summary>
+        /// Always show businesses in PersonPicker controls
+        /// </summary>
+        public const string ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER = "core_AlwaysShowBusinessInPersonPicker";
+
+        /// <summary>
         /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
         /// </summary>
         public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
@@ -231,5 +236,15 @@ namespace Rock.SystemKey
         /// Settings for Giving Analytics
         /// </summary>
         public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
+
+        /// <summary>
+        /// The organization currency code
+        /// </summary>
+        public const string ORGANIZATION_CURRENCY_CODE = "OrganizationStandardCurrencyCode";
+
+        /// <summary>
+        /// Lava Engine Type.
+        /// </summary>
+        public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
     }
 }

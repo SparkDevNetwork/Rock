@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -35,7 +36,6 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.GroupScheduling
 {
     /// <summary>
-    /// A block for a person to use to manage their group scheduling. View schedule, change preferences, and sign-up for available needs
     /// </summary>
     [DisplayName( "Group Schedule Toolbox" )]
     [Category( "Group Scheduling" )]
@@ -85,7 +85,21 @@ namespace RockWeb.Blocks.GroupScheduling
         Description = "If the group type has enabled 'RequiresReasonIfDeclineSchedule' then specify the page to provide that reason here.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULE_CONFIRMATION,
-        Key = AttributeKey.DeclineReasonPage )]
+        Key = AttributeKey.DeclineReasonPage,
+        Order = 3 )]
+
+    [BooleanField( "Scheduler Receive Confirmation Emails",
+        Description = "If checked, the scheduler will receive an email response for each confirmation or decline.",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = AttributeKey.SchedulerReceiveConfirmationEmails )]
+
+    [SystemCommunicationField( "Scheduling Response Email",
+        Description = "The system email that will be used for sending responses back to the scheduler.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE,
+        Key = AttributeKey.SchedulingResponseEmail,
+        Order = 5 )]
 
     public partial class GroupScheduleToolbox : RockBlock
     {
@@ -95,6 +109,8 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
             public const string DeclineReasonPage = "DeclineReasonPage";
+            public const string SchedulerReceiveConfirmationEmails = "SchedulerReceiveConfirmationEmails";
+            public const string SchedulingResponseEmail = "SchedulingResponseEmail";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -335,6 +351,11 @@ $('#{0}').tooltip();
         /// </summary>
         private void ShowSelectedTab()
         {
+            // Make sure the parent panels are visible before adjusting the child objects.
+            pnlMySchedule.Visible = CurrentTab == GroupScheduleToolboxTab.MySchedule;
+            pnlPreferences.Visible = CurrentTab == GroupScheduleToolboxTab.Preferences;
+            pnlSignup.Visible = CurrentTab == GroupScheduleToolboxTab.SignUp;
+
             switch ( CurrentTab )
             {
                 case GroupScheduleToolboxTab.MySchedule:
@@ -353,10 +374,6 @@ $('#{0}').tooltip();
                 default:
                     break;
             }
-
-            pnlMySchedule.Visible = CurrentTab == GroupScheduleToolboxTab.MySchedule;
-            pnlPreferences.Visible = CurrentTab == GroupScheduleToolboxTab.Preferences;
-            pnlSignup.Visible = CurrentTab == GroupScheduleToolboxTab.SignUp;
         }
 
         /// <summary>
@@ -522,6 +539,23 @@ $('#{0}').tooltip();
                 {
                     attendanceService.ScheduledPersonDecline( attendanceId.Value, null );
                     rockContext.SaveChanges();
+                    try
+                    {
+                        var schedulingResponseEmailGuid = GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid();
+
+                        // The scheduler receives email add as a recipient for both Confirmation and Decline
+                        if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() )
+                        {
+                            attendanceService.SendScheduledPersonResponseEmailToScheduler( attendanceId.Value, schedulingResponseEmailGuid );
+                        }
+
+                        attendanceService.SendScheduledPersonDeclineEmail( attendanceId.Value, schedulingResponseEmailGuid );
+                    }
+                    catch ( SystemException ex )
+                    {
+                        // intentionally ignore exception
+                        ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
+                    }
                 }
             }
 
@@ -871,7 +905,7 @@ $('#{0}').tooltip();
                 // limit to schedules that haven't had a schedule preference set yet
                 sortedScheduleList = sortedScheduleList.Where( a =>
                     !configuredScheduleIds.Contains( a.Id )
-                    || (selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
+                    || ( selectedScheduleId.HasValue && a.Id == selectedScheduleId.Value ) ).ToList();
 
                 ddlGroupScheduleAssignmentSchedule.Items.Clear();
                 ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
@@ -1371,8 +1405,9 @@ $('#{0}').tooltip();
                 var groups = groupMemberService
                     .Queryable()
                     .AsNoTracking()
-                    .Where( g => g.PersonId == this.SelectedPersonId )
-                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true
+                    .Where( g => g.Group.IsActive == true
+                        && g.PersonId == this.SelectedPersonId
+                        && g.Group.GroupType.IsSchedulingEnabled == true
                         && g.Group.DisableScheduling == false
                         && g.Group.DisableScheduleToolboxAccess == false )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
@@ -1604,11 +1639,10 @@ $('#{0}').tooltip();
         /// <param name="dateTime">The date time.</param>
         private void CreateDateHeader( DateTime dateTime )
         {
-            string date = dateTime.ToShortDateString();
-            string dayOfWeek = dateTime.DayOfWeek.ToString();
+            string date = dateTime.ToLongDateString();
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine( "<div class='form-control-group'>" );
-            sb.AppendLine( string.Format( "<label class='control-label'>{0}&nbsp;({1})</label><br /><br />", date, dayOfWeek ) );
+            sb.AppendLine( "<div class='form-control-group margin-b-lg'>" );
+            sb.AppendLine( string.Format( "<div class=\"clearfix\"><label class='control-label'>{0}</label></div>", date ) );
             phSignUpSchedules.Controls.Add( new LiteralControl( sb.ToString() ) );
         }
 
@@ -1620,9 +1654,8 @@ $('#{0}').tooltip();
         private void CreateScheduleSignUpRow( PersonScheduleSignup personScheduleSignup, List<PersonScheduleSignup> availableGroupLocationSchedules )
         {
             var scheduleSignUpRowItem = new HtmlGenericContainer();
-            scheduleSignUpRowItem.Attributes.Add( "class", "row" );
+            scheduleSignUpRowItem.Attributes.Add( "class", "row d-flex flex-wrap align-items-center" );
             scheduleSignUpRowItem.AddCssClass( "js-person-schedule-signup-row" );
-            scheduleSignUpRowItem.AddCssClass( "margin-b-sm" );
             phSignUpSchedules.Controls.Add( scheduleSignUpRowItem );
 
             var hfGroupId = new HiddenField { ID = "hfGroupId", Value = personScheduleSignup.GroupId.ToString() };
@@ -1639,12 +1672,20 @@ $('#{0}').tooltip();
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
-            cbSignupSchedule.Text = personScheduleSignup.ScheduledDateTime.ToString( "hh:mm tt" );
+            cbSignupSchedule.DisplayInline = true;
+            cbSignupSchedule.Text = personScheduleSignup.ScheduledDateTime.ToShortTimeString();
             cbSignupSchedule.ToolTip = personScheduleSignup.ScheduleName;
             cbSignupSchedule.AddCssClass( "js-person-schedule-signup-checkbox" );
             cbSignupSchedule.Checked = false;
             cbSignupSchedule.AutoPostBack = true;
             cbSignupSchedule.CheckedChanged += CbSignupSchedule_CheckedChanged;
+            cbSignupSchedule.Enabled = !personScheduleSignup.MaxScheduled;
+
+            if ( personScheduleSignup.MaxScheduled )
+            {
+                cbSignupSchedule.Text += " (filled)";
+            }
+
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
             var locations = availableGroupLocationSchedules
@@ -1659,6 +1700,8 @@ $('#{0}').tooltip();
             ddlSignupLocations.Visible = false;
 
             ddlSignupLocations.AddCssClass( "js-person-schedule-signup-ddl" );
+            ddlSignupLocations.AddCssClass( "input-sm" );
+            ddlSignupLocations.AddCssClass( "my-1" );
             ddlSignupLocations.Items.Insert( 0, new ListItem( NO_LOCATION_PREFERENCE, string.Empty ) );
             foreach ( var location in locations )
             {
@@ -1800,6 +1843,13 @@ $('#{0}').tooltip();
                 {
                     foreach ( var schedule in personGroupLocation.Schedules )
                     {
+                        //  find if this has max volunteers here
+                        int? maximumCapacitySetting = null;
+                        if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
+                        {
+                            maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
+                        }
+
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
                         foreach ( var startDateTime in startDateTimeList )
                         {
@@ -1822,6 +1872,15 @@ $('#{0}').tooltip();
                                 continue;
                             }
 
+                            // If there is a maximum Capacity then find out how many already RSVP with "Yes"
+                            var currentScheduled = maximumCapacitySetting != null
+                                ? attendanceService
+                                    .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )
+                                    .Count()
+                                : 0;
+
+                            bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
+
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
                             {
@@ -1835,6 +1894,7 @@ $('#{0}').tooltip();
                                 ScheduleId = schedule.Id,
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
+                                MaxScheduled = maxScheduled
                             } );
                         }
                     }
@@ -1865,6 +1925,8 @@ $('#{0}').tooltip();
             public string LocationName { get; set; }
 
             public int LocationOrder { get; set; }
+
+            public bool MaxScheduled { get; set; }
         }
 
         #endregion Sign-up Tab

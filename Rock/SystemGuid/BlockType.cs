@@ -269,5 +269,10 @@ namespace Rock.SystemGuid
         /// Workflow Entry
         /// </summary>
         public const string WORKFLOW_ENTRY = "A8BD05C8-6F89-4628-845B-059E686F089A";
+
+        /// <summary>
+        /// The Checkin Manager En Route
+        /// </summary>
+        public const string CHECK_IN_MANAGER_EN_ROUTE = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D";
     }
 }

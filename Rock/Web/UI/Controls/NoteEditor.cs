@@ -44,13 +44,16 @@ namespace Rock.Web.UI.Controls
         private CheckBox _cbPrivate;
         private LinkButton _lbSaveNote;
 
-        // NOTE: Intentially using a HtmlAnchor for security instead of SecurityButton since the URL will need to be set in Javascript
+        // NOTE: Intentionally using a HtmlAnchor for security instead of SecurityButton since the URL will need to be set in Javascript
         private HtmlAnchor _aSecurity;
 
         private DateTimePicker _dtCreateDate;
         private HiddenFieldWithClass _hfParentNoteId;
         private HiddenFieldWithClass _hfNoteId;
         private ModalAlert _mdEditWarning;
+
+        private AttributeValuesContainer _avcNoteAttributes;
+        private HiddenFieldWithClass _hfPostBackControlId;
 
         #endregion
 
@@ -76,25 +79,67 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the properties of the control based on the specified note
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
+        public void SetNote( Note note )
+        {
+            EnsureChildControls();
+            this.NoteId = note.Id;
+
+            if ( note.NoteTypeId == 0 && this.NoteTypeId.HasValue )
+            {
+                // if this is a new note, use the default NoteType
+                note.NoteTypeId = this.NoteTypeId.Value;
+            }
+            else
+            {
+                this.NoteTypeId = note.NoteTypeId;
+            }
+
+            this.EntityId = note.EntityId;
+            this.CreatedByPersonAlias = note.CreatedByPersonAlias;
+            this.Text = note.Text;
+            this.IsAlert = note.IsAlert.HasValue && note.IsAlert.Value;
+            this.IsPrivate = note.IsPrivateNote;
+            this.ParentNoteId = note.ParentNoteId;
+            this.CreatedDateTime = note.CreatedDateTime;
+            note.LoadAttributes();
+
+            this._hasAttributes = note.Attributes.Any();
+
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+
+            this._avcNoteAttributes.AddEditControls( note, Authorization.EDIT, rockPage?.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this note has attributes.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has attributes; otherwise, <c>false</c>.
+        /// </value>
+        private bool _hasAttributes
+        {
+            get => ViewState["_hasAttributes"] as bool? ?? false;
+            set => ViewState["_hasAttributes"] = value;
+        }
+
+        /// <summary>
         /// Sets the note.
         /// </summary>
         /// <value>
         /// The note.
         /// </value>
+        [Obsolete( "Use SetNote instead" )]
+        [RockObsolete( "1.12" )]
         public Rock.Model.Note Note
         {
             set
             {
-                EnsureChildControls();
-                this.NoteId = value.Id;
-                this.NoteTypeId = value.NoteTypeId;
-                this.EntityId = value.EntityId;
-                this.CreatedByPersonAlias = value.CreatedByPersonAlias;
-                this.Text = value.Text;
-                this.IsAlert = value.IsAlert.HasValue && value.IsAlert.Value;
-                this.IsPrivate = value.IsPrivateNote;
-                this.ParentNoteId = value.ParentNoteId;
-                this.CreatedDateTime = value.CreatedDateTime;
+                SetNote( value );
             }
         }
 
@@ -110,7 +155,7 @@ namespace Rock.Web.UI.Controls
             {
                 int? noteTypeId = ViewState["NoteTypeId"] as int?;
 
-                if ( !noteTypeId.HasValue )
+                if ( !noteTypeId.HasValue || noteTypeId == 0 )
                 {
                     var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
                     var editableNoteTypes = this.NoteOptions.GetEditableNoteTypes( rockPage?.CurrentPerson );
@@ -269,6 +314,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _dtCreateDate.SelectedDateTime;
             }
+
             set
             {
                 EnsureChildControls();
@@ -353,6 +399,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is editing.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is editing; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEditing
+        {
+            get
+            {
+                return ViewState["IsEditing"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IsEditing"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether start this note in Edit mode instead of View mode
         /// </summary>
         /// <value>
@@ -432,6 +497,8 @@ namespace Rock.Web.UI.Controls
             _dtCreateDate = new DateTimePicker();
             _hfParentNoteId = new HiddenFieldWithClass();
             _mdEditWarning = new ModalAlert();
+            _hfPostBackControlId = new HiddenFieldWithClass();
+            _avcNoteAttributes = new AttributeValuesContainer();
 
             _hfNoteId.ID = this.ID + "_hfNoteId";
             _hfNoteId.CssClass = "js-noteid";
@@ -456,14 +523,24 @@ namespace Rock.Web.UI.Controls
             _tbNote.RequiredFieldValidator.ErrorMessage = "Note is required.";
             Controls.Add( _tbNote );
 
+            _hfPostBackControlId = new HiddenFieldWithClass();
+            _hfPostBackControlId.ID = this.ID + "_hfEditNotePostBackScript";
+            _hfPostBackControlId.CssClass = "js-postback-control-id";
+            Controls.Add( _hfPostBackControlId );
+
+            _avcNoteAttributes.ID = this.ID + "_avcNoteAttributes";
+            Controls.Add( _avcNoteAttributes );
+
             _ddlNoteType.ID = this.ID + "_ddlNoteType";
             _ddlNoteType.CssClass = "form-control input-sm input-width-lg noteentry-notetype js-notenotetype";
             _ddlNoteType.DataValueField = "Id";
             _ddlNoteType.DataTextField = "Name";
+            _ddlNoteType.AutoPostBack = true;
+            _ddlNoteType.SelectedIndexChanged += _ddlNoteType_SelectedIndexChanged;
             Controls.Add( _ddlNoteType );
 
             _hfHasUnselectableNoteType.ID = this.ID + "_hfHasUnselectableNoteType";
-            _hfHasUnselectableNoteType.CssClass = "js-has-unselectable-notetype";
+            _hfHasUnselectableNoteType.CssClass = "hidden js-has-unselectable-notetype";
             Controls.Add( _hfHasUnselectableNoteType );
 
             _cbAlert.ID = this.ID + "_cbAlert";
@@ -499,6 +576,44 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlNoteType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _ddlNoteType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var noteTypeId = _ddlNoteType.SelectedValue.AsIntegerOrNull();
+            if ( !noteTypeId.HasValue )
+            {
+                return;
+            }
+
+            // get current edit values from Attribute Controls (prior to changing the NoteType)
+            // then store them tempNoteForExistingAttributeValueEdits
+            var tempNoteForExistingAttributeValueEdits = new Note();
+            tempNoteForExistingAttributeValueEdits.LoadAttributes();
+            _avcNoteAttributes.GetEditValues( tempNoteForExistingAttributeValueEdits );
+
+            // create new temp note with the new NoteTypeId
+            // any NoteTypeId specific attributes will be loaded in this new temp note
+            var tempNoteForNewAttributes = new Note();
+            tempNoteForNewAttributes.NoteTypeId = noteTypeId.Value;
+            tempNoteForNewAttributes.LoadAttributes();
+
+            // copy the edit values from the tempNoteForExistingAttributeValueEdits into
+            // temp note that has the selected noteTypeId (which might have different attributes)
+            foreach ( var attribute in tempNoteForExistingAttributeValueEdits.Attributes )
+            {
+                tempNoteForNewAttributes.SetAttributeValue( attribute.Key, tempNoteForExistingAttributeValueEdits.GetAttributeValue( attribute.Key ) );
+            }
+
+            var rockPage = ( this.Page as RockPage ) ?? System.Web.HttpContext.Current.Handler as RockPage;
+
+            _avcNoteAttributes.AddEditControls( tempNoteForNewAttributes, Authorization.EDIT, rockPage?.CurrentPerson );
+            _hasAttributes = tempNoteForNewAttributes.Attributes.Any();
+        }
+
+        /// <summary>
         /// Binds the note types.
         /// </summary>
         private void BindNoteTypes()
@@ -517,19 +632,43 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            var noteType = NoteTypeId.HasValue ? NoteTypeCache.Get( NoteTypeId.Value ) : null;
+            if ( !this.Visible )
+            {
+                return;
+            }
 
-            //Add Note Validation Group here since the ClientID is now resolved
+            var script =
+$@"Rock.controls.noteEditor.initialize({{
+    id: '{this.ClientID}',
+    currentNoteId: {this.NoteId ?? 0},
+    parentNoteId: {this.ParentNoteId ?? 0},
+    isEditing: {this.IsEditing.ToJavaScriptValue()},
+}});";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "noteEditor-script" + this.ClientID, script, true );
+
+            // Add Note Validation Group here since the ClientID is now resolved
             AddNoteValidationGroup();
 
             StringBuilder noteCss = new StringBuilder();
 
             noteCss.Append( "note-editor js-note-editor meta" );
+            if ( _hasAttributes )
+            {
+                noteCss.Append( " note-editor-attributes" );
+                _tbNote.Label = "Note";
+            }
+            else
+            {
+                noteCss.Append( " note-editor-standard" );
+                _tbNote.Label = string.Empty;
+            }
 
             if ( !string.IsNullOrEmpty( this.CssClass ) )
             {
                 noteCss.Append( " " + this.CssClass );
             }
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, noteCss.ToString() );
             if ( this.Style[HtmlTextWriterStyle.Display] != null )
@@ -550,7 +689,6 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Edit Mode HTML...
-
             if ( NoteOptions.DisplayType == NoteDisplayType.Full && NoteOptions.UsePersonIcon )
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "meta-figure" );
@@ -580,17 +718,23 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _vsEditNote.RenderControl( writer );
             _tbNote.RenderControl( writer );
+            _avcNoteAttributes.RenderControl( writer );
+
             _hfNoteId.RenderControl( writer );
             _hfParentNoteId.RenderControl( writer );
-            writer.RenderEndTag();
 
+            _hfPostBackControlId.Value = this.ParentUpdatePanel()?.ClientID;
+            _hfPostBackControlId.RenderControl( writer );
+
+            writer.RenderEndTag();
 
             // Options
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // The optional create date text box, but only for new notes...
-            if ( NoteOptions.ShowCreateDateInput && !NoteId.HasValue )
+            // The optional create date text box if ShowCreateDateInput is enabled.
+            // This allows back-dating of existing notes
+            if ( NoteOptions.ShowCreateDateInput)
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "createDate" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -598,8 +742,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();  // createDate div
             }
 
-            _ddlNoteType.RenderControl( writer );
             _hfHasUnselectableNoteType.RenderControl( writer );
+            _ddlNoteType.RenderControl( writer );
 
             if ( NoteOptions.DisplayType == NoteDisplayType.Full )
             {
@@ -642,7 +786,6 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderEndTag();  // settings div
 
-
             writer.RenderEndTag();  // panel body
 
             writer.RenderEndTag(); // ????
@@ -652,7 +795,7 @@ namespace Rock.Web.UI.Controls
         /// Adds the note validation group.
         /// ValidationGroups for Notes needs to a group for each
         /// Note, this is called from RenderControl
-        /// So that ClientID is fully Qualified 
+        /// So that ClientID is fully Qualified
         /// </summary>
         private void AddNoteValidationGroup()
         {
@@ -679,105 +822,111 @@ namespace Rock.Web.UI.Controls
             }
 
             var rockPage = this.Page as RockPage;
-            if ( rockPage != null && NoteTypeId.HasValue )
+
+            if ( rockPage == null || !NoteTypeId.HasValue )
             {
-                var currentPerson = rockPage.CurrentPerson;
+                return;
+            }
 
-                var rockContext = new RockContext();
-                var service = new NoteService( rockContext );
-                Note note = null;
+            var currentPerson = rockPage.CurrentPerson;
 
-                if ( NoteId.HasValue )
+            var rockContext = new RockContext();
+            var service = new NoteService( rockContext );
+            Note note = null;
+
+            if ( NoteId.HasValue )
+            {
+                note = service.Get( NoteId.Value );
+            }
+
+            bool isNew = false;
+            if ( note == null )
+            {
+                note = new Note();
+                note.IsSystem = false;
+                note.EntityId = EntityId;
+                note.ParentNoteId = _hfParentNoteId.Value.AsIntegerOrNull();
+                service.Add( note );
+                isNew = true;
+            }
+            else
+            {
+                if ( !note.IsAuthorized( Authorization.EDIT, currentPerson ) )
                 {
-                    note = service.Get( NoteId.Value );
+                    // if somehow a person is trying to edit a note that they aren't authorized to edit, don't update the note
+                    _mdEditWarning.Show( "Not authorized to edit note", ModalAlertType.Warning );
+                    return;
                 }
+            }
 
-                bool isNew = false;
-                if ( note == null )
-                {
-                    note = new Note();
-                    note.IsSystem = false;
-                    note.EntityId = EntityId;
-                    note.ParentNoteId = _hfParentNoteId.Value.AsIntegerOrNull();
-                    service.Add( note );
-                    isNew = true;
-                }
-                else
-                {
-                    if ( !note.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                    {
-                        // if somehow a person is trying to edit a note that they aren't authorized to edit, don't update the note
-                        _mdEditWarning.Show( "Not authorized to edit note", ModalAlertType.Warning );
-                        return;
-                    }
-                }
+            if ( isNew || ( note.CreatedByPersonId.HasValue && currentPerson.Id == note.CreatedByPersonId ) )
+            {
+                note.IsPrivateNote = IsPrivate;
+            }
 
-                if ( isNew || ( note.CreatedByPersonId.HasValue && currentPerson.Id == note.CreatedByPersonId ) )
-                {
-                    note.IsPrivateNote = IsPrivate;
-                }
+            if ( _hfHasUnselectableNoteType.Value.AsBoolean() && note.NoteTypeId > 0 && note.Id > 0 )
+            {
+                // a note type with an UnSelectable NoteType was edited, so just keep the NoteType that it had before
+            }
+            else
+            {
+                note.NoteTypeId = NoteTypeId.Value;
+            }
 
-                if ( _hfHasUnselectableNoteType.Value.AsBoolean() && note.NoteTypeId > 0 && note.Id > 0 )
+            string personalNoteCaption = "You - Personal Note";
+            if ( string.IsNullOrWhiteSpace( note.Caption ) )
+            {
+                note.Caption = IsPrivate ? personalNoteCaption : string.Empty;
+            }
+            else
+            {
+                // if the note still has the personalNoteCaption, but was changed to have IsPrivateNote to false, change the caption to empty string
+                if ( note.Caption == personalNoteCaption && !IsPrivate )
                 {
-                    // a note type with an unselectable notetype was edited, so just keep the notetype that is had before
+                    note.Caption = string.Empty;
                 }
-                else
-                {
-                    note.NoteTypeId = NoteTypeId.Value;
-                }
+            }
 
-                string personalNoteCaption = "You - Personal Note";
-                if ( string.IsNullOrWhiteSpace( note.Caption ) )
-                {
-                    note.Caption = IsPrivate ? personalNoteCaption : string.Empty;
-                }
-                else
-                {
-                    // if the note still has the personalNoteCaption, but was changed to have IsPrivateNote to false, change the caption to empty string
-                    if ( note.Caption == personalNoteCaption && !IsPrivate )
-                    {
-                        note.Caption = string.Empty;
-                    }
-                }
+            note.Text = Text;
+            note.IsAlert = IsAlert;
+            _avcNoteAttributes.GetEditValues( note );
 
-                note.Text = Text;
-                note.IsAlert = IsAlert;
+            if ( NoteOptions.ShowCreateDateInput )
+            {
+                note.CreatedDateTime = _dtCreateDate.SelectedDateTime;
+            }
 
-                if ( NoteOptions.ShowCreateDateInput )
-                {
-                    note.CreatedDateTime = _dtCreateDate.SelectedDateTime;
-                }
+            note.EditedByPersonAliasId = currentPerson?.PrimaryAliasId;
+            note.EditedDateTime = RockDateTime.Now;
+            note.NoteUrl = this.RockBlock()?.CurrentPageReference?.BuildUrl();
 
-                note.EditedByPersonAliasId = currentPerson?.PrimaryAliasId;
-                note.EditedDateTime = RockDateTime.Now;
-                note.NoteUrl = this.RockBlock()?.CurrentPageReference?.BuildUrl();
+            var noteType = NoteTypeCache.Get( note.NoteTypeId );
 
-                var noteType = NoteTypeCache.Get( note.NoteTypeId );
-
-                if ( noteType.RequiresApprovals )
-                {
-                    if ( note.IsAuthorized( Authorization.APPROVE, currentPerson ) )
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.Approved;
-                        note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
-                        note.ApprovedDateTime = RockDateTime.Now;
-                    }
-                    else
-                    {
-                        note.ApprovalStatus = NoteApprovalStatus.PendingApproval;
-                    }
-                }
-                else
+            if ( noteType.RequiresApprovals )
+            {
+                if ( note.IsAuthorized( Authorization.APPROVE, currentPerson ) )
                 {
                     note.ApprovalStatus = NoteApprovalStatus.Approved;
+                    note.ApprovedByPersonAliasId = currentPerson?.PrimaryAliasId;
+                    note.ApprovedDateTime = RockDateTime.Now;
                 }
-
-                rockContext.SaveChanges();
-
-                if ( SaveButtonClick != null )
+                else
                 {
-                    SaveButtonClick( this, new NoteEventArgs( note.Id ) );
+                    note.ApprovalStatus = NoteApprovalStatus.PendingApproval;
                 }
+            }
+            else
+            {
+                note.ApprovalStatus = NoteApprovalStatus.Approved;
+            }
+
+            rockContext.SaveChanges();
+            Rock.Attribute.Helper.SaveAttributeValues( note );
+            this.IsEditing = false;
+
+            if ( SaveButtonClick != null )
+            {
+                SaveButtonClick( this, new NoteEventArgs( note.Id ) );
             }
         }
 
@@ -819,7 +968,7 @@ namespace Rock.Web.UI.Controls
     #region Enums
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum NoteDisplayType
     {

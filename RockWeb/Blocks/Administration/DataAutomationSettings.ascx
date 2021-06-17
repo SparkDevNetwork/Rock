@@ -53,6 +53,15 @@
                                 </div>
                             </div>
 
+                             <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbRegisteredInAnyEvent" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbRegisteredInAnyEvent" runat="server" Label="Any family member has registered for any event in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
+
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbAttendanceInGroupType" runat="server" />
@@ -201,6 +210,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoRegistrationInAnyEvent" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbNoRegistrationInAnyEvent" runat="server" Label="No family member has registered for any event  in the last" AppendText="days" CssClass="input-width-md" Text="500" />
                                 </div>
                             </div>
 

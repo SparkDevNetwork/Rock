@@ -356,7 +356,7 @@ namespace Rock.Rest.Controllers
 
                     foreach ( var schedule in location.Schedules )
                     {
-                        var scheduleDetails = InetCalendarHelper.GetCalendarEvent( schedule.IcalContent );
+                        var scheduleDetails = InetCalendarHelper.CreateCalendarEvent( schedule.IcalContent );
 
                         if ( scheduleDetails.RecurrenceRules.Count == 0 )
                         {

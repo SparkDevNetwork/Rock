@@ -158,8 +158,19 @@ namespace Rock.Communication.Transport
         {
             var sendGridMessage = new SendGridMessage();
 
+            /*
+                2021-04-30 MSB
+
+                The SendGrid API requires email addresses to be unique between the to, cc and bcc, and will return a bad request error
+                if email addresses are duplicated between any of the three. The below code has been modified to make sure
+                that the To email addresses don't exist in the CC list, and that the To and CC email addresses don't exist
+                in the BCC list.
+
+                Reason: SendGrid v3 API behavior
+            */
             // To
-            rockEmailMessage.GetRecipients().ForEach( r => sendGridMessage.AddTo( r.To, r.Name ) );
+            var toEmail = rockEmailMessage.GetRecipients();
+            toEmail.ForEach( r => sendGridMessage.AddTo( r.To, r.Name ) );
 
             if ( rockEmailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
             {
@@ -170,10 +181,12 @@ namespace Rock.Communication.Transport
 
             // CC
             var ccEmailAddresses = rockEmailMessage
-                                    .CCEmails
-                                    .Where( e => e != string.Empty )
-                                    .Select( cc => new EmailAddress { Email = cc } )
-                                    .ToList();
+                .CCEmails
+                .Where( cc => cc != string.Empty )
+                .Where( cc => !toEmail.Any( te => te.To == cc ) )
+                .Select( cc => new EmailAddress { Email = cc } )
+                .ToList();
+
             if ( ccEmailAddresses.Count > 0 )
             {
                 sendGridMessage.AddCcs( ccEmailAddresses );
@@ -182,9 +195,12 @@ namespace Rock.Communication.Transport
             // BCC
             var bccEmailAddresses = rockEmailMessage
                 .BCCEmails
-                .Where( e => e != string.Empty )
-                .Select( cc => new EmailAddress { Email = cc } )
+                .Where( bcc => bcc != string.Empty )
+                .Where( bcc => !toEmail.Any( te => te.To == bcc ) )
+                .Where( bcc => !ccEmailAddresses.Any( te => te.Email == bcc ) )
+                .Select( bcc => new EmailAddress { Email = bcc } )
                 .ToList();
+
             if ( bccEmailAddresses.Count > 0 )
             {
                 sendGridMessage.AddBccs( bccEmailAddresses );

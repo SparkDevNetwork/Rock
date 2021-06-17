@@ -383,9 +383,9 @@ namespace Rock.Model
                                 }
 
                                 transaction.FinancialPaymentDetail.AccountNumberMasked = financialPaymentDetail.AccountNumberMasked;
-                                transaction.FinancialPaymentDetail.NameOnCardEncrypted = financialPaymentDetail.NameOnCardEncrypted;
-                                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = financialPaymentDetail.ExpirationMonthEncrypted;
-                                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = financialPaymentDetail.ExpirationYearEncrypted;
+                                transaction.FinancialPaymentDetail.NameOnCard = financialPaymentDetail.NameOnCard;
+                                transaction.FinancialPaymentDetail.ExpirationMonth = financialPaymentDetail.ExpirationMonth;
+                                transaction.FinancialPaymentDetail.ExpirationYear = financialPaymentDetail.ExpirationYear;
                                 transaction.FinancialPaymentDetail.BillingLocationId = financialPaymentDetail.BillingLocationId;
                                 if ( financialPaymentDetail.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
                                 {
@@ -575,25 +575,28 @@ namespace Rock.Model
             }
 
             // Queue a transaction to update the status of all affected scheduled transactions
-            var updatePaymentStatusTxn = new UpdatePaymentStatusFinancialScheduledTransactions.Message
+            var updatePaymentStatusTask = new UpdatePaymentStatusFinancialScheduledTransactions.Message()
             {
                 ScheduledTransactionIds = scheduledTransactionIds
             };
 
-            updatePaymentStatusTxn.Send();
+            updatePaymentStatusTask.Send();
+
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
                 // Queue a transaction to send receipts
-                foreach ( var newTransactionsForReceiptEmail in newTransactionsForReceiptEmails )
+                var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
+
+                foreach( int newTransactionId in newTransactionIds )
                 {
-                    var sendPaymentReceiptsTxnMsg = new ProcessSendPaymentReceiptEmails.Message()
+                    var sendPaymentReceiptsTask = new ProcessSendPaymentReceiptEmails.Message
                     {
                         SystemEmailGuid = receiptEmail.Value,
-                        TransactionId = newTransactionsForReceiptEmail.Id
+                        TransactionId = newTransactionId
                     };
 
-                    sendPaymentReceiptsTxnMsg.Send();
+                    sendPaymentReceiptsTask.Send();
                 }
             }
 
@@ -603,33 +606,25 @@ namespace Rock.Model
                 if ( failedPaymentEmail.HasValue )
                 {
                     // Queue a transaction to send payment failure
-                    foreach ( var failedPayment in failedPayments )
+                    var failedPaymentTransactionIds = failedPayments.Select( t => t.Id ).ToList();
+                    foreach( int failedPaymentTransactionId in failedPaymentTransactionIds )
                     {
-                        var sendPaymentFailureTxnMsg = new ProcessSendPaymentReceiptEmails.Message()
+                        var sendPaymentFailureTask = new ProcessSendPaymentReceiptEmails.Message
                         {
-                            SystemEmailGuid = failedPaymentEmail.Value,
-                            TransactionId = failedPayment.Id
+                            SystemEmailGuid = receiptEmail.Value,
+                            TransactionId = failedPaymentTransactionId
                         };
 
-                        sendPaymentFailureTxnMsg.Send();
+                        sendPaymentFailureTask.Send();
                     }
                 }
 
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
-                    var msg  = new LaunchWorkflows.Message
-                    {
-                        WorkflowTypeGuid = failedPaymentWorkflowType.Value
-                    };
-                    msg.WorkflowDetails = failedPayments
-                        .Select( p => new LaunchWorkflows.WorkflowDetail
-                        {
-                            EntityId = p.Id,
-                            EntityTypeId = p.TypeId
-                        }).ToList();
-
-                    msg.Send();
+                    var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
+                    var launchWorkflowsTxn = new LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
+                    RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }
 

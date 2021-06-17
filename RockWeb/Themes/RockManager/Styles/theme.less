@@ -69,10 +69,6 @@ h4 {
   }
 }
 
-.panel {
-  margin-bottom: 16px;
-}
-
 .text-sm {
   font-size: @font-size-sm;
 }
@@ -86,10 +82,6 @@ h4 {
   margin-left: 16px;
   font-size: 28px;
   font-weight: @font-weight-bold;
-}
-
-.panel-widget {
-  overflow: hidden;
 }
 
 .btn-xs {
@@ -115,9 +107,6 @@ h4 {
   justify-content: flex-end;
 }
 
-.navbar-zone-login {
-  display: flex;
-}
 
 /* #region
 // 1. HTML Overrides         */
@@ -145,7 +134,7 @@ main {
 h3,
 h4,
 legend {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 b,
@@ -161,12 +150,7 @@ textarea,
 .picker-label {
   background-clip: padding-box;
   box-shadow: @shadow-sm;
-}
 
-.picker-label,
-input[type="text"],
-textarea,
-.form-control {
   &:focus {
     border: 1px solid @input-border-focus;
     outline: none;
@@ -225,6 +209,15 @@ textarea,
   }
 }
 
+.badge {
+  .btn-xs &,
+  .btn-group-xs > .btn & {
+    top: -2px;
+    line-height: 1;
+    font-size: 11px;
+  }
+}
+
 .label.btn-label {
   padding: .2em .5em .3em;
   color: @btn-default-color !important;
@@ -274,7 +267,7 @@ textarea,
 
     // Active state, and its :hover to override normal :hover
     &.active > a {
-      font-weight: bold;
+      font-weight: 700;
       color: @gray-dark;
       &,
       &:hover,
@@ -429,7 +422,7 @@ textarea,
       padding-top: 18px;
     }
     &.grid-row-header {
-      font-weight: bold;
+      font-weight: 700;
       border-right: 1px solid @table-border-color;
     }
 
@@ -575,6 +568,7 @@ textarea,
 }
 
 .panel {
+  margin-bottom: 16px;
   .box-shadow(@shadow-raised);
 
   .panel-title {
@@ -590,6 +584,7 @@ textarea,
 }
 
 .panel-widget {
+  overflow: hidden;
   box-shadow: @shadow-sm;
 }
 
@@ -601,14 +596,11 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: flex;
     flex-wrap: wrap;
     align-content: center;
     align-items: center;
+    border-bottom: 1px solid @panel-border;
 
     .row {
       width: 100%;
@@ -737,6 +729,22 @@ td.grid-actions {
   min-height: 100%;
 }
 
+.btn-nav-zone {
+  display: inline-block;
+  width: 100%;
+  padding: 7px 14px;
+  color: @navbartop-color;
+  background: transparent;
+  border: 1px solid @navbartop-color;
+  border-radius: @btn-border-radius-base;
+
+  &:hover,
+  &:focus {
+    color: @navbartop-color;
+    background: fade(@white, 10%);
+  }
+}
+
 .rock-top-header {
   display: flex;
   margin-bottom: 0;
@@ -750,6 +758,7 @@ td.grid-actions {
   }
 
   .navbar-zone-login {
+    display: flex;
     float: right;
   }
 
@@ -806,22 +815,9 @@ td.grid-actions {
 
   .navbar-nav.contextsetter {
     margin: ((@navbar-top-height - 40px) / 2);
-    color: @navbartop-color;
-    background-color: transparent;
-    border: 1px solid @navbartop-color;
-    border-radius: @btn-border-radius-base;
-    .dropdown-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: 7px 14px;
-      color: @navbartop-color;
 
-      &:hover,
-      &:focus {
-        background: fade(@white, 10%);
-      }
+    .dropdown-toggle {
+      &:extend(.btn-nav-zone all);
 
       b {
         margin-left: 8px;
@@ -876,6 +872,10 @@ td.grid-actions {
   }
 }
 
+#zone-login .zone-content {
+  display: flex;
+  align-items: center;
+}
 
 #content-wrapper {
   position: relative;
@@ -1352,7 +1352,7 @@ td.grid-actions {
 
     @media (max-width: @screen-sm) {
       &,
-      .attendance-chart {
+      .trend-chart {
         width: 100%;
         padding-right: 0;
         padding-left: 0;

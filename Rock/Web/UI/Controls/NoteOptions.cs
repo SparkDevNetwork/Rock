@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using Rock.Utility;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -27,8 +27,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="DotLiquid.Drop" />
-    public class NoteOptions : DotLiquid.Drop
+    public class NoteOptions : RockDynamic
     {
         private StateBag _containerViewState;
 
@@ -37,9 +36,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         [RockObsolete( "1.8" )]
         [Obsolete( " Use NoteOptions( NoteContainer noteContainer ) instead", true )]
-        public NoteOptions() : this( null )
+        public NoteOptions() : this( ( StateBag ) null )
         {
-
         }
 
         /// <summary>
@@ -47,8 +45,18 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="noteContainer">The note container.</param>
         public NoteOptions( NoteContainer noteContainer )
+            : this( noteContainer?.ContainerViewState )
         {
-            _containerViewState = noteContainer?.ContainerViewState ?? new StateBag();
+        }
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NoteOptions"/> class.
+        /// </summary>
+        /// <param name="containerViewState">The ViewState of the parent control</param>
+        public NoteOptions( StateBag containerViewState )
+        {
+            _containerViewState = containerViewState;
             _noteTypeIds = new List<int>();
         }
 
@@ -253,12 +261,7 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [show create date input].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show create date input]; otherwise, <c>false</c>.
-        /// </value>
+        /// <inheritdoc cref="NoteContainer.ShowCreateDateInput"/>
         public bool ShowCreateDateInput
         {
             get

@@ -68,10 +68,34 @@
                             <Rock:PagePicker ID="ppConnectionRequestDetail" runat="server" Label="Connection Request Detail Page" Required="false" PromptForPageRoute="true" Help="Choose a page that should be used for viewing connection requests of this type. This is useful if you have different detail pages with different settings. A default page will be used if this is left blank." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />
-                            <Rock:RockCheckBox ID="cbFullActivityList" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFullActivityList" Label="Enable Full Activity List" />
-                            <Rock:RockCheckBox ID="cbRequiresPlacementGroup" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="RequiresPlacementGroupToConnect" Label="Requires Placement Group To Connect" />
-                            <Rock:RockCheckBox ID="cbEnableRequestSecurity" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableRequestSecurity" Label="Enable Request Security" />
+                            <Rock:RockCheckBox
+                                ID="cbFutureFollowUp"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableFutureFollowUp"
+                                Label="Enable Future Follow-up"
+                                Help="Allows a request to be frozen until a specific date, at which point a job will turn it back to Active." />
+                            <Rock:RockCheckBox
+                                ID="cbFullActivityList"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableFullActivityList"
+                                Label="Enable Full Activity List"
+                                Help="Show activities from other requests made by the same individual." />
+                            <Rock:RockCheckBox
+                                ID="cbRequiresPlacementGroup"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="RequiresPlacementGroupToConnect"
+                                Label="Requires Placement Group To Connect"
+                                Help="If checked, this will prevent the Connect button from activating on a Request unless a Placement Group is set."/>
+                            <Rock:RockCheckBox
+                                ID="cbEnableRequestSecurity"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableRequestSecurity"
+                                Label="Enable Request Security"
+                                Help="If enabled, connection request blocks will have an additional setting allowing security to be applied to individual requests. A special rule is also applied, which automatically allows an assigned connector to view or edit their requests when the connector doesn't have security to the connection opportunity or type. Enabling this setting will noticeably impact performance when there are a significant amount of requests." />
                         </div>
                     </div>
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">

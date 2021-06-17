@@ -79,7 +79,7 @@ namespace Rock.Model
         public DateTime EndDate { get; set; }
 
         /// <summary>
-        /// The GroupId if there is a specific group for this exclusion.
+        /// The <see cref="Rock.Model.Group">GroupId</see> if there is a specific group for this exclusion.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -112,7 +112,7 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// The Group if there is a specific group for this exclusion.
+        /// The <see cref="Rock.Model.Group"/> if there is a specific group for this exclusion.
         /// </summary>
         /// <value>
         /// The group.
@@ -121,7 +121,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the parent person schedule exclusion.
+        /// Gets or sets the parent <see cref="Rock.Model.PersonScheduleExclusion"/>.
         /// </summary>
         /// <value>
         /// The parent person schedule exclusion.

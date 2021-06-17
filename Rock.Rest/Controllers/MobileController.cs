@@ -38,6 +38,33 @@ namespace Rock.Rest.Controllers
     public class MobileController : ApiControllerBase
     {
         /// <summary>
+        /// Gets the communication interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The communication interaction channel identifier.
+        /// </value>
+        private static int CommunicationInteractionChannelId
+        {
+            get
+            {
+                if ( _communicationInteractionChannelId == 0 )
+                {
+                    _communicationInteractionChannelId = InteractionChannelCache.GetId( SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() ).Value;
+                }
+
+                return _communicationInteractionChannelId;
+            }
+        }
+        private static int _communicationInteractionChannelId;
+
+        /// <summary>
+        /// The communication interaction channel unique identifier
+        /// </summary>
+        private static readonly Guid _communicationInteractionChannelGuid = SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+
+        #region API Methods
+
+        /// <summary>
         /// Gets the launch packet.
         /// </summary>
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
@@ -84,6 +111,8 @@ namespace Rock.Rest.Controllers
 
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
+
+                UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }
 
             //
@@ -210,7 +239,7 @@ namespace Rock.Rest.Controllers
                 //
                 string GetComponentCacheKey( MobileInteraction mi )
                 {
-                    return $"{mi.AppId}:{mi.PageGuid}:{mi.ChannelId}:{mi.ComponentId}:{mi.ComponentName}";
+                    return $"{mi.AppId}:{mi.PageGuid}:{mi.ChannelGuid}:{mi.ChannelId}:{mi.ComponentId}:{mi.ComponentName}";
                 }
 
                 //
@@ -253,23 +282,46 @@ namespace Rock.Rest.Controllers
 
                         interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
                     }
-                    else if ( mobileInteraction.ChannelId.HasValue )
+                    else if ( mobileInteraction.ChannelId.HasValue || mobileInteraction.ChannelGuid.HasValue )
                     {
-                        var interactionChannelId = mobileInteraction.ChannelId;
+                        int? interactionChannelId = null;
 
-                        if ( mobileInteraction.ComponentId.HasValue )
+                        if ( mobileInteraction.ChannelId.HasValue )
                         {
-                            interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), mobileInteraction.ComponentId.Value );
+                            interactionChannelId = mobileInteraction.ChannelId.Value;
                         }
-                        else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
+                        else if ( mobileInteraction.ChannelGuid.HasValue )
                         {
-                            //
-                            // Get an existing or create a new component.
-                            //
-                            var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
-                            rockContext.SaveChanges();
+                            interactionChannelId = InteractionChannelCache.Get( mobileInteraction.ChannelGuid.Value )?.Id;
+                        }
 
-                            interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponent.Id );
+                        if ( interactionChannelId.HasValue )
+                        {
+                            if ( mobileInteraction.ComponentId.HasValue )
+                            {
+                                // Use the provided component identifier.
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), mobileInteraction.ComponentId.Value );
+                            }
+                            else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
+                            {
+                                int interactionComponentId;
+
+                                // Get or create a new component with the details we have.
+                                if ( mobileInteraction.ComponentEntityId.HasValue )
+                                {
+                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName );
+                                }
+                                else
+                                {
+                                    var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
+
+                                    rockContext.SaveChanges();
+
+                                    interactionComponentId = interactionComponent.Id;
+                                }
+
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
+                            }
                         }
                     }
                 }
@@ -314,7 +366,7 @@ namespace Rock.Rest.Controllers
                                 mobileInteraction.Summary,
                                 mobileInteraction.Data,
                                 person?.PrimaryAliasId,
-                                mobileInteraction.DateTime,
+                                RockDateTime.ConvertLocalDateTimeToRockDateTime( mobileInteraction.DateTime.LocalDateTime ),
                                 mobileSession.Application,
                                 mobileSession.OperatingSystem,
                                 mobileSession.ClientType,
@@ -324,10 +376,20 @@ namespace Rock.Rest.Controllers
 
                             interaction.Guid = mobileInteraction.Guid;
                             interaction.PersonalDeviceId = personalDeviceId;
+                            interaction.RelatedEntityTypeId = mobileInteraction.RelatedEntityTypeId;
+                            interaction.RelatedEntityId = mobileInteraction.RelatedEntityId;
+                            interaction.ChannelCustom1 = mobileInteraction.ChannelCustom1;
+                            interaction.ChannelCustom2 = mobileInteraction.ChannelCustom2;
+                            interaction.ChannelCustomIndexed1 = mobileInteraction.ChannelCustomIndexed1;
+
                             interactionService.Add( interaction );
-                            rockContext.SaveChanges();
+
+                            // Attempt to process this as a communication interaction.
+                            ProcessCommunicationInteraction( mobileSession, mobileInteraction, rockContext );
                         }
                     }
+
+                    rockContext.SaveChanges();
                 } );
             }
 
@@ -373,9 +435,12 @@ namespace Rock.Rest.Controllers
                     if ( personalDevice != null && personalDevice.PersonAliasId != userLogin.Person.PrimaryAliasId )
                     {
                         personalDevice.PersonAliasId = userLogin.Person.PrimaryAliasId;
-                        rockContext.SaveChanges();
                     }
                 }
+
+                userLogin.LastLoginDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
 
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
@@ -383,5 +448,60 @@ namespace Rock.Rest.Controllers
                 return Ok( mobilePerson );
             }
         }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Checks if the interaction is for a communication and if so do
+        /// additional steps to mark the communication as opened..
+        /// </summary>
+        /// <param name="session">The interaction session.</param>
+        /// <param name="interaction">The interaction data.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ProcessCommunicationInteraction( MobileInteractionSession session, MobileInteraction interaction, Rock.Data.RockContext rockContext )
+        {
+            // The interaction must be for the communication channel.
+            if ( interaction.ChannelGuid != _communicationInteractionChannelGuid && interaction.ChannelId != CommunicationInteractionChannelId )
+            {
+                return;
+            }
+
+            // We need the communication recipient identifier and the communication identifier.
+            if ( !interaction.EntityId.HasValue || !interaction.ComponentEntityId.HasValue )
+            {
+                return;
+            }
+
+            // Only process "Opened" operations for now.
+            if ( !interaction.Operation.Equals( "OPENED", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return;
+            }
+
+            // Because this is a mostly open API, don't trust just the
+            // recipient identifier. Do a query that makes sure both the
+            // communication identifier and the recipient identifier match
+            // for a bit of extra security.
+            var communicationRecipient = new CommunicationRecipientService( rockContext ).Queryable()
+                .Where( a => a.Id == interaction.EntityId && a.CommunicationId == interaction.ComponentEntityId )
+                .FirstOrDefault();
+
+            if ( communicationRecipient == null )
+            {
+                return;
+            }
+
+            communicationRecipient.Status = CommunicationRecipientStatus.Opened;
+            communicationRecipient.OpenedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( interaction.DateTime.LocalDateTime );
+            communicationRecipient.OpenedClient = string.Format(
+                "{0} {1} ({2})",
+                session.OperatingSystem ?? "unknown",
+                session.Application ?? "unknown",
+                session.ClientType ?? "unknown" );
+        }
+
+        #endregion
     }
 }

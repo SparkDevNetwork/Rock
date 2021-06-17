@@ -149,19 +149,22 @@ namespace Rock.Workflow.Action.CheckIn
                         .Select( g => g.PersonId )
                         .ToList();
 
-                    foreach ( var person in new PersonService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( p => personIds.Contains( p.Id ) )
-                        .ToList() )
+                    if ( personIds.Any() )
                     {
-                        if ( !family.People.Any( p => p.Person.Id == person.Id ) )
+                        foreach ( var person in new PersonService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( p => personIds.Contains( p.Id ) )
+                            .ToList() )
                         {
-                            if ( !preventInactive || dvInactive == null || person.RecordStatusValueId != dvInactive.Id )
+                            if ( !family.People.Any( p => p.Person.Id == person.Id ) )
                             {
-                                var relatedPerson = new CheckInPerson();
-                                relatedPerson.Person = person.Clone( false );
-                                relatedPerson.FamilyMember = false;
-                                family.People.Add( relatedPerson );
+                                if ( !preventInactive || dvInactive == null || person.RecordStatusValueId != dvInactive.Id )
+                                {
+                                    var relatedPerson = new CheckInPerson();
+                                    relatedPerson.Person = person.Clone( false );
+                                    relatedPerson.FamilyMember = false;
+                                    family.People.Add( relatedPerson );
+                                }
                             }
                         }
                     }

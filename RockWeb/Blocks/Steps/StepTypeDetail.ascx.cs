@@ -568,6 +568,9 @@ namespace RockWeb.Blocks.Steps
             {
                 rockContext.SaveChanges();
 
+                avcStepProgramAttributes.GetEditValues( stepType );
+                stepType.SaveAttributeValues( rockContext );
+
                 Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepType.Id.ToString(), rockContext );
             } );
 
@@ -1178,6 +1181,22 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
+        /// Build the dynamic controls based on the attributes
+        /// </summary>
+        private void StepTypeAttributeValueContainer( bool editMode )
+        {
+            var stepProgramId = GetStepProgramId();
+            var stepType = GetStepType() ?? new StepType { StepProgramId = stepProgramId };
+
+            stepType.LoadAttributes();
+
+            if ( editMode )
+            {
+                avcStepProgramAttributes.AddEditControls( stepType );
+            }
+        }
+
+        /// <summary>
         /// Reorders the attribute list.
         /// </summary>
         /// <param name="itemList">The item list.</param>
@@ -1288,19 +1307,7 @@ namespace RockWeb.Blocks.Steps
             var dataContext = GetDataContext();
 
             // Load available Prerequisite Steps.
-            var stepType = GetStepType();
-
-            int programId = 0;
-
-            if ( stepType != null )
-            {
-                programId = stepType.StepProgramId;
-            }
-
-            if ( programId == 0 )
-            {
-                programId = _stepProgramId;
-            }
+            var programId = GetStepProgramId();
 
             var stepsService = new StepTypeService( dataContext );
 
@@ -1319,6 +1326,29 @@ namespace RockWeb.Blocks.Steps
             cblPrerequsities.DataBind();
 
             cblPrerequsities.Visible = prerequisiteStepTypes.Count > 0;
+        }
+
+        /// <summary>
+        /// Gets the step program identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetStepProgramId()
+        {
+            var stepType = GetStepType();
+
+            int programId = 0;
+
+            if ( stepType != null )
+            {
+                programId = stepType.StepProgramId;
+            }
+
+            if ( programId == 0 )
+            {
+                programId = _stepProgramId;
+            }
+
+            return programId;
         }
 
         /// <summary>
@@ -1421,7 +1451,7 @@ namespace RockWeb.Blocks.Steps
 
             LoadPrerequisiteStepsList();
             LoadWorkflowTriggerTypesSelectionList();
-
+            
             // General properties
             tbName.Text = stepType.Name;
             cbIsActive.Checked = stepType.IsActive;
@@ -1598,7 +1628,8 @@ namespace RockWeb.Blocks.Steps
                     stepType = new StepType
                     {
                         Id = 0,
-                        IsDateRequired = true
+                        IsDateRequired = true,
+                        StepProgramId = _stepProgramId
                     };
                 }
 
@@ -1628,6 +1659,7 @@ namespace RockWeb.Blocks.Steps
             pnlViewDetails.Visible = !editable;
 
             HideSecondaryBlocks( editable );
+            StepTypeAttributeValueContainer( editable );
         }
 
         /// <summary>

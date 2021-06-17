@@ -77,7 +77,7 @@ namespace Rock.Model
         public bool ContinueIfMatched { get; set; }
 
         /// <summary>
-        /// Gets or sets the repeat prevention duration.
+        /// Gets or sets the repeat prevention duration (days).
         /// </summary>
         /// <value>
         /// The repeat prevention duration.
@@ -199,6 +199,15 @@ namespace Rock.Model
         [Index]
         [DataMember]
         public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum days since last gift.
+        /// </summary>
+        /// <value>
+        /// The maximum days since last gift.
+        /// </value>
+        [DataMember]
+        public int? MaximumDaysSinceLastGift { get; set; }
 
         #endregion Entity Properties
 

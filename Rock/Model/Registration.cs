@@ -30,6 +30,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -56,7 +57,7 @@ namespace Rock.Model
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -122,7 +123,7 @@ namespace Rock.Model
         public decimal DiscountAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -188,21 +189,21 @@ namespace Rock.Model
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -238,7 +239,7 @@ namespace Rock.Model
         /// The total cost.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal TotalCost
         {
             get
@@ -259,7 +260,7 @@ namespace Rock.Model
         /// The discounted cost.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal DiscountedCost
         {
             get
@@ -282,7 +283,7 @@ namespace Rock.Model
         /// The total paid.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal TotalPaid
         {
             get
@@ -298,7 +299,7 @@ namespace Rock.Model
         /// The balance due.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal BalanceDue
         {
             get
@@ -315,7 +316,7 @@ namespace Rock.Model
         /// The registration template identifier.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual int? RegistrationTemplateId
         {
             get
@@ -330,13 +331,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the payments.
+        /// Gets the <see cref="Rock.Model.FinancialTransactionDetail">payments</see>.
         /// </summary>
         /// <value>
         /// The payments.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual IQueryable<FinancialTransactionDetail> Payments
         {
             get

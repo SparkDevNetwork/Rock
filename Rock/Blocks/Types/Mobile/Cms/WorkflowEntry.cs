@@ -459,7 +459,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             if ( form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
             {
-                person.SetBirthDate( mobilePerson.BirthDate );
+                person.SetBirthDate( mobilePerson.BirthDate?.DateTime );
             }
 
             if ( form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
@@ -497,7 +497,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var personMatchQuery = new PersonService.PersonMatchQuery( personValues.FirstName, personValues.LastName, personValues.Email, personValues.MobilePhone )
             {
                 Gender = form.PersonEntryGenderEntryOption != WorkflowActionFormPersonEntryOption.Hidden ? ( Rock.Model.Gender? ) personValues.Gender.ToNative() : null,
-                BirthDate = form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden ? personValues.BirthDate : null
+                BirthDate = form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden ? personValues.BirthDate?.DateTime : null
             };
 
             bool updatePrimaryEmail = false;

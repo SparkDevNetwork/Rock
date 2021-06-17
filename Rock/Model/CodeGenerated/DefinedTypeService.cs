@@ -119,6 +119,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CategoryId = source.CategoryId;
             target.Description = source.Description;
+            target.EnableSecurityOnValues = source.EnableSecurityOnValues;
             target.FieldTypeId = source.FieldTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

@@ -35,14 +35,14 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="AchievementType"/> to which this prerequisite belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.AchievementType"/> to which this prerequisite belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
         public int AchievementTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="AchievementType"/> that is the prerequisite. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.AchievementType"/> that is the prerequisite. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -53,13 +53,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the AchievementType.
+        /// Gets or sets the <see cref="Rock.Model.AchievementType"/>.
         /// </summary>
         [DataMember]
         public virtual AchievementType AchievementType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Prerequisite AchievementType.
+        /// Gets or sets the Prerequisite <see cref="Rock.Model.AchievementType"/>.
         /// </summary>
         [DataMember]
         public virtual AchievementType PrerequisiteAchievementType { get; set; }

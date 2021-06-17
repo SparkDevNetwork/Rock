@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -43,7 +44,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the AttendanceOccurrence that the attendance is for.
+        /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceOccurrence"/> that the attendance is for.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32" /> representing the Id of the AttendanceOccurrence that the attendance is for.
@@ -266,7 +267,7 @@ namespace Rock.Model
         public int? ScheduledByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the attendance check in session identifier.
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCheckInSession"/> identifier.
         /// </summary>
         /// <value>
         /// The attendance check in session identifier.
@@ -285,7 +286,7 @@ namespace Rock.Model
         public DateTime? PresentDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the person that presented the <see cref="PersonAlias"/> person attended.
+        /// Gets or sets the person that presented the <see cref="Rock.Model.PersonAlias"/> person attended.
         /// </summary>
         /// <value>
         /// The person that presented the <see cref="PersonAlias"/> person attended.
@@ -294,7 +295,7 @@ namespace Rock.Model
         public int? PresentByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person that checked-out the <see cref="PersonAlias"/> person attended.
+        /// Gets or sets the person that checked-out the <see cref="Rock.Model.PersonAlias"/> person attended.
         /// </summary>
         /// <value>
         /// The person that checked-out the <see cref="PersonAlias"/> person attended.
@@ -307,7 +308,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the attendance check in session.
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCheckInSession"/>.
         /// </summary>
         /// <value>
         /// The attendance check in session.
@@ -320,7 +321,7 @@ namespace Rock.Model
         /// <value>
         /// The label data.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual AttendanceData AttendanceData { get; set; }
 
         /// <summary>
@@ -329,16 +330,16 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.AttendanceOccurrence"/> for the attendance
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual AttendanceOccurrence Occurrence { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -347,7 +348,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -374,7 +375,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group SearchResultGroup { get; set; }
 
         /// <summary>
@@ -405,7 +406,7 @@ namespace Rock.Model
         public virtual DefinedValue DeclineReasonValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the scheduled by person alias.
+        /// Gets or sets the scheduled by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The scheduled by person alias.
@@ -414,7 +415,7 @@ namespace Rock.Model
         public virtual PersonAlias ScheduledByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the presented by person alias.
+        /// Gets or sets the presented by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The presented by person alias.
@@ -423,7 +424,7 @@ namespace Rock.Model
         public virtual PersonAlias PresentByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the checked-out by person alias.
+        /// Gets or sets the checked-out by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The checked-out by person alias.
@@ -507,7 +508,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.GroupId instead", true )]
@@ -529,7 +530,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.LocationId instead", true )]
@@ -551,7 +552,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.ScheduleId instead", true )]
@@ -573,7 +574,7 @@ namespace Rock.Model
         /// <value>
         /// The did not occur.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
@@ -595,7 +596,7 @@ namespace Rock.Model
         /// <value>
         /// The Sunday date.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.SundayDate instead", true )]
@@ -621,7 +622,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Group instead", true )]
@@ -648,7 +649,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Location instead", true )]
@@ -675,7 +676,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Schedule instead", true )]
@@ -997,7 +998,7 @@ namespace Rock.Model
         Maybe = 2,
 
         /// <summary>
-        /// RVSP not answered yet (or doesn't apply)
+        /// RSVP not answered yet (or doesn't apply)
         /// </summary>
         Unknown = 3
     }

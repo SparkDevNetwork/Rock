@@ -27,6 +27,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Security;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -122,6 +123,20 @@ namespace Rock.Model
         [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
         [DecimalPrecision(18, 2)]
         public decimal? FeeCoverageAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign currency amount.
+        /// </summary>
+        /// <value>
+        /// The foreign currency amount.
+        /// </value>
+        /// /// <remarks>
+        /// This value will be in the currency specified by the Financial Transaction's Foreign Currency Code which defaults to USD.
+        /// </remarks>
+        [DataMember]
+        [BoundFieldType( typeof( Web.UI.Controls.CurrencyField ) )]
+        [DecimalPrecision( 18, 2 )]
+        public decimal? ForeignCurrencyAmount { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -132,7 +147,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialTransaction"/> that this detail item belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialTransaction Transaction { get; set; }
 
         /// <summary>
@@ -141,7 +156,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.FinancialAccount"/> that is affected by this detail line item.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [DataMember]
         public virtual FinancialAccount Account { get; set; }
 

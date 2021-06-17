@@ -643,7 +643,7 @@ function() {
 
             sdpDateCompleted.DelimitedValues = settings.CompletedInPeriod.ToDelimitedString();
 
-            PopulateStepCampuses( cblStepStatuses );
+            PopulateStepCampuses( cblStepCampuses );
 
             foreach ( var item in cblStepCampuses.Items.OfType<ListItem>() )
             {

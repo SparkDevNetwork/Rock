@@ -86,7 +86,7 @@ namespace RockWeb.Blocks.Store
                 {
                     string storeKey = StoreService.GetOrganizationKey();
 
-                    Response.Redirect("http://www.rockrms.com/Rock/Organization/" + storeKey );
+                    Response.Redirect("https://www.rockrms.com/Rock/Organization/" + storeKey );
                 }
                 else
                 {

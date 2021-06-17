@@ -72,7 +72,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepProgram"/> to which this step type belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepProgram"/> to which this step type belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -112,20 +112,20 @@ namespace Rock.Model
         public bool HasEndDate { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="DataView"/> associated with this step type. The data view reveals the people that are allowed to be
+        /// Gets or sets the Id of the <see cref="Rock.Model.DataView"/> associated with this step type. The data view reveals the people that are allowed to be
         /// considered for this step type.
         /// </summary>
         [DataMember]
         public int? AudienceDataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets a flag indicating if the number of occurences should be shown on the badge.
+        /// Gets or sets a flag indicating if the number of occurrences should be shown on the badge.
         /// </summary>
         [DataMember]
         public bool ShowCountOnBadge { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="DataView"/> associated with this step type. The data view reveals the people that should be considered
+        /// Gets or sets the Id of the <see cref="Rock.Model.DataView"/> associated with this step type. The data view reveals the people that should be considered
         /// as having completed this step.
         /// </summary>
         [DataMember]
@@ -162,7 +162,7 @@ namespace Rock.Model
         private string _cardLavaTemplate;
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="MergeTemplate"/> associated with this step type. This template can represent things like
+        /// Gets or sets the Id of the <see cref="Rock.Model.MergeTemplate"/> associated with this step type. This template can represent things like
         /// certificates or letters.
         /// </summary>
         [DataMember]
@@ -232,7 +232,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Step Program.
+        /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
         /// </summary>
         [DataMember]
         public virtual StepProgram StepProgram { get; set; }
@@ -274,21 +274,21 @@ namespace Rock.Model
         private ICollection<StepTypePrerequisite> _stepTypeDependencies;
 
         /// <summary>
-        /// Gets or sets the Data View.  The data view reveals the people that are allowed to be
+        /// Gets or sets the <see cref="Rock.Model.DataView"/>.  The data view reveals the people that are allowed to be
         /// considered for this step type.
         /// </summary>
         [DataMember]
         public virtual DataView AudienceDataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the Data View.  The data view reveals the people that should be considered
+        /// Gets or sets the <see cref="Rock.Model.DataView"/>.  The data view reveals the people that should be considered
         /// as having completed this step.
         /// </summary>
         [DataMember]
         public virtual DataView AutoCompleteDataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the Merge Template.  This template can represent things like
+        /// Gets or sets the <see cref="Rock.Model.MergeTemplate"/>.  This template can represent things like
         /// certificates or letters.
         /// </summary>
         [DataMember]
@@ -306,7 +306,7 @@ namespace Rock.Model
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
 
         /// <summary>
-        /// Gets or sets the achievement types.
+        /// Gets or sets the <see cref="Rock.Model.AchievementType">achievement types</see>.
         /// </summary>
         /// <value>
         /// The streak type achievement types.

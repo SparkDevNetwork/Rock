@@ -718,7 +718,15 @@
                     $resourceDiv.tooltip({ html: true });
                 }
 
-                $resourceDiv.find('.js-resource-name').text(schedulerResource.PersonName);
+                var resourceName = $resourceDiv.find('.js-resource-name');
+                resourceName.text(schedulerResource.PersonName);
+
+                if (schedulerResource.ConfirmationStatus == 'declined') {
+                    var resourceNameToolTipHtml = schedulerResource.DeclinedReason || 'No reason given.';
+                    resourceName.attr('data-original-title', resourceNameToolTipHtml);
+                    resourceName.tooltip({ html: true });
+                }                
+
                 if (schedulerResource.Note) {
                     $resourceDiv.addClass('has-note');
                     $resourceMeta.parent().prepend('<div class="resource-note js-resource-note hide-transit">' + schedulerResource.Note + '</div>');

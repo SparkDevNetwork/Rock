@@ -748,7 +748,7 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence.Location = tbLocation.Text;
 
                 string iCalendarContent = sbSchedule.iCalendarContent;
-                var calEvent = InetCalendarHelper.GetCalendarEvent( iCalendarContent );
+                var calEvent = InetCalendarHelper.CreateCalendarEvent( iCalendarContent );
                 if ( calEvent != null && calEvent.DtStart != null )
                 {
                     if ( eventItemOccurrence.Schedule == null )

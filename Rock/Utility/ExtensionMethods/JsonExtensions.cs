@@ -33,8 +33,11 @@ namespace Rock
         #region JSON Extensions
 
         /// <summary>
-        /// Converts object to JSON string
+        /// Converts object to JSON string.
         /// </summary>
+        /// <remarks>
+        /// Public properties are serialized, but public fields are ignored.
+        /// </remarks>
         /// <param name="obj">Object.</param>
         /// <returns></returns>
         public static string ToJson( this object obj )

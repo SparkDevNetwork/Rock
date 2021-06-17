@@ -22,7 +22,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.CurrencyBox"/> control with an associated label.
+    /// A <see cref="T:Rock.Web.UI.Controls.RockTextBox" /> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:EmailBox runat=server></{0}:EmailBox>" )]
     public class EmailBox : RockTextBox

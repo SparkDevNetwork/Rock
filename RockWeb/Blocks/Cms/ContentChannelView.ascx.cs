@@ -31,6 +31,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
@@ -424,7 +425,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !dataViewFilter.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -551,7 +552,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected override void ShowSettings()
         {
-            // Switch does not automatically initialize again after a partial-postback.  This script 
+            // Switch does not automatically initialize again after a partial-postback.  This script
             // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
@@ -627,7 +628,7 @@ $(document).ready(function() {
 
         /// <summary>
         /// Shows the content channel item or items. If an output cache duration is set,
-        /// the content will attempt to be fetched from cache unless any of the following 
+        /// the content will attempt to be fetched from cache unless any of the following
         /// settings are enabled or set:
         ///    * MergeContent (bool)
         ///    * SetPageTitle (bool)
@@ -654,7 +655,7 @@ $(document).ready(function() {
             string metaImageAttributeValue = GetAttributeValue( AttributeKey.MetaImageAttribute );
             int pageNumber = PageParameter( PageParameterKey.Page ).AsIntegerOrNull() ?? 1;
 
-            // Try fetching from cache if it's OK to do so. 
+            // Try fetching from cache if it's OK to do so.
             // For now, we'll only cache if pagination is page 1. When our cache supports caching as a region (set)
             // we can then cache all pages and call ClearRegion if the block settings change.
             if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 && pageNumber == 1 &&
@@ -830,9 +831,22 @@ $(document).ready(function() {
                     }
                 }
 
-                var template = GetTemplate();
+                if ( LavaService.RockLiquidIsEnabled )
+                {
+                    var template = GetTemplate();
 
-                outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
+                    outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
+                }
+                else
+                {
+                    var template = GetLavaTemplate();
+
+                    var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
+
+                    var renderResult = LavaService.RenderTemplate( template, lavaContext );
+
+                    outputContents = renderResult.Text;
+                }
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
                 {
@@ -873,6 +887,53 @@ $(document).ready(function() {
         /// <summary>
         /// Gets the template.
         /// </summary>
+        /// <returns>a Lava Template</returns>
+        /// <returns>A <see cref="Rock.Lava.ILavaTemplate"/></returns>
+        private ILavaTemplate GetLavaTemplate()
+        {
+            ILavaTemplate template = null;
+
+            try
+            {
+                // only load from the cache if a cacheDuration was specified
+                if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+                {
+                    template = GetCacheItem( TEMPLATE_CACHE_KEY, true ) as ILavaTemplate;
+                }
+
+                if ( template == null )
+                {
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.Template ) );
+
+                    if ( parseResult.HasErrors )
+                    {
+                        throw parseResult.GetLavaException();
+                    }
+
+                    template = parseResult.Template;
+
+                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
+                    {
+                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
+                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                var parseResult = LavaService.ParseTemplate( string.Format( "Lava error: {0}", ex.Message ) );
+
+                template = parseResult.Template;
+            }
+
+            return template;
+        }
+
+        #region RockLiquid Lava implementation
+
+        /// <summary>
+        /// Gets the template.
+        /// </summary>
         /// <returns>a DotLiquid Template</returns>
         /// <returns>A <see cref="DotLiquid.Template"/></returns>
         private Template GetTemplate()
@@ -890,6 +951,8 @@ $(document).ready(function() {
                 if ( template == null )
                 {
                     template = Template.Parse( GetAttributeValue( AttributeKey.Template ) );
+
+                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
 
                     if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
                     {
@@ -909,8 +972,10 @@ $(document).ready(function() {
             return template;
         }
 
+        #endregion
+
         /// <summary>
-        /// Gets the content channel items from the item-cache (if there), or from 
+        /// Gets the content channel items from the item-cache (if there), or from
         /// the configured Channel and any given Item id or filter in the query string
         /// if QueryParameterFiltering is enabled.
         /// </summary>
@@ -1203,7 +1268,7 @@ $(document).ready(function() {
                              * - In DataViewDetail this would determine what type of Comparison Control to use (Drop Down, just the word 'is', etc). In the case of a DropDown, the first
                              * one in the drop down is the default comparison type.
                              * - In DynamicReport, the Comparison control is not visible, so that always ends up using the default comparison type of that IFieldType.
-                             * 
+                             *
                              * So for ContentChannelView, we'll use the exact same way to determine the Comparison type (use the first/default comparison type that the field type supports.
                              */
 
@@ -1484,7 +1549,7 @@ $(document).ready(function() {
 
         #region Helper Classes
 
-        private class TagModel : DotLiquid.Drop
+        private class TagModel : RockDynamic
         {
             public int Id { get; set; }
             public Guid Guid { get; set; }
@@ -1507,7 +1572,7 @@ $(document).ready(function() {
             public List<ArchiveSummaryModel> ArchiveSumaries { get; set; }
         }
 
-        public class Pagination : DotLiquid.Drop
+        public class Pagination : RockDynamic
         {
 
             /// <summary>
@@ -1628,9 +1693,9 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        public class PaginationPage : DotLiquid.Drop
+        public class PaginationPage : RockDynamic
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="PaginationPage"/> class.

@@ -36,30 +36,41 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
+    /// <summary>
+    /// Shows the details of the given data view.
+    /// </summary>
+    /// <seealso cref="Rock.Web.UI.RockBlock" />
+    /// <seealso cref="Rock.Web.UI.IDetailBlock" />
     [DisplayName( "Data View Detail" )]
     [Category( "Reporting" )]
     [Description( "Shows the details of the given data view." )]
+
+    [BooleanField( "Add Administrate Security to Item Creator",
+        Key = AttributeKey.AddAdministrateSecurityToItemCreator,
+        Description = "If enabled, the person who creates a new item will be granted 'Administrate' security rights to the item.  This was the behavior in previous versions of Rock.  If disabled, the item creator will not be able to edit the Data View, its security settings, or possibly perform other functions without the Rock administrator settings up a role that is allowed to perform such functions.",
+        DefaultBooleanValue = false,
+        Order = 0)]
 
     [LinkedPage(
         "Data View Detail Page",
         Key = AttributeKey.DataViewDetailPage,
         Description = "The page to display a data view.",
         IsRequired = false,
-        Order = 0 )]
+        Order = 1 )]
 
     [LinkedPage(
         "Report Detail Page",
         Key = AttributeKey.ReportDetailPage,
         Description = "The page used to view or create a report.",
         IsRequired = false,
-        Order = 1 )]
+        Order = 2 )]
 
     [LinkedPage(
         "Group Detail Page",
         Key = AttributeKey.GroupDetailPage,
         Description = "The page to display a group (when showing group syncs that use this data view) .",
         IsRequired = false,
-        Order = 2 )]
+        Order = 3 )]
 
     [IntegerField(
         "Database Timeout",
@@ -67,13 +78,15 @@ namespace RockWeb.Blocks.Reporting
         Description = "The number of seconds to wait before reporting a database timeout.",
         IsRequired = false,
         DefaultIntegerValue = 180,
-        Order = 3 )]
+        Order = 4 )]
+
     public partial class DataViewDetail : RockBlock, IDetailBlock
     {
         #region Attribute Keys
 
         private static class AttributeKey
         {
+            public const string AddAdministrateSecurityToItemCreator = "AddAdministrateSecurityToItemCreator";
             public const string DatabaseTimeoutSeconds = "DatabaseTimeout";
             public const string DataViewDetailPage = "DataViewDetailPage";
             public const string ReportDetailPage = "ReportDetailPage";
@@ -130,8 +143,7 @@ $(document).ready(function() {
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", DataView.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.DataView ) ).Id;
 
-            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
-            //// note: this only makes a difference on Postback, not on the initial page visit
+            //// Set postback timeout and request-timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
             //// We'll want to do this in this block just in case this data view is set to persisted and we'll be waiting for it to persist
             int databaseTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
             var sm = ScriptManager.GetCurrent( this.Page );
@@ -241,6 +253,17 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            cvSecurityError.IsValid = true;
+            var AddAdminToCreator = GetAttributeValue( AttributeKey.AddAdministrateSecurityToItemCreator ).AsBoolean();
+            var dvCategory = CategoryCache.Get( cpCategory.SelectedValueAsInt( false ).Value );
+
+            if ( !AddAdminToCreator && !dvCategory.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                cvSecurityError.IsValid = false;
+                cvSecurityError.ErrorMessage = string.Format( "You are not authorized to create or edit Data Views for the Category '{0}'.", dvCategory.Name );
+                return;
+            }
+
             DataView dataView = null;
 
             var rockContext = new RockContext();
@@ -282,7 +305,6 @@ $(document).ready(function() {
             }
 
             var adding = dataView.Id.Equals( 0 );
-
             rockContext.WrapTransaction( () =>
             {
                 if ( adding )
@@ -312,11 +334,7 @@ $(document).ready(function() {
             {
                 try
                 {
-                    Stopwatch stopwatch = Stopwatch.StartNew();
                     dataView.PersistResult( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-                    stopwatch.Stop();
-                    dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                    dataView.PersistedLastRunDurationMilliseconds = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
                     rockContext.SaveChanges();
                 }
                 catch ( Exception ex )
@@ -337,9 +355,8 @@ $(document).ready(function() {
                 }
             }
 
-            if ( adding )
+            if ( adding && AddAdminToCreator )
             {
-                // add EDIT and ADMINISTRATE to the person who added the dataView
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.EDIT, this.CurrentPerson, rockContext );
                 Rock.Security.Authorization.AllowPerson( dataView, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
             }
@@ -1040,7 +1057,11 @@ $(document).ready(function() {
                 {
                     SortProperty = gPreview.SortProperty,
                     DbContext = dbContext,
-                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180
+                    DatabaseTimeoutSeconds = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180,
+                    DataViewFilterOverrides = new DataViewFilterOverrides
+                    {
+                        ShouldUpdateStatics = false
+                    }
                 };
 
                 var qry = dataView.GetQuery( dataViewGetQueryArgs );

@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.UI;
@@ -69,7 +70,7 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class Success : CheckInBlock
     {
-        private static class AttributeKey
+        private new static class AttributeKey
         {
             public const string PersonSelectPage = "PersonSelectPage";
             public const string Title = "Title";
@@ -97,8 +98,8 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// CheckinResult for rendering the Success Lava Template
         /// </summary>
-        /// <seealso cref="DotLiquid.Drop" />
-        public class CheckinResult : DotLiquid.Drop
+        /// <seealso cref="RockDynamic" />
+        public class CheckinResult : RockDynamic
         {
             /// <summary>
             /// Gets the person.

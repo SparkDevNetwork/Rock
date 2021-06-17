@@ -11,7 +11,13 @@
                         <asp:Literal ID="lBlockTitleIcon" runat="server" />&nbsp;<asp:Literal ID="lBlockTitle" runat="server" /></h4>
                 </div>
                 <div class="panel-body">
-
+                    <Rock:NotificationBox
+                        runat="server"
+                        ID="nbBuildErrors"
+                        NotificationBoxType="Warning"
+                        Visible="false"
+                    />
+                        
                     <asp:Panel runat="server" ID="pnlFilters">
                         <div class="row">
                             <div class="col-md-12">
@@ -61,8 +67,13 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:PagePicker ID="ppRedirectPage" runat="server" Label="Redirect Page" Help="If set, the filter button will redirect to the selected page." />
-                                <Rock:RockCheckBox ID="cbShowResetFiltersButton" runat="server" Label="Show Reset Filters Button" Help="Determines if the Reset Filters button should be displayed" />
-                                <Rock:RockCheckBox ID="cbDoesSelectionCausePostback" runat="server" Label="Does Selection Cause Postback" Help="If set, selecting a filter will force a PostBack, recalculating the available selections. Useful for SQL values." />
+                                <Rock:RockCheckBox ID="cbShowResetFiltersButton" runat="server" Label="Show Reset Filters Button" Help="Determines if the Reset Filters button should be displayed." />
+                                <Rock:RockDropDownList ID="ddlSelectionAction" Label="Selection Action" runat="server" Help="Specifies what should happen when a value is changed. Nothing, update page the change will be visible to all blocks on the page, or update block the change will only be visible to the page parameter filter block.">
+                                    <asp:ListItem Text="" Value="0" />
+                                    <asp:ListItem Text="Update Block" Value="1" />
+                                    <asp:ListItem Text="Update Page" Value="2" />
+                                </Rock:RockDropDownList>
+                                <Rock:RockCheckBox ID="cbHideFilterActions" runat="server" Label="Hide Filter Actions" Help="Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick." />
                             </div>
                         </div>
                     </fieldset>

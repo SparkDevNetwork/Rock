@@ -157,9 +157,9 @@ namespace Rock
 
         /// <summary>
         /// Returns a string in FB style relative format (x seconds ago, x minutes ago, about an hour ago, etc.).
-        /// or if max days has already passed in FB datetime format (February 13 at 11:28am or November 5, 2011 at 1:57pm).
+        /// or if max days has already passed in FB DateTime format (February 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
-        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="dateTime">the DateTime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in FB date-time format (ex. November 5, 2011 at 1:57pm)</param>
         /// <returns></returns>
         public static string ToRelativeDateString( this DateTime? dateTime, int? maxDays = null )
@@ -223,7 +223,7 @@ namespace Rock
         /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
         /// 13 at 11:28am or November 5, 2011 at 1:57pm).
         /// </summary>
-        /// <param name="dateTime">the datetime to convert to relative time.</param>
+        /// <param name="dateTime">the DateTime to convert to relative time.</param>
         /// <param name="maxDays">maximum number of days before formatting in long format (ex. November 5, 2011 at 1:57pm) </param>
         /// <returns></returns>
         public static string ToRelativeDateString( this DateTime dateTime, int? maxDays = null )
@@ -339,16 +339,17 @@ namespace Rock
         /// <returns></returns>
         public static string ToMonthDayString( this DateTime dateTime )
         {
-            var dtf = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
-            string mdp = dtf.ShortDatePattern;
-            mdp = mdp.Replace( dtf.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dtf.DateSeparator, "" );
+            var dateTimeFormat = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat;
+            string mdp = dateTimeFormat.ShortDatePattern;
+            mdp = mdp.Replace( dateTimeFormat.DateSeparator + "yyyy", "" ).Replace( "yyyy" + dateTimeFormat.DateSeparator, "" );
             return dateTime.ToString( mdp );
         }
 
         /// <summary>
         /// Returns the date of the start of the month for the specified date/time.
+        /// For example 3/23/2021 11:15am will return 3/1/2021 00:00:00.
         /// </summary>
-        /// <param name="dt">The dt.</param>
+        /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
         public static DateTime StartOfMonth( this DateTime dt )
         {
@@ -356,10 +357,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the Date of the last day of the month.
+        /// For example 3/23/2021 11:15am will return 3/31/2021 00:00:00.
+        /// </summary>
+        /// <param name="dt">The DateTime</param>
+        /// <returns></returns>
+        public static DateTime EndOfMonth( this DateTime dt )
+        {
+            return new DateTime( dt.Year, dt.Month, 1 ).AddMonths( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
+        }
+
+        /// <summary>
         /// Returns the date of the start of the week for the specified date/time.
         /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting
         /// </summary>
-        /// <param name="dt">The dt.</param>
+        /// <param name="dt">The DateTime.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
         public static DateTime StartOfWeek( this DateTime dt, DayOfWeek startOfWeek )
@@ -378,7 +390,7 @@ namespace Rock
         /// Use <see cref="RockDateTime.FirstDayOfWeek"/> for startOfWeek if you want to have this based on the configured FirstDateOfWeek setting.
         /// from http://stackoverflow.com/a/38064/1755417
         /// </summary>
-        /// <param name="dt">The dt.</param>
+        /// <param name="dt">The DateTime.</param>
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
         public static DateTime EndOfWeek( this DateTime dt, DayOfWeek startOfWeek )
@@ -386,11 +398,10 @@ namespace Rock
             return dt.StartOfWeek( startOfWeek ).AddDays( 6 );
         }
 
-
         /// <summary>
         /// Gets the Date of which Sunday is associated with the specified Date/Time, based on <see cref="RockDateTime.FirstDayOfWeek" />
         /// </summary>
-        /// <param name="dt">The dt.</param>
+        /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
         public static DateTime SundayDate( this DateTime dt )
         {
@@ -422,10 +433,10 @@ namespace Rock
         /// </remarks>
         public static int GetWeekOfMonth( this DateTime dateTime, DayOfWeek firstDayOfWeek )
         {
-            DateTime first = new DateTime( dateTime.Year, dateTime.Month, 1 );
+            DateTime firstDayOfMonth = new DateTime( dateTime.Year, dateTime.Month, 1 );
 
             // note: CalendarWeekRule doesn't matter since we are subtracting
-            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - first.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
+            return dateTime.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) - firstDayOfMonth.GetWeekOfYear( CalendarWeekRule.FirstDay, firstDayOfWeek ) + 1;
         }
 
         /// <summary>
@@ -451,9 +462,9 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts a datetime to the short date/time format.
+        /// Converts a DateTime to the short date/time format.
         /// </summary>
-        /// <param name="dt">The dt.</param>
+        /// <param name="dt">The DateTime.</param>
         /// <returns></returns>
         public static string ToShortDateTimeString( this DateTime dt )
         {
@@ -481,9 +492,11 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets the age.
+        /// Returns a formatted age based on the specified birthdate.
+        /// If the age is less than a year, it will be the age in months or days (depending on how old they are).
+        /// For example: 14 yrs, 1 yr, 6 mos, 4 days
         /// </summary>
-        /// <param name="dateTime">The date time.</param>
+        /// <param name="dateTime">The BirthDate.</param>
         /// <returns></returns>
         public static string GetFormattedAge( this DateTime dateTime )
         {
@@ -526,6 +539,120 @@ namespace Rock
                 days = days + birthMonth.AddMonths( 1 ).AddDays( -1 ).Day;
             }
             return days + ( days == 1 ? " day" : " days" );
+        }
+
+        /// <summary>
+        ///  Determines whether the DateTime is in the future.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the future, false if not.</returns>
+        public static bool IsFuture( this DateTime dateTime )
+        {
+            return dateTime > RockDateTime.Now;
+        }
+
+        /// <summary>
+        ///  Determines whether the DateTime is in the past.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the past, false if not.</returns>
+        public static bool IsPast( this DateTime dateTime )
+        {
+            return dateTime < RockDateTime.Now;
+        }
+
+        /// <summary>
+        ///  Determines whether the DateTime is today.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>true if the value is in the past, false if not.</returns>
+        public static bool IsToday( this DateTime dateTime )
+        {
+            return dateTime.Date == RockDateTime.Today;
+        }
+
+        /// <summary>
+        /// Gets the date key. For example: 3/24/2021 11:15 am, will return "20210324".
+        /// This handy for the various DateKey columns used in some of Rock tables
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static int AsDateKey( this DateTime dateTime )
+        {
+            return dateTime.ToString( "yyyyMMdd" ).AsInteger();
+        }
+
+        /// <summary>
+        ///  Gets the Start of the Day for the specified DateTime.
+        ///  For example: 3/24/2021 11:15 am, will return 3/24/2021 00:00:00.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime StartOfDay( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day );
+        }
+
+        /// <summary>
+        ///  Gets the End of the Day (last millisecond) for the specified DateTime.
+        ///  For example: 3/24/2021 11:15 am, will return 3/24/2021 23:59:59:999.
+        ///  Gets the DateTime of the last day of the year with the time set to "23:59:59:999". The last moment of the last day of the year.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime EndOfDay( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, dateTime.Month, dateTime.Day ).AddDays( 1 ).Subtract( new TimeSpan( 0, 0, 0, 0, 1 ) );
+        }
+
+        /// <summary>
+        ///  Gets the End of the Year (last millisecond) for the specified DateTime.
+        ///  For example: 3/24/2021 11:15 am, will return 12/31/2021 23:59:59:999.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime EndOfYear( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, 1, 1 ).AddYears( 1 ).Subtract( new TimeSpan( 1, 0, 0, 0, 0 ) );
+        }
+
+        /// <summary>
+        /// Returns the date of the start of the year for the specified date/time.
+        /// For example 3/23/2021 11:15am will return 1/1/2021 00:00:00.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns></returns>
+        public static DateTime StartOfYear( this DateTime dateTime )
+        {
+            return new DateTime( dateTime.Year, 1, 1 );
+        }
+
+        /// <summary>
+        /// Gets the next weekday.
+        /// https://stackoverflow.com/questions/6346119/datetime-get-next-tuesday
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="day">The day.</param>
+        /// <returns></returns>
+        public static DateTime GetNextWeekday( this DateTime dateTime, DayOfWeek day)
+        {
+            // The (... + 7) % 7 ensures we end up with a value in the range [0, 6]
+            int daysToAdd = ((int) day - (int) dateTime.DayOfWeek + 7) % 7;
+            return dateTime.AddDays(daysToAdd);
+        }
+
+        /// <summary>
+        /// Converts a <see cref="DateTime"/> that is in <see cref="RockDateTime.OrgTimeZoneInfo"/>
+        /// into a <see cref="DateTimeOffset"/> that is also in the organization time zone.
+        /// <param name="dateTime">The Rock date time.</param>
+        /// <returns>The <see cref="DateTimeOffset"/> instance that specifies the same point in time.</returns>
+        /// </summary>
+        public static DateTimeOffset ToRockDateTimeOffset( this DateTime dateTime )
+        {
+            // We can only apply a time zone offset to an unspecified type.
+            var unspecifiedDateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
+
+            return new DateTimeOffset( unspecifiedDateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( unspecifiedDateTime ) );
         }
 
         #endregion DateTime Extensions
@@ -590,7 +717,7 @@ namespace Rock
         /// new DateTime(2010, 11, 4, 10, 28, 27).Round( TimeSpan.FromMinutes(1) ); // rounds to 2010.11.04 10:28:00
         /// new DateTime(2010, 11, 4, 13, 28, 27).Round( TimeSpan.FromDays(1) ); // rounds to 2010.11.05 00:00
         /// </example>
-        /// <param name="datetime">The datetime.</param>
+        /// <param name="datetime">The DateTime.</param>
         /// <param name="roundingInterval">The rounding interval.</param>
         /// <returns></returns>
         public static DateTime Round( this DateTime datetime, TimeSpan roundingInterval )

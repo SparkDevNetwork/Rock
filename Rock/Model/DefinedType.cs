@@ -123,6 +123,15 @@ namespace Rock.Model
         [Required]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the DefinedValues for this DefinedType should allow security settings.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable security on values]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableSecurityOnValues { get; set; }
+
         #endregion 
 
         #region Virtual Properties

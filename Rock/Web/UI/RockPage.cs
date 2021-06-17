@@ -2135,8 +2135,18 @@ Sys.Application.add_load(function () {
             string virtualPath = this.ResolveRockUrl( url );
             if ( Context.Request != null && Context.Request.Url != null )
             {
+                /*
+                     4/30/2021 - NA
+
+                     Due to the interaction between Rock 2-3 Step Payment Gateways and a possible CDN,
+                     the URL that is returned needs to be the proxy safe one, not the one that the
+                     CDN uses (such as Origin)
+
+                     Reason: CDN and Payment Gateways
+                */
+
                 string protocol = WebRequestHelper.IsSecureConnection( Context ) ? "https" : Context.Request.Url.Scheme;
-                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.UrlProxySafe().Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();

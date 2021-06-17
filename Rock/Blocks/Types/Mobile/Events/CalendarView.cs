@@ -315,7 +315,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                             .Where( b => b >= beginDate && b < endDate )
                             .Select( b => new
                             {
-                                Date = b,
+                                Date = b.ToRockDateTimeOffset(),
                                 Duration = duration,
                                 AudienceGuids = a.EventItem.EventItemAudiences.Select( c => DefinedValueCache.Get( c.DefinedValueId )?.Guid ).Where( c => c.HasValue ).Select( c => c.Value ).ToList(),
                                 EventItemOccurrence = a
@@ -328,9 +328,9 @@ namespace Rock.Blocks.Types.Mobile.Events
                         a.EventItemOccurrence.Id,
                         a.EventItemOccurrence.EventItem.Name,
                         DateTime = a.Date,
-                        EndDateTime = a.Duration > 0 ? ( DateTime? ) a.Date.AddMinutes( a.Duration ) : null,
-                        Date = a.Date.ToShortDateString(),
-                        Time = a.Date.ToShortTimeString(),
+                        EndDateTime = a.Duration > 0 ? ( DateTimeOffset? ) a.Date.AddMinutes( a.Duration ) : null,
+                        Date = a.Date.ToString( "d" ), // Short date
+                        Time = a.Date.ToString( "t" ), // Short time
                         CampusGuid = a.EventItemOccurrence.Campus?.Guid,
                         Campus = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         Location = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",

@@ -21,6 +21,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -53,6 +54,8 @@ namespace Rock.Web.UI.Controls
         HtmlEditor _htmlRegistrationInstructions;
         HtmlEditor _htmlAdditionalReminderDetails;
         HtmlEditor _htmlAdditionalConfirmationDetails;
+        RockDropDownList _ddlGatewayMerchants;
+        RockDropDownList _ddlGatewayFunds;
 
         /// <summary>
         /// Gets or sets a value indicating whether active checkbox should be displayed
@@ -95,6 +98,8 @@ namespace Rock.Web.UI.Controls
         }
 
         private bool _showRegistrationTypeSection = true;
+
+
         /// <summary>
         /// Gets or sets a value indicating whether [show registration type section].
         /// </summary>
@@ -287,12 +292,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbCost.Text.AsDecimalOrNull();
+                return _cbCost.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbCost.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbCost.Value = value;
             }
         }
 
@@ -307,12 +312,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbMinimumInitialPayment.Text.AsDecimalOrNull();
+                return _cbMinimumInitialPayment.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbMinimumInitialPayment.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbMinimumInitialPayment.Value = value;
             }
         }
 
@@ -327,12 +332,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                return _cbDefaultPaymentAmount.Value;
             }
             set
             {
                 EnsureChildControls();
-                _cbDefaultPaymentAmount.Text = value.HasValue ? value.ToString() : string.Empty;
+                _cbDefaultPaymentAmount.Value = value;
             }
         }
 
@@ -568,6 +573,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the gateway entity type identifier.
+        /// </summary>
+        /// <value>
+        /// The gateway entity type identifier.
+        /// </value>
+        private int? GatewayEntityTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -603,6 +616,8 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalConfirmationDetails.ValidationGroup = value;
                 _htmlRegistrationInstructions.ValidationGroup = value;
                 _htmlAdditionalReminderDetails.ValidationGroup = value;
+                _ddlGatewayFunds.ValidationGroup = value;
+                _ddlGatewayMerchants.ValidationGroup = value;
             }
         }
 
@@ -647,11 +662,11 @@ namespace Rock.Web.UI.Controls
 
                 _pnContactPhone.Text = instance.ContactPhone;
                 _ebContactEmail.Text = instance.ContactEmail;
-                _cbCost.Text = instance.Cost.HasValue ? instance.Cost.Value.ToString() : string.Empty;
+                _cbCost.Value = instance.Cost;
                 _cbCost.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
-                _cbMinimumInitialPayment.Text = instance.MinimumInitialPayment.HasValue ? instance.MinimumInitialPayment.Value.ToString() : string.Empty;
+                _cbMinimumInitialPayment.Value = instance.MinimumInitialPayment;
                 _cbMinimumInitialPayment.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
-                _cbDefaultPaymentAmount.Text = instance.DefaultPayment.HasValue ? instance.DefaultPayment.Value.ToString() : string.Empty;
+                _cbDefaultPaymentAmount.Value = instance.DefaultPayment;
                 _cbDefaultPaymentAmount.Visible = instance.RegistrationTemplate != null && ( instance.RegistrationTemplate.SetCostOnInstance ?? false );
                 _apAccount.SetValue( instance.AccountId );
                 _apAccount.Visible = instance.RegistrationTemplate != null && instance.RegistrationTemplate.FinancialGatewayId.HasValue;
@@ -660,6 +675,43 @@ namespace Rock.Web.UI.Controls
                 _htmlRegistrationInstructions.Text = instance.RegistrationInstructions;
                 _htmlAdditionalReminderDetails.Text = instance.AdditionalReminderDetails;
                 _htmlAdditionalConfirmationDetails.Text = instance.AdditionalConfirmationDetails;
+
+                if ( instance.RegistrationTemplate.FinancialGateway.IsRedirectionGateway() )
+                {
+                    GatewayEntityTypeId = instance.RegistrationTemplate.FinancialGateway.EntityTypeId;
+                    var gateway = instance.RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IRedirectionGateway;
+                    _ddlGatewayMerchants.Label = gateway.MerchantFieldLabel;
+                    _ddlGatewayMerchants.Visible = true;
+                    _ddlGatewayMerchants.Items.Clear();
+                    _ddlGatewayMerchants.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                    _ddlGatewayMerchants.Items.AddRange( gateway.GetMerchants().Select( x => new ListItem( x.Value, x.Key ) ).ToArray() );
+
+                    _ddlGatewayFunds.Label = gateway.FundFieldLabel;
+                    _ddlGatewayFunds.Visible = true;
+
+                    _ddlGatewayMerchants.SelectedValue = instance.ExternalGatewayMerchantId.ToString();
+                    if ( instance.ExternalGatewayMerchantId != null )
+                    {
+                        _ddlGatewayFunds.Items.Clear();
+                        _ddlGatewayFunds.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                        _ddlGatewayFunds
+                            .Items
+                            .AddRange(
+                                gateway.GetMerchantFunds( instance.ExternalGatewayMerchantId.ToString() )
+                                .Select( x => new ListItem( x.Value, x.Key )
+                            ).ToArray() );
+                        _ddlGatewayFunds.SelectedValue = instance.ExternalGatewayFundId.ToString();
+                    }
+
+                    _apAccount.SetValue( null );
+                    _apAccount.Visible = false;
+                }
+                else
+                {
+                    _ddlGatewayFunds.ClearSelection();
+                    _ddlGatewayMerchants.ClearSelection();
+                    _apAccount.Visible = true;
+                }
             }
             else
             {
@@ -673,15 +725,17 @@ namespace Rock.Web.UI.Controls
                 _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
-                _cbCost.Text = string.Empty;
-                _cbMinimumInitialPayment.Text = string.Empty;
-                _cbDefaultPaymentAmount.Text = string.Empty;
+                _cbCost.Value = null;
+                _cbMinimumInitialPayment.Value = null;
+                _cbDefaultPaymentAmount.Value = null;
                 _apAccount.SetValue( null );
                 _dtpSendReminder.SelectedDateTime = null;
                 _cbReminderSent.Checked = false;
                 _htmlRegistrationInstructions.Text = string.Empty;
                 _htmlAdditionalReminderDetails.Text = string.Empty;
                 _htmlAdditionalConfirmationDetails.Text = string.Empty;
+                _ddlGatewayFunds.ClearSelection();
+                _ddlGatewayMerchants.ClearSelection();
             }
         }
 
@@ -708,9 +762,9 @@ namespace Rock.Web.UI.Controls
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
-                instance.Cost = _cbCost.Text.AsDecimalOrNull();
-                instance.MinimumInitialPayment = _cbMinimumInitialPayment.Text.AsDecimalOrNull();
-                instance.DefaultPayment = _cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+                instance.Cost = _cbCost.Value;
+                instance.MinimumInitialPayment = _cbMinimumInitialPayment.Value;
+                instance.DefaultPayment = _cbDefaultPaymentAmount.Value;
                 int accountId = _apAccount.SelectedValue.AsInteger();
                 instance.AccountId = accountId > 0 ? accountId : ( int? ) null;
                 instance.SendReminderDateTime = _dtpSendReminder.SelectedDateTime;
@@ -718,7 +772,47 @@ namespace Rock.Web.UI.Controls
                 instance.RegistrationInstructions = _htmlRegistrationInstructions.Text;
                 instance.AdditionalReminderDetails = _htmlAdditionalReminderDetails.Text;
                 instance.AdditionalConfirmationDetails = _htmlAdditionalConfirmationDetails.Text;
+
+                var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
+                var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGateway;
+                if ( gatewayComponent != null )
+                {
+                    instance.ExternalGatewayMerchantId = _ddlGatewayMerchants.SelectedValue.AsIntegerOrNull();
+                    if ( instance.ExternalGatewayMerchantId != null )
+                    {
+                        instance.ExternalGatewayFundId = _ddlGatewayFunds.SelectedValue.AsIntegerOrNull();
+                    }
+                }
+                else
+                {
+                    instance.ExternalGatewayMerchantId = null;
+                    instance.ExternalGatewayFundId = null;
+                }
             }
+        }
+
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            GatewayEntityTypeId = ViewState["GatewayEntityTypeId"] as int?;
+        }
+
+        /// <summary>
+        /// Saves any state that was modified after the <see cref="M:System.Web.UI.WebControls.Style.TrackViewState" /> method was invoked.
+        /// </summary>
+        /// <returns>
+        /// An object that contains the current view state of the control; otherwise, if there is no view state associated with the control, <see langword="null" />.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["GatewayEntityTypeId"] = GatewayEntityTypeId;
+
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -740,7 +834,6 @@ namespace Rock.Web.UI.Controls
                 _cbIsActive = new RockCheckBox();
                 _cbIsActive.ID = this.ID + "_cbIsActive";
                 _cbIsActive.Label = "Active";
-                _cbIsActive.Text = "Yes";
                 Controls.Add( _cbIsActive );
 
                 _tbUrlSlug = new RockTextBox();
@@ -805,6 +898,7 @@ namespace Rock.Web.UI.Controls
                 _apAccount.ID = this.ID + "_apAccount";
                 _apAccount.Label = "Account";
                 _apAccount.Required = true;
+                _apAccount.DisplayActiveOnly = true;
                 Controls.Add( _apAccount );
 
                 _ppContact = new PersonPicker();
@@ -859,7 +953,46 @@ namespace Rock.Web.UI.Controls
                 _htmlAdditionalConfirmationDetails.Height = 200;
                 Controls.Add( _htmlAdditionalConfirmationDetails );
 
+                _ddlGatewayMerchants = new RockDropDownList
+                {
+                    ID = $"{ID}{nameof( _ddlGatewayMerchants )}",
+                    Visible = false,
+                    AutoPostBack = true,
+                };
+
+                _ddlGatewayMerchants.SelectedIndexChanged += _ddlGatewayMerchants_SelectedIndexChanged;
+
+                Controls.Add( _ddlGatewayMerchants );
+
+                _ddlGatewayFunds = new RockDropDownList
+                {
+                    ID = $"{ID}{nameof( _ddlGatewayFunds )}",
+                    Visible = false
+                };
+                Controls.Add( _ddlGatewayFunds );
+
                 _controlsLoaded = true;
+            }
+        }
+
+        private void _ddlGatewayMerchants_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var gateway = new FinancialGateway { EntityTypeId = GatewayEntityTypeId };
+            var gatewayComponent = gateway.GetGatewayComponent() as IRedirectionGateway;
+            if ( gatewayComponent != null )
+            {
+                _ddlGatewayFunds.Items.Clear();
+                if ( _ddlGatewayMerchants.SelectedValue != null )
+                {
+                    _ddlGatewayFunds.Items.Add( new ListItem( string.Empty, string.Empty ) );
+                    _ddlGatewayFunds
+                        .Items
+                        .AddRange(
+                            gatewayComponent.GetMerchantFunds( _ddlGatewayMerchants.SelectedValue )
+                            .Select( x => new ListItem( x.Value, x.Key )
+                        ).ToArray() );
+                    _ddlGatewayFunds.ClearSelection();
+                }
             }
         }
 
@@ -1004,7 +1137,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             } );
 
-            if ( _cbCost.Visible || _cbMinimumInitialPayment.Visible || _cbDefaultPaymentAmount.Visible || _apAccount.Visible )
+            if ( _cbCost.Visible || _cbMinimumInitialPayment.Visible || _cbDefaultPaymentAmount.Visible || _apAccount.Visible || _ddlGatewayMerchants.Visible )
             {
                 RockControlHelper.RenderSection( "Registration Financial Information", CssClass, writer, ( HtmlTextWriter ) =>
                 {
@@ -1019,6 +1152,16 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     _cbMinimumInitialPayment.RenderControl( writer );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _ddlGatewayMerchants.RenderControl( writer );
+                    writer.RenderEndTag();
+
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    _ddlGatewayFunds.RenderControl( writer );
                     writer.RenderEndTag();
 
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
