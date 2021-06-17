@@ -581,6 +581,7 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
@@ -714,6 +715,7 @@
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
