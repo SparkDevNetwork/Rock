@@ -127,6 +127,15 @@ namespace Rock.Web.Cache
         public int? CampusTypeValueId { get; private set; }
 
         /// <summary>
+        /// Gets or sets the team group identifier.
+        /// </summary>
+        /// <value>
+        /// The team group identifier.
+        /// </value>
+        [DataMember]
+        public int? TeamGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -274,6 +283,7 @@ namespace Rock.Web.Cache
             TimeZoneId = campus.TimeZoneId;
             CampusStatusValueId = campus.CampusStatusValueId;
             CampusTypeValueId = campus.CampusTypeValueId;
+            TeamGroupId = campus.TeamGroupId;
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
