@@ -260,7 +260,7 @@ namespace RockWeb.Blocks.Examples
                     if ( entityCategory == null )
                     {
                         entityCategory = new MCategory { Guid = Guid.NewGuid(), Name = category, RockEntityIds = new List<int>() };
-                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-th-large";
+                        entityCategory.IconCssClass = categoryIcons.ContainsKey( category ) ? categoryIcons[category] : "fa fa-network-wired";
                         entityCategories.Add( entityCategory );
                     }
 
