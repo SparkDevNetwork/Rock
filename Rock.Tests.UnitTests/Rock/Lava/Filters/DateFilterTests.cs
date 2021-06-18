@@ -113,10 +113,19 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// The Date filter should accept the keyword 'Now' as input and resolve it to the current date.
+        /// The Date filter should accept the keyword 'Now' as input and resolve it to the current date using the general datetime output format.
         /// </summary>
         [TestMethod]
-        public void Date_NowAsInput_ResolvesToCurrentDate()
+        public void Date_NowWithNoFormatStringAsInput_ResolvesToCurrentDateTimeWithGeneralFormat()
+        {
+            TestHelper.AssertTemplateOutput( RockDateTime.Now.ToString( "g" ), "{{ 'Now' | Date }}" );
+        }
+
+        /// <summary>
+        /// The Date filter should accept the keyword 'Now' as input and resolve it to the current date with the specified format.
+        /// </summary>
+        [TestMethod]
+        public void Date_NowWithFormatStringAsInput_ResolvesToCurrentDateTimeWithSpecifiedFormat()
         {
             TestHelper.AssertTemplateOutputDate( RockDateTime.Now.ToString( "yyyy-MM-dd" ), "{{ 'Now' | Date:'yyyy-MM-dd' }}" );
         }

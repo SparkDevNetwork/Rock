@@ -1136,38 +1136,37 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="format"></param>
         /// <returns></returns>
-        public static string Date( object input, string format )
+        public static string Date( object input, string format = null)
         {
             if ( input == null )
             {
                 return null;
             }
 
+            // If input is "now", use the current system date/time as the input value.
             if ( input.ToString().ToLower() == "now" )
             {
-                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
+                input = RockDateTime.Now;
             }
 
             if ( string.IsNullOrWhiteSpace( format ) )
             {
-                return input.ToString();
+                format = "g";
             }
-
-            // If the format string is a single character, add a space to produce a valid custom format string.
-            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
-            if ( format.Length == 1 )
-            {
-                format = " " + format;
-            }
-
             // Consider special 'Standard Date' and 'Standard Time' formats.
-            if ( format == "sd" )
+            else if ( format == "sd" )
             {
                 format = "d";
             }
             else if ( format == "st" )
             {
                 format = "t";
+            }
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
+            else if ( format.Length == 1 )
+            {
+                format = " " + format;
             }
 
             // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
