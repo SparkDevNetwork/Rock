@@ -246,11 +246,11 @@ namespace Rock.Web.UI.Controls
                 ViewState["VisibilityRules"] = value;
                 if ( value.RuleList.Count > 0 )
                 {
-                    _lbFilter.CssClass = "btn btn-warning btn-sm";
+                    _lbFilter.CssClass = "btn btn-warning btn-xs btn-square";
                 }
                 else
                 {
-                    _lbFilter.CssClass = "btn btn-default btn-sm";
+                    _lbFilter.CssClass = "btn btn-default btn-xs btn-square";
                 }
             }
         }
@@ -327,7 +327,7 @@ namespace Rock.Web.UI.Controls
             _lbFilter = new LinkButton();
             _lbFilter.ID = $"{ID}{nameof( _lbFilter )}";
             _lbFilter.Text = "<i class=\"fa fa-filter\"></i>";
-            _lbFilter.CssClass = "btn btn-default btn-sm";
+            _lbFilter.CssClass = "btn btn-default btn-xs btn-square";
             _lbFilter.Click += _lbFilter_Click;
             Controls.Add( _lbFilter );
 
@@ -402,7 +402,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row no-gutters d-flex align-items-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
@@ -413,40 +413,40 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-1 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbHideLabel.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPreHtml.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPostHtml.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-1 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex flex-eq justify-content-center grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _lbFilter.RenderControl( writer );
                 writer.RenderEndTag();
