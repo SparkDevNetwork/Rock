@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -374,6 +375,43 @@ namespace Rock.Lava
                 rootObj = this;
             }
 
+
+            // First check if this is a reference to a dictionary key.
+            if ( rootObj is IDictionary dictionary )
+            {
+                var dictionaryType = dictionary.GetType();
+
+                Type keyType;
+
+                if ( dictionaryType.IsGenericType )
+                {
+                    keyType = dictionaryType.GetGenericArguments()[0];
+                }
+                else
+                {
+                    keyType = typeof( object );
+                }
+
+                // Try to convert the property path to the same type as the dictionary key so we can attempt a lookup.
+                try
+                {
+                    var keyValue = TypeDescriptor.GetConverter( keyType ).ConvertFromInvariantString( propertyPathName );
+
+                    if ( keyValue != null
+                         && dictionary.Contains( keyValue ) )
+                    {
+                        result = dictionary[keyValue];
+                        return true;
+                    }
+                }
+                catch ( NotSupportedException )
+                {
+                    // The property path cannot be converted to the same type as the dictionary key,
+                    // so proceed to evaluate it as a class member reference instead.
+                }
+            }
+
+            // Next, try to resolve the reference as a property path.
             var propPath = propertyPathName.Split( new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries ).ToList<string>();
 
             object obj = rootObj;
