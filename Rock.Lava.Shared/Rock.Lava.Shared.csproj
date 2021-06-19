@@ -103,7 +103,7 @@
     <Compile Include="Core\ILavaFileSystem.cs" />
     <Compile Include="Core\ILavaTemplate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shortcodes\ILavaElement.cs" />
+    <Compile Include="Core\ILavaElement.cs" />
     <Compile Include="Shortcodes\ILavaShortcode.cs" />
   </ItemGroup>
   <ItemGroup>
