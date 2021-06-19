@@ -27,6 +27,20 @@ namespace Rock.Tests.Integration.Lava
     public class LiquidLanguageCompatibilityTests : LavaIntegrationTestBase
     {
         [TestMethod]
+        public void Variables_VariableNamesThatDifferOnlyByCase_AreReferencedAsDifferentVariables()
+        {
+            var input = @"
+{%- assign text = 'lowercase' -%}
+{%- assign TEXT = 'uppercase' -%}
+Text (lower) = {{ text }}, Text (upper) = {{ TEXT }}
+";
+            var expectedOutput = @"Text (lower) = lowercase, Text (upper) = uppercase";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+
+        [TestMethod]
         public void Whitespace_TrimInOutputTagWithVariable_RemovesWhitespace()
         {
             var input = @"{%- assign text = 'hello' -%}--> {{- text -}} <--";

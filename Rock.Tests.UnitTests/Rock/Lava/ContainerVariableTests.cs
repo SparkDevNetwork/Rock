@@ -73,5 +73,21 @@ namespace Rock.Tests.UnitTests.Lava
             // as the default proxy wrapper. It exists here for test coverage, but is not used in any production Lava templates.
             TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, "Male", "{{ EnumDictionary['Male'] }}", mergeValues );
         }
+
+        /// <summary>
+        /// Referencing an existing dictionary entry with an Enum key type should return the dictionary value.
+        /// </summary>
+        [TestMethod]
+        public void LavaDataDictionary_WithKeysDifferingOnlyByCase_ReturnsMatchingValueForKey()
+        {
+            var mergeValues = new LavaDataDictionary()
+            {
+                { "case", "lower" },
+                { "CASE", "upper" },
+                { "Case", "mixed" }
+            };
+
+            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, "lower,upper,mixed", "{{ case }},{{ CASE }},{{ Case }}", mergeValues );
+        }
     }
 }

@@ -142,8 +142,9 @@ namespace Rock.Lava.Fluid
             // If this type is not registered, Fluid throws some seemingly unrelated exceptions.
             templateOptions.ValueConverters.Add( ( value ) => value is System.DBNull ? FluidValue.Create( null, templateOptions ) : null );
 
-            // Converter for a Dictionary with a non-string key type.
-            // If this converter is not registered, any attempt to access the dictionary by key returns a null value.
+            // Converter for a Dictionary with a non-string key type; wraps the dictionary in a proxy so it can be accessed
+            // with a key that is not a string type.
+            // If this converter is not registered, any attempt to access a non-standard dictionary by key returns a null value.
             templateOptions.ValueConverters.Add( ( value ) =>
             {
                 // If the value is not a dictionary, this converter is not applicable.
