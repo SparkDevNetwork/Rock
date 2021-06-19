@@ -1065,7 +1065,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "px-0" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-end" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row no-gutters d-flex align-items-end text-xs" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
@@ -1076,40 +1076,40 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-end" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex align-items-end" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-1 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Visible" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Editable" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Required" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Hide Label" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Pre-HTML" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Post-HTML" );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-1 text-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq text-truncate text-wrap text-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.Write( "Logic" );
                 writer.RenderEndTag();

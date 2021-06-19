@@ -220,7 +220,7 @@ namespace RockWeb.Blocks.Core
             var rtValueField = rGrid.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.ID == "rtValue" );
             if ( rtValueField != null )
             {
-                rtValueField.Visible = !hideColumnsOnGrid.Contains( "Value" ); // default value / value
+                rtValueField.Visible = _displayValueEdit && !hideColumnsOnGrid.Contains( "Value" ); // default value / value
             }
 
             var editField = rGrid.ColumnsOfType<EditField>().FirstOrDefault();
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Core
                 securityField.Visible = _canConfigure;
             }
 
-            if ( _displayValueEdit && ( _canConfigure || canEdit ) )
+            if ( ( _displayValueEdit && canEdit ) || _canConfigure )
             {
                 rGrid.RowSelected += rGrid_RowSelected;
             }

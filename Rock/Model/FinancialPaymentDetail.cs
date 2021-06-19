@@ -457,7 +457,8 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberMasked;
+            // Return the Account Number, or an empty string to avoid potential downstream issues caused by an unexpected null value.
+            return this.AccountNumberMasked.ToStringSafe();
         }
 
         /// <summary>
