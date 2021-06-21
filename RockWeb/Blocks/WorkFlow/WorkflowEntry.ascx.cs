@@ -1015,10 +1015,6 @@ namespace RockWeb.Blocks.WorkFlow
             personBasicEditor.RequireBirthdate = form.PersonEntryBirthdateEntryOption == WorkflowActionFormPersonEntryOption.Required;
             personBasicEditor.ShowBirthdate = form.PersonEntryBirthdateEntryOption != WorkflowActionFormPersonEntryOption.Hidden;
 
-            // workflow doesn't have a setting for requiring/showing gender
-            personBasicEditor.RequireGender = true;
-            personBasicEditor.ShowGender = true;
-
             // we have a another MaritalStatus picker that will apply to both Person and Person's Spouse
             personBasicEditor.ShowMaritalStatus = false;
         }

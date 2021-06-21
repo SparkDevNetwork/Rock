@@ -210,11 +210,11 @@ namespace RockWeb.Blocks.Groups
                             {
                                 if ( this.Request.QueryString.Count == 0 )
                                 {
-                                    redirectUrl = this.Request.Url + "?GroupId=" + _groupId.ToString();
+                                    redirectUrl = this.Request.UrlProxySafe() + "?GroupId=" + _groupId.ToString();
                                 }
                                 else
                                 {
-                                    redirectUrl = this.Request.Url + "&GroupId=" + _groupId.ToString();
+                                    redirectUrl = this.Request.UrlProxySafe() + "&GroupId=" + _groupId.ToString();
                                 }
                             }
 

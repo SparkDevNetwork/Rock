@@ -224,7 +224,7 @@ namespace Rock.Model
         /// <param name="persistedLastRunDurationMilliseconds">The time to persist dataview in milliseconds.</param>
         public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunDurationMilliseconds = null, int? persistedLastRunDurationMilliseconds = null )
         {
-            var transaction = new Rock.Transactions.RunDataViewTransaction();
+            var transaction = new Transactions.RunDataViewTransaction();
             transaction.DataViewId = dataViewId;
             transaction.LastRunDateTime = RockDateTime.Now;
             transaction.ShouldIncrementRunCount = true;
@@ -239,18 +239,7 @@ namespace Rock.Model
                 transaction.ShouldIncrementRunCount = false;
             }
 
-            if ( persistedLastRunDurationMilliseconds.HasValue )
-            {
-                transaction.PersistedLastRefreshDateTime = RockDateTime.Now;
-                transaction.PersistedLastRunDurationMilliseconds = persistedLastRunDurationMilliseconds.Value;
-                /*
-                 * If the persisted last run duration is set that means this was called after the expression was
-                 * already evaluated, which in turn already counted the run so we don't want to double count it here.
-                 */
-                transaction.ShouldIncrementRunCount = false;
-            }
-
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
         }
 
         #endregion Static Methods

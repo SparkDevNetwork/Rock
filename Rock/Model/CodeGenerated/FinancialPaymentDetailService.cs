@@ -111,15 +111,21 @@ namespace Rock.Model
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
             target.ExpirationMonth = source.ExpirationMonth;
+            #pragma warning disable 612, 618
             target.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            #pragma warning restore 612, 618
             target.ExpirationYear = source.ExpirationYear;
+            #pragma warning disable 612, 618
             target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            #pragma warning restore 612, 618
             target.FinancialPersonSavedAccountId = source.FinancialPersonSavedAccountId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayPersonIdentifier = source.GatewayPersonIdentifier;
             target.NameOnCard = source.NameOnCard;
+            #pragma warning disable 612, 618
             target.NameOnCardEncrypted = source.NameOnCardEncrypted;
+            #pragma warning restore 612, 618
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

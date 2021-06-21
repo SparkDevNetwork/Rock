@@ -30,7 +30,7 @@
                                     <Rock:DateField HeaderText="Registration Date" DataField="RegistrationDate" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="RegistrationDate" />
                                     <Rock:RockBoundField HeaderText="Registrant Count" DataField="RegistrantCount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="RegistrantCount" />
                                     <Rock:RockBoundField HeaderText="Discount Code" DataField="DiscountCode" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" />
-                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Discount" />
+                                    <Rock:RockBoundField HeaderText="Discount" DataField="Discount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Discount" HtmlEncode="false" />
                                     <Rock:CurrencyField HeaderText="Total Cost" DataField="TotalCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost" />
                                     <Rock:CurrencyField HeaderText="Discount Qualified Cost" DataField="DiscountQualifiedCost" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="DiscountQualifiedCost" />
                                     <Rock:CurrencyField HeaderText="Total Discount" DataField="TotalDiscount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalDiscount" />

@@ -106,14 +106,6 @@ namespace RockWeb.Blocks.Connection
         DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
         Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
         Order = 7 )]
-    [BooleanField(
-        "Enable Request Security",
-        DefaultBooleanValue = false,
-        Description = "When enabled, the security column for the request would be displayed.",
-        Key = AttributeKey.EnableRequestSecurity,
-        IsRequired = true,
-        Order = 8
-    )]
     #endregion Block Attributes
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
@@ -122,7 +114,6 @@ namespace RockWeb.Blocks.Connection
         {
             public const string ConfigurationPage = "ConfigurationPage";
             public const string DetailPage = "DetailPage";
-            public const string EnableRequestSecurity = "EnableRequestSecurity";
             public const string ConnectionTypes = "ConnectionTypes";
             public const string ShowRequestTotal = "ShowRequestTotal";
             public const string ShowLastActivityNote = "ShowLastActivityNote";
@@ -235,9 +226,6 @@ namespace RockWeb.Blocks.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
-            var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
-            securityField.EntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
-            securityField.Visible = GetAttributeValue( AttributeKey.EnableRequestSecurity ).AsBoolean();
 
             var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
             if ( lastActivityNoteBoundField != null )
@@ -560,6 +548,11 @@ namespace RockWeb.Blocks.Connection
             {
                 var service = new ConnectionRequestService( rockContext );
                 var connectionRequest = service.Get( e.RowKeyId );
+                if ( !service.IsAuthorizedToEdit( connectionRequest, CurrentPerson ) )
+                {
+                    return;
+                }
+
                 if ( connectionRequest != null )
                 {
                     string errorMessage;
@@ -712,8 +705,7 @@ namespace RockWeb.Blocks.Connection
                         .ToList();
                 }
 
-                var canView = canEdit ||
-                                opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                var canView = opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
                                 ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
 
                 // Is user is authorized to view this opportunity type...
@@ -793,7 +785,8 @@ namespace RockWeb.Blocks.Connection
                             IdleConnectionRequests = idleConnectionRequests,
                             CriticalConnectionRequests = criticalConnectionRequests,
                             DaysUntilRequestIdle = opportunity.ConnectionType.DaysUntilRequestIdle,
-                            CanEdit = canEdit
+                            CanEdit = canEdit,
+                            CanSetSecurity = opportunity.ConnectionType.EnableRequestSecurity && opportunity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ),
                         };
 
                         // If the user is limited requests with specific campus(es) set the list, otherwise leave it to be null
@@ -1005,6 +998,10 @@ namespace RockWeb.Blocks.Connection
             {
                 connectionTypeSummary = SummaryState.Where( t => t.Opportunities.Any( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
                 opportunitySummary = SummaryState.SelectMany( t => t.Opportunities.Where( o => o.Id == SelectedOpportunityId.Value ) ).FirstOrDefault();
+
+                var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+                securityField.Visible = opportunitySummary.CanSetSecurity;
             }
 
             if ( connectionTypeSummary != null && opportunitySummary != null )
@@ -1385,6 +1382,7 @@ namespace RockWeb.Blocks.Connection
             public List<int> ConnectorCampusIds { get; set; }  // Will be null if user is a connector for all campuses
             public int DaysUntilRequestIdle { get; set; }
             public bool CanEdit { get; set; }
+            public bool CanSetSecurity { get; set; }
             public int AssignedToYou
             {
                 get

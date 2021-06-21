@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Attribute Keys
 
-        private static class AttributeKey
+        private new static class AttributeKey
         {
             public const string FamilySelectPage = "FamilySelectPage";
             public const string ScheduledLocationsPage = "ScheduledLocationsPage";

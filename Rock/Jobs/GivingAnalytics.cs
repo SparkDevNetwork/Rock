@@ -26,6 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Quartz;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -110,6 +111,9 @@ namespace Rock.Jobs
         /// </summary>
         public virtual void Execute( IJobExecutionContext jobContext )
         {
+            // Since this class could technically be persisted across jobs, zero out the last run cache
+            _lastRunDateTime = null;
+
             // Create a context object that will help transport state and helper information so as to not rely on the
             // job class itself being a single use instance
             var context = new GivingAnalyticsContext( jobContext );
@@ -562,13 +566,13 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
         /// </summary>
         /// <param name="orderedValues"></param>
         /// <returns></returns>
-        private static (List<decimal>, List<decimal>, List<decimal>) SplitQuartileRanges( List<decimal> orderedValues )
+        public static Tuple<List<decimal>, List<decimal>, List<decimal>> SplitQuartileRanges( List<decimal> orderedValues )
         {
             var count = orderedValues.Count;
 
             if ( count <= 2 )
             {
-                return (new List<decimal>(), orderedValues, new List<decimal>());
+                return Tuple.Create( new List<decimal>(), orderedValues, new List<decimal>() );
             }
 
             var lastMidIndex = count / 2;
@@ -582,7 +586,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             var q1 = orderedValues.GetRange( 0, firstMidIndex );
             var q3 = orderedValues.GetRange( lastMidIndex + 1, count - lastMidIndex - 1 );
 
-            return (q1, medianValues, q3);
+            return Tuple.Create( q1, medianValues, q3 );
         }
 
         /// <summary>
@@ -737,8 +741,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
 
                 // This is the people that have given since the last run date or the configured old gift date point.
                 var minTransactionDate = LastRunDateTime ?? GetEarliestLastGiftDateTime( context );
-                var givingIds = financialTransactionService.Queryable()
-                    .AsNoTracking()
+                var givingIds = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                     .Where( t => t.TransactionDateTime >= minTransactionDate )
                     .Select( t => t.AuthorizedPersonAlias.Person.GivingId )
                     .Distinct()
@@ -760,16 +763,13 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             using ( var rockContext = new RockContext() )
             {
                 var minDate = context.Now.AddMonths( -12 );
-                var contributionTypeGuid = SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid();
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
-                var givingGroups = financialTransactionService.Queryable()
-                    .AsNoTracking()
+                var givingGroups = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                     .Where( t =>
                         t.TransactionDateTime.HasValue &&
                         t.TransactionDateTime > minDate &&
                         t.AuthorizedPersonAliasId.HasValue &&
-                        t.TransactionTypeValue.Guid == contributionTypeGuid &&
                         t.AuthorizedPersonAlias.Person.GivingId != null &&
                         t.AuthorizedPersonAlias.Person.GivingId.Length > 0 )
                     .GroupBy( t => t.AuthorizedPersonAlias.Person.GivingId )
@@ -846,8 +846,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
                 // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
                 var oneYearAgo = context.Now.AddMonths( -12 );
-                var transactions = financialTransactionService.Queryable()
-                    .AsNoTracking()
+                var transactions = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                     .Where( t =>
                         t.AuthorizedPersonAliasId.HasValue &&
                         personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
@@ -887,23 +886,21 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
 
                 // We need to know if this giving group has other transactions. If they do then we do not need to
                 // extrapolate because we have the complete 12 month data picture.
-                var mostRecentOldTransactionDate = financialTransactionService.Queryable()
-                .AsNoTracking()
-                .OrderByDescending( t => t.TransactionDateTime )
-                .Where( t =>
-                    t.AuthorizedPersonAliasId.HasValue &&
-                    personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
-                    t.TransactionDateTime < oneYearAgo )
-                .Select( t => t.TransactionDateTime )
-                .FirstOrDefault();
+                var mostRecentOldTransactionDate = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                    .OrderByDescending( t => t.TransactionDateTime )
+                    .Where( t =>
+                        t.AuthorizedPersonAliasId.HasValue &&
+                        personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                        t.TransactionDateTime < oneYearAgo )
+                    .Select( t => t.TransactionDateTime )
+                    .FirstOrDefault();
 
                 // If the group doesn't have FirstGiftDate attribute, set it by querying for the value
                 var firstGiftDate = GetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_FIRST_GAVE ).AsDateTime();
 
                 if ( !firstGiftDate.HasValue )
                 {
-                    firstGiftDate = financialTransactionService.Queryable()
-                        .AsNoTracking()
+                    firstGiftDate = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                         .Where( t =>
                             t.AuthorizedPersonAliasId.HasValue &&
                             personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
@@ -937,6 +934,9 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 people.ForEach( p => p.SaveAttributeValues( rockContext ) );
                 rockContext.SaveChanges();
                 context.GivingIdsSuccessful++;
+
+                // Fire the bus event to notify that these people have been classified
+                GivingUnitWasClassifiedMessage.Publish( people.Select( p => p.Id ) );
 
                 // Alerts are generated for transactions since last run
                 var transactionsSinceLastRun = LastRunDateTime.HasValue ?
@@ -982,15 +982,15 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
 
                     foreach ( var transaction in transactionsSinceLastRun )
                     {
-                        var alertsForTransaction = CreateAlertsForTransaction(
+                        var alertsForTransaction = lastTransactionDate.HasValue ? CreateAlertsForTransaction(
                             rockContext,
                             people,
                             recentAlerts,
                             transaction,
-                            lastTransactionDate,
+                            lastTransactionDate.Value,
                             context,
                             allowGratitiude,
-                            allowFollowUp );
+                            allowFollowUp ) : new List<FinancialTransactionAlert>();
 
                         lastTransactionDate = transaction.TransactionDateTime;
                         alertsToAddToDb.AddRange( alertsForTransaction );
@@ -1035,7 +1035,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             List<Person> people,
             List<AlertView> recentAlerts,
             TransactionView transaction,
-            DateTime? lastGiftDate,
+            DateTime lastGiftDate,
             GivingAnalyticsContext context,
             bool allowGratitude,
             bool allowFollowUp )
@@ -1046,6 +1046,8 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             {
                 return alerts;
             }
+
+            var daysSinceLastTransaction = ( transaction.TransactionDateTime - lastGiftDate ).TotalDays;
 
             // The people all have the same attribute values, so this method will use the first person
             var person = people.First();
@@ -1068,6 +1070,12 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 }
 
                 if ( !allowGratitude && alertType.AlertType == AlertType.Gratitude )
+                {
+                    continue;
+                }
+
+                // Check the days since the last transaction are within allowed range
+                if ( alertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > alertType.MaximumDaysSinceLastGift.Value )
                 {
                     continue;
                 }
@@ -1150,14 +1158,14 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                     // number of IQRs since the formula is dividing by zero. Since we don't want alerts for scenarios like an increase of $1, we use
                     // a fallback formula for IQR.
                     // Use 15% of the median amount or $100 if the median amount is somehow $0.
-                    var fallbackAmountIqr = 0.15m * medianGiftAmount;
+                    amountIqr = 0.15m * medianGiftAmount;
 
-                    if ( fallbackAmountIqr == 0 )
+                    if ( amountIqr == 0 )
                     {
-                        fallbackAmountIqr = 100m;
+                        amountIqr = 100m;
                     }
 
-                    numberOfAmountIqrs = amountDeviation / fallbackAmountIqr;
+                    numberOfAmountIqrs = amountDeviation / amountIqr;
                 }
 
                 // Make sure the calculation doesn't exceed "infinity"
@@ -1173,7 +1181,6 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 // Check the frequency sensitivity scale
                 var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
                 var frequencyMean = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimal();
-                var daysSinceLastTransaction = lastGiftDate.HasValue ? ( transaction.TransactionDateTime - lastGiftDate.Value ).TotalDays : 1000;
                 var frequencyDeviation = frequencyMean - Convert.ToDecimal( daysSinceLastTransaction );
                 decimal numberOfFrequencyStdDevs;
 
@@ -1181,24 +1188,24 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 {
                     numberOfFrequencyStdDevs = 0;
                 }
-                else if ( frequencyStdDev != 0 )
+                else if ( frequencyStdDev >= 1 )
                 {
                     numberOfFrequencyStdDevs = frequencyDeviation / frequencyStdDev;
                 }
                 else
                 {
-                    // If the frequency std dev is 0, then this giving group gives the same interval and even a 1 day change would be an infinite
+                    // If the frequency std dev is less than 1, then this giving group gives the same interval and even a 1.1 day change would be a large
                     // number of std devs since the formula is dividing by zero. Since we don't want alerts for scenarios like being 1 day early, we use
                     // a fallback formula for std dev.
                     // Use 15% of the mean or 3 days if the mean is still 0.
-                    var fallbackFrequencyStdDev = 0.15m * frequencyMean;
+                    frequencyStdDev = 0.15m * frequencyMean;
 
-                    if ( fallbackFrequencyStdDev == 0 )
+                    if ( frequencyStdDev < 1 )
                     {
-                        fallbackFrequencyStdDev = 3m;
+                        frequencyStdDev = 3m;
                     }
 
-                    numberOfFrequencyStdDevs = frequencyDeviation / fallbackFrequencyStdDev;
+                    numberOfFrequencyStdDevs = frequencyDeviation / frequencyStdDev;
                 }
 
                 // Make sure the calculation doesn't exceed "infinity"
@@ -1515,7 +1522,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             var frequencyStdDevDays = Math.Sqrt( daysSinceLastTransactionWithValue.Average( d => Math.Pow( d - meanFrequencyDays, 2 ) ) );
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS, frequencyStdDevDays );
 
-            // Frequency Labels:  
+            // Frequency Labels:
             //      Weekly = Avg days between 4.5 - 8.5; Std Dev< 7;
             //      2 Weeks = Avg days between 9 - 17; Std Dev< 10;
             //      Monthly = Avg days between 25 - 35; Std Dev< 10;
@@ -1694,8 +1701,7 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                     var aliasIds = people.SelectMany( p => p.Aliases.Select( a => a.Id ) ).ToList();
 
                     // Get the last giver, who the alert will be tied to
-                    var lastTransactionAliasId = financialTransactionService.Queryable()
-                        .AsNoTracking()
+                    var lastTransactionAliasId = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                         .Where( ft =>
                             ft.AuthorizedPersonAliasId.HasValue &&
                             aliasIds.Contains( ft.AuthorizedPersonAliasId.Value ) )
@@ -1842,6 +1848,12 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
             // Find the correct alert type to tie the new alert with
             foreach ( var alertType in lateGiftAlertTypes )
             {
+                // Check the maximum days since the last alert
+                if ( alertType.MaximumDaysSinceLastGift.HasValue && daysSinceLastTransaction > alertType.MaximumDaysSinceLastGift )
+                {
+                    continue;
+                }
+
                 // Check if this alert type has already been alerted too recently
                 if ( alertType.RepeatPreventionDuration.HasValue && recentAlerts?.Any( a => a.AlertTypeId == alertType.Id ) == true )
                 {

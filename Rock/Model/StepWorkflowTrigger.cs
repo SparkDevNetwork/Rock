@@ -37,19 +37,19 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepProgram"/> by which this Workflow is triggered.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepProgram"/> by which this Workflow is triggered.
         /// </summary>
         [DataMember]
         public int? StepProgramId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> by which this Workflow is triggered.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepType"/> by which this Workflow is triggered.
         /// </summary>
         [DataMember]
         public int? StepTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="WorkflowType"/> that is triggered. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.WorkflowType"/> that is triggered. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -91,25 +91,25 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Step Program.
+        /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
         /// </summary>
         [DataMember]
         public virtual StepProgram StepProgram { get; set; }
 
         /// <summary>
-        /// Gets or sets the Step Type.
+        /// Gets or sets the <see cref="Rock.Model.StepType"/>.
         /// </summary>
         [DataMember]
         public virtual StepType StepType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Workflow Type.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/>.
         /// </summary>
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="StepWorkflow">StepWorkflows</see> that are of this trigger.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.StepWorkflow">StepWorkflows</see> that are of this trigger.
         /// </summary>
         [DataMember]
         public virtual ICollection<StepWorkflow> StepWorkflows
@@ -156,10 +156,10 @@ namespace Rock.Model
             /// </summary>
             public StepWorkflowTriggerConfiguration()
             {
-                // This has to be CascadeDelete false because otherwise SQL server doesn't like the possiblity of dependency cycles
+                // This has to be CascadeDelete false because otherwise SQL server doesn't like the possibility of dependency cycles
                 HasRequired( swt => swt.WorkflowType ).WithMany().HasForeignKey( swt => swt.WorkflowTypeId ).WillCascadeOnDelete( false );
 
-                // These both have to be CascadeDelete false because otherwise SQL server doesn't like the possiblity of dependency cycles
+                // These both have to be CascadeDelete false because otherwise SQL server doesn't like the possibility of dependency cycles
                 HasOptional( swt => swt.StepProgram ).WithMany( sp => sp.StepWorkflowTriggers ).HasForeignKey( swt => swt.StepProgramId ).WillCascadeOnDelete( false );
                 HasOptional( swt => swt.StepType ).WithMany( st => st.StepWorkflowTriggers ).HasForeignKey( swt => swt.StepTypeId ).WillCascadeOnDelete( false );
             }

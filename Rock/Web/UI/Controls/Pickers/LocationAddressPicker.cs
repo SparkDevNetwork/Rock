@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -117,6 +118,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -144,6 +146,7 @@ namespace Rock.Web.UI.Controls
             {
                 return WarningBlock != null ? WarningBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( WarningBlock != null )
@@ -183,6 +186,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -200,7 +204,11 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
+            get
+            {
+                return ViewState["ValidationGroup"] as string;
+            }
+
             set
             {
                 ViewState["ValidationGroup"] = value;
@@ -277,6 +285,25 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether the control should be displayed Full-Width
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable full width]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableFullWidth
+        {
+            get
+            {
+                return ViewState["EnableFullWidth"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["EnableFullWidth"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the address summary text.
         /// </summary>
         /// <value>
@@ -308,7 +335,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return new LocationService( new RockContext() ).Get( _hfLocationId.ValueAsInt() );
+                var locationId = _hfLocationId.ValueAsInt();
+                if ( locationId > 0 )
+                {
+                    return new LocationService( new RockContext() ).Get( locationId );
+                }
+
+                return null;
             }
 
             private set
@@ -362,6 +395,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _hfPanelIsVisible.Value.AsBooleanOrNull() ?? false;
             }
+
             set
             {
                 EnsureChildControls();
@@ -379,6 +413,7 @@ namespace Rock.Web.UI.Controls
             {
                 return base.Enabled;
             }
+
             set
             {
                 base.Enabled = value;
@@ -425,8 +460,6 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-
-            this.CssClass = "picker picker-select rollover-container";
 
             _hfLocationId = new HiddenField { ID = "hfLocationId" };
             this.Controls.Add( _hfLocationId );
@@ -479,7 +512,6 @@ namespace Rock.Web.UI.Controls
             _addressRequirementsValidator.Display = ValidatorDisplay.None;
             _addressRequirementsValidator.ValidationGroup = ValidationGroup;
             this.Controls.Add( _addressRequirementsValidator );
-
         }
 
         /// <summary>
@@ -575,8 +607,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-
             RegisterJavaScript();
+
+            List<string> pickerClasses = new List<string>();
+            pickerClasses.Add( "picker" );
+            if ( EnableFullWidth )
+            {
+                pickerClasses.Add( "picker-fullwidth" );
+            }
+
+            pickerClasses.Add( "picker-select rollover-container" );
+            this.CssClass = pickerClasses.AsDelimited( " " );
 
             _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = ShowDropDown ? "block" : "none";
             this.Render( writer );
@@ -587,10 +628,11 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            string script = string.Format( @"
-setTimeout(function () {{
+            string script = string.Format(
+@"setTimeout(function () {{
   Rock.dialogs.updateModalScrollBar('{0}');
-}}, 0);", this.ClientID );
+}}, 0);",
+this.ClientID );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "location_address_picker-script_" + this.ID, script, true );
         }

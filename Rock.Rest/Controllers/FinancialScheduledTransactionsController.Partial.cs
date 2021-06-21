@@ -54,9 +54,9 @@ namespace Rock.Rest.Controllers
         public List<FinancialScheduledTransaction> GetExpiring( int numberOfDays, int? daysBack = null )
         {
             // qry all ScheduledTransactions that have a FinancialPaymentDetail with an ExpirationMonth and Year
-            var qry = this.Service.Queryable().Include( a => a.FinancialPaymentDetail ).Where( a => a.FinancialPaymentDetail.ExpirationMonthEncrypted != null && a.FinancialPaymentDetail.ExpirationYearEncrypted != null );
+            var qry = this.Service.Queryable().Include( a => a.FinancialPaymentDetail ).Where( a => a.FinancialPaymentDetail.CardExpirationDate != null );
 
-            //  fetch all the ScheduleTransactions into a list since ExpirationYear and ExpirationMonth are the decrypted from ExpirationMonthEncrypted and ExpirationYearEncrypted in C#
+            //  fetch all the ScheduleTransactions into a list since ExpirationYear and ExpirationMonth are come from Expiration Date
             var resultList = qry.ToList();
 
             var currentDate = RockDateTime.Now.Date;
@@ -126,6 +126,10 @@ namespace Rock.Rest.Controllers
                 DefinedValueCache.Get( financialScheduledTransaction.SourceTypeValueId.Value ).Guid :
                 ( Guid? ) null;
 
+            var currencyCode = financialScheduledTransaction.ForeignCurrencyCodeValueId.HasValue ?
+                DefinedValueCache.Get( financialScheduledTransaction.ForeignCurrencyCodeValueId.Value ).Value :
+                string.Empty;
+
             var automatedPaymentArgs = new AutomatedPaymentArgs
             {
                 ScheduledTransactionId = scheduledTransactionId,
@@ -133,7 +137,8 @@ namespace Rock.Rest.Controllers
                 AutomatedGatewayId = financialScheduledTransaction.FinancialGatewayId.Value,
                 AutomatedPaymentDetails = details,
                 IdempotencyKey = idempotencyKey,
-                FinancialSourceGuid = sourceGuid
+                FinancialSourceGuid = sourceGuid,
+                AmountCurrencyCode = currencyCode
             };
 
             var errorMessage = string.Empty;

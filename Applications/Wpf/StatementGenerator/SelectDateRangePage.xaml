@@ -8,43 +8,41 @@
     Title="Select Date Range"
     d:DesignHeight="600"
     d:DesignWidth="800"
-    Style="{StaticResource pageBackgroundGrey}"
+    Style="{StaticResource pageBackground}"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Style="{StaticResource gridPanelBorderColumn}" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
-            <RowDefinition Height="*" />
-            <RowDefinition Style="{StaticResource gridPanelBorderRow}" />
-        </Grid.RowDefinitions>
+    <Border Style="{StaticResource borderStyleMain}">
 
-        <Grid
-            Grid.Row="1"
-            Grid.Column="1"
-            Style="{StaticResource gridPanel}">
+        <Grid Background="White">
+
             <Grid.RowDefinitions>
-                <RowDefinition Style="{StaticResource rowDefinitionPanelTitle}" />
-                <RowDefinition Height="*" />
-                <RowDefinition Style="{StaticResource rowDefinitionActions}" />
+                <RowDefinition Height="45" />
+                <RowDefinition />
+                <RowDefinition Height="60" />
             </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Style="{StaticResource panelBanner}">
-                <Label Content="STEP 3:" Style="{StaticResource labelStyleBannerTitle}" />
-                <Label Content="Statement Date Range" Style="{StaticResource labelStyleBannerText}" />
-            </StackPanel>
+
+            <Border
+                Grid.Row="0"
+                VerticalAlignment="Top"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1">
+                <StackPanel HorizontalAlignment="Stretch" Background="{StaticResource PanelHeaderBrush}">
+                    <Label
+                        Margin="10"
+                        HorizontalAlignment="Left"
+                        Content="Step 3: Statement Date Range"
+                        Style="{StaticResource labelStyleStepCaption}" />
+                </StackPanel>
+            </Border>
+
             <StackPanel
                 Grid.Row="1"
-                Grid.Column="1"
+                Margin="10"
                 HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Style="{StaticResource indentStyle}">
+                VerticalAlignment="Top">
 
-                <Label Content="Date Range" Style="{StaticResource labelStyleLegend}" />
-                <StackPanel Orientation="Horizontal">
+                <Label Content="Date Range" Style="{StaticResource labelStyleCaption}" />
+                <StackPanel Margin="1" Orientation="Horizontal">
                     <StackPanel>
                         <Label Content="Start Date" Style="{StaticResource labelStyle}" />
                         <DatePicker
@@ -69,10 +67,14 @@
                     Content="Please select a Date Range"
                     Visibility="Hidden" />
             </StackPanel>
+
+
+
+
             <Button
                 x:Name="btnPrev"
                 Grid.Row="2"
-                Margin="8,8,8,8"
+                Margin="12"
                 HorizontalAlignment="Left"
                 Click="btnPrev_Click"
                 Style="{StaticResource buttonStyle}">
@@ -84,7 +86,7 @@
             <Button
                 x:Name="btnNext"
                 Grid.Row="2"
-                Margin="8,8,8,8"
+                Margin="12"
                 HorizontalAlignment="Right"
                 Click="btnNext_Click"
                 Style="{StaticResource buttonStylePrimary}">
@@ -94,11 +96,5 @@
                 </StackPanel>
             </Button>
         </Grid>
-
-        <Frame
-            Grid.Row="3"
-            Grid.Column="2"
-            Source="images/statement-generator.xaml"
-            Style="{StaticResource logoStyleBottomRight}" />
-    </Grid>
+    </Border>
 </Page>

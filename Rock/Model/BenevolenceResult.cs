@@ -79,7 +79,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Benevolence Request.
+        /// Gets or sets the <see cref="Rock.Model.BenevolenceRequest"/>.
         /// </summary>
         /// <value>
         /// The Benevolence Request.

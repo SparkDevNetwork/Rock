@@ -45,7 +45,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupType that is allowed to use this template (or null if any GroupType can use it)
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that is allowed to use this template (or null if any GroupType can use it)
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -54,7 +54,7 @@ namespace Rock.Model
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -67,7 +67,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the GroupType that is allowed to use this template (or null if any GroupType can use it)
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that is allowed to use this template (or null if any GroupType can use it)
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -76,7 +76,7 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>, which indicates the Schedule that a GroupMember is associated with (Every Week, Every Other Week, etc)
         /// </summary>
         /// <value>
         /// The schedule.

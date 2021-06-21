@@ -19,11 +19,21 @@
                     </div>
                     <div class="panel-body">
                         <div class="row">
-                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlCampus">
-                                <Rock:CampusPicker ID="cpCampus" runat="server" CssClass="input-width-lg" Label="Campus" />
+                            <asp:Panel CssClass="col-md-4" runat="server" ID="pnlCampus">
+                                <Rock:CampusPicker ID="cpCampus" runat="server" CssClass="input-width-lg" Label="Campus" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" AutoPostBack="true" />
                             </asp:Panel>
-                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlPlannedDate">
+                            <asp:Panel CssClass="col-md-5" runat="server" ID="pnlPlannedDate" Visible="true">
                                 <Rock:DatePicker ID="dpPlannedDate" runat="server" Label="Planned Visit Date" AllowPastDateSelection="false" />
+                            </asp:Panel>
+                            <asp:Panel CssClass="col-md-7" runat="server" ID="pnlPlannedSchedule" Visible="false">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <Rock:RockDropDownList ID="ddlScheduleDate" runat="server" Label="Planned Visit Date" OnSelectedIndexChanged="ddlScheduleDate_SelectedIndexChanged" AutoPostBack="true"></Rock:RockDropDownList>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <Rock:RockDropDownList ID="ddlScheduleTime" runat="server" Label="Planned Visit Time"></Rock:RockDropDownList>
+                                    </div>
+                                </div>
                             </asp:Panel>
                         </div>
                     </div>

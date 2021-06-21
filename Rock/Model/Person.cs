@@ -168,7 +168,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
-        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2)]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
         [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
         public string FirstName { get; set; }
 
@@ -302,7 +302,7 @@ namespace Rock.Model
         public int? GraduationYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
+        /// Gets or sets the <see cref="Rock.Model.Group">giving group</see> id.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
         /// <value>
@@ -310,7 +310,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public int? GivingGroupId { get; set; }
+        public int? GivingGroupId
+        {
+            get
+            {
+                return _givingGroupId;
+            }
+
+            set
+            {
+                _givingGroupId = value;
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
+            }
+        }
+
+        private int? _givingGroupId;
 
         /// <summary>
         /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
@@ -320,24 +334,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId
-        {
-            get
-            {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                return GivingGroupId.HasValue ?
-                    string.Format( "G{0}", GivingGroupId.Value ) :
-                    string.Format( "P{0}", Id );
-            }
-
-            private set
-            {
-                // don't do anything here since EF uses this for loading
-            }
-        }
+        public string GivingId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier.
+        /// Gets or sets the giving leader's Person Id.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -486,7 +486,7 @@ namespace Rock.Model
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for the primary family.
+        /// Gets or sets the group id for the <see cref="Person.PrimaryFamily" />.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -566,7 +566,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the primary alias.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
         /// </summary>
         /// <value>
         /// The primary alias.
@@ -582,7 +582,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary alias identifier.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
         /// </summary>
         /// <value>
         /// The primary alias identifier.
@@ -961,7 +961,7 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the aliases for this person
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">aliases</see> for this person.
         /// </summary>
         /// <value>
         /// The aliases.
@@ -1075,7 +1075,7 @@ namespace Rock.Model
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary family.
+        /// Gets or sets the <see cref="Rock.Model.Group">primary family</see>.
         /// </summary>
         /// <value>
         /// The primary family.
@@ -1084,7 +1084,7 @@ namespace Rock.Model
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's primary campus.
+        /// Gets or sets the person's <see cref="Rock.Model.Campus">primary campus</see>.
         /// </summary>
         /// <value>
         /// The primary campus.
@@ -1093,7 +1093,7 @@ namespace Rock.Model
         public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's default financial account gift designation.
+        /// Gets or sets the person's default <see cref="Rock.Model.FinancialAccount" /> gift designation.
         /// </summary>
         /// <value>
         /// The financial account.
@@ -2011,6 +2011,12 @@ namespace Rock.Model
                 NickName = FirstName;
             }
 
+            // Make sure the GivingId is correct.
+            if ( GivingId != ( GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}" ) )
+            {
+                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+            }
+
             if ( PhotoId.HasValue )
             {
                 var originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
@@ -2201,6 +2207,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;
@@ -2245,6 +2257,13 @@ namespace Rock.Model
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
+
+            // If the person was just added then update the GivingId to prevent "P0" values
+            if ( this.GivingId == "P0" )
+            {
+                PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
+            }
         }
 
         /// <summary>
@@ -2372,16 +2391,118 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <param name="useFormalNames">if set to <c>true</c> [use formal name].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
+        [RockObsolete( "12.4" )]
+        [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
         {
+            var args = new CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalSeparator,
+                Separator = separator,
+                LimitToPersonIds = null
+            };
+
+            return CalculateFamilySalutation( person, args );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public sealed class CalculateFamilySalutationArgs
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CalculateFamilySalutationArgs"/> class.
+            /// </summary>
+            /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+            public CalculateFamilySalutationArgs( bool includeChildren )
+            {
+                IncludeChildren = includeChildren;
+            }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include children].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include children]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeChildren { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include inactive].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeInactive { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [use formal names].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [use formal names]; otherwise, <c>false</c>.
+            /// </value>
+            public bool UseFormalNames { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets the final separator.
+            /// </summary>
+            /// <value>
+            /// The final separator.
+            /// </value>
+            public string FinalSeparator { get; set; } = "&";
+
+            /// <summary>
+            /// Gets or sets the separator.
+            /// </summary>
+            /// <value>
+            /// The separator.
+            /// </value>
+            public string Separator { get; set; } = ",";
+
+            /// <summary>
+            /// Gets or sets the limit to person ids.
+            /// </summary>
+            /// <value>
+            /// The limit to person ids.
+            /// </value>
+            public int[] LimitToPersonIds { get; set; } = null;
+
+            /// <summary>
+            /// Gets or sets the rock context.
+            /// </summary>
+            /// <value>
+            /// The rock context.
+            /// </value>
+            public RockContext RockContext { get; set; } = null;
+        }
+
+        /// <summary>
+        /// Calculates the family salutation.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="calculateFamilySalutationArgs">The calculate family salutation arguments.</param>
+        /// <returns></returns>
+        public static string CalculateFamilySalutation( Person person, CalculateFamilySalutationArgs calculateFamilySalutationArgs )
+        {
+            calculateFamilySalutationArgs = calculateFamilySalutationArgs ?? new CalculateFamilySalutationArgs( false );
             var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
             var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+
             var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+
+            var finalSeparator = calculateFamilySalutationArgs.FinalSeparator;
+            var separator = calculateFamilySalutationArgs.Separator;
+            var includeInactive = calculateFamilySalutationArgs.IncludeInactive;
+            var includeChildren = calculateFamilySalutationArgs.IncludeChildren;
+            var useFormalNames = calculateFamilySalutationArgs.UseFormalNames;
+            var limitToPersonIds = calculateFamilySalutationArgs.LimitToPersonIds;
 
             // clean up the separators
             finalSeparator = $" {finalSeparator} "; // add spaces before and after
@@ -2397,7 +2518,7 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var familyMembersQry = person.GetFamilyMembers( true ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
+            var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
 
             // Filter for inactive.
             if ( !includeInactive )
@@ -2405,6 +2526,14 @@ namespace Rock.Model
                 var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
                 familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId );
             }
+
+            if ( limitToPersonIds != null && limitToPersonIds.Length > 0 )
+            {
+                familyMembersQry = familyMembersQry.Where( m => limitToPersonIds.Contains( m.PersonId ) );
+            }
+
+            // just in case there are no Adults, have this query ready
+            var familyMembersIncludingChildrenQry = familyMembersQry;
 
             // Filter out kids if not needed.
             if ( !includeChildren )
@@ -2422,10 +2551,27 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            // Check that a family even existed. If not, return their name.
+            //  There are a couple of cases where there would be no familyMembers
+            // 1) There are no adults in the family, and includeChildren=false .
+            // 2) All the members of the family are deceased/inactive.
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
             if ( !familyMembersList.Any() )
             {
-                return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
+                familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
+                {
+                    LastName = s.Person.LastName,
+                    NickName = s.Person.NickName,
+                    FirstName = s.Person.FirstName,
+                    Gender = s.Person.Gender,
+                    s.Person.BirthDate,
+                    GroupRoleId = s.GroupRoleId
+                } ).ToList();
+
+                if ( !familyMembersList.Any() )
+                {
+                    // This shouldn't happen, but if somehow there are no family members, just return the specified person's name
+                    return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
+                }
             }
 
             // Determine if more than one last name is at play.
@@ -2461,17 +2607,17 @@ namespace Rock.Model
             }
 
             // Children:
-            if ( includeChildren )
+            if ( includeChildren || !adults.Any() )
             {
                 var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
 
-                if ( primaryLastName.IsNullOrWhiteSpace() )
-                {
-                    primaryLastName = children.First().LastName;
-                }
-
                 if ( children.Count() > 0 )
                 {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
+
                     foreach ( var child in children )
                     {
                         var firstName = child.NickName;
@@ -3826,6 +3972,79 @@ namespace Rock.Model
             }
 
             return qryWithGradeOffset.Select( a => a.Person );
+        }
+
+        /// <summary>
+        /// Calculates whether the person is in an active merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the person is part of merge request; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsPartOfMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.Any() ?? false;
+        }
+
+        /// <summary>
+        /// Gets the merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntitySet GetMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( this Person person, RockContext rockContext = null )
+        {
+            var mergeRequestQry = PersonService
+                .GetMergeRequestQuery( rockContext )
+                .Where( es => es.Items.Any( esi => esi.EntityId == person.Id ) );
+
+            return mergeRequestQry;
+        }
+
+        /// <summary>
+        /// Creates the merge request.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="masterPerson">The master person.</param>
+        /// <returns></returns>
+        public static EntitySet CreateMergeRequest( this Person namelessPerson, Person masterPerson )
+        {
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySet
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                EntitySetPurposeValueId = definedValueId
+            };
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = namelessPerson.Id
+            } );
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = masterPerson.Id
+            } );
+
+            return entitySet;
         }
     }
 

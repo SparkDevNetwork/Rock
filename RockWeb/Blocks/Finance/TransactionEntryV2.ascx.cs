@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1250,7 +1251,7 @@ mission. We are so grateful for your commitment.</p>
 
                 cbGiveNowCoverTheFee.Text = string.Format(
                     "Optionally add {0}<span class='js-coverthefee-checkbox-fee-amount-text'></span> to cover processing fee.",
-                    GlobalAttributesCache.Value( "CurrencySymbol" ) );
+                    RockCurrencyCodeInfo.GetCurrencySymbol() );
             }
 
             pnlGiveNowCoverTheFee.Visible = true;
@@ -1668,9 +1669,9 @@ mission. We are so grateful for your commitment.</p>
             savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
             savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
             savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
-            savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
-            savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
-            savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+            savedAccount.FinancialPaymentDetail.NameOnCard = paymentDetail.NameOnCard;
+            savedAccount.FinancialPaymentDetail.ExpirationMonth = paymentDetail.ExpirationMonth;
+            savedAccount.FinancialPaymentDetail.ExpirationYear = paymentDetail.ExpirationYear;
             savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
             var savedAccountService = new FinancialPersonSavedAccountService( rockContext );

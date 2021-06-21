@@ -37,7 +37,7 @@
                     <Rock:NotificationBox ID="nbNoUpcomingSchedules" runat="server" Visible="false" Text="No upcoming schedules" NotificationBoxType="Info" />
 
                     <%-- Pending Confirmations Grid --%>
-                    <asp:Panel ID="pnlPendingConfirmations" runat="server" CssClass="pending-confirmations">
+                    <asp:Panel ID="pnlPendingConfirmations" runat="server" CssClass="pending-confirmations margin-b-lg">
                         <span class="control-label">
                             <asp:Literal runat="server" ID="lPendingConfirmations" Text="Pending Confirmations" />
                         </span>

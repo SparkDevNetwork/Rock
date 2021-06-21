@@ -77,16 +77,16 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             SetExtraRestParams();
-            
+
             this.IconCssClass = "fa fa-calendar";
             base.OnInit( e );
         }
 
         /// <summary>
-        /// Sets the value.
+        /// Sets the value from cache.
         /// </summary>
         /// <param name="schedule">The schedule.</param>
-        public void SetValue( Schedule schedule )
+        private void SetValueFromCache( NamedScheduleCache schedule )
         {
             if ( schedule != null )
             {
@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
                 ItemId = schedule.Id.ToString();
 
                 string parentCategoryIds = string.Empty;
-                var parentCategory = schedule.CategoryId.HasValue ? CategoryCache.Get( schedule.CategoryId.Value ) : null;
+                var parentCategory = schedule.Category;
                 while ( parentCategory != null )
                 {
                     parentCategoryIds = parentCategory.Id + "," + parentCategoryIds;
@@ -118,10 +118,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the values.
+        /// Sets the value.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        public void SetValue( Schedule schedule )
+        {
+            if ( schedule == null )
+            {
+                SetValueFromCache( null );
+            }
+            else
+            {
+                SetValueFromCache( NamedScheduleCache.Get( schedule.Id ) );
+            }
+        }
+
+        /// <summary>
+        /// Sets the values from cache.
         /// </summary>
         /// <param name="schedules">The schedules.</param>
-        public void SetValues( IEnumerable<Schedule> schedules )
+        private void SetValuesFromCache( IEnumerable<NamedScheduleCache> schedules )
         {
             var scheduleList = schedules.ToList();
 
@@ -166,12 +182,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="schedules">The schedules.</param>
+        public void SetValues( IEnumerable<Schedule> schedules )
+        {
+            SetValuesFromCache( schedules.Select( a => NamedScheduleCache.Get( a.Id ) ).ToList() );
+        }
+
+        /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected override void SetValueOnSelect()
         {
-            var schedule = new ScheduleService( new RockContext() ).Get( int.Parse( ItemId ) );
-            SetValue( schedule );
+            SetValueFromCache( NamedScheduleCache.Get( ItemId.AsInteger() ) );
         }
 
         /// <summary>
@@ -179,8 +203,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var schedules = new ScheduleService( new RockContext() ).Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
-            this.SetValues( schedules );
+            this.SetValuesFromCache( ItemIds.AsIntegerList().Select( a => NamedScheduleCache.Get( a ) ).ToList() );
         }
 
         /// <summary>

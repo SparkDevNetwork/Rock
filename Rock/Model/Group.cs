@@ -95,7 +95,7 @@ namespace Rock.Model
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule identifier.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -226,7 +226,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -264,7 +264,7 @@ namespace Rock.Model
         public AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias identifier.
@@ -273,7 +273,7 @@ namespace Rock.Model
         public int? ScheduleCancellationPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias identifier.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The group administrator person alias identifier.
@@ -288,7 +288,7 @@ namespace Rock.Model
         /// The inactive reason value identifier.
         /// </value>
         [DataMember]
-        [DefinedValue]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_INACTIVE_REASONS )]
         public int? InactiveReasonValueId { get; set; }
 
         /// <summary>
@@ -299,15 +299,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string InactiveReasonNote  { get; set; }
-
-        /// <summary>
-        /// Gets or sets the system communication to use for sending an RSVP reminder.
-        /// </summary>
-        /// <value>
-        /// The RSVP reminder system communication object.
-        /// </value>
-        [DataMember]
-        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets the system communication to use for sending an RSVP reminder.
@@ -345,9 +336,44 @@ namespace Rock.Model
         [DataMember]
         public bool DisableScheduling { get; set; }
 
+        /// <summary>
+        /// List leaders names, in order by males → females.
+        /// Examples: Ted &#38; Cindy Decker -or- Ted Decker &#38; Cindy Wright.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=false, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutation { get; set; }
+
+        /// <summary>
+        /// List all active group members, or order by leaders males → females - non leaders by age.
+        /// Examples: Ted, Cindy, Noah and Alex Decker.
+        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
+        /// with includeChildren=true, and useFormalNames=false.
+        /// </summary>
+        /// <value>
+        /// The group salutation.
+        /// </value>
+        [DataMember]
+        [MaxLength( 250 )]
+        public string GroupSalutationFull { get; set; }
+
         #endregion
 
         #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication object.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets this parent Group of this Group.
@@ -377,7 +403,7 @@ namespace Rock.Model
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -395,7 +421,7 @@ namespace Rock.Model
         public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -404,7 +430,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group administrator person alias.
+        /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The group administrator person alias.
@@ -450,7 +476,7 @@ namespace Rock.Model
         public virtual ICollection<GroupRequirement> GroupRequirements { get; set; } = new Collection<GroupRequirement>();
 
         /// <summary>
-        /// Gets or sets the group member workflow triggers.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberWorkflowTrigger">Group Member Workflow Triggers</see>.
         /// </summary>
         /// <value>
         /// The group member workflow triggers.
@@ -459,7 +485,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberWorkflowTrigger> GroupMemberWorkflowTriggers { get; set; } = new Collection<GroupMemberWorkflowTrigger>();
 
         /// <summary>
-        /// Gets or sets the group syncs.
+        /// Gets or sets the <see cref="Rock.Model.GroupSync">group syncs</see>.
         /// </summary>
         /// <value>
         /// The group syncs.
@@ -468,7 +494,7 @@ namespace Rock.Model
         public virtual ICollection<GroupSync> GroupSyncs { get; set; } = new Collection<GroupSync>();
 
         /// <summary>
-        /// Gets or sets the linkages.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceGroupMap">linkages</see>.
         /// </summary>
         /// <value>
         /// The linkages.
@@ -575,7 +601,7 @@ namespace Rock.Model
         public virtual DefinedValue StatusValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias of the person to notify when a person cancels
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person to notify when a person cancels
         /// </summary>
         /// <value>
         /// The schedule cancellation person alias.

@@ -649,14 +649,16 @@ namespace RockWeb.Blocks.Event
                             .ForEach( p => rPayments.AddOrReplace( p.RegistrationId, p.Payments ) );
 
                         var rPmtSummary = rCosts
-                            .Join(
+                            .GroupJoin(
                                 rPayments,
                                 c => c.Key,
                                 p => p.Key,
-                                ( c, p ) => new
+                                ( c, p ) => new { rCosts = c, rPayments = p } )
+                            .SelectMany( c => c.rPayments.DefaultIfEmpty(),
+                                ( cp, p ) => new
                                 {
-                                    RegistrationId = c.Key,
-                                    Costs = c.Value,
+                                    RegistrationId = cp.rCosts.Key,
+                                    Costs = cp.rCosts.Value,
                                     Payments = p.Value
                                 } )
                             .ToList();

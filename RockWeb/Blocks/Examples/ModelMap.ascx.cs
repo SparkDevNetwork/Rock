@@ -639,19 +639,25 @@ namespace RockWeb.Blocks.Examples
         private string MakeSummaryHtml( string innerXml )
         {
             innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"\s+", " " );
-            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*)""(?: />|>(.*)</see>)" );
-            if ( match.Success )
+            var match = System.Text.RegularExpressions.Regex.Match( innerXml, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+            while ( match.Success )
             {
+                var updatedValue = match.Value;
+                System.Text.RegularExpressions.Regex.Match( match.Value, @"<see cref=""T:(.*?)""(?: />|>(.*)</see>)" );
+
                 var entityType = EntityTypeCache.Get( match.Groups[1].Value );
                 if ( entityType != null )
                 {
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", string.Format( "<a href=\"?EntityType={0}\">$2</a>", entityType.Id ) );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"">(.*)</see>", string.Format( "<a href=\"?EntityType={0}\" title=\"$2\">$3</a>", entityType.Id ) );
                 }
                 else
                 {
-                    innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
+                    updatedValue = System.Text.RegularExpressions.Regex.Replace( updatedValue, @"<see cref=""T:(.*)\.([^.]*)"" />", "<a href=\"#$2\">$2</a>" );
                 }
+
+                innerXml = System.Text.RegularExpressions.Regex.Replace( innerXml, match.Value, updatedValue );
+                match = match.NextMatch();
             }
             return innerXml;
         }

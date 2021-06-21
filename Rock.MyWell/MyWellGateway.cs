@@ -206,11 +206,11 @@ namespace Rock.MyWell
                 {
                     AccountNumberMasked = paymentDetail.AccountNumberMasked,
                     Amount = paymentInfo.Amount,
-                    ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted,
-                    ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted,
+                    ExpirationMonth = paymentDetail.ExpirationMonth,
+                    ExpirationYear = paymentDetail.ExpirationYear,
                     IsSettled = transaction.IsSettled,
                     SettledDate = transaction.SettledDate,
-                    NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted,
+                    NameOnCard = paymentDetail.NameOnCard,
                     Status = transaction.Status,
                     StatusMessage = transaction.StatusMessage,
                     TransactionCode = transaction.TransactionCode,
@@ -1085,7 +1085,7 @@ namespace Rock.MyWell
             if ( billingAddressResponse != null )
             {
                 // Since we are using a token for payment, it is possible that the Gateway has a different address associated with the payment method.
-                financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{billingAddressResponse.FirstName} {billingAddressResponse.LastName}" );
+                financialPaymentDetail.NameOnCard = $"{billingAddressResponse.FirstName} {billingAddressResponse.LastName}";
 
                 // If address wasn't collected when entering the transaction, set the address to the billing info returned from the gateway (if any).
                 if ( paymentInfo.Street1.IsNullOrWhiteSpace() )
@@ -1114,8 +1114,8 @@ namespace Rock.MyWell
 
                 if ( creditCardResponse.ExpirationDate?.Length == 5 )
                 {
-                    financialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( creditCardResponse.ExpirationDate.Substring( 0, 2 ) );
-                    financialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( creditCardResponse.ExpirationDate.Substring( 3, 2 ) );
+                    financialPaymentDetail.ExpirationMonth = creditCardResponse.ExpirationDate.Substring( 0, 2 ).AsIntegerOrNull();
+                    financialPaymentDetail.ExpirationYear = creditCardResponse.ExpirationDate.Substring( 3, 2 ).AsIntegerOrNull();
                 }
 
                 //// The gateway tells us what the CreditCardType is since it was selected using their hosted payment entry frame.
@@ -1549,7 +1549,7 @@ namespace Rock.MyWell
                     //// ScheduleActive doesn't apply because MyWell subscriptions are either active or deleted (don't exist).
                     ////   - GetScheduledPaymentStatus will take care of setting ScheduledTransaction.IsActive to false
                     //// SettledGroupId isn't included in the response from MyWell (this is an open issue)
-                    //// NameOnCardEncrypted, ExpirationMonthEncrypted, ExpirationYearEncrypted are set when the FinancialScheduledTransaction record is created
+                    //// NameOnCard, ExpirationMonth, ExpirationYear are set when the FinancialScheduledTransaction record is created
                 };
 
                 if ( transaction.PaymentType == "ach" )

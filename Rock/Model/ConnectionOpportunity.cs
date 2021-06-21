@@ -90,7 +90,7 @@ namespace Rock.Model
         public int? PhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection type identifier.
@@ -159,7 +159,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the connection.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
         /// </summary>
         /// <value>
         /// The type of the connection.
@@ -208,7 +208,7 @@ namespace Rock.Model
         private ICollection<ConnectionOpportunityGroup> _connectionOpportunityGroups;
 
         /// <summary>
-        /// Gets or sets the connection opportunity placement groups.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunityConnectorGroupConfiguration">connection opportunity group configs</see>.
         /// </summary>
         /// <value>
         /// The connection opportunity placement groups.

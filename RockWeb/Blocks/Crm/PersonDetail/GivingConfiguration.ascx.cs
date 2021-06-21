@@ -21,7 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Giving Configuration" )]
     [Category( "CRM > Person Detail" )]
@@ -83,7 +83,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Description = "The contribution statement detail page.",
         Order = 6,
         Key = AttributeKey.ContributionStatementDetailPage )]
-
+    [LinkedPage(
+        "Scheduled Transaction Detail Page",
+        Key = AttributeKey.ScheduledTransactionDetailPage,
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.SCHEDULED_TRANSACTION,
+        Order = 7 )]
     public partial class GivingConfiguration : Rock.Web.UI.PersonBlock
     {
         #region Attribute Keys
@@ -97,6 +102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string ContributionStatementDetailPage = "ContributionStatementDetailPage";
             public const string MaxYearsToDisplay = "MaxYearsToDisplay";
             public const string PledgeDetailPage = "PledgeDetailPage";
+            public const string ScheduledTransactionDetailPage = "ScheduledTransactionDetailPage";
         }
 
         #endregion Attribute Keys
@@ -146,6 +152,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             // just send them the same page as Add Transaction page since you can add a scheduled transaction there either way
             btnAddTransaction_Click( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPledges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptPledges_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var financialPledge = e.Item.DataItem as FinancialPledge;
+            if ( financialPledge != null )
+            {
+                var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
+                if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format(
+                        "{0} {1}",
+                        financialPledge.StartDate.ToShortDateString(),
+                        financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
+                }
+                else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format( "Till {0}", financialPledge.EndDate.ToShortDateString() );
+                }
+                else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
+                {
+                    lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+                }
+                else
+                {
+                    lPledgeDate.Text = "No Dates Provided";
+                }
+            }
         }
 
         /// <summary>
@@ -202,7 +241,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 string yearStr = year.ToStringSafe();
                 if ( year == RockDateTime.Now.Year )
                 {
-                    yearStr = yearStr + "<small>YTD</small>";
+                    yearStr = yearStr + " <small>YTD</small>";
                 }
                 lbYear.Text = yearStr;
             }
@@ -306,6 +345,47 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Event when the user clicks to edit the scheduled transaction
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rptScheduledTransaction_Edit( object sender, CommandEventArgs e )
+        {
+            var scheduledTransactionGuid = e.CommandArgument.ToStringSafe().AsGuid();
+            var rockContext = new RockContext();
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
+
+            if ( financialScheduledTransaction != null )
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.AddOrReplace( "ScheduledTransactionId", financialScheduledTransaction.Id.ToString() );
+                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                NavigateToLinkedPage( AttributeKey.ScheduledTransactionDetailPage, queryParams );
+            }
+        }
+
+        /// <summary>
+        /// Event when the user clicks to edit the pledge
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void rptPledges_Edit( object sender, CommandEventArgs e )
+        {
+            var pledgeGuid = e.CommandArgument.ToStringSafe().AsGuid();
+            var rockContext = new RockContext();
+            var pledgeService = new FinancialPledgeService( rockContext );
+            var pledge = pledgeService.Get( pledgeGuid );
+            if ( pledge != null )
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.AddOrReplace( "PledgeId", pledge.Id.ToString() );
+                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
+            }
+        }
+
+        /// <summary>
         /// Event when the user clicks to delete the pledge
         /// </summary>
         /// <param name="sender"></param>
@@ -388,8 +468,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             rptScheduledTransaction.DataSource = scheduledTransactionList;
             rptScheduledTransaction.DataBind();
-
-            pnlSavedAccounts.Visible = scheduledTransactionList.Any();
         }
 
         private void BindSavedAccountList()
@@ -424,8 +502,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var pledges = pledgesQry.ToList();
             rptPledges.DataSource = pledges;
             rptPledges.DataBind();
-
-            pnlSavedAccounts.Visible = pledges.Any();
         }
 
         private void BindContributionStatement()

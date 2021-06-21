@@ -104,6 +104,8 @@
                                             Help="If the page has a campus context its value will be used as a filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Display Attribute Filters" RepeatDirection="Horizontal"
                                             Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockCheckBox ID="cbHideOvercapacityGroups" runat="server" Label="Hide Overcapacity Groups" Text="Yes"
+                                            Help="When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                                 <div class="row">

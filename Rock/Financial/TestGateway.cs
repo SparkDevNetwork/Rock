@@ -59,6 +59,13 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
+
+    [BooleanField(
+        "Prompt for Name on Card",
+        Description = "This will tell the Gateway to prompt for the name on card.",
+        Key = AttributeKey.PromptForNameOnCard,
+        DefaultBooleanValue = false,
+        Order = 4 )]
     public class TestGateway : GatewayComponent, IAutomatedGatewayComponent
     {
         #region Attribute Keys
@@ -72,10 +79,10 @@ namespace Rock.Financial
             public const string GenerateFakeGetPayments = "GenerateFakeGetPayments";
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
+            public const string PromptForNameOnCard = "PromptForNameOnCard";
         }
 
         #endregion
-
 
         #region Automated Gateway Component
 
@@ -114,6 +121,7 @@ namespace Rock.Financial
             return new Payment
             {
                 TransactionCode = transaction.TransactionCode,
+                NameOnCard = $"{paymentInfo.FirstName} {paymentInfo.LastName}",
                 Amount = paymentInfo.Amount
             };
         }
@@ -152,7 +160,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
-            return false;
+            return GetAttributeValue( financialGateway, AttributeKey.PromptForNameOnCard ).AsBoolean();
         }
 
         /// <summary>

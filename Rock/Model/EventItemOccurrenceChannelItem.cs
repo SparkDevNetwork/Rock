@@ -32,7 +32,7 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets or sets the event item occurrence identifier.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" /> identifier.
         /// </summary>
         /// <value>
         /// The event item occurrence identifier.
@@ -41,10 +41,10 @@ namespace Rock.Model
         public int EventItemOccurrenceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration instance identifier.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem" />.
         /// </summary>
         /// <value>
-        /// The registration instance identifier.
+        /// The content channel item identifier.
         /// </value>
         [DataMember]
         public int ContentChannelItemId { get; set; }
@@ -52,7 +52,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the event item occurrence.
+        /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" />.
         /// </summary>
         /// <value>
         /// The event item occurrence.
@@ -61,7 +61,7 @@ namespace Rock.Model
         public virtual EventItemOccurrence EventItemOccurrence { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem" />.
         /// </summary>
         /// <value>
         /// The group.

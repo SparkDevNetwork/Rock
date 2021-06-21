@@ -230,6 +230,14 @@ namespace Rock.Data
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
 
         /// <summary>
+        /// Gets or sets the analytics source giving units.
+        /// </summary>
+        /// <value>
+        /// The analytics source giving units.
+        /// </value>
+        public DbSet<AnalyticsSourceGivingUnit> AnalyticsSourceGivingUnits { get; set; }
+
+        /// <summary>
         /// Gets or sets the asset storage providers.
         /// </summary>
         /// <value>
@@ -924,6 +932,14 @@ namespace Rock.Data
         /// The financial scheduled transaction details.
         /// </value>
         public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial statement templates.
+        /// </summary>
+        /// <value>
+        /// The financial statement templates.
+        /// </value>
+        public DbSet<FinancialStatementTemplate> FinancialStatementTemplates { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.

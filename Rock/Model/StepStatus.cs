@@ -43,7 +43,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepProgram"/> to which this status belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepProgram"/> to which this status belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -87,13 +87,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the StepProgram.
+        /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
         /// </summary>
         [DataMember]
         public virtual StepProgram StepProgram { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Step">Steps</see> that are of this step status.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Step">Steps</see> that are of this step status.
         /// </summary>
         [DataMember]
         public virtual ICollection<Step> Steps

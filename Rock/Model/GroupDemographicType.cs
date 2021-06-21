@@ -47,7 +47,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// The GroupType.Id of the group this Group Demographic Type is associated with.
+        /// The <see cref="Rock.Model.GroupType"/> identifier of the group this Group Demographic Type is associated with.
         /// </summary>
         /// <value>
         /// The group type identifier.
@@ -89,7 +89,7 @@ namespace Rock.Model
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// A comma delimited list of GroupTypeRoles IDs
+        /// A comma delimited list of <see cref="Rock.Model.GroupTypeRole">GroupTypeRoles</see> IDs
         /// </summary>
         /// <value>
         /// The role filter.
@@ -133,7 +133,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.

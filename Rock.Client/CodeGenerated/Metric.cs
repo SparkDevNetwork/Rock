@@ -38,6 +38,9 @@ namespace Rock.Client
         public int? AdminPersonAliasId { get; set; }
 
         /// <summary />
+        public bool AutoPartitionOnPrimaryCampus { get; set; }
+
+        /// <summary />
         public int? DataViewId { get; set; }
 
         /// <summary />
@@ -133,6 +136,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdminPersonAliasId = source.AdminPersonAliasId;
+            this.AutoPartitionOnPrimaryCampus = source.AutoPartitionOnPrimaryCampus;
             this.DataViewId = source.DataViewId;
             this.Description = source.Description;
             this.EnableAnalytics = source.EnableAnalytics;

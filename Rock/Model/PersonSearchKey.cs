@@ -71,6 +71,16 @@ namespace Rock.Model
         [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
         public string SearchValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this value is private.
+        /// If the search key is private, it should not be shown in the UI.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is value private; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsValuePrivate { get; set; }
+
         #endregion
 
         #region Virtual Properties

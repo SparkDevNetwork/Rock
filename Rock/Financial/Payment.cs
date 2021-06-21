@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Financial
@@ -27,17 +27,17 @@ namespace Rock.Financial
     public class Payment
     {
         /// <summary>
-        /// Gets or sets the gross amount.
+        /// Gets or sets the gross amount. This value will always be in the organization's currency.
         /// </summary>
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the net amount (Amount minus FeeAmount).
+        /// Gets or sets the net amount (Amount minus FeeAmount). This value will always be in the organization's currency.
         /// </summary>
         public decimal? NetAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the fee amount.
+        /// Gets or sets the fee amount. This value will always be in the organization's currency.
         /// </summary>
         public decimal? FeeAmount { get; set; }
 
@@ -127,28 +127,180 @@ namespace Rock.Financial
         /// </value>
         public string AccountNumberMasked { get; set; }
 
+        private string _nameOnCardEncrypted = null;
         /// <summary>
         /// Gets or sets the name on card encrypted.
         /// </summary>
         /// <value>
         /// The name on card encrypted.
         /// </value>
-        public string NameOnCardEncrypted { get; set; }
+        [Obsolete("Use NameOnCard")]
+        [RockObsolete( "1.12.4" )]
+        public string NameOnCardEncrypted
+        {
+            get
+            {
+                // We are only checking null here because empty string is valid.
+                if ( _nameOnCard.IsNull() )
+                {
+                    return _nameOnCardEncrypted;
+                }
+                return Encryption.EncryptString( _nameOnCard );
+            }
+            set
+            {
+                _nameOnCardEncrypted = value;
+            }
+        }
+
+        private string _nameOnCard = null;
+        /// <summary>
+        /// Gets or sets the name on card.
+        /// </summary>
+        /// <value>
+        /// The name on card.
+        /// </value>
+        public string NameOnCard
+        {
+            get
+            {
+                // We are only checking null here because empty string is valid.
+                if ( _nameOnCard.IsNull() )
+                {
+                    return Encryption.DecryptString( _nameOnCardEncrypted );
+                }
+                return _nameOnCard;
+            }
+            set
+            {
+                _nameOnCard = value;
+            }
+        }
+
+        private string _expirationMonthEncrypted = null;
+        private string _expirationYearEncrypted = null;
 
         /// <summary>
-        /// Gets or sets the expiration month encrypted.
+        /// Gets or sets the expiration month encrypted. Use <seealso cref="ExpirationMonth"/> to get the unencrypted version of Month.
         /// </summary>
         /// <value>
         /// The expiration month encrypted.
         /// </value>
-        public string ExpirationMonthEncrypted { get; set; }
+        [Obsolete( "Use ExpirationMonth" )]
+        [RockObsolete( "1.12.4" )]
+        public string ExpirationMonthEncrypted
+        {
+            get
+            {
+                if ( _expirationMonth == null )
+                {
+                    return _expirationMonthEncrypted;
+                }
+                return Encryption.EncryptString( _expirationMonth.Value.ToString() );
+            }
+            set
+            {
+                _expirationMonthEncrypted = value;
+            }
+        }
 
         /// <summary>
-        /// Gets or sets the expiration year encrypted.
+        /// Important Note: that this could be a 2 digit or 4 digit year, so use <seealso cref="ExpirationYear"/> to get the unencrypted version of this which will always return a 4 digit year.
         /// </summary>
         /// <value>
         /// The expiration year encrypted.
         /// </value>
-        public string ExpirationYearEncrypted { get; set; }
+        [Obsolete( "Use ExpirationYear" )]
+        [RockObsolete( "1.12.4" )]
+        public string ExpirationYearEncrypted
+        {
+            get
+            {
+                if ( _expirationYear == null )
+                {
+                    return _expirationYearEncrypted;
+                }
+                return Encryption.EncryptString( _expirationYear.Value.ToString() );
+            }
+            set
+            {
+                _expirationYearEncrypted = value;
+            }
+        }
+
+        private int? _expirationMonth = null;
+        private int? _expirationYear = null;
+
+        /// <summary>
+        /// Gets the expiration month by decrypting ExpirationMonthEncrypted
+        /// </summary>
+        /// <value>
+        /// The expiration month.
+        /// </value>
+        public int? ExpirationMonth
+        {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
+            get
+            {
+                return _expirationMonth ?? Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull();
+            }
+            set
+            {
+                _expirationMonth = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the 4 digit year by decrypting ExpirationYearEncrypted and correcting to a 4 digit year if ExpirationYearEncrypted is just a 2 digit year
+        /// </summary>
+        /// <value>
+        /// The expiration year.
+        /// </value>
+        public int? ExpirationYear
+        {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
+            get
+            {
+                return _expirationYear ?? ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() );
+            }
+
+            set
+            {
+                _expirationYear = ToFourDigitYear( value );
+            }
+        }
+
+        private int? ToFourDigitYear( int? year )
+        {
+            if ( year == null || year >= 100 )
+            {
+                return year;
+            }
+            else
+            {
+                return System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+            }
+        }
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the foreign currency amount.
+        /// </summary>
+        /// <value>
+        /// The foreign currency amount.
+        /// </value>
+        public decimal? ForeignCurrencyAmount { get; set; }
     }
 }

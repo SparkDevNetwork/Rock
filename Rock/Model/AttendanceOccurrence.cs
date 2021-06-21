@@ -59,7 +59,7 @@ namespace Rock.Model
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Schedule"/> that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
@@ -180,7 +180,7 @@ namespace Rock.Model
         public string DeclineReasonValueIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurrence is associated.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepType"/> to which this occurrence is associated.
         /// </summary>
         [DataMember]
         public int? StepTypeId { get; set; }
@@ -216,6 +216,7 @@ namespace Rock.Model
         /// The attendance type value identifier.
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.CHECK_IN_ATTENDANCE_TYPES )]
         public int? AttendanceTypeValueId { get; set; }
 
         #endregion
@@ -232,7 +233,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> where the Person attended.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
@@ -241,7 +242,7 @@ namespace Rock.Model
         public virtual Location Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -339,7 +340,7 @@ namespace Rock.Model
             }
         }
         /// <summary>
-        /// Gets or sets the Step Type.
+        /// Gets or sets the <see cref="Rock.Model.StepType"/>.
         /// </summary>
         [DataMember]
         public virtual StepType StepType { get; set; }

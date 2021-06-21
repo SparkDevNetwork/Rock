@@ -364,7 +364,8 @@ namespace RockWeb.Blocks.Connection
                 .AsNoTracking()
                 .Where( f =>
                     f.PersonAliasId == CurrentPersonAliasId &&
-                    f.EntityTypeId == opportunityEntityTypeId )
+                    f.EntityTypeId == opportunityEntityTypeId &&
+                    string.IsNullOrEmpty( f.PurposeKey ) )
                 .Select( f => f.EntityId )
                 .ToList();
 
@@ -435,8 +436,7 @@ namespace RockWeb.Blocks.Connection
                         .ToList();
                 }
 
-                var canView = canEdit ||
-                                opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
+                var canView = opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
                                 ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
 
                 // Is user is authorized to view this opportunity type...

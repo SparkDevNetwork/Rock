@@ -83,7 +83,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the event calendar items.
+        /// Gets or sets the <see cref="Rock.Model.EventCalendarItem">event calendar items</see>.
         /// </summary>
         /// <value>
         /// The event calendar items.

@@ -15,10 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 
@@ -59,6 +55,8 @@ namespace Rock.Transactions
         /// <value>
         /// The persisted last run date.
         /// </value>
+        [RockObsolete( "1.12.4" )]
+        [Obsolete( "This update is now handled by the DataView PersistResult method." )]
         public DateTime? PersistedLastRefreshDateTime { get; set; }
 
         /// <summary>
@@ -67,6 +65,8 @@ namespace Rock.Transactions
         /// <value>
         /// The persisted last run duration in milliseconds.
         /// </value>
+        [RockObsolete( "1.12.4" )]
+        [Obsolete( "This update is now handled by the DataView PersistResult method." )]
         public int? PersistedLastRunDurationMilliseconds { get; set; }
 
         /// <summary>
@@ -102,20 +102,10 @@ namespace Rock.Transactions
                 if ( LastRunDateTime != null )
                 {
                     dataView.LastRunDateTime = LastRunDateTime;
-                    if( ShouldIncrementRunCount )
+                    if ( ShouldIncrementRunCount )
                     {
                         dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
                     }
-                }
-
-                if ( PersistedLastRefreshDateTime != null )
-                {
-                    dataView.PersistedLastRefreshDateTime = PersistedLastRefreshDateTime;
-                }
-
-                if ( PersistedLastRunDurationMilliseconds != null )
-                {
-                    dataView.PersistedLastRunDurationMilliseconds = PersistedLastRunDurationMilliseconds;
                 }
 
                 // We will only update the RunCount if we were given a TimeToRun value.

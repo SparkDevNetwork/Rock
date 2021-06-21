@@ -449,7 +449,7 @@ namespace Rock.Model
 
             if ( impersonated )
             {
-                var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
+                var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
 
                 relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
                 relatedEntityId = impersonatedByUser?.PersonId;

@@ -356,6 +356,11 @@ textarea,
     padding: 18px 0 18px 12px;
     vertical-align: middle;
 
+    // Remove padding offset on right
+    &[align="right"] {
+      padding-right: 17px;
+    }
+
     // Remove padding offset on center
     &[align="center"] {
       padding: 18px 6px;
@@ -1577,33 +1582,24 @@ body.navbar-side-open {
 }
 
 .picker-menu {
-  animation-name: css-1, css-13;
+  animation-name: picker-animation;
   animation-duration: .367s;
   animation-timing-function: cubic-bezier(.1, .9, .2, 1);
   animation-fill-mode: both;
 }
 
-@keyframes css-1 {
+@keyframes picker-animation {
   0% {
     opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes css-13 {
-
-  0% {
     transform: translate3d(0, -10px, 0);
   }
 
   100% {
+    opacity: 1;
     transform: translate3d(0, 0, 0);
   }
-
 }
+
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {

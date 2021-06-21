@@ -34,7 +34,7 @@ namespace Rock.Model
     {
         #region Entity Properties
         /// <summary>
-        /// Gets or sets the group identifier.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> identifier.
         /// </summary>
         /// <value>
         /// The group identifier.
@@ -45,7 +45,7 @@ namespace Rock.Model
         public int GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type role identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupTypeRole"/> identifier.
         /// </summary>
         /// <value>
         /// The group type role identifier.
@@ -56,7 +56,7 @@ namespace Rock.Model
         public int GroupTypeRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the synchronize data view identifier.
+        /// Gets or sets the synchronize <see cref="Rock.Model.DataView"/> identifier.
         /// </summary>
         /// <value>
         /// The synchronize data view identifier.
@@ -86,10 +86,10 @@ namespace Rock.Model
         public int? WelcomeSystemEmailId { get; set; }
 
         /// <summary>
-        /// Gets or sets the exit system email identifier.
+        /// Gets or sets the exit <see cref="Rock.Model.SystemCommunication"/> identifier.
         /// </summary>
         /// <value>
-        /// The exit system email identifier.
+        /// The exit system communication identifier.
         /// </value>
         [DataMember]
         public int? ExitSystemCommunicationId { get; set; }
@@ -135,7 +135,7 @@ namespace Rock.Model
 
         #region Virtual Properties
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// The group.
@@ -144,7 +144,7 @@ namespace Rock.Model
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type role.
+        /// Gets or sets the <see cref="Rock.Model.GroupTypeRole"/>.
         /// </summary>
         /// <value>
         /// The group type role.
@@ -153,7 +153,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupTypeRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the synchronize data view.
+        /// Gets or sets the syncDataview.
         /// </summary>
         /// <value>
         /// The synchronize data view.
@@ -184,7 +184,7 @@ namespace Rock.Model
         public virtual SystemEmail ExitSystemEmail { get; set; }
 
         /// <summary>
-        /// Gets or sets the welcome system communication.
+        /// Gets or sets the welcome <see cref="Rock.Model.SystemCommunication"/>.
         /// </summary>
         /// <value>
         /// The welcome system communication.
@@ -193,7 +193,7 @@ namespace Rock.Model
         public virtual SystemCommunication WelcomeSystemCommunication { get; set; }
 
         /// <summary>
-        /// Gets or sets the exit system communication.
+        /// Gets or sets the exit <see cref="Rock.Model.SystemCommunication"/>.
         /// </summary>
         /// <value>
         /// The exit system communication.
