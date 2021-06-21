@@ -23,8 +23,8 @@ export type CommonEntity = {
 
 // The common entity configs that will be used with generateCommonEntityModule to create store modules
 export const commonEntities: CommonEntity[] = [
-    { namespace: 'campuses', apiUrl: '/api/obsidian/v1/commonentities/campuses' },
-    { namespace: 'definedTypes', apiUrl: '/api/obsidian/v1/commonentities/definedTypes' }
+    { namespace: 'campuses', apiUrl: '/api/v2/CommonEntities/Campuses' },
+    { namespace: 'definedTypes', apiUrl: '/api/v2/CommonEntities/DefinedTypes' }
 ];
 export const commonEntityModules = {};
 

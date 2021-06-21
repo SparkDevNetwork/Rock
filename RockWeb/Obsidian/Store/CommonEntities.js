@@ -10,8 +10,8 @@ System.register(["./Generators"], function (exports_1, context_1) {
         ],
         execute: function () {
             exports_1("commonEntities", commonEntities = [
-                { namespace: 'campuses', apiUrl: '/api/obsidian/v1/commonentities/campuses' },
-                { namespace: 'definedTypes', apiUrl: '/api/obsidian/v1/commonentities/definedTypes' }
+                { namespace: 'campuses', apiUrl: '/api/v2/CommonEntities/Campuses' },
+                { namespace: 'definedTypes', apiUrl: '/api/v2/CommonEntities/DefinedTypes' }
             ]);
             exports_1("commonEntityModules", commonEntityModules = {});
             for (var _i = 0, commonEntities_1 = commonEntities; _i < commonEntities_1.length; _i++) {

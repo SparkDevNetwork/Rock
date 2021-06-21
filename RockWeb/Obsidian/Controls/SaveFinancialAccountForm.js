@@ -127,7 +127,7 @@ System.register(["vue", "../Elements/Alert", "../Elements/CheckBox", "../Element
                                             return [2];
                                         }
                                         this.isLoading = true;
-                                        return [4, this.http.post("api/obsidian/v1/controls/savefinancialaccountform/" + this.gatewayGuid, null, {
+                                        return [4, this.http.post("api/v2/controls/savefinancialaccountforms/" + this.gatewayGuid, null, {
                                                 Password: this.password,
                                                 SavedAccountName: this.savedAccountName,
                                                 TransactionCode: this.transactionCode,

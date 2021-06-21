@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -24,12 +23,12 @@ using System.Web.Http;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
-namespace Rock.Obsidian.Controllers.Controls
+namespace Rock.Rest.Controls
 {
     /// <summary>
-    /// Defined Value Picker
+    /// Controller used by Defined Value Pickers in the Rock UI
     /// </summary>
-    public class DefinedValuePickerController : ObsidianController
+    public class DefinedValuePickersController : ControlsControllerBase
     {
         /// <summary>
         /// Gets the defined values.
@@ -37,10 +36,9 @@ namespace Rock.Obsidian.Controllers.Controls
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="IsActive">if set to <c>true</c> [is active].</param>
         /// <returns></returns>
-        /// <exception cref="HttpResponseException"></exception>
         [Authenticate]
         [HttpGet]
-        [System.Web.Http.Route( "api/obsidian/v1/controls/definedvaluepicker/{definedTypeGuid}" )]
+        [Route( "api/v2/Controls/DefinedValuePickers/{definedTypeGuid}" )]
         public IEnumerable<DefinedValueViewModel> GetDefinedValues( Guid definedTypeGuid, [FromUri] bool IsActive = true )
         {
             var definedType = DefinedTypeCache.Get( definedTypeGuid );
@@ -59,7 +57,7 @@ namespace Rock.Obsidian.Controllers.Controls
                 throw new HttpResponseException( errorResponse );
             }
 
-            IEnumerable<DefinedValueCache> viewModels = definedType
+            var viewModels = definedType
                 .DefinedValues
                 .Where( dv => dv.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) );
 

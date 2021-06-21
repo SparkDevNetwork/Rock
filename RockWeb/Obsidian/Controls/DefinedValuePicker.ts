@@ -96,7 +96,7 @@ export default defineComponent( {
                 else
                 {
                     this.isLoading = true;
-                    const result = await this.http.get<DefinedValue[]>( `/api/obsidian/v1/controls/definedvaluepicker/${this.definedTypeGuid}` );
+                    const result = await this.http.get<DefinedValue[]>( `/api/v2/controls/definedvaluepickers/${this.definedTypeGuid}` );
 
                     if ( result && result.data )
                     {

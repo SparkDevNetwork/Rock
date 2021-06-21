@@ -23,12 +23,12 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
 
-namespace Rock.Obsidian.Controllers.Controls
+namespace Rock.Rest.Controls
 {
     /// <summary>
     /// Save Financial Account Form
     /// </summary>
-    public class SaveFinancialAccountFormController : ObsidianController
+    public class SaveFinancialAccountFormsController : ControlsControllerBase
     {
         /// <summary>
         /// Saves the financial account.
@@ -38,7 +38,7 @@ namespace Rock.Obsidian.Controllers.Controls
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
-        [System.Web.Http.Route( "api/obsidian/v1/controls/savefinancialaccountform/{gatewayGuid}" )]
+        [System.Web.Http.Route( "api/v2/Controls/SaveFinancialAccountForms/{gatewayGuid}" )]
         public SaveFinancialAccountFormResult SaveFinancialAccount( Guid gatewayGuid, [FromBody] SaveFinancialAccountFormArgs args )
         {
             // Validate the args

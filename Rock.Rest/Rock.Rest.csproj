@@ -130,6 +130,7 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controls\CommonEntitiesController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
     <Compile Include="Controllers\CheckinController.cs" />
@@ -210,6 +211,8 @@
     <Compile Include="Controllers\CodeGenerated\WebFarmNodesController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controls\ControlsControllerBase.cs" />
+    <Compile Include="Controls\DefinedValuePickersController.cs" />
     <Compile Include="Controllers\DocumentsController.partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
@@ -227,6 +230,7 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="Controls\SaveFinancialAccountFormsController.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="Handler\RockAssembliesResolver.cs" />
     <Compile Include="HeaderTokens.cs" />

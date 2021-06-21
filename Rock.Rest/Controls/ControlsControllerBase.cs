@@ -15,17 +15,14 @@
 // </copyright>
 //
 
-using System;
-using System.Linq;
-using Rock.Rest;
-using Rock.Web.Cache;
+using System.Web.Http;
 
-namespace Rock.Obsidian.Controllers
+namespace Rock.Rest.Controls
 {
     /// <summary>
-    /// Abstract Obsidian Controller
+    /// Endpoints used by Rock UI Controls
     /// </summary>
-    public abstract class ObsidianController : ApiControllerBase
+    public abstract class ControlsControllerBase : ApiControllerBase
     {
     }
 }

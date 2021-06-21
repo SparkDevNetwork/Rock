@@ -123,7 +123,7 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                                             return [3, 3];
                                         case 1:
                                             this.isLoading = true;
-                                            return [4, this.http.get("/api/obsidian/v1/controls/definedvaluepicker/" + this.definedTypeGuid)];
+                                            return [4, this.http.get("/api/v2/controls/definedvaluepickers/" + this.definedTypeGuid)];
                                         case 2:
                                             result = _a.sent();
                                             if (result && result.data) {
