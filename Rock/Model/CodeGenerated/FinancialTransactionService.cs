@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,21 +54,83 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.TransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionRefund>( Context ).Queryable().Any( a => a.OriginalTransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialTransaction View Model Helper
+    /// </summary>
+    public partial class FinancialTransactionViewModelHelper : ViewModelHelper<FinancialTransaction, Rock.ViewModel.FinancialTransactionViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialTransactionViewModel CreateViewModel( FinancialTransaction model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialTransactionViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
+                BatchId = model.BatchId,
+                CheckMicrEncrypted = model.CheckMicrEncrypted,
+                CheckMicrHash = model.CheckMicrHash,
+                CheckMicrParts = model.CheckMicrParts,
+                FinancialGatewayId = model.FinancialGatewayId,
+                FinancialPaymentDetailId = model.FinancialPaymentDetailId,
+                FutureProcessingDateTime = model.FutureProcessingDateTime,
+                IsReconciled = model.IsReconciled,
+                IsSettled = model.IsSettled,
+                MICRStatus = ( int? ) model.MICRStatus,
+                NonCashAssetTypeValueId = model.NonCashAssetTypeValueId,
+                ProcessedByPersonAliasId = model.ProcessedByPersonAliasId,
+                ProcessedDateTime = model.ProcessedDateTime,
+                ScheduledTransactionId = model.ScheduledTransactionId,
+                SettledDate = model.SettledDate,
+                SettledGroupId = model.SettledGroupId,
+                ShowAsAnonymous = model.ShowAsAnonymous,
+                SourceTypeValueId = model.SourceTypeValueId,
+                Status = model.Status,
+                StatusMessage = model.StatusMessage,
+                Summary = model.Summary,
+                SundayDate = model.SundayDate,
+                TransactionCode = model.TransactionCode,
+                TransactionDateTime = model.TransactionDateTime,
+                TransactionTypeValueId = model.TransactionTypeValueId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -160,5 +225,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialTransactionViewModel ToViewModel( this FinancialTransaction model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialTransactionViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,65 @@ namespace Rock.Model
         public bool CanDelete( ContentChannelItem item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring ContentChannelItemAssociation,ChildContentChannelItemId 
-            
-            // ignoring ContentChannelItemAssociation,ContentChannelItemId 
-            
-            // ignoring ContentChannelItemSlug,ContentChannelItemId 
+
+            // ignoring ContentChannelItemAssociation,ChildContentChannelItemId
+
+            // ignoring ContentChannelItemAssociation,ContentChannelItemId
+
+            // ignoring ContentChannelItemSlug,ContentChannelItemId
             return true;
         }
     }
+
+    /// <summary>
+    /// ContentChannelItem View Model Helper
+    /// </summary>
+    public partial class ContentChannelItemViewModelHelper : ViewModelHelper<ContentChannelItem, Rock.ViewModel.ContentChannelItemViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.ContentChannelItemViewModel CreateViewModel( ContentChannelItem model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.ContentChannelItemViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ApprovedByPersonAliasId = model.ApprovedByPersonAliasId,
+                ApprovedDateTime = model.ApprovedDateTime,
+                Content = model.Content,
+                ContentChannelId = model.ContentChannelId,
+                ContentChannelTypeId = model.ContentChannelTypeId,
+                ExpireDateTime = model.ExpireDateTime,
+                ItemGlobalKey = model.ItemGlobalKey,
+                Order = model.Order,
+                Permalink = model.Permalink,
+                Priority = model.Priority,
+                StartDateTime = model.StartDateTime,
+                Status = ( int ) model.Status,
+                StructuredContent = model.StructuredContent,
+                Title = model.Title,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -141,5 +194,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.ContentChannelItemViewModel ToViewModel( this ContentChannelItem model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new ContentChannelItemViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

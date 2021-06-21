@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -63,6 +64,15 @@ namespace Rock.Blocks
         public RockRequestContext RequestContext { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Gets the control markup.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetControlMarkup()
+        {
+            return string.Empty;
+        }
 
         /// <summary>
         /// Gets the attribute value.

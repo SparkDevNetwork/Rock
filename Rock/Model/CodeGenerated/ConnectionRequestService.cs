@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,11 +54,60 @@ namespace Rock.Model
         public bool CanDelete( ConnectionRequest item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring ConnectionRequestActivity,ConnectionRequestId 
+
+            // ignoring ConnectionRequestActivity,ConnectionRequestId
             return true;
         }
     }
+
+    /// <summary>
+    /// ConnectionRequest View Model Helper
+    /// </summary>
+    public partial class ConnectionRequestViewModelHelper : ViewModelHelper<ConnectionRequest, Rock.ViewModel.ConnectionRequestViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.ConnectionRequestViewModel CreateViewModel( ConnectionRequest model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.ConnectionRequestViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AssignedGroupId = model.AssignedGroupId,
+                AssignedGroupMemberAttributeValues = model.AssignedGroupMemberAttributeValues,
+                AssignedGroupMemberRoleId = model.AssignedGroupMemberRoleId,
+                AssignedGroupMemberStatus = ( int? ) model.AssignedGroupMemberStatus,
+                CampusId = model.CampusId,
+                Comments = model.Comments,
+                ConnectionOpportunityId = model.ConnectionOpportunityId,
+                ConnectionState = ( int ) model.ConnectionState,
+                ConnectionStatusId = model.ConnectionStatusId,
+                ConnectorPersonAliasId = model.ConnectorPersonAliasId,
+                FollowupDate = model.FollowupDate,
+                Order = model.Order,
+                PersonAliasId = model.PersonAliasId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -136,5 +188,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.ConnectionRequestViewModel ToViewModel( this ConnectionRequest model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new ConnectionRequestViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

@@ -661,28 +661,49 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the login URL with return URL.
+        /// </summary>
+        /// <returns></returns>
+        public string GetLoginUrlWithReturnUrl()
+        {
+            if ( LoginPageId is null )
+            {
+                return string.Empty;
+            }
+
+            var context = HttpContext.Current;
+            var pageReference = LoginPageReference;
+            var parms = new Dictionary<string, string>();
+
+            // if there is a rckipid token, we don't want to include it when they go to login page since they are going there to login as a real user
+            // this also prevents an issue where they would log in as a real user, but then get logged in with the token instead after they are redirected
+            var returnUrl = context.Request.QueryString["returnUrl"] ??
+                context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) );
+
+            parms.Add( "returnurl", returnUrl );
+            pageReference.Parameters = parms;
+            var url = pageReference.BuildUrl();
+            return url;
+        }
+
+        /// <summary>
         /// Redirects to login page.
         /// </summary>
         public void RedirectToLoginPage( bool includeReturnUrl )
         {
             var context = HttpContext.Current;
 
-            var pageReference = LoginPageReference;
-
             if ( includeReturnUrl )
             {
-                var parms = new Dictionary<string, string>();
-
-                // if there is a rckipid token, we don't want to include it when they go to login page since they are going there to login as a real user
-                // this also prevents an issue where they would log in as a real user, but then get logged in with the token instead after they are redirected
-                var returnUrl = context.Request.QueryString["returnUrl"] ??
-                    context.Server.UrlEncode( PersonToken.RemoveRockMagicToken( context.Request.RawUrl ) );
-
-                parms.Add( "returnurl", returnUrl );
-                pageReference.Parameters = parms;
+                var url = GetLoginUrlWithReturnUrl();
+                context.Response.Redirect( url, false );
+            }
+            else
+            {
+                var pageReference = LoginPageReference;
+                context.Response.Redirect( pageReference.BuildUrl(), false );
             }
 
-            context.Response.Redirect( pageReference.BuildUrl(), false );
             context.ApplicationInstance.CompleteRequest();
         }
 

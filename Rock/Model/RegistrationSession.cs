@@ -46,7 +46,7 @@ namespace Rock.Model
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the registration count.
+        /// Gets or sets the registration count. These are registrants that are not slated to be on the waitlist.
         /// </summary>
         /// <value>
         /// The registration count.

@@ -27,7 +27,7 @@ using System.Web.Http.Controllers;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using Rock.Blocks;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -96,7 +96,7 @@ namespace Rock.Rest.Controllers
 
             if ( model.IsValid )
             {
-                model.Order = ( (BlockService)Service ).GetMaxOrder( model );
+                model.Order = ( ( BlockService ) Service ).GetMaxOrder( model );
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
@@ -165,7 +165,7 @@ namespace Rock.Rest.Controllers
         /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
         [Authenticate]
         [HttpGet]
-        [Route( "api/blocks/action/{page}/{block}/{actionName}")]
+        [Route( "api/blocks/action/{page}/{block}/{actionName}" )]
         [RockObsolete( "1.12" )]
         public IHttpActionResult BlockAction( string page, string block, string actionName )
         {
@@ -271,7 +271,8 @@ namespace Rock.Rest.Controllers
                     return NotFound();
                 }
 
-                var requestContext = new Net.RockRequestContext( Request );
+                var clientType = rockBlock.GetRockClientType();
+                var requestContext = new Net.RockRequestContext( Request, clientType );
                 requestContext.AddContextEntitiesForPage( blockCache.Page );
 
                 //
@@ -282,6 +283,36 @@ namespace Rock.Rest.Controllers
                 rockBlock.RequestContext = requestContext;
 
                 var actionParameters = new Dictionary<string, JToken>( StringComparer.InvariantCultureIgnoreCase );
+
+                //
+                // Parse any posted parameter data.
+                //
+                if ( parameters != null )
+                {
+                    try
+                    {
+                        foreach ( var kvp in parameters.ToObject<Dictionary<string, JToken>>() )
+                        {
+                            if ( kvp.Key == "__context" )
+                            {
+                                var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+
+                                foreach ( var pageParam in pageParameters )
+                                {
+                                    rockBlock.RequestContext.OriginalPageParameters[pageParam.Key] = pageParam.Value;
+                                }
+                            }
+                            else
+                            {
+                                actionParameters.AddOrReplace( kvp.Key, kvp.Value );
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        return BadRequest( "Invalid parameter data." );
+                    }
+                }
 
                 //
                 // Parse any query string parameter data.
@@ -431,12 +462,12 @@ namespace Rock.Rest.Controllers
             catch ( TargetInvocationException ex )
             {
                 ExceptionLogService.LogApiException( ex.InnerException, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogApiException( ex, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
             //
@@ -446,9 +477,15 @@ namespace Rock.Rest.Controllers
             {
                 return ( IHttpActionResult ) result;
             }
-            else if ( result is Rock.Blocks.BlockActionResult actionResult )
+            else if ( result is BlockActionResult actionResult )
             {
-                if ( actionResult.Error != null )
+                var isErrorStatusCode = ( int ) actionResult.StatusCode >= 400;
+
+                if ( isErrorStatusCode && actionResult.Content is string )
+                {
+                    return Content( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ) );
+                }
+                else if ( actionResult.Error != null )
                 {
                     return Content( actionResult.StatusCode, new HttpError( actionResult.Error ) );
                 }
@@ -468,7 +505,7 @@ namespace Rock.Rest.Controllers
                     return StatusCode( actionResult.StatusCode );
                 }
             }
-            else if ( action.ReturnType == typeof(void))
+            else if ( action.ReturnType == typeof( void ) )
             {
                 return Ok();
             }
@@ -476,6 +513,31 @@ namespace Rock.Rest.Controllers
             {
                 return Ok( result );
             }
+        }
+
+        /// <summary>
+        /// Gets the message for client.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns></returns>
+        private string GetMessageForClient( Exception exception )
+        {
+            if ( exception is null )
+            {
+                return "An unknown error occurred";
+            }
+
+            if ( exception.InnerException != null )
+            {
+                return GetMessageForClient( exception.InnerException );
+            }
+
+            if ( exception.Message.IsNullOrWhiteSpace() )
+            {
+                return "An unknown error occurred";
+            }
+
+            return exception.Message;
         }
     }
 }

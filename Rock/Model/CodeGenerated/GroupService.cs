@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,103 +54,167 @@ namespace Rock.Model
         public bool CanDelete( Group item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.SearchResultGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Campus.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialPledge>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, Group.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.ParentGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Group.FriendlyTypeName, GroupHistorical.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupLocationHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupLocationHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
                 return false;
-            }  
-            
-            // ignoring GroupRequirement,GroupId 
- 
+            }
+
+            // ignoring GroupRequirement,GroupId
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryFamilyId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<PersonScheduleExclusion>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, PersonScheduleExclusion.FriendlyTypeName );
                 return false;
-            }  
-            
-            // ignoring Registration,GroupId 
- 
+            }
+
+            // ignoring Registration,GroupId
+
             if ( new Service<WorkflowActivity>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, WorkflowActivity.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Group View Model Helper
+    /// </summary>
+    public partial class GroupViewModelHelper : ViewModelHelper<Group, Rock.ViewModel.GroupViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.GroupViewModel CreateViewModel( Group model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.GroupViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AllowGuests = model.AllowGuests,
+                ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
+                ArchivedDateTime = model.ArchivedDateTime,
+                AttendanceRecordRequiredForCheckIn = ( int ) model.AttendanceRecordRequiredForCheckIn,
+                CampusId = model.CampusId,
+                Description = model.Description,
+                DisableScheduleToolboxAccess = model.DisableScheduleToolboxAccess,
+                DisableScheduling = model.DisableScheduling,
+                GroupCapacity = model.GroupCapacity,
+                GroupTypeId = model.GroupTypeId,
+                InactiveDateTime = model.InactiveDateTime,
+                InactiveReasonNote = model.InactiveReasonNote,
+                InactiveReasonValueId = model.InactiveReasonValueId,
+                IsActive = model.IsActive,
+                IsArchived = model.IsArchived,
+                IsPublic = model.IsPublic,
+                IsSecurityRole = model.IsSecurityRole,
+                IsSystem = model.IsSystem,
+                Name = model.Name,
+                Order = model.Order,
+                ParentGroupId = model.ParentGroupId,
+                RequiredSignatureDocumentTemplateId = model.RequiredSignatureDocumentTemplateId,
+                RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
+                RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
+                ScheduleCancellationPersonAliasId = model.ScheduleCancellationPersonAliasId,
+                ScheduleId = model.ScheduleId,
+                SchedulingMustMeetRequirements = model.SchedulingMustMeetRequirements,
+                StatusValueId = model.StatusValueId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -245,5 +312,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.GroupViewModel ToViewModel( this Group model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new GroupViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

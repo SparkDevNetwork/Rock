@@ -14,13 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using Rock.Data;
+using Rock.ViewModel.Blocks;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class RegistrationInstanceService
     {
@@ -130,5 +134,257 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the registration cost summary information.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="registration">The registration.</param>
+        /// <returns></returns>
+        public List<RegistrationCostSummaryInfo> GetRegistrationCostSummaryInfo( RegistrationContext context, RegistrationEntryBlockArgs registration )
+        {
+            var minimumInitialPaymentPerRegistrant = context.RegistrationSettings.PerRegistrantMinInitialPayment;
+            var defaultPaymentAmountPerRegistrant = context.RegistrationSettings.PerRegistrantDefaultInitialPayment;
+
+            var rockContext = Context as RockContext;
+            var registrationService = new RegistrationService( rockContext );
+
+            // Get the cost/fee summary
+            var costs = new List<RegistrationCostSummaryInfo>();
+            var discountedRegistrantsRemaining = context.Discount?.RegistrationTemplateDiscount?.MaxRegistrants;
+            var discountModel = context.Discount?.RegistrationTemplateDiscount;
+
+            foreach ( var registrant in registration.Registrants )
+            {
+                var discountApplies = discountModel != null && ( !discountedRegistrantsRemaining.HasValue || discountedRegistrantsRemaining.Value > 0 );
+
+                if ( discountedRegistrantsRemaining.HasValue )
+                {
+                    discountedRegistrantsRemaining--;
+                }
+
+                // Use this to hold the amount of discount remaining if the discount is greater than the registrant cost. The remaining dollars can be applied to eligable fees.
+                decimal discountAmountRemaining = 0.0m;
+
+                var firstName = registrationService.GetFirstName( context.RegistrationSettings, registrant );
+                var lastName = registrationService.GetLastName( context.RegistrationSettings, registrant );
+
+                // The registrant name for the payment summary grid
+                var costSummary = new RegistrationCostSummaryInfo
+                {
+                    Type = RegistrationCostSummaryType.Cost,
+                    Description = string.Format( "{0} {1}", firstName, lastName )
+                };
+
+                // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
+                if ( registrant.IsOnWaitList )
+                {
+                    costSummary.Description += " (Waiting List)";
+                    costSummary.Cost = 0.0m;
+                    costSummary.DiscountedCost = 0.0m;
+                    costSummary.MinPayment = 0.0m;
+                    costSummary.DefaultPayment = 0.0m;
+                }
+                else
+                {
+                    // Add the registrant cost to the cost summary
+                    costSummary.Cost = context.RegistrationSettings.PerRegistrantCost;
+
+                    // Default the DiscountedCost to the same as the actual cost
+                    costSummary.DiscountedCost = costSummary.Cost;
+
+                    // Check if a discount should be applied to the registrant and set the DiscountedCost
+                    if ( discountApplies )
+                    {
+                        // Apply the percentage if it exists
+                        if ( discountModel.DiscountPercentage > 0.0m )
+                        {
+                            // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
+                            costSummary.DiscountedCost = discountModel.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * discountModel.DiscountPercentage );
+                        }
+                        else if ( discountModel.DiscountAmount > 0 ) // Apply the discount amount
+                        {
+                            // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
+                            if ( discountModel.DiscountAmount > costSummary.Cost )
+                            {
+                                discountAmountRemaining = discountModel.DiscountAmount - costSummary.Cost;
+                                costSummary.DiscountedCost = 0.0m;
+                            }
+                            else
+                            {
+                                // Compute the DiscountedCost using the DiscountAmount
+                                costSummary.DiscountedCost = costSummary.Cost - discountModel.DiscountAmount;
+                            }
+                        }
+                    }
+
+                    // If registration allows a minimum payment calculate that amount, otherwise use the discounted amount as minimum
+                    costSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? minimumInitialPaymentPerRegistrant.Value : costSummary.DiscountedCost;
+                    costSummary.DefaultPayment = defaultPaymentAmountPerRegistrant;
+                }
+
+                // Add the cost to the list
+                costs.Add( costSummary );
+
+                foreach ( var kvp in registrant.FeeItemQuantities )
+                {
+                    var feeItemGuid = kvp.Key;
+                    var quantity = kvp.Value;
+
+                    if ( quantity < 1 )
+                    {
+                        // Don't include a line item for things the user didn't choose
+                        continue;
+                    }
+
+                    // Get the fee from the template
+                    var templateFeeItems = context.RegistrationSettings.Fees.SelectMany( f => f.FeeItems );
+                    var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
+                    var templateFee = templateFeeItem.RegistrationTemplateFee;
+
+                    decimal cost = templateFeeItem.Cost;
+                    var desc = GetFeeLineItemDescription( templateFee, templateFeeItem, quantity );
+
+                    var feeCostSummary = new RegistrationCostSummaryInfo
+                    {
+                        Type = RegistrationCostSummaryType.Fee,
+                        Description = desc,
+                        Cost = quantity * cost,
+
+                        // Default the DiscountedCost to be the same as the Cost
+                        DiscountedCost = quantity * cost
+                    };
+
+                    if ( templateFee != null && templateFee.DiscountApplies && discountApplies )
+                    {
+                        if ( discountModel.DiscountPercentage > 0.0m )
+                        {
+                            feeCostSummary.DiscountedCost = discountModel.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost - ( feeCostSummary.Cost * discountModel.DiscountPercentage );
+                        }
+                        else if ( discountModel.DiscountAmount > 0 && discountAmountRemaining > 0 )
+                        {
+                            // If there is any discount amount remaining after subracting it from the cost then it can be applied here
+                            // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
+                            if ( discountAmountRemaining > feeCostSummary.Cost )
+                            {
+                                discountAmountRemaining -= feeCostSummary.DiscountedCost;
+                                feeCostSummary.DiscountedCost = 0.0m;
+                            }
+                            else
+                            {
+                                // Compute the DiscountedCost using the DiscountAmountRemaining
+                                feeCostSummary.DiscountedCost = feeCostSummary.Cost - discountAmountRemaining;
+                            }
+                        }
+                    }
+
+                    // If template allows a minimum payment, then fees are not included, otherwise it is included
+                    feeCostSummary.MinPayment = minimumInitialPaymentPerRegistrant.HasValue ? 0 : feeCostSummary.DiscountedCost;
+
+                    // Add the fee cost to the list
+                    costs.Add( feeCostSummary );
+                }
+            }
+
+            return costs;
+        }
+
+        /// <summary>
+        /// Gets the fee line item description.
+        /// </summary>
+        /// <param name="fee">The fee.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="quantity">The quantity.</param>
+        /// <returns></returns>
+        private static string GetFeeLineItemDescription( RegistrationTemplateFee fee, RegistrationTemplateFeeItem item, int quantity )
+        {
+            var useFeeNameOnly = item.Name.IsNullOrWhiteSpace() || ( fee.FeeType == RegistrationFeeType.Single && fee.Name == item.Name );
+            var name = useFeeNameOnly ? fee.Name : $"{fee.Name} - {item.Name}";
+            var formattedCost = item.Cost.FormatAsCurrency().Trim();
+            var costDesc = fee.AllowMultiple ? $"{quantity} @ {formattedCost}" : formattedCost;
+            return $"{name} ({costDesc})";
+        }
+
+        /// <summary>
+        /// Gets the spots available. If null, then there is no cap.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public int? GetSpotsAvailable( RegistrationContext context )
+        {
+            // Get the number of slots available
+            var spotsRemaining = context.RegistrationSettings.MaxAttendees;
+
+            if ( !spotsRemaining.HasValue )
+            {
+                // Unlimited capacity
+                return null;
+            }
+
+            if ( spotsRemaining.HasValue )
+            {
+                // Check the count of people already registered
+                var otherRegistrantsCount = new RegistrationRegistrantService( Context as RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Count( a =>
+                        a.Registration.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId &&
+                        !a.Registration.IsTemporary );
+
+                spotsRemaining -= otherRegistrantsCount;
+
+                if ( spotsRemaining > 0 && context.RegistrationSettings.IsTimeoutEnabled )
+                {
+                    // Check the number of people that are in the process of registering right now
+                    var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( s => s.ExpirationDateTime > RockDateTime.Now )
+                        .Select( s => s.RegistrationCount )
+                        .DefaultIfEmpty( 0 )
+                        .Sum();
+
+                    spotsRemaining -= sessionRegistrantCount;
+                }
+            }
+
+            if ( spotsRemaining < 0 )
+            {
+                spotsRemaining = 0;
+            }
+
+            return spotsRemaining;
+        }
+
+        /// <summary>
+        /// Gets the fee item count remaining.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public Dictionary<Guid, int?> GetFeeItemCountRemaining( RegistrationContext context )
+        {
+            var feeItems = context.RegistrationSettings.Fees.SelectMany( f => f.FeeItems );
+            var map = feeItems.ToDictionary( fi => fi.Guid, fi => ( int? ) null );
+
+            var service = new RegistrationRegistrantFeeService( Context as RockContext );
+            var quantitiesUsed = service.Queryable()
+                .AsNoTracking()
+                .Where( rf =>
+                     rf.RegistrationRegistrant.Registration.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId &&
+                     rf.RegistrationTemplateFeeItem.MaximumUsageCount.HasValue )
+                .Select( f => new
+                {
+                    f.Quantity,
+                    f.RegistrationTemplateFeeItem.Guid
+                } )
+                .ToList();
+
+            foreach ( var quantityUsed in quantitiesUsed )
+            {
+                var qtyUsed = map.GetValueOrDefault( quantityUsed.Guid, 0 ) + quantityUsed.Quantity;
+                map[quantityUsed.Guid] = qtyUsed;
+            }
+
+            return map;
+        }
     }
 }

@@ -92,6 +92,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include=".eslintignore" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

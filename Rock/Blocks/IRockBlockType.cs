@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Net;
 using Rock.Web.Cache;
 
@@ -55,5 +56,11 @@ namespace Rock.Blocks
         /// The request context.
         /// </value>
         RockRequestContext RequestContext { get; set; }
+
+        /// <summary>
+        /// Gets the control markup.
+        /// </summary>
+        /// <returns></returns>
+        string GetControlMarkup();
     }
 }

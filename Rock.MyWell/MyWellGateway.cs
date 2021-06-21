@@ -38,7 +38,7 @@ using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 namespace Rock.MyWell
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
     [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
@@ -86,7 +86,7 @@ namespace Rock.MyWell
         Order = 5 )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
 
@@ -122,6 +122,37 @@ namespace Rock.MyWell
         }
 
         #endregion Attribute Keys
+
+        #region Obsidian
+
+        /// <summary>
+        /// Gets the Obsidian control file URL.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The control file URL.
+        /// </value>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/Obsidian/Controls/MyWellGatewayControl.js";
+        }
+
+        /// <summary>
+        /// Gets the obsidian control settings.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        {
+            return new
+            {
+                PublicApiKey = GetPublicApiKey( financialGateway ),
+                GatewayUrl = GetGatewayUrl( financialGateway )
+            };
+        }
+
+        #endregion Obsidian
 
         /// <summary>
         /// Gets the gateway URL.
@@ -743,7 +774,7 @@ namespace Rock.MyWell
                 billingFrequency = BillingFrequency.twice_monthly;
 
                 /* 2020-07-30 MDP
-                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it, 
+                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it,
                     but it really end up posting on whatever the next 1st or 15th lands on (which is what we want to happen).
                     For example, if we set up a 1st/15th schedule to start on July 23rd, it'll report that the NextBillDate is July 23rd,
                     but it won't really bill until Aug 1st. From then on, the NextBillDate will get reported as whatever the next 1st and 15th is.
@@ -1018,7 +1049,7 @@ namespace Rock.MyWell
         #region Exceptions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.Exception" />
         public class ReferencePaymentInfoRequired : Exception
@@ -1032,7 +1063,7 @@ namespace Rock.MyWell
             }
         }
 
-        #endregion 
+        #endregion
 
         #region GatewayComponent implementation
 

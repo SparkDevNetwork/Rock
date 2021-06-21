@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,21 +54,82 @@ namespace Rock.Model
         public bool CanDelete( Attribute item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.ContentChannelAttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, MediaFolder.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplateFormField>( Context ).Queryable().Any( a => a.AttributeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Attribute.FriendlyTypeName, RegistrationTemplateFormField.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Attribute View Model Helper
+    /// </summary>
+    public partial class AttributeViewModelHelper : ViewModelHelper<Attribute, Rock.ViewModel.AttributeViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.AttributeViewModel CreateViewModel( Attribute model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.AttributeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AbbreviatedName = model.AbbreviatedName,
+                AllowSearch = model.AllowSearch,
+                DefaultValue = model.DefaultValue,
+                Description = model.Description,
+                EnableHistory = model.EnableHistory,
+                EntityTypeId = model.EntityTypeId,
+                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
+                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
+                FieldTypeId = model.FieldTypeId,
+                IconCssClass = model.IconCssClass,
+                IsActive = model.IsActive,
+                IsAnalytic = model.IsAnalytic,
+                IsAnalyticHistory = model.IsAnalyticHistory,
+                IsGridColumn = model.IsGridColumn,
+                IsIndexEnabled = model.IsIndexEnabled,
+                IsMultiValue = model.IsMultiValue,
+                IsPublic = model.IsPublic,
+                IsRequired = model.IsRequired,
+                IsSystem = model.IsSystem,
+                Key = model.Key,
+                Name = model.Name,
+                Order = model.Order,
+                PostHtml = model.PostHtml,
+                PreHtml = model.PreHtml,
+                ShowOnBulk = model.ShowOnBulk,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -158,5 +222,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.AttributeViewModel ToViewModel( this Attribute model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new AttributeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }
