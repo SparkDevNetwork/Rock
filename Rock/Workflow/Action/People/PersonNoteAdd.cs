@@ -37,14 +37,63 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Note Add" )]
 
-    [WorkflowAttribute("Person", "Workflow attribute that contains the person to add the note to.", true, "", "", 0, null, new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [NoteTypeField("Note Type", "The type of note to add.", false, "Rock.Model.Person", "", "", true, Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE, "", 1 )]
-    [TextField( "Caption", "The title/caption of the note. If none is provided then the author's name will be displayed. <span class='tip tip-lava'></span>", false, "", "", 2 )]
-    [MemoField("Text", "The body of the note. <span class='tip tip-lava'></span>", true, "", "", 3)]
-    [WorkflowAttribute("Author", "Workflow attribute that contains the person to use as the author of the note. While not required it is recommended.", false, "", "", 4, null, new string[] { "Rock.Field.Types.PersonFieldType" })]
-    [BooleanField("Alert", "Determines if the note should be flagged as an alert.", false, "", 5)]
+    #region Workflow Attributes
+
+    [WorkflowAttribute( "Person",
+        Description = "Workflow attribute that contains the person to add the note to.",
+        Key = AttributeKey.Person,
+        IsRequired = true,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
+        Order = 0 )]
+
+    [NoteTypeField( "Note Type",
+        Description = "The type of note to add.",
+        Key = AttributeKey.NoteType,
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.NoteType.PERSON_TIMELINE_NOTE,
+        Order = 1 )]
+
+    [TextField( "Caption",
+        Description = "The title/caption of the note. If none is provided then the author's name will be displayed. <span class='tip tip-lava'></span>",
+        Key = AttributeKey.Caption,
+        IsRequired = false,
+        Order = 2 )]
+
+    [MemoField( "Text",
+        Description = "The body of the note. <span class='tip tip-lava'></span>",
+        Key = AttributeKey.Text,
+        IsRequired = true,
+        Order = 3 )]
+
+    [WorkflowAttribute( "Author",
+        Description = "Workflow attribute that contains the person to use as the author of the note. While not required it is recommended.",
+        Key = AttributeKey.Author,
+        IsRequired = false,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" },
+        Order = 4 )]
+
+    [BooleanField( "Alert",
+        Description = "Determines if the note should be flagged as an alert.",
+        Key = AttributeKey.Alert,
+        IsRequired = false,
+        Order = 5 )]
+
+    #endregion Workflow Attributes
+
     public class PersonNoteAdd : ActionComponent
     {
+        private static class AttributeKey
+        {
+            public const string Person = "Person";
+            public const string NoteType = "NoteType";
+            public const string Caption = "Caption";
+            public const string Text = "Text";
+            public const string Author = "Author";
+            public const string Alert = "Alert";
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -57,41 +106,42 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            var person = GetPersonAliasFromActionAttribute("Person", rockContext, action, errorMessages);
-            if (person != null)
+            var person = GetPersonAliasFromActionAttribute( AttributeKey.Person, rockContext, action, errorMessages );
+            if ( person != null )
             {
-                var mergeFields = GetMergeFields(action);
+                var mergeFields = GetMergeFields( action );
                 
-                NoteService noteService = new NoteService(rockContext);
+                NoteService noteService = new NoteService( rockContext );
 
                 Note note = new Note();
                 note.EntityId = person.Id;
-                note.Caption = GetAttributeValue( action, "Caption" ).ResolveMergeFields(mergeFields);
-                note.IsAlert = GetAttributeValue(action, "Alert").AsBoolean();
+                note.Caption = GetAttributeValue( action, AttributeKey.Caption ).ResolveMergeFields( mergeFields );
+                note.IsAlert = GetAttributeValue( action, AttributeKey.Alert ).AsBoolean();
                 note.IsPrivateNote = false;
-                note.Text = GetAttributeValue(action, "Text").ResolveMergeFields(mergeFields); ;
+                note.Text = GetAttributeValue( action, AttributeKey.Text ).ResolveMergeFields( mergeFields );
+                note.EditedDateTime = RockDateTime.Now;
 
-                var noteType = NoteTypeCache.Get( GetAttributeValue( action, "NoteType" ).AsGuid() );
+                var noteType = NoteTypeCache.Get( GetAttributeValue( action, AttributeKey.NoteType ).AsGuid() );
                 if ( noteType != null )
                 {
                     note.NoteTypeId = noteType.Id;
                 }
 
                 // get author
-                var author = GetPersonAliasFromActionAttribute("Author", rockContext, action, errorMessages);
-                if (author != null)
+                var author = GetPersonAliasFromActionAttribute( AttributeKey.Author, rockContext, action, errorMessages );
+                if ( author != null )
                 {
                     note.CreatedByPersonAliasId = author.PrimaryAlias.Id;
                 }
 
-                noteService.Add(note);
+                noteService.Add( note );
                 rockContext.SaveChanges();
 
                 return true;
             }
             else
             {
-                errorMessages.Add("No person was provided for the note.");
+                errorMessages.Add( "No person was provided for the note." );
             }
 
             errorMessages.ForEach( m => action.AddLogEntry( m, true ) );
@@ -99,46 +149,45 @@ namespace Rock.Workflow.Action
             return true;
         }
 
-        private Person GetPersonAliasFromActionAttribute(string key, RockContext rockContext, WorkflowAction action, List<string> errorMessages)
+        private Person GetPersonAliasFromActionAttribute( string key, RockContext rockContext, WorkflowAction action, List<string> errorMessages )
         {
             string value = GetAttributeValue( action, key );
             Guid guidPersonAttribute = value.AsGuid();
-            if (!guidPersonAttribute.IsEmpty())
+            if ( guidPersonAttribute.IsEmpty() )
             {
-                var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
-                if (attributePerson != null)
-                {
-                    string attributePersonValue = action.GetWorkflowAttributeValue(guidPersonAttribute);
-                    if (!string.IsNullOrWhiteSpace(attributePersonValue))
-                    {
-                        if (attributePerson.FieldType.Class == "Rock.Field.Types.PersonFieldType")
-                        {
-                            Guid personAliasGuid = attributePersonValue.AsGuid();
-                            if (!personAliasGuid.IsEmpty())
-                            {
-                                PersonAliasService personAliasService = new PersonAliasService(rockContext);
-                                return personAliasService.Queryable().AsNoTracking()
-                                    .Where(a => a.Guid.Equals(personAliasGuid))
-                                    .Select(a => a.Person)
-                                    .FirstOrDefault();
-                            }
-                            else
-                            {
-                                errorMessages.Add(string.Format("Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString()));
-                                return null;
-                            }
-                        }
-                        else
-                        {
-                            errorMessages.Add(string.Format("The attribute used for {0} to provide the person was not of type 'Person'.", key));
-                            return null;
-                        }
-                    }
-                }
+                return null;
             }
 
-            return null;
-        }
+            var attributePerson = AttributeCache.Get( guidPersonAttribute, rockContext );
+            if ( attributePerson == null )
+            {
+                return null;
+            }
 
+            string attributePersonValue = action.GetWorkflowAttributeValue( guidPersonAttribute );
+            if ( string.IsNullOrWhiteSpace( attributePersonValue ) )
+            {
+                return null;
+            }
+
+            if ( attributePerson.FieldType.Class != "Rock.Field.Types.PersonFieldType" )
+            {
+                errorMessages.Add( $"The attribute used for {key} to provide the person was not of type 'Person'." );
+                return null;
+            }
+
+            Guid personAliasGuid = attributePersonValue.AsGuid();
+            if ( personAliasGuid.IsEmpty() )
+            {
+                errorMessages.Add( $"Person could not be found for selected value ('{guidPersonAttribute}')!" );
+                return null;
+            }
+
+            PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            return personAliasService.Queryable().AsNoTracking()
+                .Where( a => a.Guid.Equals( personAliasGuid ) )
+                .Select( a => a.Person )
+                .FirstOrDefault();
+        }
     }
 }

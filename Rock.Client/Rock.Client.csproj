@@ -155,7 +155,18 @@
     <Compile Include="CodeGenerated\FinancialPledge.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorOptions.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipient.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientRequest.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientResult.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorUploadGivingStatementData.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementIndividualSaveOptions.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementReportConfiguration.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplate.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplatePDFSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplatePledgeSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateReportSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateTransactionSetting.cs" />
     <Compile Include="CodeGenerated\FinancialTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionAlert.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionAlertType.cs" />
@@ -244,6 +255,7 @@
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="CodeGenerated\PersonSearchKey.cs" />
+    <Compile Include="CodeGenerated\PersonSearchResult.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
@@ -313,7 +325,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

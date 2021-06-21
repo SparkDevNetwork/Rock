@@ -25,7 +25,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -1279,7 +1279,7 @@ namespace Rock.Lava
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
-            
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
@@ -3444,7 +3444,7 @@ namespace Rock.Lava
             var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
 
             if ( rockContext == null )
-            { 
+            {
                 rockContext = new RockContext();
 
                 context.SetInternalField( "rock_context", rockContext );
@@ -4072,7 +4072,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 resultDataObject = dataObject;
 
                 // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
@@ -4111,7 +4111,7 @@ namespace Rock.Lava
             }
             else
             {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset
                 if ( isCollection )
                 {
                     IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
@@ -4210,7 +4210,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum FollowFilterType
         {
@@ -5064,6 +5064,10 @@ namespace Rock.Lava
             {
                 return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
             }
+            else if ( valueName == "lavaengine" )
+            {
+                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+            }
 
             return $"Configuration setting \"{ input }\" is not available.";
         }
@@ -5163,8 +5167,6 @@ namespace Rock.Lava
 
             var result = new List<object>();
 
-            var engine = LavaEngine.CurrentEngine;
-
             foreach ( var value in ( (IEnumerable)input ) )
             {
                 ILavaDataDictionary lavaObject = null;
@@ -5181,8 +5183,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && engine.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -5232,16 +5234,24 @@ namespace Rock.Lava
 
                 if ( input is List<object> objectList )
                 {
-                    var itemType = objectList.FirstOrDefault().GetType();
+                    if ( objectList.Any() )
+                    {
+                        var itemType = objectList.FirstOrDefault().GetType();
 
-                    enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                        enumerableInput = ConvertListItemsToType( objectList, itemType ) as IEnumerable;
+                    }
+                    else
+                    {
+                        return new List<object>();
+                    }
                 }
                 else
                 {
                     enumerableInput = (IEnumerable)input;
                 }
 
-                return enumerableInput.Where( filter );
+                // The new System.Linq.Dynamic.Core only works on Queryables
+                return enumerableInput.AsQueryable().Where( filter );
             }
 
             return null;
@@ -5383,12 +5393,21 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( !( input is IList ) )
+            IList inputList;
+
+            if ( ( input is IList ) )
+            {
+                inputList = input as IList;
+            }
+            else if ( ( input is IEnumerable ) )
+            {
+                inputList = ( input as IEnumerable ).Cast<object>().ToList();
+            }
+            else
             {
                 return input;
             }
 
-            var inputList = input as IList;
             var indexInt = index.ToString().AsIntegerOrNull();
             if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
             {
@@ -5415,7 +5434,8 @@ namespace Rock.Lava
                 return input;
             }
 
-            return e.Distinct().Cast<object>().ToList();
+            // The new System.Linq.Dynamic.Core only works on Queryabless
+            return e.AsQueryable().Distinct().Cast<object>().ToList();
         }
 
         /// <summary>

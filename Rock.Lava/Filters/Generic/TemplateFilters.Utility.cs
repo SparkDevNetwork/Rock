@@ -35,7 +35,7 @@ namespace Rock.Lava.Filters
                 return null;
             }
 
-            var result = LavaEngine.CurrentEngine.RenderTemplate( input.ToString(), new LavaRenderParameters { Context = context } );
+            var result = LavaService.RenderTemplate( input.ToString(), new LavaRenderParameters { Context = context } );
 
             return result.Text;
         }

@@ -129,12 +129,12 @@ namespace Rock.CheckIn
             public const string Individual = "Individual";
 
             /// <summary>
-            /// Lava Merge field 'SelectedArea' 
+            /// Lava Merge field 'SelectedArea'
             /// </summary>
             public const string SelectedArea = "SelectedArea";
 
             /// <summary>
-            /// Lava Merge field 'SelectedGroup' 
+            /// Lava Merge field 'SelectedGroup'
             /// </summary>
             public const string SelectedGroup = "SelectedGroup";
 
@@ -147,6 +147,11 @@ namespace Rock.CheckIn
             /// Lava Merge field 'SelectedSchedule' is a Schedule and is the current selected schedule.
             /// </summary>
             public const string SelectedSchedule = "SelectedSchedule";
+
+            /// <summary>
+            /// Lava Merge field 'SelectedLocation' is a Location and is the current selected location.
+            /// </summary>
+            public const string SelectedLocation = "SelectedLocation";
         }
 
         #region Page Parameter Keys
@@ -322,7 +327,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Gets a value indicating whether the kiosk has active group types and locations that 
+        /// Gets a value indicating whether the kiosk has active group types and locations that
         /// are open for check-in or check-out.
         /// </summary>
         /// <value>
@@ -571,7 +576,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Processes the selection, save state and navigates to the next page if no errors
-        /// are encountered during processing the activity.  
+        /// are encountered during processing the activity.
         /// </summary>
         /// <param name="modalAlert">The modal alert control to show if errors occur.</param>
         /// <param name="doNotProceedCondition">A condition that must be met after processing
@@ -884,7 +889,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Loads a check-in block to determine if it will require a selection or not. This is used to find the
-        /// next page/block that does require a selection so that user can be redirected once to that block, 
+        /// next page/block that does require a selection so that user can be redirected once to that block,
         /// rather than just continuously redirected to next/previous page blocks and possibly exceeding the maximum
         /// number of redirects.
         /// </summary>

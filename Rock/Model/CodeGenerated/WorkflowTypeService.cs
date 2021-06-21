@@ -82,6 +82,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, MediaFolder.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );

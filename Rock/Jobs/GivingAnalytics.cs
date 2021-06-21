@@ -26,6 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Quartz;
 using Rock.Attribute;
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -933,6 +934,9 @@ Processed {context.TransactionsChecked} {"transaction".PluralizeIf( context.Tran
                 people.ForEach( p => p.SaveAttributeValues( rockContext ) );
                 rockContext.SaveChanges();
                 context.GivingIdsSuccessful++;
+
+                // Fire the bus event to notify that these people have been classified
+                GivingUnitWasClassifiedMessage.Publish( people.Select( p => p.Id ) );
 
                 // Alerts are generated for transactions since last run
                 var transactionsSinceLastRun = LastRunDateTime.HasValue ?

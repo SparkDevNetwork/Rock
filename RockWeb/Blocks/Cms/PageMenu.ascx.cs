@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Cms
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
 
-                if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( LavaService.RockLiquidIsEnabled )
                 {
                     var lavaTemplate = GetTemplate();
 
@@ -231,20 +231,20 @@ namespace RockWeb.Blocks.Cms
                     var templateText = GetAttributeValue( AttributeKey.Template );
 
                     // Apply Enabled Lava Commands
-                    var lavaContext = LavaEngine.CurrentEngine.NewRenderContext( pageProperties );
+                    var lavaContext = LavaService.NewRenderContext( pageProperties );
 
                     var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
 
                     lavaContext.SetEnabledCommands( enabledCommands.SplitDelimitedValues() );
 
-                    var result = LavaEngine.CurrentEngine.RenderTemplate( templateText,
+                    var result = LavaService.RenderTemplate( templateText,
                         new LavaRenderParameters { Context = lavaContext, CacheKey = CacheKey() } );
 
                     content = result.Text;
 
                     if ( result.HasErrors )
                     {
-                        throw result.GetLavaException();
+                        throw result.GetLavaException("PageMenu Block Lava Error");
                     }
                 }
 
@@ -288,6 +288,9 @@ namespace RockWeb.Blocks.Cms
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
+
+            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
+
             return cacheTemplate != null ? cacheTemplate.Template as Template : null;
         }
         #endregion

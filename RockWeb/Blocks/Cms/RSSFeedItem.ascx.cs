@@ -171,6 +171,9 @@ namespace RockWeb.Blocks.Cms
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
+
+            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
+
             return cacheTemplate != null ? cacheTemplate.Template as DotLiquid.Template : null;
         }
 
@@ -300,7 +303,7 @@ namespace RockWeb.Blocks.Cms
                     {
                         string content;
 
-                        if ( LavaEngine.CurrentEngine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                        if ( LavaService.RockLiquidIsEnabled )
                         {
                             content = GetTemplate().Render( Hash.FromDictionary( feedFinal ) );
                         }

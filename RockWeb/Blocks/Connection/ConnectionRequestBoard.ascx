@@ -146,7 +146,7 @@
                     <h2 class="panel-title">
                         <asp:Literal ID="lTitle" runat="server" />
                     </h2>
-                    <div class="d-block">
+                    <div class="panel-labels">
                         <asp:LinkButton ID="btnAddCampaignRequests" runat="server" OnClick="btnAddCampaignRequests_Click" CssClass="btn btn-default btn-xs">
                                 <i class="fa fa-plus"></i>
                                 Campaign Requests

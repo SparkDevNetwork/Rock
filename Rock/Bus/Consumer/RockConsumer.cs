@@ -24,6 +24,7 @@ using MassTransit;
 
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Logging;
 using Rock.Utility.ExtensionMethods;
 
 namespace Rock.Bus.Consumer
@@ -80,6 +81,7 @@ namespace Rock.Bus.Consumer
         /// <returns></returns>
         public virtual Task Consume( ConsumeContext<TMessage> context )
         {
+            RockLogger.Log.Debug( RockLogDomains.Core, "Rock Task Consumer: {0} TMessage Type: {1} Context: {@context}", GetType(), typeof( TMessage ), context );
             ConsumeContext = context;
             Consume( context.Message );
             return RockMessageBus.GetCompletedTask();

@@ -39,17 +39,17 @@ namespace Rock.Tests.Integration.Lava
             return AssertCurrentEngineIs( new LavaEngineTypeSpecifier[] { validEngine } );
         }
 
-        protected bool AssertCurrentEngineIsNot( LavaEngineTypeSpecifier invalidEngine)
+        protected bool AssertCurrentEngineIsNot( LavaEngineTypeSpecifier invalidEngine )
         {
             return AssertCurrentEngineIsNot( new LavaEngineTypeSpecifier[] { invalidEngine } );
         }
 
         protected bool AssertCurrentEngineIs( IEnumerable<LavaEngineTypeSpecifier> validEngines )
-        {            
+        {
             if ( validEngines == null
-                 || !validEngines.Contains( LavaEngine.CurrentEngine.EngineType ) )
+                 || ( LavaService.CurrentEngineType != null && !validEngines.Contains( LavaService.CurrentEngineType.Value ) ) )
             {
-                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaEngine.CurrentEngine.EngineName }\".", "warning" );
+                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
                 return false;
             }
 
@@ -59,12 +59,13 @@ namespace Rock.Tests.Integration.Lava
         protected bool AssertCurrentEngineIsNot( IEnumerable<LavaEngineTypeSpecifier> invalidEngines )
         {
             if ( invalidEngines != null
-                 && invalidEngines.Contains( LavaEngine.CurrentEngine.EngineType ) )
+                 && LavaService.CurrentEngineType != null
+                 && invalidEngines.Contains( LavaService.CurrentEngineType.Value ) )
             {
-                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaEngine.CurrentEngine.EngineName }\".", "warning" );
+                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
                 return true;
             }
-            
+
             return false;
         }
     }

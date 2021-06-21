@@ -22,24 +22,20 @@
                             <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-12">
                             <Rock:DataTextBox ID="tbScheduleDescription" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
-                    </div>
 
-                    <div class="row">
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="Mins Before Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
+                            <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="mins before start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" Label="Category" Required="true" />
                             <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
+                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="mins after start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <div class="attributes">
                                 <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                             </div>

@@ -366,6 +366,11 @@ namespace Rock.Jobs
 
                         // make sure a person doesn't get a notification on a note that they wrote
                         noteList = noteList.Where( a => a.EditedByPersonAlias?.PersonId != personToNotify.Id ).ToList();
+                        if ( !noteList.Any() )
+                        {
+                            // if there aren't any notes left, skip processing.
+                            continue;
+                        }
 
                         if ( !string.IsNullOrEmpty( personToNotify.Email ) && personToNotify.IsEmailActive && personToNotify.EmailPreference != EmailPreference.DoNotEmail && noteList.Any() )
                         {
@@ -455,7 +460,7 @@ namespace Rock.Jobs
             // if there are any NoteWatches that relate to this note, process them
             if ( noteWatchesQuery.Any() )
             {
-                var noteWatchesForNote = noteWatchesQuery.Include( a => a.WatcherPersonAlias.Person ).AsNoTracking().ToList();
+                var noteWatchesForNote = noteWatchesQuery.Include( a => a.WatcherPersonAlias.Person ).ToList();  // Shaun - 5/20/21 - Removed .AsNoTracking() from this query to prevent lazy loading issues triggered when the results are used to check authorization (via Note.IsAuthorized()).
                 List<NoteWatchPersonToNotify> noteWatchPersonToNotifyListAll = new List<NoteWatchPersonToNotify>();
 
                 // loop thru Watches to get a list of people to possibly notify/override

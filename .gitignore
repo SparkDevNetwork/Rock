@@ -26,6 +26,7 @@ StyleCop.Cache
 
 #specific folders
 RockWeb/Cache/*
+RockWeb/Plugins/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 RockWeb/App_Data/MobileAppBundles

@@ -152,7 +152,7 @@
                                     <Rock:RockCheckBox ID="cbNcoaRecurringEnabled" runat="server" Label="Recurring Enabled" OnCheckedChanged="cbNcoaRecurringEnabled_CheckedChanged" AutoPostBack="true" Help="Should the job run periodically"/>
                                 </div>
                                 <div class="col-md-4">
-                                    <Rock:NumberBox ID="nbNcoaRecurrenceInterval" runat="server" AppendText="Days" CssClass="input-width-md" Label="Recurrence Interval" NumberType="Integer" Text="95" Required="true" ValidationGroup="NcoaValidationGroup" Help="After how many days should the job automatically start after the last successful run" OnTextChanged="nbNcoaRecurrenceInterval_TextChanged" AutoPostBack="true" />
+                                    <Rock:NumberBox ID="nbNcoaRecurrenceInterval" runat="server" AppendText="days" CssClass="input-width-md" Label="Recurrence Interval" NumberType="Integer" Text="95" Required="true" ValidationGroup="NcoaValidationGroup" Help="After how many days should the job automatically start after the last successful run" OnTextChanged="nbNcoaRecurrenceInterval_TextChanged" AutoPostBack="true" />
                                 </div>
                             </div>
                             <div class="actions margin-t-lg">
