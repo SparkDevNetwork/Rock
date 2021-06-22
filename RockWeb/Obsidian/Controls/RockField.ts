@@ -23,8 +23,10 @@ import TextField from '../Fields/TextField';
 
 // Import other field types so they are registered and available upon dynamic request
 import '../Fields/BooleanField';
+import '../Fields/ColorField';
 import '../Fields/DateField';
 import '../Fields/DefinedValueField';
+import '../Fields/GenderField';
 import '../Fields/SingleSelect';
 import '../Fields/PhoneNumber';
 import '../Fields/MemoField';
