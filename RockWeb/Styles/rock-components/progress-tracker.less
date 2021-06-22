@@ -113,11 +113,21 @@
     font-size: 24px;
     padding: 4px 14px;
   }
+
+  & + .progress-tracker-more {
+      display: none;
+  }
 }
 
 .progress-tracker-details {
   margin-top: 2px;
   min-width: 0;
+}
+
+.current + .progress-tracker-details {
+  .progress-tracker-title, .progress-tracker-subtitle {
+    color: @brand-primary;
+  }
 }
 
 .progress-tracker-title {

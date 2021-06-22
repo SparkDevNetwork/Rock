@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,264 +54,264 @@ namespace Rock.Model
         public bool CanDelete( EntityType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<AssetStorageProvider>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AssetStorageProvider.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Attribute>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Attribute.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Audit>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Audit.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Auth>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Auth.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ProcessorEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Badge>( Context ).Queryable().Any( a => a.BadgeComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Badge.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Badge>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Badge.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<BinaryFileType>( Context ).Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFileType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<BlockType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BlockType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Category>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationResponse>( Context ).Queryable().Any( a => a.RelatedMediumEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationResponse>( Context ).Queryable().Any( a => a.RelatedTransportEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.TransformEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataView.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DocumentType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DocumentType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<EntitySet>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, EntitySet.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialGateway>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialGateway.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialScheduledTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionDetail>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FollowingEventType>( Context ).Queryable().Any( a => a.FollowedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingEventType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupDemographicType>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, GroupDemographicType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupDemographicValue>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, GroupDemographicValue.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<History>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<History>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, History.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Interaction>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Interaction.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<InteractionChannel>( Context ).Queryable().Any( a => a.InteractionEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, InteractionChannel.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MediaAccount>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MediaAccount.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.MergeTemplateTypeEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MetricPartition>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, MetricPartition.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<NoteType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, NoteType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<PersistedDataset>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersistedDataset.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.SourceEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.TargetEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Report>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.ProviderEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<TaggedItem>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, TaggedItem.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<UserLogin>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, UserLogin.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<WorkflowTrigger>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, WorkflowTrigger.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -387,5 +390,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

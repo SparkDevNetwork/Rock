@@ -22,7 +22,7 @@ var Rock;
         var MediaPlayer = (function () {
             function MediaPlayer(elementSelector, options) {
                 if (options === void 0) { options = {}; }
-                this.timerId = -1;
+                this.timerId = null;
                 this.watchBits = Array();
                 this.watchBitsInitialized = false;
                 this.watchBitsDirty = false;
@@ -311,7 +311,9 @@ var Rock;
                     _this.writeDebugMessage("Event 'play' called.");
                 });
                 this.player.on("pause", function () {
-                    clearInterval(_this.timerId);
+                    if (_this.timerId) {
+                        clearInterval(_this.timerId);
+                    }
                     _this.markBitWatched();
                     window.removeEventListener("pagehide", pageHideHandler);
                     window.removeEventListener("visibilitychange", visibilityChangeHandler);

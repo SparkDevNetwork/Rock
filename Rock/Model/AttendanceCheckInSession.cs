@@ -71,7 +71,7 @@ namespace Rock.Model
         /// The attendances.
         /// </value>
         [DataMember]
-        public ICollection<Attendance> Attendances { get; set; }
+        public virtual ICollection<Attendance> Attendances { get; set; }
     }
 
     /// <summary>

@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,33 +54,80 @@ namespace Rock.Model
         public bool CanDelete( Device item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.DeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<AttendanceCheckInSession>( Context ).Queryable().Any( a => a.DeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, AttendanceCheckInSession.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Device>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Device View Model Helper
+    /// </summary>
+    public partial class DeviceViewModelHelper : ViewModelHelper<Device, Rock.ViewModel.DeviceViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.DeviceViewModel CreateViewModel( Device model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.DeviceViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CameraBarcodeConfigurationType = ( int? ) model.CameraBarcodeConfigurationType,
+                Description = model.Description,
+                DeviceTypeValueId = model.DeviceTypeValueId,
+                HasCamera = model.HasCamera,
+                IPAddress = model.IPAddress,
+                IsActive = model.IsActive,
+                LocationId = model.LocationId,
+                Name = model.Name,
+                PrinterDeviceId = model.PrinterDeviceId,
+                PrintFrom = ( int ) model.PrintFrom,
+                PrintToOverride = ( int ) model.PrintToOverride,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -156,5 +206,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.DeviceViewModel ToViewModel( this Device model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new DeviceViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

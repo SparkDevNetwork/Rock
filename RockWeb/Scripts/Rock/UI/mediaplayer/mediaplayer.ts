@@ -224,7 +224,7 @@ namespace Rock.UI {
         private options: Options;
 
         /** The identifier of the timer that is updating the watch map. */
-        private timerId = -1;
+        private timerId: NodeJS.Timeout | null = null;
 
         /** The core player. */
         private player!: Plyr;
@@ -771,7 +771,10 @@ namespace Rock.UI {
             // Define pause event
             this.player.on("pause", () => {
                 // Clear timer
-                clearInterval(this.timerId);
+                if ( this.timerId )
+                {
+                    clearInterval( this.timerId );
+                }
 
                 // Check if we need to write a watch bit. Not checking here can
                 // lead to gaps in the map depending on the timing of the

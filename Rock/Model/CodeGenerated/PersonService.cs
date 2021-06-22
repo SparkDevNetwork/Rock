@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,93 @@ namespace Rock.Model
         public bool CanDelete( Person item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<PersonAlias>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Person View Model Helper
+    /// </summary>
+    public partial class PersonViewModelHelper : ViewModelHelper<Person, Rock.ViewModel.PersonViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.PersonViewModel CreateViewModel( Person model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.PersonViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AgeClassification = ( int ) model.AgeClassification,
+                AnniversaryDate = model.AnniversaryDate,
+                BirthDay = model.BirthDay,
+                BirthMonth = model.BirthMonth,
+                BirthYear = model.BirthYear,
+                CommunicationPreference = ( int ) model.CommunicationPreference,
+                ConnectionStatusValueId = model.ConnectionStatusValueId,
+                ContributionFinancialAccountId = model.ContributionFinancialAccountId,
+                DeceasedDate = model.DeceasedDate,
+                Email = model.Email,
+                EmailNote = model.EmailNote,
+                EmailPreference = ( int ) model.EmailPreference,
+                FirstName = model.FirstName,
+                Gender = ( int ) model.Gender,
+                GivingGroupId = model.GivingGroupId,
+                GivingLeaderId = model.GivingLeaderId,
+                GraduationYear = model.GraduationYear,
+                InactiveReasonNote = model.InactiveReasonNote,
+                IsDeceased = model.IsDeceased,
+                IsEmailActive = model.IsEmailActive,
+                IsLockedAsChild = model.IsLockedAsChild,
+                IsSystem = model.IsSystem,
+                LastName = model.LastName,
+                MaritalStatusValueId = model.MaritalStatusValueId,
+                MiddleName = model.MiddleName,
+                NickName = model.NickName,
+                PhotoId = model.PhotoId,
+                PrimaryCampusId = model.PrimaryCampusId,
+                PrimaryFamilyId = model.PrimaryFamilyId,
+                RecordStatusLastModifiedDateTime = model.RecordStatusLastModifiedDateTime,
+                RecordStatusReasonValueId = model.RecordStatusReasonValueId,
+                RecordStatusValueId = model.RecordStatusValueId,
+                RecordTypeValueId = model.RecordTypeValueId,
+                ReviewReasonNote = model.ReviewReasonNote,
+                ReviewReasonValueId = model.ReviewReasonValueId,
+                SuffixValueId = model.SuffixValueId,
+                SystemNote = model.SystemNote,
+                TitleValueId = model.TitleValueId,
+                TopSignalColor = model.TopSignalColor,
+                TopSignalIconCssClass = model.TopSignalIconCssClass,
+                TopSignalId = model.TopSignalId,
+                ViewedCount = model.ViewedCount,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -169,5 +250,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.PersonViewModel ToViewModel( this Person model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new PersonViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

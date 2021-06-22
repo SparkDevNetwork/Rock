@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,51 +54,109 @@ namespace Rock.Model
         public bool CanDelete( SystemCommunication item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// SystemCommunication View Model Helper
+    /// </summary>
+    public partial class SystemCommunicationViewModelHelper : ViewModelHelper<SystemCommunication, Rock.ViewModel.SystemCommunicationViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.SystemCommunicationViewModel CreateViewModel( SystemCommunication model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.SystemCommunicationViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                Bcc = model.Bcc,
+                Body = model.Body,
+                CategoryId = model.CategoryId,
+                Cc = model.Cc,
+                CssInliningEnabled = model.CssInliningEnabled,
+                From = model.From,
+                FromName = model.FromName,
+                IsActive = model.IsActive,
+                IsSystem = model.IsSystem,
+                LavaFieldsJson = model.LavaFieldsJson,
+                PushData = model.PushData,
+                PushImageBinaryFileId = model.PushImageBinaryFileId,
+                PushMessage = model.PushMessage,
+                PushOpenAction = ( int? ) model.PushOpenAction,
+                PushOpenMessage = model.PushOpenMessage,
+                PushSound = model.PushSound,
+                PushTitle = model.PushTitle,
+                SMSFromDefinedValueId = model.SMSFromDefinedValueId,
+                SMSMessage = model.SMSMessage,
+                Subject = model.Subject,
+                Title = model.Title,
+                To = model.To,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -185,5 +246,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.SystemCommunicationViewModel ToViewModel( this SystemCommunication model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new SystemCommunicationViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

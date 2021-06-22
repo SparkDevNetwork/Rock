@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,63 +54,127 @@ namespace Rock.Model
         public bool CanDelete( Location item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Campus.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Device>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Device.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.BillingLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupLocationHistorical>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, GroupLocationHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, GroupMemberAssignment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Location>( Context ).Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Streak>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Streak.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<StreakTypeExclusion>( Context ).Queryable().Any( a => a.LocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, StreakTypeExclusion.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Location View Model Helper
+    /// </summary>
+    public partial class LocationViewModelHelper : ViewModelHelper<Location, Rock.ViewModel.LocationViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.LocationViewModel CreateViewModel( Location model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.LocationViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AssessorParcelId = model.AssessorParcelId,
+                Barcode = model.Barcode,
+                City = model.City,
+                Country = model.Country,
+                County = model.County,
+                FirmRoomThreshold = model.FirmRoomThreshold,
+                GeocodeAttemptedDateTime = model.GeocodeAttemptedDateTime,
+                GeocodeAttemptedResult = model.GeocodeAttemptedResult,
+                GeocodeAttemptedServiceType = model.GeocodeAttemptedServiceType,
+                GeocodedDateTime = model.GeocodedDateTime,
+                GeoFence = model.GeoFence,
+                GeoPoint = model.GeoPoint,
+                ImageId = model.ImageId,
+                IsActive = model.IsActive,
+                IsGeoPointLocked = model.IsGeoPointLocked,
+                LocationTypeValueId = model.LocationTypeValueId,
+                Name = model.Name,
+                ParentLocationId = model.ParentLocationId,
+                PostalCode = model.PostalCode,
+                PrinterDeviceId = model.PrinterDeviceId,
+                SoftRoomThreshold = model.SoftRoomThreshold,
+                StandardizeAttemptedDateTime = model.StandardizeAttemptedDateTime,
+                StandardizeAttemptedResult = model.StandardizeAttemptedResult,
+                StandardizeAttemptedServiceType = model.StandardizeAttemptedServiceType,
+                StandardizedDateTime = model.StandardizedDateTime,
+                State = model.State,
+                Street1 = model.Street1,
+                Street2 = model.Street2,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -203,5 +270,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.LocationViewModel ToViewModel( this Location model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new LocationViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

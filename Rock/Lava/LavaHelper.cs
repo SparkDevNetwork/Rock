@@ -33,7 +33,7 @@ using UAParser;
 namespace Rock.Lava
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class LavaHelper
     {
@@ -94,19 +94,7 @@ namespace Rock.Lava
 
             if ( options.GetPageContext && rockPage != null )
             {
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var contextEntityType in rockPage.GetContextEntityTypes() )
-                {
-                    var contextEntity = rockPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null && IsLavaDataObject( contextEntity ) )
-                    {
-                        var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                        if ( type != null )
-                        {
-                            contextObjects.Add( type.Name, contextEntity );
-                        }
-                    }
-                }
+                var contextObjects = rockPage.GetContextEntities();
 
                 if ( contextObjects.Any() )
                 {
@@ -454,12 +442,12 @@ namespace Rock.Lava
         /// Remove Lava-style comments from a Lava template.
         /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
         /// and can can be in one of the following forms:
-        /// 
+        ///
         /// /- This Lava block comment style...
         ///    ... can span multiple lines -/
         ///
         /// //- This Lava line comment style can be appended to any single line.
-        /// 
+        ///
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>

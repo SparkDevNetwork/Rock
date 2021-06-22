@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,6 +57,53 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// StreakType View Model Helper
+    /// </summary>
+    public partial class StreakTypeViewModelHelper : ViewModelHelper<StreakType, Rock.ViewModel.StreakTypeViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.StreakTypeViewModel CreateViewModel( StreakType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.StreakTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                Description = model.Description,
+                EnableAttendance = model.EnableAttendance,
+                FirstDayOfWeek = ( int? ) model.FirstDayOfWeek,
+                IsActive = model.IsActive,
+                Name = model.Name,
+                OccurrenceFrequency = ( int ) model.OccurrenceFrequency,
+                OccurrenceMap = model.OccurrenceMap,
+                RequiresEnrollment = model.RequiresEnrollment,
+                StartDate = model.StartDate,
+                StructureEntityId = model.StructureEntityId,
+                StructureType = ( int? ) model.StructureType,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -132,5 +182,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.StreakTypeViewModel ToViewModel( this StreakType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new StreakTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }
