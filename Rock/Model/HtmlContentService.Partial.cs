@@ -70,7 +70,7 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // Add appropraite filtering (reused by other methods)
+            // Add appropriate filtering (reused by other methods)
             content = AddFilterLogic( content, blockId, entityValue );
 
             // return the most recently approved item
@@ -87,7 +87,7 @@ namespace Rock.Model
         {
             var content = Queryable( "ModifiedByPersonAlias.Person" );
 
-            // Add appropraite filtering (reused by other methods)
+            // Add appropriate filtering (reused by other methods)
             content = AddFilterLogic( content, blockId, entityValue );
 
             return content.OrderByDescending( c => c.Version ).ThenByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
@@ -188,7 +188,7 @@ namespace Rock.Model
             var shouldFilterByBlockId = true;
 
             // If an entity value is specified, then return content specific to that context (entityValue), 
-            // otherewise return content for the current block instance
+            // otherwise return content for the current block instance
             if ( entityValue.IsNotNullOrWhiteSpace() )
             {
                 qry = qry.Where( c => c.EntityValue == entityValue );

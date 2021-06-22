@@ -1,0 +1,9 @@
+<Project>
+    <PropertyGroup>
+        <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectFile)'=='Rock.Common.NG.csproj'">obj/NG</MSBuildProjectExtensionsPath>
+        <BaseOutputPath Condition="'$(MSBuildProjectFile)'=='Rock.Common.NG.csproj'">bin/NG</BaseOutputPath>
+        <BaseIntermediateOutputPath Condition="'$(MSBuildProjectFile)'=='Rock.Common.NG.csproj'">obj/NG</BaseIntermediateOutputPath>
+    </PropertyGroup>
+</Project>
+
+

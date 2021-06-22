@@ -15,12 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    /// 
+    /// Extension methods for <see cref="string"/> that relate to pluralization.
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class StringPluralizationExtensions
     {
         /// <summary>
         /// Pluralizes the specified string.
@@ -29,18 +29,14 @@ namespace Rock.Common
         /// <returns></returns>
         public static string Pluralize( this string str )
         {
-            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            // Humanizer handles most words, but there are some exceptions (i.e. CAMPUS)
             switch ( str )
             {
-                case "Campus":
-                case "campus":
-                    return str + "es";
-
                 case "CAMPUS":
                     return str + "ES";
 
                 default:
-                    return Humanizer.InflectorExtensions.Pluralize( str );
+                    return Humanizer.InflectorExtensions.Pluralize( str, false );
             }
         }
 
@@ -69,7 +65,7 @@ namespace Rock.Common
         /// <returns></returns>
         public static string Singularize( this string str )
         {
-            return Humanizer.InflectorExtensions.Singularize( str );
+            return Humanizer.InflectorExtensions.Singularize( str, false );
         }
 
         /// <summary>

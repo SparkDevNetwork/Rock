@@ -19,6 +19,7 @@ namespace Rock.Tests.Rock.Model
     public class ScheduleTests
     {
         private static Calendar _calendarSpecificDates;
+        private static Calendar _calendarSingleDate;
         private static List<DateTime> _specificDates;
         private static CalendarSerializer _calendarSerializer = new CalendarSerializer();
 
@@ -46,6 +47,7 @@ namespace Rock.Tests.Rock.Model
 
             var firstDate = _specificDates.First();
 
+            // Create a calendar for an event that recurs on specific dates.
             _calendarSpecificDates = new Calendar()
             {
                 // Create an event for the first scheduled date (1am-2am), and set the recurring dates.
@@ -60,6 +62,18 @@ namespace Rock.Tests.Rock.Model
                 }
             };
 
+            // Create a calendar for a one-time event.
+            _calendarSingleDate = new Calendar()
+            {
+                // Create an event for the first scheduled date (1am-2am) only.
+                Events = { new Event
+                    {
+                        DtStart = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 1, 0, 0 ),
+                        DtEnd = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 2, 0, 0 ),
+                        DtStamp = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day ),
+                    }
+                }
+            };
         }
 
         #endregion
@@ -85,6 +99,26 @@ namespace Rock.Tests.Rock.Model
             Assert.That.IsNotNull( endDateReturned );
             Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Period.StartTime.Date, "Unexpected value for Last Occurrence Date." );
             Assert.That.AreEqual( _specificDates.Count, scheduleDates.Count, "Incorrect number of Occurrences returned from Schedule." );
+        }
+
+        /// <summary>
+        /// A schedule that specifies a single date with no recurrence pattern should have an effective end date matching the start date.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_WithSingleDate_HasEffectiveEndDate()
+        {
+            var schedule = new Schedule();
+
+            schedule.iCalendarContent = _calendarSerializer.SerializeToString( _calendarSingleDate );
+
+            schedule.EnsureEffectiveStartEndDates();
+
+            var endDateSpecified = _specificDates.FirstOrDefault();
+
+            var endDateReturned = schedule.EffectiveEndDate;
+
+            Assert.That.IsNotNull( endDateReturned );
+            Assert.That.AreEqualDate( endDateSpecified, endDateReturned.Value.Date, "Unexpected value for Last Occurrence Date." );
         }
 
         /// <summary>

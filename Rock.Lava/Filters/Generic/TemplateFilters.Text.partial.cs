@@ -22,8 +22,6 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Humanizer;
 
-using Rock.Common;
-
 namespace Rock.Lava.Filters
 {
     public static partial class TemplateFilters
@@ -384,7 +382,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string ReplaceLast( this string source, string find, string replace )
         {
-            return ExtensionMethods.ReplaceLastOccurrence( source, find, replace );
+            return source.ReplaceLastOccurrence( find, replace );
         }
 
         /// <summary>

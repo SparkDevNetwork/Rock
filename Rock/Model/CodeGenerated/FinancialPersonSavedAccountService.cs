@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,11 +54,58 @@ namespace Rock.Model
         public bool CanDelete( FinancialPersonSavedAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring FinancialPaymentDetail,FinancialPersonSavedAccountId 
+
+            // ignoring FinancialPaymentDetail,FinancialPersonSavedAccountId
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialPersonSavedAccount View Model Helper
+    /// </summary>
+    public partial class FinancialPersonSavedAccountViewModelHelper : ViewModelHelper<FinancialPersonSavedAccount, Rock.ViewModel.FinancialPersonSavedAccountViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialPersonSavedAccountViewModel CreateViewModel( FinancialPersonSavedAccount model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialPersonSavedAccountViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                FinancialGatewayId = model.FinancialGatewayId,
+                FinancialPaymentDetailId = model.FinancialPaymentDetailId,
+                GatewayPersonIdentifier = model.GatewayPersonIdentifier,
+                GroupId = model.GroupId,
+                IsDefault = model.IsDefault,
+                IsSystem = model.IsSystem,
+                Name = model.Name,
+                PersonAliasId = model.PersonAliasId,
+                PreferredForeignCurrencyCodeValueId = model.PreferredForeignCurrencyCodeValueId,
+                ReferenceNumber = model.ReferenceNumber,
+                TransactionCode = model.TransactionCode,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -134,5 +184,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialPersonSavedAccountViewModel ToViewModel( this FinancialPersonSavedAccount model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialPersonSavedAccountViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

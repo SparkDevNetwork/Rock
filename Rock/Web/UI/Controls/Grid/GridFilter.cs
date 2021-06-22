@@ -176,7 +176,7 @@ namespace Rock.Web.UI.Controls
             const string scriptKey = "grid-filter-script";
             const string script = @"
     $('div.grid-filter header').on('click', function () {
-        $('i.toggle-filter', this).toggleClass('fa-chevron-down fa-chevron-up');
+        $('.btn-filter-toggle', this).toggleClass('is-open').find('i.toggle-filter').toggleClass('fa-chevron-down fa-chevron-up');
         var $hf = $('input', this).first();
         if($hf.val() != 'true') {
             $hf.val('true');
@@ -258,34 +258,6 @@ namespace Rock.Web.UI.Controls
             {
                 bool visible = _hfVisible.Value == "true";
 
-                writer.AddAttribute( "class", "grid-filter" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.Write( "<header>" );
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs btn-filter-toggle is-open" : "btn btn-link btn-xs btn-filter-toggle" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Button );
-                writer.Write( "Filter Options" );
-
-                _hfVisible.RenderControl( writer );
-
-                writer.AddAttribute( "class", visible ? "btn-icon fa fa-chevron-up toggle-filter" : "btn-icon fa fa-chevron-down toggle-filter" );
-                writer.RenderBeginTag( HtmlTextWriterTag.I );
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-
-                writer.Write( "</header>" );
-
-                // Filter Overview
-                writer.AddAttribute( "class", "grid-filter-overview" );
-                if ( visible )
-                {
-                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
                 var filterDisplay = new Dictionary<string, string>();
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
@@ -319,6 +291,42 @@ namespace Rock.Web.UI.Controls
 
                 if ( filterDisplay.Any() )
                 {
+                    writer.AddAttribute( "class", "grid-filter has-criteria" );
+                }
+                else
+                {
+                    writer.AddAttribute( "class", "grid-filter" );
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.Write( "<header>" );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs btn-filter-toggle is-open" : "btn btn-link btn-xs btn-filter-toggle" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Button );
+                writer.Write( "Filter Options" );
+
+                _hfVisible.RenderControl( writer );
+
+                writer.AddAttribute( "class", visible ? "btn-icon fa fa-chevron-up toggle-filter" : "btn-icon fa fa-chevron-down toggle-filter" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+
+                writer.Write( "</header>" );
+
+                // Filter Overview
+                writer.AddAttribute( "class", "grid-filter-overview" );
+                if ( visible )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                if ( filterDisplay.Any() )
+                {
                     writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
                     writer.WriteLine( "<h4>Enabled Filters</h4>" );
                     writer.WriteLine( "<div class='row'>" );
@@ -347,8 +355,6 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-
-                writer.Write( "<h4>Filter Options</h4>" );
 
                 base.RenderControl( writer );
 

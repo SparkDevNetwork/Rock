@@ -279,14 +279,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             public override Control GetCustomSettingsControl( IHasAttributes attributeEntity, Control parent )
             {
                 var pnlContent = new Panel();
-                var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
 
                 var jfBuilder = new JsonFieldsBuilder
                 {
                     Label = "Additional Fields",
                     SourceType = typeof( GroupMember ),
-                    AvailableAttributes = AttributeCache.All()
-                        .Where( a => a.EntityTypeId == groupMemberEntityTypeId )
+                    AvailableAttributes = AttributeCache.AllForEntityType<GroupMember>()
                         .Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() )
                         .ToList()
                 };

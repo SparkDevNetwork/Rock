@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -25,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// <seealso cref="Rock.Web.UI.Controls.RockTextBox" />
     public class NumberBoxBase : RockTextBox
     {
-        private RangeValidator _rangeValidator;
+        private CustomValidator _customValidator;
 
         /// <summary>
         /// Gets or sets the name of the field (for range validation messages when Label is not provided)
@@ -143,7 +144,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return base.IsValid && _rangeValidator.IsValid;
+                return base.IsValid && _customValidator.IsValid;
             }
         }
 
@@ -154,17 +155,30 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            _rangeValidator = new RangeValidator();
-            _rangeValidator.ID = this.ID + "_RV";
-            _rangeValidator.ControlToValidate = this.ID;
-            _rangeValidator.Display = ValidatorDisplay.Dynamic;
-            _rangeValidator.CssClass = "validation-error help-inline";
+            _customValidator = new CustomValidator();
+            _customValidator.ID = this.ID + nameof( _customValidator );
+            _customValidator.ControlToValidate = this.ID;
+            _customValidator.Display = ValidatorDisplay.Dynamic;
+            _customValidator.CssClass = "validation-error help-inline";
+            _customValidator.ClientValidationFunction = "Rock.controls.numberBox.clientValidate";
+            _customValidator.ServerValidate += ServerValidation;
+            Controls.Add( _customValidator );
+        }
 
-            _rangeValidator.Type = this.NumberType;
-            _rangeValidator.MinimumValue = int.MinValue.ToString();
-            _rangeValidator.MaximumValue = int.MaxValue.ToString();
+        private void ServerValidation( object source, ServerValidateEventArgs args )
+        {
+            var min = Convert.ToDecimal( MinimumValue ?? int.MinValue.ToString() );
+            var max = Convert.ToDecimal( MaximumValue ?? int.MaxValue.ToString() );
 
-            Controls.Add( _rangeValidator );
+            var value = args.Value.AsDecimalInvariantCultureOrNull();
+
+            if ( value == null )
+            {
+                args.IsValid = false;
+                return;
+            }
+
+            args.IsValid = value <= max && value >= min;
         }
 
         /// <summary>
@@ -173,10 +187,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            _rangeValidator.Type = NumberType;
-            _rangeValidator.MinimumValue = this.MinimumValue;
-            _rangeValidator.MaximumValue = this.MaximumValue;
-            string dataTypeText = string.Empty;
+            _customValidator.Attributes.Add( "min", MinimumValue ?? int.MinValue.ToString() );
+            _customValidator.Attributes.Add( "max", MaximumValue ?? int.MaxValue.ToString() );
+            _customValidator.Attributes.Add( "control", ClientID );
 
             decimal minValue = MinimumValue.AsDecimalOrNull() ?? decimal.MinValue;
             decimal maxValue = MaximumValue.AsDecimalOrNull() ?? decimal.MaxValue;
@@ -184,7 +197,7 @@ namespace Rock.Web.UI.Controls
             string rangeMessageFormat = null;
 
             // if they are in the valid range, but not an integer, they'll see this message
-            switch ( _rangeValidator.Type )
+            switch ( NumberType )
             {
                 case ValidationDataType.Integer:
                     rangeMessageFormat = "{0} must be an integer";
@@ -220,11 +233,13 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( rangeMessageFormat ) )
             {
-                _rangeValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace( FieldName ) ? "Value" : FieldName );
+                _customValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace( FieldName ) ? "Value" : FieldName );
             }
 
-            _rangeValidator.ValidationGroup = this.ValidationGroup;
-            _rangeValidator.RenderControl( writer );
+            _customValidator.Attributes.Add( "ErrorMessage", _customValidator.ErrorMessage );
+
+            _customValidator.ValidationGroup = this.ValidationGroup;
+            _customValidator.RenderControl( writer );
         }
 
 

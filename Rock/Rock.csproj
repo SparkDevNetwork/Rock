@@ -53,6 +53,15 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
+    <Reference Include="Azure.Core, Version=1.15.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Core.1.15.0\lib\net461\Azure.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Azure.Storage.Blobs, Version=12.9.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Blobs.12.9.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
+    </Reference>
+    <Reference Include="Azure.Storage.Common, Version=12.8.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Common.12.8.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
+    </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
     </Reference>
@@ -198,6 +207,9 @@
     <Reference Include="Microsoft.Azure.Storage.Common, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Storage.Common.11.1.3\lib\net452\Microsoft.Azure.Storage.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
     </Reference>
@@ -317,6 +329,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.6.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
@@ -342,6 +357,9 @@
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Memory.Data, Version=1.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.Data.1.0.2\lib\net461\System.Memory.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
@@ -360,9 +378,15 @@
     <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
+    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -556,7 +580,12 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\IObsidianBlockType.cs" />
+    <Compile Include="Blocks\IRockClientBlockType.cs" />
+    <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
@@ -635,6 +664,13 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Data\EntityContextState.cs" />
+    <Compile Include="Data\EntitySaveHook.cs" />
+    <Compile Include="Data\IEntitySaveEntry.cs" />
+    <Compile Include="Data\IEntitySaveHook.cs" />
+    <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Financial\IRedirectionGateway.cs" />
@@ -676,7 +712,16 @@
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
+    <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
@@ -714,7 +759,14 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
+    <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHtmlExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -757,6 +809,7 @@
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
+    <Compile Include="Jobs\PostV125UpdateStepProgramCompletion.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -796,6 +849,7 @@
     <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
     <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\StepProgramCompletionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
@@ -810,6 +864,7 @@
     <Compile Include="Model\MediaFolder.cs" />
     <Compile Include="Model\MediaFolderService.Partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
+    <Compile Include="Model\StepProgramCompletion.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
@@ -924,6 +979,8 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
+    <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
@@ -941,6 +998,7 @@
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
@@ -1039,6 +1097,7 @@
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
+    <Compile Include="Security\SimpleCookie.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
@@ -1290,17 +1349,15 @@
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
     <Compile Include="Utility\EnumOrderAttribute.cs" />
-    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DictionaryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
     <Compile Include="Mobile\MobileHelper.cs" />
     <Compile Include="Utility\JsonInterfaceContractResolver.cs" />
     <Compile Include="Utility\DynamicPropertyMapContractResolver.cs" />
-    <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
-    <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
@@ -2072,8 +2129,8 @@
     <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
-    <Compile Include="Model\NoteType.cs" />
-    <Compile Include="Model\NoteTypeService.Partial.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.cs" />
+    <Compile Include="Model\Core\NoteType\NoteTypeService.cs" />
     <Compile Include="Model\NoteWatch.cs" />
     <Compile Include="Model\Notification.cs" />
     <Compile Include="Model\NotificationRecipient.cs" />
@@ -2261,8 +2318,8 @@
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
     <Compile Include="Model\TagService.Partial.cs" />
-    <Compile Include="Model\UserLogin.cs" />
-    <Compile Include="Model\UserLoginService.Partial.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow.cs" />
     <Compile Include="Model\WorkflowAction.cs" />
     <Compile Include="Model\WorkflowActionForm.cs" />
@@ -2699,15 +2756,15 @@
     <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\ExpressionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\AttributesExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\BooleanExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\BooleanExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ControlExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DateTimeExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DateTimeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DecimalExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DefinedValueExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\EnumExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\EnumExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\JsonExtensions.cs" />
@@ -2719,13 +2776,13 @@
     <Compile Include="Utility\ExtensionMethods\ReportingExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringPluralizationExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHumanizerExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
     <Compile Include="Utility\IRockStartup.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\Reflection.cs" />
-    <Compile Include="Utility\RockDateTime.cs" />
+    <Compile Include="Utility\RockDateTimeHelper.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextReader.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
@@ -3267,6 +3324,10 @@
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
@@ -3282,6 +3343,10 @@
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

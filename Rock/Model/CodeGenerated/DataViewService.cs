@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,65 +54,116 @@ namespace Rock.Model
         public bool CanDelete( DataView item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring DataViewFilter,DataViewId 
- 
+
+            // ignoring DataViewFilter,DataViewId
+
             if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.RelatedDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.WarningDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.SyncDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Report>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<StepType>( Context ).Queryable().Any( a => a.AudienceDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, StepType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<StepType>( Context ).Queryable().Any( a => a.AutoCompleteDataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, StepType.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// DataView View Model Helper
+    /// </summary>
+    public partial class DataViewViewModelHelper : ViewModelHelper<DataView, Rock.ViewModel.DataViewViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.DataViewViewModel CreateViewModel( DataView model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.DataViewViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CategoryId = model.CategoryId,
+                DataViewFilterId = model.DataViewFilterId,
+                Description = model.Description,
+                EntityTypeId = model.EntityTypeId,
+                IncludeDeceased = model.IncludeDeceased,
+                IsSystem = model.IsSystem,
+                LastRunDateTime = model.LastRunDateTime,
+                Name = model.Name,
+                PersistedLastRefreshDateTime = model.PersistedLastRefreshDateTime,
+                PersistedLastRunDurationMilliseconds = model.PersistedLastRunDurationMilliseconds,
+                PersistedScheduleIntervalMinutes = model.PersistedScheduleIntervalMinutes,
+                RunCount = model.RunCount,
+                RunCountLastRefreshDateTime = model.RunCountLastRefreshDateTime,
+                TimeToRunDurationMilliseconds = model.TimeToRunDurationMilliseconds,
+                TransformEntityTypeId = model.TransformEntityTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -192,5 +246,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.DataViewViewModel ToViewModel( this DataView model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new DataViewViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

@@ -14,14 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
     /// Boolean Extensions
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class BooleanExtensions
     {
         #region Boolean Extensions
 
@@ -30,7 +29,7 @@ namespace Rock.Common
         /// </summary>
         /// <param name="field"></param>
         /// <returns></returns>
-        public static int Bit( this Boolean field )
+        public static int Bit( this bool field )
         {
             return field ? 1 : 0;
         }
@@ -53,6 +52,16 @@ namespace Rock.Common
         public static string ToTrueFalse( this bool value )
         {
             return value ? "True" : "False";
+        }
+
+        /// <summary>
+        /// Returns the string "true" or "false" (lowercase) which can be used for JSON and JavaScript boolean values
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToJavaScriptValue( this bool value )
+        {
+            return value.ToTrueFalse().ToLower();
         }
 
         #endregion Boolean Extensions

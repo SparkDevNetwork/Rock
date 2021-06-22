@@ -418,7 +418,7 @@ so you can customize this to be exactly what you want.</p>
             // Construct the JavaScript to initialize the player.
             var script = $@"<script>
 (function() {{
-    new Rock.UI.MediaPlayer(""#{elementId}"", {options.ToJson( Newtonsoft.Json.Formatting.None )});
+    new Rock.UI.MediaPlayer(""#{elementId}"", {options.ToJson( indentOutput: false )});
 }})();
 </script>";
 

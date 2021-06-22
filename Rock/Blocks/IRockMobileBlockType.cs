@@ -20,7 +20,7 @@ namespace Rock.Blocks
     /// Defines the properties and methods that all mobile blocks must implement.
     /// </summary>
     /// <seealso cref="Rock.Blocks.IRockBlockType" />
-    public interface IRockMobileBlockType : IRockBlockType
+    public interface IRockMobileBlockType : IRockClientBlockType
     {
         /// <summary>
         /// Gets the required mobile application binary interface version.
@@ -37,11 +37,5 @@ namespace Rock.Blocks
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
         string MobileBlockType { get; }
-
-        /// <summary>
-        /// Gets the property values that will be sent to the device in the application bundle.
-        /// </summary>
-        /// <returns>A collection of string/object pairs.</returns>
-        object GetMobileConfigurationValues();
     }
 }

@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,69 @@ namespace Rock.Model
         public bool CanDelete( FinancialTransactionAlertType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialTransactionAlert>( Context ).Queryable().Any( a => a.AlertTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransactionAlertType.FriendlyTypeName, FinancialTransactionAlert.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialTransactionAlertType View Model Helper
+    /// </summary>
+    public partial class FinancialTransactionAlertTypeViewModelHelper : ViewModelHelper<FinancialTransactionAlertType, Rock.ViewModel.FinancialTransactionAlertTypeViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialTransactionAlertTypeViewModel CreateViewModel( FinancialTransactionAlertType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialTransactionAlertTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AlertType = ( int ) model.AlertType,
+                AmountSensitivityScale = model.AmountSensitivityScale,
+                CampusId = model.CampusId,
+                ConnectionOpportunityId = model.ConnectionOpportunityId,
+                ContinueIfMatched = model.ContinueIfMatched,
+                DataViewId = model.DataViewId,
+                FrequencySensitivityScale = model.FrequencySensitivityScale,
+                MaximumDaysSinceLastGift = model.MaximumDaysSinceLastGift,
+                MaximumGiftAmount = model.MaximumGiftAmount,
+                MaximumMedianGiftAmount = model.MaximumMedianGiftAmount,
+                MinimumGiftAmount = model.MinimumGiftAmount,
+                MinimumMedianGiftAmount = model.MinimumMedianGiftAmount,
+                Name = model.Name,
+                Order = model.Order,
+                RepeatPreventionDuration = model.RepeatPreventionDuration,
+                SendBusEvent = model.SendBusEvent,
+                SystemCommunicationId = model.SystemCommunicationId,
+                WorkflowTypeId = model.WorkflowTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -145,5 +202,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialTransactionAlertTypeViewModel ToViewModel( this FinancialTransactionAlertType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialTransactionAlertTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

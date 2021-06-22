@@ -197,9 +197,9 @@ namespace Rock.UniversalSearch.IndexModels
 
             if ( displayOptions != null )
             {
-                if ( displayOptions.ContainsKey( "ChannelItem-IsSecurityDisabled" ) )
+                if ( displayOptions.ContainsKey( "ContentChannelItem-IsSecurityDisabled" ) )
                 {
-                    isSecurityDisabled = displayOptions["ChannelItem-IsSecurityDisabled"].ToString().AsBoolean();
+                    isSecurityDisabled = displayOptions["ContentChannelItem-IsSecurityDisabled"].ToString().AsBoolean();
                 }
             }
 

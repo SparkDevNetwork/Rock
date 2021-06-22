@@ -168,5 +168,18 @@ namespace Rock.Rest.Controllers
 
             return processResponse;
         }
+
+        /// <summary>
+        /// Gets the formatted date.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        [HttpGet]
+        [System.Web.Http.Route( "api/Utility/FormatDate" )]
+        public string GetFormattedDate( [FromUri] DateTime value, [FromUri] string format = "MM/dd/yyyy" )
+        {
+            return value.ToString( format );
+        }
     }
 }

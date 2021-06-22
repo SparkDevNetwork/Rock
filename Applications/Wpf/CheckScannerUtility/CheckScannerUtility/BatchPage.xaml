@@ -158,7 +158,7 @@
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
                         CanUserResizeColumns="True"
-                        CellStyle="{StaticResource gridCellStyleGrey}"
+                        CellStyle="{StaticResource gridCellStyle}"
                         GridLinesVisibility="Horizontal"
                         HeadersVisibility="Column"
                         HorizontalGridLinesBrush="{StaticResource HorizontalGridLinesBrush}"
@@ -553,7 +553,7 @@
                         BorderThickness="1"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
-                        CellStyle="{StaticResource gridCellStyleAmountGrey}"
+                        CellStyle="{StaticResource gridCellStyleAmount}"
                         ColumnWidth="SizeToHeader"
                         GridLinesVisibility="Horizontal"
                         HeadersVisibility="Column"
@@ -563,7 +563,7 @@
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.VerticalScrollBarVisibility="Auto"
                         SelectionMode="Single"
-                        Style="{StaticResource gridStyleGrey}">
+                        Style="{StaticResource gridStyle}">
                         <DataGrid.ItemContainerStyle>
                             <Style TargetType="{x:Type DataGridRow}">
                                 <EventSetter Event="Control.MouseDoubleClick" Handler="grdBatchItems_RowEdit" />
@@ -574,7 +574,7 @@
                                 Binding="{Binding CreatedDateTime}"
                                 CanUserResize="False"
                                 CanUserSort="False"
-                                CellStyle="{StaticResource gridCellStyleDateTimeGrey}"
+                                CellStyle="{StaticResource gridCellStyleDateTime}"
                                 Header="Date/Time"
                                 HeaderStyle="{StaticResource gridHeaderStyleDateTime}" />
 
@@ -583,23 +583,23 @@
                                 Binding="{Binding Path=FinancialPaymentDetail.CurrencyTypeValue.Value}"
                                 CanUserResize="False"
                                 CanUserSort="False"
-                                CellStyle="{StaticResource gridCellStyleGrey}"
+                                CellStyle="{StaticResource gridCellStyle}"
                                 Header="Type"
-                                HeaderStyle="{StaticResource gridHeaderStyleGrey}" />
+                                HeaderStyle="{StaticResource gridHeaderStyle}" />
 
                             <DataGridTextColumn
                                 Width="*"
                                 Binding="{Binding TransactionCode}"
                                 CanUserResize="False"
                                 CanUserSort="False"
-                                CellStyle="{StaticResource gridCellStyleGrey}"
+                                CellStyle="{StaticResource gridCellStyle}"
                                 Header="Check #"
-                                HeaderStyle="{StaticResource gridHeaderStyleGrey}" />
+                                HeaderStyle="{StaticResource gridHeaderStyle}" />
                             <DataGridTemplateColumn
                                 x:Name="colBatchItemAmount"
                                 Width="*"
                                 Header="Amount"
-                                HeaderStyle="{StaticResource gridHeaderStyleGrey}"
+                                HeaderStyle="{StaticResource gridHeaderStyle}"
                                 TextBlock.TextAlignment="Right">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -615,7 +615,7 @@
                                 Width="*"
                                 CanUserResize="False"
                                 CanUserSort="False"
-                                CellStyle="{StaticResource gridCellStyleGrey}"
+                                CellStyle="{StaticResource gridCellStyle}"
                                 Header=""
                                 HeaderStyle="{StaticResource gridHeaderStyleActions}">
                                 <DataGridTemplateColumn.CellTemplate>

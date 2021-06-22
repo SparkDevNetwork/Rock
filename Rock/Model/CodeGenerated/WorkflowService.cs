@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,63 @@ namespace Rock.Model
         public bool CanDelete( Workflow item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<ConnectionRequestWorkflow>( Context ).Queryable().Any( a => a.WorkflowId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Workflow View Model Helper
+    /// </summary>
+    public partial class WorkflowViewModelHelper : ViewModelHelper<Workflow, Rock.ViewModel.WorkflowViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.WorkflowViewModel CreateViewModel( Workflow model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.WorkflowViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ActivatedDateTime = model.ActivatedDateTime,
+                CompletedDateTime = model.CompletedDateTime,
+                Description = model.Description,
+                EntityId = model.EntityId,
+                EntityTypeId = model.EntityTypeId,
+                InitiatorPersonAliasId = model.InitiatorPersonAliasId,
+                IsProcessing = model.IsProcessing,
+                LastProcessedDateTime = model.LastProcessedDateTime,
+                Name = model.Name,
+                Status = model.Status,
+                WorkflowIdNumber = model.WorkflowIdNumber,
+                WorkflowTypeId = model.WorkflowTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -139,5 +190,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.WorkflowViewModel ToViewModel( this Workflow model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new WorkflowViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

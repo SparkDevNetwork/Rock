@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,69 +54,126 @@ namespace Rock.Model
         public bool CanDelete( Campus item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<BenevolenceRequest>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, BenevolenceRequest.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialAccount>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, FinancialAccount.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialBatch>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, FinancialBatch.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Group>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryCampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Person.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Step>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Step.FriendlyTypeName );
                 return false;
-            }  
+            }
+
+            if ( new Service<StepProgramCompletion>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, StepProgramCompletion.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Campus View Model Helper
+    /// </summary>
+    public partial class CampusViewModelHelper : ViewModelHelper<Campus, Rock.ViewModel.CampusViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.CampusViewModel CreateViewModel( Campus model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.CampusViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CampusStatusValueId = model.CampusStatusValueId,
+                CampusTypeValueId = model.CampusTypeValueId,
+                Description = model.Description,
+                IsActive = model.IsActive,
+                IsSystem = model.IsSystem,
+                LeaderPersonAliasId = model.LeaderPersonAliasId,
+                LocationId = model.LocationId,
+                Name = model.Name,
+                Order = model.Order,
+                PhoneNumber = model.PhoneNumber,
+                ServiceTimes = model.ServiceTimes,
+                ShortCode = model.ShortCode,
+                TeamGroupId = model.TeamGroupId,
+                TimeZoneId = model.TimeZoneId,
+                Url = model.Url,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -196,5 +256,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.CampusViewModel ToViewModel( this Campus model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new CampusViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

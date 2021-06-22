@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,58 @@ namespace Rock.Model
         public bool CanDelete( GroupLocation item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<GroupLocationHistorical>( Context ).Queryable().Any( a => a.GroupLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupLocation.FriendlyTypeName, GroupLocationHistorical.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// GroupLocation View Model Helper
+    /// </summary>
+    public partial class GroupLocationViewModelHelper : ViewModelHelper<GroupLocation, Rock.ViewModel.GroupLocationViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.GroupLocationViewModel CreateViewModel( GroupLocation model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.GroupLocationViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                GroupId = model.GroupId,
+                GroupLocationTypeValueId = model.GroupLocationTypeValueId,
+                GroupMemberPersonAliasId = model.GroupMemberPersonAliasId,
+                IsMailingLocation = model.IsMailingLocation,
+                IsMappedLocation = model.IsMappedLocation,
+                LocationId = model.LocationId,
+                Order = model.Order,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -134,5 +180,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.GroupLocationViewModel ToViewModel( this GroupLocation model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new GroupLocationViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

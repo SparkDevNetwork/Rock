@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{05BAAF85-9C53-4CCD-A535-036427B0DF72}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rock.ViewModel</RootNamespace>
+    <AssemblyName>Rock.ViewModel</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Blocks\SessionRenewalResult.cs" />
+    <Compile Include="Blocks\RegistrationEntryBlockSession.cs" />
+    <Compile Include="Blocks\RegistrationEntryBlockSuccessViewModel.cs" />
+    <Compile Include="Blocks\RegistrationEntryBlockArgs.cs" />
+    <Compile Include="Blocks\RegistrationEntryBlockViewModel.cs" />
+    <Compile Include="CodeGenerated\AchievementAttemptViewModel.cs" />
+    <Compile Include="CodeGenerated\AchievementTypePrerequisiteViewModel.cs" />
+    <Compile Include="CodeGenerated\AchievementTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\AssessmentTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\AssessmentViewModel.cs" />
+    <Compile Include="CodeGenerated\AssetStorageProviderViewModel.cs" />
+    <Compile Include="CodeGenerated\AttendanceOccurrenceViewModel.cs" />
+    <Compile Include="CodeGenerated\AttendanceViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixItemViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeMatrixViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeValueHistoricalViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeValueViewModel.cs" />
+    <Compile Include="CodeGenerated\AttributeViewModel.cs" />
+    <Compile Include="CodeGenerated\AuthClaimViewModel.cs" />
+    <Compile Include="CodeGenerated\AuthClientViewModel.cs" />
+    <Compile Include="CodeGenerated\AuthScopeViewModel.cs" />
+    <Compile Include="CodeGenerated\AuthViewModel.cs" />
+    <Compile Include="CodeGenerated\BackgroundCheckViewModel.cs" />
+    <Compile Include="CodeGenerated\BadgeViewModel.cs" />
+    <Compile Include="CodeGenerated\BenevolenceRequestDocumentViewModel.cs" />
+    <Compile Include="CodeGenerated\BenevolenceRequestViewModel.cs" />
+    <Compile Include="CodeGenerated\BenevolenceResultViewModel.cs" />
+    <Compile Include="CodeGenerated\BinaryFileDataViewModel.cs" />
+    <Compile Include="CodeGenerated\BinaryFileTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\BinaryFileViewModel.cs" />
+    <Compile Include="CodeGenerated\BlockTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\BlockViewModel.cs" />
+    <Compile Include="CodeGenerated\CampusViewModel.cs" />
+    <Compile Include="CodeGenerated\CategoryViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationAttachmentViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationRecipientViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponseAttachmentViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponseViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplateAttachmentViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionActivityTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityCampusViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityConnectorGroupViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityGroupConfigViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityGroupViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionOpportunityViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionRequestActivityViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionRequestViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionRequestWorkflowViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionStatusViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\ConnectionWorkflowViewModel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItemAssociationViewModel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItemSlugViewModel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelItemViewModel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\ContentChannelViewModel.cs" />
+    <Compile Include="CodeGenerated\DataViewFilterViewModel.cs" />
+    <Compile Include="CodeGenerated\DataViewViewModel.cs" />
+    <Compile Include="CodeGenerated\DefinedTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\DefinedValueViewModel.cs" />
+    <Compile Include="CodeGenerated\DeviceViewModel.cs" />
+    <Compile Include="CodeGenerated\DocumentTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\DocumentViewModel.cs" />
+    <Compile Include="CodeGenerated\EntityCampusFilterViewModel.cs" />
+    <Compile Include="CodeGenerated\EntitySetItemViewModel.cs" />
+    <Compile Include="CodeGenerated\EntitySetViewModel.cs" />
+    <Compile Include="CodeGenerated\EventCalendarContentChannelViewModel.cs" />
+    <Compile Include="CodeGenerated\EventCalendarItemViewModel.cs" />
+    <Compile Include="CodeGenerated\EventCalendarViewModel.cs" />
+    <Compile Include="CodeGenerated\EventItemAudienceViewModel.cs" />
+    <Compile Include="CodeGenerated\EventItemOccurrenceChannelItemViewModel.cs" />
+    <Compile Include="CodeGenerated\EventItemOccurrenceGroupMapViewModel.cs" />
+    <Compile Include="CodeGenerated\EventItemOccurrenceViewModel.cs" />
+    <Compile Include="CodeGenerated\EventItemViewModel.cs" />
+    <Compile Include="CodeGenerated\ExceptionLogViewModel.cs" />
+    <Compile Include="CodeGenerated\FieldTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialAccountViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialBatchViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialGatewayViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialPaymentDetailViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialPersonBankAccountViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialPersonSavedAccountViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialPledgeViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialScheduledTransactionDetailViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialScheduledTransactionViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionDetailViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionImageViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionRefundViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingEventNotificationViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingEventSubscriptionViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingEventTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggestedViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingSuggestionTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\FollowingViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupDemographicTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupDemographicValueViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupHistoricalViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupLocationHistoricalViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupLocationViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupMemberAssignmentViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupMemberHistoricalViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupMemberRequirementViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupMemberScheduleTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupMemberViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupRequirementTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupRequirementViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupScheduleExclusionViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupSyncViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupTypeRoleViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\GroupViewModel.cs" />
+    <Compile Include="CodeGenerated\HistoryViewModel.cs" />
+    <Compile Include="CodeGenerated\HtmlContentViewModel.cs" />
+    <Compile Include="CodeGenerated\IdentityVerificationCodeViewModel.cs" />
+    <Compile Include="CodeGenerated\IdentityVerificationViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionChannelViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionComponentViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionDeviceTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionSessionViewModel.cs" />
+    <Compile Include="CodeGenerated\InteractionViewModel.cs" />
+    <Compile Include="CodeGenerated\LavaShortcodeViewModel.cs" />
+    <Compile Include="CodeGenerated\LayoutViewModel.cs" />
+    <Compile Include="CodeGenerated\LocationViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaAccountViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaElementViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaFolderViewModel.cs" />
+    <Compile Include="CodeGenerated\MergeTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\MetricPartitionViewModel.cs" />
+    <Compile Include="CodeGenerated\MetricValuePartitionViewModel.cs" />
+    <Compile Include="CodeGenerated\MetricValueViewModel.cs" />
+    <Compile Include="CodeGenerated\MetricViewModel.cs" />
+    <Compile Include="CodeGenerated\NcoaHistoryViewModel.cs" />
+    <Compile Include="CodeGenerated\NoteAttachmentViewModel.cs" />
+    <Compile Include="CodeGenerated\NoteTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\NoteViewModel.cs" />
+    <Compile Include="CodeGenerated\NoteWatchViewModel.cs" />
+    <Compile Include="CodeGenerated\NotificationRecipientViewModel.cs" />
+    <Compile Include="CodeGenerated\NotificationViewModel.cs" />
+    <Compile Include="CodeGenerated\PageContextViewModel.cs" />
+    <Compile Include="CodeGenerated\PageRouteViewModel.cs" />
+    <Compile Include="CodeGenerated\PageShortLinkViewModel.cs" />
+    <Compile Include="CodeGenerated\PageViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonalDeviceViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonDuplicateViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonPreviousNameViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonScheduleExclusionViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonSearchKeyViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonSignalViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonViewModel.cs" />
+    <Compile Include="CodeGenerated\PhoneNumberViewModel.cs" />
+    <Compile Include="CodeGenerated\PluginMigrationViewModel.cs" />
+    <Compile Include="CodeGenerated\PrayerRequestViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationInstanceViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationRegistrantFeeViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationRegistrantViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationSessionViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateDiscountViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFeeItemViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFeeViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFormFieldViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateFormViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplatePlacementViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationViewModel.cs" />
+    <Compile Include="CodeGenerated\RelatedEntityViewModel.cs" />
+    <Compile Include="CodeGenerated\ReportFieldViewModel.cs" />
+    <Compile Include="CodeGenerated\ReportViewModel.cs" />
+    <Compile Include="CodeGenerated\RestActionViewModel.cs" />
+    <Compile Include="CodeGenerated\RestControllerViewModel.cs" />
+    <Compile Include="CodeGenerated\ScheduleCategoryExclusionViewModel.cs" />
+    <Compile Include="CodeGenerated\ScheduleViewModel.cs" />
+    <Compile Include="CodeGenerated\ServiceJobHistoryViewModel.cs" />
+    <Compile Include="CodeGenerated\ServiceJobViewModel.cs" />
+    <Compile Include="CodeGenerated\ServiceLogViewModel.cs" />
+    <Compile Include="CodeGenerated\SignalTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\SignatureDocumentTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\SignatureDocumentViewModel.cs" />
+    <Compile Include="CodeGenerated\SiteDomainViewModel.cs" />
+    <Compile Include="CodeGenerated\SiteViewModel.cs" />
+    <Compile Include="CodeGenerated\SmsActionViewModel.cs" />
+    <Compile Include="CodeGenerated\SmsPipelineViewModel.cs" />
+    <Compile Include="CodeGenerated\StepProgramCompletionViewModel.cs" />
+    <Compile Include="CodeGenerated\StepProgramViewModel.cs" />
+    <Compile Include="CodeGenerated\StepStatusViewModel.cs" />
+    <Compile Include="CodeGenerated\StepTypePrerequisiteViewModel.cs" />
+    <Compile Include="CodeGenerated\StepTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\StepViewModel.cs" />
+    <Compile Include="CodeGenerated\StepWorkflowTriggerViewModel.cs" />
+    <Compile Include="CodeGenerated\StepWorkflowViewModel.cs" />
+    <Compile Include="CodeGenerated\StreakTypeExclusionViewModel.cs" />
+    <Compile Include="CodeGenerated\StreakTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\StreakViewModel.cs" />
+    <Compile Include="CodeGenerated\SystemCommunicationViewModel.cs" />
+    <Compile Include="CodeGenerated\SystemEmailViewModel.cs" />
+    <Compile Include="CodeGenerated\TaggedItemViewModel.cs" />
+    <Compile Include="CodeGenerated\TagViewModel.cs" />
+    <Compile Include="CodeGenerated\UserLoginViewModel.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeLogViewModel.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeMetricViewModel.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormAttributeViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionFormViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActionViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActivityTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowActivityViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\WorkflowViewModel.cs" />
+    <Compile Include="Controls\BirthdayPickerViewModel.cs" />
+    <Compile Include="Controls\AddressControlViewModel.cs" />
+    <Compile Include="Controls\GatewayControlViewModel.cs" />
+    <Compile Include="IViewModel.cs" />
+    <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
+    <Compile Include="Partials\AttributeValueViewModel.partial.cs" />
+    <Compile Include="Partials\AttributeViewModel.partial.cs" />
+    <Compile Include="Partials\PersonViewModel.partial.cs" />
+    <Compile Include="Partials\RegistrationTemplate.partial.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeScriptTypeAttribute.cs" />
+    <Compile Include="ViewModelBase.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

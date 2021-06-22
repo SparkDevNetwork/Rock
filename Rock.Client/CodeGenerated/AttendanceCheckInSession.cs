@@ -35,9 +35,6 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public ICollection<Attendance> Attendances { get; set; }
-
-        /// <summary />
         public string ClientIpAddress { get; set; }
 
         /// <summary />
@@ -62,7 +59,6 @@ namespace Rock.Client
         public void CopyPropertiesFrom( AttendanceCheckInSession source )
         {
             this.Id = source.Id;
-            this.Attendances = source.Attendances;
             this.ClientIpAddress = source.ClientIpAddress;
             this.DeviceId = source.DeviceId;
             this.ForeignGuid = source.ForeignGuid;
@@ -78,6 +74,9 @@ namespace Rock.Client
     /// </summary>
     public partial class AttendanceCheckInSession : AttendanceCheckInSessionEntity
     {
+        /// <summary />
+        public ICollection<Attendance> Attendances { get; set; }
+
         /// <summary />
         public Device Device { get; set; }
 

@@ -1086,6 +1086,12 @@ namespace Rock.Model
                         this.ValidationResults.Add( new ValidationResult( "Lava template for group view is mandatory." ) );
                         return false;
                     }
+
+                    if ( this.IsSchedulingEnabled && !Enum.GetValues( typeof( ScheduleType ) ).Cast<ScheduleType>().Where( v => v!=ScheduleType.None && AllowedScheduleTypes.HasFlag( v ) ).Any() )
+                    {
+                        this.ValidationResults.Add( new ValidationResult( "Any Group Schedule Options must be selected if Scheduling is enabled." ) );
+                        return false;
+                    }
                 }
 
                 return result;

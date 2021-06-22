@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,17 +54,80 @@ namespace Rock.Model
         public bool CanDelete( RegistrationInstance item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Registration,RegistrationInstanceId 
- 
+
+            // ignoring Registration,RegistrationInstanceId
+
             if ( new Service<RegistrationSession>( Context ).Queryable().Any( a => a.RegistrationInstanceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationInstance.FriendlyTypeName, RegistrationSession.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// RegistrationInstance View Model Helper
+    /// </summary>
+    public partial class RegistrationInstanceViewModelHelper : ViewModelHelper<RegistrationInstance, Rock.ViewModel.RegistrationInstanceViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.RegistrationInstanceViewModel CreateViewModel( RegistrationInstance model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.RegistrationInstanceViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AccountId = model.AccountId,
+                AdditionalConfirmationDetails = model.AdditionalConfirmationDetails,
+                AdditionalReminderDetails = model.AdditionalReminderDetails,
+                ContactEmail = model.ContactEmail,
+                ContactPersonAliasId = model.ContactPersonAliasId,
+                ContactPhone = model.ContactPhone,
+                Cost = model.Cost,
+                DefaultPayment = model.DefaultPayment,
+                Details = model.Details,
+                EndDateTime = model.EndDateTime,
+                ExternalGatewayFundId = model.ExternalGatewayFundId,
+                ExternalGatewayMerchantId = model.ExternalGatewayMerchantId,
+                IsActive = model.IsActive,
+                MaxAttendees = model.MaxAttendees,
+                MinimumInitialPayment = model.MinimumInitialPayment,
+                Name = model.Name,
+                PaymentRedirectData = model.PaymentRedirectData,
+                RegistrationInstructions = model.RegistrationInstructions,
+                RegistrationMeteringThreshold = model.RegistrationMeteringThreshold,
+                RegistrationTemplateId = model.RegistrationTemplateId,
+                RegistrationWorkflowTypeId = model.RegistrationWorkflowTypeId,
+                ReminderSent = model.ReminderSent,
+                SendReminderDateTime = model.SendReminderDateTime,
+                StartDateTime = model.StartDateTime,
+                TimeoutIsEnabled = model.TimeoutIsEnabled,
+                TimeoutLengthMinutes = model.TimeoutLengthMinutes,
+                TimeoutThreshold = model.TimeoutThreshold,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -145,6 +211,9 @@ namespace Rock.Model
             target.ReminderSent = source.ReminderSent;
             target.SendReminderDateTime = source.SendReminderDateTime;
             target.StartDateTime = source.StartDateTime;
+            target.TimeoutIsEnabled = source.TimeoutIsEnabled;
+            target.TimeoutLengthMinutes = source.TimeoutLengthMinutes;
+            target.TimeoutThreshold = source.TimeoutThreshold;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -153,5 +222,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.RegistrationInstanceViewModel ToViewModel( this RegistrationInstance model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new RegistrationInstanceViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

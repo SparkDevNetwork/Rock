@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,11 +54,74 @@ namespace Rock.Model
         public bool CanDelete( CommunicationTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Communication,CommunicationTemplateId 
+
+            // ignoring Communication,CommunicationTemplateId
             return true;
         }
     }
+
+    /// <summary>
+    /// CommunicationTemplate View Model Helper
+    /// </summary>
+    public partial class CommunicationTemplateViewModelHelper : ViewModelHelper<CommunicationTemplate, Rock.ViewModel.CommunicationTemplateViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.CommunicationTemplateViewModel CreateViewModel( CommunicationTemplate model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.CommunicationTemplateViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                BCCEmails = model.BCCEmails,
+                CategoryId = model.CategoryId,
+                CCEmails = model.CCEmails,
+                CssInliningEnabled = model.CssInliningEnabled,
+                Description = model.Description,
+                FromEmail = model.FromEmail,
+                FromName = model.FromName,
+                ImageFileId = model.ImageFileId,
+                IsActive = model.IsActive,
+                IsSystem = model.IsSystem,
+                LavaFieldsJson = model.LavaFieldsJson,
+                LogoBinaryFileId = model.LogoBinaryFileId,
+                Message = model.Message,
+                MessageMetaData = model.MessageMetaData,
+                Name = model.Name,
+                PushData = model.PushData,
+                PushImageBinaryFileId = model.PushImageBinaryFileId,
+                PushMessage = model.PushMessage,
+                PushOpenAction = ( int? ) model.PushOpenAction,
+                PushOpenMessage = model.PushOpenMessage,
+                PushSound = model.PushSound,
+                PushTitle = model.PushTitle,
+                ReplyToEmail = model.ReplyToEmail,
+                SenderPersonAliasId = model.SenderPersonAliasId,
+                SMSFromDefinedValueId = model.SMSFromDefinedValueId,
+                SMSMessage = model.SMSMessage,
+                Subject = model.Subject,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -150,5 +216,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.CommunicationTemplateViewModel ToViewModel( this CommunicationTemplate model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new CommunicationTemplateViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

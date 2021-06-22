@@ -18,7 +18,6 @@ using System;
 using System.Globalization;
 
 using Humanizer;
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -32,7 +31,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static bool AsBoolean( object input, bool resultIfNullOrEmpty = false )
         {
-            return ExtensionMethods.AsBoolean( input.ToStringSafe(), resultIfNullOrEmpty );
+            return input.ToStringSafe().AsBoolean( resultIfNullOrEmpty );
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static decimal AsDecimal( object input )
         {
-            return ExtensionMethods.AsDecimal( input.ToStringSafe() );
+            return input.ToStringSafe().AsDecimal();
         }
 
         /// <summary>
@@ -52,7 +51,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static double AsDouble( object input )
         {
-            return ExtensionMethods.AsDouble( input.ToStringSafe() );
+            return input.ToStringSafe().AsDouble();
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static int AsInteger( object input )
         {
-            return ExtensionMethods.AsInteger( input.ToStringSafe() );
+            return input.ToStringSafe().AsInteger();
         }
 
         /// <summary>

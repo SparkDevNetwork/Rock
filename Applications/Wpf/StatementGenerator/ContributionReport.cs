@@ -67,6 +67,9 @@ namespace Rock.Apps.StatementGenerator
 
         private bool _cancelRunning = false;
         private bool _cancelled = false;
+
+        // The max number of Chrome.exe threads to allow to run at the same time.
+        // The optimal number seems to be the computer's ProcessorCount, plus 4 more.
         private readonly int _maxRenderThreads = Environment.ProcessorCount + 4;
 
         /// <summary>
@@ -150,6 +153,8 @@ namespace Rock.Apps.StatementGenerator
 
             UpdateProgress( "Starting...", 0, 0 );
 
+            // spin up Chrome render engines for each thread
+            // These will show as chrome.exe in Task Manager
             availablePagesCache = new ConcurrentStack<Page>();
             for ( int i = 0; i < _maxRenderThreads; i++ )
             {
@@ -377,6 +382,7 @@ namespace Rock.Apps.StatementGenerator
 
         private string GetStatementGeneratorLocalApplicationDataFolder()
         {
+            // have the chrome rendering engine download and run in AppData\Local\Spark_Development_Network\StatementGenerator\.local-chromium
             var statementGeneratorUserDataFolder = Path.Combine( Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData ), "Spark_Development_Network", "StatementGenerator" );
             var browserDownloadPath = Path.Combine( statementGeneratorUserDataFolder, ".local-chromium" );
             if ( !Directory.Exists( browserDownloadPath ) )
@@ -415,6 +421,9 @@ namespace Rock.Apps.StatementGenerator
             // 
             try
             {
+                // just in case the Statement Generator didn't close cleanly previously,
+                // Kill any chrome.exe's that got left running in
+                // AppData\Local\Spark_Development_Network\StatementGenerator\.local-chromium\Win64-848005\chrome-win
                 var browserProcessModule = browser.Process.MainModule;
                 var allProcesses = Process.GetProcesses();
                 foreach ( var process in allProcesses.Where( a => a.ProcessName == browser.Process.ProcessName ) )
@@ -743,15 +752,15 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
                 _lastSaveRecipientListStatus = DateTime.Now;
             }
 
+            // if still writing (very rare), just skip. It is OK if it is a little behind
+            if ( recipientDataJsonFileLocker.WaitingWriteCount > 0 )
+            {
+                WriteToLog( $"recipientDataJsonFileLocker.WaitingWriteCount: {recipientDataJsonFileLocker.WaitingWriteCount}" );
+                return;
+            }
+
             try
             {
-                // if still writing, just skip. It is OK if it is a little behind
-                if ( recipientDataJsonFileLocker.WaitingWriteCount > 0 )
-                {
-                    WriteToLog( $"recipientDataJsonFileLocker.WaitingWriteCount: {recipientDataJsonFileLocker.WaitingWriteCount}" );
-                    return;
-                }
-
                 recipientDataJsonFileLocker.EnterWriteLock();
                 WriteRecipientListToFile( recipientList, reportRockStatementGeneratorTemporaryDirectory );
             }

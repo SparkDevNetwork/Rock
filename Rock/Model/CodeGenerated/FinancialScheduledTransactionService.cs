@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,72 @@ namespace Rock.Model
         public bool CanDelete( FinancialScheduledTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialScheduledTransaction View Model Helper
+    /// </summary>
+    public partial class FinancialScheduledTransactionViewModelHelper : ViewModelHelper<FinancialScheduledTransaction, Rock.ViewModel.FinancialScheduledTransactionViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialScheduledTransactionViewModel CreateViewModel( FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialScheduledTransactionViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AuthorizedPersonAliasId = model.AuthorizedPersonAliasId,
+                CardReminderDate = model.CardReminderDate,
+                EndDate = model.EndDate,
+                FinancialGatewayId = model.FinancialGatewayId,
+                FinancialPaymentDetailId = model.FinancialPaymentDetailId,
+                ForeignCurrencyCodeValueId = model.ForeignCurrencyCodeValueId,
+                GatewayScheduleId = model.GatewayScheduleId,
+                InactivateDateTime = model.InactivateDateTime,
+                IsActive = model.IsActive,
+                LastRemindedDate = model.LastRemindedDate,
+                LastStatusUpdateDateTime = model.LastStatusUpdateDateTime,
+                NextPaymentDate = model.NextPaymentDate,
+                NumberOfPayments = model.NumberOfPayments,
+                SourceTypeValueId = model.SourceTypeValueId,
+                StartDate = model.StartDate,
+                Status = ( int? ) model.Status,
+                StatusMessage = model.StatusMessage,
+                Summary = model.Summary,
+                TransactionCode = model.TransactionCode,
+                TransactionFrequencyValueId = model.TransactionFrequencyValueId,
+                TransactionTypeValueId = model.TransactionTypeValueId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -126,6 +186,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayScheduleId = source.GatewayScheduleId;
+            target.InactivateDateTime = source.InactivateDateTime;
             target.IsActive = source.IsActive;
             target.LastRemindedDate = source.LastRemindedDate;
             target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
@@ -133,6 +194,8 @@ namespace Rock.Model
             target.NumberOfPayments = source.NumberOfPayments;
             target.SourceTypeValueId = source.SourceTypeValueId;
             target.StartDate = source.StartDate;
+            target.Status = source.Status;
+            target.StatusMessage = source.StatusMessage;
             target.Summary = source.Summary;
             target.TransactionCode = source.TransactionCode;
             target.TransactionFrequencyValueId = source.TransactionFrequencyValueId;
@@ -145,5 +208,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialScheduledTransactionViewModel ToViewModel( this FinancialScheduledTransaction model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialScheduledTransactionViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

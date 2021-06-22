@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,60 @@ namespace Rock.Model
         public bool CanDelete( RegistrationTemplateFee item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<RegistrationRegistrantFee>( Context ).Queryable().Any( a => a.RegistrationTemplateFeeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplateFee.FriendlyTypeName, RegistrationRegistrantFee.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// RegistrationTemplateFee View Model Helper
+    /// </summary>
+    public partial class RegistrationTemplateFeeViewModelHelper : ViewModelHelper<RegistrationTemplateFee, Rock.ViewModel.RegistrationTemplateFeeViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.RegistrationTemplateFeeViewModel CreateViewModel( RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.RegistrationTemplateFeeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AllowMultiple = model.AllowMultiple,
+                DiscountApplies = model.DiscountApplies,
+                FeeType = ( int ) model.FeeType,
+                HideWhenNoneRemaining = model.HideWhenNoneRemaining,
+                IsActive = model.IsActive,
+                IsRequired = model.IsRequired,
+                Name = model.Name,
+                Order = model.Order,
+                RegistrationTemplateId = model.RegistrationTemplateId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -139,5 +187,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.RegistrationTemplateFeeViewModel ToViewModel( this RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new RegistrationTemplateFeeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

@@ -184,12 +184,14 @@ namespace Rock.Model
         }
 
         private DateTime? _cardExpirationDate = null;
+
         /// <summary>
         /// Gets the card expiration date.
         /// </summary>
         /// <value>
         /// The card expiration date.
         /// </value>
+        [DataMember]
         public DateTime? CardExpirationDate
         {
             get
@@ -355,6 +357,7 @@ namespace Rock.Model
                 return null;
             }
         }
+
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
@@ -454,7 +457,8 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberMasked;
+            // Return the Account Number, or an empty string to avoid potential downstream issues caused by an unexpected null value.
+            return this.AccountNumberMasked.ToStringSafe();
         }
 
         /// <summary>

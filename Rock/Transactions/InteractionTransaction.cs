@@ -270,7 +270,32 @@ namespace Rock.Transactions
             // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
             // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit, so update the streak using a task.
-            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
+
+            // Only launch this task if there are StreakTypes configured that have interactions. Otherwise several
+            // database calls are made only to find out there are no streak types defined.
+            if ( StreakTypeCache.All().Any( s => s.IsInteractionRelated ) )
+            {
+                // Ids do not exit for the interactions in the collection since they were bulk imported.
+                // Read their ids from their guids and append the id.
+                var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
+
+                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                                        .Where( i => insertedGuids.Contains( i.Guid ) )
+                                        .Select( i => new { i.Id, i.Guid } )
+                                        .ToList();
+
+                foreach ( var interactionId in interactionIds )
+                {
+                    var interaction = interactionsToInsert.Where( i => i.Guid == interactionId.Guid ).FirstOrDefault();
+                    if ( interaction != null )
+                    {
+                        interaction.Id = interactionId.Id;
+                    }
+                }
+
+                // Launch task
+                interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
+            }
         }
     }
 

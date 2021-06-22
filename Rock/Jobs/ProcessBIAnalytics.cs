@@ -70,6 +70,8 @@ namespace Rock.Jobs
 
         #region Private Fields
 
+        private const int _maxAttributeValueLength = 250;
+
         /// <summary>
         /// The person job stats
         /// </summary>
@@ -279,13 +281,12 @@ namespace Rock.Jobs
             analyticsFieldNames.Add( "Guid" );
             analyticsFieldNames.Add( "TypeId" );
 
-            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
-                !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
+            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a => !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
 
             const string BooleanSqlFieldType = "bit";
             const string DateTimeSqlFieldType = "datetime";
             const string NumericSqlFieldType = "[decimal](29,4)";
-            const string DefaultSqlFieldType = "nvarchar(250)";
+            string DefaultSqlFieldType = $"nvarchar({_maxAttributeValueLength})";
 
             using ( var rockContext = GetNewConfiguredDataContext() )
             {
@@ -634,15 +635,22 @@ UPDATE [AnalyticsSourcePersonHistorical]
                         {
                             var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
 
+                            // unformatted values over this length are filtered out. Prevent truncated string SQL errors here by checking the formatted value against the max length.
+                            if ( formattedValue.Length > _maxAttributeValueLength )
+                            {
+                                continue;
+                            }
+
                             // mass update the value for the Attribute in the AnalyticsSourcePersonHistorical records 
-                            // Don't update the Historical Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
-                            // have the historical records say "Member" even though it is the same definedvalue id
+                            // Don't update the Historical Records, even if it was just a Text change.  For example, 
+                            // if they changed DefinedValue "Member" to "Owner", have the historical records say "Member"
+                            // even though it is the same definedvalue id.
                             var updateSql = $@"
-UPDATE [AnalyticsSourcePersonHistorical] 
-    SET [{columnName}] = @formattedValue 
-    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
-    AND isnull([{columnName}],'') != @formattedValue
-    AND [CurrentRowIndicator] = 1";
+                                UPDATE [AnalyticsSourcePersonHistorical] 
+                                    SET [{columnName}] = @formattedValue 
+                                    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
+                                        AND isnull([{columnName}],'') != @formattedValue
+                                        AND [CurrentRowIndicator] = 1";
 
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
@@ -650,7 +658,17 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
                             _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
 
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            try
+                            {
+                                _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( new Exception( $"Error inserting Person Analytics value {columnName}. Value: {personAttributeValue}, formatted value: {formattedValue}", ex ) );
+
+                                // Throw the exception since missing any data will not provide accurate analytics.
+                                throw;
+                            }
                         }
                     }
                 }
@@ -689,7 +707,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
             List<string> populatePersonValueFROMClauses = new List<string>( populatePersonValueSELECTClauses );
 
-            const int maxAttributeValueLength = 250;
+            
 
             using ( var rockContext = GetNewConfiguredDataContext() )
             {
@@ -731,7 +749,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     }
 
                     string lengthCondition = personAttributeValueFieldName == "Value"
-                        ? $"AND len(av{personAttribute.Id}.Value) <= {maxAttributeValueLength}"
+                        ? $"AND len(av{personAttribute.Id}.Value) <= {_maxAttributeValueLength}"
                         : null;
 
                     string populateAttributeValueFROMClause =

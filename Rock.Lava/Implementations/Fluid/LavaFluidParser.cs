@@ -78,6 +78,15 @@ namespace Rock.Lava.Fluid
                                 Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
                                 Primary.Then( x => new FilterArgument( null, x ) )
                             ) ) );
+
+            // Replace the default Fluid comment block to allow empty content.
+            var commentTag = TagEnd
+                       .SkipAnd( AnyCharBefore( CreateTag( "endcomment" ), canBeEmpty: true ) )
+                       .AndSkip( CreateTag( "endcomment" ).ElseError( $"'{{% endcomment %}}' was expected" ) )
+                       .Then<Statement>( x => new CommentStatement( x ) )
+                       .ElseError( "Invalid 'comment' tag" );
+
+            this.RegisteredTags["comment"] = commentTag;
         }
 
         #endregion

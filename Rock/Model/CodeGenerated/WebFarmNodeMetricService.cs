@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,6 +57,47 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// WebFarmNodeMetric View Model Helper
+    /// </summary>
+    public partial class WebFarmNodeMetricViewModelHelper : ViewModelHelper<WebFarmNodeMetric, Rock.ViewModel.WebFarmNodeMetricViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.WebFarmNodeMetricViewModel CreateViewModel( WebFarmNodeMetric model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.WebFarmNodeMetricViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                MetricType = ( int ) model.MetricType,
+                MetricValue = model.MetricValue,
+                MetricValueDateTime = model.MetricValueDateTime,
+                Note = model.Note,
+                WebFarmNodeId = model.WebFarmNodeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -126,5 +170,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.WebFarmNodeMetricViewModel ToViewModel( this WebFarmNodeMetric model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new WebFarmNodeMetricViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

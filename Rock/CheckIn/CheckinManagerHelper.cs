@@ -300,7 +300,7 @@ namespace Rock.CheckIn
         /// <param name="checkinManagerConfiguration">The checkin manager configuration.</param>
         private static void SaveCheckinManagerConfigurationToCookie( CheckinManagerConfiguration checkinManagerConfiguration )
         {
-            var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( Newtonsoft.Json.Formatting.None );
+            var checkinManagerConfigurationJson = checkinManagerConfiguration.ToJson( indentOutput: false );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInManagerCookieKey.CheckinManagerConfiguration, checkinManagerConfigurationJson, RockDateTime.Now.AddYears( 1 ) );
 
             // Also save the Configuration in the Request.Items so that we can grab the configuration from there instead

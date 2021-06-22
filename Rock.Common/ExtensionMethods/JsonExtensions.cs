@@ -17,48 +17,67 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    /// JSON Extensions
+    /// Extension methods related to converting things to and from JSON.
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class JsonExtensions
     {
         #region JSON Extensions
+
+        /// <summary>
+        /// Converts object to JSON string. The output is not indented.
+        /// </summary>
+        /// <remarks>
+        /// Public properties are serialized, but public fields are ignored.
+        /// </remarks>
+        /// <param name="obj">Object.</param>
+        /// <returns></returns>
+        public static string ToJson( this object obj )
+        {
+            return ToJson( obj, false, false );
+        }
 
         /// <summary>
         /// Converts object to JSON string
         /// </summary>
         /// <param name="obj">Object.</param>
+        /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
         /// <returns></returns>
-        public static string ToJson( this object obj )
+        public static string ToJson( this object obj, bool indentOutput )
         {
-            return JsonConvert.SerializeObject( obj, Formatting.None,
-                new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                } );
+            return ToJson( obj, indentOutput, false );
         }
 
         /// <summary>
-        /// To the JSON.
+        /// Converts object to JSON string with an option to ignore errors
         /// </summary>
-        /// <param name="obj">The object.</param>
-        /// <param name="format">The format.</param>
+        /// <param name="obj">Object.</param>
+        /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
+        /// <param name="ignoreErrors">if set to <c>true</c> errors will be ignored.</param>
         /// <returns></returns>
-        public static string ToJson( this object obj, Formatting format )
+        public static string ToJson( this object obj, bool indentOutput, bool ignoreErrors )
         {
-            return JsonConvert.SerializeObject( obj, format,
-                new JsonSerializerSettings()
+            var settings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = indentOutput ? Formatting.Indented : Formatting.None
+            };
+
+            if ( ignoreErrors )
+            {
+                settings.Error += new EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs>( ( s, e ) =>
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    e.ErrorContext.Handled = true;
                 } );
+            }
+
+            return JsonConvert.SerializeObject( obj, settings );
         }
 
         /// <summary>
@@ -68,6 +87,25 @@ namespace Rock.Common
         /// <param name="val">The value.</param>
         /// <returns></returns>
         public static T FromJsonOrNull<T>( this string val )
+        {
+            try
+            {
+                return val.FromJsonOrThrow<T>();
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( ex.Message );
+                return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Attempts to deserialize a JSON string into T. If it can't be deserialized, it will throw an exception
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static T FromJsonOrThrow<T>( this string val )
         {
             try
             {
@@ -82,8 +120,7 @@ namespace Rock.Common
             }
             catch ( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof( T ).Name}. {ex}" );
-                return default( T );
+                throw new Exception( $"Unable to deserialize to {typeof( T ).Name}. {ex}", ex );
             }
         }
 
@@ -157,61 +194,6 @@ namespace Rock.Common
             }
 
             return dynamicObject;
-        }
-
-        #endregion
-
-        #region JObject extension methods
-
-        /// <summary>
-        /// Converts a jObject to a dictionary
-        /// </summary>
-        /// <param name="jobject">The JObject.</param>
-        /// <returns></returns>
-        public static IDictionary<string, object> ToDictionary( this JObject jobject )
-        {
-            var result = jobject.ToObject<Dictionary<string, object>>();
-
-            var valueKeys = result
-                .Where( r => r.Value != null && r.Value.GetType() == typeof( JObject ) )
-                .Select( r => r.Key )
-                .ToList();
-
-            var arrayKeys = result
-                .Where( r => r.Value != null && r.Value.GetType() == typeof( JArray ) )
-                .Select( r => r.Key )
-                .ToList();
-
-            arrayKeys.ForEach( k => result[k] = ( ( JArray ) result[k] ).ToObjectArray() );
-            valueKeys.ForEach( k => result[k] = ToDictionary( result[k] as JObject ) );
-
-            return result;
-        }
-
-        /// <summary>
-        /// Converts a JArray to a Object array
-        /// </summary>
-        /// <param name="jarray">The JArray.</param>
-        /// <returns></returns>
-        public static object[] ToObjectArray( this JArray jarray )
-        {
-            var valueList = new List<object>();
-
-            for ( var i = 0; i < jarray.Count; i++ )
-            {
-                var obj = jarray[i];
-                if ( obj.GetType() == typeof( JObject ) )
-                {
-                    valueList.Add( ( ( JObject ) obj ).ToDictionary() );
-                }
-
-                if ( obj.GetType() == typeof( JValue ) )
-                {
-                    valueList.Add( ( ( JValue ) obj ).Value );
-                }
-            }
-
-            return valueList.ToArray();
         }
 
         #endregion

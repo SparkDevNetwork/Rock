@@ -58,6 +58,12 @@ You can view an online version of this email here:
         Category = "",
         Order = 3,
         Key = "DefaultPlainText" )]
+
+    [BooleanField( "CSS Inlining Enabled",
+        Description = "Enable to move CSS styles to inline attributes. This can help maximize compatibility with email clients.",
+        DefaultBooleanValue = false,
+        Key = "CSSInliningEnabled",
+        Order = 4)]
     public class Email : MediumComponent
     {
         /// <summary>

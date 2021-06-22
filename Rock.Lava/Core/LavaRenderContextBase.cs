@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Common;
-
 namespace Rock.Lava
 {
     /// <summary>

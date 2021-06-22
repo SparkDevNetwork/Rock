@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Event
                                 emailMessage.Message = ceEmailMessage.Text;
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                                emailMessage.CreateCommunicationRecord = false;
+                                emailMessage.CreateCommunicationRecord = true;
                                 emailMessage.Send();
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;

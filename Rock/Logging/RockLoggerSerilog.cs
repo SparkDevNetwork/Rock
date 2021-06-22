@@ -832,7 +832,7 @@ namespace Rock.Logging
         public void ReloadConfiguration()
         {
             Close();
-            
+
             // The ctor loads up all the settings from the DB.
             LogConfiguration = new RockLogConfiguration();
             LoadConfiguration( LogConfiguration );

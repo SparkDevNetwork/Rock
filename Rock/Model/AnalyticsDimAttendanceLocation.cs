@@ -20,6 +20,7 @@ using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -30,6 +31,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimAttendanceLocation" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsDimAttendanceLocation
     {
         #region Entity Properties

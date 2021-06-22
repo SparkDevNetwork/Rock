@@ -542,7 +542,7 @@ namespace RockWeb.Blocks.Finance
                 hfMigrateSavedAccountsResultFileURL.Value = logFileUrl;
 
                 string logFile = this.Context.Server.MapPath( logFileUrl );
-                File.WriteAllText( logFile, migrateSavedAccountResultList.ToJson( Newtonsoft.Json.Formatting.Indented ) );
+                File.WriteAllText( logFile, migrateSavedAccountResultList.ToJson( indentOutput: true ) );
             }
             catch
             {
@@ -849,7 +849,7 @@ namespace RockWeb.Blocks.Finance
 
                      string logFile = this.Context.Server.MapPath( logFileUrl );
                      this.SetBlockUserPreference( UserPreferenceKey.MigrateScheduledTransactionsResultFileURL, logFileUrl );
-                     File.WriteAllText( logFile, scheduledTransactionMigrationResults.ToJson( Newtonsoft.Json.Formatting.Indented ) );
+                     File.WriteAllText( logFile, scheduledTransactionMigrationResults.ToJson( indentOutput: true ) );
                  }
                  catch
                  {

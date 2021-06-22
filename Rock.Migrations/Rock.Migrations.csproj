@@ -85,6 +85,38 @@
     <Compile Include="Migrations\202106081839210_CodeGenerated_0608.Designer.cs">
       <DependentUpon>202106081839210_CodeGenerated_0608.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106091502220_AddStepProgramCompletion.cs" />
+    <Compile Include="Migrations\202106091502220_AddStepProgramCompletion.Designer.cs">
+      <DependentUpon>202106091502220_AddStepProgramCompletion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106091645247_ScheduledTransactionInactiveDateTime.cs" />
+    <Compile Include="Migrations\202106091645247_ScheduledTransactionInactiveDateTime.Designer.cs">
+      <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.cs" />
+    <Compile Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.Designer.cs">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106141358456_AddAzureBlobStorageProvider.cs" />
+    <Compile Include="Migrations\202106141358456_AddAzureBlobStorageProvider.Designer.cs">
+      <DependentUpon>202106141358456_AddAzureBlobStorageProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106141449072_RegistrationTimeout.cs" />
+    <Compile Include="Migrations\202106141449072_RegistrationTimeout.Designer.cs">
+      <DependentUpon>202106141449072_RegistrationTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106141518385_Rollup_0614.cs" />
+    <Compile Include="Migrations\202106141518385_Rollup_0614.Designer.cs">
+      <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs" />
+    <Compile Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.Designer.cs">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202106221850270_Rollup_06221.cs" />
+    <Compile Include="Migrations\202106221850270_Rollup_06221.Designer.cs">
+      <DependentUpon>202106221850270_Rollup_06221.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -547,6 +579,36 @@
     <EmbeddedResource Include="Migrations\202106072348124_EventCalendarIndexProperty.resx">
       <DependentUpon>202106072348124_EventCalendarIndexProperty.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106081803525_Rollup_0608.resx">
+      <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106081839210_CodeGenerated_0608.resx">
+      <DependentUpon>202106081839210_CodeGenerated_0608.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106091502220_AddStepProgramCompletion.resx">
+      <DependentUpon>202106091502220_AddStepProgramCompletion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106091645247_ScheduledTransactionInactiveDateTime.resx">
+      <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106101643505_FinancialScheduledTransactionStatus.resx">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106141358456_AddAzureBlobStorageProvider.resx">
+      <DependentUpon>202106141358456_AddAzureBlobStorageProvider.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106141449072_RegistrationTimeout.resx">
+      <DependentUpon>202106141449072_RegistrationTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106141518385_Rollup_0614.resx">
+      <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.resx">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106221850270_Rollup_06221.resx">
+      <DependentUpon>202106221850270_Rollup_06221.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -903,6 +965,7 @@
     <Content Include="Migrations\202106081803525_Rollup_0608_UpdateTrendChart.sql">
       <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202106221850270_Rollup_06221_UpdateStatementGenerator.sql" />
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
@@ -991,6 +1054,10 @@
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

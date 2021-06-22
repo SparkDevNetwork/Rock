@@ -25,6 +25,8 @@ using System.Data.Entity.Infrastructure;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
+using System.Linq;
+using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -146,6 +148,13 @@ namespace Rock.Model
                         CompletedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
             private set { }
         }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepProgramCompletion"/> to which this step belongs.
+        /// </summary>
+        [DataMember]
+        public int? StepProgramCompletionId { get; set; }
+
         #endregion Entity Properties
 
         #region IOrdered
@@ -183,6 +192,12 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.StepProgramCompletion"/>.
+        /// </summary>
+        [DataMember]
+        public virtual StepProgramCompletion StepProgramCompletion { get; set; }
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.StepWorkflow">StepWorkflows</see> that are of this step.
@@ -309,7 +324,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             int? previousStepStatusId = null;
 
@@ -332,6 +347,64 @@ namespace Rock.Model
             base.PreSaveChanges( dbContext, entry );
         }
 
+        /// <summary>
+        /// Posts the save changes.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            UpdateStepProgramCompletion( dbContext as RockContext );
+        }
+
+        private void UpdateStepProgramCompletion( RockContext rockContext )
+        {
+            if ( !this.CompletedDateTime.HasValue )
+            {
+                return;
+            }
+
+            var stepTypeService = new StepTypeService( rockContext );
+            var stepType = this.StepType ?? stepTypeService.Get( this.StepTypeId );
+
+            if ( stepType == null )
+            {
+                return;
+            }
+
+            var programStepTypeIds = stepTypeService
+                .Queryable()
+                .Where( a => a.StepProgramId == stepType.StepProgramId && a.IsActive )
+                .Select( a => a.Id )
+                .ToList();
+
+            var steps = new StepService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.PersonAliasId == this.PersonAliasId && !a.StepProgramCompletionId.HasValue && a.CompletedDateTime.HasValue )
+                .OrderBy( a => a.CompletedDateTime )
+                .ToList();
+
+            while ( steps.Any() && programStepTypeIds.All( a => steps.Any( b => b.StepTypeId == a ) ) )
+            {
+                var stepSet = new List<Step>();
+                foreach ( var programStepTypeId in programStepTypeIds )
+                {
+                    var step = steps.Where( a => a.StepTypeId == programStepTypeId ).FirstOrDefault();
+                    if ( step == null )
+                    {
+                        continue;
+                    }
+
+                    stepSet.Add( step );
+                    steps.RemoveAll( a => a.Id == step.Id );
+                }
+
+                StepService.UpdateStepProgramCompletion( stepSet, PersonAliasId, stepType.StepProgramId, rockContext );
+            }
+        }
+
         #endregion Overrides
 
         #region Entity Configuration
@@ -351,6 +424,7 @@ namespace Rock.Model
 
                 HasOptional( s => s.Campus ).WithMany().HasForeignKey( s => s.CampusId ).WillCascadeOnDelete( false );
                 HasOptional( s => s.StepStatus ).WithMany( ss => ss.Steps ).HasForeignKey( s => s.StepStatusId ).WillCascadeOnDelete( false );
+                HasOptional( s => s.StepProgramCompletion ).WithMany( ss => ss.Steps ).HasForeignKey( s => s.StepProgramCompletionId ).WillCascadeOnDelete( true );
 
                 // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
                 // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed

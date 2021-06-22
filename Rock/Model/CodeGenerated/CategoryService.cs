@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,113 +54,159 @@ namespace Rock.Model
         public bool CanDelete( Category item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, AchievementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Category>( Context ).Queryable().Any( a => a.ParentCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Category.FriendlyTypeName, Category.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<CommunicationTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, CommunicationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<ContentChannel>( Context ).Queryable().Any( a => a.ItemTagCategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, ContentChannel.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DataView.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DefinedType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, DefinedType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<History>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, History.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MergeTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, MergeTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<PrayerRequest>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Report>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Report.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Schedule>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Schedule.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<StepProgram>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, StepProgram.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SystemCommunication>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
                 return false;
-            }  
+            }
 
-            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated 
+            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated
             if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, SystemEmail.FriendlyTypeName );
                 return false;
-            }  
+            }
             #pragma warning restore 612, 618
- 
+
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Tag.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<WorkflowType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Category View Model Helper
+    /// </summary>
+    public partial class CategoryViewModelHelper : ViewModelHelper<Category, Rock.ViewModel.CategoryViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.CategoryViewModel CreateViewModel( Category model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.CategoryViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                Description = model.Description,
+                EntityTypeId = model.EntityTypeId,
+                EntityTypeQualifierColumn = model.EntityTypeQualifierColumn,
+                EntityTypeQualifierValue = model.EntityTypeQualifierValue,
+                HighlightColor = model.HighlightColor,
+                IconCssClass = model.IconCssClass,
+                IsSystem = model.IsSystem,
+                Name = model.Name,
+                Order = model.Order,
+                ParentCategoryId = model.ParentCategoryId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -235,5 +284,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.CategoryViewModel ToViewModel( this Category model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new CategoryViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }
