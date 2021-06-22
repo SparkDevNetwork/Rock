@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -178,8 +179,13 @@ namespace Rock.Model
 
             foreach ( var eventItemId in eventItems )
             {
-                var transaction = new DeleteIndexEntityTransaction { EntityId = eventItemId, EntityTypeId = eventItemEntityTypeId };
-                transaction.Enqueue();
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = eventItemEntityTypeId,
+                    EntityId = eventItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
             }
         }
 
@@ -206,8 +212,13 @@ namespace Rock.Model
 
             foreach ( var eventItemId in eventItems )
             {
-                var transaction = new IndexEntityTransaction { EntityId = eventItemId, EntityTypeId = eventItemEntityTypeId };
-                transaction.Enqueue();
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = eventItemEntityTypeId,
+                    EntityId = eventItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
             }
         }
         #endregion
