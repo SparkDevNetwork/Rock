@@ -32,6 +32,7 @@ export default interface Following extends Entity {
     EntityId: number;
     EntityTypeId: number;
     PersonAliasId: number;
+    PurposeKey: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

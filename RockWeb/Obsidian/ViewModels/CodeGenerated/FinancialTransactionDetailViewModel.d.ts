@@ -35,6 +35,7 @@ export default interface FinancialTransactionDetail extends Entity {
     EntityTypeId: number | null;
     FeeAmount: number | null;
     FeeCoverageAmount: number | null;
+    ForeignCurrencyAmount: number | null;
     Summary: string | null;
     TransactionId: number;
     CreatedDateTime: RockDateType | null;

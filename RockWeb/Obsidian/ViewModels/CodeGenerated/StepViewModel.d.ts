@@ -36,6 +36,7 @@ export default interface Step extends Entity {
     Order: number;
     PersonAliasId: number;
     StartDateTime: RockDateType | null;
+    StepProgramCompletionId: number | null;
     StepStatusId: number | null;
     StepTypeId: number;
     CreatedDateTime: RockDateType | null;

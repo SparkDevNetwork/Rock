@@ -26,20 +26,18 @@ import AttributeValue from './AttributeValueViewModel';
 import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
-export default interface FinancialPersonSavedAccount extends Entity {
+export default interface RegistrationSession extends Entity {
     Id: number;
     Attributes: Record<string, AttributeValue> | null;
-    FinancialGatewayId: number | null;
-    FinancialPaymentDetailId: number | null;
-    GatewayPersonIdentifier: string | null;
-    GroupId: number | null;
-    IsDefault: boolean;
-    IsSystem: boolean;
-    Name: string | null;
-    PersonAliasId: number | null;
-    PreferredForeignCurrencyCodeValueId: number | null;
-    ReferenceNumber: string | null;
-    TransactionCode: string | null;
+    ClientIpAddress: string | null;
+    ExpirationDateTime: RockDateType;
+    PaymentGatewayReference: string | null;
+    RegistrationCount: number;
+    RegistrationData: string | null;
+    RegistrationId: number | null;
+    RegistrationInstanceId: number;
+    SessionStartDateTime: RockDateType;
+    SessionStatus: number;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

@@ -31,6 +31,7 @@ export default interface DefinedType extends Entity {
     Attributes: Record<string, AttributeValue> | null;
     CategoryId: number | null;
     Description: string | null;
+    EnableSecurityOnValues: boolean;
     FieldTypeId: number | null;
     HelpText: string | null;
     IsActive: boolean;

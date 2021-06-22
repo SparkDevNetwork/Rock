@@ -34,13 +34,10 @@ export default interface FinancialPaymentDetail extends Entity {
     CreditCardTypeValueId: number | null;
     CurrencyTypeValueId: number | null;
     ExpirationMonth: number | null;
-    ExpirationMonthEncrypted: string | null;
     ExpirationYear: number | null;
-    ExpirationYearEncrypted: string | null;
     FinancialPersonSavedAccountId: number | null;
     GatewayPersonIdentifier: string | null;
     NameOnCard: string | null;
-    NameOnCardEncrypted: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

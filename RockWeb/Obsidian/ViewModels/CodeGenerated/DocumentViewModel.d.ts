@@ -34,6 +34,7 @@ export default interface Document extends Entity {
     EntityId: number;
     IsSystem: boolean;
     Name: string | null;
+    PurposeKey: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

@@ -30,6 +30,7 @@ export default interface Metric extends Entity {
     Id: number;
     AdminPersonAliasId: number | null;
     Attributes: Record<string, AttributeValue> | null;
+    AutoPartitionOnPrimaryCampus: boolean;
     DataViewId: number | null;
     Description: string | null;
     EnableAnalytics: boolean;

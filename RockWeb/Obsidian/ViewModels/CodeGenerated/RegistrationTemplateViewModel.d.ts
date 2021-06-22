@@ -48,6 +48,7 @@ export default interface RegistrationTemplate extends Entity {
     GroupMemberStatus: number;
     GroupTypeId: number | null;
     IsActive: boolean;
+    IsRegistrationMeteringEnabled: boolean;
     LoginRequired: boolean;
     MaxRegistrants: number | null;
     MinimumInitialPayment: number | null;

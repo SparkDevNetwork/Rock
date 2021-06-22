@@ -26,20 +26,15 @@ import AttributeValue from './AttributeValueViewModel';
 import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
-export default interface FinancialPersonSavedAccount extends Entity {
+export default interface MediaAccount extends Entity {
     Id: number;
     Attributes: Record<string, AttributeValue> | null;
-    FinancialGatewayId: number | null;
-    FinancialPaymentDetailId: number | null;
-    GatewayPersonIdentifier: string | null;
-    GroupId: number | null;
-    IsDefault: boolean;
-    IsSystem: boolean;
+    ComponentEntityTypeId: number;
+    IsActive: boolean;
+    LastRefreshDateTime: RockDateType | null;
+    MetricData: string | null;
     Name: string | null;
-    PersonAliasId: number | null;
-    PreferredForeignCurrencyCodeValueId: number | null;
-    ReferenceNumber: string | null;
-    TransactionCode: string | null;
+    SourceData: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

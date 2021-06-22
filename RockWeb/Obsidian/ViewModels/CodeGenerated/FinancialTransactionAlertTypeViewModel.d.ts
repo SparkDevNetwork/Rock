@@ -26,20 +26,27 @@ import AttributeValue from './AttributeValueViewModel';
 import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
-export default interface FinancialPersonSavedAccount extends Entity {
+export default interface FinancialTransactionAlertType extends Entity {
     Id: number;
+    AlertType: number;
+    AmountSensitivityScale: number | null;
     Attributes: Record<string, AttributeValue> | null;
-    FinancialGatewayId: number | null;
-    FinancialPaymentDetailId: number | null;
-    GatewayPersonIdentifier: string | null;
-    GroupId: number | null;
-    IsDefault: boolean;
-    IsSystem: boolean;
+    CampusId: number | null;
+    ConnectionOpportunityId: number | null;
+    ContinueIfMatched: boolean;
+    DataViewId: number | null;
+    FrequencySensitivityScale: number | null;
+    MaximumDaysSinceLastGift: number | null;
+    MaximumGiftAmount: number | null;
+    MaximumMedianGiftAmount: number | null;
+    MinimumGiftAmount: number | null;
+    MinimumMedianGiftAmount: number | null;
     Name: string | null;
-    PersonAliasId: number | null;
-    PreferredForeignCurrencyCodeValueId: number | null;
-    ReferenceNumber: string | null;
-    TransactionCode: string | null;
+    Order: number;
+    RepeatPreventionDuration: number | null;
+    SendBusEvent: boolean;
+    SystemCommunicationId: number | null;
+    WorkflowTypeId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

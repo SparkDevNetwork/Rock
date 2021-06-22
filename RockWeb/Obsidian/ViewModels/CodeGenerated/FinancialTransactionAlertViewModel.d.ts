@@ -22,24 +22,28 @@
 //
 
 import Entity from '../Entity';
-import AttributeValue from './AttributeValueViewModel';
 import { RockDateType } from '../../Util/RockDate';
+import AttributeValue from './AttributeValueViewModel';
 import { Guid } from '../../Util/Guid';
 
-export default interface FinancialPersonSavedAccount extends Entity {
+export default interface FinancialTransactionAlert extends Entity {
     Id: number;
+    AlertDateKey: number;
+    AlertDateTime: RockDateType;
+    AlertTypeId: number;
+    Amount: number | null;
+    AmountCurrentIqr: number | null;
+    AmountCurrentMedian: number | null;
+    AmountIqrMultiplier: number | null;
     Attributes: Record<string, AttributeValue> | null;
-    FinancialGatewayId: number | null;
-    FinancialPaymentDetailId: number | null;
-    GatewayPersonIdentifier: string | null;
-    GroupId: number | null;
-    IsDefault: boolean;
-    IsSystem: boolean;
-    Name: string | null;
-    PersonAliasId: number | null;
-    PreferredForeignCurrencyCodeValueId: number | null;
-    ReferenceNumber: string | null;
-    TransactionCode: string | null;
+    FrequencyCurrentMean: number | null;
+    FrequencyCurrentStandardDeviation: number | null;
+    FrequencyDifferenceFromMean: number | null;
+    FrequencyZScore: number | null;
+    GivingId: string | null;
+    PersonAliasId: number;
+    ReasonsKey: string | null;
+    TransactionId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

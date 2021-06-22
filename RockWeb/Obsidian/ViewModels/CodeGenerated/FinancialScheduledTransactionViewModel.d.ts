@@ -34,7 +34,9 @@ export default interface FinancialScheduledTransaction extends Entity {
     EndDate: RockDateType | null;
     FinancialGatewayId: number | null;
     FinancialPaymentDetailId: number | null;
+    ForeignCurrencyCodeValueId: number | null;
     GatewayScheduleId: string | null;
+    InactivateDateTime: RockDateType | null;
     IsActive: boolean;
     LastRemindedDate: RockDateType | null;
     LastStatusUpdateDateTime: RockDateType | null;
@@ -42,6 +44,8 @@ export default interface FinancialScheduledTransaction extends Entity {
     NumberOfPayments: number | null;
     SourceTypeValueId: number | null;
     StartDate: RockDateType;
+    Status: number | null;
+    StatusMessage: string | null;
     Summary: string | null;
     TransactionCode: string | null;
     TransactionFrequencyValueId: number;

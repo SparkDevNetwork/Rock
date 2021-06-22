@@ -32,6 +32,7 @@ export default interface EventCalendar extends Entity {
     Description: string | null;
     IconCssClass: string | null;
     IsActive: boolean;
+    IsIndexEnabled: boolean;
     Name: string | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;

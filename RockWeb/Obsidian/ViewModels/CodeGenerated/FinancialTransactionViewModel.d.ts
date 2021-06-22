@@ -36,6 +36,7 @@ export default interface FinancialTransaction extends Entity {
     CheckMicrParts: string | null;
     FinancialGatewayId: number | null;
     FinancialPaymentDetailId: number | null;
+    ForeignCurrencyCodeValueId: number | null;
     FutureProcessingDateTime: RockDateType | null;
     IsReconciled: boolean | null;
     IsSettled: boolean | null;

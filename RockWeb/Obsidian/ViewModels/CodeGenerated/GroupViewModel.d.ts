@@ -38,6 +38,8 @@ export default interface Group extends Entity {
     DisableScheduleToolboxAccess: boolean;
     DisableScheduling: boolean;
     GroupCapacity: number | null;
+    GroupSalutation: string | null;
+    GroupSalutationFull: string | null;
     GroupTypeId: number;
     InactiveDateTime: RockDateType | null;
     InactiveReasonNote: string | null;

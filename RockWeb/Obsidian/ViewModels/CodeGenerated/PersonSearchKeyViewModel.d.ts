@@ -29,6 +29,7 @@ import { Guid } from '../../Util/Guid';
 export default interface PersonSearchKey extends Entity {
     Id: number;
     Attributes: Record<string, AttributeValue> | null;
+    IsValuePrivate: boolean;
     PersonAliasId: number | null;
     SearchTypeValueId: number;
     SearchValue: string | null;
