@@ -2580,7 +2580,7 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;Google Heatmap&apos;, N&apos;Add an interactive visualization to depict the intensity of data at geographical points.&apos;, N&apos;&lt;p&gt;
-        ///This shortcode makes it easy to add responsive Heatmaps from Google Maps to your site. And uses similar options to the Google Map shortcode to make things as easy as possible. Let&apos;&apos;s start with a simple example and w [rest of string was truncated]&quot;;.
+        ///This shortcode makes it easy to add responsive Heatmaps from Google Maps to your site. And uses similar options to the Google Map shortcode to make things as easy as possible. Let&apos;&apos;s start with a simple example and  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202106081803525_Rollup_0608_LavaHeatMap {
             get {
@@ -2597,11 +2597,25 @@ namespace Rock.Migrations.Migrations {
         ///    &lt;span&gt;[[ dataitem label:&apos;&apos;February&apos;&apos; value:&apos;&apos;45&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
         ///    &lt;span&gt;[[ dataitem label:&apos;&apos;March&apos;&apos; value:&apos;&apos;38&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
         ///    &lt;span&gt;[[ dataitem label:&apos;&apos;April&apos;&apos; value:&apos;&apos;34&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
-        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;May&apos;&apos; value:&apos;&apos; [rest of string was truncated]&quot;;.
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;May&apos;&apos;  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202106081803525_Rollup_0608_UpdateTrendChart {
             get {
                 return ResourceManager.GetString("_202106081803525_Rollup_0608_UpdateTrendChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [FinancialStatementTemplate] SET [ReportTemplate]=N&apos;{% assign publicApplicationRoot = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos; %}
+        ///{% assign organizationName = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationName&apos;&apos; %}
+        ///{% assign organizationAddress = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationAddress&apos;&apos; %}
+        ///{% assign organizationWebsite = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationWebsite&apos;&apos; %}
+        ///{% assign organizationEmail = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationEmail&apos;&apos; %}
+        ///{% assign organizationPhone = &apos;&apos;Global&apos;&apos; | Attrib [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106221850270_Rollup_06221_UpdateStatementGenerator {
+            get {
+                return ResourceManager.GetString("_202106221850270_Rollup_06221_UpdateStatementGenerator", resourceCulture);
             }
         }
     }
