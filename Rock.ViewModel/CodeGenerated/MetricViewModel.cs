@@ -40,6 +40,14 @@ namespace Rock.ViewModel
         public int? AdminPersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the AutoPartitionOnPrimaryCampus.
+        /// </summary>
+        /// <value>
+        /// The AutoPartitionOnPrimaryCampus.
+        /// </value>
+        public bool AutoPartitionOnPrimaryCampus { get; set; }
+
+        /// <summary>
         /// Gets or sets the DataViewId.
         /// </summary>
         /// <value>

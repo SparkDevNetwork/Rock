@@ -100,6 +100,7 @@ namespace Rock.Model
                 CheckMicrParts = model.CheckMicrParts,
                 FinancialGatewayId = model.FinancialGatewayId,
                 FinancialPaymentDetailId = model.FinancialPaymentDetailId,
+                ForeignCurrencyCodeValueId = model.ForeignCurrencyCodeValueId,
                 FutureProcessingDateTime = model.FutureProcessingDateTime,
                 IsReconciled = model.IsReconciled,
                 IsSettled = model.IsSettled,

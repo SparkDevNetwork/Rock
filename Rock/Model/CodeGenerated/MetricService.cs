@@ -82,6 +82,7 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 AdminPersonAliasId = model.AdminPersonAliasId,
+                AutoPartitionOnPrimaryCampus = model.AutoPartitionOnPrimaryCampus,
                 DataViewId = model.DataViewId,
                 Description = model.Description,
                 EnableAnalytics = model.EnableAnalytics,

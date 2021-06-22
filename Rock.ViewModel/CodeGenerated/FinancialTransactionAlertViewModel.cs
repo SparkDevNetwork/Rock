@@ -27,81 +27,129 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// DefinedType View Model
+    /// FinancialTransactionAlert View Model
     /// </summary>
-    public partial class DefinedTypeViewModel : ViewModelBase
+    public partial class FinancialTransactionAlertViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the CategoryId.
+        /// Gets or sets the AlertDateKey.
         /// </summary>
         /// <value>
-        /// The CategoryId.
+        /// The AlertDateKey.
         /// </value>
-        public int? CategoryId { get; set; }
+        public int AlertDateKey { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the AlertDateTime.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The AlertDateTime.
         /// </value>
-        public string Description { get; set; }
+        public DateTime AlertDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the EnableSecurityOnValues.
+        /// Gets or sets the AlertTypeId.
         /// </summary>
         /// <value>
-        /// The EnableSecurityOnValues.
+        /// The AlertTypeId.
         /// </value>
-        public bool EnableSecurityOnValues { get; set; }
+        public int AlertTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FieldTypeId.
+        /// Gets or sets the Amount.
         /// </summary>
         /// <value>
-        /// The FieldTypeId.
+        /// The Amount.
         /// </value>
-        public int? FieldTypeId { get; set; }
+        public decimal? Amount { get; set; }
 
         /// <summary>
-        /// Gets or sets the HelpText.
+        /// Gets or sets the AmountCurrentIqr.
         /// </summary>
         /// <value>
-        /// The HelpText.
+        /// The AmountCurrentIqr.
         /// </value>
-        public string HelpText { get; set; }
+        public decimal? AmountCurrentIqr { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the AmountCurrentMedian.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// The AmountCurrentMedian.
         /// </value>
-        public bool IsActive { get; set; }
+        public decimal? AmountCurrentMedian { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the AmountIqrMultiplier.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The AmountIqrMultiplier.
         /// </value>
-        public bool IsSystem { get; set; }
+        public decimal? AmountIqrMultiplier { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the FrequencyCurrentMean.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The FrequencyCurrentMean.
         /// </value>
-        public string Name { get; set; }
+        public decimal? FrequencyCurrentMean { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets the FrequencyCurrentStandardDeviation.
         /// </summary>
         /// <value>
-        /// The Order.
+        /// The FrequencyCurrentStandardDeviation.
         /// </value>
-        public int Order { get; set; }
+        public decimal? FrequencyCurrentStandardDeviation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FrequencyDifferenceFromMean.
+        /// </summary>
+        /// <value>
+        /// The FrequencyDifferenceFromMean.
+        /// </value>
+        public decimal? FrequencyDifferenceFromMean { get; set; }
+
+        /// <summary>
+        /// Gets or sets the FrequencyZScore.
+        /// </summary>
+        /// <value>
+        /// The FrequencyZScore.
+        /// </value>
+        public decimal? FrequencyZScore { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GivingId.
+        /// </summary>
+        /// <value>
+        /// The GivingId.
+        /// </value>
+        public string GivingId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonAliasId.
+        /// </summary>
+        /// <value>
+        /// The PersonAliasId.
+        /// </value>
+        public int PersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ReasonsKey.
+        /// </summary>
+        /// <value>
+        /// The ReasonsKey.
+        /// </value>
+        public string ReasonsKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TransactionId.
+        /// </summary>
+        /// <value>
+        /// The TransactionId.
+        /// </value>
+        public int? TransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

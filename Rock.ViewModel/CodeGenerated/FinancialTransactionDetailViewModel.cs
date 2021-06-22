@@ -80,6 +80,14 @@ namespace Rock.ViewModel
         public decimal? FeeCoverageAmount { get; set; }
 
         /// <summary>
+        /// Gets or sets the ForeignCurrencyAmount.
+        /// </summary>
+        /// <value>
+        /// The ForeignCurrencyAmount.
+        /// </value>
+        public decimal? ForeignCurrencyAmount { get; set; }
+
+        /// <summary>
         /// Gets or sets the Summary.
         /// </summary>
         /// <value>

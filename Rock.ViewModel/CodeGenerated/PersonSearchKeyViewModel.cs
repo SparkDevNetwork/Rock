@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class PersonSearchKeyViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the IsValuePrivate.
+        /// </summary>
+        /// <value>
+        /// The IsValuePrivate.
+        /// </value>
+        public bool IsValuePrivate { get; set; }
+
+        /// <summary>
         /// Gets or sets the PersonAliasId.
         /// </summary>
         /// <value>

@@ -96,6 +96,14 @@ namespace Rock.ViewModel
         public int? PersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the PreferredForeignCurrencyCodeValueId.
+        /// </summary>
+        /// <value>
+        /// The PreferredForeignCurrencyCodeValueId.
+        /// </value>
+        public int? PreferredForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the ReferenceNumber.
         /// </summary>
         /// <value>

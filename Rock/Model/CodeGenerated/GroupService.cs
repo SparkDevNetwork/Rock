@@ -184,6 +184,8 @@ namespace Rock.Model
                 DisableScheduleToolboxAccess = model.DisableScheduleToolboxAccess,
                 DisableScheduling = model.DisableScheduling,
                 GroupCapacity = model.GroupCapacity,
+                GroupSalutation = model.GroupSalutation,
+                GroupSalutationFull = model.GroupSalutationFull,
                 GroupTypeId = model.GroupTypeId,
                 InactiveDateTime = model.InactiveDateTime,
                 InactiveReasonNote = model.InactiveReasonNote,

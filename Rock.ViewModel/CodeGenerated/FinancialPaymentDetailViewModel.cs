@@ -72,28 +72,12 @@ namespace Rock.ViewModel
         public int? ExpirationMonth { get; set; }
 
         /// <summary>
-        /// Gets or sets the ExpirationMonthEncrypted.
-        /// </summary>
-        /// <value>
-        /// The ExpirationMonthEncrypted.
-        /// </value>
-        public string ExpirationMonthEncrypted { get; set; }
-
-        /// <summary>
         /// Gets or sets the ExpirationYear.
         /// </summary>
         /// <value>
         /// The ExpirationYear.
         /// </value>
         public int? ExpirationYear { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ExpirationYearEncrypted.
-        /// </summary>
-        /// <value>
-        /// The ExpirationYearEncrypted.
-        /// </value>
-        public string ExpirationYearEncrypted { get; set; }
 
         /// <summary>
         /// Gets or sets the FinancialPersonSavedAccountId.
@@ -118,14 +102,6 @@ namespace Rock.ViewModel
         /// The NameOnCard.
         /// </value>
         public string NameOnCard { get; set; }
-
-        /// <summary>
-        /// Gets or sets the NameOnCardEncrypted.
-        /// </summary>
-        /// <value>
-        /// The NameOnCardEncrypted.
-        /// </value>
-        public string NameOnCardEncrypted { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

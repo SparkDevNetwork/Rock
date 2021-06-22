@@ -27,9 +27,9 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// MediaElement View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class MediaElementViewModel : ViewModelBase
     {
         /// <summary>
         /// Gets or sets the Description.
@@ -40,28 +40,36 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the DurationSeconds.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The DurationSeconds.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public int? DurationSeconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the FileDataJson.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The FileDataJson.
         /// </value>
-        public int EntityId { get; set; }
+        public string FileDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the MediaFolderId.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The MediaFolderId.
         /// </value>
-        public bool IsSystem { get; set; }
+        public int MediaFolderId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MetricData.
+        /// </summary>
+        /// <value>
+        /// The MetricData.
+        /// </value>
+        public string MetricData { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -72,12 +80,44 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the SourceCreatedDateTime.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The SourceCreatedDateTime.
         /// </value>
-        public string PurposeKey { get; set; }
+        public DateTime? SourceCreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceData.
+        /// </summary>
+        /// <value>
+        /// The SourceData.
+        /// </value>
+        public string SourceData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceKey.
+        /// </summary>
+        /// <value>
+        /// The SourceKey.
+        /// </value>
+        public string SourceKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceModifiedDateTime.
+        /// </summary>
+        /// <value>
+        /// The SourceModifiedDateTime.
+        /// </value>
+        public DateTime? SourceModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ThumbnailDataJson.
+        /// </summary>
+        /// <value>
+        /// The ThumbnailDataJson.
+        /// </value>
+        public string ThumbnailDataJson { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

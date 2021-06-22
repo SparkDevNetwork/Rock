@@ -88,6 +88,14 @@ namespace Rock.ViewModel
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary>
+        /// Gets or sets the ForeignCurrencyCodeValueId.
+        /// </summary>
+        /// <value>
+        /// The ForeignCurrencyCodeValueId.
+        /// </value>
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the FutureProcessingDateTime.
         /// </summary>
         /// <value>

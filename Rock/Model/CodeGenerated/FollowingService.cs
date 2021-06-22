@@ -84,6 +84,7 @@ namespace Rock.Model
                 EntityId = model.EntityId,
                 EntityTypeId = model.EntityTypeId,
                 PersonAliasId = model.PersonAliasId,
+                PurposeKey = model.PurposeKey,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
