@@ -46,6 +46,7 @@ import CheckBox from '../../Elements/CheckBox';
 import PhoneNumberBox from '../../Elements/PhoneNumberBox';
 import HelpBlock from '../../Elements/HelpBlock';
 import DatePartsPicker, { DatePartsPickerModel } from '../../Elements/DatePartsPicker';
+import ColorPicker from '../../Elements/ColorPicker';
 
 /** An inner component that describes the template used for each of the controls
  *  within this control gallery */
@@ -485,6 +486,32 @@ const DefinedTypeAndValueGallery = defineComponent( {
 </GalleryAndResult>`
 } );
 
+/** Demonstrates a color picker */
+const ColorPickerGallery = defineComponent({
+    name: 'ColorPickerGallery',
+    components: {
+        GalleryAndResult,
+        ColorPicker
+    },
+    data() {
+        return {
+            value: '#ee7725',
+        };
+    },
+    template: `
+<GalleryAndResult>
+    <template #header>
+        ColorPicker
+    </template>
+    <template #gallery>
+        <ColorPicker label="Color" v-model="value" />
+    </template>
+    <template #result>
+        {{value}}
+    </template>
+</GalleryAndResult>`
+});
+
 export default defineComponent({
     name: 'Example.ControlGallery',
     components: {
@@ -512,7 +539,8 @@ export default defineComponent({
         DropDownListGallery,
         HelpBlockGallery,
         FormRulesGallery,
-        DefinedTypeAndValueGallery
+        DefinedTypeAndValueGallery,
+        ColorPickerGallery
     },
     data() {
         return {
@@ -695,6 +723,7 @@ export default defineComponent({
         <PhoneNumberBoxGallery />
         <DropDownListGallery />
         <HelpBlockGallery />
+        <ColorPickerGallery />
     </template>
 </PaneledBlockTemplate>`
 });

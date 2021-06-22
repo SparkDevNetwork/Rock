@@ -166,6 +166,10 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Elements/
                         BooleanControlType: '2'
                     }),
                     PhoneNumberGallery: GetFieldTypeGalleryComponent('PhoneNumber', '(321) 456-7890', '6B1908EC-12A2-463A-A7BD-970CE0FAF097', {}),
+                    GenderGallery: GetFieldTypeGalleryComponent('Gender', '2', '2E28779B-4C76-4142-AE8D-49EA31DDB503', {}),
+                    ColorGallery: GetFieldTypeGalleryComponent('Color', '#ee7725', 'D747E6AE-C383-4E22-8846-71518E3DD06F', {
+                        selectiontype: 'Color Picker'
+                    }),
                     DefinedValueGallery: GetFieldTypeGalleryComponent('DefinedValue (WIP)', 'af28af43-8461-41ac-a2c5-85122712be96', '59D5A94C-94A0-4630-B80A-BB25697D74C7', {
                         definedtype: '92',
                         allowmultiple: '',
@@ -176,7 +180,7 @@ System.register(["../../Templates/PaneledBlockTemplate", "vue", "../../Elements/
                         RepeatColumns: ''
                     })
                 },
-                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n        <DateGallery />\n        <SingleSelectGallery />\n        <MemoGallery />\n        <BooleanGallery />\n        <PhoneNumberGallery />\n        <DefinedValueGallery />\n    </template>\n</PaneledBlockTemplate>"
+                template: "\n<PaneledBlockTemplate>\n    <template v-slot:title>\n        <i class=\"fa fa-flask\"></i>\n        Obsidian Field Type Gallery\n    </template>\n    <template v-slot:default>\n        <TextGallery />\n        <DateGallery />\n        <SingleSelectGallery />\n        <MemoGallery />\n        <BooleanGallery />\n        <PhoneNumberGallery />\n        <GenderGallery />\n        <ColorGallery />\n        <DefinedValueGallery />\n    </template>\n</PaneledBlockTemplate>"
             }));
         }
     };
