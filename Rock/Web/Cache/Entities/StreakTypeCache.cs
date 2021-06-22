@@ -108,6 +108,24 @@ namespace Rock.Web.Cache
         public bool IsActive { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this streak type is releated to interactions.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance related to interactions; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsInteractionRelated
+        {
+            get
+            {
+                return (
+                        StructureType == StreakStructureType.InteractionChannel
+                        || StructureType == StreakStructureType.InteractionComponent
+                        || StructureType == StreakStructureType.InteractionMedium
+                       );
+            }
+        }
+
+        /// <summary>
         /// Gets the Streak Type Exclusions
         /// </summary>
         /// <value>
