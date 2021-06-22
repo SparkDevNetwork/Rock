@@ -78,6 +78,7 @@
     <Compile Include="CodeGenerated\CategoryViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachmentViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipientViewModel.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponseAttachmentViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationResponseViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplateAttachmentViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplateViewModel.cs" />
@@ -128,6 +129,9 @@
     <Compile Include="CodeGenerated\FinancialPledgeViewModel.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetailViewModel.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertTypeViewModel.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertViewModel.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetailViewModel.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionImageViewModel.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionRefundViewModel.cs" />
@@ -167,6 +171,9 @@
     <Compile Include="CodeGenerated\LavaShortcodeViewModel.cs" />
     <Compile Include="CodeGenerated\LayoutViewModel.cs" />
     <Compile Include="CodeGenerated\LocationViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaAccountViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaElementViewModel.cs" />
+    <Compile Include="CodeGenerated\MediaFolderViewModel.cs" />
     <Compile Include="CodeGenerated\MergeTemplateViewModel.cs" />
     <Compile Include="CodeGenerated\MetricPartitionViewModel.cs" />
     <Compile Include="CodeGenerated\MetricValuePartitionViewModel.cs" />
@@ -196,6 +203,7 @@
     <Compile Include="CodeGenerated\RegistrationInstanceViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrantFeeViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrantViewModel.cs" />
+    <Compile Include="CodeGenerated\RegistrationSessionViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateDiscountViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFeeItemViewModel.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFeeViewModel.cs" />
@@ -221,6 +229,7 @@
     <Compile Include="CodeGenerated\SiteViewModel.cs" />
     <Compile Include="CodeGenerated\SmsActionViewModel.cs" />
     <Compile Include="CodeGenerated\SmsPipelineViewModel.cs" />
+    <Compile Include="CodeGenerated\StepProgramCompletionViewModel.cs" />
     <Compile Include="CodeGenerated\StepProgramViewModel.cs" />
     <Compile Include="CodeGenerated\StepStatusViewModel.cs" />
     <Compile Include="CodeGenerated\StepTypePrerequisiteViewModel.cs" />

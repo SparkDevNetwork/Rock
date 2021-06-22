@@ -27,41 +27,41 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// MediaAccount View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class MediaAccountViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the ComponentEntityTypeId.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The ComponentEntityTypeId.
         /// </value>
-        public string Description { get; set; }
+        public int ComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the IsActive.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The IsActive.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the LastRefreshDateTime.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The LastRefreshDateTime.
         /// </value>
-        public int EntityId { get; set; }
+        public DateTime? LastRefreshDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the MetricData.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The MetricData.
         /// </value>
-        public bool IsSystem { get; set; }
+        public string MetricData { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -72,12 +72,12 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the SourceData.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The SourceData.
         /// </value>
-        public string PurposeKey { get; set; }
+        public string SourceData { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

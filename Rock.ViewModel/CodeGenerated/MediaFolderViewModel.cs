@@ -27,10 +27,34 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// MediaFolder View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class MediaFolderViewModel : ViewModelBase
     {
+        /// <summary>
+        /// Gets or sets the ContentChannelAttributeId.
+        /// </summary>
+        /// <value>
+        /// The ContentChannelAttributeId.
+        /// </value>
+        public int? ContentChannelAttributeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ContentChannelId.
+        /// </summary>
+        /// <value>
+        /// The ContentChannelId.
+        /// </value>
+        public int? ContentChannelId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ContentChannelItemStatus.
+        /// </summary>
+        /// <value>
+        /// The ContentChannelItemStatus.
+        /// </value>
+        public int? ContentChannelItemStatus { get; set; }
+
         /// <summary>
         /// Gets or sets the Description.
         /// </summary>
@@ -40,28 +64,36 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the IsContentChannelSyncEnabled.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The IsContentChannelSyncEnabled.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public bool IsContentChannelSyncEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the IsPublic.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The IsPublic.
         /// </value>
-        public int EntityId { get; set; }
+        public bool? IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the MediaAccountId.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The MediaAccountId.
         /// </value>
-        public bool IsSystem { get; set; }
+        public int MediaAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the MetricData.
+        /// </summary>
+        /// <value>
+        /// The MetricData.
+        /// </value>
+        public string MetricData { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -72,12 +104,28 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the SourceData.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The SourceData.
         /// </value>
-        public string PurposeKey { get; set; }
+        public string SourceData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SourceKey.
+        /// </summary>
+        /// <value>
+        /// The SourceKey.
+        /// </value>
+        public string SourceKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the WorkflowTypeId.
+        /// </summary>
+        /// <value>
+        /// The WorkflowTypeId.
+        /// </value>
+        public int? WorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

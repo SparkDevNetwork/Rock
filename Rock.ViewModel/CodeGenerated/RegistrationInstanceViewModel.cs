@@ -112,6 +112,22 @@ namespace Rock.ViewModel
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the ExternalGatewayFundId.
+        /// </summary>
+        /// <value>
+        /// The ExternalGatewayFundId.
+        /// </value>
+        public int? ExternalGatewayFundId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ExternalGatewayMerchantId.
+        /// </summary>
+        /// <value>
+        /// The ExternalGatewayMerchantId.
+        /// </value>
+        public int? ExternalGatewayMerchantId { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsActive.
         /// </summary>
         /// <value>
@@ -160,6 +176,14 @@ namespace Rock.ViewModel
         public string RegistrationInstructions { get; set; }
 
         /// <summary>
+        /// Gets or sets the RegistrationMeteringThreshold.
+        /// </summary>
+        /// <value>
+        /// The RegistrationMeteringThreshold.
+        /// </value>
+        public int? RegistrationMeteringThreshold { get; set; }
+
+        /// <summary>
         /// Gets or sets the RegistrationTemplateId.
         /// </summary>
         /// <value>
@@ -198,6 +222,30 @@ namespace Rock.ViewModel
         /// The StartDateTime.
         /// </value>
         public DateTime? StartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimeoutIsEnabled.
+        /// </summary>
+        /// <value>
+        /// The TimeoutIsEnabled.
+        /// </value>
+        public bool TimeoutIsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimeoutLengthMinutes.
+        /// </summary>
+        /// <value>
+        /// The TimeoutLengthMinutes.
+        /// </value>
+        public int? TimeoutLengthMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the TimeoutThreshold.
+        /// </summary>
+        /// <value>
+        /// The TimeoutThreshold.
+        /// </value>
+        public int? TimeoutThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

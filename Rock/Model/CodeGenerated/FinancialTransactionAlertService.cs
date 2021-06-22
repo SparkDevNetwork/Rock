@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,6 +57,57 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialTransactionAlert View Model Helper
+    /// </summary>
+    public partial class FinancialTransactionAlertViewModelHelper : ViewModelHelper<FinancialTransactionAlert, Rock.ViewModel.FinancialTransactionAlertViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialTransactionAlertViewModel CreateViewModel( FinancialTransactionAlert model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialTransactionAlertViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AlertDateKey = model.AlertDateKey,
+                AlertDateTime = model.AlertDateTime,
+                AlertTypeId = model.AlertTypeId,
+                Amount = model.Amount,
+                AmountCurrentIqr = model.AmountCurrentIqr,
+                AmountCurrentMedian = model.AmountCurrentMedian,
+                AmountIqrMultiplier = model.AmountIqrMultiplier,
+                FrequencyCurrentMean = model.FrequencyCurrentMean,
+                FrequencyCurrentStandardDeviation = model.FrequencyCurrentStandardDeviation,
+                FrequencyDifferenceFromMean = model.FrequencyDifferenceFromMean,
+                FrequencyZScore = model.FrequencyZScore,
+                GivingId = model.GivingId,
+                PersonAliasId = model.PersonAliasId,
+                ReasonsKey = model.ReasonsKey,
+                TransactionId = model.TransactionId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -136,5 +190,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialTransactionAlertViewModel ToViewModel( this FinancialTransactionAlert model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialTransactionAlertViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

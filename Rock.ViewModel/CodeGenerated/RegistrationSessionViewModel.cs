@@ -27,57 +27,81 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// RegistrationSession View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class RegistrationSessionViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the ClientIpAddress.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The ClientIpAddress.
         /// </value>
-        public string Description { get; set; }
+        public string ClientIpAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the ExpirationDateTime.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The ExpirationDateTime.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public DateTime ExpirationDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the PaymentGatewayReference.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The PaymentGatewayReference.
         /// </value>
-        public int EntityId { get; set; }
+        public string PaymentGatewayReference { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the RegistrationCount.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The RegistrationCount.
         /// </value>
-        public bool IsSystem { get; set; }
+        public int RegistrationCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the RegistrationData.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The RegistrationData.
         /// </value>
-        public string Name { get; set; }
+        public string RegistrationData { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the RegistrationId.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The RegistrationId.
         /// </value>
-        public string PurposeKey { get; set; }
+        public int? RegistrationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RegistrationInstanceId.
+        /// </summary>
+        /// <value>
+        /// The RegistrationInstanceId.
+        /// </value>
+        public int RegistrationInstanceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SessionStartDateTime.
+        /// </summary>
+        /// <value>
+        /// The SessionStartDateTime.
+        /// </value>
+        public DateTime SessionStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SessionStatus.
+        /// </summary>
+        /// <value>
+        /// The SessionStatus.
+        /// </value>
+        public int SessionStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

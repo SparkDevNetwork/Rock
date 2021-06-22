@@ -106,6 +106,7 @@ namespace Rock.Model
                 GroupMemberStatus = ( int ) model.GroupMemberStatus,
                 GroupTypeId = model.GroupTypeId,
                 IsActive = model.IsActive,
+                IsRegistrationMeteringEnabled = model.IsRegistrationMeteringEnabled,
                 LoginRequired = model.LoginRequired,
                 MaxRegistrants = model.MaxRegistrants,
                 MinimumInitialPayment = model.MinimumInitialPayment,

@@ -89,6 +89,7 @@ namespace Rock.Model
                 Guid = model.Guid,
                 CategoryId = model.CategoryId,
                 Description = model.Description,
+                EnableSecurityOnValues = model.EnableSecurityOnValues,
                 FieldTypeId = model.FieldTypeId,
                 HelpText = model.HelpText,
                 IsActive = model.IsActive,

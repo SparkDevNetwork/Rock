@@ -81,6 +81,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                IsValuePrivate = model.IsValuePrivate,
                 PersonAliasId = model.PersonAliasId,
                 SearchTypeValueId = model.SearchTypeValueId,
                 SearchValue = model.SearchValue,

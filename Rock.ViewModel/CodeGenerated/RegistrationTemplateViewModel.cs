@@ -184,6 +184,14 @@ namespace Rock.ViewModel
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the IsRegistrationMeteringEnabled.
+        /// </summary>
+        /// <value>
+        /// The IsRegistrationMeteringEnabled.
+        /// </value>
+        public bool IsRegistrationMeteringEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the LoginRequired.
         /// </summary>
         /// <value>

@@ -56,6 +56,14 @@ namespace Rock.ViewModel
         public int PersonAliasId { get; set; }
 
         /// <summary>
+        /// Gets or sets the PurposeKey.
+        /// </summary>
+        /// <value>
+        /// The PurposeKey.
+        /// </value>
+        public string PurposeKey { get; set; }
+
+        /// <summary>
         /// Gets or sets the CreatedDateTime.
         /// </summary>
         /// <value>

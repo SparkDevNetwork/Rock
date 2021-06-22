@@ -27,57 +27,49 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// StepProgramCompletion View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class StepProgramCompletionViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the CampusId.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The CampusId.
         /// </value>
-        public string Description { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the EndDateTime.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The EndDateTime.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public DateTime? EndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the PersonAliasId.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The PersonAliasId.
         /// </value>
-        public int EntityId { get; set; }
+        public int PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the StartDateTime.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The StartDateTime.
         /// </value>
-        public bool IsSystem { get; set; }
+        public DateTime StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the StepProgramId.
         /// </summary>
         /// <value>
-        /// The Name.
+        /// The StepProgramId.
         /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the PurposeKey.
-        /// </summary>
-        /// <value>
-        /// The PurposeKey.
-        /// </value>
-        public string PurposeKey { get; set; }
+        public int StepProgramId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

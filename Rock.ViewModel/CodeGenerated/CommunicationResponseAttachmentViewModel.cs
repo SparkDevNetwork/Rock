@@ -27,57 +27,33 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// CommunicationResponseAttachment View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class CommunicationResponseAttachmentViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the BinaryFileId.
         /// </summary>
         /// <value>
-        /// The Description.
+        /// The BinaryFileId.
         /// </value>
-        public string Description { get; set; }
+        public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the CommunicationResponseId.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The CommunicationResponseId.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public int CommunicationResponseId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the CommunicationType.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The CommunicationType.
         /// </value>
-        public int EntityId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsSystem.
-        /// </summary>
-        /// <value>
-        /// The IsSystem.
-        /// </value>
-        public bool IsSystem { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Name.
-        /// </summary>
-        /// <value>
-        /// The Name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the PurposeKey.
-        /// </summary>
-        /// <value>
-        /// The PurposeKey.
-        /// </value>
-        public string PurposeKey { get; set; }
+        public int CommunicationType { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

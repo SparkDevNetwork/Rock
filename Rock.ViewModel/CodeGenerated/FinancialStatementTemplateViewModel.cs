@@ -27,9 +27,9 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// Document View Model
+    /// FinancialStatementTemplate View Model
     /// </summary>
-    public partial class DocumentViewModel : ViewModelBase
+    public partial class FinancialStatementTemplateViewModel : ViewModelBase
     {
         /// <summary>
         /// Gets or sets the Description.
@@ -40,28 +40,28 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the DocumentTypeId.
+        /// Gets or sets the FooterSettingsJson.
         /// </summary>
         /// <value>
-        /// The DocumentTypeId.
+        /// The FooterSettingsJson.
         /// </value>
-        public int DocumentTypeId { get; set; }
+        public string FooterSettingsJson { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId.
+        /// Gets or sets the IsActive.
         /// </summary>
         /// <value>
-        /// The EntityId.
+        /// The IsActive.
         /// </value>
-        public int EntityId { get; set; }
+        public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets the LogoBinaryFileId.
         /// </summary>
         /// <value>
-        /// The IsSystem.
+        /// The LogoBinaryFileId.
         /// </value>
-        public bool IsSystem { get; set; }
+        public int? LogoBinaryFileId { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -72,12 +72,20 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the PurposeKey.
+        /// Gets or sets the ReportSettingsJson.
         /// </summary>
         /// <value>
-        /// The PurposeKey.
+        /// The ReportSettingsJson.
         /// </value>
-        public string PurposeKey { get; set; }
+        public string ReportSettingsJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ReportTemplate.
+        /// </summary>
+        /// <value>
+        /// The ReportTemplate.
+        /// </value>
+        public string ReportTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

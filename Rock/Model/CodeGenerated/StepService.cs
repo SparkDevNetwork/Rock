@@ -88,6 +88,7 @@ namespace Rock.Model
                 Order = model.Order,
                 PersonAliasId = model.PersonAliasId,
                 StartDateTime = model.StartDateTime,
+                StepProgramCompletionId = model.StepProgramCompletionId,
                 StepStatusId = model.StepStatusId,
                 StepTypeId = model.StepTypeId,
                 CreatedDateTime = model.CreatedDateTime,

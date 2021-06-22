@@ -91,6 +91,7 @@ namespace Rock.Model
                 IsSystem = model.IsSystem,
                 Name = model.Name,
                 PersonAliasId = model.PersonAliasId,
+                PreferredForeignCurrencyCodeValueId = model.PreferredForeignCurrencyCodeValueId,
                 ReferenceNumber = model.ReferenceNumber,
                 TransactionCode = model.TransactionCode,
                 CreatedDateTime = model.CreatedDateTime,

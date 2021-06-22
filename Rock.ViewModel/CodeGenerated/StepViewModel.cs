@@ -88,6 +88,14 @@ namespace Rock.ViewModel
         public DateTime? StartDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the StepProgramCompletionId.
+        /// </summary>
+        /// <value>
+        /// The StepProgramCompletionId.
+        /// </value>
+        public int? StepProgramCompletionId { get; set; }
+
+        /// <summary>
         /// Gets or sets the StepStatusId.
         /// </summary>
         /// <value>

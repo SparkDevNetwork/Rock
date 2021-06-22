@@ -104,6 +104,22 @@ namespace Rock.ViewModel
         public int? GroupCapacity { get; set; }
 
         /// <summary>
+        /// Gets or sets the GroupSalutation.
+        /// </summary>
+        /// <value>
+        /// The GroupSalutation.
+        /// </value>
+        public string GroupSalutation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GroupSalutationFull.
+        /// </summary>
+        /// <value>
+        /// The GroupSalutationFull.
+        /// </value>
+        public string GroupSalutationFull { get; set; }
+
+        /// <summary>
         /// Gets or sets the GroupTypeId.
         /// </summary>
         /// <value>

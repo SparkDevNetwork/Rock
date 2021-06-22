@@ -56,6 +56,14 @@ namespace Rock.ViewModel
         public bool IsActive { get; set; }
 
         /// <summary>
+        /// Gets or sets the IsIndexEnabled.
+        /// </summary>
+        /// <value>
+        /// The IsIndexEnabled.
+        /// </value>
+        public bool IsIndexEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the Name.
         /// </summary>
         /// <value>

@@ -84,6 +84,7 @@ namespace Rock.Model
                 Description = model.Description,
                 IconCssClass = model.IconCssClass,
                 IsActive = model.IsActive,
+                IsIndexEnabled = model.IsIndexEnabled,
                 Name = model.Name,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,

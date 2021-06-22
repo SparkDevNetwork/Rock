@@ -27,177 +27,153 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// FinancialScheduledTransaction View Model
+    /// FinancialTransactionAlertType View Model
     /// </summary>
-    public partial class FinancialScheduledTransactionViewModel : ViewModelBase
+    public partial class FinancialTransactionAlertTypeViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the AuthorizedPersonAliasId.
+        /// Gets or sets the AlertType.
         /// </summary>
         /// <value>
-        /// The AuthorizedPersonAliasId.
+        /// The AlertType.
         /// </value>
-        public int AuthorizedPersonAliasId { get; set; }
+        public int AlertType { get; set; }
 
         /// <summary>
-        /// Gets or sets the CardReminderDate.
+        /// Gets or sets the AmountSensitivityScale.
         /// </summary>
         /// <value>
-        /// The CardReminderDate.
+        /// The AmountSensitivityScale.
         /// </value>
-        public DateTime? CardReminderDate { get; set; }
+        public decimal? AmountSensitivityScale { get; set; }
 
         /// <summary>
-        /// Gets or sets the EndDate.
+        /// Gets or sets the CampusId.
         /// </summary>
         /// <value>
-        /// The EndDate.
+        /// The CampusId.
         /// </value>
-        public DateTime? EndDate { get; set; }
+        public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialGatewayId.
+        /// Gets or sets the ConnectionOpportunityId.
         /// </summary>
         /// <value>
-        /// The FinancialGatewayId.
+        /// The ConnectionOpportunityId.
         /// </value>
-        public int? FinancialGatewayId { get; set; }
+        public int? ConnectionOpportunityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the FinancialPaymentDetailId.
+        /// Gets or sets the ContinueIfMatched.
         /// </summary>
         /// <value>
-        /// The FinancialPaymentDetailId.
+        /// The ContinueIfMatched.
         /// </value>
-        public int? FinancialPaymentDetailId { get; set; }
+        public bool ContinueIfMatched { get; set; }
 
         /// <summary>
-        /// Gets or sets the ForeignCurrencyCodeValueId.
+        /// Gets or sets the DataViewId.
         /// </summary>
         /// <value>
-        /// The ForeignCurrencyCodeValueId.
+        /// The DataViewId.
         /// </value>
-        public int? ForeignCurrencyCodeValueId { get; set; }
+        public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets the GatewayScheduleId.
+        /// Gets or sets the FrequencySensitivityScale.
         /// </summary>
         /// <value>
-        /// The GatewayScheduleId.
+        /// The FrequencySensitivityScale.
         /// </value>
-        public string GatewayScheduleId { get; set; }
+        public decimal? FrequencySensitivityScale { get; set; }
 
         /// <summary>
-        /// Gets or sets the InactivateDateTime.
+        /// Gets or sets the MaximumDaysSinceLastGift.
         /// </summary>
         /// <value>
-        /// The InactivateDateTime.
+        /// The MaximumDaysSinceLastGift.
         /// </value>
-        public DateTime? InactivateDateTime { get; set; }
+        public int? MaximumDaysSinceLastGift { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsActive.
+        /// Gets or sets the MaximumGiftAmount.
         /// </summary>
         /// <value>
-        /// The IsActive.
+        /// The MaximumGiftAmount.
         /// </value>
-        public bool IsActive { get; set; }
+        public decimal? MaximumGiftAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastRemindedDate.
+        /// Gets or sets the MaximumMedianGiftAmount.
         /// </summary>
         /// <value>
-        /// The LastRemindedDate.
+        /// The MaximumMedianGiftAmount.
         /// </value>
-        public DateTime? LastRemindedDate { get; set; }
+        public decimal? MaximumMedianGiftAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the LastStatusUpdateDateTime.
+        /// Gets or sets the MinimumGiftAmount.
         /// </summary>
         /// <value>
-        /// The LastStatusUpdateDateTime.
+        /// The MinimumGiftAmount.
         /// </value>
-        public DateTime? LastStatusUpdateDateTime { get; set; }
+        public decimal? MinimumGiftAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the NextPaymentDate.
+        /// Gets or sets the MinimumMedianGiftAmount.
         /// </summary>
         /// <value>
-        /// The NextPaymentDate.
+        /// The MinimumMedianGiftAmount.
         /// </value>
-        public DateTime? NextPaymentDate { get; set; }
+        public decimal? MinimumMedianGiftAmount { get; set; }
 
         /// <summary>
-        /// Gets or sets the NumberOfPayments.
+        /// Gets or sets the Name.
         /// </summary>
         /// <value>
-        /// The NumberOfPayments.
+        /// The Name.
         /// </value>
-        public int? NumberOfPayments { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the SourceTypeValueId.
+        /// Gets or sets the Order.
         /// </summary>
         /// <value>
-        /// The SourceTypeValueId.
+        /// The Order.
         /// </value>
-        public int? SourceTypeValueId { get; set; }
+        public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the StartDate.
+        /// Gets or sets the RepeatPreventionDuration.
         /// </summary>
         /// <value>
-        /// The StartDate.
+        /// The RepeatPreventionDuration.
         /// </value>
-        public DateTime StartDate { get; set; }
+        public int? RepeatPreventionDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the Status.
+        /// Gets or sets the SendBusEvent.
         /// </summary>
         /// <value>
-        /// The Status.
+        /// The SendBusEvent.
         /// </value>
-        public int? Status { get; set; }
+        public bool SendBusEvent { get; set; }
 
         /// <summary>
-        /// Gets or sets the StatusMessage.
+        /// Gets or sets the SystemCommunicationId.
         /// </summary>
         /// <value>
-        /// The StatusMessage.
+        /// The SystemCommunicationId.
         /// </value>
-        public string StatusMessage { get; set; }
+        public int? SystemCommunicationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Summary.
+        /// Gets or sets the WorkflowTypeId.
         /// </summary>
         /// <value>
-        /// The Summary.
+        /// The WorkflowTypeId.
         /// </value>
-        public string Summary { get; set; }
-
-        /// <summary>
-        /// Gets or sets the TransactionCode.
-        /// </summary>
-        /// <value>
-        /// The TransactionCode.
-        /// </value>
-        public string TransactionCode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the TransactionFrequencyValueId.
-        /// </summary>
-        /// <value>
-        /// The TransactionFrequencyValueId.
-        /// </value>
-        public int TransactionFrequencyValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the TransactionTypeValueId.
-        /// </summary>
-        /// <value>
-        /// The TransactionTypeValueId.
-        /// </value>
-        public int? TransactionTypeValueId { get; set; }
+        public int? WorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

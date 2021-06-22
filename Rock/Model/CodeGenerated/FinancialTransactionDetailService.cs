@@ -87,6 +87,7 @@ namespace Rock.Model
                 EntityTypeId = model.EntityTypeId,
                 FeeAmount = model.FeeAmount,
                 FeeCoverageAmount = model.FeeCoverageAmount,
+                ForeignCurrencyAmount = model.ForeignCurrencyAmount,
                 Summary = model.Summary,
                 TransactionId = model.TransactionId,
                 CreatedDateTime = model.CreatedDateTime,
