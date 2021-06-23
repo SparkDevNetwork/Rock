@@ -264,13 +264,41 @@ namespace Rock.Field.Types
 
                 if ( thumbnails != null )
                 {
-                    thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
-                        .OrderByDescending( t => t.Height )
-                        .Select( t => t.Link )
-                        .FirstOrDefault() ?? string.Empty;
+                    if ( condensed )
+                    {
+                        // Attempt to get the smallest thumbnail above 400px in
+                        // width. If that fails then just get the largest
+                        // thumbnail we have available.
+                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() && t.Width >= 400 )
+                            .OrderBy( t => t.Height )
+                            .Select( t => t.Link )
+                            .FirstOrDefault() ?? string.Empty;
+
+                        if ( thumbnailUrl == string.Empty )
+                        {
+                            thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
+                                .OrderByDescending( t => t.Height )
+                                .Select( t => t.Link )
+                                .FirstOrDefault() ?? string.Empty;
+                        }
+                    }
+                    else
+                    {
+                        thumbnailUrl = thumbnails.Where( t => t.Link.IsNotNullOrWhiteSpace() )
+                            .OrderByDescending( t => t.Height )
+                            .Select( t => t.Link )
+                            .FirstOrDefault() ?? string.Empty;
+                    }
                 }
 
-                return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
+                if ( condensed )
+                {
+                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive max-w-grid-img' />";
+                }
+                else
+                {
+                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
+                }
             }
         }
 
