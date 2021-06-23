@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Http;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Groups.AddToGroup;
@@ -616,10 +615,37 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Performs the save action to join one or more people to the group.
         /// </summary>
+        /// <param name="firstName">The first name of the person to add.</param>
+        /// <param name="lastName">The last name of the person to add.</param>
+        /// <param name="email">The email of the person to add.</param>
+        /// <param name="mobilePhone">The mobile phone of the person to add.</param>
+        /// <param name="familyMembers">The family members unique identifiers to also add.</param>
+        /// <returns>The response to be displayed to the user.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "JoinGroup" )]
+        public BlockActionResult JoinGroupLegacy( string firstName, string lastName, string email, string mobilePhone, List<Guid> familyMembers )
+        {
+            var parameters = new JoinGroupParameters
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                MobilePhone = mobilePhone,
+                FamilyMembers = familyMembers
+            };
+
+            return JoinGroup( parameters );
+        }
+
+        /// <summary>
+        /// Performs the save action to join one or more people to the group.
+        /// </summary>
         /// <param name="parameters">The parameters.</param>
         /// <returns>The response to be displayed to the user.</returns>
         [BlockAction]
-        public BlockActionResult JoinGroup( [FromBody] JoinGroupParameters parameters )
+        public BlockActionResult JoinGroup( JoinGroupParameters parameters )
         {
             using ( var rockContext = new RockContext() )
             {

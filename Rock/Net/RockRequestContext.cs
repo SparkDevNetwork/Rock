@@ -80,7 +80,7 @@ namespace Rock.Net
         /// <value>
         /// The page parameters.
         /// </value>
-        internal protected virtual IDictionary<string, string> PageParameters { get; set; }
+        internal protected virtual IDictionary<string, string> PageParameters { get; private set; }
 
         /// <summary>
         /// Gets or sets the context entities.
@@ -97,12 +97,6 @@ namespace Rock.Net
         /// The headers.
         /// </value>
         private IDictionary<string, IEnumerable<string>> Headers { get; set; }
-
-        /// <summary>
-        /// The original page parameters. This is the query string arguments that were included when the current web page
-        /// was requested. These are not the query params that are necessarily included in an AJAX or postback request.
-        /// </summary>
-        public readonly Dictionary<string, string> OriginalPageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
 
         /// <summary>
         /// Gets the type of the rock client.
@@ -305,6 +299,17 @@ namespace Rock.Net
                     } ) );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the page parameters. This is used by things like block actions
+        /// so they can update the request with the original page parameters
+        /// rather than what is currently on the query string.
+        /// </summary>
+        /// <param name="parameters">The parameters to use for the page.</param>
+        internal virtual void SetPageParameters( IDictionary<string, string> parameters )
+        {
+            PageParameters = new Dictionary<string, string>( parameters, StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>
