@@ -402,7 +402,6 @@ namespace Rock.Web.Cache
         {
             var entityTypeId = EntityTypeCache.Get<T>()?.Id;
             return AllForEntityType( entityTypeId ?? 0 );
-
         }
 
         /// <summary>
@@ -780,7 +779,6 @@ namespace Rock.Web.Cache
             RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
-
         }
 
         /// <summary>
@@ -857,7 +855,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Entity Attributes Cache
-
 
         /// <summary>
         /// Gets a list of AttributeIds for the specified entityTypeId
@@ -949,7 +946,6 @@ namespace Rock.Web.Cache
     /// </summary>
     public class AttributeControlOptions
     {
-
         /// <summary>
         /// The value that should be set to the control after it is created.
         /// </summary>
@@ -1097,12 +1093,14 @@ namespace Rock.Web.Cache
         {
             viewModel.FieldTypeGuid = FieldTypeCache.Get( model.FieldTypeId ).Guid;
             viewModel.CategoryGuids = model.Categories.Select( c => c.Guid ).ToArray();
-            viewModel.QualifierValues = model.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => new ViewModel.NonEntities.AttributeConfigurationValue
-            {
-                Name = kvp.Value.Name,
-                Value = kvp.Value.Value,
-                Description = kvp.Value.Description
-            } );
+            viewModel.QualifierValues = model.QualifierValues.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new ViewModel.NonEntities.AttributeConfigurationValue
+                {
+                    Name = kvp.Value.Name,
+                    Value = kvp.Value.Value,
+                    Description = kvp.Value.Description
+                } );
         }
     }
 }
