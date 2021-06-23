@@ -35,7 +35,40 @@ using Rock.Security;
 namespace RockWeb.Blocks.Core
 {
     /// <summary>
-    /// User control for managing the attributes that are available for a specific entity
+    /// This block is for managing the attributes that are available for a specific entity type.
+    /// 
+    /// In addition to managing (editing) the attribute(s), the "Allow Setting of Values" block setting
+    /// will allow editing a particular "value" (not the Attribute's "default value") for a particular
+    /// Entity.  In general that only makes sense when the configured EntityId block setting is
+    /// non-0 but the "Global Attribute" is special case.  In that case the block is configured
+    /// for the "None (Global Attributes)" Entity and the EntitId will be 0 -- but that is
+    /// the Global Attribute and it will have values you can edit.
+
+    /// There are several use-cases that this block is set to handle:
+    ///
+    /// * Person Attributes page
+    ///     - Used to edit attributes and control security for those attributes. When used
+    ///       here, clicking on the row allows editing the attribute and it's default value.
+    ///     
+    /// * Global Attributes page
+    ///     - Used to edit the values "None (Global Attributes)" entity.  When used
+    ///       here, clicking on the row allows editing the *value* of the Global Attribute.
+    ///       Clicking on the edit button allows editing the attribute and it's default value.
+    ///
+    /// * Special pages use-cases:
+    ///     - A person has only VIEW (page/block) access and "Allow Setting of Values" is FALSE. 
+    ///         They can see the attributes and only see the default value.
+    ///         
+    ///     - A person has only VIEW (page/block) access and "Allow Setting of Values" is TRUE.
+    ///         They can see the attributes and see the entity's value.
+    ///         
+    ///     - A person has only VIEW & EDIT (page/block) access and "Allow Setting of Values" is FALSE.
+    ///         They can see the attributes and only see the default value.
+    ///         
+    ///     - A person has only VIEW & EDIT (page/block) access and "Allow Setting of Values" is TRUE.
+    ///         They can see the attributes and see the entity's value -- and they can 
+    ///         click the row to edit the particular configured entity's value.
+    ///       
     /// </summary>
     [DisplayName( "Attributes" )]
     [Category( "Core" )]
