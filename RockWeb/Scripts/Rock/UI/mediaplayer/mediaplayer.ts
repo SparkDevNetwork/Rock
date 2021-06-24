@@ -574,6 +574,10 @@ namespace Rock.UI {
          * the DOM player element has the media metadata downloaded.
          */
         private prepareForPlay() {
+            if (this.watchBitsInitialized !== false) {
+                return;
+            }
+
             this.writeDebugMessage("Preparing the player.");
 
             this.initializeMap();
@@ -647,6 +651,12 @@ namespace Rock.UI {
             this.writeDebugMessage(`Map provided in .map property: ${existingMapString}`);
 
             this.watchBits = MediaPlayer.rleToArray(existingMapString);
+
+            // Get count of watched bits
+            const watchedItemCount = this.watchBits.filter(item => item > 0).length;
+
+            // Calculate percent watched
+            this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
         }
 
         /**
@@ -675,6 +685,7 @@ namespace Rock.UI {
             }
 
             this.watchBits = new Array(mapSize).fill(0);
+            this.percentWatchedInternal = 0;
 
             this.writeDebugMessage(`Blank map created of size: ${this.watchBits.length}`);
         }
@@ -741,9 +752,7 @@ namespace Rock.UI {
                 // Check that player is prepped. In an HTML 5 media this will
                 // have already happened. But embedded players do not support
                 // the events we need.
-                if (this.watchBitsInitialized === false) {
-                    this.prepareForPlay();
-                }
+                this.prepareForPlay();
 
                 // Start play timer
                 if (this.options.trackProgress) {

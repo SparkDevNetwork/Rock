@@ -206,6 +206,9 @@ var Rock;
                 this.writeDebugMessage("Player Time: " + this.player.currentTime + "; Current Time: " + playBit + "; Percent Watched: " + this.percentWatched + "; Unwatched Items: " + (this.watchBits.length - watchedItemCount) + "; Map Size: " + this.watchBits.length);
             };
             MediaPlayer.prototype.prepareForPlay = function () {
+                if (this.watchBitsInitialized !== false) {
+                    return;
+                }
                 this.writeDebugMessage("Preparing the player.");
                 this.initializeMap();
                 this.setResume();
@@ -243,6 +246,8 @@ var Rock;
                 var existingMapString = this.options.map;
                 this.writeDebugMessage("Map provided in .map property: " + existingMapString);
                 this.watchBits = MediaPlayer.rleToArray(existingMapString);
+                var watchedItemCount = this.watchBits.filter(function (item) { return item > 0; }).length;
+                this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
             };
             MediaPlayer.prototype.validateMap = function () {
                 var mediaLength = Math.ceil(this.player.duration);
@@ -257,6 +262,7 @@ var Rock;
                     mapSize = 0;
                 }
                 this.watchBits = new Array(mapSize).fill(0);
+                this.percentWatchedInternal = 0;
                 this.writeDebugMessage("Blank map created of size: " + this.watchBits.length);
             };
             MediaPlayer.rleToArray = function (value) {
@@ -292,9 +298,7 @@ var Rock;
                     }
                 };
                 this.player.on("play", function () {
-                    if (_this.watchBitsInitialized === false) {
-                        _this.prepareForPlay();
-                    }
+                    _this.prepareForPlay();
                     if (_this.options.trackProgress) {
                         _this.timerId = setInterval(function () { return _this.trackPlay(); }, 250);
                     }

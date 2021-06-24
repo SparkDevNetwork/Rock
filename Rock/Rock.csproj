@@ -669,6 +669,7 @@
     <Compile Include="Data\IEntitySaveEntry.cs" />
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
@@ -711,6 +712,9 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
+    <Compile Include="Media\MediaPlayerControls.cs" />
+    <Compile Include="Media\MediaPlayerInterfaceType.cs" />
+    <Compile Include="Media\MediaPlayerOptions.cs" />
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
@@ -762,6 +766,7 @@
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
@@ -1000,6 +1005,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
+    <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
