@@ -1195,5 +1195,14 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_ATTENDANCE_TYPE_VIRTUAL = "DF1C89D0-7D8A-48C2-B251-DFF3376C2931";
 
         #endregion
+
+        #region Schedule Types
+
+        /// <summary>
+        /// Schedule Type:  Weekend Service
+        /// </summary>
+        public const string SCHEDULE_TYPE_WEEKEND_SERVICE = "033FC160-2650-4C97-8075-0C0114FA7A8D";
+
+        #endregion Schedule Types
     }
 }

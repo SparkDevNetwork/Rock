@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -203,6 +204,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
+        /// </value>
+        public virtual List<int> CampusScheduleIds { get; set; } = new List<int>();
+
+        /// <summary>
         /// Gets the order.
         /// </summary>
         /// <value>
@@ -288,6 +297,7 @@ namespace Rock.Web.Cache
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
+            CampusScheduleIds = campus.CampusSchedules.Select( s => s.ScheduleId ).ToList();
             Order = campus.Order;
 
             Location = new CampusLocation( campus.Location );

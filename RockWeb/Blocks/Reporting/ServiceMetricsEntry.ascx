@@ -1,7 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ServiceMetricsEntry.ascx.cs" Inherits="RockWeb.Blocks.Reporting.ServiceMetricsEntry" %>
 
-
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -12,6 +10,13 @@
             </div>
 
             <div class="panel-body">
+
+                <asp:Panel ID="pnlConfigurationError" runat="server" Visible="false">
+                    <Rock:NotificationBox ID="nbNoCampuses" runat="server" NotificationBoxType="Warning"
+                        Heading="No Campuses Available"
+                        Text="There are no campuses available based on the campus filter settings."
+                        Visible="false" />
+                </asp:Panel>
 
                 <asp:Panel ID="pnlSelection" runat="server">
 

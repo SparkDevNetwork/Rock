@@ -139,13 +139,13 @@
 	GaugeChartHelper.prototype.renderSmallValueArrow = function(value) {
 		var angle = this.getAngleOfValue(value);
 		this.ctx.globalCompositeOperation = "source-over";
-		this.renderArrow(this.gaugeRadius - 1, angle, this.arrowLength - 1, this.arrowAngle, this.arrowColor);
+		this.renderArrow(this.gaugeRadius - 2, angle, this.arrowLength - 2, this.arrowAngle, this.arrowColor);
 	};
 	GaugeChartHelper.prototype.clearValueArrow = function(value) {
-		var angle = this.getAngleOfValue(value);
+        var angle = this.getAngleOfValue(value);
 		this.ctx.lineWidth = 2;
 		this.ctx.globalCompositeOperation = "destination-out";
-		this.renderArrow(this.gaugeRadius - 1, angle, this.arrowLength + 1, this.arrowAngle, "#FFFFFF");
+		this.renderArrow(this.gaugeRadius - 3, angle, this.arrowLength - 3, this.arrowAngle, "#000");
 		this.ctx.stroke();
 	};
 	GaugeChartHelper.prototype.renderArrow = function(radius, angle, arrowLength, arrowAngle, arrowColor) {
