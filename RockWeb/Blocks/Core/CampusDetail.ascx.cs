@@ -435,14 +435,9 @@ namespace RockWeb.Blocks.Core
         /// Gets the CampusSchedule.
         /// </summary>
         /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
-        private CampusSchedule GetCampusSchedule( Guid campusScheduleGuid )
+        private CampusScheduleDTO GetCampusSchedule( Guid campusScheduleGuid )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return new CampusScheduleService( rockContext ).Queryable().AsNoTracking()
-                    .Where( s => s.Guid == campusScheduleGuid )
-                    .FirstOrDefault();
-            }
+            return CampusSchedulesState.Where( s => s.Guid == campusScheduleGuid ).FirstOrDefault();
         }
 
         /// <summary>
@@ -817,7 +812,7 @@ namespace RockWeb.Blocks.Core
             {
                 var campusSchedule = GetCampusSchedule( campusScheduleGuid );
                 spCampusSchedule.SetValue( campusSchedule.ScheduleId );
-                dvpScheduleType.SelectedValue = campusSchedule.ScheduleTypeValueId.ToString();
+                dvpScheduleType.SelectedValue = campusSchedule.ScheduleTypeId.ToString();
             }
         }
 
