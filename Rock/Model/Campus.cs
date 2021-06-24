@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -36,7 +38,6 @@ namespace Rock.Model
     public partial class Campus : Model<Campus>, IOrdered, ICacheable
     {
         #region Entity Properties
-
 
         /// <summary>
         /// Gets or sets a flag indicating if the Campus is a part of the Rock system/framework. This property is required.
@@ -257,6 +258,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Group TeamGroup { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.CampusSchedule">Schedules</see> that are associated with this Campus.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.CampusSchedule"/>s that are associated with this Campus.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<CampusSchedule> CampusSchedules { get; set; } = new Collection<CampusSchedule>();
 
         #endregion
 

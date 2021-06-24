@@ -422,6 +422,11 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_ATTENDANCE_TYPES = "C0508751-3BDD-40A7-BE37-8AA4FC56E00E";
 
         /// <summary>
+        /// The schedule type
+        /// </summary>
+        public const string SCHEDULE_TYPE = "831648D4-2E2C-4940-8358-9B426AEDB460";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete( "Use FinancialStatementTemplate instead" )]

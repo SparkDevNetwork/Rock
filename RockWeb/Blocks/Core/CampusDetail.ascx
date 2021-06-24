@@ -43,6 +43,18 @@
                                 <Rock:RockDropDownList ID="ddlTimeZone" runat="server" CausesValidation="false" CssClass="input-width-xxl" Label="Time Zone" Help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone." ></Rock:RockDropDownList>
                                 <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />
                                 <Rock:KeyValueList ID="kvlServiceTimes" runat="server" label="Service Times" KeyPrompt="Day" ValuePrompt="Time" Help="A list of days and times that this campus has services." />
+
+                                <div class="grid">
+                                    <Rock:Grid ID="gCampusSchedules" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Schedule">
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="Schedule" HeaderText="Schedule" />
+                                            <Rock:RockBoundField DataField="ScheduleType" HeaderText="Type" />
+                                            <Rock:EditField OnClick="gCampusSchedules_Edit" />
+                                            <Rock:DeleteField OnClick="gCampusSchedules_Delete" />
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+
                             </div>
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpCampusType" runat="server" Label="Type" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="CampusTypeValueId" />
@@ -95,5 +107,17 @@
             </div>
 
         </asp:Panel>
+
+        <!-- CampusSchedule Modal Dialog -->
+        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Campus Schedule" SaveButtonText="Ok" OnSaveClick="dlgSchedule_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
+            <Content>
+                <asp:HiddenField ID="hfCampusScheduleGuid" runat="server" />
+                <asp:ValidationSummary ID="valSummaryCampusSchedule" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="CampusSchedule" />
+
+                <Rock:SchedulePicker ID="spCampusSchedule" runat="server" Label="Schedule" Required="true" ValidationGroup="CampusSchedule" />
+                <Rock:DefinedValuePicker id="dvpScheduleType" runat="server" Label="Schedule Type" Required="true" ValidationGroup="CampusSchedule" />
+            </Content>
+        </Rock:ModalDialog>
+
     </ContentTemplate>
 </asp:UpdatePanel>
