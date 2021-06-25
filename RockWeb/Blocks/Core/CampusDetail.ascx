@@ -115,7 +115,7 @@
         </asp:Panel>
 
         <!-- CampusSchedule Modal Dialog -->
-        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Campus Schedule" SaveButtonText="Ok" OnSaveClick="dlgSchedule_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Location">
+        <Rock:ModalDialog ID="dlgSchedule" runat="server" Title="Campus Schedule" SaveButtonText="Ok" OnSaveClick="dlgSchedule_SaveClick"  ValidationGroup="Location">
             <Content>
                 <asp:HiddenField ID="hfCampusScheduleGuid" runat="server" />
                 <asp:ValidationSummary ID="valSummaryCampusSchedule" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="CampusSchedule" />
