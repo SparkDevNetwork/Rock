@@ -323,10 +323,13 @@ namespace Rock.Web.UI.Controls
 
                 fvre.ValidationGroup = "FieldFilter";
                 fvre.FieldName = wfar.AttributeName;
-                fvre.ComparableFields = this.AttributeRows.Where( ar => ar.AttributeGuid != wfar.AttributeGuid ).ToDictionary( ar => ar.AttributeGuid, ar => new FieldVisibilityRuleField {
-                    Guid = ar.AttributeGuid,
-                    Attribute = ar.Attribute
-                } );
+                fvre.ComparableFields = AttributeRows
+                    .Where( ar => ar.IsEditable && ar.IsVisible && ar.AttributeGuid != wfar.AttributeGuid )
+                    .ToDictionary( ar => ar.AttributeGuid, ar => new FieldVisibilityRuleField
+                    {
+                        Guid = ar.AttributeGuid,
+                        Attribute = ar.Attribute
+                    } );
                 fvre.SetFieldVisibilityRules( wfar.VisibilityRules );
                 _mdFieldVisibilityRules.Show();
             }
@@ -909,8 +912,10 @@ namespace Rock.Web.UI.Controls
             /* Workflow Attributes Filter Modal */
             _mdFieldVisibilityRules = new ModalDialog
             {
-                ID = nameof( _mdFieldVisibilityRules )
+                ID = nameof( _mdFieldVisibilityRules ),
+                Title = "Conditional Display Logic"
             };
+
             _mdFieldVisibilityRules.SaveClick += _mdFieldVisibilityRules_SaveClick;
             var vsFieldVisibilityRules = new ValidationSummary
             {
@@ -945,13 +950,13 @@ namespace Rock.Web.UI.Controls
             }
 
             var fvre = _mdFieldVisibilityRules.FindControl( "fvreWorkflowFields" ) as FieldVisibilityRulesEditor;
-            if(fvre == null )
+            if ( fvre == null )
             {
                 return;
             }
 
             var attributeRow = AttributeRows.Where( ar => ar.Guid == attributeRowGuid.Value ).FirstOrDefault();
-            if(attributeRow == null )
+            if ( attributeRow == null )
             {
                 return;
             }

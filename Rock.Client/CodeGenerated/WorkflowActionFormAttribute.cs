@@ -38,6 +38,9 @@ namespace Rock.Client
         public int AttributeId { get; set; }
 
         /// <summary />
+        public string FieldVisibilityRulesJSON { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -106,6 +109,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AttributeId = source.AttributeId;
+            this.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.HideLabel = source.HideLabel;
