@@ -891,7 +891,20 @@ namespace Rock.Model
 
             if ( startDate > endDate )
             {
-                startDate = endDate;
+                /*
+                 * 2021-06-25 BJW
+                 * We were previously setting the startDate = endDate in this conditional. However, this caused a bug because
+                 * a start equal to an end is actually going to result in an iteration over that single day/week. The expected
+                 * result would be to not iterate at all since there is no timespan (even inclusively) between the start and
+                 * end dates.
+                 * 
+                 * The combination of setting the end date to today if in the future (couple lines up), and then setting the
+                 * start equal to the end, caused a single iteration over the current day or week. If the person had engagement 
+                 * today/this week, they got an attempt record even though the start date was in the future.
+                 */
+
+                // There is nothing to be iterated over
+                return;
             }
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
