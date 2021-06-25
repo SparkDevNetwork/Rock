@@ -64,6 +64,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{585C34CC-D99C-4E21-9957-FDCB364DD275}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		cypress.json = cypress.json
 		Rock.sln.vsspell = Rock.sln.vsspell
 	EndProjectSection
 EndProject
@@ -96,6 +97,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{D722BDC5-08AF-4475-B7B8-84368F2FC88F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com_rocksolidchurchdemo.PageDebug", "org_rocksolidchurch.PageDebug\com_rocksolidchurchdemo.PageDebug.csproj", "{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Website", "Rock.Tests.Website\Rock.Tests.Website.csproj", "{B3A1C0B7-B72D-45C2-BCDE-DB4427E830F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,6 +242,10 @@ Global
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3A1C0B7-B72D-45C2-BCDE-DB4427E830F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3A1C0B7-B72D-45C2-BCDE-DB4427E830F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3A1C0B7-B72D-45C2-BCDE-DB4427E830F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3A1C0B7-B72D-45C2-BCDE-DB4427E830F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

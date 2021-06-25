@@ -1,0 +1,16 @@
+{
+  "baseUrl": "https://localhost:6229/",
+
+  "componentFolder": "Rock.Tests.Website/component",
+  "defaultCommandTimeout": 4000,
+  "downloadsFolder": "Rock.Tests.Website/downloads",
+  "fixturesFolder": "Rock.Tests.Website/fixtures",
+  "integrationFolder": "Rock.Tests.Website/integration",
+  "pluginsFile": "Rock.Tests.Website/plugins",
+  "screenshotsFolder": "Rock.Tests.Website/screenshots",
+  "supportFile": "Rock.Tests.Website/support",
+  "videosFolder": "Rock.Tests.Website/videos",
+  "experimentalStudio": true,
+  "viewportWidth": 1000,
+  "viewportHeight": 1200
+}
