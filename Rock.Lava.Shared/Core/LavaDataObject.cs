@@ -30,10 +30,10 @@ namespace Rock.Lava
     /// as a dictionary of values populated dynamically at runtime.
     /// </summary>
     /// <remarks>
-    /// This class does not serialize dynamic properties, but is marked as serializable to ensure that attempting to serialize a derived classes does not fail with an exception.
+    /// This class does not serialize dynamic properties, but is marked as serializable to allow derived classes to be serialized correctly.
     /// </remarks>
     [Serializable]
-    public class LavaDataObject : ILavaDataDictionary
+    public class LavaDataObject : ILavaDataDictionary, IDictionary
     {
         // The internal implementation of the DynamicObject that is used to manage access to the LavaDataObject properties.
         // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
@@ -140,6 +140,7 @@ namespace Rock.Lava
         [LavaHidden]
         public bool ContainsKey( string key )
         {
+            // First, check if this is a defined member name or or an existing dictionary entry.
             if ( AvailableKeys.Contains( key ) )
             {
                 return true;
@@ -149,9 +150,7 @@ namespace Rock.Lava
             // This code will only execute if the property does not exist,
             // or an override for OnTryGetValue exists without a corresponding override for AvailableKeys.
             // In this situation, overriding the AvailableKeys method is a more efficient implementation.
-            object discardedValue;
-
-            return TryGetValue( key, out discardedValue );
+            return TryGetValue( key, out _ );
         }
 
         /// <summary>
@@ -167,6 +166,148 @@ namespace Rock.Lava
             OnTryGetValue( key, out result );
 
             return result;
+        }
+
+        #endregion
+
+        #region IDictionary
+
+        bool IDictionary.Contains( object key )
+        {
+            if ( key == null )
+            {
+                return false;
+            }
+
+            return ContainsKey( key.ToString() );
+        }
+
+        void IDictionary.Add( object key, object value )
+        {
+            throw new NotImplementedException( "LavaDataObject operation failed. The LavaDataObject is read-only." );
+        }
+
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            var dictionary = _lavaDataObjectInternal.ToDictionary();
+
+            return dictionary.GetEnumerator();
+        }
+
+        void ICollection.CopyTo( Array array, int index )
+        {
+            var dictionary = _lavaDataObjectInternal.ToDictionary();
+
+            if ( array == null )
+            {
+                throw new ArgumentNullException( "array" );
+            }
+
+            var targetArray = array as KeyValuePair<string, object>[];
+
+            if ( targetArray == null )
+            {
+                throw new ArgumentException( "Destination array must be of type KeyValuePair<string, object>[]" );
+            }
+
+            var source = this as ICollection<KeyValuePair<string, object>>;
+
+            source.CopyTo( targetArray, index );
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            var dictionary = _lavaDataObjectInternal.ToDictionary();
+
+            return dictionary.GetEnumerator();
+        }
+
+        ICollection IDictionary.Keys
+        {
+            get
+            {
+                return AvailableKeys;
+            }
+        }
+
+        ICollection IDictionary.Values
+        {
+            get
+            {
+                return _lavaDataObjectInternal.GetProperties().Select( x => x.Value ).ToList();
+            }
+        }
+
+        bool IDictionary.IsReadOnly
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        bool IDictionary.IsFixedSize
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        int ICollection.Count
+        {
+            get
+            {
+                return _lavaDataObjectInternal.GetProperties().Count();
+            }
+        }
+
+        object ICollection.SyncRoot
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+        bool ICollection.IsSynchronized
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        object IDictionary.this[object key]
+        {
+            get
+            {
+                if ( key == null )
+                {
+                    return null;
+                }
+
+                return GetValue( key.ToString() );
+            }
+            set
+            {
+                if ( key == null )
+                {
+                    return;
+                }
+
+                _lavaDataObjectInternal[key.ToString()] = value;
+            }
+        }
+
+        void IDictionary.Clear()
+        {
+            throw new NotImplementedException( "LavaDataObject operation failed. The LavaDataObject is read-only." );
+        }
+
+        void IDictionary.Remove( object key )
+        {
+            throw new NotImplementedException( "LavaDataObject operation failed. The LavaDataObject is read-only." );
         }
 
         #endregion
@@ -221,8 +362,8 @@ namespace Rock.Lava
             {
                 if ( _instancePropertyInfoLookup == null && _targetObject != null )
                 {
-                    var rockDynamicType = typeof( LavaDataObject );
-                    _instancePropertyInfoLookup = _targetObject.GetType().GetProperties().Where( a => a.DeclaringType != rockDynamicType ).ToDictionary( k => k.Name, v => v );
+                    var lavaBaseType = typeof( LavaDataObject );
+                    _instancePropertyInfoLookup = _targetObject.GetType().GetProperties().Where( a => a.DeclaringType != lavaBaseType ).ToDictionary( k => k.Name, v => v );
                 }
 
                 return _instancePropertyInfoLookup;
@@ -555,16 +696,42 @@ namespace Rock.Lava
         {
             if ( includeInstanceProperties && _targetObject != null )
             {
-                foreach ( var prop in this.InstancePropertyLookup.Values )
+                foreach ( var prop in InstancePropertyLookup.Values )
                 {
                     yield return new KeyValuePair<string, object>( prop.Name, prop.GetValue( _targetObject, null ) );
                 }
             }
 
-            foreach ( var key in this._members.Keys )
+            foreach ( var key in _members.Keys )
             {
-                yield return new KeyValuePair<string, object>( key, this._members[key] );
+                yield return new KeyValuePair<string, object>( key, _members[key] );
             }
+        }
+
+        /// <summary>
+        /// Creates a dictionary containing the current values of the data object properties.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>();
+
+            // Add the properties of the wrapped target object.
+            if ( _targetObject != null )
+            {
+                foreach ( var prop in InstancePropertyLookup.Values )
+                {
+                    dictionary.Add( prop.Name, prop.GetValue( _targetObject, null ) );
+                }
+            }
+
+            // Add the dynamic properties.
+            foreach ( var key in _members.Keys )
+            {
+                dictionary.Add( key, _members[key] );
+            }
+
+            return dictionary;
         }
 
         /// <summary>
@@ -577,12 +744,12 @@ namespace Rock.Lava
         {
             List<string> propertyNames = new List<string>();
 
-            foreach ( var propName in this.InstancePropertyLookup.Keys )
+            foreach ( var propName in InstancePropertyLookup.Keys )
             {
                 propertyNames.Add( propName );
             }
 
-            foreach ( var key in this._members.Keys )
+            foreach ( var key in _members.Keys )
             {
                 propertyNames.Add( key );
             }

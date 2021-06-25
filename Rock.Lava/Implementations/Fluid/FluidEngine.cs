@@ -123,20 +123,30 @@ namespace Rock.Lava.Fluid
             // If this converter is not registered, any attempt to access the dictionary by key returns a null value.
             templateOptions.ValueConverters.Add( ( value ) =>
             {
-                var valueType = value.GetType();
-
-                // If this is not a dictionary type, this converter is not applicable.
-                if ( !typeof( IDictionary ).IsAssignableFrom( valueType ) )
+                // If the value is not a dictionary, this converter does not apply.
+                if ( !( value is IDictionary ) )
                 {
-                    return null;
+                    return value;
                 }
 
-                // If this is a dictionary with a string key type, no conversion is needed.
-                var keyType = valueType.GetGenericArguments()[0];
+                var valueType = value.GetType();
 
-                if ( keyType == typeof( string ) )
+                // If the value is derived from LavaDataObject, no conversion is needed.
+                if ( typeof( LavaDataObject ).IsAssignableFrom( valueType ) )
                 {
-                    return null;
+                    return value;
+                }
+
+                // If this is a generic dictionary with a string key type, no conversion is needed.
+                if ( valueType.IsGenericType
+                     && valueType.GetGenericTypeDefinition() == typeof( Dictionary<,> ) )
+                {
+                    var keyType = valueType.GetGenericArguments()[0];
+
+                    if ( keyType == typeof( string ) )
+                    {
+                        return null;
+                    }
                 }
 
                 // Wrap the dictionary in a proxy so it can be accessed with a key that is not a string type.

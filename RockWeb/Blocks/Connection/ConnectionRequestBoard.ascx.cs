@@ -29,6 +29,7 @@ using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
@@ -794,7 +795,15 @@ namespace RockWeb.Blocks.Connection
                 viewModel.IsUnassigned
             };
 
-            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            }
+            else
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+            }
+
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", daysUntilRequestIdle ) );
             return connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
         }
