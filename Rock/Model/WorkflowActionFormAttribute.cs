@@ -126,8 +126,9 @@ namespace Rock.Model
         /// <value>
         /// The field visibility rules json.
         /// </value>
+        /// <remarks>This value should never be used outside of Rock. FieldVisibilityRules should be used. </remarks>
         [DataMember]
-        public string FieldVisibilityRulesJSON { get; private set; }
+        public string FieldVisibilityRulesJSON { get; set; }
 
         #endregion
 
@@ -158,7 +159,8 @@ namespace Rock.Model
         /// The field visibility rules.
         /// </value>
         [NotMapped]
-        public virtual Field.FieldVisibilityRules FieldVisibilityRules {
+        public virtual Field.FieldVisibilityRules FieldVisibilityRules
+        {
             get
             {
                 if ( FieldVisibilityRulesJSON.IsNullOrWhiteSpace() )
@@ -224,7 +226,7 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActionFormAttributeConfiguration()
         {
-            this.HasRequired( a => a.WorkflowActionForm ).WithMany( f => f.FormAttributes).HasForeignKey( a => a.WorkflowActionFormId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.WorkflowActionForm ).WithMany( f => f.FormAttributes ).HasForeignKey( a => a.WorkflowActionFormId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Attribute ).WithMany().HasForeignKey( a => a.AttributeId ).WillCascadeOnDelete( true );
         }
     }
