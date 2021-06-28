@@ -19,4 +19,19 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+
+
+    /**
+    * This is needed because of cypress issue #909.
+    * There is no simple way to override the baseUrl
+    * from the cypress.env.json without this plugin
+    * configuration:
+    */
+    const baseUrl = config.env.baseUrl || null;
+
+    if (baseUrl) {
+        config.baseUrl = baseUrl;
+    }
+
+    return config;
 }
