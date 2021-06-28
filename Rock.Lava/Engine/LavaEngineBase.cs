@@ -38,12 +38,12 @@ namespace Rock.Lava
                 options = new LavaEngineConfigurationOptions();
             }
 
-            // Connect the cache service to this Lava Engine instance.
+            // Initialize the cache service for the current Lava Engine type.
             _cacheService = options.CacheService;
 
             if ( _cacheService != null )
             {
-                _cacheService.LavaEngine = this;
+                _cacheService.Initialize( this.GetType().Name );
             }
 
             _defaultEnabledCommands = options.DefaultEnabledCommands;
@@ -496,7 +496,7 @@ namespace Rock.Lava
             {
                 if ( _cacheService != null )
                 {
-                    template = _cacheService.GetOrAddTemplate( inputTemplate, parameters.CacheKey );
+                    template = _cacheService.GetOrAddTemplate( this, inputTemplate, parameters.CacheKey );
                 }
                 else
                 {

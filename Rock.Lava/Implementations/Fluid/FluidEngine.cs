@@ -115,6 +115,14 @@ namespace Rock.Lava.Fluid
         {
             var templateOptions = GetTemplateOptions();
 
+            /* [2021-06-24] DL
+             * Value Converters can have a significant impact on rendering performance.
+             * Wherever possible, a conversion function should:
+             * 1. Process all conversions related to a specific Type domain, to avoid the need to execute similar code in multiple converters.
+             * 2. Order from most to least frequently executed and least to most expensive execution time.
+             * 3. Return a FluidValue as quickly as possible, to avoid executing subsequent value converters in the collection.
+             */
+
             // DBNull is required to process results from the Sql command.
             // If this type is not registered, Fluid throws some seemingly unrelated exceptions.
             templateOptions.ValueConverters.Add( ( value ) => value is System.DBNull ? FluidValue.Create( null, templateOptions ) : null );
@@ -123,10 +131,17 @@ namespace Rock.Lava.Fluid
             // If this converter is not registered, any attempt to access the dictionary by key returns a null value.
             templateOptions.ValueConverters.Add( ( value ) =>
             {
-                // If the value is not a dictionary, this converter does not apply.
+                // If the value is not a dictionary, this converter is not applicable.
                 if ( !( value is IDictionary ) )
                 {
                     return value;
+                }
+
+                // If the value is a standard Liquid-compatible dictionary,
+                // return the appropriate Fluid wrapper to short-circuit further conversion attempts.
+                if ( value is IDictionary<string, object> liquidDictionary )
+                {
+                    return new DictionaryValue( new ObjectDictionaryFluidIndexable( liquidDictionary, _templateOptions ) );
                 }
 
                 var valueType = value.GetType();
@@ -145,7 +160,7 @@ namespace Rock.Lava.Fluid
 
                     if ( keyType == typeof( string ) )
                     {
-                        return null;
+                        return value;
                     }
                 }
 

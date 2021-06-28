@@ -27,7 +27,6 @@ using DotLiquid;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Model;
 using Rock.Web.Cache;
 
