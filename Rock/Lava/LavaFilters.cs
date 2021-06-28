@@ -37,7 +37,6 @@ using Humanizer.Localisation;
 using Ical.Net;
 using Ical.Net.DataTypes;
 using ImageResizer;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -53,8 +52,12 @@ using Calendar = Ical.Net.Calendar;
 namespace Rock.Lava
 {
     /// <summary>
-    /// Defines the filter methods available for use with the Lava library.
+    /// Defines filter methods available for use with the Lava library.
     /// </summary>
+    /// <remarks>
+    /// Filters defined in this class should be moved to the TemplateFilters class once they are confirmed to operate correctly
+    /// in both the Rock Web and Rock Mobile applications.
+    /// </remarks>
     public static class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
@@ -931,81 +934,6 @@ namespace Rock.Lava
             Match match = regex.Match( input );
 
             return match.Success ? match.Value : null;
-        }
-
-        /// <summary>
-        /// Returns matched RegEx list of strings from inputted string
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="expression">The regex expression.</param>
-        /// <param name="options">Option flags that affect the match type. [m=multiline, i=ignore case]</param>
-        /// <returns></returns>
-        public static List<string> RegExMatchValues( string input, string expression, string options = null )
-        {
-            if ( input == null )
-            {
-                return null;
-            }
-
-            RegexOptions regexOptions = RegexOptions.None;
-            var inputString = input.ToString();
-
-            options = options ?? string.Empty;
-
-            if ( options.Contains( 'm' ) )
-            {
-                regexOptions |= RegexOptions.Multiline;
-            }
-
-            if ( options.Contains( 'i' ) )
-            {
-                regexOptions |= RegexOptions.IgnoreCase;
-            }
-
-            var regex = new Regex( expression, regexOptions );
-
-            var matches = regex.Matches( input );
-
-            // Flatten all matches to single list
-            var captured = matches
-                .Cast<Match>()
-                .Where( m => m.Success == true )
-                .SelectMany( o =>
-                    o.Groups.Cast<Capture>()
-                        .Select( c => c.Value ) );
-
-            return captured.ToList();
-        }
-
-        /// <summary>
-        /// Run RegEx replacing on a string.
-        /// </summary>
-        /// <param name="input">The lava source to process.</param>
-        /// <param name="pattern">The regex pattern to use when matching.</param>
-        /// <param name="replacement">The string to use when doing replacement.</param>
-        /// <param name="options">The regex options to modify the matching.</param>
-        /// <example><![CDATA[
-        /// {{ 'The Rock is awesome.' | RegExReplace:'the rock','Rock','i' }}
-        /// {{ 'Hello Ted, how are you?' | RegExReplace:'[Hh]ello (\w+)','Greetings $1' }}
-        /// ]]></example>
-        public static object RegExReplace( object input, object pattern, object replacement, string options = null )
-        {
-            RegexOptions regexOptions = RegexOptions.None;
-            var inputString = input.ToString();
-
-            options = options ?? string.Empty;
-
-            if ( options.Contains( 'm' ) )
-            {
-                regexOptions |= RegexOptions.Multiline;
-            }
-
-            if ( options.Contains( 'i' ) )
-            {
-                regexOptions |= RegexOptions.IgnoreCase;
-            }
-
-            return Regex.Replace( inputString, pattern.ToString(), replacement.ToString(), regexOptions );
         }
 
         #endregion
