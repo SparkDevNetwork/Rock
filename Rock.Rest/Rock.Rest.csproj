@@ -146,6 +146,7 @@
     <Compile Include="Controllers\CodeGenerated\AuthClaimsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthClientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthScopesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CampusSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponseAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />

@@ -27,21 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Campus that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for CampusSchedule that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class CampusEntity
+    public partial class CampusScheduleEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int? CampusStatusValueId { get; set; }
-
-        /// <summary />
-        public int? CampusTypeValueId { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
+        public int CampusId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -49,46 +43,19 @@ namespace Rock.Client
         /// <summary />
         public string ForeignKey { get; set; }
 
-        /// <summary />
-        public bool? IsActive { get; set; }
-
-        /// <summary />
-        public bool IsSystem { get; set; }
-
-        /// <summary />
-        public int? LeaderPersonAliasId { get; set; }
-
-        /// <summary />
-        public int? LocationId { get; set; }
-
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
-
-        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
-        public string PhoneNumber { get; set; }
+        public int ScheduleId { get; set; }
 
         /// <summary />
-        public string ServiceTimes { get; set; }
-
-        /// <summary />
-        public string ShortCode { get; set; }
-
-        /// <summary />
-        public int? TeamGroupId { get; set; }
-
-        /// <summary />
-        public string TimeZoneId { get; set; }
-
-        /// <summary />
-        public string Url { get; set; }
+        public int? ScheduleTypeValueId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -117,30 +84,19 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Campus object
+        /// Copies the base properties from a source CampusSchedule object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Campus source )
+        public void CopyPropertiesFrom( CampusSchedule source )
         {
             this.Id = source.Id;
-            this.CampusStatusValueId = source.CampusStatusValueId;
-            this.CampusTypeValueId = source.CampusTypeValueId;
-            this.Description = source.Description;
+            this.CampusId = source.CampusId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsActive = source.IsActive;
-            this.IsSystem = source.IsSystem;
-            this.LeaderPersonAliasId = source.LeaderPersonAliasId;
-            this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
             this.Order = source.Order;
-            this.PhoneNumber = source.PhoneNumber;
-            this.ServiceTimes = source.ServiceTimes;
-            this.ShortCode = source.ShortCode;
-            this.TeamGroupId = source.TeamGroupId;
-            this.TimeZoneId = source.TimeZoneId;
-            this.Url = source.Url;
+            this.ScheduleId = source.ScheduleId;
+            this.ScheduleTypeValueId = source.ScheduleTypeValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -152,27 +108,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Campus that includes all the fields that are available for GETs. Use this for GETs (use CampusEntity for POST/PUTs)
+    /// Client model for CampusSchedule that includes all the fields that are available for GETs. Use this for GETs (use CampusScheduleEntity for POST/PUTs)
     /// </summary>
-    public partial class Campus : CampusEntity
+    public partial class CampusSchedule : CampusScheduleEntity
     {
         /// <summary />
-        public ICollection<CampusSchedule> CampusSchedules { get; set; }
+        public Schedule Schedule { get; set; }
 
         /// <summary />
-        public DefinedValue CampusStatusValue { get; set; }
-
-        /// <summary />
-        public DefinedValue CampusTypeValue { get; set; }
-
-        /// <summary />
-        public PersonAlias LeaderPersonAlias { get; set; }
-
-        /// <summary />
-        public Location Location { get; set; }
-
-        /// <summary />
-        public Group TeamGroup { get; set; }
+        public DefinedValue ScheduleTypeValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
