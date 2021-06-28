@@ -33,8 +33,6 @@ namespace Rock.CheckIn
     [DataContract]
     public class KioskDevice : ItemCache<KioskDevice>
     {
-        private static ConcurrentDictionary<int, object> _locks = new ConcurrentDictionary<int,object>();
-
         #region Constructors
 
         /// <summary>
@@ -163,7 +161,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
-        public bool HasLocations(List<int> configuredGroupTypes)
+        public bool HasLocations( List<int> configuredGroupTypes )
         {
             return ActiveGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckInActive ) );
         }
@@ -178,7 +176,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
-        public bool HasActiveLocations(List<int> configuredGroupTypes)
+        public bool HasActiveLocations( List<int> configuredGroupTypes )
         {
             return ActiveGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckInActive && l.IsActiveAndNotFull ) );
         }
@@ -208,7 +206,7 @@ namespace Rock.CheckIn
         {
             var result = new List<Rock.Model.Location>();
 
-            Rock.Model.Device currentDevice = new DeviceService( rockContext ).Get(this.Device.Id);
+            Rock.Model.Device currentDevice = new DeviceService( rockContext ).Get( this.Device.Id );
 
             // first, get all the possible locations for this device including child locations
             var allLocations = new List<int>();
@@ -314,7 +312,7 @@ namespace Rock.CheckIn
         {
             int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
 
-            using( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 var deviceService = new DeviceService( rockContext );
                 var ids = deviceService.Queryable().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId ).Select( d => d.Id ).ToList().ConvertAll( d => d.ToString() );
@@ -381,7 +379,7 @@ namespace Rock.CheckIn
                 }
             }
 
-            LoadKioskLocations( kioskDevice, location, ( campusId > 0 ? campusId : (int?)null ), rockContext );
+            LoadKioskLocations( kioskDevice, location, ( campusId > 0 ? campusId : ( int? ) null ), rockContext );
         }
 
         /// <summary>
@@ -407,7 +405,14 @@ namespace Rock.CheckIn
 
             var activeSchedules = new Dictionary<int, KioskSchedule>();
 
-            foreach ( var groupLocation in new GroupLocationService( rockContext ).GetActiveByLocations( allLocations ).OrderBy( l => l.Order ).AsNoTracking() )
+            var groupLocationList = new GroupLocationService( rockContext )
+                .GetActiveByLocations( allLocations )
+                .Include( x => x.Location )
+                .Include( x => x.Schedules )
+                .OrderBy( l => l.Order ).AsNoTracking()
+                .ToList();
+
+            foreach ( var groupLocation in groupLocationList )
             {
                 var kioskLocation = new KioskLocation( groupLocation.Location );
                 kioskLocation.CampusId = campusId;
