@@ -40,6 +40,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
     [CustomDropdownListField(
         "Filter By",
+        Description = "This controls which people appear in the list. For example, when set to 'Checked-in' people who are only checked-in (not yet marked 'Present') will be shown. For more information read about the 'Enable Presence' feature in the check-in documentation.",
         Key = AttributeKey.FilterBy,
         DefaultValue = "2",
         ListSource = "2^Checked-in,3^Present,4^Checked-out",
