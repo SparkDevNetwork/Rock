@@ -427,7 +427,18 @@ namespace Rock.Lava.Fluid
                 }
                 else
                 {
-                    lavaArgument = (int)fluidFilterArgument.ToNumberValue();
+                    lavaArgument = ( int ) fluidFilterArgument.ToNumberValue();
+                }
+            }
+            else if ( argumentType == typeof( double ) )
+            {
+                if ( fluidFilterArgument == null )
+                {
+                    lavaArgument = 0;
+                }
+                else
+                {
+                    lavaArgument = ( double ) fluidFilterArgument.ToNumberValue();
                 }
             }
             else if ( argumentType == typeof( bool ) )
@@ -451,7 +462,7 @@ namespace Rock.Lava.Fluid
             }
             else
             {
-                throw new ArgumentOutOfRangeException( argumentType.Name, $"Parameter type '{argumentType.Name}' is not supported for RockLiquid filters." );
+                throw new ArgumentOutOfRangeException( argumentType.Name, $"Parameter type '{argumentType.Name}' is not supported for Fluid filters." );
             }
 
             return lavaArgument;

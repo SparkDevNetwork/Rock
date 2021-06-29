@@ -246,7 +246,13 @@ namespace Rock.Lava.DotLiquid
         /// </summary>
         private void GetLavaFilterCompatibleArguments( string filterName, List<object> args, ParameterInfo[] lavaFilterFunctionParams, Context dotLiquidContext )
         {
-            // Unwrap proxy objects.
+            // Add the DotLiquid Context wrapped in a LavaContext.
+            if ( lavaFilterFunctionParams.Length > 0 && lavaFilterFunctionParams[0].ParameterType == typeof( ILavaRenderContext ) )
+            {
+                args.Insert( 0, new DotLiquidRenderContext( dotLiquidContext ) );
+            }
+
+            // Unwrap proxy objects and convert Types that are not processed natively by DotLiquid.
             for ( int i = 0; i < args.Count; i++ )
             {
                 if ( args[i] is ILiquidFrameworkDataObjectProxy proxy )
@@ -256,14 +262,13 @@ namespace Rock.Lava.DotLiquid
 
                 if ( args[i] is DropProxy )
                 {
-                    args[i] = ( (DropProxy)args[i] ).ConvertToValueType();
+                    args[i] = ( ( DropProxy ) args[i] ).ConvertToValueType();
                 }
-            }
 
-            // Add the DotLiquid Context wrapped in a LavaContext.
-            if ( lavaFilterFunctionParams.Length > 0 && lavaFilterFunctionParams[0].ParameterType == typeof( ILavaRenderContext ) )
-            {
-                args.Insert( 0, new DotLiquidRenderContext( dotLiquidContext ) );
+                if ( lavaFilterFunctionParams[i].ParameterType == typeof( double ) )
+                {
+                    args[i] = Convert.ChangeType( args[i], typeof( double ) );
+                }
             }
 
             // Add in any missing parameters with the default values defined for the filter method.
