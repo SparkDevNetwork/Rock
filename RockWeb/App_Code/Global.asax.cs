@@ -41,7 +41,7 @@ using Rock.WebStartup;
 namespace RockWeb
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
@@ -302,7 +302,7 @@ namespace RockWeb
         protected void Application_EndRequest( object sender, EventArgs e )
         {
             /*
-            4/28/2019 - JME 
+            4/28/2019 - JME
             The goal of the code below is to ensure that all cookies are set to be secured if
             the request is HTTPS. This is a bit tricky as we don't want to always make them
             secured as the server may not support SSL (development or small organizations).
@@ -311,8 +311,8 @@ namespace RockWeb
             Also, if the Request starts as HTTP and then the site redirects to HTTPS because it
             is required the Session cookie will have been created as unsecured. The code that does
             this redirection has been updated to clear the session cookie so it will be recreated
-            as secured.    
-    
+            as secured.
+
             Reason: Life.Church Request to increase security
             */
 
@@ -513,7 +513,8 @@ namespace RockWeb
                 // Send debug info to debug window
                 System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
 
-                RockApplicationStartupHelper.LogShutdownMessage( "Application Ended: " + shutdownReason );
+                var shutdownMessage = string.Format( "Application Ended: {0} (Process ID: {1})", shutdownReason, Rock.WebFarm.RockWebFarm.ProcessId );
+                RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
 
                 // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
@@ -532,8 +533,8 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
-                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload 
-                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock 
+                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload
+                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock
                 // in these cases.
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
@@ -921,7 +922,7 @@ namespace RockWeb
 
                     var keepAliveUrl = GetKeepAliveUrl();
 
-                    // call a page on the site to keep IIS alive 
+                    // call a page on the site to keep IIS alive
                     if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
                     {
                         try
