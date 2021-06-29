@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -90,7 +91,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> that is associated with this CampusSchedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
