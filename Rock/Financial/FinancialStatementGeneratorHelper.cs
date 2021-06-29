@@ -213,29 +213,38 @@ namespace Rock.Financial
                     .ToDictionary( k => k.Key, v => v.Select( a => new { a.NickName, a.LastName } ).FirstOrDefault() );
 
                 var givingLeaderGivingIdsQuery = givingIdsQry.Where( a => !a.PersonId.HasValue );
-                var qryNickNameLastNameAsGivingLeader = from p in personQuery.Where( a => a.GivingLeaderId == a.Id && a.GivingGroupId.HasValue )
+                var qryNickNameLastNameAsGivingLeader = from p in personQuery.Where( a => a.GivingGroupId.HasValue )
                                                         join gg in givingLeaderGivingIdsQuery on p.GivingGroupId equals gg.GroupId
-                                                        select new { gg.GroupId, p.NickName, p.LastName };
+                                                        select new { gg.GroupId, p.NickName, p.LastName, p.GivingLeaderId, PersonId = p.Id };
 
+                // Get the NickName and LastName of the GivingLeader of each group.
+                // If the Group somehow doesn't have a GivingLeader( which shouldn't happen ), use another person in that group.
                 var nickNameLastNameLookupByGivingGroupId = qryNickNameLastNameAsGivingLeader
-                    .Select( a => new { a.GroupId, a.NickName, a.LastName } )
+                    .Select( a => new { a.GroupId, a.NickName, a.LastName, a.GivingLeaderId, a.PersonId } )
                     .ToList()
                     .GroupBy( a => a.GroupId )
-                    .ToDictionary( k => k.Key, v => v.Select( a => new { a.NickName, a.LastName } ).FirstOrDefault() );
+                    .ToDictionary(
+                        k => k.Key,
+                        v => v
+                            .Select( a => new { a.NickName, a.LastName, IsGivingLeader = a.PersonId == a.GivingLeaderId } )
+                            .OrderByDescending( a => a.IsGivingLeader )
+                            .FirstOrDefault() );
 
                 foreach ( var recipient in recipientList )
                 {
                     if ( recipient.PersonId.HasValue )
                     {
                         var lookupValue = nickNameLastNameLookupByPersonId.GetValueOrNull( recipient.PersonId.Value );
-                        recipient.NickName = lookupValue?.NickName;
-                        recipient.LastName = lookupValue?.LastName;
+
+                        // lookupValue for individual giver should never be null, but just in case, do a null check 
+                        recipient.NickName = lookupValue?.NickName ?? string.Empty;
+                        recipient.LastName = lookupValue?.LastName ?? string.Empty;
                     }
                     else
                     {
                         var lookupValue = nickNameLastNameLookupByGivingGroupId.GetValueOrNull( recipient.GroupId );
-                        recipient.NickName = lookupValue?.NickName;
-                        recipient.LastName = lookupValue?.LastName;
+                        recipient.NickName = lookupValue?.NickName ?? string.Empty;
+                        recipient.LastName = lookupValue?.LastName ?? string.Empty;
                     }
                 }
 

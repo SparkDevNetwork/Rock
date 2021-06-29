@@ -2263,17 +2263,17 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
-            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
-            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
-            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
-            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
-            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
-
             // If the person was just added then update the GivingId to prevent "P0" values
             if ( this.GivingId == "P0" )
             {
                 PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
             }
+
+            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
+            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
         }
 
         /// <summary>

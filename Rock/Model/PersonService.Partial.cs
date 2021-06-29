@@ -4443,7 +4443,7 @@ FROM (
 
             if ( personId.HasValue )
             {
-                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+                sqlUpdateBuilder.Append( $" AND ( p.GivingId in (select GivingId from Person where Id = @personId ) ) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );

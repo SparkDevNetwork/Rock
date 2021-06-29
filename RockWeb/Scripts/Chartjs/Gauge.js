@@ -118,7 +118,10 @@
 		}
 	};
 	GaugeChartHelper.prototype.renderValueLabel = function() {
-		var label = this.data.value.toString();
+        var label = this.data.value.toString();
+        if (this.data.label) {
+            label = this.data.label.toString();
+        }
 		var ctx = this.ctx;
 		ctx.font = "34px " + this.fontStyle;
 		var stringWidth = ctx.measureText(label).width;
