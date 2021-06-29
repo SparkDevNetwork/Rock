@@ -19,11 +19,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
@@ -31,15 +32,11 @@ using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using System.Globalization;
-using System.Web;
-using Rock.Tasks;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -56,6 +53,7 @@ namespace RockWeb.Blocks.Examples
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the XML)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
+    [IntegerField( "Random Number Seed", "If given, the randomizer used during the creation of attendance and financial transactions will be predictable. Use 0 to use a random seed.", false, 1, "", 5 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -136,7 +134,7 @@ namespace RockWeb.Blocks.Examples
         private int summerPercentFactor = 30;
 
         /// <summary>
-        /// A random number generator for use when calculating random attendance data.
+        /// A random number generator for use when calculating random attendance data and financial giving frequency (skipping).
         /// </summary>
         private static Random _random = new Random( (int)DateTime.Now.Ticks );
 
@@ -327,6 +325,13 @@ namespace RockWeb.Blocks.Examples
         protected void bbtnLoadData_Click( object sender, EventArgs e )
         {
             string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
+
+            // Re-seed the randomizer with the given seed if it's non-0.
+            var randomizerSeed = GetAttributeValue( "RandomNumberSeed" ).AsInteger();
+            if ( randomizerSeed != 0 )
+            {
+                _random = new Random( randomizerSeed );
+            }
 
             try
             {
