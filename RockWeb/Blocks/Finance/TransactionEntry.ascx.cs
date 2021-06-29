@@ -35,6 +35,7 @@ using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -3474,13 +3475,9 @@ TransactionAccountDetails: [
             if ( receiptEmail.HasValue )
             {
                 // Queue a transaction to send receipts
-                var newTransactionIds = new List<int> { transactionId };
-                var processSendPaymentReceiptEmailsMsg = new ProcessSendPaymentReceiptEmails.Message
-                {
-                    SystemEmailGuid = receiptEmail.Value,
-                    TransactionId = transactionId
-                };
-                processSendPaymentReceiptEmailsMsg.Send();
+                var transactionIds = new List<int> { transactionId };
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
 
