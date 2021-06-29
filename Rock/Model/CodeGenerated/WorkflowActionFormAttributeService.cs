@@ -82,6 +82,7 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 AttributeId = model.AttributeId,
+                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
                 HideLabel = model.HideLabel,
                 IsReadOnly = model.IsReadOnly,
                 IsRequired = model.IsRequired,

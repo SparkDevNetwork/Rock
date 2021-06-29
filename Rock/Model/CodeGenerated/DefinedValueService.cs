@@ -109,6 +109,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<CampusSchedule>( Context ).Queryable().Any( a => a.ScheduleTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CampusSchedule.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );

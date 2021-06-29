@@ -97,6 +97,7 @@
     <Compile Include="CodeGenerated\Block.cs" />
     <Compile Include="CodeGenerated\BlockType.cs" />
     <Compile Include="CodeGenerated\Campus.cs" />
+    <Compile Include="CodeGenerated\CampusSchedule.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />

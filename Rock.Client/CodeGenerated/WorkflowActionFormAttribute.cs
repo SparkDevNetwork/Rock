@@ -139,9 +139,6 @@ namespace Rock.Client
         /// <summary />
         public Attribute Attribute { get; set; }
 
-        /// <summary />
-        public string FieldVisibilityRulesJSON { get; set; }
-
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

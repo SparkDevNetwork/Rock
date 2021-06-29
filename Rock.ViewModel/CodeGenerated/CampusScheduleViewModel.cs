@@ -27,57 +27,17 @@ using System.Linq;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// WorkflowActionFormAttribute View Model
+    /// CampusSchedule View Model
     /// </summary>
-    public partial class WorkflowActionFormAttributeViewModel : ViewModelBase
+    public partial class CampusScheduleViewModel : ViewModelBase
     {
         /// <summary>
-        /// Gets or sets the AttributeId.
+        /// Gets or sets the CampusId.
         /// </summary>
         /// <value>
-        /// The AttributeId.
+        /// The CampusId.
         /// </value>
-        public int AttributeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the FieldVisibilityRulesJSON.
-        /// </summary>
-        /// <value>
-        /// The FieldVisibilityRulesJSON.
-        /// </value>
-        public string FieldVisibilityRulesJSON { get; set; }
-
-        /// <summary>
-        /// Gets or sets the HideLabel.
-        /// </summary>
-        /// <value>
-        /// The HideLabel.
-        /// </value>
-        public bool HideLabel { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsReadOnly.
-        /// </summary>
-        /// <value>
-        /// The IsReadOnly.
-        /// </value>
-        public bool IsReadOnly { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsRequired.
-        /// </summary>
-        /// <value>
-        /// The IsRequired.
-        /// </value>
-        public bool IsRequired { get; set; }
-
-        /// <summary>
-        /// Gets or sets the IsVisible.
-        /// </summary>
-        /// <value>
-        /// The IsVisible.
-        /// </value>
-        public bool IsVisible { get; set; }
+        public int CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the Order.
@@ -88,28 +48,20 @@ namespace Rock.ViewModel
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the PostHtml.
+        /// Gets or sets the ScheduleId.
         /// </summary>
         /// <value>
-        /// The PostHtml.
+        /// The ScheduleId.
         /// </value>
-        public string PostHtml { get; set; }
+        public int ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the PreHtml.
+        /// Gets or sets the ScheduleTypeValueId.
         /// </summary>
         /// <value>
-        /// The PreHtml.
+        /// The ScheduleTypeValueId.
         /// </value>
-        public string PreHtml { get; set; }
-
-        /// <summary>
-        /// Gets or sets the WorkflowActionFormId.
-        /// </summary>
-        /// <value>
-        /// The WorkflowActionFormId.
-        /// </value>
-        public int WorkflowActionFormId { get; set; }
+        public int? ScheduleTypeValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

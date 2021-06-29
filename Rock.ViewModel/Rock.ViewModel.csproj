@@ -74,6 +74,7 @@
     <Compile Include="CodeGenerated\BinaryFileViewModel.cs" />
     <Compile Include="CodeGenerated\BlockTypeViewModel.cs" />
     <Compile Include="CodeGenerated\BlockViewModel.cs" />
+    <Compile Include="CodeGenerated\CampusScheduleViewModel.cs" />
     <Compile Include="CodeGenerated\CampusViewModel.cs" />
     <Compile Include="CodeGenerated\CategoryViewModel.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachmentViewModel.cs" />
