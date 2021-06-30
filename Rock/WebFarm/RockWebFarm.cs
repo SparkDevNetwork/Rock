@@ -237,7 +237,7 @@ namespace Rock.WebFarm
             {
                 var node = GetNode( rockContext, NodeName );
 
-                if ( node != null && node.LastRestartDateTime > ProcessStartDateTime )
+                if ( node.LastRestartDateTime > ProcessStartDateTime )
                 {
                     // SQL server doesn't store the same precision of date as C# holds, so we need to check that
                     // the difference is actually substantial
@@ -1024,7 +1024,7 @@ namespace Rock.WebFarm
         private static WebFarmNode GetNode( RockContext rockContext, string nodeName )
         {
             var webFarmNodeService = new WebFarmNodeService( rockContext );
-            var webFarmNode = webFarmNodeService.Queryable().FirstOrDefault( wfn => wfn.NodeName == nodeName );
+            var webFarmNode = webFarmNodeService.Queryable().Single( wfn => wfn.NodeName == nodeName );
             return webFarmNode;
         }
 
