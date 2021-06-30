@@ -433,40 +433,40 @@ the value entered for the Planned Visit Date field if it was displayed.
             public const string HIDE_OPTIONAL_REQUIRED = "Hide,Optional,Required";
             public const string HIDE_OPTIONAL = "Hide,Optional";
             public const string SQL_RELATIONSHIP_TYPES = @"
-SELECT 
-	R.[Id] AS [Value],
-	R.[Name] AS [Text]
-FROM [GroupType] T
-INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
-WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
-AND R.[Name] <> 'Child'
-UNION ALL
-SELECT 0, 'Child'
-ORDER BY [Text]";
+                SELECT 
+	                R.[Id] AS [Value],
+	                R.[Name] AS [Text]
+                FROM [GroupType] T
+                INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
+                WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
+                AND R.[Name] <> 'Child'
+                UNION ALL
+                SELECT 0, 'Child'
+                ORDER BY [Text]";
 
             public const string SQL_SAME_IMMEDIATE_FAMILY_RELATIONSHIPS = @"
-SELECT 
-	R.[Id] AS [Value],
-	R.[Name] AS [Text]
-FROM [GroupType] T
-INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
-WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
-AND R.[Name] <> 'Child'
-UNION ALL
-SELECT 0, 'Child'
-ORDER BY [Text]";
+                SELECT 
+	                R.[Id] AS [Value],
+	                R.[Name] AS [Text]
+                FROM [GroupType] T
+                INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
+                WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
+                AND R.[Name] <> 'Child'
+                UNION ALL
+                SELECT 0, 'Child'
+                ORDER BY [Text]";
 
             public const string SQL_CAN_CHECKIN_RELATIONSHIP = @"
-SELECT 
-	R.[Id] AS [Value],
-	R.[Name] AS [Text]
-FROM [GroupType] T
-INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
-WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
-AND R.[Name] <> 'Child'
-UNION ALL
-SELECT 0, 'Child'
-ORDER BY [Text]";
+                SELECT 
+	                R.[Id] AS [Value],
+	                R.[Name] AS [Text]
+                FROM [GroupType] T
+                INNER JOIN [GroupTypeRole] R ON R.[GroupTypeId] = T.[Id]
+                WHERE T.[Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
+                AND R.[Name] <> 'Child'
+                UNION ALL
+                SELECT 0, 'Child'
+                ORDER BY [Text]";
         }
 
         private static class PageParameterKey
@@ -551,6 +551,7 @@ ORDER BY [Text]";
                     .Where( r => selectedRelationshipTypeIds.Contains( r.Id ) )
                     .ToDictionary( k => k.Id, v => v.Name );
             }
+
             if ( selectedRelationshipTypeIds.Contains( 0 ) )
             {
                 _relationshipTypes.Add( 0, "Child" );
@@ -890,8 +891,7 @@ ORDER BY [Text]";
                     acAddress.GetValues( loc );
                     if ( acAddress.Street1.IsNotNullOrWhiteSpace() && loc.City.IsNotNullOrWhiteSpace() )
                     {
-                        loc = new LocationService( _rockContext ).Get(
-                            loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
+                        loc = new LocationService( _rockContext ).Get( loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, primaryFamily, true );
                     }
                     else
                     {
@@ -899,10 +899,7 @@ ORDER BY [Text]";
                     }
 
                     // Check to see if family has an existing home address
-                    var groupLocation = primaryFamily.GroupLocations
-                        .FirstOrDefault( l =>
-                            l.GroupLocationTypeValueId.HasValue &&
-                            l.GroupLocationTypeValueId.Value == homeLocationType.Id );
+                    var groupLocation = primaryFamily.GroupLocations.FirstOrDefault( l => l.GroupLocationTypeValueId.HasValue && l.GroupLocationTypeValueId.Value == homeLocationType.Id );
 
                     if ( loc != null )
                     {
@@ -918,10 +915,7 @@ ORDER BY [Text]";
                         {
                             // If an address was not entered, and family has one on record, update it to be a previous address
                             var prevLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
-                            if ( prevLocationType != null )
-                            {
-                                groupLocation.GroupLocationTypeValueId = prevLocationType.Id;
-                            }
+                            groupLocation.GroupLocationTypeValueId = prevLocationType != null ? prevLocationType.Id : groupLocation.GroupLocationTypeValueId;
                         }
                     }
 
@@ -1109,12 +1103,12 @@ ORDER BY [Text]";
                         EnsurePersonInOtherFamily( familyGroupType.Id, primaryFamily.Id, removedChild.Id, removedChild.Person.LastName, childRoleId, na );
                         groupMemberService.Delete( removedChild );
                     }
+
                     _rockContext.SaveChanges();
 
                     // Find all the existing relationships that were removed and delete them
                     var roleIds = _relationshipTypes.Select( r => r.Key ).ToList();
-                    foreach ( var groupMember in new PersonService( _rockContext )
-                        .GetRelatedPeople( adultIds, roleIds ) )
+                    foreach ( var groupMember in new PersonService( _rockContext ).GetRelatedPeople( adultIds, roleIds ) )
                     {
                         if ( !newRelationships.ContainsKey( groupMember.PersonId ) || !newRelationships[groupMember.PersonId].Contains( groupMember.GroupRoleId ) )
                         {
@@ -1227,11 +1221,8 @@ ORDER BY [Text]";
 
             ShowHidePlannedDatePanels();
 
-            //// Planned Visit Date
-            //dpPlannedDate.Required = SetControl( AttributeKey.PlannedVisitDate, pnlPlannedDate, null );
-
             // Visit Info
-            pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible;
+            pnlVisit.Visible = pnlCampus.Visible || pnlPlannedDate.Visible || pnlPlannedSchedule.Visible;
 
             // Adult Suffix
             bool isRequired = SetControl( AttributeKey.AdultSuffix, pnlSuffix1, pnlSuffix2 );
@@ -1294,7 +1285,6 @@ ORDER BY [Text]";
             string scheduleGuid = GetAttributeValue( AttributeKey.CampusScheduleAttribute );
             if ( scheduleGuid.IsNullOrWhiteSpace() )
             {
-                pnlPlannedDate.Visible = true;
                 pnlPlannedSchedule.Visible = false;
                 return;
             }
