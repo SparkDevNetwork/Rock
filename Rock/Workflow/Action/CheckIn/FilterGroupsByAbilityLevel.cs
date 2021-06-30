@@ -85,23 +85,20 @@ namespace Rock.Workflow.Action.CheckIn
             }
 
             string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-            if ( !string.IsNullOrWhiteSpace( personAbilityLevel ) )
+            foreach ( var groupType in person.GroupTypes.ToList() )
             {
-                foreach ( var groupType in person.GroupTypes.ToList() )
+                foreach ( var group in groupType.Groups.ToList() )
                 {
-                    foreach ( var group in groupType.Groups.ToList() )
+                    var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                    if ( groupAttributes.Any() && (!groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) || personAbilityLevel.IsNullOrWhiteSpace() ) )
                     {
-                        var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
-                        if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) )
+                        if ( remove )
                         {
-                            if ( remove )
-                            {
-                                groupType.Groups.Remove( group );
-                            }
-                            else
-                            {
-                                group.ExcludedByFilter = true;
-                            }
+                            groupType.Groups.Remove( group );
+                        }
+                        else
+                        {
+                            group.ExcludedByFilter = true;
                         }
                     }
                 }
