@@ -82,6 +82,45 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets or adds a following for the specified person and entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="purposeKey">A purpose that defines how this following will be used.</param>
+        /// <returns>An existing or new Following record.</returns>
+        /// <remarks>Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.</remarks>
+        public Following GetOrAddFollowing( int entityTypeId, int entityId, int personAliasId, string purposeKey )
+        {
+            purposeKey = purposeKey ?? string.Empty;
+
+            var followings = Queryable()
+                .Where( f =>
+                    f.EntityTypeId == entityTypeId &&
+                    f.EntityId == entityId &&
+                    f.PersonAliasId == personAliasId &&
+                    ( ( f.PurposeKey == null && purposeKey == "" ) || f.PurposeKey == purposeKey ) )
+                .ToList();
+
+            if ( followings.Any() )
+            {
+                return followings.First();
+            }
+
+            var following = new Following
+            {
+                EntityTypeId = entityTypeId,
+                EntityId = entityId,
+                PersonAliasId = personAliasId,
+                PurposeKey = purposeKey
+            };
+
+            Add( following );
+
+            return following;
+        }
+
+        /// <summary>
         /// Gets the entity query
         /// For example: If the EntityTypeId is GroupMember, this will return a GroupMember query of group members that the person is following
         /// </summary>
