@@ -15,6 +15,9 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 
@@ -60,6 +63,62 @@ namespace Rock.Communication
             else
             {
                 results.Errors.AddRange( errors );
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Sends the message to a group using the system communication. Each person in the group receives the message in their preferred medium.
+        /// A "Recipient" merge object will be added to the merge objects.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="systemCommunication">The system communication.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public static SendMessageResult SendMessage( int groupId, SystemCommunication systemCommunication, Dictionary<string, object> mergeObjects )
+        {
+            var results = new SendMessageResult();
+
+            using ( var rockContext = new RockContext() )
+            {
+                // The group members are the message recipients
+                var groupMemberViews = new GroupMemberService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( m =>
+                        m.GroupId == groupId &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active &&
+                        m.Person != null
+                     )
+                    .Select( m => new
+                    {
+                        Person = m.Person,
+                        GroupCommunicationPreference = m.CommunicationPreference
+                    } )
+                    .Distinct()
+                    .ToList();
+
+                // Send the communication to each recipient in the group
+                foreach ( var groupMemberView in groupMemberViews )
+                {
+                    var recipient = groupMemberView.Person;
+                    mergeObjects["Recipient"] = recipient;
+
+                    var mediumType = Rock.Model.Communication.DetermineMediumEntityTypeId(
+                        ( int ) CommunicationType.Email,
+                        ( int ) CommunicationType.SMS,
+                        ( int ) CommunicationType.PushNotification,
+                        groupMemberView.GroupCommunicationPreference,
+                        groupMemberView.Person.CommunicationPreference );
+
+                    var result = SendMessage( recipient, mediumType, systemCommunication, mergeObjects );
+
+                    // Add this result to the set of results to return
+                    results.Warnings.AddRange( result.Warnings );
+                    results.Errors.AddRange( result.Errors );
+                    results.MessagesSent += result.MessagesSent;
+                }
             }
 
             return results;

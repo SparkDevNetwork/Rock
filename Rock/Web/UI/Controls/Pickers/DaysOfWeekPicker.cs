@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Rock.Utility.Enums;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,7 +35,7 @@ namespace Rock.Web.UI.Controls
         {
             Label = "Days of Week";
             this.Items.Clear();
-            foreach (var dow in Enum.GetValues(typeof(DayOfWeek)).OfType<DayOfWeek>().ToList())
+            foreach ( var dow in Enum.GetValues( typeof( DayOfWeek ) ).OfType<DayOfWeek>().ToList() )
             {
                 this.Items.Add( new ListItem( dow.ConvertToString(), dow.ConvertToInt().ToString() ) );
             }
@@ -50,17 +51,33 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => (DayOfWeek)int.Parse( a.Value ) ).ToList();
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => ( DayOfWeek ) int.Parse( a.Value ) ).ToList();
             }
-            
+
             set
             {
                 foreach ( ListItem item in this.Items )
                 {
-                    item.Selected = value.Exists( a => a.Equals( (DayOfWeek)int.Parse( item.Value ) ) );
+                    item.Selected = value?.Exists( a => a.Equals( ( DayOfWeek ) int.Parse( item.Value ) ) ) == true;
                 }
             }
         }
 
+        /// <summary>
+        /// Gets the selected days of week as flags (bit per day of the week).
+        /// </summary>
+        /// <returns></returns>
+        public DayOfWeekFlag SelectedDaysOfWeekAsFlags()
+        {
+            var flags = DayOfWeekFlag.None;
+
+            foreach ( var dayOfWeek in SelectedDaysOfWeek )
+            {
+                var asFlag = dayOfWeek.AsFlag();
+                flags |= asFlag;
+            }
+
+            return flags;
+        }
     }
 }
