@@ -1,10 +1,17 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingOverview.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.GivingOverview" %>
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlContent" runat="server">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-chart-area"></i>Giving Overview</h1>
+                    <h1 class="panel-title">
+                        <i class="fa fa-chart-area"></i>
+                        Giving Overview
+                    </h1>
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlLastUpdated" runat="server" LabelType="Primary" />
+                    </div>
                 </div>
                 <div class="panel-body pt-0">
                     <div id="pnlInactiveGiver" class="alert alert-warning mt-3" runat="server">
@@ -22,7 +29,9 @@
                                 <ul class="trend-chart trend-chart-gap" style="height:85px;">
                                     <asp:Repeater ID="rptGivingByMonth" runat="server">
                                         <ItemTemplate>
-                                            <li title="<%#( ( ( DateTime ) Eval( "key" ) ).ToString( "MMM yyyy" ) ) %>: <%#  Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("value")) %>"><span style="<%# GetGivingByMonthPercent ( (decimal)Eval( "value" ) ) %>"></span></li>
+                                            <li title="<%#( ( ( DateTime ) Eval( "key" ) ).ToString( "MMM yyyy" ) ) %>: <%#  Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("value")) %>">
+                                                <span style="<%# GetGivingByMonthPercent ( (decimal)Eval( "value" ) ) %>"></span>
+                                            </li>
                                         </ItemTemplate>
                                     </asp:Repeater>
                                 </ul>

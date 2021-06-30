@@ -121,6 +121,10 @@
     <Compile Include="Migrations\202106241733122_AddCampusSchedules.Designer.cs">
       <DependentUpon>202106241733122_AddCampusSchedules.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202106301738565_GivingAnalyticsUpdates2.cs" />
+    <Compile Include="Migrations\202106301738565_GivingAnalyticsUpdates2.Designer.cs">
+      <DependentUpon>202106301738565_GivingAnalyticsUpdates2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -615,6 +619,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202106241733122_AddCampusSchedules.resx">
       <DependentUpon>202106241733122_AddCampusSchedules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202106301738565_GivingAnalyticsUpdates2.resx">
+      <DependentUpon>202106301738565_GivingAnalyticsUpdates2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
