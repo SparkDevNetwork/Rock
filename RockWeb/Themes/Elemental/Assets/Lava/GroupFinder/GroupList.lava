@@ -6,8 +6,6 @@
 <div class="group-results">
 
     <div class="row flex-row">
-
-{% comment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1880"  class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
@@ -40,7 +38,6 @@
                 </div>
             </a>
         </div>
-{% endcomment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1881" class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
