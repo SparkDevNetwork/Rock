@@ -769,10 +769,11 @@
                         <Rock:TagLiteral ID="TagLiteral2" runat="server" Tag="div" Text="" CssClass="description"/>
                         <Rock:TagLiteral ID="TagLiteral3" runat="server" Tag="div" Text="" CssClass=""/>
                         <Rock:TagLiteral ID="TagLiteral4" runat="server" Tag="div" />
-                        <Rock:TagLiteral ID="TagLiteral5" runat="server" Tag="div">
+                        <Rock:TagLiteral ID="TagLiteral5" runat="server" Tag="p">
                             <span>TagLiteral5: Literal Content in tag</span>
                         </Rock:TagLiteral>
-                        <Rock:TagLiteral ID="TagLiteral6" runat="server" />
+                        <Rock:TagLiteral ID="TagLiteral6" runat="server" Text="TagLiteral6: Text with no tag should yield a div." />
+                        <Rock:TagLiteral ID="TagLiteral7" runat="server" />
                     </div>
 
                     <a id="Badge"></a>

@@ -59,23 +59,26 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            var tag = Tag;
+
+            if ( tag.IsNullOrWhiteSpace() )
+            {
+                tag = "div";
+            }
+
             if ( Visible && Text.IsNotNullOrWhiteSpace() )
             {
-                if ( Tag.IsNotNullOrWhiteSpace() )
+
+                if ( CssClass.IsNotNullOrWhiteSpace() )
                 {
-                    if ( CssClass.IsNotNullOrWhiteSpace() )
-                    {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, CssClass );
-                    }
-                    writer.RenderBeginTag( Tag );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, CssClass );
                 }
+
+                writer.RenderBeginTag( tag );
 
                 base.RenderControl( writer );
 
-                if ( Tag.IsNotNullOrWhiteSpace() )
-                {
-                    writer.RenderEndTag();
-                }
+                writer.RenderEndTag();
             }
         }
     }
