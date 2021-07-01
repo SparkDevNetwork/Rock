@@ -119,7 +119,7 @@ namespace Rock.Tests.UnitTests.Lava
                 return _fluidEngine;
             }
 
-            return null;
+            throw new Exception( $"Cannot return an instance of engine type \"{ engineType }\"." );
         }
 
         /// <summary>
