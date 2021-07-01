@@ -5141,8 +5141,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && !AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -5176,6 +5176,21 @@ namespace Rock.Lava
             }
 
             return result;
+        }
+
+        private static bool AreEqualValue( object left, object right )
+        {
+            if ( right == null )
+            {
+                if ( left == null )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return left.Equals( right );
         }
 
         /// <summary>

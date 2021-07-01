@@ -117,7 +117,7 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        [Ignore( "This test may fail for Fluid if run in series with other tests." )]
+        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithMultipleConditions_ReturnsOnlyMatchingItems()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -159,7 +159,7 @@ Employer: Rock Solid Church <br>
         }
 
         [TestMethod]
-        [Ignore( "This test may fail for Fluid if run in series with other tests." )]
+        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithSingleConditionNotEqual_ReturnsOnlyNotEqualValues()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -179,15 +179,19 @@ Employer:
         [TestMethod]
         public void Where_DocumentationExample_IsValid()
         {
-            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
+            const int mobilePhoneNumberTypeValueId = 12;
 
             var templateInput = @"
-{{ CurrentPerson.NickName }}'s other contact numbers are: {{ CurrentPerson.PhoneNumbers | Where:'NumberTypeValueId', 136, 'notequal' | Select:'NumberFormatted' | Join:', ' }}.
+{{ CurrentPerson.NickName }}'s other contact numbers are: {{ CurrentPerson.PhoneNumbers | Where:'NumberTypeValueId', 12, 'notequal' | Select:'NumberFormatted' | Join:', ' }}.'
 ";
 
+            templateInput.Replace( "<mobilePhoneId>", mobilePhoneNumberTypeValueId.ToString() );
+
             var expectedOutput = @"
-Ted's other contact numbers are: (623) 555-2444.
+Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
 ";
+
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
 
             TestHelper.AssertTemplateOutput( expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
         }
@@ -207,7 +211,7 @@ Employer:RockSolidChurch<br>
         }
 
         [TestMethod]
-        [Ignore( "This test may fail for Fluid if run in series with other tests." )]
+        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_WithSingleConditionOnNestedProperty_ReturnsOnlyEqualValues()
         {
             var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
@@ -215,7 +219,7 @@ Employer:RockSolidChurch<br>
             var templateInput = @"
 {% assign personPhones = CurrentPerson.PhoneNumbers | Where:'NumberTypeValue.Value == ""Home""' %}
 {% for phone in personPhones %}
-    {{ phone.NumberTypeValue.Value }}: {{ phone.NumberFormatted }} <br>
+    {{ phone.NumberTypeValue.Value }}: {{ phone.NumberFormatted }}<br>
 {% endfor %}
 ";
 
@@ -227,7 +231,7 @@ Home: (623)555-3322 <br>
         }
 
         [TestMethod]
-        [Ignore( "This test may fail for Fluid if run in series with other tests." )]
+        //[Ignore( "This test may fail for Fluid if run in series with other tests." )]
         public void Where_RepeatExecutions_ReturnsSameResult()
         {
             Debug.Write( "** Pass 1:" );
