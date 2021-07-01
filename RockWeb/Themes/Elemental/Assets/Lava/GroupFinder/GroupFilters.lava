@@ -119,7 +119,7 @@ function ToggleParameter(param, id) {
 </div>
 
 {% comment %} Campus {% endcomment %}
-<p class="text-muted-">Stay connected online with others who attend your location. Search by location you attend or live near!</p>
+<p class="text-muted-">Stay connected with others who attend your location. Search by location you attend or live near!</p>
 <div class="tag-list-label hidden">Campus</div>
 <div class="tag-list form-group">
 {%- for campus in Campuses -%}
