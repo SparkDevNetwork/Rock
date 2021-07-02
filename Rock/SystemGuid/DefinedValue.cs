@@ -44,6 +44,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_COMMUNICATION_VIEW = "0D588D84-111C-4350-98DE-460C194F5DE5";
 
         /// <summary>
+        /// The block template mobile daily challenge entry
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY = "30ECA4B6-0869-4656-A4CD-B8729CB29E76";
+
+        /// <summary>
         /// The block template mobile event item occurrence list by audience
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE = "26944B71-7B69-4943-8EC2-3506F728D943";
@@ -820,6 +825,16 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: System Events
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_SYSTEM_EVENTS = "5919214F-9C59-4913-BE4E-0DFB6A05F528";
+
+        /// <summary>
+        /// Interaction Channel Type: Challenges
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHALLENGES = "593607DC-4537-46E4-939F-60E0F74A1518";
+
+        /// <summary>
+        /// Interaction Channel Type: Challenge Progress
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHALLENGE_PROGRESS = "6AA529BD-9FA5-43AD-A98E-B8DF5F997146";
 
         /// <summary>
         /// The PBX CDR medium value
