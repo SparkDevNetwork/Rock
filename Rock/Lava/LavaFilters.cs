@@ -1100,7 +1100,7 @@ namespace Rock.Lava
             // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
             if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return inputDateTimeOffset.ToLocalTime().ToString( format ).Trim();
+                return inputDateTimeOffset.ToLocalTime().DateTime.ToString( format ).Trim();
             }
 
             // Convert the input to a valid DateTime if possible.

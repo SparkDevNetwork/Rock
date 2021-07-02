@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -123,6 +124,23 @@ namespace Rock.Lava.Fluid
              * 3. Return a FluidValue as quickly as possible, to avoid executing subsequent value converters in the collection.
              */
 
+            // Substitute the default Fluid DateTimeValue with an implementation that renders in the General DateTime format
+            // rather than in UTC format.
+            templateOptions.ValueConverters.Add( ( value ) =>
+            {
+                if ( value is DateTime dt )
+                {
+                    return new LavaDateTimeValue( new DateTimeOffset( dt ) );
+                }
+                else if ( value is DateTimeOffset dto )
+                {
+                    return new LavaDateTimeValue( dto );
+                }
+
+                // This converter cannot process the value.
+                return null;
+            } );
+
             // DBNull is required to process results from the Sql command.
             // If this type is not registered, Fluid throws some seemingly unrelated exceptions.
             templateOptions.ValueConverters.Add( ( value ) => value is System.DBNull ? FluidValue.Create( null, templateOptions ) : null );
@@ -169,18 +187,14 @@ namespace Rock.Lava.Fluid
             } );
         }
 
-        private Dictionary<string,TValue> ConvertToDictionaryWithStringKey<TKey,TValue>(IDictionary<TKey,TValue> dictionary)
-        {
-            return dictionary.ToDictionary( k => k.Key.ToString(), v => v.Value );
-        }
-
         private TemplateOptions GetTemplateOptions()
         {
             if ( _templateOptions == null )
             {
                 _templateOptions = new TemplateOptions();
 
-
+                // Set Fluid to use the local server culture for formatting dates, times and currencies.
+                _templateOptions.CultureInfo = CultureInfo.CurrentCulture;
             }
 
             return _templateOptions;
