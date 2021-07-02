@@ -1152,6 +1152,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstanceId.HasValue )
                 {
                     var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
 
                     // in RegistrationInstanceMode
                     registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
