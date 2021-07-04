@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,7 +35,6 @@ namespace Rock.Tests.Rock.Model
     public class ScheduleTests
     {
         private static Calendar _calendarSpecificDates;
-        private static Calendar _calendarSingleDate;
         private static List<DateTime> _specificDates;
         private static CalendarSerializer _calendarSerializer = new CalendarSerializer();
 
@@ -61,19 +76,6 @@ namespace Rock.Tests.Rock.Model
                     }
                 }
             };
-
-            // Create a calendar for a one-time event.
-            _calendarSingleDate = new Calendar()
-            {
-                // Create an event for the first scheduled date (1am-2am) only.
-                Events = { new Event
-                    {
-                        DtStart = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 1, 0, 0 ),
-                        DtEnd = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day, 2, 0, 0 ),
-                        DtStamp = new CalDateTime( firstDate.Year, firstDate.Month, firstDate.Day ),
-                    }
-                }
-            };
         }
 
         #endregion
@@ -105,13 +107,11 @@ namespace Rock.Tests.Rock.Model
         /// A schedule that specifies a single date with no recurrence pattern should have an effective end date matching the start date.
         /// </summary>
         [TestMethod]
-        public void Schedule_WithSingleDate_HasEffectiveEndDate()
+        public void Schedule_WithOneTimeSingleDayEvent_HasEffectiveEndDateEqualToStartDate()
         {
-            var schedule = new Schedule();
+            var singleDayEvent = GetCalendarEvent( GetFirstTestScheduleDate(), new TimeSpan( 1, 0, 0 ) );
 
-            schedule.iCalendarContent = _calendarSerializer.SerializeToString( _calendarSingleDate );
-
-            schedule.EnsureEffectiveStartEndDates();
+            var schedule = GetSchedule( GetCalendar( singleDayEvent ) );
 
             var endDateSpecified = _specificDates.FirstOrDefault();
 
@@ -122,10 +122,33 @@ namespace Rock.Tests.Rock.Model
         }
 
         /// <summary>
+        /// A schedule that specifies a single date with no recurrence pattern should have an effective end date matching the start date.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_WithOneTimeMultiDayEvent_HasEffectiveEndDateOnLastDayOfEvent()
+        {
+            var singleDayEvent = GetCalendarEvent( GetFirstTestScheduleDate(), new TimeSpan( 24, 0, 0 ) );
+
+            var schedule = GetSchedule( GetCalendar( singleDayEvent ) );
+
+            var endDateExpected = _specificDates.FirstOrDefault().AddDays( 1 );
+
+            var endDateReturned = schedule.EffectiveEndDate;
+
+            Assert.That.IsNotNull( endDateReturned );
+            Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
+        }
+
+        private DateTime GetFirstTestScheduleDate()
+        {
+            return _specificDates.First();
+        }
+
+        /// <summary>
         /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
         /// </summary>
         [TestMethod]
-        public void Schedule_WithInfiniteRecurrencePattern_GetOccurrencesObservesRequestedEndDate()
+        public void Schedule_SingleDayEventWithInfiniteRecurrencePattern_GetOccurrencesObservesRequestedEndDate()
         {
             var schedule = GetScheduleWithDailyRecurrence( null );
 
@@ -137,6 +160,61 @@ namespace Rock.Tests.Rock.Model
 
             // End date is at 12am, so the last occurrence of the event will land on the preceding day.
             Assert.That.AreEqualDate( endDate, scheduleDates.LastOrDefault().Period.StartTime.Date.AddDays( 1 ) );
+        }
+
+        /// <summary>
+        /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetOccurrencesForPeriodStartingDuringMultiDayEvent_DoesNotIncludeInProgressEvent()
+        {
+            var inProgressEventStartDate = RockDateTime.Today.AddDays( -1 );
+
+            // Get a calendar that includes a multi-day event that started yesterday and repeats every 7 days.
+            var calendar = GetCalendar( GetCalendarEvent( inProgressEventStartDate, new TimeSpan( 25, 0, 0 ) ),
+                GetDailyRecurrencePattern( null, null, 7 ) );
+
+            var schedule = GetSchedule( calendar );
+
+            // Get events for the next 3 months, starting from today.
+            var endRequestDate = RockDateTime.Now.Date.AddMonths( 3 );
+
+            var scheduleDates = schedule.GetICalOccurrences( RockDateTime.Now, endRequestDate );
+
+            Assert.That.IsNotNull( scheduleDates.FirstOrDefault() );
+
+            // Verify that the result does not include the event that started yesterday and is in progress today.
+            var firstEvent = scheduleDates.FirstOrDefault();
+
+            Assert.That.AreNotEqualDate( inProgressEventStartDate, firstEvent.Period.StartTime.Date );
+        }
+
+        /// <summary>
+        /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_GetOccurrencesForPeriodEndingDuringMultiDayEvent_IncludesInProgressEvent()
+        {
+            var eventStartDate = RockDateTime.Now.AddDays( -1 );
+
+            // Get a calendar that includes a multi-day event that started yesterday and repeats daily.
+            var calendar = GetCalendar( GetCalendarEvent( eventStartDate, new TimeSpan( 25, 0, 0 ) ),
+                GetDailyRecurrencePattern( null, null, 1 ) );
+
+            var schedule = GetSchedule( calendar );
+
+            // Get events for the next 7 days (inclusive), starting from today.
+            var lastRequestDate = RockDateTime.Now.Date.AddDays( 8 ).AddMilliseconds( -1 );
+
+            // Get occurrences for the schedule from today.
+            var scheduleDates = schedule.GetICalOccurrences( RockDateTime.Now, lastRequestDate );
+
+            Assert.That.IsNotNull( scheduleDates.FirstOrDefault() );
+
+            var lastEvent = scheduleDates.LastOrDefault();
+
+            // Verify that the result includes the event that starts on the last day of the request period but ends on the following day.
+            Assert.That.AreEqualDate( lastRequestDate, lastEvent.Period.StartTime.Date );
         }
 
         /// <summary>
@@ -190,13 +268,7 @@ namespace Rock.Tests.Rock.Model
         public void Schedule_CreatedWithInfiniteRecurrence_EffectiveEndDateIsNull()
         {
             // Create a daily recurring calendar that has no end date.
-            var calendar = GetCalendarWithDailyRecurrence( null );
-
-            var schedule = new Schedule();
-
-            var serializer = new CalendarSerializer( calendar );
-
-            schedule.iCalendarContent = serializer.SerializeToString();
+            var schedule = GetScheduleWithDailyRecurrence( null, new TimeSpan( 1, 0, 0 ), null );
 
             schedule.EnsureEffectiveStartEndDates();
 
@@ -249,10 +321,21 @@ namespace Rock.Tests.Rock.Model
 
         #region Helper methods
 
-        private Schedule GetScheduleWithDailyRecurrence( DateTime? endDate = null, int? occurrenceCount = null )
+        private Schedule GetScheduleWithDailyRecurrence( DateTime? endDate = null, TimeSpan? eventDuration = null, int? occurrenceCount = null )
         {
-            var calendar = GetCalendarWithDailyRecurrence( endDate, occurrenceCount );
+            var calendarEvent = GetCalendarEvent( RockDateTime.Today, eventDuration );
 
+            var recurrence = GetDailyRecurrencePattern( endDate, occurrenceCount );
+
+            var calendar = GetCalendar( calendarEvent, recurrence );
+
+            var schedule = GetSchedule( calendar );
+
+            return schedule;
+        }
+
+        private Schedule GetSchedule( Calendar calendar )
+        {
             var schedule = new Schedule();
 
             var serializer = new CalendarSerializer( calendar );
@@ -264,16 +347,28 @@ namespace Rock.Tests.Rock.Model
             return schedule;
         }
 
-        private Calendar GetCalendarWithDailyRecurrence( DateTime? endDate, int? occurrenceCount = null )
+        private Calendar GetCalendar( Event calendarEvent, RecurrencePattern recurrencePattern = null )
         {
-            var today = RockDateTime.Now;
-
-            // Repeat daily from today until the specified end date.
-            var pattern = "RRULE:FREQ=DAILY";
-
-            if ( endDate != null )
+            if ( recurrencePattern != null )
             {
-                pattern += $";UNTIL={endDate:yyyyMMdd}";
+                calendarEvent.RecurrenceRules = new List<IRecurrencePattern> { recurrencePattern };
+            }
+
+            var calendar = new Calendar();
+
+            calendar.Events.Add( calendarEvent );
+
+            return calendar;
+        }
+
+        private RecurrencePattern GetDailyRecurrencePattern( DateTime? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )
+        {
+            // Repeat daily from the start date until the specified end date or a set number of recurrences, at the specified interval.
+            var pattern = $"RRULE:FREQ=DAILY;INTERVAL={interval}";
+
+            if ( recurrenceEndDate != null )
+            {
+                pattern += $";UNTIL={recurrenceEndDate:yyyyMMdd}";
             }
 
             if ( occurrenceCount != null )
@@ -283,19 +378,19 @@ namespace Rock.Tests.Rock.Model
 
             var recurrencePattern = new RecurrencePattern( pattern );
 
-            var calendar = new Calendar()
+            return recurrencePattern;
+        }
+
+        private Event GetCalendarEvent( DateTime eventStartDate, TimeSpan? eventDuration )
+        {
+            var calendarEvent = new Event
             {
-                Events = { new Event
-                    {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day, 13, 0, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day, 14, 0, 0 ),
-                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { recurrencePattern }
-                    }
-                }
+                DtStart = new CalDateTime( eventStartDate ),
+                Duration = eventDuration ?? new TimeSpan( 1, 0, 0 ),
+                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
             };
 
-            return calendar;
+            return calendarEvent;
         }
 
         #endregion
