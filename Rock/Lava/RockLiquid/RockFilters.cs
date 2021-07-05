@@ -5281,7 +5281,7 @@ namespace Rock.Lava
         /// <param name="input">The lava source to process.</param>
         /// <example><![CDATA[
         /// {% capture lava %}{% raw %}{% assign test = "hello" %}{{ test }}{% endraw %}{% endcapture %}
-        /// {{ lava | BBM_RunLava }}
+        /// {{ lava | RunLava }}
         /// ]]></example>
         public static string RunLava( Context context, object input )
         {
