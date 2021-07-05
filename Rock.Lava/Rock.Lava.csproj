@@ -44,7 +44,7 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Fluid, Version=0.0.0.0, Culture=neutral, PublicKeyToken=51cdb8c1938e4789, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fluid.Core.2.0.9\lib\netstandard2.0\Fluid.dll</HintPath>
+      <HintPath>..\packages\Fluid.Core.2.0.13\lib\netstandard2.0\Fluid.dll</HintPath>
     </Reference>
     <Reference Include="Humanizer">
       <HintPath>..\libs\Humanizer.2.1.0\Humanizer.dll</HintPath>
