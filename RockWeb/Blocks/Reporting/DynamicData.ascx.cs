@@ -469,7 +469,7 @@ namespace RockWeb.Blocks.Reporting
                 int i = 0;
                 foreach ( Control div in phContent.Controls )
                 {
-                    foreach ( var grid in div.Controls.OfType<Grid>() )
+                    foreach ( var grid in div.ControlsOfTypeRecursive<Grid>() )
                     {
                         if ( ds.Tables.Count > i )
                         {

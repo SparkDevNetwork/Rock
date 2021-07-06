@@ -63,7 +63,7 @@ namespace Rock.Tests.Integration.Model
         /// Retrieving a list of active events should only return an event scheduled for a single date if it occurs after the specified date.
         /// </summary>
         [TestMethod]
-        public void EventItemService_GetActiveEventsAtSpecificDate_ReturnsEventScheduledForSingleDateAfterSpecifiedDate()
+        public void EventItemService_GetActiveEventsAtSpecificDate_ReturnsEventScheduledForSingleDateOnOrAfterSpecifiedDate()
         {
             var rockContext = new RockContext();
 
@@ -76,18 +76,7 @@ namespace Rock.Tests.Integration.Model
 
             Assert.That.IsNotNull( warriorEvent, "Target event not found." );
 
-            // Ensure that the Event Schedule has been updated to record the EffectiveEndDate.
-            // This is only necessary if the RockCleanup job has not been run in the current database
-            // since upgrading from v1.12.4.
-            foreach ( var occurrence in warriorEvent.EventItemOccurrences )
-            {
-                var isUpdated = occurrence.Schedule.EnsureEffectiveStartEndDates();
-
-                if ( isUpdated )
-                {
-                    rockContext.SaveChanges();
-                }
-            }
+            ForceUpdateScheduleEffectiveDates( rockContext, warriorEvent );
 
             // The "Warrior Youth Event" has a single occurrence on 02-May-2018.
             // Verify that the filter returns the event on the date of the single occurrence...
@@ -105,6 +94,22 @@ namespace Rock.Tests.Integration.Model
                 .ToList();
 
             Assert.That.IsTrue( invalidEvents.Count() == 0, "Unexpected Event found." );
+        }
+
+        private void ForceUpdateScheduleEffectiveDates( RockContext rockContext, EventItem eventItem )
+        {
+            // Ensure that the Event Schedule has been updated to record the EffectiveEndDate.
+            // This is only necessary if the RockCleanup job has not been run in the current database
+            // since upgrading from v1.12.4.
+            foreach ( var occurrence in eventItem.EventItemOccurrences )
+            {
+                var isUpdated = occurrence.Schedule.EnsureEffectiveStartEndDates();
+
+                if ( isUpdated )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
         }
 
         /// <summary>
