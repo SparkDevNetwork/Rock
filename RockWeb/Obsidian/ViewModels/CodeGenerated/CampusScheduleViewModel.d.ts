@@ -22,34 +22,17 @@
 //
 
 import Entity from '../Entity';
-import { RockDateType } from '../../Util/RockDate';
 import AttributeValue from './AttributeValueViewModel';
+import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
-export default interface PrayerRequest extends Entity {
+export default interface CampusSchedule extends Entity {
     Id: number;
-    AllowComments: boolean | null;
-    Answer: string | null;
-    ApprovedByPersonAliasId: number | null;
-    ApprovedOnDateTime: RockDateType | null;
     Attributes: Record<string, AttributeValue> | null;
-    CampusId: number | null;
-    CategoryId: number | null;
-    Email: string | null;
-    EnteredDateTime: RockDateType;
-    ExpirationDate: RockDateType | null;
-    FirstName: string | null;
-    FlagCount: number | null;
-    GroupId: number | null;
-    IsActive: boolean | null;
-    IsApproved: boolean | null;
-    IsPublic: boolean | null;
-    IsUrgent: boolean | null;
-    LanguageValueId: number | null;
-    LastName: string | null;
-    PrayerCount: number | null;
-    RequestedByPersonAliasId: number | null;
-    Text: string | null;
+    CampusId: number;
+    Order: number;
+    ScheduleId: number;
+    ScheduleTypeValueId: number | null;
     CreatedDateTime: RockDateType | null;
     ModifiedDateTime: RockDateType | null;
     CreatedByPersonAliasId: number | null;

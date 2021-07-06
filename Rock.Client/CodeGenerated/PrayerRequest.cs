@@ -89,6 +89,9 @@ namespace Rock.Client
         public bool? IsUrgent { get; set; }
 
         /// <summary />
+        public int? LanguageValueId { get; set; }
+
+        /// <summary />
         public string LastName { get; set; }
 
         /// <summary>
@@ -156,6 +159,7 @@ namespace Rock.Client
             this.IsApproved = source.IsApproved;
             this.IsPublic = source.IsPublic;
             this.IsUrgent = source.IsUrgent;
+            this.LanguageValueId = source.LanguageValueId;
             this.LastName = source.LastName;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PrayerCount = source.PrayerCount;
@@ -181,6 +185,9 @@ namespace Rock.Client
 
         /// <summary />
         public Category Category { get; set; }
+
+        /// <summary />
+        public DefinedValue LanguageValue { get; set; }
 
         /// <summary />
         public PersonAlias RequestedByPersonAlias { get; set; }
