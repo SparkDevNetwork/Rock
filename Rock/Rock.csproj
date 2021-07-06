@@ -717,6 +717,9 @@
     <Compile Include="Media\MediaPlayerInterfaceType.cs" />
     <Compile Include="Media\MediaPlayerOptions.cs" />
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
+    <Compile Include="Model\Core\Tag\Tag.cs" />
+    <Compile Include="Model\Core\Tag\Tag.Logic.cs" />
+    <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
@@ -2324,10 +2327,8 @@
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />
-    <Compile Include="Model\Tag.cs" />
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
-    <Compile Include="Model\TagService.Partial.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow.cs" />
