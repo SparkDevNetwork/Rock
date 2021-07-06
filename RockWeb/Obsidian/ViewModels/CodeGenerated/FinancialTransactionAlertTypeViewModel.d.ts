@@ -28,6 +28,7 @@ import { Guid } from '../../Util/Guid';
 
 export default interface FinancialTransactionAlertType extends Entity {
     Id: number;
+    AlertSummaryNotificationGroupId: number | null;
     AlertType: number;
     AmountSensitivityScale: number | null;
     Attributes: Record<string, AttributeValue> | null;
@@ -44,6 +45,7 @@ export default interface FinancialTransactionAlertType extends Entity {
     Name: string | null;
     Order: number;
     RepeatPreventionDuration: number | null;
+    RunDays: number | null;
     SendBusEvent: boolean;
     SystemCommunicationId: number | null;
     WorkflowTypeId: number | null;

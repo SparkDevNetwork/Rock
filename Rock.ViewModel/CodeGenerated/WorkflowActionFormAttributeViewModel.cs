@@ -40,6 +40,14 @@ namespace Rock.ViewModel
         public int AttributeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the FieldVisibilityRulesJSON.
+        /// </summary>
+        /// <value>
+        /// The FieldVisibilityRulesJSON.
+        /// </value>
+        public string FieldVisibilityRulesJSON { get; set; }
+
+        /// <summary>
         /// Gets or sets the HideLabel.
         /// </summary>
         /// <value>

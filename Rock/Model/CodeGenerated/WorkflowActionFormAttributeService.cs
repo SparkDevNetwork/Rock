@@ -82,6 +82,7 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 AttributeId = model.AttributeId,
+                FieldVisibilityRulesJSON = model.FieldVisibilityRulesJSON,
                 HideLabel = model.HideLabel,
                 IsReadOnly = model.IsReadOnly,
                 IsRequired = model.IsRequired,
@@ -160,6 +161,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AttributeId = source.AttributeId;
+            target.FieldVisibilityRulesJSON = source.FieldVisibilityRulesJSON;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.HideLabel = source.HideLabel;

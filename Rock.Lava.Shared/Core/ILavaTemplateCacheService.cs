@@ -26,9 +26,10 @@ namespace Rock.Lava
     public interface ILavaTemplateCacheService
     {
         /// <summary>
-        /// The LavaEngine instance that is responsible for compiling a template before it is added to the cache.
+        /// Initialize the cache service for use with a specific engine instance.
         /// </summary>
-        ILavaEngine LavaEngine { get; set; }
+        /// <param name="engine"></param>
+        void Initialize( string cacheKeyPrefix );
 
         /// <summary>
         /// Adds a compiled template to the cache.
@@ -44,7 +45,7 @@ namespace Rock.Lava
         /// <param name="templateContent">The template source text.</param>
         /// <param name="cacheKey">An optional key that uniquely identifies the template. If not specified, the template source text is used to calculate a key for cache storage and retrieval.</param>
         /// <returns></returns>
-        ILavaTemplate GetOrAddTemplate( string templateContent, string cacheKey = null );
+        ILavaTemplate GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey = null );
 
         /// <summary>
         /// Remove all templates from the cache.

@@ -600,11 +600,75 @@ namespace Rock.Migrations.Migrations {
         ///{% assign organizationAddress = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationAddress&apos;&apos; %}
         ///{% assign organizationWebsite = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationWebsite&apos;&apos; %}
         ///{% assign organizationEmail = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationEmail&apos;&apos; %}
-        ///{% assign organizationPhone = &apos;&apos;Global&apos;&apos; | Attrib [rest of string was truncated]&quot;;.
+        ///{% assign organizationPhone = &apos;&apos;Global&apos;&apos; | A [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202106221850270_Rollup_06221_UpdateStatementGenerator {
             get {
                 return ResourceManager.GetString("_202106221850270_Rollup_06221_UpdateStatementGenerator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_chartupdate {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_chartupdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h4 id=&quot;s [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_KPIShortCode {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_KPIShortCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Easy Pie Chart is the perfect solution when you need to display a single percentage value on a chart. In fact it&apos;&apos;s as simple as &lt;code&gt;{[easypie value:&apos;&apos;60&apos;&apos;]}{[endeasypie]}&lt;/code&gt;&lt;/p&gt;
+        ///&lt;p&gt;&lt;img src=&quot;https://rockrms.blob.core.windows.net/documentation/Lava/Shortcodes/easypie-main.png&quot; class=&quot;img-responsive&quot; alt=&quot;Easy Pie&quot; width=&quot;100&quot; height=&quot;100&quot; loading=&quot;lazy&quot;&gt;&lt;/p&gt;
+        ///
+        ///&lt;p&gt;Each has the following basic settings settings:&lt;/p&gt;
+        ///&lt;ul&gt;
+        ///&lt;li&gt;&lt;strong&gt;value&lt;/strong&gt; (0) - The [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_update_easypie {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_update_easypie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[ sparkline type:&apos;&apos;line&apos;&apos; data:&apos;&apos;5,6,7,9,9,5,3,2,2,4,6,7&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;bar&apos;&apos; data:&apos;&apos;5,6,7,2,0,-4,-2,4 &apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;tristate&apos;&apos; data:&apos;&apos;1,1,0,1,-1,-1,1,-1,0,0,1,1&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;discrete&apos;&apos; data:&apos;&apos;4,6,7,7,4,3,2,1,4,4&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;bullet&apos;&apos; data:&apos;&apos;10,12,12,9,7&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_update_sparklinesimg {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_update_sparklinesimg", resourceCulture);
             }
         }
     }

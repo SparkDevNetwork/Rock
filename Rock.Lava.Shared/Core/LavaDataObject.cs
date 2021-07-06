@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Rock.Lava
@@ -33,7 +34,7 @@ namespace Rock.Lava
     /// This class does not serialize dynamic properties, but is marked as serializable to allow derived classes to be serialized correctly.
     /// </remarks>
     [Serializable]
-    public class LavaDataObject : ILavaDataDictionary, IDictionary
+    public class LavaDataObject : ILavaDataDictionary, IDictionary, IDynamicMetaObjectProvider
     {
         // The internal implementation of the DynamicObject that is used to manage access to the LavaDataObject properties.
         // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
@@ -308,6 +309,17 @@ namespace Rock.Lava
         void IDictionary.Remove( object key )
         {
             throw new NotImplementedException( "LavaDataObject operation failed. The LavaDataObject is read-only." );
+        }
+
+        #endregion
+
+        #region IDynamicMetaObjectProvider
+
+        public DynamicMetaObject GetMetaObject( Expression parameter )
+        {
+            var metaObject = ( ( IDynamicMetaObjectProvider ) _lavaDataObjectInternal ).GetMetaObject( parameter );
+
+            return metaObject;
         }
 
         #endregion

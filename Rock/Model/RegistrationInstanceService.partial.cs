@@ -46,7 +46,18 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetRegistrationInstancePlacementGroupsByPlacement( RegistrationInstance registrationInstance, int registrationTemplatePlacementId )
         {
-            return this.RelatedEntities.GetRelatedToSourceEntityQualifier<Group>( registrationInstance.Id, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, registrationTemplatePlacementId.ToString() );
+            return GetRegistrationInstancePlacementGroupsByPlacement( registrationInstance.Id, registrationTemplatePlacementId );
+        }
+
+        /// <summary>
+        /// Gets the registration instance placement groups by placement.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetRegistrationInstancePlacementGroupsByPlacement( int registrationInstanceId, int registrationTemplatePlacementId )
+        {
+            return this.RelatedEntities.GetRelatedToSourceEntityQualifier<Group>( registrationInstanceId, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, registrationTemplatePlacementId.ToString() );
         }
 
         /// <summary>
@@ -128,10 +139,7 @@ namespace Rock.Model
         public void DeleteRegistrationInstancePlacementGroup( RegistrationInstance registrationInstance, Group group, int registrationTemplatePlacementId )
         {
             string qualifierValue = registrationTemplatePlacementId.ToString();
-            if ( this.RelatedEntities.RelatedToSourceEntityAlreadyExists( registrationInstance.Id, group, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, qualifierValue ) )
-            {
-                this.RelatedEntities.DeleteRelatedToSourceEntity( registrationInstance.Id, group, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, qualifierValue );
-            }
+            this.RelatedEntities.DeleteTargetEntityFromSourceEntity( registrationInstance.Id, group, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement, qualifierValue );
         }
 
         /// <summary>

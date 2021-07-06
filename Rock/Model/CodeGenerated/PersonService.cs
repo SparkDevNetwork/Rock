@@ -114,6 +114,7 @@ namespace Rock.Model
                 MiddleName = model.MiddleName,
                 NickName = model.NickName,
                 PhotoId = model.PhotoId,
+                PreferredLanguageValueId = model.PreferredLanguageValueId,
                 PrimaryCampusId = model.PrimaryCampusId,
                 PrimaryFamilyId = model.PrimaryFamilyId,
                 RecordStatusLastModifiedDateTime = model.RecordStatusLastModifiedDateTime,
@@ -227,6 +228,7 @@ namespace Rock.Model
             target.MiddleName = source.MiddleName;
             target.NickName = source.NickName;
             target.PhotoId = source.PhotoId;
+            target.PreferredLanguageValueId = source.PreferredLanguageValueId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;

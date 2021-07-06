@@ -29,6 +29,11 @@ namespace Rock
         /// <returns></returns>
         public static string Pluralize( this string str )
         {
+            if ( string.IsNullOrWhiteSpace( str ) )
+            {
+                return str;
+            }
+
             // Humanizer handles most words, but there are some exceptions (i.e. CAMPUS)
             switch ( str )
             {

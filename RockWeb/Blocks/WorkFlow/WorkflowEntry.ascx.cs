@@ -712,7 +712,7 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
                 };
-                                
+
                 phAttributes.Controls.Add( fieldVisibilityWrapper );
 
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )

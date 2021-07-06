@@ -430,6 +430,12 @@ namespace RockWeb.Blocks.Cms
 
             bool readOnly = false;
 
+            var mediaComponent = mediaElement.MediaFolder.MediaAccount.GetMediaAccountComponent();
+            if ( mediaComponent != null && !mediaComponent.AllowsManualEntry )
+            {
+                readOnly = true;
+            }
+
             nbEditModeMessage.Text = string.Empty;
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {

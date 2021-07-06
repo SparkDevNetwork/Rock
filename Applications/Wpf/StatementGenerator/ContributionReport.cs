@@ -1217,20 +1217,20 @@ Overall PDF/sec    Avg: {overallPDFPerSecond }/sec
             if ( financialStatementReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.PageCount )
             {
                 recipientsByPrimarySortKey = recipientList
-                    .GroupBy( k => k.RenderedPageCount.ToString() )
+                    .GroupBy( k => k.RenderedPageCount.ToString() ?? string.Empty )
                     .ToDictionary( k => k.Key.ToString(), v => v.ToList() );
             }
             else if ( financialStatementReportConfiguration.PrimarySortOrder == FinancialStatementOrderBy.LastName )
             {
                 recipientsByPrimarySortKey = recipientList
-                    .GroupBy( k => k.LastName )
+                    .GroupBy( k => k.LastName ?? string.Empty )
                     .ToDictionary( k => k.Key, v => v.ToList() );
             }
             else
             {
                 // group by postal code
                 recipientsByPrimarySortKey = recipientList
-                    .GroupBy( k => k.GetFiveDigitPostalCode() )
+                    .GroupBy( k => k.GetFiveDigitPostalCode() ?? string.Empty )
                     .ToDictionary( k => k.Key, v => v.ToList() );
             }
 

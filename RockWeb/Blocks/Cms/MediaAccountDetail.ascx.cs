@@ -28,6 +28,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -71,8 +72,6 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
-            nbActionResult.Text = string.Empty;
 
             if ( !Page.IsPostBack )
             {
@@ -181,7 +180,7 @@ namespace RockWeb.Blocks.Cms
                 await MediaAccountService.SyncAnalyticsInAccountAsync( mediaAccountId );
             } );
 
-            nbActionResult.Text = "Synchronization with provider started and will continue in the background.";
+            mdSyncMessage.Show( "Synchronization with provider started and will continue in the background.", ModalAlertType.Information );
         }
 
         /// <summary>

@@ -25,6 +25,7 @@ using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.ViewModel;
 using Rock.ViewModel.Controls;
 using Rock.Web.Cache;
@@ -1387,11 +1388,9 @@ mission. We are so grateful for your commitment.</p>
             if ( receiptEmail.HasValue )
             {
                 // Queue a transaction to send receipts
-                new ProcessSendPaymentReceiptEmails.Message
-                {
-                    SystemEmailGuid = receiptEmail.Value,
-                    TransactionId = transactionId
-                }.Send();
+                var transactionIds = new List<int> { transactionId };
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
 

@@ -30,6 +30,7 @@ export default interface WorkflowActionFormAttribute extends Entity {
     Id: number;
     AttributeId: number;
     Attributes: Record<string, AttributeValue> | null;
+    FieldVisibilityRulesJSON: string | null;
     HideLabel: boolean;
     IsReadOnly: boolean;
     IsRequired: boolean;

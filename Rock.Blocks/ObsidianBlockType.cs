@@ -55,7 +55,7 @@ namespace Rock.Blocks
         /// <returns></returns>
         public string PageParameter( string name )
         {
-            return RequestContext?.OriginalPageParameters?.GetValueOrNull( name ) ?? RequestContext?.GetPageParameter( name );
+            return RequestContext?.GetPageParameter( name );
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Rock.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual string GetBlockInitialization( RockClientType clientType )
+        public virtual object GetBlockInitialization( RockClientType clientType )
         {
             if ( clientType == RockClientType.Obsidian )
             {
@@ -104,7 +104,7 @@ Obsidian.whenReady(() => {{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',
-            configurationValues: {JavaScript.ToJavaScriptObject( GetObsidianBlockInitialization() ?? new object() )}
+            configurationValues: {GetBlockInitialization( RockClientType.Obsidian )}
         }});
     }});
 }});

@@ -231,6 +231,11 @@ export default defineComponent( {
         } ),
         PhoneNumberGallery: GetFieldTypeGalleryComponent( 'PhoneNumber', '(321) 456-7890', '6B1908EC-12A2-463A-A7BD-970CE0FAF097', {
         } ),
+        GenderGallery: GetFieldTypeGalleryComponent('Gender', '2', '2E28779B-4C76-4142-AE8D-49EA31DDB503', {
+        }),
+        ColorGallery: GetFieldTypeGalleryComponent('Color', '#ee7725', 'D747E6AE-C383-4E22-8846-71518E3DD06F', {
+            selectiontype: 'Color Picker'
+        }),
         DefinedValueGallery: GetFieldTypeGalleryComponent( 'DefinedValue (WIP)', 'af28af43-8461-41ac-a2c5-85122712be96', '59D5A94C-94A0-4630-B80A-BB25697D74C7', {
             definedtype: '92',
             allowmultiple: '',
@@ -254,6 +259,8 @@ export default defineComponent( {
         <MemoGallery />
         <BooleanGallery />
         <PhoneNumberGallery />
+        <GenderGallery />
+        <ColorGallery />
         <DefinedValueGallery />
     </template>
 </PaneledBlockTemplate>`

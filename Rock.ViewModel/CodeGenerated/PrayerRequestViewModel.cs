@@ -160,6 +160,14 @@ namespace Rock.ViewModel
         public bool? IsUrgent { get; set; }
 
         /// <summary>
+        /// Gets or sets the LanguageValueId.
+        /// </summary>
+        /// <value>
+        /// The LanguageValueId.
+        /// </value>
+        public int? LanguageValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the LastName.
         /// </summary>
         /// <value>

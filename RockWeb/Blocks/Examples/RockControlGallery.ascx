@@ -757,6 +757,25 @@
                         <Rock:NotificationBox ID="nbExampleDetails" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details" />
                     </div>
 
+                    <a id="TagLiteral"></a>
+                    <h2 runat="server">Rock:TagLiteral</h2>
+                    <p>
+                        This creates a asp:literal with the contents wrapped by the specified tag.  We’ve added the ability to specify a css class.
+                        TagLiteral2, TagLiteral3, TagLiteral6 demonstrate the fact that if the text is not set nothing will be rendered.
+                    </p>
+
+                    <div runat="server" class="r-example">
+                        <Rock:TagLiteral ID="TagLiteral1" runat="server" Tag="div" Text="TagLiteral1: Text Set via the Text Property with CssClass = Description" CssClass="description"/>
+                        <Rock:TagLiteral ID="TagLiteral2" runat="server" Tag="div" Text="" CssClass="description"/>
+                        <Rock:TagLiteral ID="TagLiteral3" runat="server" Tag="div" Text="" CssClass=""/>
+                        <Rock:TagLiteral ID="TagLiteral4" runat="server" Tag="div" />
+                        <Rock:TagLiteral ID="TagLiteral5" runat="server" Tag="p">
+                            <span>TagLiteral5: Literal Content in tag</span>
+                        </Rock:TagLiteral>
+                        <Rock:TagLiteral ID="TagLiteral6" runat="server" Text="TagLiteral6: Text with no tag should yield a div." />
+                        <Rock:TagLiteral ID="TagLiteral7" runat="server" />
+                    </div>
+
                     <a id="Badge"></a>
                     <h2 runat="server">Rock:Badge</h2>
                     <p>

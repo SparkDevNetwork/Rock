@@ -409,7 +409,7 @@ namespace Rock.Workflow.Action
         public static void UpdateEmailStatus( Guid actionGuid, string status, string emailEventType, RockContext rockContext, bool ProcessWorkflow )
         {
             var action = new WorkflowActionService( rockContext ).Get( actionGuid );
-            if ( action != null && action.Activity != null )
+            if ( action != null && action.Activity != null && action.Activity.Workflow.IsActive )
             {
 
                 string attrKey = action.ActionTypeCache.Guid.ToString() + "_EmailStatus";

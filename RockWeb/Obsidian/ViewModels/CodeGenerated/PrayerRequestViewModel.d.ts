@@ -45,6 +45,7 @@ export default interface PrayerRequest extends Entity {
     IsApproved: boolean | null;
     IsPublic: boolean | null;
     IsUrgent: boolean | null;
+    LanguageValueId: number | null;
     LastName: string | null;
     PrayerCount: number | null;
     RequestedByPersonAliasId: number | null;

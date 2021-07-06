@@ -82,7 +82,8 @@
 
                         </asp:Panel>
 
-                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg" />
+                        <%-- This needs a 'js-workflow-entry-message-notification-box' javascript hook so that Rock.Workflow.Action.ShowHtml can find it.--%>
+                        <Rock:NotificationBox ID="nbMessage" runat="server" Dismissable="true" CssClass="margin-t-lg js-workflow-entry-message-notification-box" />
                     </div>
 
                 </div>

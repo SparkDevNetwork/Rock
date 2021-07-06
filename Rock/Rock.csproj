@@ -587,6 +587,7 @@
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\DailyChallengeEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
@@ -669,6 +670,7 @@
     <Compile Include="Data\IEntitySaveEntry.cs" />
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
@@ -711,7 +713,13 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
+    <Compile Include="Media\MediaPlayerControls.cs" />
+    <Compile Include="Media\MediaPlayerInterfaceType.cs" />
+    <Compile Include="Media\MediaPlayerOptions.cs" />
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
+    <Compile Include="Model\Core\Tag\Tag.cs" />
+    <Compile Include="Model\Core\Tag\Tag.Logic.cs" />
+    <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
@@ -762,6 +770,7 @@
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
@@ -840,7 +849,9 @@
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
     <Compile Include="Model\AnalyticsSourceGivingUnit.cs" />
+    <Compile Include="Model\CampusSchedule.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.cs" />
+    <Compile Include="Model\CodeGenerated\CampusScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialStatementTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
@@ -1000,6 +1011,7 @@
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
+    <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
@@ -1009,6 +1021,7 @@
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
+    <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -2314,10 +2327,8 @@
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />
-    <Compile Include="Model\Tag.cs" />
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
-    <Compile Include="Model\TagService.Partial.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow.cs" />

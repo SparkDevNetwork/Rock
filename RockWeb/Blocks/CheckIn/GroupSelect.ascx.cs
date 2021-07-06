@@ -260,7 +260,8 @@ namespace RockWeb.Blocks.CheckIn
 
         private string GetTitleText()
         {
-            var checkinPerson = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
+            var checkinPerson = CurrentCheckInState.CheckIn.CurrentPerson
+                ?? CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
             var selectedGroup = checkinPerson?.SelectedGroupTypes( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.Group;
             var selectedArea = CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.Where( a => a.Selected ).FirstOrDefault()?.GroupType
                 ?? CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.FirstOrDefault()?.GroupType;

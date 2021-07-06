@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class FinancialTransactionAlertTypeViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the AlertSummaryNotificationGroupId.
+        /// </summary>
+        /// <value>
+        /// The AlertSummaryNotificationGroupId.
+        /// </value>
+        public int? AlertSummaryNotificationGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the AlertType.
         /// </summary>
         /// <value>
@@ -150,6 +158,14 @@ namespace Rock.ViewModel
         /// The RepeatPreventionDuration.
         /// </value>
         public int? RepeatPreventionDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RunDays.
+        /// </summary>
+        /// <value>
+        /// The RunDays.
+        /// </value>
+        public int? RunDays { get; set; }
 
         /// <summary>
         /// Gets or sets the SendBusEvent.

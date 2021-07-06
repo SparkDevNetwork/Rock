@@ -37,7 +37,6 @@ using Humanizer.Localisation;
 using Ical.Net;
 using Ical.Net.DataTypes;
 using ImageResizer;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -53,8 +52,12 @@ using Calendar = Ical.Net.Calendar;
 namespace Rock.Lava
 {
     /// <summary>
-    /// Defines the filter methods available for use with the Lava library.
+    /// Defines filter methods available for use with the Lava library.
     /// </summary>
+    /// <remarks>
+    /// Filters defined in this class should be moved to the TemplateFilters class once they are confirmed to operate correctly
+    /// in both the Rock Web and Rock Mobile applications.
+    /// </remarks>
     public static class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
@@ -933,81 +936,6 @@ namespace Rock.Lava
             return match.Success ? match.Value : null;
         }
 
-        /// <summary>
-        /// Returns matched RegEx list of strings from inputted string
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="expression">The regex expression.</param>
-        /// <param name="options">Option flags that affect the match type. [m=multiline, i=ignore case]</param>
-        /// <returns></returns>
-        public static List<string> RegExMatchValues( string input, string expression, string options = null )
-        {
-            if ( input == null )
-            {
-                return null;
-            }
-
-            RegexOptions regexOptions = RegexOptions.None;
-            var inputString = input.ToString();
-
-            options = options ?? string.Empty;
-
-            if ( options.Contains( 'm' ) )
-            {
-                regexOptions |= RegexOptions.Multiline;
-            }
-
-            if ( options.Contains( 'i' ) )
-            {
-                regexOptions |= RegexOptions.IgnoreCase;
-            }
-
-            var regex = new Regex( expression, regexOptions );
-
-            var matches = regex.Matches( input );
-
-            // Flatten all matches to single list
-            var captured = matches
-                .Cast<Match>()
-                .Where( m => m.Success == true )
-                .SelectMany( o =>
-                    o.Groups.Cast<Capture>()
-                        .Select( c => c.Value ) );
-
-            return captured.ToList();
-        }
-
-        /// <summary>
-        /// Run RegEx replacing on a string.
-        /// </summary>
-        /// <param name="input">The lava source to process.</param>
-        /// <param name="pattern">The regex pattern to use when matching.</param>
-        /// <param name="replacement">The string to use when doing replacement.</param>
-        /// <param name="options">The regex options to modify the matching.</param>
-        /// <example><![CDATA[
-        /// {{ 'The Rock is awesome.' | RegExReplace:'the rock','Rock','i' }}
-        /// {{ 'Hello Ted, how are you?' | RegExReplace:'[Hh]ello (\w+)','Greetings $1' }}
-        /// ]]></example>
-        public static object RegExReplace( object input, object pattern, object replacement, string options = null )
-        {
-            RegexOptions regexOptions = RegexOptions.None;
-            var inputString = input.ToString();
-
-            options = options ?? string.Empty;
-
-            if ( options.Contains( 'm' ) )
-            {
-                regexOptions |= RegexOptions.Multiline;
-            }
-
-            if ( options.Contains( 'i' ) )
-            {
-                regexOptions |= RegexOptions.IgnoreCase;
-            }
-
-            return Regex.Replace( inputString, pattern.ToString(), replacement.ToString(), regexOptions );
-        }
-
         #endregion
 
         /// <summary>
@@ -1172,7 +1100,7 @@ namespace Rock.Lava
             // If the object is a DateTimeOffset, translate it to local server time to ensure that the offset is accounted for in the output.
             if ( input is DateTimeOffset inputDateTimeOffset )
             {
-                return inputDateTimeOffset.ToLocalTime().ToString( format ).Trim();
+                return inputDateTimeOffset.ToLocalTime().DateTime.ToString( format ).Trim();
             }
 
             // Convert the input to a valid DateTime if possible.
@@ -4034,57 +3962,72 @@ namespace Rock.Lava
                 return dataObject;
             }
 
-            dynamic resultDataObject;
+            dynamic resultDataObject = null;
+
+            var dataObjectType = dataObject.GetType();
 
             // Determine if dataset is a collection or a single object
             bool isCollection;
+            bool isEntityCollection = false;
+            int? dataObjectEntityTypeId = null;
 
             if ( dataObject is IEntity entity )
             {
-                resultDataObject = new LavaDataObject( dataObject );
+                resultDataObject = new RockDynamic( dataObject );
                 resultDataObject.EntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
                 isCollection = false;
             }
-            else if ( dataObject is IEnumerable<IEntity> entityList )
+            else
             {
-                var firstEntity = entityList.FirstOrDefault();
-                var dynamicEntityList = new List<LavaDataObject>();
-                if ( firstEntity != null )
+                isCollection = false;
+
+                if ( dataObject is IEnumerable entityList )
                 {
-                    foreach ( var item in entityList )
+                    var enumerator = entityList.GetEnumerator();
+
+                    var firstEntity = enumerator.MoveNext() ? enumerator.Current as IEntity : null;
+
+                    if ( firstEntity != null )
                     {
-                        dynamic rockDynamicItem = new LavaDataObject( item );
-                        rockDynamicItem.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
-                        dynamicEntityList.Add( rockDynamicItem );
+                        dataObjectEntityTypeId = EntityTypeCache.GetId( firstEntity.GetType() );
+
+                        var dynamicEntityList = new List<RockDynamic>();
+
+                        foreach ( var item in entityList )
+                        {
+                            dynamic rockDynamicItem = new RockDynamic( item );
+                            rockDynamicItem.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
+                            dynamicEntityList.Add( rockDynamicItem );
+                        }
+
+                        resultDataObject = dynamicEntityList;
+
+                        isEntityCollection = true;
+                        isCollection = true;
                     }
                 }
 
-                resultDataObject = dynamicEntityList;
-
-                isCollection = true;
-            }
-            else
-            {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
-                resultDataObject = dataObject;
-
-                // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
-                isCollection = resultDataObject is IEnumerable<ExpandoObject>;
-
-                // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
-                if ( isCollection )
+                if ( !isEntityCollection )
                 {
-                    resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();
-                }
-                else
-                {
-                    resultDataObject = ( resultDataObject as ExpandoObject )?.ShallowCopy() ?? resultDataObject;
+                    // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                    resultDataObject = dataObject;
+
+                    // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
+                    isCollection = resultDataObject is IEnumerable<ExpandoObject>;
+
+                    // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
+                    if ( isCollection )
+                    {
+                        resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();
+                    }
+                    else
+                    {
+                        resultDataObject = ( resultDataObject as ExpandoObject )?.ShallowCopy() ?? resultDataObject;
+                    }
                 }
             }
 
             List<int> entityIdList;
-
-            int? dataObjectEntityTypeId = null;
 
             if ( dataObject is IEntity dataObjectAsEntity )
             {
@@ -4092,13 +4035,9 @@ namespace Rock.Lava
                 entityIdList = new List<int>();
                 entityIdList.Add( dataObjectAsEntity.Id );
             }
-            else if ( dataObject is IEnumerable<IEntity> dataObjectAsEntityList )
+            else if ( isEntityCollection )
             {
-                var firstDataObject = dataObjectAsEntityList.FirstOrDefault();
-                if ( firstDataObject != null )
-                {
-                    dataObjectEntityTypeId = EntityTypeCache.GetId( firstDataObject.GetType() );
-                }
+                var dataObjectAsEntityList = ( ( IEnumerable ) dataObject ).Cast<IEntity>();
 
                 entityIdList = dataObjectAsEntityList.Select( a => a.Id ).ToList();
             }
@@ -4181,6 +4120,32 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Attempt to convert an object to an enumerable collection of the specified type if possible.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataObject"></param>
+        /// <returns>null if the supplied data object is not an enumerable collection of the specified type.</returns>
+        private static IEnumerable<T> GetDataObjectAsEnumerableType<T>( object dataObject )
+            where T : class
+        {
+            IEnumerable<T> dataObjectAsEntityList = null;
+
+            if ( dataObject is IEnumerable entityList )
+            {
+                var enumerator = entityList.GetEnumerator();
+
+                var firstEntity = enumerator.MoveNext() ? enumerator.Current as T : null;
+
+                if ( firstEntity != null )
+                {
+                    dataObjectAsEntityList = ( ( IEnumerable ) dataObject ).Cast<T>();
+                }
+            }
+
+            return dataObjectAsEntityList;
+        }
+
+        /// <summary>
         /// Filters results to items that are being followed by the current person. Items can be  entity/entities or a data object created from <see cref="PersistedDataset(ILavaRenderContext, string, string)"/>.
         /// </summary>
         /// <param name="context">The context.</param>
@@ -4227,21 +4192,21 @@ namespace Rock.Lava
             }
 
             // if AppendFollowing wasn't already done on this, run it thru AppendFollowing so that all the objects are either ExpandoObject or RockDynamic
-            if ( !( ( dataObject is IDynamicMetaObjectProvider ) || ( dataObject is IEnumerable<IDynamicMetaObjectProvider> ) ) )
+            var dataObjectAsEnumerable = GetDataObjectAsEnumerableType<IDynamicMetaObjectProvider>( dataObject );
+
+            if ( !( ( dataObject is IDynamicMetaObjectProvider ) || ( dataObjectAsEnumerable != null ) ) )
             {
                 dataObject = AppendFollowing( context, dataObject );
             }
 
             dynamic resultDataObject = dataObject;
 
-            var isCollection = dataObject is IEnumerable<IDynamicMetaObjectProvider>;
-
             var resultDataObjectAsCollection = new List<IDynamicMetaObjectProvider>();
 
             // If requested only followed items filter
             if ( followFilterType == FollowFilterType.Followed )
             {
-                if ( isCollection )
+                if ( dataObjectAsEnumerable != null )
                 {
                     foreach ( dynamic item in ( IEnumerable ) resultDataObject )
                     {
@@ -4265,7 +4230,7 @@ namespace Rock.Lava
             // If requested only unfollowed items filter
             if ( followFilterType == FollowFilterType.NotFollowed )
             {
-                if ( isCollection )
+                if ( dataObjectAsEnumerable != null )
                 {
                     foreach ( dynamic item in ( IEnumerable ) resultDataObject )
                     {
@@ -5176,8 +5141,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && LavaService.AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
+                                 || ( comparisonType == "notequal" && !AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -5211,6 +5176,21 @@ namespace Rock.Lava
             }
 
             return result;
+        }
+
+        private static bool AreEqualValue( object left, object right )
+        {
+            if ( right == null )
+            {
+                if ( left == null )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return left.Equals( right );
         }
 
         /// <summary>
@@ -5774,10 +5754,8 @@ namespace Rock.Lava
         /// <returns></returns>
         private static Person GetCurrentPerson( ILavaRenderContext context )
         {
-            Person currentPerson = null;
-
             // First check for a person override value included in lava context
-            currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
+            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
 
             if ( currentPerson == null )
             {

@@ -19,9 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Security;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -33,14 +31,8 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Tag" )]
     [DataContract]
-
     public partial class Tag : Model<Tag>, IOrdered
     {
-        /// <summary>
-        /// The Regular Expression used to determine a valid tag name. This regex will return true if the string does not contain angle brackets, percent, or ampersand.
-        /// </summary>
-        public const string VALIDATOR_REGEX_BLACKLIST = @"^((?!<)(?!>)(?!%)(?!&).)*$";
-
         #region Entity Properties
 
         /// <summary>
@@ -137,6 +129,7 @@ namespace Rock.Model
             get { return _isActive; }
             set { _isActive = value; }
         }
+
         private bool _isActive = true;
 
         /// <summary>
@@ -170,7 +163,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the owner person alias.
@@ -208,101 +201,22 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
-        /// <summary>
-        /// Gets the parent security authority of this Tag. Where security is inherited from.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                if ( this.CategoryId.HasValue )
-                {
-                    return Rock.Web.Cache.CategoryCache.Get( this.CategoryId.Value ) ?? base.ParentAuthority;
-                }
+        #endregion Navigation Properties
 
-                return this.Category != null ? this.Category : base.ParentAuthority;
-            }
-        }
+        #region Public Methods
 
         /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                }
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Determines whether the specified action is authorized. If the tag is personal and
-        /// owned by the person, it returns true, but if it's personal and NOT owned by the person
-        /// it returns false -- otherwise (not a personal tag) it returns what the chain of authority
-        ///  determines, but note: the parent authority is the category (if the tag has a category).
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>True if the person is authorized; false otherwise.</returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId == person.Id )
-            {
-                // always allow people to do anything with their own tags
-                return true;
-            }
-            else if ( this.OwnerPersonAlias != null && person != null && this.OwnerPersonAlias.PersonId != person.Id )
-            {
-                // always prevent people from doing anything with someone else's tags
-                return false;
-            }
-            else
-            {
-                return base.IsAuthorized( action, person );
-            }
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this Tag.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this Tag.
+        /// A <see cref="System.String" /> that represents this instance.
         /// </returns>
         public override string ToString()
         {
             return this.Name;
         }
 
-        /// <summary>
-        /// Determines whether specified tag name is allowed.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <returns>
-        ///   <c>true</c> if [is valid tag name] [the specified tag name]; otherwise, <c>false</c>.
-        /// </returns>
-        public static bool IsValidTagName( string tagName )
-        {
-            return new System.Text.RegularExpressions.Regex( VALIDATOR_REGEX_BLACKLIST ).IsMatch( tagName );
-        }
-
         #endregion
-
     }
 
     #region Entity Configuration
@@ -324,5 +238,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

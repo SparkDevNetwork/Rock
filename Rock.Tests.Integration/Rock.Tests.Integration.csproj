@@ -152,6 +152,7 @@
     <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
     <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
     <Compile Include="Lava\Engine\ConfigurationTests.cs" />
+    <Compile Include="Lava\Engine\PerformanceTests.cs" />
     <Compile Include="Lava\Engine\ParsingTests.cs" />
     <Compile Include="Lava\Engine\ExceptionHandlingTests.cs" />
     <Compile Include="Lava\Engine\ScopeTests.cs" />
@@ -177,6 +178,7 @@
     <Compile Include="Jobs\StepsAutomationJobTests.cs" />
     <Compile Include="Jobs\TestJobDetail.cs" />
     <Compile Include="Jobs\TestJobContext.cs" />
+    <Compile Include="Lava\Engine\MockTemplateCacheService.cs" />
     <Compile Include="Model\EventTests.cs" />
     <Compile Include="Model\BinaryFileTests.cs" />
     <Compile Include="Model\LocationTests.cs" />

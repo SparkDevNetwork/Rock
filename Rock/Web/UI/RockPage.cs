@@ -72,6 +72,12 @@ namespace Rock.Web.UI
 
         private PageStatePersister _PageStatePersister = null;
 
+        /// <summary>
+        /// Will be <c>true</c> if the page has anything on it that requires
+        /// Obsidian libraries to be loaded.
+        /// </summary>
+        private bool _pageNeedsObsidian = false;
+
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
         private Stopwatch _onLoadStopwatch = null;
@@ -674,6 +680,7 @@ namespace Rock.Web.UI
             {
                 _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
                 _previousTiming = _tsDuration.TotalMilliseconds;
+                _pageNeedsObsidian = true;
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
@@ -710,7 +717,6 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/Obsidian" ) );
 
             /*
                 2/16/2021 - JME
@@ -1136,45 +1142,6 @@ Rock.settings.initialize({{
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
                     }
 
-                    Page.Trace.Warn( "Initializing Obsidian" );
-                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-systemjs-map" ) )
-                    {
-                        var script = $@"
-<script type=""systemjs-importmap"">
-{{
-    ""imports"": {{
-        ""vue"": ""/ObsidianJs/SystemJsVendor/Vue/vue.js"",
-        ""vuex"": ""/ObsidianJs/SystemJsVendor/Vuex/index.js"",
-        ""vee-validate"": ""/ObsidianJs/SystemJsVendor/VeeValidate/vee-validate.js"",
-        ""axios"": ""/ObsidianJs/SystemJsVendor/Axios/index.js"",
-        ""mitt"": ""/ObsidianJs/SystemJsVendor/Mitt/index.js""
-    }}
-}}
-</script>";
-
-                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-systemjs-map", script, false );
-                    }
-
-                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
-                    {
-                        var script = $@"
-Obsidian.whenReady(() => {{
-    System.import('/Obsidian/Index.js').then(indexModule => {{
-        indexModule.initializePage({{
-            executionStartTime: new Date(),
-            pageId: {_pageCache.Id},
-            pageGuid: '{_pageCache.Guid}',
-            pageParameters: {PageParameters().ToJson()},
-            currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
-            contextEntities: {GetContextViewModels().ToJson()},
-            loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
-        }});
-    }});
-}});";
-
-                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
-                    }
-
                     AddTriggerPanel();
 
                     // Add config elements
@@ -1291,6 +1258,11 @@ Obsidian.whenReady(() => {{
                                             control = wrapper;
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
+
+                                        if ( blockEntity is IObsidianBlockType )
+                                        {
+                                            _pageNeedsObsidian = true;
+                                        }
                                     }
 
                                     if ( control == null )
@@ -1362,6 +1334,50 @@ Obsidian.whenReady(() => {{
                                 stopwatchBlockInit.Stop();
                                 _debugTimingViewModels.Add( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
                             }
+                        }
+                    }
+
+                    if ( _pageNeedsObsidian )
+                    {
+                        _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/Obsidian" ) );
+
+                        Page.Trace.Warn( "Initializing Obsidian" );
+                        if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-systemjs-map" ) )
+                        {
+                            var script = $@"
+<script type=""systemjs-importmap"">
+{{
+    ""imports"": {{
+        ""vue"": ""/ObsidianJs/SystemJsVendor/Vue/vue.js"",
+        ""vuex"": ""/ObsidianJs/SystemJsVendor/Vuex/index.js"",
+        ""vee-validate"": ""/ObsidianJs/SystemJsVendor/VeeValidate/vee-validate.js"",
+        ""axios"": ""/ObsidianJs/SystemJsVendor/Axios/index.js"",
+        ""mitt"": ""/ObsidianJs/SystemJsVendor/Mitt/index.js""
+    }}
+}}
+</script>";
+
+                            ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-systemjs-map", script, false );
+                        }
+
+                        if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
+                        {
+                            var script = $@"
+Obsidian.whenReady(() => {{
+    System.import('/Obsidian/Index.js').then(indexModule => {{
+        indexModule.initializePage({{
+            executionStartTime: new Date(),
+            pageId: {_pageCache.Id},
+            pageGuid: '{_pageCache.Guid}',
+            pageParameters: {PageParameters().ToJson()},
+            currentPerson: {( CurrentPerson == null ? "null" : CurrentPerson.ToViewModel( CurrentPerson ).ToJson() )},
+            contextEntities: {GetContextViewModels().ToJson()},
+            loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
+        }});
+    }});
+}});";
+
+                            ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
                     }
 
@@ -1657,12 +1673,14 @@ Obsidian.whenReady(() => {{
             // Finalize the debug settings
             if ( _showDebugTimings )
             {
-                Page.Trace.Warn( "Finalizing Obsidian Page Timings" );
                 _tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
 
-                if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
-                {
-                    var script = $@"
+                if ( _pageNeedsObsidian )
+                { 
+                    Page.Trace.Warn( "Finalizing Obsidian Page Timings" );
+                    if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
+                    {
+                        var script = $@"
 Obsidian.whenReady(() => {{
     System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializePageTimings({{
@@ -1672,7 +1690,8 @@ Obsidian.whenReady(() => {{
     }});
 }});";
 
-                    ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
+                        ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-page-timings", script, true );
+                    }
                 }
             }
         }

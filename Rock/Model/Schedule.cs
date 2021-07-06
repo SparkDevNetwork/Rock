@@ -527,7 +527,9 @@ namespace Rock.Model
 
             var originalEffectiveEndDate = EffectiveEndDate;
             var originalEffectiveStartDate = EffectiveStartDate;
-            EffectiveStartDate = calEvent.DtStart?.Value.Date;
+
+            DateTime? effectiveStartDateTime = calEvent.DtStart?.Value.Date;
+            DateTime? effectiveEndDateTime = null;
 
             // In Rock it is possible to set a rule with an end date, no end date (which is actually end date of max value) or a number
             // of occurrences. The count property in the iCal rule refers to the count of occurrences.
@@ -546,11 +548,11 @@ namespace Rock.Model
             {
                 if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
                 {
-                    EffectiveEndDate = DateTime.MaxValue;
+                    effectiveEndDateTime = DateTime.MaxValue;
                 }
                 else
                 {
-                    EffectiveEndDate = endDateRules.Max( rule => rule.Until );
+                    effectiveEndDateTime = endDateRules.Max( rule => rule.Until );
                 }
             }
 
@@ -560,7 +562,7 @@ namespace Rock.Model
                 {
                     // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
                     // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
-                    EffectiveEndDate = DateTime.MaxValue;
+                    effectiveEndDateTime = DateTime.MaxValue;
                 }
                 else
                 {
@@ -577,36 +579,46 @@ namespace Rock.Model
                 // If the Schedule does not have any other rules, reset the Effective End Date to ensure it is recalculated.
                 if ( !hasRuleWithEndDate && !hasRuleWithCount )
                 {
-                    EffectiveEndDate = null;
+                    effectiveEndDateTime = null;
                 }
 
                 adjustEffectiveDateForLastOccurrence = true;
             }
 
             if ( adjustEffectiveDateForLastOccurrence
-                 && EffectiveEndDate != DateTime.MaxValue )
+                 && effectiveEndDateTime != DateTime.MaxValue )
             {
                 var occurrences = GetICalOccurrences( DateTime.MinValue, DateTime.MaxValue );
 
                 if ( occurrences.Any() )
                 {
                     var lastOccurrenceDate = occurrences.Any() // It is possible for an event to have no occurrences
-                        ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
-                        : EffectiveStartDate;
+                        ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Value
+                        : effectiveStartDateTime;
 
-                    if ( EffectiveEndDate == null
-                         || lastOccurrenceDate > EffectiveEndDate )
+                    if ( effectiveEndDateTime == null
+                         || lastOccurrenceDate > effectiveEndDateTime )
                     {
-                        EffectiveEndDate = lastOccurrenceDate;
+                        effectiveEndDateTime = lastOccurrenceDate;
                     }
                 }
             }
 
             // At this point, if no EffectiveEndDate is set then assume this is a one-time event and set the EffectiveEndDate to the EffectiveStartDate.
-            if ( EffectiveEndDate == null && !adjustEffectiveDateForLastOccurrence )
+            if ( effectiveEndDateTime == null && !adjustEffectiveDateForLastOccurrence )
             {
-                EffectiveEndDate = EffectiveStartDate;
+                effectiveEndDateTime = effectiveStartDateTime;
             }
+
+            // Add the Duration of the event to ensure that the effective end date corresponds to the day on which the event concludes.
+            if ( effectiveEndDateTime != null && effectiveEndDateTime != DateTime.MaxValue )
+            {
+                effectiveEndDateTime = effectiveEndDateTime.Value.AddMinutes( DurationInMinutes );
+            }
+
+            // Set the Effective Start and End dates. The dates are inclusive but do not have a time component.
+            EffectiveStartDate = effectiveStartDateTime?.Date;
+            EffectiveEndDate = effectiveEndDateTime?.Date;
 
             return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
         }

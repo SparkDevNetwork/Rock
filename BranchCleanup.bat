@@ -4,6 +4,12 @@ RMDIR "DotLiquid\Obj" /S /Q
 RMDIR "Rock\Bin" /S /Q
 RMDIR "Rock\Obj" /S /Q
 
+RMDIR "org_rocksolidchurch.PageDebug\Bin" /S /Q
+RMDIR "org_rocksolidchurch.PageDebug\Obj" /S /Q
+
+RMDIR "Rock.Blocks\Bin" /S /Q
+RMDIR "Rock.Blocks\Obj" /S /Q
+
 RMDIR "Rock.Checkr\Bin" /S /Q
 RMDIR "Rock.Checkr\Obj" /S /Q
 

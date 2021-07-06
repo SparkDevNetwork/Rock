@@ -248,6 +248,14 @@ namespace Rock.ViewModel
         public int? PhotoId { get; set; }
 
         /// <summary>
+        /// Gets or sets the PreferredLanguageValueId.
+        /// </summary>
+        /// <value>
+        /// The PreferredLanguageValueId.
+        /// </value>
+        public int? PreferredLanguageValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the PrimaryCampusId.
         /// </summary>
         /// <value>

@@ -139,6 +139,15 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( "requests", "{{ 'requests' | Pluralize }}" );
         }
 
+        /// <summary>
+        /// Providing a collective noun as input produces unchanged output.
+        /// </summary>
+        [TestMethod]
+        public void Pluralize_EmptyInput_ProducesEmptyOutput()
+        {
+            TestHelper.AssertTemplateOutput( "", "{{ '' | Pluralize }}" );
+        }
+
         #endregion
 
         #region Filter Tests: PluralizeForQuantity

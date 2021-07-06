@@ -26,6 +26,6 @@ namespace Rock.Blocks
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <returns>A collection of string/object pairs.</returns>
-        string GetBlockInitialization( RockClientType clientType );
+        object GetBlockInitialization( RockClientType clientType );
     }
 }

@@ -1096,6 +1096,11 @@ namespace Rock.SystemGuid
         public const string GIVE_NOW = "1615E090-1889-42FF-AB18-5F7BE9F24498";
 
         /// <summary>
+        /// The giving alerts
+        /// </summary>
+        public const string GIVING_ALERTS = "57650485-7727-4392-9C42-36DE50FBEEEA";
+
+        /// <summary>
         /// Gets the Global Attributes page guid
         /// ParentPage: General Settings
         /// </summary>

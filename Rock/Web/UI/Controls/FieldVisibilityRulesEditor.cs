@@ -21,7 +21,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -639,7 +638,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
+            else if ( selectedField != null && FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
             {
                 var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
                 var filterControl = fieldType.Field.FilterControl( null, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );

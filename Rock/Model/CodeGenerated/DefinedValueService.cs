@@ -109,6 +109,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<CampusSchedule>( Context ).Queryable().Any( a => a.ScheduleTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, CampusSchedule.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.SMSFromDefinedValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Communication.FriendlyTypeName );
@@ -265,6 +271,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<Person>( Context ).Queryable().Any( a => a.PreferredLanguageValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.RecordStatusReasonValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
@@ -316,6 +328,12 @@ namespace Rock.Model
             if ( new Service<PhoneNumber>( Context ).Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<PrayerRequest>( Context ).Queryable().Any( a => a.LanguageValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, PrayerRequest.FriendlyTypeName );
                 return false;
             }
 

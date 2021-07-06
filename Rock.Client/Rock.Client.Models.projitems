@@ -67,6 +67,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Block.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\BlockType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Campus.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CampusSchedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Category.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Communication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\CommunicationAttachment.cs" />

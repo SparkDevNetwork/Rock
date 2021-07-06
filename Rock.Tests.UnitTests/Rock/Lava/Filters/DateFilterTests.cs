@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 
@@ -41,6 +42,23 @@ namespace Rock.Tests.UnitTests.Lava
             var template = "{{ '' | Date:'yyyy-MM-dd HH:mm:ss' }}";
 
             TestHelper.AssertTemplateOutput( string.Empty, template );
+        }
+
+        /// <summary>
+        /// The default render format for a DateTime value should be the local server time rather than the invariant culture format.
+        /// </summary>
+        [TestMethod]
+        public void AsDateTime_DefaultRenderFormat_IsServerLocalCulture()
+        {
+            var dateTimeInput = new DateTime( 2018, 5, 1, 10, 0, 0 );
+
+            var culture = CultureInfo.CurrentCulture;
+
+            // Convert the input time to local server time, which most likely has a different UTC offset to the input date.
+            var serverLocalTimeString = dateTimeInput.ToString( "G", culture );
+
+            // Verify that the default date output format matches the current culture General Date format.
+            TestHelper.AssertTemplateOutput( serverLocalTimeString, "{{ '2018-05-01 10:00:00 AM' | AsDateTime }}" );
         }
 
         /// <summary>

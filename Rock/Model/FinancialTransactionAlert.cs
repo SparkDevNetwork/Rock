@@ -15,15 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -217,6 +212,31 @@ namespace Rock.Model
         public virtual FinancialTransactionAlertType FinancialTransactionAlertType { get; set; }
 
         #endregion Virtual Properties
+
+        #region Methods
+
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if ( ( FinancialTransactionAlertType?.Name ).IsNullOrWhiteSpace() )
+            {
+                return base.ToString();
+            }
+
+            if ( ( PersonAlias?.Person?.FullName ).IsNullOrWhiteSpace() )
+            {
+                return base.ToString();
+            }
+
+            return $"{FinancialTransactionAlertType.Name}: {PersonAlias.Person.FullName}";
+        }
+
+        #endregion Methods
     }
 
     #region Entity Configuration

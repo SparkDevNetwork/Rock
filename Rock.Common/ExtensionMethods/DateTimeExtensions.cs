@@ -15,7 +15,9 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using Rock.Utility.Enums;
 
 namespace Rock
 {
@@ -653,6 +655,82 @@ namespace Rock
             var unspecifiedDateTime = DateTime.SpecifyKind( dateTime, DateTimeKind.Unspecified );
 
             return new DateTimeOffset( unspecifiedDateTime, RockDateTime.OrgTimeZoneInfo.GetUtcOffset( unspecifiedDateTime ) );
+        }
+
+        /// <summary>
+        /// Converts to the flag (bit per day) friendly enum.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Rock is not familiar with this day of the week: {dateTime.DayOfWeek}</exception>
+        public static DayOfWeekFlag AsFlag( this DayOfWeek dayOfWeek )
+        {
+            switch ( dayOfWeek )
+            {
+                case DayOfWeek.Sunday:
+                    return DayOfWeekFlag.Sunday;
+                case DayOfWeek.Monday:
+                    return DayOfWeekFlag.Monday;
+                case DayOfWeek.Tuesday:
+                    return DayOfWeekFlag.Tuesday;
+                case DayOfWeek.Wednesday:
+                    return DayOfWeekFlag.Wednesday;
+                case DayOfWeek.Thursday:
+                    return DayOfWeekFlag.Thursday;
+                case DayOfWeek.Friday:
+                    return DayOfWeekFlag.Friday;
+                case DayOfWeek.Saturday:
+                    return DayOfWeekFlag.Saturday;
+                default:
+                    throw new Exception( $"Rock is not familiar with this day of the week: {dayOfWeek}" );
+            }
+        }
+
+        /// <summary>
+        /// Converts the flags to "day of week" enum list.
+        /// </summary>
+        /// <param name="flags">The flags.</param>
+        /// <returns></returns>
+        public static List<DayOfWeek> AsDayOfWeekList( this DayOfWeekFlag flags )
+        {
+            var enums = new List<DayOfWeek>();
+
+            if ( ( flags & DayOfWeekFlag.Sunday ) == DayOfWeekFlag.Sunday )
+            {
+                enums.Add( DayOfWeek.Sunday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Monday ) == DayOfWeekFlag.Monday )
+            {
+                enums.Add( DayOfWeek.Monday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Tuesday ) == DayOfWeekFlag.Tuesday )
+            {
+                enums.Add( DayOfWeek.Tuesday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Wednesday ) == DayOfWeekFlag.Wednesday )
+            {
+                enums.Add( DayOfWeek.Wednesday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Thursday ) == DayOfWeekFlag.Thursday )
+            {
+                enums.Add( DayOfWeek.Thursday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Friday ) == DayOfWeekFlag.Friday )
+            {
+                enums.Add( DayOfWeek.Friday );
+            }
+
+            if ( ( flags & DayOfWeekFlag.Saturday ) == DayOfWeekFlag.Saturday )
+            {
+                enums.Add( DayOfWeek.Saturday );
+            }
+
+            return enums;
         }
 
         #endregion DateTime Extensions

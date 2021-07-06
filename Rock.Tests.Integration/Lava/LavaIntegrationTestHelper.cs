@@ -512,6 +512,22 @@ namespace Rock.Tests.Integration.Lava
         }
 
         /// <summary>
+        /// Execute an action and return the elapsed time.
+        /// </summary>
+        /// <param name="testMethod"></param>
+        /// <returns></returns>
+        public TimeSpan ExecuteAndGetElapsedTime( Action testMethod )
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            testMethod();
+
+            stopwatch.Stop();
+
+            return stopwatch.Elapsed;
+        }
+
+        /// <summary>
         /// For each of the currently enabled Lava Engines, process the specified action.
         /// </summary>
         /// <param name="testMethod"></param>

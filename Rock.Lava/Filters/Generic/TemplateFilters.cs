@@ -29,7 +29,7 @@ namespace Rock.Lava.Filters
     /// Template filters must have the following properties:
     /// 1. The filter function must have a return type of string.
     /// 2. Input parameters should be of type string or object. Any parameter conversion should be performed in the function itself.
-    /// 3. No optional parameters. Some Liquid templating frameworks do not handle these correctly, so use an explicit function overloads to define different parameter sets.
+    /// 3. No optional parameters. Some Liquid templating frameworks do not handle these correctly, so use an explicit function overload to define different parameter sets.
     /// </remarks>
     public static partial class TemplateFilters
     {
