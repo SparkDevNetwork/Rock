@@ -159,6 +159,7 @@
     <Compile Include="Lava\Engine\ParallelExecutionTests.cs" />
     <Compile Include="Lava\Filters\EncodingFilterTests.cs" />
     <Compile Include="Lava\Filters\AttributeFilterTests.cs" />
+    <Compile Include="Lava\Filters\PersonFilterTests.cs" />
     <Compile Include="Lava\Filters\WebFilterTests.cs" />
     <Compile Include="Lava\Filters\MiscellaneousFilterTests.cs" />
     <Compile Include="Lava\EventScheduledInstanceCommandTests.cs" />
