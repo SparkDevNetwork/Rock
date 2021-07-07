@@ -722,6 +722,8 @@
     <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
+    <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
