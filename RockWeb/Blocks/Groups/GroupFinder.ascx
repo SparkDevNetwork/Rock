@@ -78,49 +78,50 @@
                             <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupFinderSettings" />
 
                             <Rock:PanelWidget ID="wpGroups" runat="server" Title="Groups" Expanded="true">
-                                <Rock:GroupTypesPicker
-                                    ID="gtpGroupType"
-                                    runat="server"
-                                    Label="Group Type"
-                                    Help="The type of groups to look for."
-                                    AutoPostBack="true"
-                                    OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged"
-                                    ValidationGroup="GroupFinderSettings"
-                                    DisplayAsCheckList="false"
-                                    CssClass="col-md-6" />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockListBox
+                                            ID="gtpGroupType"
+                                            runat="server"
+                                            Label="Group Type"
+                                            Help="The type of groups to look for."
+                                            AutoPostBack="true"
+                                            OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged"
+                                            ValidationGroup="GroupFinderSettings"
+                                            DataTextField="text"
+                                            DataValueField="value" />
 
-                                <Rock:RockCheckBox
-                                    ID="cbHideOvercapacityGroups"
-                                    runat="server"
-                                    Label="Hide Overcapacity Groups"
-                                    Help="When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden."
-                                    ValidationGroup="GroupFinderSettings"
-                                    CssClass="col-md-6" />
+                                        <Rock:RockCheckBox
+                                            ID="cbHideOvercapacityGroups"
+                                            runat="server"
+                                            Label="Hide Overcapacity Groups"
+                                            Help="When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden."
+                                            ValidationGroup="GroupFinderSettings" />
 
-                                <Rock:RockCheckBox
-                                    ID="cbLoadInitialResults"
-                                    runat="server"
-                                    Label="Load Results on Initial Page Load"
-                                    Help="When enabled the group finder will load with all configured groups (no filters enabled)."
-                                    ValidationGroup="GroupFinderSettings"
-                                    CssClass="col-md-6" />
-
-                                <div class="col-md-6">
-                                    <label class="control-label">Location Types</label>
-                                    <Rock:Grid
-                                        runat="server"
-                                        ID="gGroupTypeLocation"
-                                        DisplayType="Light"
-                                        OnRowDataBound="gGroupTypeLocation_RowDataBound">
-                                        <Columns>
-                                            <Rock:RockBoundField DataField="Name" />
-                                            <asp:TemplateField>
-                                                <ItemTemplate>
-                                                    <Rock:RockDropDownList ID="lLocationList" runat="server" AutoPostBack="true" OnSelectedIndexChanged="lLocationList_SelectedIndexChanged" />
-                                                </ItemTemplate>
-                                            </asp:TemplateField>
-                                        </Columns>
-                                    </Rock:Grid>
+                                        <Rock:RockCheckBox
+                                            ID="cbLoadInitialResults"
+                                            runat="server"
+                                            Label="Load Results on Initial Page Load"
+                                            Help="When enabled the group finder will load with all configured groups (no filters enabled)."
+                                            ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="control-label">Location Types</label>
+                                        <Rock:Grid
+                                            runat="server"
+                                            ID="gGroupTypeLocation"
+                                            DisplayType="Light"
+                                            OnRowDataBound="gGroupTypeLocation_RowDataBound">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="Name" />
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <Rock:RockDropDownList ID="lLocationList" runat="server" AutoPostBack="true" OnSelectedIndexChanged="lLocationList_SelectedIndexChanged" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
                                 </div>
                             </Rock:PanelWidget>
                             <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filters" Expanded="true">
@@ -189,7 +190,7 @@
                                         <Rock:DefinedValuePicker ID="ddlMapMarker" Label="Map Marker" runat="server" ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" Help="The color to use for the map marker. If no color is provided the color will come from the group type's color setting."/>
+                                        <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" Help="The color to use for the map marker. If no color is provided the color will come from the group type's color setting." />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:RockDropDownList ID="ddlMinZoomLevel" Label="Minimum Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the minimum zoom level that the map will allow.">

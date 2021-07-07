@@ -772,9 +772,9 @@ namespace RockWeb.Blocks.Groups
             cblAttributes.Items.Clear();
             cblGridAttributes.Items.Clear();
 
-            if ( gtpGroupType.SelectedGroupTypeIds != null )
+            if ( gtpGroupType.SelectedValuesAsInt != null )
             {
-                var groupTypes = gtpGroupType.SelectedGroupTypeIds.Select( id => GroupTypeCache.Get( id ) );
+                var groupTypes = gtpGroupType.SelectedValuesAsInt.Select( id => GroupTypeCache.Get( id ) );
 
                 foreach ( var groupType in groupTypes )
                 {
@@ -806,7 +806,7 @@ namespace RockWeb.Blocks.Groups
                 var groupTypeIdWithLocations = GroupTypeLocations.Keys.ToList();
                 foreach ( var groupTypeId in groupTypeIdWithLocations )
                 {
-                    if ( !gtpGroupType.SelectedGroupTypeIds.Contains( groupTypeId ) )
+                    if ( !gtpGroupType.SelectedValuesAsInt.Contains( groupTypeId ) )
                     {
                         GroupTypeLocations.Remove( groupTypeId );
                     }
@@ -1635,22 +1635,23 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
-        private void BindGroupType( GroupTypesPicker control, List<GroupType> groupTypes )
+        private void BindGroupType( RockListBox control, List<GroupType> groupTypes )
         {
-            control.GroupTypes = groupTypes;
+            control.DataSource = groupTypes.Select( t => new { value = t.Id, text = t.Name } );
+            control.DataBind();
 
             var groupTypeIds = GetGroupTypeIds();
 
             if ( groupTypeIds != null )
             {
                 var existingGroupTypeIds = groupTypes.Where( g => groupTypeIds.Any( gt => gt == g.Id ) );
-                control.SelectedGroupTypeIds = groupTypeIds;
+                control.SetValues( groupTypeIds );
             }
         }
 
         private void BindGroupTypeLocationGrid()
         {
-            var groupTypeIds = gtpGroupType.SelectedGroupTypeIds;
+            var groupTypeIds = gtpGroupType.SelectedValuesAsInt;
             if ( groupTypeIds == null )
             {
                 groupTypeIds = GetGroupTypeIds();
