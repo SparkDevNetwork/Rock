@@ -248,6 +248,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE = "44A8B647-E0A7-42E7-9A75-276310F7E7BB";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry"/>
+        /// </summary>
+        public const string MOBILE_CMS_DAILY_CHALLENGE_ENTRY = "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.LavaItemList
         /// </summary>
         public const string MOBILE_LAVA_ITEM_LIST_BLOCK_TYPE = "60AD6D70-8A2A-4CC1-97D5-199300AF77EE";

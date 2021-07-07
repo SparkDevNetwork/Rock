@@ -427,6 +427,16 @@ namespace Rock.SystemGuid
         public const string SCHEDULE_TYPE = "831648D4-2E2C-4940-8358-9B426AEDB460";
 
         /// <summary>
+        /// The map markers
+        /// </summary>
+        public const string MAP_MARKERS = "80DC21DE-A2C2-42DF-880B-FA9CABD504A0";
+
+        /// <summary>
+        /// Languages
+        /// </summary>
+        public const string LANGUAGES = "6060ba8b-4085-4a29-bf19-a4862b95556a";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete( "Use FinancialStatementTemplate instead" )]

@@ -44,6 +44,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_COMMUNICATION_VIEW = "0D588D84-111C-4350-98DE-460C194F5DE5";
 
         /// <summary>
+        /// The block template mobile daily challenge entry
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY = "30ECA4B6-0869-4656-A4CD-B8729CB29E76";
+
+        /// <summary>
         /// The block template mobile event item occurrence list by audience
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE = "26944B71-7B69-4943-8EC2-3506F728D943";
@@ -822,6 +827,16 @@ namespace Rock.SystemGuid
         public const string INTERACTIONCHANNELTYPE_SYSTEM_EVENTS = "5919214F-9C59-4913-BE4E-0DFB6A05F528";
 
         /// <summary>
+        /// Interaction Channel Type: Challenges
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHALLENGES = "593607DC-4537-46E4-939F-60E0F74A1518";
+
+        /// <summary>
+        /// Interaction Channel Type: Challenge Progress
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_CHALLENGE_PROGRESS = "6AA529BD-9FA5-43AD-A98E-B8DF5F997146";
+
+        /// <summary>
         /// The PBX CDR medium value
         /// </summary>
         public const string PBX_CDR_MEDIUM_VALUE = "B3904B57-62A2-57AC-43EA-94D4DEBA3D51";
@@ -1204,5 +1219,36 @@ namespace Rock.SystemGuid
         public const string SCHEDULE_TYPE_WEEKEND_SERVICE = "033FC160-2650-4C97-8075-0C0114FA7A8D";
 
         #endregion Schedule Types
+
+        #region Map Markers
+        /// <summary>
+        /// The map marker pin
+        /// </summary>
+        public const string MAP_MARKER_PIN = "52DEB4F4-7D2C-4BB0-9A70-80CCA536E3EB";
+        /// <summary>
+        /// The map marker marker
+        /// </summary>
+        public const string MAP_MARKER_MARKER = "D9841DDB-BD34-45A7-97DC-141C8D6D9E84";
+        /// <summary>
+        /// The map marker marker with dot
+        /// </summary>
+        public const string MAP_MARKER_MARKER_WITH_DOT = "C0FF9C66-8232-41E8-A9C0-DC9D0ECAF932";
+        /// <summary>
+        /// The map marker circle
+        /// </summary>
+        public const string MAP_MARKER_CIRCLE = "66C27E88-6BC5-4B57-A981-0AD58481C66A";
+        #endregion
+
+        #region Languages
+        /// <summary>
+        /// Translation Languages - English
+        /// </summary>
+        public const string LANGUAGE_ENGLISH = "DF0A29A7-A61E-E4A7-4F3D-58CFDD3D3871";
+
+        /// <summary>
+        /// Translation Languages - Spanish
+        /// </summary>
+        public const string LANGUAGE_SPANISH = "C93CB430-8554-E599-4F49-D7F3CED2B2C7";
+        #endregion
     }
 }
