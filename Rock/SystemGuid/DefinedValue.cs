@@ -1238,5 +1238,17 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MAP_MARKER_CIRCLE = "66C27E88-6BC5-4B57-A981-0AD58481C66A";
         #endregion
+
+        #region Languages
+        /// <summary>
+        /// Translation Languages - English
+        /// </summary>
+        public const string LANGUAGE_ENGLISH = "DF0A29A7-A61E-E4A7-4F3D-58CFDD3D3871";
+
+        /// <summary>
+        /// Translation Languages - Spanish
+        /// </summary>
+        public const string LANGUAGE_SPANISH = "C93CB430-8554-E599-4F49-D7F3CED2B2C7";
+        #endregion
     }
 }

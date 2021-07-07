@@ -169,16 +169,21 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
+            target.CompletionSystemCommunicationId = source.CompletionSystemCommunicationId;
             target.Description = source.Description;
+            target.DocumentTerm = source.DocumentTerm;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             #pragma warning disable 612, 618
             target.InviteSystemEmailId = source.InviteSystemEmailId;
             #pragma warning restore 612, 618
+            target.IsActive = source.IsActive;
+            target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
+            target.SignatureType = source.SignatureType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -189,10 +189,10 @@
                                         <Rock:DefinedValuePicker ID="ddlMapMarker" Label="Map Marker" runat="server" ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" Help="The color to use for the map marker. If no color is provided the color will come from the group type's color setting."/>
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlMinZoomLevel" Label="Minimum Zoom Level" runat="server" ValidationGroup="GroupFinderSettings">
+                                        <Rock:RockDropDownList ID="ddlMinZoomLevel" Label="Minimum Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the minimum zoom level that the map will allow.">
                                             <asp:ListItem Text="" Value="" />
                                             <asp:ListItem Text="0" Value="0" />
                                             <asp:ListItem Text="1 - World" Value="1" />
@@ -218,7 +218,7 @@
                                         </Rock:RockDropDownList>
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlMaxZoomLevel" Label="Maxium Zoom Level" runat="server" ValidationGroup="GroupFinderSettings">
+                                        <Rock:RockDropDownList ID="ddlMaxZoomLevel" Label="Maxium Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the maximum zoom level that the map will allow.">
                                             <asp:ListItem Text="" Value="" />
                                             <asp:ListItem Text="0" Value="0" />
                                             <asp:ListItem Text="1 - World" Value="1" />
@@ -246,7 +246,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlInitialZoomLevel" Label="Initial Zoom Level" runat="server" ValidationGroup="GroupFinderSettings">
+                                        <Rock:RockDropDownList ID="ddlInitialZoomLevel" Label="Initial Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the initial zoom level the map should use.">
                                             <asp:ListItem Text="Automatic" Value="" />
                                             <asp:ListItem Text="0" Value="0" />
                                             <asp:ListItem Text="1 - World" Value="1" />
@@ -274,7 +274,7 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlMarkerZoomLevel" Label="Marker Auto Scale Zoom Level" runat="server" ValidationGroup="GroupFinderSettings">
+                                        <Rock:RockDropDownList ID="ddlMarkerZoomLevel" Label="Marker Auto Scale Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="The zoom level threshold that will cause the markers to auto resize to keep from showing precise locations on the map. Once this threshold is passed, the marker will begin to auto scale.">
                                             <asp:ListItem Text="" Value="" />
                                             <asp:ListItem Text="0" Value="0" />
                                             <asp:ListItem Text="1 - World" Value="1" />
@@ -300,10 +300,10 @@
                                         </Rock:RockDropDownList>
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:NumberBox runat="server" ID="nbMarkerAutoScaleAmount" Label="Marker Auto Scale Amount" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:NumberBox runat="server" ID="nbMarkerAutoScaleAmount" Label="Marker Auto Scale Amount" ValidationGroup="GroupFinderSettings" Help="The amount relative to the zoom level that the markers should scale themselves. A value of 2 means the scale will be 2 times the zoom level." />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockDropDownList ID="ddlLocationPrecisionLevel" Label="Location Precision Level" runat="server" ValidationGroup="GroupFinderSettings">
+                                        <Rock:RockDropDownList ID="ddlLocationPrecisionLevel" Label="Location Precision Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines how precise of a latitude/longitude to provide to the map. ">
                                             <asp:ListItem Text="Precise" Value="Precise" />
                                             <asp:ListItem Text="Narrow" Value="Narrow" />
                                             <asp:ListItem Text="Close" Value="Close" />
@@ -319,7 +319,7 @@
                                         <asp:LinkButton
                                             runat="server"
                                             ID="lbShowAdditionalMapSettings"
-                                            Text="Additional GeoFence Settings"
+                                            Text="Additional Geofence Settings"
                                             OnClick="lbShowAdditionalMapSettings_Click"
                                             CausesValidation="false"
                                             CssClass="pull-right" />

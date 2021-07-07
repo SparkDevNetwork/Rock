@@ -141,6 +141,14 @@
     <Compile Include="Migrations\202107062041018_AddMapMarkersDefinedType.Designer.cs">
       <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107070516013_AddLanguageDefinedType.cs" />
+    <Compile Include="Migrations\202107070516013_AddLanguageDefinedType.Designer.cs">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107071327583_UpdateSignatureDocument.cs" />
+    <Compile Include="Migrations\202107071327583_UpdateSignatureDocument.Designer.cs">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -650,6 +658,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107062041018_AddMapMarkersDefinedType.resx">
       <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107070516013_AddLanguageDefinedType.resx">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107071327583_UpdateSignatureDocument.resx">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
