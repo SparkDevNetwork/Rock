@@ -113,6 +113,11 @@ namespace Rock.SystemKey
         #region Checkin
 
         /// <summary>
+        /// Attribute key to indicate if the checkin GroupType should skip past the AbilityLevelSelect block.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION = "core_checkin_AbilityLevelDetermination";
+
+        /// <summary>
         /// Attribute key for GroupTypes that allow checkout
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ALLOW_CHECKOUT = "core_checkin_AllowCheckout";

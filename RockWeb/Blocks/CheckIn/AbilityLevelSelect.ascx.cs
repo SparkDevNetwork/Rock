@@ -354,12 +354,23 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+                        person.StateParameters.Add( "AbilityLevel", _personAbilityLevelGuid );
 
-                        var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                        if ( abilityLevelDType != null )
+                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk )
                         {
-                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                            rSelection.DataBind();
+                            if ( !ProcessSelection() )
+                            {
+                                NavigateToNextPage( true );
+                            }
+                        }
+                        else
+                        {
+                            var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                            if ( abilityLevelDType != null )
+                            {
+                                rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                                rSelection.DataBind();
+                            }
                         }
                     }
                 }
