@@ -239,7 +239,7 @@ it will automatically get the best video URL to use and the thumbnail URL. Even
 better it will automatically track playback sessions and record them in Rock so
 you get metrics about the videos being watched.</p>
 
-<pre>{[ mediaplayer media:'18' ]}[{ endmediaplayer ]}</pre>
+<pre>{[ mediaplayer media:'18' ]}{[ endmediaplayer ]}</pre>
 
 <p>Let's take a look at some of the parameters and options that are available so
 so you can customize this to be exactly what you want.</p>
