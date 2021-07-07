@@ -80,7 +80,7 @@
       {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
       {% if eventItemOccurrenceLinkagesCount > 0 %}
         {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
-          {% if eventItemOccurrenceLinkage.RegistrationInstance == null %}
+          {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
 
             {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
             {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
@@ -162,9 +162,3 @@
 
   </div>
 </div>
-
-
-
-
-
-
