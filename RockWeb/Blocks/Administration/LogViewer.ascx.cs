@@ -29,8 +29,13 @@ namespace RockWeb.Blocks.Administration
     [System.ComponentModel.Category( "Administration" )]
     [System.ComponentModel.Description( "Block to view system logs." )]
 
-    public partial class LogViewer : RockBlock, ICustomGridColumns
+    public partial class LogViewer : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
+        public void SetVisible( bool visible )
+        {
+            pnlLogs.Visible = visible;
+        }
+
         #region Control Methods
 
         /// <summary>
