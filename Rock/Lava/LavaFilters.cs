@@ -1078,9 +1078,10 @@ namespace Rock.Lava
                 input = RockDateTime.Now;
             }
 
+            // Use the General Short Date/Long Time format by default.
             if ( string.IsNullOrWhiteSpace( format ) )
             {
-                format = "g";
+                format = "G";
             }
             // Consider special 'Standard Date' and 'Standard Time' formats.
             else if ( format == "sd" )
