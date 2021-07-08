@@ -187,7 +187,7 @@
                                             ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:DefinedValuePicker ID="ddlMapMarker" Label="Map Marker" runat="server" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:DefinedValuePicker ID="ddlMapMarker" Label="Map Marker" runat="server" ValidationGroup="GroupFinderSettings" Help="The map marker shape to show on the map." />
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" Help="The color to use for the map marker. If no color is provided the color will come from the group type's color setting." />
