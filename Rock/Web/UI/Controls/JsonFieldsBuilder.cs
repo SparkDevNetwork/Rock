@@ -529,7 +529,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = "tbKey",
                 Label = "Key",
-                Help = "This will become the prorperty name in the returned JSON.",
+                Help = "This will become the property name in the returned JSON.",
                 Required = true
             };
             Controls.Add( _tbKey );

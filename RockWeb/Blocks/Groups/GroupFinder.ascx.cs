@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Groups
         Key = AttributeKey.MarkerZoomLevel,
         Category = AttributeCategory.CustomSetting )]
     [IntegerField( "Marker Zoom Amount",
-        DefaultIntegerValue = 2,
+        DefaultIntegerValue = 1,
         Key = AttributeKey.MarkerZoomAmount,
         Category = AttributeCategory.CustomSetting )]
     [TextField( "Location Precision Level",
@@ -1847,7 +1847,8 @@ namespace RockWeb.Blocks.Groups
 
                 var scale = markerScale;
                 if ( zoom >= zoomThreshold ) {{
-                    scale = markerScale * zoom * zoomAmount / 3;
+                    let zoomScale = [ 0, 1, 1.00025, 1.0005, 1.001, 1.002, 1.004, 1.008, 1.016, 1.032, 1.064, 1.128, 1.256, 1.512, 2.024, 3.048, 5.096, 9.192, 17.384, 33.769, 66.536]
+                    scale = (zoomScale[zoom] * zoomAmount );
                 }}
 
                 var markerCount = allMarkers.length;
@@ -1982,7 +1983,7 @@ namespace RockWeb.Blocks.Groups
                     fillColor: color,
                     fillOpacity: 1,
                     strokeColor: '#000',
-                    strokeWeight: 1,
+                    strokeWeight: 0,
                     scale: markerScale,
                     labelOrigin: new google.maps.Point(0, 0),
                     anchor: new google.maps.Point(0, 0),
@@ -2129,7 +2130,7 @@ namespace RockWeb.Blocks.Groups
             if ( markerDefinedValueId != null )
             {
                 marker = DefinedValueCache.Get( markerDefinedValueId.Value ).Description;
-                scale = .05d;
+                scale = 1;
             }
 
             string mapScript = string.Format(
