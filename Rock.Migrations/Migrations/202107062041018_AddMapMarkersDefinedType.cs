@@ -39,10 +39,10 @@ namespace Rock.Migrations
 
 	                    INSERT INTO DefinedValue (IsSystem, DefinedTypeId, [Order], [Value], [Description], [Guid], IsActive)
 	                    VALUES 
-	                    (1, @definedValueId, 0, 'Pin', 'M112 316.94v156.69l22.02 33.02c4.75 7.12 15.22 7.12 19.97 0L176 473.63V316.94c-10.39 1.92-21.06 3.06-32 3.06s-21.61-1.14-32-3.06zM144 0C64.47 0 0 64.47 0 144s64.47 144 144 144 144-64.47 144-144S223.53 0 144 0zm0 76c-37.5 0-68 30.5-68 68 0 6.62-5.38 12-12 12s-12-5.38-12-12c0-50.73 41.28-92 92-92 6.62 0 12 5.38 12 12s-5.38 12-12 12z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_PIN}', 1),
-	                    (1, @definedValueId, 1, 'Marker', 'M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_MARKER}', 1),
-	                    (1, @definedValueId, 2, 'Marker With Dot', 'M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_MARKER_WITH_DOT}', 1),
-	                    (1, @definedValueId, 3, 'Circle', 'M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_CIRCLE}', 1)
+	                    (1, @definedValueId, 0, 'Pin', 'M-2.8-9.2V4.3l1.9,2.8c0.4,0.6,1.3,0.6,1.7,0l1.9-2.8V-9.2C1.9-9,0.9-8.9,0-8.9S-1.9-9-2.8-9.2z M0-36.4 c-6.8,0-12.4,5.5-12.4,12.4S-6.8-11.7,0-11.7s12.4-5.5,12.4-12.4S6.8-36.4,0-36.4z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_PIN}', 1),
+	                    (1, @definedValueId, 1, 'Marker', 'M-1.8,11.2c-13.5-19.5-16-21.5-16-28.7c0-9.8,8-17.8,17.8-17.8s17.8,8,17.8,17.8c0,7.2-2.5,9.2-16,28.7 C0.9,12.5-0.9,12.5-1.8,11.2L-1.8,11.2z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_MARKER}', 1),
+	                    (1, @definedValueId, 2, 'Marker With Dot', 'M-1.8,11.2c-13.5-19.5-16-21.5-16-28.7c0-9.8,8-17.8,17.8-17.8s17.8,8,17.8,17.8c0,7.2-2.5,9.2-16,28.7 C0.9,12.5-0.9,12.5-1.8,11.2L-1.8,11.2z M0-10.1c4.1,0,7.4-3.3,7.4-7.4S4.1-24.9,0-24.9s-7.4,3.3-7.4,7.4S-4.1-10.1,0-10.1z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_MARKER_WITH_DOT}', 1),
+	                    (1, @definedValueId, 3, 'Circle', 'M0-11.3c-6.3,0-11.3,5.1-11.3,11.3S-6.3,11.3,0,11.3S11.3,6.3,11.3,0S6.3-11.3,0-11.3z', '{Rock.SystemGuid.DefinedValue.MAP_MARKER_CIRCLE}', 1)
                     END" );
         }
         
