@@ -672,6 +672,8 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
+    <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
@@ -1863,8 +1865,8 @@
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockType.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
-    <Compile Include="Model\Campus.cs" />
-    <Compile Include="Model\CampusService.partial.cs" />
+    <Compile Include="Model\Core\Campus\Campus.cs" />
+    <Compile Include="Model\Core\Campus\CampusService.cs" />
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFinancialAccountService.cs" />

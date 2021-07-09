@@ -14,17 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -186,9 +184,9 @@ namespace Rock.Model
         [DataMember]
         public int? TeamGroupId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Location"/> entity that is associated with this campus.
@@ -268,55 +266,9 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<CampusSchedule> CampusSchedules { get; set; } = new Collection<CampusSchedule>();
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state of the entity.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
-        {
-            var rockContext = ( RockContext ) dbContext;
-
-            /*
-            * 1/15/2020 - JPH
-            * Upon saving a Campus, ensure it has a TeamGroup defined (GroupType = 'Team Group',
-            * IsSystem = true). We are creating this Campus-to-Group relationship behind the scenes
-            * so that we can assign GroupRoles to a Campus, and place people into those roles.
-            *
-            * Reason: Campus Team Feature
-            */
-            var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
-            if ( state != EntityState.Deleted && campusTeamGroupTypeId.HasValue )
-            {
-                if ( this.TeamGroup == null || this.TeamGroup.GroupTypeId != campusTeamGroupTypeId.Value )
-                {
-                    // this Campus does not yet have a Group of the correct GroupType: create one and assign it
-                    var teamGroup = new Group
-                    {
-                        IsSystem = true,
-                        GroupTypeId = campusTeamGroupTypeId.Value,
-                        Name = string.Format( "{0} Team", this.Name ),
-                        Description = "Are responsible for leading and administering the Campus."
-                    };
-
-                    new GroupService( rockContext ).Add( teamGroup );
-
-                    this.TeamGroup = teamGroup;
-                }
-
-                if ( !this.TeamGroup.IsSystem )
-                {
-                    // this Campus already had a Group of the correct GroupType, but the IsSystem value was incorrect
-                    this.TeamGroup.IsSystem = true;
-                }
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> containing the Location's Name that represents this instance.
@@ -329,30 +281,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return CampusCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            CampusCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration
