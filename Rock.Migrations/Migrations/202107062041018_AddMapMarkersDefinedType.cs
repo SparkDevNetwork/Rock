@@ -31,8 +31,18 @@ namespace Rock.Migrations
         {
             @Sql( $@"IF NOT EXISTS(SELECT 1 FROM DefinedType WHERE [Guid] = '{Rock.SystemGuid.DefinedType.MAP_MARKERS}')
                     BEGIN
+                        DECLARE @DefinedTypeEntityTypeId int = (
+                            SELECT TOP 1 [Id]
+                            FROM [EntityType]
+                            WHERE [Name] = 'Rock.Model.DefinedType' )
+
+                        DECLARE @CategoryId int = (
+                            SELECT TOP 1 [Id] FROM [Category]
+                            WHERE [EntityTypeId] = @DefinedTypeEntityTypeId
+                            AND [Name] = 'Global' )
+
 	                    INSERT INTO DefinedType (IsSystem, FieldTypeId, [Order], [Name], [Description], [Guid], HelpText, CategoryId, IsActive)
-	                    VALUES (1, 1, (SELECT MAX([Order]) FROM DefinedType), 'Map Markers', 'Markers that can be used by the group finder block.', '{Rock.SystemGuid.DefinedType.MAP_MARKERS}', '', NULL, 1)
+	                    VALUES (1, 1, (SELECT MAX([Order]) FROM DefinedType), 'Map Markers', 'Markers that can be used by the group finder block.', '{Rock.SystemGuid.DefinedType.MAP_MARKERS}', '', @CategoryId, 1)
 
 	                    DECLARE @definedValueId AS INT
 	                    SET @definedValueId = @@IDENTITY
