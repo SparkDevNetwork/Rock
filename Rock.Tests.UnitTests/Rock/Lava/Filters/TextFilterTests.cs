@@ -422,6 +422,29 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: ToCssClass
+
+        /// <summary>
+        /// ToCssClass filter returns expected output.
+        /// </summary>
+        ///
+        [DataTestMethod]
+        [DataRow( "Community Participant", "community-participant" )]
+        [DataRow( "community--participant", "community-participant" )]
+        [DataRow( "1234", "-x-1234" )]
+        [DataRow( "abc$$!!123", "abc-123" )]
+        [DataRow( "   ", "" )]
+        [DataRow( "", "" )]
+        [DataRow( null, "" )]
+        public void ToCssClass_VariousInputs_ReturnExpectedOutput( string input, string expected )
+        {
+            var template = "{{ '" + input + "' | ToCssClass }}";
+
+            TestHelper.AssertTemplateOutput( expected, template );
+        }
+
+        #endregion
+
         /// <summary>
         /// Leading and trailing whitespace should be removed, while internal whitespace is preserved.
         /// </summary>

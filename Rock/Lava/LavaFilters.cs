@@ -430,19 +430,20 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// returns sentence in 'PascalCase'
+        /// Converts an input string to a well-formatted cascading style sheet (CSS) reference.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         public static string ToCssClass( string input )
         {
+            // Ignore empty input.
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return string.Empty;
+            }
+
             // list from: https://mathiasbynens.be/notes/css-escapes
             Regex ex = new Regex( @"[&*!""#$%'()+,.\/:;<=>?@\[\]\^`{\|}~\s]" );
-
-            if ( input == null )
-            {
-                return input;
-            }
 
             // replace unsupported characters
             input = ex.Replace( input, "-" ).ToLower();
