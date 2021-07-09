@@ -40,7 +40,7 @@ namespace Rock.Lava
         // This class is implemented privately because it has a number of the public methods that are unnecessary or confusing
         // for Lava developers looking to implement a simple Lava data source.
         [NonSerialized]
-        private LavaDataObjectInternal _lavaDataObjectInternal;
+        private LavaDataObjectInternal _lavaDataObjectInternal = null;
 
         #region Constructors
 
@@ -49,9 +49,7 @@ namespace Rock.Lava
         /// </summary>
         public LavaDataObject()
         {
-            _lavaDataObjectInternal = new LavaDataObjectInternal( this );
-
-            _lavaDataObjectInternal.TryGetMemberCallback = OnTryGetValue;
+            SetLavaDataObjectInternal( this );
         }
 
         /// <summary>
@@ -68,6 +66,32 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
+        /// Gets an internal implementation of the LavaDataObject, or instantiates a new instance if it has not been created.
+        /// Lazy instantiation will occur if this object is deserialized.
+        /// </summary>
+        /// <returns></returns>
+        private LavaDataObjectInternal GetLavaDataObjectInternal()
+        {
+            if ( _lavaDataObjectInternal == null )
+            {
+                SetLavaDataObjectInternal( this );
+            }
+
+            return _lavaDataObjectInternal;
+        }
+
+        /// <summary>
+        /// Sets the internal implementation of the LavaDataObject.
+        /// </summary>
+        /// <returns></returns>
+        private void SetLavaDataObjectInternal( object wrappedObject )
+        {
+            _lavaDataObjectInternal = new LavaDataObjectInternal( wrappedObject );
+
+            _lavaDataObjectInternal.TryGetMemberCallback = OnTryGetValue;
+        }
+
+        /// <summary>
         /// Override this method to provide a custom implementation for retrieving a property value from this data object.
         /// </summary>
         /// <param name="key"></param>
@@ -82,7 +106,9 @@ namespace Rock.Lava
                 return false;
             }
 
-            return _lavaDataObjectInternal.GetProperty( key.ToString(), out result );
+            var ldo = GetLavaDataObjectInternal();
+
+            return ldo.GetProperty( key.ToString(), out result );
         }
 
         /// <summary>
@@ -101,7 +127,9 @@ namespace Rock.Lava
             }
             set
             {
-                _lavaDataObjectInternal[key] = value;
+                var ldo = GetLavaDataObjectInternal();
+
+                ldo[key] = value;
             }
         }
 
@@ -113,7 +141,9 @@ namespace Rock.Lava
         /// <returns>True if a value is available for the specified key.</returns>
         public bool TryGetValue( string key, out object value )
         {
-            return _lavaDataObjectInternal.TryGetMember( key, out value );
+            var ldo = GetLavaDataObjectInternal();
+
+            return ldo.TryGetMember( key, out value );
         }
 
         #region ILavaDataDictionary Implementation
@@ -129,7 +159,9 @@ namespace Rock.Lava
         {
             get
             {
-                return _lavaDataObjectInternal.GetDynamicMemberNames().ToList();
+                var ldo = GetLavaDataObjectInternal();
+
+                return ldo.GetDynamicMemberNames().ToList();
             }
         }
 
@@ -190,15 +222,13 @@ namespace Rock.Lava
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            var dictionary = _lavaDataObjectInternal.ToDictionary();
+            var dictionary = GetLavaDataObjectInternal().ToDictionary();
 
             return dictionary.GetEnumerator();
         }
 
         void ICollection.CopyTo( Array array, int index )
         {
-            var dictionary = _lavaDataObjectInternal.ToDictionary();
-
             if ( array == null )
             {
                 throw new ArgumentNullException( "array" );
@@ -218,7 +248,7 @@ namespace Rock.Lava
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            var dictionary = _lavaDataObjectInternal.ToDictionary();
+            var dictionary = GetLavaDataObjectInternal().ToDictionary();
 
             return dictionary.GetEnumerator();
         }
@@ -235,7 +265,9 @@ namespace Rock.Lava
         {
             get
             {
-                return _lavaDataObjectInternal.GetProperties().Select( x => x.Value ).ToList();
+                var ldo = GetLavaDataObjectInternal();
+
+                return ldo.GetProperties().Select( x => x.Value ).ToList();
             }
         }
 
@@ -259,7 +291,9 @@ namespace Rock.Lava
         {
             get
             {
-                return _lavaDataObjectInternal.GetProperties().Count();
+                var ldo = GetLavaDataObjectInternal();
+
+                return ldo.GetProperties().Count();
             }
         }
 
@@ -297,7 +331,9 @@ namespace Rock.Lava
                     return;
                 }
 
-                _lavaDataObjectInternal[key.ToString()] = value;
+                var ldo = GetLavaDataObjectInternal();
+
+                ldo[key.ToString()] = value;
             }
         }
 
@@ -317,7 +353,9 @@ namespace Rock.Lava
 
         public DynamicMetaObject GetMetaObject( Expression parameter )
         {
-            var metaObject = ( ( IDynamicMetaObjectProvider ) _lavaDataObjectInternal ).GetMetaObject( parameter );
+            var ldo = GetLavaDataObjectInternal();
+
+            var metaObject = ( ( IDynamicMetaObjectProvider ) ldo ).GetMetaObject( parameter );
 
             return metaObject;
         }
