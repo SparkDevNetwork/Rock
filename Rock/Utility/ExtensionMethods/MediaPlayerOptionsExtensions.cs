@@ -85,6 +85,12 @@ namespace Rock
                     return;
                 }
 
+                // If we don't have a person, then we can't get interactions.
+                if ( currentPerson == null )
+                {
+                    return;
+                }
+
                 // Build a query to find Interactions for this person having
                 // previously watched this media element.
                 var interactionQry = interactionService.Queryable()

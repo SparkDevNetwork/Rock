@@ -216,6 +216,13 @@ namespace Rock.UI {
             return this.percentWatchedInternal;
         }
 
+        /**
+         * Get the duration of the video.
+         */
+        public get duration(): number {
+            return this.player.duration;
+        }
+
         // #endregion
 
         // #region Private Properties
@@ -300,6 +307,15 @@ namespace Rock.UI {
         // #endregion
 
         // #region Methods
+
+        /**
+         * Seek to the specified position in the video.
+         * 
+         * @param positionInSeconds The position in seconds, this can be a floating point number.
+         */
+        public seek(positionInSeconds: number) {
+            this.player.currentTime = positionInSeconds;
+        }
 
         /**
          * Configure the options that will be passed to the initializePlayer
@@ -672,7 +688,6 @@ namespace Rock.UI {
             }
         }
 
-        // Method: Creates a blank map of the size of the current media
         /**
          * Creates a blank map of the length of the current media
          */
