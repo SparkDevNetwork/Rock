@@ -136,7 +136,8 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void Date_NowWithNoFormatStringAsInput_ResolvesToCurrentDateTimeWithGeneralFormat()
         {
-            TestHelper.AssertTemplateOutput( RockDateTime.Now.ToString( "g" ), "{{ 'Now' | Date }}" );
+            // Expect the general format: short date/long time.
+            TestHelper.AssertTemplateOutput( RockDateTime.Now.ToString( "G" ), "{{ 'Now' | Date }}" );
         }
 
         /// <summary>
