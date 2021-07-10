@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-bus"></i>
+                    <i class="fa fa-code-branch"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
             </div>
