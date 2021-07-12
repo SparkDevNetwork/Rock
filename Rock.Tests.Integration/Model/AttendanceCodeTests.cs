@@ -239,10 +239,9 @@ namespace Rock.Tests.Integration.Model
                 // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
                 Assert.That.IsTrue( codeList.Last().Length == 2, "last code was " + codeList.Last().Length + " characters long." );
             }
-            catch ( TimeoutException )
+            catch ( Exception )
             {
-                // An exception in this case is considered better than hanging (since there is 
-                // no actual solution).
+                // An exception in this case is considered better than hanging (since there is no actual solution).
                 Assert.That.IsTrue( true );
             }
             finally
@@ -264,16 +263,13 @@ namespace Rock.Tests.Integration.Model
 
             var codeList = new List<string>();
             AttendanceCode code = null;
-            for ( int i = 0; i < 998; i++ )
+            for ( int i = 0; i < 997; i++ )
             {
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
                 codeList.Add( code.Code );
             }
 
-            var duplicates = codeList.GroupBy( x => x )
-                                    .Where( group => group.Count() > 1 )
-                                    .Select( group => group.Key );
-
+            var duplicates = codeList.GroupBy( x => x ).Where( group => group.Count() > 1 ).Select( group => group.Key );
             Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join( ", ", duplicates ) );
 
             stopWatch.Stop();
