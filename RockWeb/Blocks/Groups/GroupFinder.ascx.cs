@@ -1803,7 +1803,7 @@ namespace RockWeb.Blocks.Groups
         var locationData = {0};
         var fenceData = {1};
         var groupData = {2}; 
-        var markerScale = {11};
+        var markerScale = 1;
 
         var allMarkers = [];
 
@@ -1828,16 +1828,16 @@ namespace RockWeb.Blocks.Groups
                  mapTypeId: 'roadmap'
                 ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
-                ,maxZoom: {12}
-                ,minZoom: {13}
+                ,maxZoom: {11}
+                ,minZoom: {12}
                 ,zoom: {9}
             }};
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
             google.maps.event.addDomListener(map, 'zoom_changed', function() {{
-                var zoomThreshold = {14};
-                var zoomAmount = {15};
+                var zoomThreshold = {13};
+                var zoomAmount = {14};
 
                 var zoom = map.getZoom();
 
@@ -1848,6 +1848,12 @@ namespace RockWeb.Blocks.Groups
                 var scale = markerScale;
                 if ( zoom >= zoomThreshold ) {{
                     let zoomScale = [ 0, 1, 1.00025, 1.0005, 1.001, 1.002, 1.004, 1.008, 1.016, 1.032, 1.064, 1.128, 1.256, 1.512, 2.024, 3.048, 5.096, 9.192, 17.384, 33.769, 66.536]
+                    let zoomScaleLastIndex = zoomScale.length - 1;
+                    if(zoom > zoomScaleLastIndex)
+                    {{
+                        zoom = zoomScaleLastIndex;
+                    }}
+
                     scale = (zoomScale[zoom] * zoomAmount );
                 }}
 
@@ -2125,12 +2131,10 @@ namespace RockWeb.Blocks.Groups
 
             var markerDefinedValueId = GetAttributeValue( AttributeKey.MapMarker ).AsIntegerOrNull();
             var marker = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
-            var scale = 1.0d;
 
             if ( markerDefinedValueId != null )
             {
                 marker = DefinedValueCache.Get( markerDefinedValueId.Value ).Description;
-                scale = 1;
             }
 
             string mapScript = string.Format(
@@ -2146,11 +2150,10 @@ namespace RockWeb.Blocks.Groups
                 longitude,          // 8
                 zoom,               // 9
                 marker,             // 10
-                scale,              // 11
-                maxZoomLevel,       // 12
-                minZoomLevel,       // 13
-                zoomThreshold,      // 14
-                zoomAmount );       // 15
+                maxZoomLevel,       // 11
+                minZoomLevel,       // 12
+                zoomThreshold,      // 13
+                zoomAmount );       // 14
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-finder-map-script", mapScript, true );
         }

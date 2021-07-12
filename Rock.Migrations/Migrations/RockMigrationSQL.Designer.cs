@@ -694,5 +694,24 @@ namespace Rock.Migrations.Migrations {
                         "ge", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [EntityType] SET [IndexResultTemplate]=N&apos;{% if IndexDocument.IndexModelType == &quot;Rock.UniversalSearch.IndexModels.PersonIndex&quot; %}
+        ///
+        ///    {% assign url = &quot;~/Person/&quot; | ResolveRockUrl %}
+        ///    
+        ///    {% if DisplayOptions.Person-Url and DisplayOptions.Person-Url != null and DisplayOptions.Person-Url != &apos;&apos;&apos;&apos; %}
+        ///        {% assign url = DisplayOptions.Person-Url | ResolveRockUrl %}
+        ///    {% endif %}
+        ///    
+        ///    
+        ///    &lt;div class=&quot;row model-cannavigate&quot; data-href=&quot;{{ url }}{{ IndexDocument.Id }}&quot;&gt;
+        ///        &lt;div  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity {
+            get {
+                return ResourceManager.GetString("_202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity", resourceCulture);
+            }
+        }
     }
 }

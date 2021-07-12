@@ -161,6 +161,10 @@
     <Compile Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.Designer.cs">
       <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107121730176_RegistrationInstanceTimeout.cs" />
+    <Compile Include="Migrations\202107121730176_RegistrationInstanceTimeout.Designer.cs">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -686,6 +690,9 @@
     <EmbeddedResource Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.resx">
       <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107121730176_RegistrationInstanceTimeout.resx">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -1059,6 +1066,9 @@
     </Content>
     <Content Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge.sql">
       <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity.sql">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
