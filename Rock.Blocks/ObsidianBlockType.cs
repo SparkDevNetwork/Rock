@@ -98,7 +98,7 @@ namespace Rock.Blocks
             return
 $@"<div id=""{rootElementId}""></div>
 <script type=""text/javascript"">
-Obsidian.whenReady(() => {{
+Obsidian.onReady(() => {{
     System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializeBlock({{
             blockFileUrl: '{BlockFileUrl}',

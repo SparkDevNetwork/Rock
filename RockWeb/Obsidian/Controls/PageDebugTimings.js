@@ -104,14 +104,14 @@ System.register(["../Services/Number", "vue", "../Store/Index"], function (expor
                     },
                     firstClientRelativeStartTimeMs: function () {
                         if (!this.relativeClientViewModels.length) {
-                            return 0;
+                            return this.serverEndTimeMs;
                         }
                         var viewModel = this.relativeClientViewModels[0];
                         return viewModel.TimestampMs;
                     },
                     clientRelativeEndTimeMs: function () {
                         if (!this.relativeClientViewModels.length) {
-                            return 0;
+                            return this.serverEndTimeMs;
                         }
                         var lastIndex = this.relativeClientViewModels.length - 1;
                         var lastViewModel = this.relativeClientViewModels[lastIndex];
