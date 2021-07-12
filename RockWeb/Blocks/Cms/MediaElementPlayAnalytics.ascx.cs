@@ -90,9 +90,9 @@ namespace RockWeb.Blocks.Cms
         RockRequestContext IRockBlockType.RequestContext { get; set; }
 
         /// <inheritdoc/>
-        string IRockBlockType.GetControlMarkup()
+        object IRockBlockType.GetBlockInitialization( RockClientType clientType )
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         #endregion
