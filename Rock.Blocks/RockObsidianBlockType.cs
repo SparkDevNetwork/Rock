@@ -24,7 +24,7 @@ namespace Rock.Blocks
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     /// <seealso cref="IRockClientBlockType" />
-    public abstract class ObsidianBlockType : RockBlockType, IObsidianBlockType
+    public abstract class RockObsidianBlockType : RockBlockType, IRockObsidianBlockType
     {
         #region Properties
 
@@ -65,12 +65,11 @@ namespace Rock.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public virtual object GetBlockInitialization( RockClientType clientType )
+        public override object GetBlockInitialization( RockClientType clientType )
         {
-            if ( clientType == RockClientType.Obsidian )
+            if ( clientType == RockClientType.Web )
             {
-                var initConfig = GetObsidianBlockInitialization() ?? new object();
-                return JavaScript.ToJavaScriptObject( initConfig );
+                return GetObsidianBlockInitialization();
             }
 
             return null;
@@ -104,7 +103,7 @@ Obsidian.onReady(() => {{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',
-            configurationValues: {GetBlockInitialization( RockClientType.Obsidian )}
+            configurationValues: {GetBlockInitialization( RockClientType.Web ).ToJson()}
         }});
     }});
 }});

@@ -444,7 +444,7 @@ namespace Rock.Mobile
 
                     mobileBlockEntity.BlockCache = block;
                     mobileBlockEntity.PageCache = block.Page;
-                    mobileBlockEntity.RequestContext = new Net.RockRequestContext( RockClientType.Mobile );
+                    mobileBlockEntity.RequestContext = new Net.RockRequestContext();
 
                     var attributes = block.Attributes
                         .Select( a => a.Value )

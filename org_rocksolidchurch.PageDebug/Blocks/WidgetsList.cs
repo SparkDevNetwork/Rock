@@ -31,14 +31,14 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
     /// <summary>
     /// Shows the widgets.
     /// </summary>
-    /// <seealso cref="ObsidianBlockType" />
+    /// <seealso cref="RockObsidianBlockType" />
 
     [DisplayName( "Widget List" )]
     [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows a list of widgets" )]
     [IconCssClass( "fa fa-fan" )]
 
-    public class WidgetsList : ObsidianBlockType
+    public class WidgetsList : RockObsidianBlockType
     {
         /// <summary>
         /// Gets the block markup file identifier.

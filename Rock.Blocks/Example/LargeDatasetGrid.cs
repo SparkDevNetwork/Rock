@@ -29,14 +29,14 @@ namespace Rock.Blocks.Example
     /// <summary>
     /// Lists attribute values and demonstrates server-side paging and filtering.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Large Dataset Grid" )]
     [Category( "Obsidian > Example" )]
     [Description( "Lists attribute values and demonstrates server-side paging and filtering." )]
     [IconCssClass( "fa fa-dumbbell" )]
 
-    public class LargeDatasetGrid : ObsidianBlockType
+    public class LargeDatasetGrid : RockObsidianBlockType
     {
         #region Actions
 

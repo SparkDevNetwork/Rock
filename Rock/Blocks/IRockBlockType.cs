@@ -58,9 +58,10 @@ namespace Rock.Blocks
         RockRequestContext RequestContext { get; set; }
 
         /// <summary>
-        /// Gets the control markup.
+        /// Gets the object that will be used to initialize the block by the client.
         /// </summary>
-        /// <returns></returns>
-        string GetControlMarkup();
+        /// <param name="clientType">The type of client that is requesting the configuration data.</param>
+        /// <returns>An object that will be JSON encoded and sent to the client.</returns>
+        object GetBlockInitialization( RockClientType clientType );
     }
 }

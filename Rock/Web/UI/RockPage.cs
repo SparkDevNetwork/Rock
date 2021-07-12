@@ -1242,8 +1242,7 @@ Rock.settings.initialize({{
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
-                                            var clientType = rockBlockEntity.GetRockClientType();
-                                            rockBlockEntity.RequestContext = new RockRequestContext( Request, clientType );
+                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
                                             rockBlockEntity.RequestContext.AddContextEntitiesForPage( _pageCache );
 
                                             var wrapper = new RockBlockTypeWrapper
@@ -1259,7 +1258,7 @@ Rock.settings.initialize({{
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
 
-                                        if ( blockEntity is IObsidianBlockType )
+                                        if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
                                         }

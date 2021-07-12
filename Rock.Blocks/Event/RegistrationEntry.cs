@@ -35,7 +35,7 @@ namespace Rock.Blocks.Event
     /// <summary>
     /// Registration Entry.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Registration Entry" )]
     [Category( "Obsidian > Event" )]
@@ -117,7 +117,7 @@ namespace Rock.Blocks.Event
 
     #endregion Block Attributes
 
-    public class RegistrationEntry : ObsidianBlockType
+    public class RegistrationEntry : RockObsidianBlockType
     {
         #region Keys
 

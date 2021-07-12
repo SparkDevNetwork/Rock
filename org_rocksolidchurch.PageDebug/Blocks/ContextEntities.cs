@@ -25,14 +25,14 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
     /// <summary>
     /// Shows the page's context entities.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Context Entities" )]
     [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows the page's context entities" )]
     [IconCssClass( "fa fa-pizza-slice" )]
 
-    public class ContextEntities : ObsidianBlockType
+    public class ContextEntities : RockObsidianBlockType
     {
         /// <summary>
         /// Gets the block markup file identifier.

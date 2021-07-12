@@ -29,7 +29,7 @@ namespace Rock.Blocks.Crm
     /// <summary>
     /// Allows for editing the value(s) of a set of attributes for person.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Attribute Values" )]
     [Category( "Obsidian > CRM" )]
@@ -87,7 +87,7 @@ namespace Rock.Blocks.Crm
 
     #endregion Block Attributes
 
-    public class AttributeValues : ObsidianBlockType
+    public class AttributeValues : RockObsidianBlockType
     {
         #region Attribute Keys
         private static class AttributeKey
@@ -102,7 +102,7 @@ namespace Rock.Blocks.Crm
 
         #endregion Attribute Keys
 
-        #region IObsidianBlockType Implementation
+        #region IRockObsidianBlockType Implementation
 
         /// <summary>
         /// Gets the property values that will be sent to the browser.

@@ -23,37 +23,13 @@ namespace Rock.Blocks
     public enum RockClientType
     {
         /// <summary>
-        /// Web Forms
+        /// A client that is requesting a web page.
         /// </summary>
-        WebForms = 0,
+        Web = 0,
 
         /// <summary>
-        /// Mobile
+        /// A Rock Mobile shell client.
         /// </summary>
-        Mobile = 1,
-
-        /// <summary>
-        /// Obsidian
-        /// </summary>
-        Obsidian = 2
-    }
-
-    /// <summary>
-    /// Rock Client Type Helpers
-    /// </summary>
-    internal static class RockClientTypeHelpers
-    {
-        /// <summary>
-        /// Gets the type of the rock client.
-        /// </summary>
-        /// <param name="blockType">Type of the block.</param>
-        /// <returns></returns>
-        internal static RockClientType GetRockClientType( this IRockBlockType blockType )
-        {
-            return
-                blockType is IObsidianBlockType ? RockClientType.Obsidian :
-                blockType is IRockMobileBlockType ? RockClientType.Mobile :
-                RockClientType.WebForms;
-        }
+        Mobile = 1
     }
 }

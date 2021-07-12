@@ -581,8 +581,8 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
-    <Compile Include="Blocks\IObsidianBlockType.cs" />
-    <Compile Include="Blocks\IRockClientBlockType.cs" />
+    <Compile Include="Blocks\IRockObsidianBlockType.cs" />
+    <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />

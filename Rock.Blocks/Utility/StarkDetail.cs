@@ -25,7 +25,7 @@ namespace Rock.Blocks.Utility
     /// <summary>
     /// An example block.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Stark Detail" )]
     [Category( "Obsidian > Utility" )]
@@ -50,7 +50,7 @@ namespace Rock.Blocks.Utility
 
     #endregion Block Attributes
 
-    public class StarkDetail : ObsidianBlockType
+    public class StarkDetail : RockObsidianBlockType
     {
         #region Attribute Keys
 

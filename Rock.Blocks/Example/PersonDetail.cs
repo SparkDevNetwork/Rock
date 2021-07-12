@@ -27,14 +27,14 @@ namespace Rock.Blocks.Example
     /// <summary>
     /// Demonstrates a detail block.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Person Detail" )]
     [Category( "Obsidian > Example" )]
     [Description( "Demonstrates a detail block." )]
     [IconCssClass( "fa fa-flask" )]
 
-    public class PersonDetail : ObsidianBlockType
+    public class PersonDetail : RockObsidianBlockType
     {
         /// <summary>
         /// Gets the person view model.

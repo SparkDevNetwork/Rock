@@ -18,16 +18,16 @@
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Obsidian Block Type
+    /// A Rock block that is designed to exist on a web page.
     /// </summary>
-    public interface IObsidianBlockType : IRockClientBlockType
+    /// <seealso cref="Rock.Blocks.IRockBlockType" />
+    public interface IRockWebBlockType : IRockBlockType
     {
         /// <summary>
-        /// Gets the client block identifier.
+        /// Gets the control markup that will be used to initialize this block.
+        /// The returned text will be injected into the HTML page.
         /// </summary>
-        /// <value>
-        /// The client block identifier.
-        /// </value>
-        string BlockFileUrl { get; }
+        /// <returns>A string that contains HTML markup.</returns>
+        string GetControlMarkup();
     }
 }

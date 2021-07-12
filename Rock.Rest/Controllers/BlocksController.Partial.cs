@@ -271,8 +271,7 @@ namespace Rock.Rest.Controllers
                     return NotFound();
                 }
 
-                var clientType = rockBlock.GetRockClientType();
-                var requestContext = new Net.RockRequestContext( Request, clientType );
+                var requestContext = new Net.RockRequestContext( Request );
                 requestContext.AddContextEntitiesForPage( blockCache.Page );
 
                 //

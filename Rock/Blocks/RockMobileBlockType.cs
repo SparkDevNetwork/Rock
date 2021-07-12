@@ -53,7 +53,7 @@ namespace Rock.Blocks
         /// Gets the property values that will be sent to the block.
         /// </summary>
         /// <returns>A collection of string/object pairs.</returns>
-        public object GetBlockInitialization( RockClientType clientType )
+        public override object GetBlockInitialization( RockClientType clientType )
         {
             if ( clientType == RockClientType.Mobile )
             {
@@ -69,7 +69,11 @@ namespace Rock.Blocks
         /// <returns>
         /// A collection of string/object pairs.
         /// </returns>
-        public abstract object GetMobileConfigurationValues();
+        public virtual object GetMobileConfigurationValues()
+        {
+            return null;
+        }
+
 
         /// <summary>
         /// Gets the additional settings defined for this block instance.
