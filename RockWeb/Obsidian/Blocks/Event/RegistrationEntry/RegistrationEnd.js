@@ -48,12 +48,12 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         immediate: true,
                         handler: function () {
                             var _this = this;
-                            this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesEnd.map(function (a) {
-                                var currentValue = _this.registrationEntryState.RegistrationFieldValues[a.Guid] || '';
+                            this.attributeValues = this.registrationEntryState.ViewModel.registrationAttributesEnd.map(function (a) {
+                                var currentValue = _this.registrationEntryState.RegistrationFieldValues[a.guid] || '';
                                 return {
-                                    Attribute: a,
-                                    AttributeId: a.Id,
-                                    Value: currentValue
+                                    attribute: a,
+                                    attributeId: a.id,
+                                    value: currentValue
                                 };
                             });
                         }
@@ -64,9 +64,9 @@ System.register(["vue", "../../../Controls/AttributeValuesContainer", "../../../
                         handler: function () {
                             for (var _i = 0, _a = this.attributeValues; _i < _a.length; _i++) {
                                 var attributeValue = _a[_i];
-                                var attribute = attributeValue.Attribute;
+                                var attribute = attributeValue.attribute;
                                 if (attribute) {
-                                    this.registrationEntryState.RegistrationFieldValues[attribute.Guid] = attributeValue.Value;
+                                    this.registrationEntryState.RegistrationFieldValues[attribute.guid] = attributeValue.value;
                                 }
                             }
                         }

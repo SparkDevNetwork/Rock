@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FollowingEventType extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    EntityNotificationFormatLava: string | null;
-    EntityTypeId: number | null;
-    FollowedEntityTypeId: number | null;
-    IsActive: boolean;
-    IsNoticeRequired: boolean;
-    LastCheckDateTime: RockDateType | null;
-    Name: string | null;
-    Order: number;
-    SendOnWeekends: boolean;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    entityNotificationFormatLava: string | null;
+    entityTypeId: number | null;
+    followedEntityTypeId: number | null;
+    isActive: boolean;
+    isNoticeRequired: boolean;
+    lastCheckDateTime: RockDateType | null;
+    name: string | null;
+    order: number;
+    sendOnWeekends: boolean;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

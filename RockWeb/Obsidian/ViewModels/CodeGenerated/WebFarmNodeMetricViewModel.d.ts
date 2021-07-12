@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface WebFarmNodeMetric extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    MetricType: number;
-    MetricValue: number;
-    MetricValueDateTime: RockDateType;
-    Note: string | null;
-    WebFarmNodeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    metricType: number;
+    metricValue: number;
+    metricValueDateTime: RockDateType;
+    note: string | null;
+    webFarmNodeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

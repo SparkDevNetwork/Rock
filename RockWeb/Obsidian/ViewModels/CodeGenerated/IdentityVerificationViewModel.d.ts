@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface IdentityVerification extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    FailedMatchAttemptCount: number | null;
-    IdentityVerificationCodeId: number;
-    IssueDateTime: RockDateType;
-    ReferenceNumber: string | null;
-    RequestIpAddress: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    failedMatchAttemptCount: number | null;
+    identityVerificationCodeId: number;
+    issueDateTime: RockDateType;
+    referenceNumber: string | null;
+    requestIpAddress: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

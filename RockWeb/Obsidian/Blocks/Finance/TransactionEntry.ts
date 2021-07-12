@@ -150,17 +150,17 @@ export default defineComponent({
             const accountNames = [] as string[];
 
             for (const accountGuid in this.args.AccountAmounts) {
-                const account = this.accounts.find(a => areEqual(accountGuid, a.Guid));
+                const account = this.accounts.find(a => areEqual(accountGuid, a.guid));
 
-                if (!account || !account.PublicName) {
+                if (!account || !account.publicName) {
                     continue;
                 }
 
-                accountNames.push(account.PublicName);
+                accountNames.push(account.publicName);
             }
 
             if (this.campus) {
-                return `${asCommaAnd(accountNames)} - ${this.campus.Name}`;
+                return `${asCommaAnd(accountNames)} - ${this.campus.name}`;
             }
 
             return asCommaAnd(accountNames);
@@ -246,9 +246,9 @@ export default defineComponent({
                     return;
                 }
 
-                this.args.FirstName = this.args.FirstName || this.currentPerson.FirstName || '';
-                this.args.LastName = this.args.LastName || this.currentPerson.LastName || '';
-                this.args.Email = this.args.Email || this.currentPerson.Email || '';
+                this.args.FirstName = this.args.FirstName || this.currentPerson.firstName || '';
+                this.args.LastName = this.args.LastName || this.currentPerson.lastName || '';
+                this.args.Email = this.args.Email || this.currentPerson.email || '';
             }
         }
     },

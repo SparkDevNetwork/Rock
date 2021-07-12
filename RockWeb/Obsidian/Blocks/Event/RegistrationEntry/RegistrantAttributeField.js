@@ -42,16 +42,16 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                 },
                 methods: {
                     isRuleMet: function (rule) {
-                        var value = this.fieldValues[rule.ComparedToRegistrationTemplateFormFieldGuid] || '';
+                        var value = this.fieldValues[rule.comparedToRegistrationTemplateFormFieldGuid] || '';
                         if (typeof value !== 'string') {
                             return false;
                         }
                         var strVal = value.toLowerCase().trim();
-                        var comparison = rule.ComparedToValue.toLowerCase().trim();
+                        var comparison = rule.comparedToValue.toLowerCase().trim();
                         if (!strVal) {
                             return false;
                         }
-                        switch (rule.ComparisonType) {
+                        switch (rule.comparisonType) {
                             case RegistrationEntryBlockViewModel_1.ComparisonType.EqualTo:
                                 return strVal === comparison;
                             case RegistrationEntryBlockViewModel_1.ComparisonType.NotEqualTo:
@@ -67,32 +67,32 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                 computed: {
                     isVisible: function () {
                         var _this = this;
-                        switch (this.field.VisibilityRuleType) {
+                        switch (this.field.visibilityRuleType) {
                             case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAll:
-                                return this.field.VisibilityRules.every(function (vr) { return _this.isRuleMet(vr); });
+                                return this.field.visibilityRules.every(function (vr) { return _this.isRuleMet(vr); });
                             case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAllFalse:
-                                return this.field.VisibilityRules.every(function (vr) { return !_this.isRuleMet(vr); });
+                                return this.field.visibilityRules.every(function (vr) { return !_this.isRuleMet(vr); });
                             case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAny:
-                                return this.field.VisibilityRules.some(function (vr) { return _this.isRuleMet(vr); });
+                                return this.field.visibilityRules.some(function (vr) { return _this.isRuleMet(vr); });
                             case RegistrationEntryBlockViewModel_1.FilterExpressionType.GroupAnyFalse:
-                                return this.field.VisibilityRules.some(function (vr) { return !_this.isRuleMet(vr); });
+                                return this.field.visibilityRules.some(function (vr) { return !_this.isRuleMet(vr); });
                         }
                         return true;
                     },
                     attribute: function () {
-                        return this.field.Attribute || null;
+                        return this.field.attribute || null;
                     },
                     fieldProps: function () {
                         if (!this.attribute) {
                             return {};
                         }
                         return {
-                            fieldTypeGuid: this.attribute.FieldTypeGuid,
+                            fieldTypeGuid: this.attribute.fieldTypeGuid,
                             isEditMode: true,
-                            label: this.attribute.Name,
-                            help: this.attribute.Description,
-                            rules: this.field.IsRequired ? 'required' : '',
-                            configurationValues: this.attribute.QualifierValues
+                            label: this.attribute.name,
+                            help: this.attribute.description,
+                            rules: this.field.isRequired ? 'required' : '',
+                            configurationValues: this.attribute.qualifierValues
                         };
                     }
                 },
@@ -101,13 +101,13 @@ System.register(["vue", "../../../Controls/RockField", "../../../Elements/Alert"
                         immediate: true,
                         handler: function () {
                             var _a;
-                            if (!(this.field.Guid in this.fieldValues)) {
-                                this.fieldValues[this.field.Guid] = ((_a = this.attribute) === null || _a === void 0 ? void 0 : _a.DefaultValue) || '';
+                            if (!(this.field.guid in this.fieldValues)) {
+                                this.fieldValues[this.field.guid] = ((_a = this.attribute) === null || _a === void 0 ? void 0 : _a.defaultValue) || '';
                             }
                         }
                     }
                 },
-                template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-bind=\"fieldProps\" v-model=\"this.fieldValues[this.field.Guid]\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
+                template: "\n<template v-if=\"isVisible\">\n    <RockField v-if=\"attribute\" v-bind=\"fieldProps\" v-model=\"this.fieldValues[this.field.guid]\" />\n    <Alert v-else alertType=\"danger\">Could not resolve attribute field</Alert>\n</template>"
             }));
         }
     };

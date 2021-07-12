@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Step extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CampusId: number | null;
-    CompletedDateTime: RockDateType | null;
-    EndDateTime: RockDateType | null;
-    Note: string | null;
-    Order: number;
-    PersonAliasId: number;
-    StartDateTime: RockDateType | null;
-    StepProgramCompletionId: number | null;
-    StepStatusId: number | null;
-    StepTypeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    campusId: number | null;
+    completedDateTime: RockDateType | null;
+    endDateTime: RockDateType | null;
+    note: string | null;
+    order: number;
+    personAliasId: number;
+    startDateTime: RockDateType | null;
+    stepProgramCompletionId: number | null;
+    stepStatusId: number | null;
+    stepTypeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

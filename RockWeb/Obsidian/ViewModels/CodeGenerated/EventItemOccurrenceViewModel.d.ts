@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface EventItemOccurrence extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CampusId: number | null;
-    ContactEmail: string | null;
-    ContactPersonAliasId: number | null;
-    ContactPhone: string | null;
-    EventItemId: number;
-    Location: string | null;
-    Note: string | null;
-    ScheduleId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    campusId: number | null;
+    contactEmail: string | null;
+    contactPersonAliasId: number | null;
+    contactPhone: string | null;
+    eventItemId: number;
+    location: string | null;
+    note: string | null;
+    scheduleId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

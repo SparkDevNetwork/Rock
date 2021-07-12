@@ -20,19 +20,19 @@ import { RegistrantInfo, RegistrarInfo } from './RegistrationEntryBlockViewModel
 
 export interface RegistrationEntryBlockArgs
 {
-    RegistrationGuid: Guid | null;
-    RegistrationSessionGuid: Guid | null;
-    Registrants: RegistrantInfo[];
-    FieldValues: Record<Guid, unknown>;
-    Registrar: RegistrarInfo;
-    GatewayToken: string;
-    DiscountCode: string;
-    AmountToPayNow: number;
+    registrationGuid: Guid | null;
+    registrationSessionGuid: Guid | null;
+    registrants: RegistrantInfo[];
+    fieldValues: Record<Guid, unknown>;
+    registrar: RegistrarInfo;
+    gatewayToken: string;
+    discountCode: string;
+    amountToPayNow: number;
 }
 
 export interface RegistrationEntryBlockSession extends RegistrationEntryBlockArgs
 {
-    DiscountAmount: number;
-    DiscountPercentage: number;
-    PreviouslyPaid: number;
+    discountAmount: number;
+    discountPercentage: number;
+    previouslyPaid: number;
 }

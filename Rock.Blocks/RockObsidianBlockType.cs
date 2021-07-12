@@ -103,7 +103,7 @@ Obsidian.onReady(() => {{
             blockFileUrl: '{BlockFileUrl}',
             rootElement: document.getElementById('{rootElementId}'),
             blockGuid: '{BlockCache.Guid}',
-            configurationValues: {GetBlockInitialization( RockClientType.Web ).ToJson()}
+            configurationValues: {GetBlockInitialization( RockClientType.Web ).ToCamelCaseJson( false, true )}
         }});
     }});
 }});

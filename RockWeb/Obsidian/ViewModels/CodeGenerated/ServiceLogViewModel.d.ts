@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ServiceLog extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Input: string | null;
-    LogDateTime: RockDateType | null;
-    Name: string | null;
-    Result: string | null;
-    Success: boolean;
-    Type: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    input: string | null;
+    logDateTime: RockDateType | null;
+    name: string | null;
+    result: string | null;
+    success: boolean;
+    type: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

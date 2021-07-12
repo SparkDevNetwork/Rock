@@ -52,7 +52,7 @@ System.register(["vue", "../../../Elements/CheckBox", "../../../Elements/EmailBo
                 },
                 computed: {
                     useLoggedInPersonForRegistrar: function () {
-                        return (!!this.currentPerson) && this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson;
+                        return (!!this.currentPerson) && this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson;
                     },
                     currentPerson: function () {
                         return this.$store.state.currentPerson;
@@ -68,28 +68,28 @@ System.register(["vue", "../../../Elements/CheckBox", "../../../Elements/EmailBo
                     },
                     doShowUpdateEmailOption: function () {
                         var _a;
-                        return !this.viewModel.ForceEmailUpdate && !!((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.Email);
+                        return !this.viewModel.forceEmailUpdate && !!((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.email);
                     },
                     registrantInfos: function () {
                         var _this = this;
-                        return this.registrationEntryState.Registrants.map(function (r) { return RegistrationEntry_1.getRegistrantBasicInfo(r, _this.viewModel.RegistrantForms); });
+                        return this.registrationEntryState.Registrants.map(function (r) { return RegistrationEntry_1.getRegistrantBasicInfo(r, _this.viewModel.registrantForms); });
                     },
                     registrantTerm: function () {
-                        return this.registrantInfos.length === 1 ? this.viewModel.RegistrantTerm : this.viewModel.PluralRegistrantTerm;
+                        return this.registrantInfos.length === 1 ? this.viewModel.registrantTerm : this.viewModel.pluralRegistrantTerm;
                     },
                     instanceName: function () {
-                        return this.viewModel.InstanceName;
+                        return this.viewModel.instanceName;
                     },
                     familyOptions: function () {
                         var _a;
                         var options = [];
                         var usedFamilyGuids = {};
-                        if (this.viewModel.RegistrantsSameFamily !== RegistrationEntryBlockViewModel_1.RegistrantsSameFamily.Ask) {
+                        if (this.viewModel.registrantsSameFamily !== RegistrationEntryBlockViewModel_1.RegistrantsSameFamily.Ask) {
                             return options;
                         }
                         for (var i = 0; i < this.registrationEntryState.Registrants.length; i++) {
                             var registrant = this.registrationEntryState.Registrants[i];
-                            var info = RegistrationEntry_1.getRegistrantBasicInfo(registrant, this.viewModel.RegistrantForms);
+                            var info = RegistrationEntry_1.getRegistrantBasicInfo(registrant, this.viewModel.registrantForms);
                             if (!usedFamilyGuids[registrant.FamilyGuid] && (info === null || info === void 0 ? void 0 : info.FirstName) && (info === null || info === void 0 ? void 0 : info.LastName)) {
                                 options.push({
                                     key: registrant.FamilyGuid,
@@ -99,11 +99,11 @@ System.register(["vue", "../../../Elements/CheckBox", "../../../Elements/EmailBo
                                 usedFamilyGuids[registrant.FamilyGuid] = true;
                             }
                         }
-                        if (((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.PrimaryFamilyGuid) && this.currentPerson.FullName && !usedFamilyGuids[this.currentPerson.PrimaryFamilyGuid]) {
+                        if (((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.primaryFamilyGuid) && this.currentPerson.fullName && !usedFamilyGuids[this.currentPerson.primaryFamilyGuid]) {
                             options.push({
-                                key: this.currentPerson.PrimaryFamilyGuid,
-                                text: this.currentPerson.FullName,
-                                value: this.currentPerson.PrimaryFamilyGuid
+                                key: this.currentPerson.primaryFamilyGuid,
+                                text: this.currentPerson.fullName,
+                                value: this.currentPerson.primaryFamilyGuid
                             });
                         }
                         options.push({
@@ -118,24 +118,24 @@ System.register(["vue", "../../../Elements/CheckBox", "../../../Elements/EmailBo
                     prefillRegistrar: function () {
                         this.isRegistrarPanelShown = true;
                         if (this.currentPerson &&
-                            (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar)) {
-                            this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
-                            this.registrar.LastName = this.currentPerson.LastName || '';
-                            this.registrar.Email = this.currentPerson.Email || '';
-                            this.registrar.FamilyGuid = this.currentPerson.PrimaryFamilyGuid;
+                            (this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseLoggedInPerson || this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar)) {
+                            this.registrar.NickName = this.currentPerson.nickName || this.currentPerson.firstName || '';
+                            this.registrar.LastName = this.currentPerson.lastName || '';
+                            this.registrar.Email = this.currentPerson.email || '';
+                            this.registrar.FamilyGuid = this.currentPerson.primaryFamilyGuid;
                             return;
                         }
-                        if (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar) {
+                        if (this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PromptForRegistrar) {
                             return;
                         }
-                        if (this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
-                            var firstRegistrantInfo = RegistrationEntry_1.getRegistrantBasicInfo(this.firstRegistrant, this.viewModel.RegistrantForms);
+                        if (this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.PrefillFirstRegistrant || this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
+                            var firstRegistrantInfo = RegistrationEntry_1.getRegistrantBasicInfo(this.firstRegistrant, this.viewModel.registrantForms);
                             this.registrar.NickName = firstRegistrantInfo.FirstName;
                             this.registrar.LastName = firstRegistrantInfo.LastName;
                             this.registrar.Email = firstRegistrantInfo.Email;
                             this.registrar.FamilyGuid = this.firstRegistrant.FamilyGuid;
                             var hasAllInfo = (!!this.registrar.NickName) && (!!this.registrar.LastName) && (!!this.registrar.Email);
-                            if (hasAllInfo && this.viewModel.RegistrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
+                            if (hasAllInfo && this.viewModel.registrarOption === RegistrationEntryBlockViewModel_1.RegistrarOption.UseFirstRegistrant) {
                                 this.isRegistrarPanelShown = false;
                             }
                             return;

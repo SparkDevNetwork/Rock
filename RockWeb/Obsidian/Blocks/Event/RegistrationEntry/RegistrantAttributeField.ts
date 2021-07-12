@@ -48,7 +48,7 @@ export default defineComponent( {
     methods: {
         isRuleMet( rule: RegistrationEntryBlockFormFieldRuleViewModel )
         {
-            const value = this.fieldValues[ rule.ComparedToRegistrationTemplateFormFieldGuid ] || '';
+            const value = this.fieldValues[ rule.comparedToRegistrationTemplateFormFieldGuid ] || '';
 
             if ( typeof value !== 'string' )
             {
@@ -56,14 +56,14 @@ export default defineComponent( {
             }
 
             const strVal = value.toLowerCase().trim();
-            const comparison = rule.ComparedToValue.toLowerCase().trim();
+            const comparison = rule.comparedToValue.toLowerCase().trim();
 
             if ( !strVal )
             {
                 return false;
             }
 
-            switch ( rule.ComparisonType )
+            switch ( rule.comparisonType )
             {
                 case ComparisonType.EqualTo:
                     return strVal === comparison;
@@ -81,23 +81,23 @@ export default defineComponent( {
     computed: {
         isVisible(): boolean
         {
-            switch ( this.field.VisibilityRuleType )
+            switch ( this.field.visibilityRuleType )
             {
                 case FilterExpressionType.GroupAll:
-                    return this.field.VisibilityRules.every( vr => this.isRuleMet( vr ) );
+                    return this.field.visibilityRules.every( vr => this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAllFalse:
-                    return this.field.VisibilityRules.every( vr => !this.isRuleMet( vr ) );
+                    return this.field.visibilityRules.every( vr => !this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAny:
-                    return this.field.VisibilityRules.some( vr => this.isRuleMet( vr ) );
+                    return this.field.visibilityRules.some( vr => this.isRuleMet( vr ) );
                 case FilterExpressionType.GroupAnyFalse:
-                    return this.field.VisibilityRules.some( vr => !this.isRuleMet( vr ) );
+                    return this.field.visibilityRules.some( vr => !this.isRuleMet( vr ) );
             }
 
             return true;
         },
         attribute(): Attribute | null
         {
-            return this.field.Attribute || null;
+            return this.field.attribute || null;
         },
         fieldProps(): Record<string, unknown>
         {
@@ -107,12 +107,12 @@ export default defineComponent( {
             }
 
             return {
-                fieldTypeGuid: this.attribute.FieldTypeGuid,
+                fieldTypeGuid: this.attribute.fieldTypeGuid,
                 isEditMode: true,
-                label: this.attribute.Name,
-                help: this.attribute.Description,
-                rules: this.field.IsRequired ? 'required' : '',
-                configurationValues: this.attribute.QualifierValues
+                label: this.attribute.name,
+                help: this.attribute.description,
+                rules: this.field.isRequired ? 'required' : '',
+                configurationValues: this.attribute.qualifierValues
             };
         }
     },
@@ -121,16 +121,16 @@ export default defineComponent( {
             immediate: true,
             handler()
             {
-                if ( !( this.field.Guid in this.fieldValues ) )
+                if ( !( this.field.guid in this.fieldValues ) )
                 {
-                    this.fieldValues[ this.field.Guid ] = this.attribute?.DefaultValue ||  '';
+                    this.fieldValues[ this.field.guid ] = this.attribute?.defaultValue ||  '';
                 }
             }
         }
     },
     template: `
 <template v-if="isVisible">
-    <RockField v-if="attribute" v-bind="fieldProps" v-model="this.fieldValues[this.field.Guid]" />
+    <RockField v-if="attribute" v-bind="fieldProps" v-model="this.fieldValues[this.field.guid]" />
     <Alert v-else alertType="danger">Could not resolve attribute field</Alert>
 </template>`
 } );

@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface InteractionComponent extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ChannelCustom1: string | null;
-    ChannelCustom2: string | null;
-    ChannelCustomIndexed1: string | null;
-    ComponentData: string | null;
-    ComponentSummary: string | null;
-    EntityId: number | null;
-    InteractionChannelId: number;
-    Name: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    channelCustom1: string | null;
+    channelCustom2: string | null;
+    channelCustomIndexed1: string | null;
+    componentData: string | null;
+    componentSummary: string | null;
+    entityId: number | null;
+    interactionChannelId: number;
+    name: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

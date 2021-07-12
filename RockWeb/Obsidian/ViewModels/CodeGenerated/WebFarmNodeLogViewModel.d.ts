@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface WebFarmNodeLog extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EventDateTime: RockDateType;
-    EventType: string | null;
-    Message: string | null;
-    Severity: number;
-    WebFarmNodeId: number;
-    WriterWebFarmNodeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    eventDateTime: RockDateType;
+    eventType: string | null;
+    message: string | null;
+    severity: number;
+    webFarmNodeId: number;
+    writerWebFarmNodeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

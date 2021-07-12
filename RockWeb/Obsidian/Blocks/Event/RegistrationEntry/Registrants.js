@@ -90,7 +90,7 @@ System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (ex
                                             this.$emit('previous');
                                             return [2];
                                         }
-                                        lastFormIndex = this.registrationEntryState.ViewModel.RegistrantForms.length - 1;
+                                        lastFormIndex = this.registrationEntryState.ViewModel.registrantForms.length - 1;
                                         this.registrationEntryState.CurrentRegistrantIndex--;
                                         this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
                                         return [4, this.persistSession()];
@@ -133,19 +133,19 @@ System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (ex
                         var firstRegistrant = this.registrants[0];
                         for (var i = 1; i < this.registrants.length; i++) {
                             var currentRegistrant = this.registrants[i];
-                            for (var _i = 0, _a = this.registrationEntryState.ViewModel.RegistrantForms; _i < _a.length; _i++) {
+                            for (var _i = 0, _a = this.registrationEntryState.ViewModel.registrantForms; _i < _a.length; _i++) {
                                 var form = _a[_i];
-                                for (var _b = 0, _c = form.Fields; _b < _c.length; _b++) {
+                                for (var _b = 0, _c = form.fields; _b < _c.length; _b++) {
                                     var field = _c[_b];
-                                    if (!field.IsSharedValue) {
+                                    if (!field.isSharedValue) {
                                         continue;
                                     }
-                                    var valueToShare = firstRegistrant.FieldValues[field.Guid];
+                                    var valueToShare = firstRegistrant.FieldValues[field.guid];
                                     if (valueToShare && typeof valueToShare === 'object') {
-                                        currentRegistrant.FieldValues[field.Guid] = __assign({}, valueToShare);
+                                        currentRegistrant.FieldValues[field.guid] = __assign({}, valueToShare);
                                     }
                                     else {
-                                        currentRegistrant.FieldValues[field.Guid] = valueToShare;
+                                        currentRegistrant.FieldValues[field.guid] = valueToShare;
                                     }
                                 }
                             }
@@ -161,7 +161,7 @@ System.register(["vue", "./Registrant", "../../../Elements/Alert"], function (ex
                         return currentRegistrant.IsOnWaitList;
                     },
                     registrantTerm: function () {
-                        return (this.registrationEntryState.ViewModel.RegistrantTerm || 'registrant').toLowerCase();
+                        return (this.registrationEntryState.ViewModel.registrantTerm || 'registrant').toLowerCase();
                     },
                     registrants: function () {
                         return this.registrationEntryState.Registrants;

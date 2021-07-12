@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Auth extends Entity {
-    Id: number;
-    Action: string | null;
-    AllowOrDeny: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number | null;
-    EntityTypeId: number;
-    GroupId: number | null;
-    Order: number;
-    PersonAliasId: number | null;
-    SpecialRole: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    action: string | null;
+    allowOrDeny: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number | null;
+    entityTypeId: number;
+    groupId: number | null;
+    order: number;
+    personAliasId: number | null;
+    specialRole: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

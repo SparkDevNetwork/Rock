@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialPaymentDetail extends Entity {
-    Id: number;
-    AccountNumberMasked: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    BillingLocationId: number | null;
-    CreditCardTypeValueId: number | null;
-    CurrencyTypeValueId: number | null;
-    ExpirationMonth: number | null;
-    ExpirationYear: number | null;
-    FinancialPersonSavedAccountId: number | null;
-    GatewayPersonIdentifier: string | null;
-    NameOnCard: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    accountNumberMasked: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    billingLocationId: number | null;
+    creditCardTypeValueId: number | null;
+    currencyTypeValueId: number | null;
+    expirationMonth: number | null;
+    expirationYear: number | null;
+    financialPersonSavedAccountId: number | null;
+    gatewayPersonIdentifier: string | null;
+    nameOnCard: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

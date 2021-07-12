@@ -127,7 +127,15 @@ namespace Rock.Utility
             var loadAttributesOptions = new LoadAttributesOptions( loadAttributesEnabled, serializeInSimpleMode, limitToAttributeKeyList, person );
             HttpContext.Current.Items[LoadAttributesOptions.ContextItemsKey] = loadAttributesOptions;
 
-            return base.GetPerRequestFormatterInstance( type, request, mediaType );
+            var formatter = ( JsonMediaTypeFormatter ) base.GetPerRequestFormatterInstance( type, request, mediaType );
+
+            if ( request.RequestUri.AbsolutePath.StartsWith( "/api/v2/", StringComparison.OrdinalIgnoreCase ) )
+            {
+                // API v2 endpoints should use camel case.
+                formatter.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+            }
+
+            return formatter;
         }
 
         /// <summary>

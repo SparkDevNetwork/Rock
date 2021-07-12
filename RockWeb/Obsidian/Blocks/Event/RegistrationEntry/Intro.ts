@@ -63,26 +63,26 @@ export default defineComponent( {
         /** The number of these registrants that will be placed on a waitlist because of capacity rules */
         numberToAddToWaitlist (): number
         {
-            if ( this.viewModel.SpotsRemaining === null || !this.viewModel.WaitListEnabled )
+            if ( this.viewModel.spotsRemaining === null || !this.viewModel.waitListEnabled )
             {
                 // There is no waitlist or no cap on number of attendees
                 return 0;
             }
 
-            if ( this.viewModel.SpotsRemaining >= this.numberOfRegistrants )
+            if ( this.viewModel.spotsRemaining >= this.numberOfRegistrants )
             {
                 // There is enough capacity left for all of these registrants
                 return 0;
             }
 
             // Some or all need to go on the waitlist
-            return this.numberOfRegistrants - this.viewModel.SpotsRemaining;
+            return this.numberOfRegistrants - this.viewModel.spotsRemaining;
         },
 
         /** The capacity left phrase: Ex: 1 more camper */
         remainingCapacityPhrase (): string
         {
-            const spots = this.viewModel.SpotsRemaining;
+            const spots = this.viewModel.spotsRemaining;
 
             if ( spots === null )
             {
@@ -95,30 +95,30 @@ export default defineComponent( {
         /** Is this instance full and no one else can register? */
         isFull (): boolean
         {
-            if ( this.viewModel.SpotsRemaining === null )
+            if ( this.viewModel.spotsRemaining === null )
             {
                 return false;
             }
 
-            return this.viewModel.SpotsRemaining < 1;
+            return this.viewModel.spotsRemaining < 1;
         },
 
         registrantTerm (): string
         {
-            this.viewModel.InstanceName;
-            return ( this.viewModel.RegistrantTerm || 'registrant' ).toLowerCase();
+            this.viewModel.instanceName;
+            return ( this.viewModel.registrantTerm || 'registrant' ).toLowerCase();
         },
         registrantTermPlural (): string
         {
-            return ( this.viewModel.PluralRegistrantTerm || 'registrants' ).toLowerCase();
+            return ( this.viewModel.pluralRegistrantTerm || 'registrants' ).toLowerCase();
         },
         registrationTerm (): string
         {
-            return ( this.viewModel.RegistrationTerm || 'registration' ).toLowerCase();
+            return ( this.viewModel.registrationTerm || 'registration' ).toLowerCase();
         },
         registrationTermPlural (): string
         {
-            return ( this.viewModel.PluralRegistrationTerm || 'registrations' ).toLowerCase();
+            return ( this.viewModel.pluralRegistrationTerm || 'registrations' ).toLowerCase();
         },
         registrationTermTitleCase (): string
         {
@@ -136,10 +136,10 @@ export default defineComponent( {
                 .filter( r => r.PersonGuid )
                 .map( r => r.PersonGuid );
 
-            const availableFamilyMembers = this.viewModel.FamilyMembers
+            const availableFamilyMembers = this.viewModel.familyMembers
                 .filter( fm =>
-                    areEqual( fm.FamilyGuid, forcedFamilyGuid ) &&
-                    !usedFamilyMemberGuids.includes( fm.Guid ) );
+                    areEqual( fm.familyGuid, forcedFamilyGuid ) &&
+                    !usedFamilyMemberGuids.includes( fm.guid ) );
 
             // Resize the registrant array to match the selected number
             while ( this.numberOfRegistrants > this.registrationEntryState.Registrants.length )
@@ -163,7 +163,7 @@ export default defineComponent( {
             {
                 const familyMember = availableFamilyMembers[ 0 ];
                 const registrant = this.registrationEntryState.Registrants[ 0 ];
-                registrant.PersonGuid = familyMember.Guid;
+                registrant.PersonGuid = familyMember.guid;
             }
 
             this.$emit( 'next' );
@@ -172,10 +172,10 @@ export default defineComponent( {
     watch: {
         numberOfRegistrants()
         {
-            if ( !this.viewModel.WaitListEnabled && this.viewModel.SpotsRemaining !== null && this.viewModel.SpotsRemaining < this.numberOfRegistrants )
+            if ( !this.viewModel.waitListEnabled && this.viewModel.spotsRemaining !== null && this.viewModel.spotsRemaining < this.numberOfRegistrants )
             {
                 this.showRemainingCapacity = true;
-                const spotsRemaining = this.viewModel.SpotsRemaining;
+                const spotsRemaining = this.viewModel.spotsRemaining;
 
                 // Do this on the next tick to allow the events to finish. Otherwise the component tree doesn't have time
                 // to respond to this, since the watch was triggered by the numberOfRegistrants change
@@ -188,7 +188,7 @@ export default defineComponent( {
     <Alert v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
         <strong>{{registrationTermTitleCase}} Full</strong>
         <p>
-            There are not any more {{registrationTermPlural}} available for {{viewModel.InstanceName}}. 
+            There are not any more {{registrationTermPlural}} available for {{viewModel.instanceName}}. 
         </p>
     </Alert>
     <Alert v-if="showRemainingCapacity" class="text-left" alertType="warning">
@@ -197,15 +197,15 @@ export default defineComponent( {
             This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
         </p>
     </Alert>
-    <div class="text-left" v-html="viewModel.InstructionsHtml">
+    <div class="text-left" v-html="viewModel.instructionsHtml">
     </div>
-    <div v-if="viewModel.MaxRegistrants > 1" class="registrationentry-intro">
-        <h1>How many {{viewModel.PluralRegistrantTerm}} will you be registering?</h1>
-        <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.MaxRegistrants" />
+    <div v-if="viewModel.maxRegistrants > 1" class="registrationentry-intro">
+        <h1>How many {{viewModel.pluralRegistrantTerm}} will you be registering?</h1>
+        <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="viewModel.maxRegistrants" />
     </div>
-    <Alert v-if="viewModel.TimeoutMinutes" alertType="info" class="text-left">
+    <Alert v-if="viewModel.timeoutMinutes" alertType="info" class="text-left">
         Due to a high-volume of expected interest, your {{registrationTerm}} session will expire after
-        {{pluralConditional(viewModel.TimeoutMinutes, 'a minute', viewModel.TimeoutMinutes + ' minutes')}}
+        {{pluralConditional(viewModel.timeoutMinutes, 'a minute', viewModel.timeoutMinutes + ' minutes')}}
         of inactivity.
     </Alert>
     <Alert v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
@@ -213,7 +213,7 @@ export default defineComponent( {
     </Alert>
     <Alert v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
         This {{registrationTerm}} only has capacity for {{remainingCapacityPhrase}}.
-        The first {{pluralConditional(viewModel.SpotsRemaining, registrantTerm, viewModel.SpotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.InstanceName}}.
+        The first {{pluralConditional(viewModel.spotsRemaining, registrantTerm, viewModel.spotsRemaining + ' ' + registrantTermPlural)}} you add will be registered for {{viewModel.instanceName}}.
         The remaining {{pluralConditional(numberToAddToWaitlist, registrantTerm, numberToAddToWaitlist + ' ' + registrantTermPlural)}} will be added to the waitlist. 
     </Alert>
     <div class="actions text-right">

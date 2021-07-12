@@ -51,7 +51,7 @@ export default registerFieldType( fieldTypeGuid, defineComponent( {
     computed: {
         selectedDefinedValue (): DefinedValue | null
         {
-            return this.definedValues.find( dv => dv.Guid === this.internalValue ) || null;
+            return this.definedValues.find( dv => dv.guid === this.internalValue ) || null;
         },
         displayValue (): string
         {
@@ -62,10 +62,10 @@ export default registerFieldType( fieldTypeGuid, defineComponent( {
 
             if ( this.displayDescription )
             {
-                return this.selectedDefinedValue.Description || '';
+                return this.selectedDefinedValue.description || '';
             }
 
-            return this.selectedDefinedValue.Value || '';
+            return this.selectedDefinedValue.value || '';
         },
         displayDescription (): boolean
         {
@@ -84,7 +84,7 @@ export default registerFieldType( fieldTypeGuid, defineComponent( {
                 if ( definedTypeId )
                 {
                     const definedType = this.$store.getters[ 'definedTypes/getById' ]( definedTypeId ) as DefinedType | null;
-                    attributes.definedTypeGuid = definedType?.Guid || '';
+                    attributes.definedTypeGuid = definedType?.guid || '';
                 }
             }
 

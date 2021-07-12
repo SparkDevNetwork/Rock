@@ -27,17 +27,22 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface SignatureDocumentTemplate extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    BinaryFileTypeId: number | null;
-    Description: string | null;
-    InviteSystemCommunicationId: number | null;
-    Name: string | null;
-    ProviderEntityTypeId: number | null;
-    ProviderTemplateKey: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    binaryFileTypeId: number | null;
+    completionSystemCommunicationId: number | null;
+    description: string | null;
+    documentTerm: string | null;
+    inviteSystemCommunicationId: number | null;
+    isActive: boolean;
+    lavaTemplate: string | null;
+    name: string | null;
+    providerEntityTypeId: number | null;
+    providerTemplateKey: string | null;
+    signatureType: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

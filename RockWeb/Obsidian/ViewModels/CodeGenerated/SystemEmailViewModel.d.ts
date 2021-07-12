@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface SystemEmail extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Bcc: string | null;
-    Body: string | null;
-    CategoryId: number | null;
-    Cc: string | null;
-    From: string | null;
-    FromName: string | null;
-    IsSystem: boolean;
-    Subject: string | null;
-    Title: string | null;
-    To: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    bcc: string | null;
+    body: string | null;
+    categoryId: number | null;
+    cc: string | null;
+    from: string | null;
+    fromName: string | null;
+    isSystem: boolean;
+    subject: string | null;
+    title: string | null;
+    to: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

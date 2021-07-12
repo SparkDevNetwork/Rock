@@ -110,23 +110,23 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                 },
                 computed: {
                     gatewayControlModel: function () {
-                        return this.viewModel.GatewayControl;
+                        return this.viewModel.gatewayControl;
                     },
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;
                     },
                     registrantInfos: function () {
                         var _this = this;
-                        return this.registrationEntryState.Registrants.map(function (r) { return RegistrationEntry_1.getRegistrantBasicInfo(r, _this.viewModel.RegistrantForms); });
+                        return this.registrationEntryState.Registrants.map(function (r) { return RegistrationEntry_1.getRegistrantBasicInfo(r, _this.viewModel.registrantForms); });
                     },
                     registrantTerm: function () {
-                        return this.registrantInfos.length === 1 ? this.viewModel.RegistrantTerm : this.viewModel.PluralRegistrantTerm;
+                        return this.registrantInfos.length === 1 ? this.viewModel.registrantTerm : this.viewModel.pluralRegistrantTerm;
                     },
                     instanceName: function () {
-                        return this.viewModel.InstanceName;
+                        return this.viewModel.instanceName;
                     },
                     finishButtonText: function () {
-                        return (this.viewModel.IsRedirectGateway && this.registrationEntryState.AmountToPayToday) ? 'Pay' : 'Finish';
+                        return (this.viewModel.isRedirectGateway && this.registrationEntryState.AmountToPayToday) ? 'Pay' : 'Finish';
                     }
                 },
                 methods: {
@@ -141,7 +141,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                                     case 0:
                                         this.loading = true;
                                         if (!this.registrationEntryState.AmountToPayToday) return [3, 4];
-                                        if (!this.viewModel.IsRedirectGateway) return [3, 2];
+                                        if (!this.viewModel.isRedirectGateway) return [3, 2];
                                         return [4, this.getPaymentRedirect()];
                                     case 1:
                                         redirectUrl = _a.sent();
@@ -249,7 +249,7 @@ System.register(["vue", "../../../Controls/GatewayControl", "../../../Controls/R
                         });
                     }
                 },
-                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n\n        <Registrar />\n\n        <div v-if=\"viewModel.Cost\">\n            <h4>Payment Summary</h4>\n            <DiscountCodeForm />\n            <CostSummary />\n        </div>\n\n        <div v-if=\"gatewayControlModel && registrationEntryState.AmountToPayToday\" class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @reset=\"onGatewayControlReset\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div v-if=\"!viewModel.Cost\" class=\"margin-b-md\">\n            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>\n            <ul>\n                <li v-for=\"r in registrantInfos\" :key=\"r.Guid\">\n                    <strong>{{r.FirstName}} {{r.LastName}}</strong>\n                </li>\n            </ul>\n        </div>\n\n        <Alert v-if=\"submitErrorMessage\" alertType=\"danger\">{{submitErrorMessage}}</Alert>\n\n        <div class=\"actions text-right\">\n            <RockButton v-if=\"viewModel.AllowRegistrationUpdates\" class=\"pull-left\" btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" type=\"submit\" :isLoading=\"loading\">\n                {{finishButtonText}}\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
+                template: "\n<div class=\"registrationentry-summary\">\n    <RockForm @submit=\"onNext\">\n\n        <Registrar />\n\n        <div v-if=\"viewModel.cost\">\n            <h4>Payment Summary</h4>\n            <DiscountCodeForm />\n            <CostSummary />\n        </div>\n\n        <div v-if=\"gatewayControlModel && registrationEntryState.AmountToPayToday\" class=\"well\">\n            <h4>Payment Method</h4>\n            <Alert v-if=\"gatewayErrorMessage\" alertType=\"danger\">{{gatewayErrorMessage}}</Alert>\n            <RockValidation :errors=\"gatewayValidationFields\" />\n            <div class=\"hosted-payment-control\">\n                <GatewayControl\n                    :gatewayControlModel=\"gatewayControlModel\"\n                    :submit=\"doGatewayControlSubmit\"\n                    @success=\"onGatewayControlSuccess\"\n                    @reset=\"onGatewayControlReset\"\n                    @error=\"onGatewayControlError\"\n                    @validation=\"onGatewayControlValidation\" />\n            </div>\n        </div>\n\n        <div v-if=\"!viewModel.cost\" class=\"margin-b-md\">\n            <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>\n            <ul>\n                <li v-for=\"r in registrantInfos\" :key=\"r.Guid\">\n                    <strong>{{r.FirstName}} {{r.LastName}}</strong>\n                </li>\n            </ul>\n        </div>\n\n        <Alert v-if=\"submitErrorMessage\" alertType=\"danger\">{{submitErrorMessage}}</Alert>\n\n        <div class=\"actions text-right\">\n            <RockButton v-if=\"viewModel.allowRegistrationUpdates\" class=\"pull-left\" btnType=\"default\" @click=\"onPrevious\" :isLoading=\"loading\">\n                Previous\n            </RockButton>\n            <RockButton btnType=\"primary\" type=\"submit\" :isLoading=\"loading\">\n                {{finishButtonText}}\n            </RockButton>\n        </div>\n    </RockForm>\n</div>"
             }));
         }
     };

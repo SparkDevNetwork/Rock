@@ -24,24 +24,24 @@ System.register(["vue", "../../../Controls/SaveFinancialAccountForm"], function 
                 },
                 computed: {
                     registrationTerm: function () {
-                        return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
+                        return this.registrationEntryState.ViewModel.registrationTerm.toLowerCase();
                     },
                     messageHtml: function () {
                         var _a;
-                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.MessageHtml) || "You have successfully completed this " + this.registrationTerm;
+                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.messageHtml) || "You have successfully completed this " + this.registrationTerm;
                     },
                     gatewayGuid: function () {
-                        return this.registrationEntryState.ViewModel.GatewayGuid;
+                        return this.registrationEntryState.ViewModel.gatewayGuid;
                     },
                     transactionCode: function () {
                         var _a;
-                        return this.registrationEntryState.ViewModel.IsRedirectGateway ?
+                        return this.registrationEntryState.ViewModel.isRedirectGateway ?
                             '' :
-                            ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.TransactionCode) || '';
+                            ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.transactionCode) || '';
                     },
                     gatewayPersonIdentifier: function () {
                         var _a;
-                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.GatewayPersonIdentifier) || '';
+                        return ((_a = this.registrationEntryState.SuccessViewModel) === null || _a === void 0 ? void 0 : _a.gatewayPersonIdentifier) || '';
                     }
                 },
                 template: "\n<div>\n    <div v-html=\"messageHtml\"></div>\n    <SaveFinancialAccountForm v-if=\"gatewayGuid && transactionCode && gatewayPersonIdentifier\" :gatewayGuid=\"gatewayGuid\" :transactionCode=\"transactionCode\" :gatewayPersonIdentifier=\"gatewayPersonIdentifier\" class=\"well\">\n        <template #header>\n            <h3>Make Payments Even Easier</h3>\n        </template>\n    </SaveFinancialAccountForm>\n</div>"

@@ -59,11 +59,11 @@ System.register(["../../Util/Bus", "../../Templates/PaneledBlockTemplate", "../.
                     },
                     currentPersonName: function () {
                         var _a;
-                        return ((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.FullName) || 'anonymous';
+                        return ((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.fullName) || 'anonymous';
                     },
                     imageUrl: function () {
                         var _a;
-                        return ((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.PhotoUrl) || '/Assets/Images/person-no-photo-unknown.svg';
+                        return ((_a = this.currentPerson) === null || _a === void 0 ? void 0 : _a.photoUrl) || '/Assets/Images/person-no-photo-unknown.svg';
                     },
                     photoElementStyle: function () {
                         return "background-image: url(\"" + this.imageUrl + "\"); background-size: cover; background-repeat: no-repeat;";

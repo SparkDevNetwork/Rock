@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface CommunicationResponse extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    FromPersonAliasId: number | null;
-    IsRead: boolean;
-    MessageKey: string | null;
-    RelatedCommunicationId: number | null;
-    RelatedMediumEntityTypeId: number;
-    RelatedSmsFromDefinedValueId: number | null;
-    RelatedTransportEntityTypeId: number;
-    Response: string | null;
-    ToPersonAliasId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    fromPersonAliasId: number | null;
+    isRead: boolean;
+    messageKey: string | null;
+    relatedCommunicationId: number | null;
+    relatedMediumEntityTypeId: number;
+    relatedSmsFromDefinedValueId: number | null;
+    relatedTransportEntityTypeId: number;
+    response: string | null;
+    toPersonAliasId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

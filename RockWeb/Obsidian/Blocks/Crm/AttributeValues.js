@@ -101,7 +101,7 @@ System.register(["vue", "../../Templates/PaneledBlockTemplate", "../../Controls/
                     },
                     personGuid: function () {
                         var _a;
-                        return ((_a = this.person) === null || _a === void 0 ? void 0 : _a.Guid) || null;
+                        return ((_a = this.person) === null || _a === void 0 ? void 0 : _a.guid) || null;
                     },
                     categoryGuids: function () {
                         return this.configurationValues.CategoryGuids || [];
@@ -112,26 +112,26 @@ System.register(["vue", "../../Templates/PaneledBlockTemplate", "../../Controls/
                     attributeValues: function () {
                         var _this = this;
                         var _a;
-                        var attributes = ((_a = this.person) === null || _a === void 0 ? void 0 : _a.Attributes) || {};
+                        var attributes = ((_a = this.person) === null || _a === void 0 ? void 0 : _a.attributes) || {};
                         var attributeValues = [];
                         for (var key in attributes) {
                             var attributeValue = attributes[key];
-                            var attribute = attributeValue.Attribute;
+                            var attribute = attributeValue.attribute;
                             if (this.categoryGuids && !attribute) {
                                 continue;
                             }
-                            if (this.categoryGuids && !(attribute === null || attribute === void 0 ? void 0 : attribute.CategoryGuids.some(function (g1) { return _this.categoryGuids.some(function (g2) { return Guid_1.areEqual(g1, g2); }); }))) {
+                            if (this.categoryGuids && !(attribute === null || attribute === void 0 ? void 0 : attribute.categoryGuids.some(function (g1) { return _this.categoryGuids.some(function (g2) { return Guid_1.areEqual(g1, g2); }); }))) {
                                 continue;
                             }
                             attributeValues.push(attributeValue);
                         }
                         attributeValues.sort(function (a, b) {
                             var _a, _b, _c, _d;
-                            var aOrder = ((_a = a.Attribute) === null || _a === void 0 ? void 0 : _a.Order) || 0;
-                            var bOrder = ((_b = b.Attribute) === null || _b === void 0 ? void 0 : _b.Order) || 0;
+                            var aOrder = ((_a = a.attribute) === null || _a === void 0 ? void 0 : _a.order) || 0;
+                            var bOrder = ((_b = b.attribute) === null || _b === void 0 ? void 0 : _b.order) || 0;
                             if (aOrder === bOrder) {
-                                var aName = ((_c = a.Attribute) === null || _c === void 0 ? void 0 : _c.Name) || '';
-                                var bName = ((_d = b.Attribute) === null || _d === void 0 ? void 0 : _d.Name) || '';
+                                var aName = ((_c = a.attribute) === null || _c === void 0 ? void 0 : _c.name) || '';
+                                var bName = ((_d = b.attribute) === null || _d === void 0 ? void 0 : _d.name) || '';
                                 if (aName > bName) {
                                     return 1;
                                 }
@@ -161,8 +161,8 @@ System.register(["vue", "../../Templates/PaneledBlockTemplate", "../../Controls/
                                         keyValueMap = {};
                                         for (_i = 0, _a = this.attributeValues; _i < _a.length; _i++) {
                                             a = _a[_i];
-                                            if (a.Attribute) {
-                                                keyValueMap[a.Attribute.Key] = a.Value;
+                                            if (a.attribute) {
+                                                keyValueMap[a.attribute.key] = a.value;
                                             }
                                         }
                                         return [4, this.invokeBlockAction('SaveAttributeValues', {

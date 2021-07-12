@@ -911,7 +911,8 @@ namespace Rock.ViewModel
 
             foreach ( var property in viewModelProperties )
             {
-                sb.AppendLine( $"    {property.Name}: {property.TypeScriptType};" );
+                var camelCasePropertyName = $"{property.Name.Substring( 0, 1 ).ToLower()}{property.Name.Substring( 1 )}";
+                sb.AppendLine( $"    {camelCasePropertyName}: {property.TypeScriptType};" );
             }
 
             sb.AppendLine( "}" );

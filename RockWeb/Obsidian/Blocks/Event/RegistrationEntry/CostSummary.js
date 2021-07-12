@@ -161,7 +161,7 @@ System.register(["vue", "../../../Controls/Loading", "../../../Elements/Currency
                     },
                     amountPreviouslyPaid: function () {
                         var _a;
-                        return ((_a = this.registrationEntryState.ViewModel.Session) === null || _a === void 0 ? void 0 : _a.PreviouslyPaid) || 0;
+                        return ((_a = this.registrationEntryState.ViewModel.session) === null || _a === void 0 ? void 0 : _a.previouslyPaid) || 0;
                     },
                     amountPreviouslyPaidFormatted: function () {
                         return "$" + Number_1.asFormattedString(this.amountPreviouslyPaid);

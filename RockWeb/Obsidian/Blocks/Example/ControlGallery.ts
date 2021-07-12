@@ -446,11 +446,11 @@ const DefinedTypeAndValueGallery = defineComponent( {
         definedTypeName (): string
         {
             const definedType = store.getters[ 'definedTypes/getByGuid' ]( this.definedTypeGuid ) as DefinedType;
-            return definedType?.Name || '';
+            return definedType?.name || '';
         },
         definedValueName (): string
         {
-            return this.definedValue?.Value || '';
+            return this.definedValue?.value || '';
         }
     },
     methods: {
@@ -575,10 +575,10 @@ export default defineComponent({
             return store.getters['campuses/getByGuid'](this.campusGuid) || null;
         },
         campusName(): string {
-            return this.campus?.Name || '';
+            return this.campus?.name || '';
         },
         campusId(): number | null {
-            return this.campus ? this.campus.Id : null;
+            return this.campus ? this.campus.id : null;
         }
     },
     template: `

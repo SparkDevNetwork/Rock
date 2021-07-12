@@ -57,7 +57,7 @@ export default defineComponent({
             return (store.getters.personContext || null) as Person | null;
         },
         personGuid(): Guid | null {
-            return this.person?.Guid || null;
+            return this.person?.guid || null;
         },
         categoryGuids(): Guid[] {
             return (this.configurationValues.CategoryGuids as Guid[] | null) || [];
@@ -66,18 +66,18 @@ export default defineComponent({
             return this.configurationValues.UseAbbreviatedNames as boolean;
         },
         attributeValues(): AttributeValue[] {
-            const attributes = this.person?.Attributes || {};
+            const attributes = this.person?.attributes || {};
             const attributeValues: AttributeValue[] = [];
 
             for (const key in attributes) {
                 const attributeValue = attributes[key];
-                const attribute = attributeValue.Attribute;
+                const attribute = attributeValue.attribute;
 
                 if (this.categoryGuids && !attribute) {
                     continue;
                 }
 
-                if (this.categoryGuids && !attribute?.CategoryGuids.some(g1 => this.categoryGuids.some(g2 => areEqual(g1, g2)))) {
+                if (this.categoryGuids && !attribute?.categoryGuids.some(g1 => this.categoryGuids.some(g2 => areEqual(g1, g2)))) {
                     continue;
                 }
 
@@ -85,12 +85,12 @@ export default defineComponent({
             }
 
             attributeValues.sort((a, b) => {
-                const aOrder = a.Attribute?.Order || 0;
-                const bOrder = b.Attribute?.Order || 0;
+                const aOrder = a.attribute?.order || 0;
+                const bOrder = b.attribute?.order || 0;
 
                 if (aOrder === bOrder) {
-                    const aName = a.Attribute?.Name || '';
-                    const bName = b.Attribute?.Name || '';
+                    const aName = a.attribute?.name || '';
+                    const bName = b.attribute?.name || '';
 
                     if (aName > bName) {
                         return 1;
@@ -119,8 +119,8 @@ export default defineComponent({
             const keyValueMap = {};
 
             for (const a of this.attributeValues) {
-                if (a.Attribute) {
-                    keyValueMap[a.Attribute.Key] = a.Value;
+                if (a.attribute) {
+                    keyValueMap[a.attribute.key] = a.value;
                 }
             }
 

@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ConnectionRequestWorkflow extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ConnectionRequestId: number;
-    ConnectionWorkflowId: number;
-    TriggerQualifier: string | null;
-    TriggerType: number;
-    WorkflowId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    connectionRequestId: number;
+    connectionWorkflowId: number;
+    triggerQualifier: string | null;
+    triggerType: number;
+    workflowId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

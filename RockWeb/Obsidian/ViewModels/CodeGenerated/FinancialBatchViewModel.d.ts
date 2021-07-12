@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialBatch extends Entity {
-    Id: number;
-    AccountingSystemCode: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    BatchEndDateTime: RockDateType | null;
-    BatchStartDateTime: RockDateType | null;
-    CampusId: number | null;
-    ControlAmount: number;
-    ControlItemCount: number | null;
-    IsAutomated: boolean;
-    Name: string | null;
-    Note: string | null;
-    Status: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    accountingSystemCode: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    batchEndDateTime: RockDateType | null;
+    batchStartDateTime: RockDateType | null;
+    campusId: number | null;
+    controlAmount: number;
+    controlItemCount: number | null;
+    isAutomated: boolean;
+    name: string | null;
+    note: string | null;
+    status: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

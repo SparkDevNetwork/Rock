@@ -81,6 +81,34 @@ namespace Rock
         }
 
         /// <summary>
+        /// Converts object to JSON string with an option to ignore errors
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="indentOutput"><c>true</c> if the output should be indented for easy reading; otherwise <c>false</c>.</param>
+        /// <param name="ignoreErrors">if set to <c>true</c> errors will be ignored.</param>
+        /// <returns></returns>
+        /// <remarks>Marked as internal until there is decision on method name and parameters. -dsh</remarks>
+        internal static string ToCamelCaseJson( this object obj, bool indentOutput, bool ignoreErrors )
+        {
+            var settings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = indentOutput ? Formatting.Indented : Formatting.None,
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+            };
+
+            if ( ignoreErrors )
+            {
+                settings.Error += new EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs>( ( s, e ) =>
+                {
+                    e.ErrorContext.Handled = true;
+                } );
+            }
+
+            return JsonConvert.SerializeObject( obj, settings );
+        }
+
+        /// <summary>
         /// Attempts to deserialize a JSON string into T.  If it can't be deserialized, returns null
         /// </summary>
         /// <typeparam name="T"></typeparam>

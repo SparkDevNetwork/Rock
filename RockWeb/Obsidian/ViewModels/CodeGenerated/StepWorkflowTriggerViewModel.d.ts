@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface StepWorkflowTrigger extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    IsActive: boolean;
-    StepProgramId: number | null;
-    StepTypeId: number | null;
-    TriggerType: number;
-    TypeQualifier: string | null;
-    WorkflowName: string | null;
-    WorkflowTypeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    isActive: boolean;
+    stepProgramId: number | null;
+    stepTypeId: number | null;
+    triggerType: number;
+    typeQualifier: string | null;
+    workflowName: string | null;
+    workflowTypeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface GroupLocationHistorical extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CurrentRowIndicator: boolean;
-    EffectiveDateTime: RockDateType;
-    ExpireDateTime: RockDateType;
-    GroupId: number;
-    GroupLocationId: number | null;
-    GroupLocationTypeName: string | null;
-    GroupLocationTypeValueId: number | null;
-    LocationId: number;
-    LocationModifiedDateTime: RockDateType | null;
-    LocationName: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    currentRowIndicator: boolean;
+    effectiveDateTime: RockDateType;
+    expireDateTime: RockDateType;
+    groupId: number;
+    groupLocationId: number | null;
+    groupLocationTypeName: string | null;
+    groupLocationTypeValueId: number | null;
+    locationId: number;
+    locationModifiedDateTime: RockDateType | null;
+    locationName: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

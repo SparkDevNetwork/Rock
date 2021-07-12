@@ -27,16 +27,16 @@ import { Guid } from '../../Util/Guid';
 import { RockDateType } from '../../Util/RockDate';
 
 export default interface TaggedItem extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityGuid: Guid;
-    EntityTypeId: number;
-    IsSystem: boolean;
-    Quantity: number;
-    TagId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    entityGuid: Guid;
+    entityTypeId: number;
+    isSystem: boolean;
+    quantity: number;
+    tagId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

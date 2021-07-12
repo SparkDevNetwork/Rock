@@ -55,10 +55,10 @@ export default defineComponent({
             return store.state.currentPerson;
         },
         currentPersonName(): string {
-            return this.currentPerson?.FullName || 'anonymous';
+            return this.currentPerson?.fullName || 'anonymous';
         },
         imageUrl(): string {
-            return this.currentPerson?.PhotoUrl || '/Assets/Images/person-no-photo-unknown.svg';
+            return this.currentPerson?.photoUrl || '/Assets/Images/person-no-photo-unknown.svg';
         },
         photoElementStyle(): string {
             return `background-image: url("${this.imageUrl}"); background-size: cover; background-repeat: no-repeat;`;

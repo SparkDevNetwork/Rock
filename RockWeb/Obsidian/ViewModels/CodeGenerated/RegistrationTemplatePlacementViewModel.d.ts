@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RegistrationTemplatePlacement extends Entity {
-    Id: number;
-    AllowMultiplePlacements: boolean;
-    Attributes: Record<string, AttributeValue> | null;
-    Cost: number | null;
-    GroupTypeId: number;
-    IconCssClass: string | null;
-    IsInternal: boolean;
-    Name: string | null;
-    Order: number;
-    RegistrationTemplateId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    allowMultiplePlacements: boolean;
+    attributes: Record<string, AttributeValue> | null;
+    cost: number | null;
+    groupTypeId: number;
+    iconCssClass: string | null;
+    isInternal: boolean;
+    name: string | null;
+    order: number;
+    registrationTemplateId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

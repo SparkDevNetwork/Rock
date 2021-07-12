@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialStatementTemplate extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    FooterSettingsJson: string | null;
-    IsActive: boolean;
-    LogoBinaryFileId: number | null;
-    Name: string | null;
-    ReportSettingsJson: string | null;
-    ReportTemplate: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    footerSettingsJson: string | null;
+    isActive: boolean;
+    logoBinaryFileId: number | null;
+    name: string | null;
+    reportSettingsJson: string | null;
+    reportTemplate: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

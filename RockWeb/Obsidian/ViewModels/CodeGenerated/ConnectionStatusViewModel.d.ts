@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ConnectionStatus extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    AutoInactivateState: boolean;
-    ConnectionTypeId: number | null;
-    Description: string | null;
-    HighlightColor: string | null;
-    IsActive: boolean;
-    IsCritical: boolean;
-    IsDefault: boolean;
-    Name: string | null;
-    Order: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    autoInactivateState: boolean;
+    connectionTypeId: number | null;
+    description: string | null;
+    highlightColor: string | null;
+    isActive: boolean;
+    isCritical: boolean;
+    isDefault: boolean;
+    name: string | null;
+    order: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

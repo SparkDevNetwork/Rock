@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface LavaShortcode extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    Documentation: string | null;
-    EnabledLavaCommands: string | null;
-    IsActive: boolean;
-    IsSystem: boolean;
-    Markup: string | null;
-    Name: string | null;
-    Parameters: string | null;
-    TagName: string | null;
-    TagType: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    documentation: string | null;
+    enabledLavaCommands: string | null;
+    isActive: boolean;
+    isSystem: boolean;
+    markup: string | null;
+    name: string | null;
+    parameters: string | null;
+    tagName: string | null;
+    tagType: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

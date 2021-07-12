@@ -27,18 +27,18 @@ import AttributeValue from './AttributeValueViewModel';
 import { Guid } from '../../Util/Guid';
 
 export default interface AchievementAttempt extends Entity {
-    Id: number;
-    AchievementAttemptEndDateTime: RockDateType | null;
-    AchievementAttemptStartDateTime: RockDateType;
-    AchievementTypeId: number;
-    AchieverEntityId: number;
-    Attributes: Record<string, AttributeValue> | null;
-    IsClosed: boolean;
-    IsSuccessful: boolean;
-    Progress: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    achievementAttemptEndDateTime: RockDateType | null;
+    achievementAttemptStartDateTime: RockDateType;
+    achievementTypeId: number;
+    achieverEntityId: number;
+    attributes: Record<string, AttributeValue> | null;
+    isClosed: boolean;
+    isSuccessful: boolean;
+    progress: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

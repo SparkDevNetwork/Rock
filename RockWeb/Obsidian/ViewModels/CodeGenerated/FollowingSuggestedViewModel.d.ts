@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FollowingSuggested extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number;
-    EntityTypeId: number;
-    LastPromotedDateTime: RockDateType | null;
-    PersonAliasId: number;
-    Status: number;
-    StatusChangedDateTime: RockDateType;
-    SuggestionTypeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number;
+    entityTypeId: number;
+    lastPromotedDateTime: RockDateType | null;
+    personAliasId: number;
+    status: number;
+    statusChangedDateTime: RockDateType;
+    suggestionTypeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

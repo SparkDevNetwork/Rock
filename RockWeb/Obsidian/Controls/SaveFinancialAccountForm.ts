@@ -27,9 +27,9 @@ import RockForm from "./RockForm";
 
 interface SaveFinancialAccountFormResult
 {
-    Title: string;
-    Detail: string;
-    IsSuccess: boolean;
+    title: string;
+    detail: string;
+    isSuccess: boolean;
 };
 
 /** A form to save a payment token for later use as a Financial Person Saved Account */
@@ -125,15 +125,15 @@ const SaveFinancialAccountForm = defineComponent( {
                 GatewayPersonIdentifier: this.gatewayPersonIdentifier
             } );
 
-            if ( result?.data?.IsSuccess )
+            if ( result?.data?.isSuccess )
             {
-                this.successTitle = result.data.Title;
-                this.successMessage = result.data.Detail || 'Success';
+                this.successTitle = result.data.title;
+                this.successMessage = result.data.detail || 'Success';
             }
             else
             {
-                this.errorTitle = result.data?.Title || '';
-                this.errorMessage = result.data?.Detail || 'Error';
+                this.errorTitle = result.data?.title || '';
+                this.errorMessage = result.data?.detail || 'Error';
             }
 
             this.isLoading = false;

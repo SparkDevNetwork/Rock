@@ -100,9 +100,9 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                     options: function () {
                         var _this = this;
                         return this.definedValues.map(function (dv) { return ({
-                            key: dv.Guid,
-                            value: dv.Guid,
-                            text: _this.displayDescriptions ? dv.Description : dv.Value
+                            key: dv.guid,
+                            value: dv.guid,
+                            text: _this.displayDescriptions ? dv.description : dv.value
                         }); });
                     }
                 },
@@ -143,7 +143,7 @@ System.register(["vue", "../Elements/DropDownList"], function (exports_1, contex
                     internalValue: function () {
                         var _this = this;
                         this.$emit('update:modelValue', this.internalValue);
-                        var definedValue = this.definedValues.find(function (dv) { return dv.Guid === _this.internalValue; }) || null;
+                        var definedValue = this.definedValues.find(function (dv) { return dv.guid === _this.internalValue; }) || null;
                         this.$emit('update:model', definedValue);
                     }
                 },

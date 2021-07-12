@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface MergeTemplate extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CategoryId: number;
-    Description: string | null;
-    MergeTemplateTypeEntityTypeId: number;
-    Name: string | null;
-    PersonAliasId: number | null;
-    TemplateBinaryFileId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    categoryId: number;
+    description: string | null;
+    mergeTemplateTypeEntityTypeId: number;
+    name: string | null;
+    personAliasId: number | null;
+    templateBinaryFileId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

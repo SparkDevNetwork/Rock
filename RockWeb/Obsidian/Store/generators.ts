@@ -112,12 +112,12 @@ export function generateCommonEntityModule<TEntity extends Entity>(commonEntity:
             },
             getByGuid(state) {
                 return (guid: Guid) => {
-                    return state.items.find(i => i.Guid === guid) || null;
+                    return state.items.find(i => i.guid === guid) || null;
                 };
             },
             getById(state) {
                 return (id: number) => {
-                    return state.items.find(i => i.Id === id) || null;
+                    return state.items.find(i => i.id === id) || null;
                 };
             }
         },

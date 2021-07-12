@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface PersonScheduleExclusion extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EndDate: RockDateType;
-    GroupId: number | null;
-    ParentPersonScheduleExclusionId: number | null;
-    PersonAliasId: number | null;
-    StartDate: RockDateType;
-    Title: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    endDate: RockDateType;
+    groupId: number | null;
+    parentPersonScheduleExclusionId: number | null;
+    personAliasId: number | null;
+    startDate: RockDateType;
+    title: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

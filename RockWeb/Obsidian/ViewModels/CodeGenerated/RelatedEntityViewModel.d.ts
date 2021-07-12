@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RelatedEntity extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    IsSystem: boolean;
-    Order: number;
-    PurposeKey: string | null;
-    QualifierValue: string | null;
-    SourceEntityId: number;
-    SourceEntityTypeId: number;
-    TargetEntityId: number;
-    TargetEntityTypeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    isSystem: boolean;
+    order: number;
+    purposeKey: string | null;
+    qualifierValue: string | null;
+    sourceEntityId: number;
+    sourceEntityTypeId: number;
+    targetEntityId: number;
+    targetEntityTypeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

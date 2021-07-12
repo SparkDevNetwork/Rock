@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface GroupRequirement extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    GroupId: number | null;
-    GroupRequirementTypeId: number;
-    GroupRoleId: number | null;
-    GroupTypeId: number | null;
-    MustMeetRequirementToAddMember: boolean;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    groupId: number | null;
+    groupRequirementTypeId: number;
+    groupRoleId: number | null;
+    groupTypeId: number | null;
+    mustMeetRequirementToAddMember: boolean;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface AttributeValueHistorical extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    AttributeValueId: number;
-    CurrentRowIndicator: boolean;
-    EffectiveDateTime: RockDateType;
-    ExpireDateTime: RockDateType;
-    Value: string | null;
-    ValueAsBoolean: boolean | null;
-    ValueAsDateTime: RockDateType | null;
-    ValueAsNumeric: number | null;
-    ValueAsPersonId: number | null;
-    ValueFormatted: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    attributeValueId: number;
+    currentRowIndicator: boolean;
+    effectiveDateTime: RockDateType;
+    expireDateTime: RockDateType;
+    value: string | null;
+    valueAsBoolean: boolean | null;
+    valueAsDateTime: RockDateType | null;
+    valueAsNumeric: number | null;
+    valueAsPersonId: number | null;
+    valueFormatted: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialPledge extends Entity {
-    Id: number;
-    AccountId: number | null;
-    Attributes: Record<string, AttributeValue> | null;
-    EndDate: RockDateType;
-    GroupId: number | null;
-    PersonAliasId: number | null;
-    PledgeFrequencyValueId: number | null;
-    StartDate: RockDateType;
-    TotalAmount: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    accountId: number | null;
+    attributes: Record<string, AttributeValue> | null;
+    endDate: RockDateType;
+    groupId: number | null;
+    personAliasId: number | null;
+    pledgeFrequencyValueId: number | null;
+    startDate: RockDateType;
+    totalAmount: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

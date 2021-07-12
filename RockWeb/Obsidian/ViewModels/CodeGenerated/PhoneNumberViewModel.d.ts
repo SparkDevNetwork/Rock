@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface PhoneNumber extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CountryCode: string | null;
-    Description: string | null;
-    Extension: string | null;
-    IsMessagingEnabled: boolean;
-    IsSystem: boolean;
-    IsUnlisted: boolean;
-    Number: string | null;
-    NumberFormatted: string | null;
-    NumberTypeValueId: number | null;
-    PersonId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    countryCode: string | null;
+    description: string | null;
+    extension: string | null;
+    isMessagingEnabled: boolean;
+    isSystem: boolean;
+    isUnlisted: boolean;
+    number: string | null;
+    numberFormatted: string | null;
+    numberTypeValueId: number | null;
+    personId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

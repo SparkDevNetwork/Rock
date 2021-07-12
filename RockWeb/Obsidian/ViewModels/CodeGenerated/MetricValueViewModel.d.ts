@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface MetricValue extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    MetricId: number;
-    MetricValueDateTime: RockDateType | null;
-    MetricValueType: number;
-    Note: string | null;
-    XValue: string | null;
-    YValue: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    metricId: number;
+    metricValueDateTime: RockDateType | null;
+    metricValueType: number;
+    note: string | null;
+    xValue: string | null;
+    yValue: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

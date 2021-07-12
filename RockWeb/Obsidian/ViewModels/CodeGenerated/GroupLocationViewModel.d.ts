@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface GroupLocation extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    GroupId: number;
-    GroupLocationTypeValueId: number | null;
-    GroupMemberPersonAliasId: number | null;
-    IsMailingLocation: boolean;
-    IsMappedLocation: boolean;
-    LocationId: number;
-    Order: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    groupId: number;
+    groupLocationTypeValueId: number | null;
+    groupMemberPersonAliasId: number | null;
+    isMailingLocation: boolean;
+    isMappedLocation: boolean;
+    locationId: number;
+    order: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

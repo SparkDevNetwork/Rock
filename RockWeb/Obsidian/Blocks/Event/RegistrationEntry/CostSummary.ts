@@ -182,7 +182,7 @@ export default defineComponent( {
         /** The amount previously paid */
         amountPreviouslyPaid (): number
         {
-            return this.registrationEntryState.ViewModel.Session?.PreviouslyPaid || 0;
+            return this.registrationEntryState.ViewModel.session?.previouslyPaid || 0;
         },
 
         /** The amount previously paid formatted as a string */
