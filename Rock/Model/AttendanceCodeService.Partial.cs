@@ -258,6 +258,19 @@ namespace Rock.Model
                     var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
                     int nextCode = maxCode.AsInteger() + 1;
                     numericCode = nextCode.ToString( "D" + numericLength );
+                    while ( noGood.Any( s => numericCode.Contains( s ) ) )
+                    {
+                        attempts++;
+
+                        // We're only going to attempt this a million times...
+                        if ( attempts > _maxAttempts )
+                        {
+                            throw new TimeoutException( "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem." );
+                        }
+
+                        nextCode++;
+                        numericCode = nextCode.ToString( "D" + numericLength );
+                    }
                 }
                 else
                 {
