@@ -340,7 +340,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Sets the Email Message view mode to Prewiew or Advanced.
+        /// Sets the Email Message view mode to Preview or Advanced.
         /// </summary>
         /// <param name="isEnabled">If true, Preview mode will be enabled.</param>
         private void SetEmailMessagePreviewModeEnabled( bool isEnabled )
