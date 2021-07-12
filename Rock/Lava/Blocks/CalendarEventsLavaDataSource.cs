@@ -76,6 +76,22 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings )
         {
+            return this.GetEventOccurrencesForCalendar( settings, null );
+        }
+
+        /// <summary>
+        /// Gets the event occurrences for calendar.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\".
+        /// or
+        /// Invalid configuration setting \"maxoccurrences\".
+        /// </exception>
+        public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings, RockContext rockContext )
+        {
             // Check for invalid parameters.
             var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterCampusIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
@@ -84,7 +100,10 @@ namespace Rock.Lava.Blocks
                 throw new Exception( $"Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\"." );
             }
 
-            var rockContext = new RockContext();
+            if (rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
 
             // Get the Event Calendar.
             var calendar = ResolveCalendarSettingOrThrow( rockContext, settings.GetStringValue( ParameterCalendarId ) );
@@ -132,6 +151,22 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings )
         {
+            return this.GetEventOccurrencesForEvent( settings, null );
+        }
+
+        /// <summary>
+        /// Gets the event occurrences for event.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\".
+        /// or
+        /// Invalid configuration setting \"maxoccurrences\".
+        /// </exception>
+        public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings, RockContext rockContext )
+        {
             // Check for invalid parameters.
             var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCampusIds, ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
@@ -140,7 +175,10 @@ namespace Rock.Lava.Blocks
                 throw new Exception( $"Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\"." );
             }
 
-            var rockContext = new RockContext();
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
 
             // Get the Event.
             var eventItem = ResolveEventSettingOrThrow( rockContext, settings.GetStringValue( ParameterEventId ) );

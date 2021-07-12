@@ -65,7 +65,7 @@ namespace Rock.Lava.Blocks
 
                 var settings = LavaElementAttributes.NewFromMarkup( _attributesMarkup, context );
 
-                var events = dataSource.GetEventOccurrencesForEvent( settings );
+                var events = dataSource.GetEventOccurrencesForEvent( settings, LavaHelper.GetRockContextFromLavaContext( context ) );
 
                 AddLavaMergeFieldsToContext( context, events );
 

@@ -789,6 +789,7 @@
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Data\DecimalPrecisionAttribute.cs" />
     <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
+    <Compile Include="Data\Interception\RockEfInterceptor.cs" />
     <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
