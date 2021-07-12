@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// PluginMigration View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PluginMigration ) )]
     public partial class PluginMigrationViewModelHelper : ViewModelHelper<PluginMigration, Rock.ViewModel.PluginMigrationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -73,10 +73,11 @@ namespace Rock.Model
     /// <summary>
     /// SignatureDocumentTemplate View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SignatureDocumentTemplate ) )]
     public partial class SignatureDocumentTemplateViewModelHelper : ViewModelHelper<SignatureDocumentTemplate, Rock.ViewModel.SignatureDocumentTemplateViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
@@ -94,11 +95,16 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 BinaryFileTypeId = model.BinaryFileTypeId,
+                CompletionSystemCommunicationId = model.CompletionSystemCommunicationId,
                 Description = model.Description,
+                DocumentTerm = model.DocumentTerm,
                 InviteSystemCommunicationId = model.InviteSystemCommunicationId,
+                IsActive = model.IsActive,
+                LavaTemplate = model.LavaTemplate,
                 Name = model.Name,
                 ProviderEntityTypeId = model.ProviderEntityTypeId,
                 ProviderTemplateKey = model.ProviderTemplateKey,
+                SignatureType = ( int ) model.SignatureType,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,

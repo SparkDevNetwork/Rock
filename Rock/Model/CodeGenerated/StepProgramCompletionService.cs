@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// StepProgramCompletion View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( StepProgramCompletion ) )]
     public partial class StepProgramCompletionViewModelHelper : ViewModelHelper<StepProgramCompletion, Rock.ViewModel.StepProgramCompletionViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

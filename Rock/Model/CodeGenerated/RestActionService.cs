@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// RestAction View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( RestAction ) )]
     public partial class RestActionViewModelHelper : ViewModelHelper<RestAction, Rock.ViewModel.RestActionViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

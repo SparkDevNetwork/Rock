@@ -56,12 +56,36 @@ namespace Rock.ViewModel
         public int? BinaryFileId { get; set; }
 
         /// <summary>
+        /// Gets or sets the CompletionEmailSentDateTime.
+        /// </summary>
+        /// <value>
+        /// The CompletionEmailSentDateTime.
+        /// </value>
+        public DateTime? CompletionEmailSentDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the DocumentKey.
         /// </summary>
         /// <value>
         /// The DocumentKey.
         /// </value>
         public string DocumentKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the EntityId.
+        /// </summary>
+        /// <value>
+        /// The EntityId.
+        /// </value>
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the EntityTypeId.
+        /// </summary>
+        /// <value>
+        /// The EntityTypeId.
+        /// </value>
+        public int? EntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the InviteCount.
@@ -96,6 +120,14 @@ namespace Rock.ViewModel
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the SignatureData.
+        /// </summary>
+        /// <value>
+        /// The SignatureData.
+        /// </value>
+        public string SignatureData { get; set; }
+
+        /// <summary>
         /// Gets or sets the SignatureDocumentTemplateId.
         /// </summary>
         /// <value>
@@ -104,12 +136,68 @@ namespace Rock.ViewModel
         public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary>
+        /// Gets or sets the SignatureVerficationHash.
+        /// </summary>
+        /// <value>
+        /// The SignatureVerficationHash.
+        /// </value>
+        public string SignatureVerficationHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedByEmail.
+        /// </summary>
+        /// <value>
+        /// The SignedByEmail.
+        /// </value>
+        public string SignedByEmail { get; set; }
+
+        /// <summary>
         /// Gets or sets the SignedByPersonAliasId.
         /// </summary>
         /// <value>
         /// The SignedByPersonAliasId.
         /// </value>
         public int? SignedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedClientIp.
+        /// </summary>
+        /// <value>
+        /// The SignedClientIp.
+        /// </value>
+        public string SignedClientIp { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedClientUserAgent.
+        /// </summary>
+        /// <value>
+        /// The SignedClientUserAgent.
+        /// </value>
+        public string SignedClientUserAgent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedDateTime.
+        /// </summary>
+        /// <value>
+        /// The SignedDateTime.
+        /// </value>
+        public DateTime? SignedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedDocumentText.
+        /// </summary>
+        /// <value>
+        /// The SignedDocumentText.
+        /// </value>
+        public string SignedDocumentText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignedName.
+        /// </summary>
+        /// <value>
+        /// The SignedName.
+        /// </value>
+        public string SignedName { get; set; }
 
         /// <summary>
         /// Gets or sets the Status.

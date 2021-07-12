@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// CommunicationRecipient View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( CommunicationRecipient ) )]
     public partial class CommunicationRecipientViewModelHelper : ViewModelHelper<CommunicationRecipient, Rock.ViewModel.CommunicationRecipientViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

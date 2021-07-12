@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// ConnectionWorkflow View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ConnectionWorkflow ) )]
     public partial class ConnectionWorkflowViewModelHelper : ViewModelHelper<ConnectionWorkflow, Rock.ViewModel.ConnectionWorkflowViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

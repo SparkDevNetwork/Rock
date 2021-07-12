@@ -63,10 +63,11 @@ namespace Rock.Model
     /// <summary>
     /// AttendanceOccurrence View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AttendanceOccurrence ) )]
     public partial class AttendanceOccurrenceViewModelHelper : ViewModelHelper<AttendanceOccurrence, Rock.ViewModel.AttendanceOccurrenceViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

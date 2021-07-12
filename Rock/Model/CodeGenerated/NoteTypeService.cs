@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// NoteType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( NoteType ) )]
     public partial class NoteTypeViewModelHelper : ViewModelHelper<NoteType, Rock.ViewModel.NoteTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

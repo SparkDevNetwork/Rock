@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// FinancialTransactionAlertType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FinancialTransactionAlertType ) )]
     public partial class FinancialTransactionAlertTypeViewModelHelper : ViewModelHelper<FinancialTransactionAlertType, Rock.ViewModel.FinancialTransactionAlertTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

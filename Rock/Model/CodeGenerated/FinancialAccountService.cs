@@ -97,10 +97,11 @@ namespace Rock.Model
     /// <summary>
     /// FinancialAccount View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FinancialAccount ) )]
     public partial class FinancialAccountViewModelHelper : ViewModelHelper<FinancialAccount, Rock.ViewModel.FinancialAccountViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

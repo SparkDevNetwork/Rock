@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// ContentChannelItemAssociation View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ContentChannelItemAssociation ) )]
     public partial class ContentChannelItemAssociationViewModelHelper : ViewModelHelper<ContentChannelItemAssociation, Rock.ViewModel.ContentChannelItemAssociationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

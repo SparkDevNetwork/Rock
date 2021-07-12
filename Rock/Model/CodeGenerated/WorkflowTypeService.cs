@@ -115,10 +115,11 @@ namespace Rock.Model
     /// <summary>
     /// WorkflowType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( WorkflowType ) )]
     public partial class WorkflowTypeViewModelHelper : ViewModelHelper<WorkflowType, Rock.ViewModel.WorkflowTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

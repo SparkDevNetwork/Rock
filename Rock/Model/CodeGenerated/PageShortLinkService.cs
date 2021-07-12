@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// PageShortLink View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PageShortLink ) )]
     public partial class PageShortLinkViewModelHelper : ViewModelHelper<PageShortLink, Rock.ViewModel.PageShortLinkViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

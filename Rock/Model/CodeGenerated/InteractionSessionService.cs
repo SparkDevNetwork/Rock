@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// InteractionSession View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( InteractionSession ) )]
     public partial class InteractionSessionViewModelHelper : ViewModelHelper<InteractionSession, Rock.ViewModel.InteractionSessionViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

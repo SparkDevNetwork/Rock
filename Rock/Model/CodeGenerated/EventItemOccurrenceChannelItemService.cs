@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// EventItemOccurrenceChannelItem View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( EventItemOccurrenceChannelItem ) )]
     public partial class EventItemOccurrenceChannelItemViewModelHelper : ViewModelHelper<EventItemOccurrenceChannelItem, Rock.ViewModel.EventItemOccurrenceChannelItemViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// CampusSchedule View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( CampusSchedule ) )]
     public partial class CampusScheduleViewModelHelper : ViewModelHelper<CampusSchedule, Rock.ViewModel.CampusScheduleViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

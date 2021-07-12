@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// ConnectionRequestActivity View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ConnectionRequestActivity ) )]
     public partial class ConnectionRequestActivityViewModelHelper : ViewModelHelper<ConnectionRequestActivity, Rock.ViewModel.ConnectionRequestActivityViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

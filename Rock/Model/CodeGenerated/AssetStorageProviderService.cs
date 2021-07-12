@@ -47,10 +47,11 @@ namespace Rock.Model
     /// <summary>
     /// AssetStorageProvider View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AssetStorageProvider ) )]
     public partial class AssetStorageProviderViewModelHelper : ViewModelHelper<AssetStorageProvider, Rock.ViewModel.AssetStorageProviderViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

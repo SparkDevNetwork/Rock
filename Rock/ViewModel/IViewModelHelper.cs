@@ -15,13 +15,22 @@
 // </copyright>
 //
 
+using Rock.Model;
+
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// View Model
+    /// A helper class that will convert a model into a view model.
     /// </summary>
-    public interface IViewModel
+    public interface IViewModelHelper
     {
-        /* This interface is intentionally empty. */
+        /// <summary>
+        /// Creates the view model for the given model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> then attributes should be loaded.</param>
+        /// <returns></returns>
+        IViewModel CreateViewModel( object model, Person currentPerson, bool loadAttributes );
     }
 }

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// EntityCampusFilter View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( EntityCampusFilter ) )]
     public partial class EntityCampusFilterViewModelHelper : ViewModelHelper<EntityCampusFilter, Rock.ViewModel.EntityCampusFilterViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

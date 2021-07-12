@@ -127,10 +127,11 @@ namespace Rock.Model
     /// <summary>
     /// Campus View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Campus ) )]
     public partial class CampusViewModelHelper : ViewModelHelper<Campus, Rock.ViewModel.CampusViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

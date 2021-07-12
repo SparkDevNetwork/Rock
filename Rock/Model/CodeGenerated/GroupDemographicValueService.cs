@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// GroupDemographicValue View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( GroupDemographicValue ) )]
     public partial class GroupDemographicValueViewModelHelper : ViewModelHelper<GroupDemographicValue, Rock.ViewModel.GroupDemographicValueViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -15,13 +15,21 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// View Model
+    /// View Model with Attributes
     /// </summary>
-    public interface IViewModel
+    public interface IViewModelWithAttributes : IViewModel
     {
-        /* This interface is intentionally empty. */
+        /// <summary>
+        /// Gets or sets the attributes.
+        /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
+        Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
     }
 }

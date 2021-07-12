@@ -40,6 +40,14 @@ namespace Rock.ViewModel
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the CompletionSystemCommunicationId.
+        /// </summary>
+        /// <value>
+        /// The CompletionSystemCommunicationId.
+        /// </value>
+        public int? CompletionSystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the Description.
         /// </summary>
         /// <value>
@@ -48,12 +56,36 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the DocumentTerm.
+        /// </summary>
+        /// <value>
+        /// The DocumentTerm.
+        /// </value>
+        public string DocumentTerm { get; set; }
+
+        /// <summary>
         /// Gets or sets the InviteSystemCommunicationId.
         /// </summary>
         /// <value>
         /// The InviteSystemCommunicationId.
         /// </value>
         public int? InviteSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsActive.
+        /// </summary>
+        /// <value>
+        /// The IsActive.
+        /// </value>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the LavaTemplate.
+        /// </summary>
+        /// <value>
+        /// The LavaTemplate.
+        /// </value>
+        public string LavaTemplate { get; set; }
 
         /// <summary>
         /// Gets or sets the Name.
@@ -78,6 +110,14 @@ namespace Rock.ViewModel
         /// The ProviderTemplateKey.
         /// </value>
         public string ProviderTemplateKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the SignatureType.
+        /// </summary>
+        /// <value>
+        /// The SignatureType.
+        /// </value>
+        public int SignatureType { get; set; }
 
         /// <summary>
         /// Gets or sets the CreatedDateTime.

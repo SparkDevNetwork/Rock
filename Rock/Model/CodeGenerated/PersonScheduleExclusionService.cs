@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// PersonScheduleExclusion View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PersonScheduleExclusion ) )]
     public partial class PersonScheduleExclusionViewModelHelper : ViewModelHelper<PersonScheduleExclusion, Rock.ViewModel.PersonScheduleExclusionViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -2292,7 +2292,7 @@ Sys.Application.add_load(function () {
             foreach ( var kvp in contextEntities )
             {
                 var entity = kvp.Value;
-                var viewModel = ViewModelHelper.GetViewModel( entity, CurrentPerson, false );
+                var viewModel = ViewModelHelper.GetDefaultViewModel( entity, CurrentPerson, false );
 
                 if ( viewModel != null )
                 {

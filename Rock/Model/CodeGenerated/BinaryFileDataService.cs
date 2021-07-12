@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// BinaryFileData View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( BinaryFileData ) )]
     public partial class BinaryFileDataViewModelHelper : ViewModelHelper<BinaryFileData, Rock.ViewModel.BinaryFileDataViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

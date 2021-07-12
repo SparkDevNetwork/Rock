@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// Badge View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Badge ) )]
     public partial class BadgeViewModelHelper : ViewModelHelper<Badge, Rock.ViewModel.BadgeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

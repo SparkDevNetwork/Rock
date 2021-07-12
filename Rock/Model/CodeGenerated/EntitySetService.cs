@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// EntitySet View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( EntitySet ) )]
     public partial class EntitySetViewModelHelper : ViewModelHelper<EntitySet, Rock.ViewModel.EntitySetViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

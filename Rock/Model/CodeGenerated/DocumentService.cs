@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// Document View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Document ) )]
     public partial class DocumentViewModelHelper : ViewModelHelper<Document, Rock.ViewModel.DocumentViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

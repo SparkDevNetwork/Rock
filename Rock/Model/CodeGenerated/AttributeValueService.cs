@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// AttributeValue View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AttributeValue ) )]
     public partial class AttributeValueViewModelHelper : ViewModelHelper<AttributeValue, Rock.ViewModel.AttributeValueViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

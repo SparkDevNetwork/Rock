@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// Registration View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Registration ) )]
     public partial class RegistrationViewModelHelper : ViewModelHelper<Registration, Rock.ViewModel.RegistrationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

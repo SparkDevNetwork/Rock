@@ -261,6 +261,7 @@
     <Compile Include="Controls\AddressControlViewModel.cs" />
     <Compile Include="Controls\GatewayControlViewModel.cs" />
     <Compile Include="IViewModel.cs" />
+    <Compile Include="IViewModelWithAttributes.cs" />
     <Compile Include="NonEntities\AttributeConfigurationValue.cs" />
     <Compile Include="Partials\AttributeValueViewModel.partial.cs" />
     <Compile Include="Partials\AttributeViewModel.partial.cs" />

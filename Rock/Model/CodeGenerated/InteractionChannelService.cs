@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// InteractionChannel View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( InteractionChannel ) )]
     public partial class InteractionChannelViewModelHelper : ViewModelHelper<InteractionChannel, Rock.ViewModel.InteractionChannelViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// ServiceLog View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ServiceLog ) )]
     public partial class ServiceLogViewModelHelper : ViewModelHelper<ServiceLog, Rock.ViewModel.ServiceLogViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -105,10 +105,11 @@ namespace Rock.Model
     /// <summary>
     /// Schedule View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Schedule ) )]
     public partial class ScheduleViewModelHelper : ViewModelHelper<Schedule, Rock.ViewModel.ScheduleViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

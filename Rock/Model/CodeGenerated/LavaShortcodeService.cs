@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// LavaShortcode View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( LavaShortcode ) )]
     public partial class LavaShortcodeViewModelHelper : ViewModelHelper<LavaShortcode, Rock.ViewModel.LavaShortcodeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// PageContext View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PageContext ) )]
     public partial class PageContextViewModelHelper : ViewModelHelper<PageContext, Rock.ViewModel.PageContextViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
