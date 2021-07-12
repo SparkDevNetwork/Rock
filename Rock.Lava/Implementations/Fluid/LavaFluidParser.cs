@@ -87,6 +87,26 @@ namespace Rock.Lava.Fluid
                        .ElseError( "Invalid 'comment' tag" );
 
             this.RegisteredTags["comment"] = commentTag;
+
+            // Replace the default Fluid comparison operators to add support for
+            // automatic operand type conversions, date comparisons, and empty string comparisons.
+            this.RegisteredOperators["<"] = ( a, b ) =>
+            {
+                return new LavaLessThanExpression( a, b, failIfEqual: true );
+            };
+            this.RegisteredOperators["<="] = ( a, b ) =>
+            {
+                return new LavaLessThanExpression( a, b, failIfEqual: false );
+            };
+            this.RegisteredOperators[">"] = ( a, b ) =>
+            {
+                return new LavaGreaterThanExpression( a, b, failIfEqual: true );
+            };
+            this.RegisteredOperators[">="] = ( a, b ) =>
+            {
+                return new LavaGreaterThanExpression( a, b, failIfEqual: false );
+            };
+
         }
 
         #endregion

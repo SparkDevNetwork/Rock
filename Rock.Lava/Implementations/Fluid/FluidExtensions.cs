@@ -133,6 +133,45 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
+        /// Convert a filter argument to a datetimeoffset value, or return a default value if the argument cannot be converted.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static DateTimeOffset? AsDateTimeOrDefault( this FluidValue value, DateTime? defaultValue = null )
+        {
+            if ( value.Type == FluidValues.DateTime )
+            {
+                var offset = (DateTimeOffset)value.ToObjectValue();
+
+                return offset;
+            }
+
+            var rawValue = value.ToObjectValue();
+
+            if ( rawValue is DateTimeOffset isDto )
+            {
+                return isDto;
+            }
+
+            if ( rawValue is DateTime isDt )
+            {
+                return new DateTimeOffset( isDt );
+            }
+
+            DateTimeOffset dto;
+
+            var success = DateTimeOffset.TryParse( value.ToStringValue(), out dto );
+
+            if ( success )
+            {
+                return dto;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Gets real object value. The standard .ToObjectValue() method may
         /// not return an actual object for certain value types, this one unwraps those
         /// returned values and returns the raw value.
