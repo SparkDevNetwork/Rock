@@ -82,6 +82,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.CompletionSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );

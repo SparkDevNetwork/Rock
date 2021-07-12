@@ -122,6 +122,9 @@ namespace Rock.Model
             target.ReminderSent = source.ReminderSent;
             target.SendReminderDateTime = source.SendReminderDateTime;
             target.StartDateTime = source.StartDateTime;
+            target.TimeoutIsEnabled = source.TimeoutIsEnabled;
+            target.TimeoutLengthMinutes = source.TimeoutLengthMinutes;
+            target.TimeoutThreshold = source.TimeoutThreshold;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

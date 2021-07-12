@@ -106,6 +106,7 @@ namespace Rock.Model
             target.IsApproved = source.IsApproved;
             target.IsPublic = source.IsPublic;
             target.IsUrgent = source.IsUrgent;
+            target.LanguageValueId = source.LanguageValueId;
             target.LastName = source.LastName;
             target.PrayerCount = source.PrayerCount;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;

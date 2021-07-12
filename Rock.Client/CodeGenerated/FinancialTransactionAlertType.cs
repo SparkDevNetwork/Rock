@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? AlertSummaryNotificationGroupId { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.AlertType AlertType { get; set; }
 
         /// <summary />
@@ -91,6 +94,9 @@ namespace Rock.Client
         public int? RepeatPreventionDuration { get; set; }
 
         /// <summary />
+        public int /* DayOfWeekFlag*/? RunDays { get; set; }
+
+        /// <summary />
         public bool SendBusEvent { get; set; }
 
         /// <summary />
@@ -132,6 +138,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( FinancialTransactionAlertType source )
         {
             this.Id = source.Id;
+            this.AlertSummaryNotificationGroupId = source.AlertSummaryNotificationGroupId;
             this.AlertType = source.AlertType;
             this.AmountSensitivityScale = source.AmountSensitivityScale;
             this.CampusId = source.CampusId;
@@ -150,6 +157,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.RepeatPreventionDuration = source.RepeatPreventionDuration;
+            this.RunDays = source.RunDays;
             this.SendBusEvent = source.SendBusEvent;
             this.SystemCommunicationId = source.SystemCommunicationId;
             this.WorkflowTypeId = source.WorkflowTypeId;
@@ -168,6 +176,9 @@ namespace Rock.Client
     /// </summary>
     public partial class FinancialTransactionAlertType : FinancialTransactionAlertTypeEntity
     {
+        /// <summary />
+        public Group AlertSummaryNotificationGroup { get; set; }
+
         /// <summary />
         public Campus Campus { get; set; }
 

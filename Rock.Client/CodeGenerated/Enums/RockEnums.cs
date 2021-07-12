@@ -850,6 +850,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum SignatureType
+    {
+        Drawn = 0x0,
+        Typed = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum SiteType
     {
         Web = 0x0,
