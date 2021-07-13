@@ -28,8 +28,18 @@ using System.Web.Http.Validation;
 
 namespace Rock.Rest.Utility
 {
+    /// <summary>
+    /// Parameter Binding that handles differences in v1 and v2 API endpoints.
+    /// </summary>
+    /// <seealso cref="System.Web.Http.ModelBinding.FormatterParameterBinding" />
     public class RockFormatterParameterBinding : FormatterParameterBinding
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockFormatterParameterBinding"/> class.
+        /// </summary>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <param name="formatters">The formatter.</param>
+        /// <param name="bodyModelValidator">The body model validator.</param>
         public RockFormatterParameterBinding( HttpParameterDescriptor descriptor, IEnumerable<MediaTypeFormatter> formatters, IBodyModelValidator bodyModelValidator )
             : base( descriptor, formatters, bodyModelValidator )
         {
