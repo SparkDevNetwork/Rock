@@ -457,6 +457,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Swagger\SwaggerExtensions.cs" />
     <Compile Include="Utility\HttpRequestMessageExtensions.cs" />
+    <Compile Include="Utility\ApiPickerJsonMediaTypeFormatter.cs" />
+    <Compile Include="Utility\RockActionValueBinder.cs" />
+    <Compile Include="Utility\RockFormatterParameterBinding.cs" />
+    <Compile Include="Utility\RockOrganizationDateTimeJsonConverter.cs" />
+    <Compile Include="Utility\ValueProviders\RockApiV2ValueProviderResult.cs" />
+    <Compile Include="Utility\ValueProviders\RockQueryStringValueProvider.cs" />
+    <Compile Include="Utility\ValueProviders\RockQueryStringValueProviderFactory.cs" />
+    <Compile Include="Utility\ValueProviders\RockRouteDataValueProvider.cs" />
+    <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
