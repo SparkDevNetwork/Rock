@@ -1235,7 +1235,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Create aset of page query parameters to represent the current Page settings.
+        /// Create a set of page query parameters to represent the current Page settings.
         /// </summary>
         /// <returns></returns>
         private Dictionary<string, string> GetQueryParamsFromSettings()

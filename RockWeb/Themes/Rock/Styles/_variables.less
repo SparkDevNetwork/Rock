@@ -281,9 +281,14 @@
 @drawer-bg:                   @panel-subheading;
 //--
 @panel-heading-text-color:    #484848;                      // The heading's text color.
-@panel-heading-border:        @panel-heading-bg;              // The headings border color.
+@panel-heading-border:        @panel-border;              // The headings border color.
 //--
+@panel-following-offset-width:60px;
 @panel-following-active-bg:   @brand-color;                   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
+@panel-following-width:       50px;
+@panel-following-padding:     0;
+//--
+@panel-options-margin:        -15px -15px -15px 10px;
 //--
 @panel-footer-bg:             @panel-bg;                      // The background color of the panel's footer.
 @panel-footer-color:          @panel-text;                    // The color text of the panel's footer.
@@ -358,8 +363,8 @@
 @grid-footer-font-size:                 10px;
 @grid-footer-font-weight:               300;
 //--
-@grid-footer-button-bg:                 darken(@grid-footer-bg, 5%);
-@grid-footer-button-text-color:         @text-color;
+@grid-footer-button-bg:                 transparent;
+@grid-footer-button-text-color:         @ui-5;
 @grid-footer-button-border:             darken(@grid-footer-bg, 15%);
 
 // Popover
@@ -374,6 +379,9 @@
 @persondetails-bio-action-border:       @brand-color;
 @persondetails-bio-photo-border:        @ui-3;
 @persondetails-bio-photo-following:     @text-color;
+
+@persondetails-bio-firstname-font-size: .488em;
+@persondetails-bio-firstname-font-weight: 300;
 
 //// Badge Bar
 @persondetails-badge-bg:                lighten(@body-background, 2%);
