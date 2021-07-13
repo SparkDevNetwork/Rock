@@ -554,10 +554,6 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
@@ -622,9 +618,6 @@ textarea,
 }
 
 .panel-follow-status {
-  width: 50px;
-  padding: 0;
-
   &::before {
     display: grid;
     place-items: center;
@@ -632,13 +625,7 @@ textarea,
   }
 }
 
-.panel .panel-heading.panel-follow {
-  padding-right: 60px;
-}
-
 .panel .panel-heading .panel-options {
-  margin: -15px -15px -15px 10px;
-
   button {
     padding: 13px 12px 12px;
     background-color: transparent;
@@ -656,8 +643,6 @@ td.grid-actions {
   .btn-grid-action {
     padding: 5px 7px;
     font-size: 1.125em;
-    color: @ui-5;
-    background-color: transparent;
     border: 0;
     transition: color 250ms;
 
@@ -1189,6 +1174,14 @@ body.nav-open {
             content: " ";
           }
         }
+
+        .nav-childpages {
+          display: inline-block;
+
+          li.header {
+            padding-left: 0;
+          }
+        }
       }
 
       &.current,
@@ -1310,16 +1303,6 @@ body.nav-open {
           width: 10px;
           background-color: rgba(0,0,0, .2);
           border-radius: 10px;
-        }
-      }
-    }
-
-    > li.open {
-      .nav-childpages {
-        display: inline-block;
-
-        li.header {
-          padding-left: 0;
         }
       }
     }
@@ -1522,11 +1505,6 @@ body.navbar-side-open {
 .personprofilebar-bio {
   .name {
     font-weight: 700;
-  }
-
-  .name .firstname {
-    font-size: .488em;
-    font-weight: @font-weight-light;
   }
 
   .previous-names {
