@@ -246,5 +246,10 @@ namespace Rock.SystemKey
         /// Lava Engine Type.
         /// </summary>
         public const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
+
+        /// <summary>
+        /// Sets the max number of connections per url.
+        /// </summary>
+        public const string MAX_NUMBER_OF_CONNECTIONS_PER_URL = "core_MaxNumberOfConnectionsPerUrl";
     }
 }
