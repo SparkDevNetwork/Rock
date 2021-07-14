@@ -9,10 +9,10 @@
                 <div class="packagesummary">
                     <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
                         <div class="packagesummary-image">
-                            <img class="img-responsive" src="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop" srcset="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop 1x, {{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop 2x" />
+                            <img class="img-responsive" src="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop&scale=both" srcset="{{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&mode=crop&scale=both 1x, {{ promo.PackageIconBinaryFile.ImageUrl }}&h=140&w=280&zoom=2&mode=crop&scale=both 2x" width="280" height="140" />
                         </div>
                         <div class="packagesummary-body">
-                            <h2 class="text-color">{{ promo.PackageName }}</h2>
+                            <h2>{{ promo.PackageName }}</h2>
                             <p class="vendor text-sm text-muted">
                                 {{ promo.PackageVendor }}
                             </p>
