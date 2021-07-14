@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ServiceJobHistory extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ServiceJobId: number;
-    ServiceWorker: string | null;
-    StartDateTime: RockDateType | null;
-    Status: string | null;
-    StatusMessage: string | null;
-    StopDateTime: RockDateType | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    serviceJobId: number;
+    serviceWorker: string | null;
+    startDateTime: RockDateType | null;
+    status: string | null;
+    statusMessage: string | null;
+    stopDateTime: RockDateType | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

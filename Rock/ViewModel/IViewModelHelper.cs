@@ -14,28 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 
-using Rock.Web.Cache;
+using Rock.Model;
 
-namespace Rock.Model
+namespace Rock.ViewModel
 {
-    public partial class CampusService
+    /// <summary>
+    /// A helper class that will convert a model into a view model.
+    /// </summary>
+    public interface IViewModelHelper
     {
         /// <summary>
-        /// Gets the Guid for the Campus that has the specified Id
+        /// Creates the view model for the given model.
         /// </summary>
-        /// <param name="id">The identifier.</param>
+        /// <param name="model">The model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> then attributes should be loaded.</param>
         /// <returns></returns>
-        public override Guid? GetGuid( int id )
-        {
-            var cacheItem = CampusCache.Get( id );
-            if ( cacheItem != null )
-            {
-                return cacheItem.Guid;
-            }
-
-            return null;
-        }
+        IViewModel CreateViewModel( object model, Person currentPerson, bool loadAttributes );
     }
 }

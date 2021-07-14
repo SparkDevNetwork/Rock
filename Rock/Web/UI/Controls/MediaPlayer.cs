@@ -62,6 +62,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if other players should be paused; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( true )]
         public bool AutoPause
         {
             get => ViewState[nameof( AutoPause )] as bool? ?? true;
@@ -77,6 +78,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if the player should attempt to play automatically; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( false )]
         public bool AutoPlay
         {
             get => ViewState[nameof( AutoPlay )] as bool? ?? false;
@@ -105,6 +107,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if click-to-play should be supported; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( true )]
         public bool ClickToPlay
         {
             get => ViewState[nameof( ClickToPlay )] as bool? ?? true;
@@ -135,6 +138,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if debug logging is enabled; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( false )]
         public bool Debug
         {
             get => ViewState[nameof( Debug )] as bool? ?? false;
@@ -148,6 +152,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if user interface controls should be automatically hidden; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( true )]
         public bool HideControls
         {
             get => ViewState[nameof( HideControls )] as bool? ?? true;
@@ -186,6 +191,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of media player to display.
         /// </value>
+        [DefaultValue( MediaPlayerInterfaceType.Audio )]
         public MediaPlayerInterfaceType MediaType
         {
             get => ViewState[nameof( MediaType )] as MediaPlayerInterfaceType? ?? MediaPlayerInterfaceType.Automatic;
@@ -212,6 +218,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if initially muted; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( false )]
         public bool Muted
         {
             get => ViewState[nameof( Muted )] as bool? ?? false;
@@ -275,6 +282,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The required watch percentage as a value between 0 and 1.0.
         /// </value>
+        [DefaultValue( 0.9 )]
         public double RequiredWatchPercentage
         {
             get => ViewState[nameof( RequiredWatchPercentage )] as double? ?? 0.9;
@@ -288,6 +296,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The number of seconds to fast forward or rewind.
         /// </value>
+        [DefaultValue( 10 )]
         public int SeekTime
         {
             get => ViewState[nameof( SeekTime )] as int? ?? 10;
@@ -316,6 +325,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if the playback session should be tracked in the Interactions table; otherwise, <c>false</c>.
         /// </value>
+        [DefaultValue( true )]
         public bool TrackSession
         {
             get => ViewState[nameof( TrackSession )] as bool? ?? true;
@@ -328,6 +338,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The initial volume for playback between 0 and 1.0.
         /// </value>
+        [DefaultValue( 1d )]
         public double Volume
         {
             get => ViewState[nameof( Volume )] as double? ?? 1d;
@@ -701,15 +712,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
-            // Construct the CSS style for this media player.
-            var style = $@"<style>
-#{ClientID} {{
-  --plyr-color-main: {PrimaryColor};
-}}
-</style>";
-
-            writer.Write( style );
-
             // Render the container for everything.
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "js-media-player" + CssClass );
@@ -718,6 +720,8 @@ namespace Rock.Web.UI.Controls
 
             // Render the container for the media player control.
             writer.AddAttribute( HtmlTextWriterAttribute.Id, $"{ClientID}_player" );
+            writer.AddStyleAttribute( "--plyr-color-main", PrimaryColor );
+            writer.AddStyleAttribute( "width", "100%" );
             if ( MaxVideoWidth.IsNotNullOrWhiteSpace() )
             {
                 writer.AddStyleAttribute( "max-width", MaxVideoWidth );

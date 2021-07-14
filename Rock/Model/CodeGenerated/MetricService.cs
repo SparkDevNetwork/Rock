@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// Metric View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Metric ) )]
     public partial class MetricViewModelHelper : ViewModelHelper<Metric, Rock.ViewModel.MetricViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

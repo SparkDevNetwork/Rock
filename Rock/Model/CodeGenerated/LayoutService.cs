@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// Layout View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Layout ) )]
     public partial class LayoutViewModelHelper : ViewModelHelper<Layout, Rock.ViewModel.LayoutViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

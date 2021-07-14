@@ -24,14 +24,14 @@ namespace Rock.Blocks.Example
     /// <summary>
     /// Allows the user to try out various controls.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Control Gallery" )]
     [Category( "Obsidian > Example" )]
     [Description( "Allows the user to try out various controls." )]
     [IconCssClass( "fa fa-flask" )]
 
-    public class ControlGallery : ObsidianBlockType
+    public class ControlGallery : RockObsidianBlockType
     {
     }
 }

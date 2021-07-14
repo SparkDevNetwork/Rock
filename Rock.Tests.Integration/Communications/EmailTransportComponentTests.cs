@@ -89,6 +89,79 @@ namespace Rock.Tests.Integration.Communications
         }
 
         [TestMethod]
+        [DataRow( "\r" )]
+        [DataRow( "\n" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\n\r" )]
+        [DataRow( "" )]
+        public void SendRockMessageShouldReplaceNewLinesFromTheSubject( string newLineVariants )
+        {
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", expectedFromEmail, false, null );
+
+            var actualEmail = new RockEmailMessage()
+            {
+                FromEmail = "info@test.com",
+                FromName = expectedFromName,
+                ReplyToEmail = "replyto@test.com",
+                Subject = $"{newLineVariants}Test Subject{newLineVariants}"
+            };
+
+            actualEmail.AddRecipient( new RockEmailMessageRecipient( new Person
+            {
+                Email = "test@test.com",
+                FirstName = "Test",
+                LastName = "User"
+            }, new Dictionary<string, object>() ) );
+
+            var expectedEmail = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                ReplyToEmail = $"{actualEmail.ReplyToEmail},{new MailAddress( actualEmail.FromEmail, actualEmail.FromName ).ToString()}",
+                Subject = "Test Subject"
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualEmail, 0, new Dictionary<string, string>(), out var errorMessages );
+
+            Assert.That.IsEmpty( errorMessages );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedEmail.FromEmail &&
+                        rem.FromName == expectedEmail.FromName &&
+                        rem.ReplyToEmail == expectedEmail.ReplyToEmail &&
+                        rem.Subject == expectedEmail.Subject
+                    )
+                );
+        }
+
+        [TestMethod]
         public void SendRockMessageShouldNotReplaceSafeFromEmail()
         {
             AddSafeDomains();
@@ -1133,6 +1206,64 @@ namespace Rock.Tests.Integration.Communications
         }
 
         [TestMethod]
+        [DataRow( "\r" )]
+        [DataRow( "\n" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\n\r" )]
+        [DataRow( "" )]
+        public void SendCommunicationShouldReplaceNewLinesFromTheSubject( string newLineVariants )
+        {
+            var expectedFromEmail = "test@org.com";
+            var expectedFromName = "Test Name";
+
+            var globalAttributes = GlobalAttributesCache.Get();
+            globalAttributes.SetValue( "OrganizationEmail", expectedFromEmail, false, null );
+
+            var actualCommunication = CreateCommunication( expectedFromName, subject: $"{newLineVariants}Test Subject{newLineVariants}" );
+
+            var expectedCommunication = new RockEmailMessage()
+            {
+                FromName = expectedFromName,
+                FromEmail = expectedFromEmail,
+                ReplyToEmail = $"{actualCommunication.ReplyToEmail},{new MailAddress( actualCommunication.FromEmail, actualCommunication.FromName ).ToString()}",
+                Subject = "Test Subject"
+            };
+
+            var emailSendResponse = new EmailSendResponse
+            {
+                Status = Rock.Model.CommunicationRecipientStatus.Delivered,
+                StatusNote = "Email Sent."
+            };
+
+            var emailTransport = new Mock<EmailTransportComponent>()
+            {
+                CallBase = true
+            };
+
+            emailTransport
+                .Protected()
+                .Setup<EmailSendResponse>( "SendEmail", ItExpr.IsAny<RockEmailMessage>() )
+                .Returns( emailSendResponse )
+                .Verifiable();
+
+            emailTransport
+                .Object
+                .Send( actualCommunication, 37, new Dictionary<string, string>() );
+
+            emailTransport
+                .Protected()
+                .Verify( "SendEmail",
+                    Times.Once(),
+                    ItExpr.Is<RockEmailMessage>( rem =>
+                        rem.FromEmail == expectedCommunication.FromEmail &&
+                        rem.FromName == expectedCommunication.FromName &&
+                        rem.ReplyToEmail == expectedCommunication.ReplyToEmail &&
+                        rem.Subject == expectedCommunication.Subject
+                    )
+                );
+        }
+
+        [TestMethod]
         public void SendCommunicationShouldNotReplaceSafeFromEmail()
         {
             AddSafeDomains();
@@ -1574,11 +1705,11 @@ namespace Rock.Tests.Integration.Communications
         }
 
         [TestMethod]
-        [DataRow(false, false, false)]
-        [DataRow(false, true, true)]
-        [DataRow(true, false, true)]
-        [DataRow(true, true, true)]
-        public void SendCommunicationShouldSetCssInliningCorrectly(bool mediumCssInline, bool templateCssInline, bool expectedCssInline)
+        [DataRow( false, false, false )]
+        [DataRow( false, true, true )]
+        [DataRow( true, false, true )]
+        [DataRow( true, true, true )]
+        public void SendCommunicationShouldSetCssInliningCorrectly( bool mediumCssInline, bool templateCssInline, bool expectedCssInline )
         {
             var expectedEmail = "test@test.com";
             var globalAttributes = GlobalAttributesCache.Get();
@@ -1727,7 +1858,8 @@ namespace Rock.Tests.Integration.Communications
             string toEmailAddress = "test@test.com",
             List<BinaryFile> attachments = null,
             bool cssInliningEnabled = true,
-            string htmlMessage = "HTML Message" )
+            string htmlMessage = "HTML Message",
+            string subject = "Test Subject" )
         {
             var actualPerson = new Person
             {
@@ -1755,7 +1887,7 @@ namespace Rock.Tests.Integration.Communications
             actualCommunication.Message = htmlMessage;
             actualCommunication.AdditionalLavaFields = new Dictionary<string, object> { { "test", "test1" } };
             actualCommunication.ReplyToEmail = "replyto@email.com";
-            actualCommunication.Subject = "Test Subject";
+            actualCommunication.Subject = subject;
 
             if ( attachments != null )
             {

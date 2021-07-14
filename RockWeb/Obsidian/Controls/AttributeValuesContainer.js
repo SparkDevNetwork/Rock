@@ -41,21 +41,21 @@ System.register(["../Services/String", "vue", "./RockField"], function (exports_
                 methods: {
                     getAttributeLabel: function (attributeValue) {
                         var _a, _b;
-                        if (this.showAbbreviatedName && ((_a = attributeValue.Attribute) === null || _a === void 0 ? void 0 : _a.AbbreviatedName)) {
-                            return attributeValue.Attribute.AbbreviatedName;
+                        if (this.showAbbreviatedName && ((_a = attributeValue.attribute) === null || _a === void 0 ? void 0 : _a.abbreviatedName)) {
+                            return attributeValue.attribute.abbreviatedName;
                         }
-                        return ((_b = attributeValue.Attribute) === null || _b === void 0 ? void 0 : _b.Name) || '';
+                        return ((_b = attributeValue.attribute) === null || _b === void 0 ? void 0 : _b.name) || '';
                     }
                 },
                 computed: {
                     validAttributeValues: function () {
-                        return this.attributeValues.filter(function (av) { return av.Attribute; });
+                        return this.attributeValues.filter(function (av) { return av.attribute; });
                     },
                     valuesToShow: function () {
                         if (this.showEmptyValues) {
                             return this.validAttributeValues;
                         }
-                        return this.validAttributeValues.filter(function (av) { return !String_1.isNullOrWhitespace(av.Value); });
+                        return this.validAttributeValues.filter(function (av) { return !String_1.isNullOrWhitespace(av.value); });
                     }
                 },
                 template: "\n<div v-if=\"!isEditMode\" v-for=\"a in valuesToShow\" class=\"form-group static-control\">\n    <template v-if=\"a.Value\">\n        <label class=\"control-label\">\n            {{ getAttributeLabel(a) }}\n        </label>\n        <div class=\"control-wrapper\">\n            <div class=\"form-control-static\">\n                <RockField :fieldTypeGuid=\"a.Attribute.FieldTypeGuid\" v-model=\"a.Value\" :configurationValues=\"a.Attribute.QualifierValues\" />\n            </div>\n        </div>\n    </template>\n</div>\n<template v-else>\n    <template v-for=\"a in validAttributeValues\">\n        <RockField\n            isEditMode\n            :fieldTypeGuid=\"a.Attribute.FieldTypeGuid\"\n            v-model=\"a.Value\"\n            :label=\"getAttributeLabel(a)\"\n            :help=\"a.Attribute.Description\"\n            :rules=\"a.Attribute.IsRequired ? 'required' : ''\"\n            :configurationValues=\"a.Attribute.QualifierValues\"  />\n    </template>\n</template>"

@@ -581,8 +581,8 @@
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Blocks\BlockActionGridResponse.cs" />
-    <Compile Include="Blocks\IObsidianBlockType.cs" />
-    <Compile Include="Blocks\IRockClientBlockType.cs" />
+    <Compile Include="Blocks\IRockObsidianBlockType.cs" />
+    <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
@@ -672,6 +672,8 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
+    <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
@@ -722,6 +724,8 @@
     <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
+    <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
@@ -920,6 +924,7 @@
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemGuid\BinaryFile.cs" />
     <Compile Include="SystemGuid\FinancialStatementTemplate.cs" />
+    <Compile Include="SystemKey\LanguageDefinedValueAttributeKey.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Tasks\ProcessTransactionAlertActions.cs" />
@@ -990,6 +995,8 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
+    <Compile Include="ViewModel\IViewModelHelper.cs" />
     <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
     <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
@@ -1860,8 +1867,8 @@
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockType.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
-    <Compile Include="Model\Campus.cs" />
-    <Compile Include="Model\CampusService.partial.cs" />
+    <Compile Include="Model\Core\Campus\Campus.cs" />
+    <Compile Include="Model\Core\Campus\CampusService.cs" />
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFinancialAccountService.cs" />

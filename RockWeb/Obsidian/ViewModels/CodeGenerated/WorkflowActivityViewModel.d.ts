@@ -27,19 +27,19 @@ import AttributeValue from './AttributeValueViewModel';
 import { Guid } from '../../Util/Guid';
 
 export default interface WorkflowActivity extends Entity {
-    Id: number;
-    ActivatedByActivityId: number | null;
-    ActivatedDateTime: RockDateType | null;
-    ActivityTypeId: number;
-    AssignedGroupId: number | null;
-    AssignedPersonAliasId: number | null;
-    Attributes: Record<string, AttributeValue> | null;
-    CompletedDateTime: RockDateType | null;
-    LastProcessedDateTime: RockDateType | null;
-    WorkflowId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    activatedByActivityId: number | null;
+    activatedDateTime: RockDateType | null;
+    activityTypeId: number;
+    assignedGroupId: number | null;
+    assignedPersonAliasId: number | null;
+    attributes: Record<string, AttributeValue> | null;
+    completedDateTime: RockDateType | null;
+    lastProcessedDateTime: RockDateType | null;
+    workflowId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

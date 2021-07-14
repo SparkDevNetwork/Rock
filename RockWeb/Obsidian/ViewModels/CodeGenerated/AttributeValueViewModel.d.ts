@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface AttributeValue extends Entity {
-    Id: number;
-    Attribute: Attribute | null;
-    AttributeId: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number | null;
-    IsSystem: boolean;
-    Value: string | null;
-    ValueAsNumeric: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attribute: Attribute | null;
+    attributeId: number;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number | null;
+    isSystem: boolean;
+    value: string | null;
+    valueAsNumeric: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -165,10 +165,11 @@ namespace Rock.Model
     /// <summary>
     /// Category View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Category ) )]
     public partial class CategoryViewModelHelper : ViewModelHelper<Category, Rock.ViewModel.CategoryViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnTransport" runat="server" Text="Edit Transport" CssClass="btn btn-primary" OnClick="btnTransport_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnTransport" runat="server" Text="Configure Transports" CssClass="btn btn-default" OnClick="btnTransport_Click" CausesValidation="false" />
                 </div>
                 
             </div>

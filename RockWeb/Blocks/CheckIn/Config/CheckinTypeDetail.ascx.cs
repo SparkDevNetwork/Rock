@@ -225,6 +225,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_PreventInactivePeople", cbPreventInactivePeople.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_CheckInType", ddlType.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_DisplayLocationCount", cbDisplayLocCount.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, rblAbilityLevelDetermination.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_EnableManagerOption", cbEnableManager.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_EnableOverride", cbEnableOverride.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", nbMaxPhoneLength.Text );
@@ -491,6 +492,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cbPreventInactivePeople.Checked = groupType.GetAttributeValue( "core_checkin_PreventInactivePeople" ).AsBoolean( true );
                 ddlType.SetValue( groupType.GetAttributeValue( "core_checkin_CheckInType" ) );
                 cbDisplayLocCount.Checked = groupType.GetAttributeValue( "core_checkin_DisplayLocationCount" ).AsBoolean( true );
+                rblAbilityLevelDetermination.SelectedValue = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
                 cbEnableManager.Checked = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
                 cbEnableOverride.Checked = groupType.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
                 nbMaxPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" );
@@ -588,6 +590,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_PreventDuplicateCheckin" );
             excludeList.Add( "core_checkin_PreventInactivePeople" );
             excludeList.Add( "core_checkin_CheckInType" );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
             excludeList.Add( "core_checkin_DisplayLocationCount" );
             excludeList.Add( "core_checkin_EnableManagerOption" );
             excludeList.Add( "core_checkin_EnableOverride" );

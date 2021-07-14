@@ -1242,8 +1242,7 @@ Rock.settings.initialize({{
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
-                                            var clientType = rockBlockEntity.GetRockClientType();
-                                            rockBlockEntity.RequestContext = new RockRequestContext( Request, clientType );
+                                            rockBlockEntity.RequestContext = new RockRequestContext( Request );
                                             rockBlockEntity.RequestContext.AddContextEntitiesForPage( _pageCache );
 
                                             var wrapper = new RockBlockTypeWrapper
@@ -1259,7 +1258,7 @@ Rock.settings.initialize({{
                                             control.ClientIDMode = ClientIDMode.AutoID;
                                         }
 
-                                        if ( blockEntity is IObsidianBlockType )
+                                        if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
                                         }
@@ -1363,7 +1362,7 @@ Rock.settings.initialize({{
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var script = $@"
-Obsidian.whenReady(() => {{
+Obsidian.onReady(() => {{
     System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializePage({{
             executionStartTime: new Date(),
@@ -1681,7 +1680,7 @@ Obsidian.whenReady(() => {{
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-page-timings" ) )
                     {
                         var script = $@"
-Obsidian.whenReady(() => {{
+Obsidian.onReady(() => {{
     System.import('/Obsidian/Index.js').then(indexModule => {{
         indexModule.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
@@ -2293,7 +2292,7 @@ Sys.Application.add_load(function () {
             foreach ( var kvp in contextEntities )
             {
                 var entity = kvp.Value;
-                var viewModel = ViewModelHelper.GetViewModel( entity, CurrentPerson, false );
+                var viewModel = ViewModelHelper.GetDefaultViewModel( entity, CurrentPerson, false );
 
                 if ( viewModel != null )
                 {
@@ -3070,7 +3069,26 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                RemoveExistingHtmlMeta( page, htmlMeta );
+                /*
+                     6/26/2021 - SK
+
+                     The AddMetaTagToHead in the lava filter removes some of the existing Meta tag
+                     from the Head section at the later stage in page cycle. So at the time of
+                     postback The control tree into which viewstate is being loaded doesn't match 
+                     the control tree that was used to save viewstate during the previous request. 
+
+                     So instead of removing it and adding some of the existing meta tag again at the
+                     end, if we replace it with the new value at the same position, it will help
+                     maintain the viewstate.
+    
+                     Reason: To fix issue #4560 (a viewstate error on any postback) 
+                */
+                var isExisting = ReplaceHtmlMetaIfExists( page, htmlMeta );
+
+                if ( isExisting )
+                {
+                    return;
+                }
 
                 // Find last meta element
                 int index = 0;
@@ -3098,18 +3116,19 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Removes an existing HtmlMeta control if all attributes match except for Content.
+        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
         /// Returns <c>true</c> if the meta tag already exists and was removed.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
         /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for.</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool RemoveExistingHtmlMeta( Page page, HtmlMeta newMeta )
+        private static bool ReplaceHtmlMetaIfExists( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
             if ( page != null && page.Header != null )
             {
+                var index = 0;
                 foreach ( Control control in page.Header.Controls )
                 {
                     if ( control is HtmlMeta )
@@ -3134,11 +3153,17 @@ Sys.Application.add_load(function () {
 
                         if ( sameAttributes )
                         {
-                            page.Header.Controls.Remove( existingMeta );
+                            index = page.Header.Controls.IndexOf( control );
+                            page.Header.Controls.Remove( control );
                             existsAlready = true;
                             break;
                         }
                     }
+                }
+
+                if ( existsAlready )
+                {
+                    page.Header.Controls.AddAt( index, newMeta );
                 }
             }
 

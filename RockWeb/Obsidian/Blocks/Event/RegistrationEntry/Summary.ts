@@ -77,7 +77,7 @@ export default defineComponent( {
         /** The settings for the gateway (MyWell, etc) control */
         gatewayControlModel (): GatewayControlModel
         {
-            return this.viewModel.GatewayControl;
+            return this.viewModel.gatewayControl;
         },
 
         /** This is the data sent from the C# code behind when the block initialized. */
@@ -89,25 +89,25 @@ export default defineComponent( {
         /** Info about the registrants made available by .FirstName instead of by field guid */
         registrantInfos (): RegistrantBasicInfo[]
         {
-            return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.RegistrantForms ) );
+            return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.registrantForms ) );
         },
 
         /** The registrant term - plural if there are more than 1 */
         registrantTerm (): string
         {
-            return this.registrantInfos.length === 1 ? this.viewModel.RegistrantTerm : this.viewModel.PluralRegistrantTerm;
+            return this.registrantInfos.length === 1 ? this.viewModel.registrantTerm : this.viewModel.pluralRegistrantTerm;
         },
 
         /** The name of this registration instance */
         instanceName (): string
         {
-            return this.viewModel.InstanceName;
+            return this.viewModel.instanceName;
         },
 
         /** The text to be displayed on the "Finish" button */
         finishButtonText (): string
         {
-            return ( this.viewModel.IsRedirectGateway && this.registrationEntryState.AmountToPayToday ) ? 'Pay' : 'Finish';
+            return ( this.viewModel.isRedirectGateway && this.registrationEntryState.AmountToPayToday ) ? 'Pay' : 'Finish';
         }
     },
     methods: {
@@ -126,7 +126,7 @@ export default defineComponent( {
             if ( this.registrationEntryState.AmountToPayToday )
             {
                 // If this is a redirect gateway, then persist and redirect now
-                if ( this.viewModel.IsRedirectGateway )
+                if ( this.viewModel.isRedirectGateway )
                 {
                     const redirectUrl = await this.getPaymentRedirect();
 
@@ -245,7 +245,7 @@ export default defineComponent( {
 
         <Registrar />
 
-        <div v-if="viewModel.Cost">
+        <div v-if="viewModel.cost">
             <h4>Payment Summary</h4>
             <DiscountCodeForm />
             <CostSummary />
@@ -266,7 +266,7 @@ export default defineComponent( {
             </div>
         </div>
 
-        <div v-if="!viewModel.Cost" class="margin-b-md">
+        <div v-if="!viewModel.cost" class="margin-b-md">
             <p>The following {{registrantTerm}} will be registered for {{instanceName}}:</p>
             <ul>
                 <li v-for="r in registrantInfos" :key="r.Guid">
@@ -278,7 +278,7 @@ export default defineComponent( {
         <Alert v-if="submitErrorMessage" alertType="danger">{{submitErrorMessage}}</Alert>
 
         <div class="actions text-right">
-            <RockButton v-if="viewModel.AllowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
+            <RockButton v-if="viewModel.allowRegistrationUpdates" class="pull-left" btnType="default" @click="onPrevious" :isLoading="loading">
                 Previous
             </RockButton>
             <RockButton btnType="primary" type="submit" :isLoading="loading">

@@ -36,5 +36,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 [assembly: InternalsVisibleTo( "Rock" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]

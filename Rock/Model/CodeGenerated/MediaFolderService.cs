@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// MediaFolder View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( MediaFolder ) )]
     public partial class MediaFolderViewModelHelper : ViewModelHelper<MediaFolder, Rock.ViewModel.MediaFolderViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// AttributeMatrixItem View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AttributeMatrixItem ) )]
     public partial class AttributeMatrixItemViewModelHelper : ViewModelHelper<AttributeMatrixItem, Rock.ViewModel.AttributeMatrixItemViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

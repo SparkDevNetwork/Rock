@@ -87,7 +87,7 @@ export default defineComponent({
         },
         doEdit(): void {
             this.personForEditing = this.person ? { ...this.person } : null;
-            this.campusGuid = this.campus?.Guid || '';
+            this.campusGuid = this.campus?.guid || '';
             this.birthdate = this.birthdateOrNull ? toRockDate(this.birthdateOrNull) : null;
             this.setIsEditMode(true);
         },
@@ -145,7 +145,7 @@ export default defineComponent({
             return null;
         },
         campusName(): string {
-            return this.campus?.Name || '';
+            return this.campus?.name || '';
         },
         blockTitle(): string {
             return this.person ?
@@ -156,7 +156,7 @@ export default defineComponent({
             return store.state.currentPerson;
         },
         currentPersonGuid(): Guid | null {
-            return this.currentPerson ? this.currentPerson.Guid : null;
+            return this.currentPerson ? this.currentPerson.guid : null;
         }
     },
     watch: {

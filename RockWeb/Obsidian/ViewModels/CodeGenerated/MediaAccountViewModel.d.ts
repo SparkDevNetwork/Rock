@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface MediaAccount extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ComponentEntityTypeId: number;
-    IsActive: boolean;
-    LastRefreshDateTime: RockDateType | null;
-    MetricData: string | null;
-    Name: string | null;
-    SourceData: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    componentEntityTypeId: number;
+    isActive: boolean;
+    lastRefreshDateTime: RockDateType | null;
+    metricData: string | null;
+    name: string | null;
+    sourceData: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

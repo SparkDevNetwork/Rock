@@ -5,11 +5,11 @@
         <asp:PostBackTrigger ControlID="btnApplyOptions" />
     </Triggers>
     <ContentTemplate>
-        
+
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-map-marker"></i> Group Map</h1>
-                 <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
+                 <div class="pull-right"><a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a></div>
             </div>
 
             <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
@@ -31,7 +31,7 @@
                 <asp:Literal ID="lMapStyling" runat="server" />
 
                 <Rock:CampusesPicker ID="cpCampuses" runat="server" FormGroupCssClass="js-campuses-picker" Label="Campus Filter" Help="Select the campuses to narrow the results down to families with that home campus." Required="false" />
-        
+
                 <div class="form-inline clearfix">
 
                     <div class="pull-left">
@@ -59,7 +59,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="pull-right">
                         <asp:Repeater ID="rptStatus" runat="server">
                             <ItemTemplate>
@@ -73,8 +73,8 @@
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
-                    
-            
+
+
                 </div>
 
                 <asp:Panel ID="pnlMap" runat="server">

@@ -7,3 +7,52 @@
 @import "_variables.less";
 @import (reference) "_variable-overrides.less";
 @import (reference) "_css-overrides.less";
+
+a[id$="btnCancel"].btn,
+a[id$="lbCancel"].btn,
+a[id$="btnDelete"].btn,
+a[id$="btnArchive"].btn {
+  &:extend(.btn-default all);
+  font-weight: @btn-font-weight;
+  border-radius: @btn-border-radius-base;
+
+  &.btn-xs {
+    padding: 6px 10px;
+  }
+}
+
+// Jon Does not like delete buttons in red
+// a[id$="btnArchive"].btn,
+// a[id$="btnDelete"].btn {
+//   color: @brand-danger;
+//   &:hover {
+//     color: darken(@brand-danger, 5%);
+//   }
+// }
+
+.label-variant(@color) {
+  color: @color;
+  background-color: fade(@color, 20%);
+}
+
+.label-default {
+  color: @gray-800;
+}
+
+.label-warning {
+  color:#92400e;
+  background: #fef3c7;
+}
+
+.label-info {
+  color:#246d8f;
+  //background: #dbeafe;
+}
+
+.label-success {
+  color: #119c6e;
+}
+
+.label-campus {
+  color: #5f5568;
+}

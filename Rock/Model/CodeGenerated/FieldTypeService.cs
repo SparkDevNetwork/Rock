@@ -85,10 +85,11 @@ namespace Rock.Model
     /// <summary>
     /// FieldType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FieldType ) )]
     public partial class FieldTypeViewModelHelper : ViewModelHelper<FieldType, Rock.ViewModel.FieldTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

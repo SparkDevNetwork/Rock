@@ -27,13 +27,13 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface EventCalendarContentChannel extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ContentChannelId: number;
-    EventCalendarId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    contentChannelId: number;
+    eventCalendarId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

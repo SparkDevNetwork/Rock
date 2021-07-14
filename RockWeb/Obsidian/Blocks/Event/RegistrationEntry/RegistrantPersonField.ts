@@ -48,7 +48,7 @@ export default defineComponent( {
         {
             let componentPath = '';
 
-            switch ( this.field.PersonFieldType )
+            switch ( this.field.personFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
                     componentPath = 'Elements/TextBox';
@@ -81,10 +81,10 @@ export default defineComponent( {
         fieldControlComponentProps()
         {
             const props: Record<string, unknown> = {
-                rules: this.field.IsRequired ? 'required' : ''
+                rules: this.field.isRequired ? 'required' : ''
             };
 
-            switch ( this.field.PersonFieldType )
+            switch ( this.field.personFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
                     props.label = 'First Name';
@@ -122,14 +122,14 @@ export default defineComponent( {
             handler()
             {
                 // Set the default value if needed
-                if ( this.field.Guid in this.fieldValues )
+                if ( this.field.guid in this.fieldValues )
                 {
                     return;
                 }
 
                 let defaultValue: unknown = '';
 
-                switch ( this.field.PersonFieldType )
+                switch ( this.field.personFieldType )
                 {
                     case RegistrationPersonFieldType.Birthdate:
                         defaultValue = getDefaultDatePartsPickerModel();
@@ -139,10 +139,10 @@ export default defineComponent( {
                         break;
                 }
 
-                this.fieldValues[ this.field.Guid ] = defaultValue;
+                this.fieldValues[ this.field.guid ] = defaultValue;
             }
         },
     },
     template: `
-<ComponentFromUrl v-if="componentUrl" :url="componentUrl" v-bind="fieldControlComponentProps" v-model="fieldValues[field.Guid]" />`
+<ComponentFromUrl v-if="componentUrl" :url="componentUrl" v-bind="fieldControlComponentProps" v-model="fieldValues[field.guid]" />`
 } );

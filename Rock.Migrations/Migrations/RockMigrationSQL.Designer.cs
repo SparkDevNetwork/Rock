@@ -614,7 +614,7 @@ namespace Rock.Migrations.Migrations {
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
         ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
         ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
-        ///    series. Let’s look at each opt [rest of string was truncated]&quot;;.
+        ///    series. Let’s look at eac [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202107061930320_Rollup_0706_chartupdate {
             get {
@@ -630,7 +630,7 @@ namespace Rock.Migrations.Migrations {
         ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
         ///{[endkpis]}
         ///&lt;/code&gt;&lt;/pre&gt;
-        ///&lt;h4 id=&quot;s [rest of string was truncated]&quot;;.
+        ///&lt;h [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202107061930320_Rollup_0706_KPIShortCode {
             get {
@@ -644,7 +644,7 @@ namespace Rock.Migrations.Migrations {
         ///
         ///&lt;p&gt;Each has the following basic settings settings:&lt;/p&gt;
         ///&lt;ul&gt;
-        ///&lt;li&gt;&lt;strong&gt;value&lt;/strong&gt; (0) - The [rest of string was truncated]&quot;;.
+        ///&lt;li&gt;&lt;strong&gt;value&lt;/strong&gt; (0)  [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202107061930320_Rollup_0706_update_easypie {
             get {
@@ -664,11 +664,53 @@ namespace Rock.Migrations.Migrations {
         ///
         ///{[ sparkline type:&apos;&apos;bullet&apos;&apos; data:&apos;&apos;10,12,12,9,7&apos;&apos; ]}
         ///
-        ///{[ sparkline type:&apos; [rest of string was truncated]&quot;;.
+        ///{[ spark [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202107061930320_Rollup_0706_update_sparklinesimg {
             get {
                 return ResourceManager.GetString("_202107061930320_Rollup_0706_update_sparklinesimg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMer" +
+                        "ge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [EntityType] SET [IndexResultTemplate]=N&apos;{% if IndexDocument.IndexModelType == &quot;Rock.UniversalSearch.IndexModels.PersonIndex&quot; %}
+        ///
+        ///    {% assign url = &quot;~/Person/&quot; | ResolveRockUrl %}
+        ///    
+        ///    {% if DisplayOptions.Person-Url and DisplayOptions.Person-Url != null and DisplayOptions.Person-Url != &apos;&apos;&apos;&apos; %}
+        ///        {% assign url = DisplayOptions.Person-Url | ResolveRockUrl %}
+        ///    {% endif %}
+        ///    
+        ///    
+        ///    &lt;div class=&quot;row model-cannavigate&quot; data-href=&quot;{{ url }}{{ IndexDocument.Id }}&quot;&gt;
+        ///        &lt;div  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity {
+            get {
+                return ResourceManager.GetString("_202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity", resourceCulture);
             }
         }
     }

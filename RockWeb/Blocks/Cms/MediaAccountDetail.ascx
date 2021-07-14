@@ -41,7 +41,7 @@
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnSyncWithProvider" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Download all data from provider." data-toggle="tooltip" OnClick="btnSyncWithProvider_Click" CausesValidation="false">
+                            <asp:LinkButton ID="btnSyncWithProvider" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Download all data from provider." data-toggle="tooltip" OnClick="btnSyncWithProvider_Click" CausesValidation="false">
                                 <i class="fa fa-download"></i>
                             </asp:LinkButton>
                         </span>

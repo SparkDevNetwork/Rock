@@ -63,10 +63,11 @@ namespace Rock.Model
     /// <summary>
     /// FinancialBatch View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FinancialBatch ) )]
     public partial class FinancialBatchViewModelHelper : ViewModelHelper<FinancialBatch, Rock.ViewModel.FinancialBatchViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

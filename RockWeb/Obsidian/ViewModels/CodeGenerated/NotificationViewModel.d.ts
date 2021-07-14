@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Notification extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Classification: number;
-    IconCssClass: string | null;
-    Message: string | null;
-    SentDateTime: RockDateType;
-    Title: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    classification: number;
+    iconCssClass: string | null;
+    message: string | null;
+    sentDateTime: RockDateType;
+    title: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -21,12 +21,12 @@
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Text="" Visible="false" />
                     <Rock:NotificationBox ID="nbTestResult" runat="server" NotificationBoxType="Success" Text="Test communication has been sent." Visible="false" />
                     <Rock:NotificationBox ID="nbConfirmMessage" runat="server" NotificationBoxType="Info" Title="Please Confirm" Visible="false" />
-                 
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSend" runat="server" Text="Send" CssClass="btn btn-primary" OnClick="btnSend_Click" CausesValidation="true" />
                         <asp:LinkButton ID="btnSendConfirmed" runat="server" Text="Confirm Send" CssClass="btn btn-primary" OnClick="btnSendConfirmed_Click" Visible="false" CausesValidation="true" />
                         <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-danger" OnClick="btnCancel_Click" Visible="false" CausesValidation="false" />
-                        <asp:LinkButton ID="btnTest" runat="server" Text="Test" CssClass="btn btn-link" OnClick="btnTest_Click" CausesValidation="true" />
+                        <asp:LinkButton ID="btnTest" runat="server" Text="Test" CssClass="btn btn-default" OnClick="btnTest_Click" CausesValidation="true" />
                     </div>
                 </asp:Panel>
 

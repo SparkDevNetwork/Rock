@@ -56,14 +56,13 @@
     <Compile Include="Example\LargeDatasetGrid.cs" />
     <Compile Include="Finance\TransactionEntry.cs" />
     <Compile Include="Groups\GroupMemberList.cs" />
-    <Compile Include="ObsidianBlockType.cs" />
+    <Compile Include="RockObsidianBlockType.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Example\PersonSecondary.cs" />
     <Compile Include="Example\PersonDetail.cs" />
     <Compile Include="Example\ControlGallery.cs" />
     <Compile Include="Utility\StarkDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="JavaScript.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

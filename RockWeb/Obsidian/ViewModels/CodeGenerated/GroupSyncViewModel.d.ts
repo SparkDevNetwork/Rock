@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface GroupSync extends Entity {
-    Id: number;
-    AddUserAccountsDuringSync: boolean;
-    Attributes: Record<string, AttributeValue> | null;
-    ExitSystemCommunicationId: number | null;
-    GroupId: number;
-    GroupTypeRoleId: number;
-    LastRefreshDateTime: RockDateType | null;
-    ScheduleIntervalMinutes: number | null;
-    SyncDataViewId: number;
-    WelcomeSystemCommunicationId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    addUserAccountsDuringSync: boolean;
+    attributes: Record<string, AttributeValue> | null;
+    exitSystemCommunicationId: number | null;
+    groupId: number;
+    groupTypeRoleId: number;
+    lastRefreshDateTime: RockDateType | null;
+    scheduleIntervalMinutes: number | null;
+    syncDataViewId: number;
+    welcomeSystemCommunicationId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

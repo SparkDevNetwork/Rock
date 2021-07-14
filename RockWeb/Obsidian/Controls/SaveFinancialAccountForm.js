@@ -136,13 +136,13 @@ System.register(["vue", "../Elements/Alert", "../Elements/CheckBox", "../Element
                                             })];
                                     case 1:
                                         result = _d.sent();
-                                        if ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.IsSuccess) {
-                                            this.successTitle = result.data.Title;
-                                            this.successMessage = result.data.Detail || 'Success';
+                                        if ((_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a.isSuccess) {
+                                            this.successTitle = result.data.title;
+                                            this.successMessage = result.data.detail || 'Success';
                                         }
                                         else {
-                                            this.errorTitle = ((_b = result.data) === null || _b === void 0 ? void 0 : _b.Title) || '';
-                                            this.errorMessage = ((_c = result.data) === null || _c === void 0 ? void 0 : _c.Detail) || 'Error';
+                                            this.errorTitle = ((_b = result.data) === null || _b === void 0 ? void 0 : _b.title) || '';
+                                            this.errorMessage = ((_c = result.data) === null || _c === void 0 ? void 0 : _c.detail) || 'Error';
                                         }
                                         this.isLoading = false;
                                         return [2];

@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Category extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    EntityTypeId: number;
-    EntityTypeQualifierColumn: string | null;
-    EntityTypeQualifierValue: string | null;
-    HighlightColor: string | null;
-    IconCssClass: string | null;
-    IsSystem: boolean;
-    Name: string | null;
-    Order: number;
-    ParentCategoryId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    entityTypeId: number;
+    entityTypeQualifierColumn: string | null;
+    entityTypeQualifierValue: string | null;
+    highlightColor: string | null;
+    iconCssClass: string | null;
+    isSystem: boolean;
+    name: string | null;
+    order: number;
+    parentCategoryId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

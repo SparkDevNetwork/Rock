@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Dynamic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Rock.Lava;
 using Rock.Utility;
 
@@ -93,8 +96,25 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( string.Empty, "{{ CurrentPerson.NonexistentProperty }}", mergeValues );
         }
 
+        /// <summary>
+        /// Serializing and Deserializing a type derived from RockDynamic should produce a consistent result.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "RockDynamic does not correctly handle round-tripping for dynamically-defined members." )]
+        public void RockDynamicType_SerializeDeserialize_CanRoundtrip()
+        {
+            var dynamicObject = RockDynamicObjectWithCustomPropertyAccess.NewWithData();
 
+            var json = JsonConvert.SerializeObject( dynamicObject );
 
+            var dynamicFromJson = JsonConvert.DeserializeObject<RockDynamicObjectWithCustomPropertyAccess>( json );
+
+            var mergeValues = new LavaDataDictionary { { "Colors", dynamicFromJson } };
+
+            var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
+
+            TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
+        }
 
         /// <summary>
         /// Referencing a valid property of an input object should return the property value.
@@ -135,9 +155,34 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void LavaDataObjectType_WithCustomPropertyAccessor_ReturnsPropertyValue()
         {
-            var dynamicObject = new LavaDataObjectWithCustomPropertyAccess();
+            var dynamicObject = LavaDataObjectWithCustomPropertyAccess.NewWithData();
 
             var mergeValues = new LavaDataDictionary { { "Colors", dynamicObject } };
+
+            var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
+
+            // This test is only valid for the Fluid Engine.
+            TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
+        }
+
+        /// <summary>
+        /// Referencing a non-existent property of an input object should return an empty string.
+        /// </summary>
+        [TestMethod]
+        public void LavaDataObjectType_SerializeDeserialize_CanRoundtrip()
+        {
+            var dynamicObject = LavaDataObjectWithCustomPropertyAccess.NewWithData();
+
+            var json = JsonConvert.SerializeObject( dynamicObject );
+
+            // TODO: json string is empty here - dynamic properties of wrapped object not serialized correctly.
+            // RockDynamic passes this test - but it does not implement IDictionary.
+            // JsonConvert favors processing the object as IDictionary, uses IDictionary.GetEnumerator()
+
+            var dynamicFromJson = JsonConvert.DeserializeObject<LavaDataObjectWithCustomPropertyAccess>( json );
+
+            // TODO: object not correctly popoulated from JSON string - check TrySetProperty
+            var mergeValues = new LavaDataDictionary { { "Colors", dynamicFromJson } };
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
 
@@ -163,7 +208,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// <summary>
         /// A representation of a Person used for testing purposes.
         /// </summary
-        [DotLiquid.LiquidType("Id", "NickName", "FirstName", "LastName", "Campus")]
+        [DotLiquid.LiquidType( "Id", "NickName", "FirstName", "LastName", "Campus" )]
         public class PersonRockDynamic : RockDynamic
         {
             public int Id { get; set; }
@@ -181,7 +226,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// <summary>
         /// A representation of a Campus used for testing purposes.
         /// </summary>
-        [DotLiquid.LiquidType("Id", "Name" )]
+        [DotLiquid.LiquidType( "Id", "Name" )]
         public class CampusRockDynamic : RockDynamic
         {
             public int Id { get; set; }
@@ -190,6 +235,61 @@ namespace Rock.Tests.UnitTests.Lava
             public override string ToString()
             {
                 return Name;
+            }
+        }
+
+        /// <summary>
+        /// A class that is derived from LavaDataObject and implements a custom property value getter.
+        /// </summary>
+        private class RockDynamicObjectWithCustomPropertyAccess : RockDynamic
+        {
+            private Dictionary<string, object> _internalDictionary = new Dictionary<string, object>();
+
+            public static RockDynamicObjectWithCustomPropertyAccess NewWithData()
+            {
+                var dynamicObject = new RockDynamicObjectWithCustomPropertyAccess();
+
+                dynamicObject["Color1"] = "red";
+                dynamicObject["Color2"] = "green";
+                dynamicObject["Color3"] = "blue";
+
+                return dynamicObject;
+            }
+
+            public override IEnumerable<string> GetDynamicMemberNames()
+            {
+                var keys = base.GetDynamicMemberNames().ToList();
+
+                keys.AddRange( _internalDictionary.Keys );
+
+                return keys;
+            }
+
+            public override bool TrySetMember( SetMemberBinder binder, object value )
+            {
+                return base.TrySetMember( binder, value );
+            }
+
+            public override bool TryGetMember( GetMemberBinder binder, out object result )
+            {
+                var exists = base.TryGetMember( binder, out result );
+
+                if ( !exists )
+                {
+                    exists = _internalDictionary.ContainsKey( binder.Name );
+
+                    if ( exists )
+                    {
+                        result = _internalDictionary[binder.Name];
+                    }
+
+                    if ( !exists )
+                    {
+                        result = null;
+                    }
+                }
+
+                return exists;
             }
         }
 
@@ -247,26 +347,38 @@ namespace Rock.Tests.UnitTests.Lava
         {
             private Dictionary<string, object> _internalDictionary;
 
-            public LavaDataObjectWithCustomPropertyAccess()
+
+            public static LavaDataObjectWithCustomPropertyAccess NewWithData()
             {
-                _internalDictionary = new Dictionary<string, object>
-                {
-                    { "Color1","red" },
-                    { "Color2","green" },
-                    { "Color3","blue" }
-                };
+                var dynamicObject = new LavaDataObjectWithCustomPropertyAccess();
+
+                dynamicObject["Color1"] = "red";
+                dynamicObject["Color2"] = "green";
+                dynamicObject["Color3"] = "blue";
+
+                return dynamicObject;
             }
 
             protected override bool OnTryGetValue( string memberName, out object result )
             {
-                if ( _internalDictionary.ContainsKey( memberName ) )
+                var exists = base.OnTryGetValue( memberName, out result );
+
+                if ( !exists )
                 {
-                    result = _internalDictionary[memberName];
-                    return true;
+                    exists = _internalDictionary.ContainsKey( memberName );
+
+                    if ( exists )
+                    {
+                        result = _internalDictionary[memberName];
+                    }
+
+                    if ( !exists )
+                    {
+                        result = null;
+                    }
                 }
 
-                result = null;
-                return false;
+                return exists;
             }
         }
 

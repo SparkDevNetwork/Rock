@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface SignalType extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    Name: string | null;
-    Order: number;
-    SignalColor: string | null;
-    SignalIconCssClass: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    name: string | null;
+    order: number;
+    signalColor: string | null;
+    signalIconCssClass: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

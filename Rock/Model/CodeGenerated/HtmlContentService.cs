@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// HtmlContent View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( HtmlContent ) )]
     public partial class HtmlContentViewModelHelper : ViewModelHelper<HtmlContent, Rock.ViewModel.HtmlContentViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

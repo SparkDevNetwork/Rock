@@ -103,10 +103,11 @@ namespace Rock.Model
     /// <summary>
     /// PageRoute View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PageRoute ) )]
     public partial class PageRouteViewModelHelper : ViewModelHelper<PageRoute, Rock.ViewModel.PageRouteViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

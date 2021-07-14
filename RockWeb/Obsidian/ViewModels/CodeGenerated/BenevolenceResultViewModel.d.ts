@@ -27,15 +27,15 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface BenevolenceResult extends Entity {
-    Id: number;
-    Amount: number | null;
-    Attributes: Record<string, AttributeValue> | null;
-    BenevolenceRequestId: number;
-    ResultSummary: string | null;
-    ResultTypeValueId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    amount: number | null;
+    attributes: Record<string, AttributeValue> | null;
+    benevolenceRequestId: number;
+    resultSummary: string | null;
+    resultTypeValueId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -177,14 +177,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lTitle.Text = GetTitleText();
-
-                    //string groupTypeNames = groupTypes
-                    //    .Where( t => t.GroupType != null )
-                    //    .Select( t => t.GroupType.Name )
-                    //    .ToList().AsDelimited( ", " );
-                    //lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), groupTypeNames );
-
                     lCaption.Text = GetAttributeValue( AttributeKey.Caption );
+
                     var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
                     if ( availGroups.Any() )
                     {

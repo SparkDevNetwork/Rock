@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// StreakTypeExclusion View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( StreakTypeExclusion ) )]
     public partial class StreakTypeExclusionViewModelHelper : ViewModelHelper<StreakTypeExclusion, Rock.ViewModel.StreakTypeExclusionViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

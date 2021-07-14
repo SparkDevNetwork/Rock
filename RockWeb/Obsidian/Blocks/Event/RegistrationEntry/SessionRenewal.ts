@@ -57,7 +57,7 @@ export default defineComponent( {
         /** Does this registration instance have a waitlist? */
         hasWaitlist (): boolean
         {
-            return this.registrationEntryState.ViewModel.WaitListEnabled;
+            return this.registrationEntryState.ViewModel.waitListEnabled;
         },
 
         /** The number of registrants being registered */
@@ -126,9 +126,9 @@ export default defineComponent( {
 
                 if ( response.data )
                 {
-                    const asDate = new Date( response.data.ExpirationDateTime );
+                    const asDate = new Date( response.data.expirationDateTime );
                     this.registrationEntryState.SessionExpirationDate = asDate;
-                    this.spotsSecured = response.data.SpotsSecured;
+                    this.spotsSecured = response.data.spotsSecured;
 
                     // If there is a deficiency, then update the state to reflect the reduced spots available
                     let deficiency = this.nonWaitlistRegistrantCount - this.spotsSecured;
@@ -140,7 +140,7 @@ export default defineComponent( {
                         return;
                     }
 
-                    this.registrationEntryState.ViewModel.SpotsRemaining = this.spotsSecured;
+                    this.registrationEntryState.ViewModel.spotsRemaining = this.spotsSecured;
 
                     if ( !this.hasWaitlist )
                     {

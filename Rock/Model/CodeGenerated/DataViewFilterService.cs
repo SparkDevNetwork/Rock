@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// DataViewFilter View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( DataViewFilter ) )]
     public partial class DataViewFilterViewModelHelper : ViewModelHelper<DataViewFilter, Rock.ViewModel.DataViewFilterViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// SiteDomain View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SiteDomain ) )]
     public partial class SiteDomainViewModelHelper : ViewModelHelper<SiteDomain, Rock.ViewModel.SiteDomainViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

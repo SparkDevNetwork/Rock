@@ -177,18 +177,18 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                     accountAndCampusString: function () {
                         var accountNames = [];
                         var _loop_1 = function (accountGuid) {
-                            var account = this_1.accounts.find(function (a) { return Guid_1.areEqual(accountGuid, a.Guid); });
-                            if (!account || !account.PublicName) {
+                            var account = this_1.accounts.find(function (a) { return Guid_1.areEqual(accountGuid, a.guid); });
+                            if (!account || !account.publicName) {
                                 return "continue";
                             }
-                            accountNames.push(account.PublicName);
+                            accountNames.push(account.publicName);
                         };
                         var this_1 = this;
                         for (var accountGuid in this.args.AccountAmounts) {
                             _loop_1(accountGuid);
                         }
                         if (this.campus) {
-                            return String_1.asCommaAnd(accountNames) + " - " + this.campus.Name;
+                            return String_1.asCommaAnd(accountNames) + " - " + this.campus.name;
                         }
                         return String_1.asCommaAnd(accountNames);
                     }
@@ -265,9 +265,9 @@ System.register(["../../Controls/CampusPicker", "../../Controls/DefinedValuePick
                             if (!this.currentPerson) {
                                 return;
                             }
-                            this.args.FirstName = this.args.FirstName || this.currentPerson.FirstName || '';
-                            this.args.LastName = this.args.LastName || this.currentPerson.LastName || '';
-                            this.args.Email = this.args.Email || this.currentPerson.Email || '';
+                            this.args.FirstName = this.args.FirstName || this.currentPerson.firstName || '';
+                            this.args.LastName = this.args.LastName || this.currentPerson.lastName || '';
+                            this.args.Email = this.args.Email || this.currentPerson.email || '';
                         }
                     }
                 },

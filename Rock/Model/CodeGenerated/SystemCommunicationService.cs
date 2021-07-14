@@ -85,6 +85,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.CompletionSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
@@ -103,10 +109,11 @@ namespace Rock.Model
     /// <summary>
     /// SystemCommunication View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SystemCommunication ) )]
     public partial class SystemCommunicationViewModelHelper : ViewModelHelper<SystemCommunication, Rock.ViewModel.SystemCommunicationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

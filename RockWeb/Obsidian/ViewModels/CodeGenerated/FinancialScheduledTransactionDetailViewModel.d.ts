@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialScheduledTransactionDetail extends Entity {
-    Id: number;
-    AccountId: number;
-    Amount: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number | null;
-    EntityTypeId: number | null;
-    FeeCoverageAmount: number | null;
-    ScheduledTransactionId: number;
-    Summary: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    accountId: number;
+    amount: number;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number | null;
+    entityTypeId: number | null;
+    feeCoverageAmount: number | null;
+    scheduledTransactionId: number;
+    summary: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

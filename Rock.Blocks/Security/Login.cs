@@ -28,7 +28,7 @@ namespace Rock.Blocks.Security
     /// <summary>
     /// Allows the user to authenticate.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Login" )]
     [Category( "Obsidian > Security" )]
@@ -88,7 +88,7 @@ for help. Thank you.",
 
     #endregion
 
-    public class Login : ObsidianBlockType
+    public class Login : RockObsidianBlockType
     {
         #region Keys
 
@@ -125,7 +125,7 @@ for help. Thank you.",
 
         #endregion Keys
 
-        #region IObsidianBlockType Implementation
+        #region IRockObsidianBlockType Implementation
 
         /// <summary>
         /// Gets the property values that will be sent to the browser.

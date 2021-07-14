@@ -1219,5 +1219,36 @@ namespace Rock.SystemGuid
         public const string SCHEDULE_TYPE_WEEKEND_SERVICE = "033FC160-2650-4C97-8075-0C0114FA7A8D";
 
         #endregion Schedule Types
+
+        #region Map Markers
+        /// <summary>
+        /// The map marker pin
+        /// </summary>
+        public const string MAP_MARKER_PIN = "52DEB4F4-7D2C-4BB0-9A70-80CCA536E3EB";
+        /// <summary>
+        /// The map marker marker
+        /// </summary>
+        public const string MAP_MARKER_MARKER = "D9841DDB-BD34-45A7-97DC-141C8D6D9E84";
+        /// <summary>
+        /// The map marker marker with dot
+        /// </summary>
+        public const string MAP_MARKER_MARKER_WITH_DOT = "C0FF9C66-8232-41E8-A9C0-DC9D0ECAF932";
+        /// <summary>
+        /// The map marker circle
+        /// </summary>
+        public const string MAP_MARKER_CIRCLE = "66C27E88-6BC5-4B57-A981-0AD58481C66A";
+        #endregion
+
+        #region Languages
+        /// <summary>
+        /// Translation Languages - English
+        /// </summary>
+        public const string LANGUAGE_ENGLISH = "DF0A29A7-A61E-E4A7-4F3D-58CFDD3D3871";
+
+        /// <summary>
+        /// Translation Languages - Spanish
+        /// </summary>
+        public const string LANGUAGE_SPANISH = "C93CB430-8554-E599-4F49-D7F3CED2B2C7";
+        #endregion
     }
 }

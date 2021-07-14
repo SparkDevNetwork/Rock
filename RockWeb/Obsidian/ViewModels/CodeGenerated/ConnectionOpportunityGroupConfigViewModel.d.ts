@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ConnectionOpportunityGroupConfig extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ConnectionOpportunityId: number;
-    GroupMemberRoleId: number | null;
-    GroupMemberStatus: number;
-    GroupTypeId: number;
-    UseAllGroupsOfType: boolean;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    connectionOpportunityId: number;
+    groupMemberRoleId: number | null;
+    groupMemberStatus: number;
+    groupTypeId: number;
+    useAllGroupsOfType: boolean;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

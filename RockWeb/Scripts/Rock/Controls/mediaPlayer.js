@@ -33,6 +33,7 @@
         return exports;
     }());
 
+    /** This is the new Rock media player that uses Plyr. */
     Rock.controls.mediaplayer = (function () {
         var exports = {
             initialize: function (options) {

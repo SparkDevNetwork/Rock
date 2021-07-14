@@ -236,10 +236,13 @@
     <Compile Include="Engine\LavaUtilityHelper.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Utility.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Dictionaries.cs" />
+    <Compile Include="Implementations\Fluid\FluidGreaterThanExpression.cs" />
+    <Compile Include="Implementations\Fluid\FluidLessThanExpression.cs" />
     <Compile Include="Implementations\Fluid\LavaDateTimeValue.cs" />
     <Compile Include="Implementations\Fluid\FluidLavaTagStatement.cs" />
     <Compile Include="Implementations\Fluid\FluidLavaBlockStatement.cs" />
-    <Compile Include="Implementations\RockLiquidEngine.cs" />
+    <Compile Include="Implementations\RockLiquid\RockLiquidRenderContext.cs" />
+    <Compile Include="Implementations\RockLiquid\RockLiquidEngine.cs" />
     <Compile Include="Utilities\LavaDataObjectHelper.cs" />
     <Compile Include="Implementations\Fluid\FluidFileSystem.cs" />
     <Compile Include="LavaService.cs" />

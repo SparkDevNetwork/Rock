@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// EventCalendarContentChannel View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( EventCalendarContentChannel ) )]
     public partial class EventCalendarContentChannelViewModelHelper : ViewModelHelper<EventCalendarContentChannel, Rock.ViewModel.EventCalendarContentChannelViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

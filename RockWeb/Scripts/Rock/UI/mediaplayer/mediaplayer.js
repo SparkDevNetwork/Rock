@@ -64,6 +64,16 @@ var Rock;
                 enumerable: false,
                 configurable: true
             });
+            Object.defineProperty(MediaPlayer.prototype, "duration", {
+                get: function () {
+                    return this.player.duration;
+                },
+                enumerable: false,
+                configurable: true
+            });
+            MediaPlayer.prototype.seek = function (positionInSeconds) {
+                this.player.currentTime = positionInSeconds;
+            };
             MediaPlayer.prototype.setupPlayer = function () {
                 var _this = this;
                 var mediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");

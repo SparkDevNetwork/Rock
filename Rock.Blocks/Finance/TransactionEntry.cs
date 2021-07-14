@@ -36,7 +36,7 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Allows the user to try out various controls.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Transaction Entry" )]
     [Category( "Obsidian > Finance" )]
@@ -455,7 +455,7 @@ namespace Rock.Blocks.Finance
 
     #endregion Block Attributes
 
-    public class TransactionEntry : ObsidianBlockType
+    public class TransactionEntry : RockObsidianBlockType
     {
         #region constants
 

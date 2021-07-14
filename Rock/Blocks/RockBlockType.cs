@@ -65,6 +65,12 @@ namespace Rock.Blocks
 
         #endregion
 
+        #region Methods
+
+        /// <inheritdoc/>
+        public abstract object GetBlockInitialization( RockClientType clientType );
+
+
         /// <summary>
         /// Gets the control markup.
         /// </summary>
@@ -122,6 +128,8 @@ namespace Rock.Blocks
         {
             return RequestContext.CurrentPerson;
         }
+
+        #endregion
 
         #region Action Response Methods
 

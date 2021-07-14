@@ -91,6 +91,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rock\Lava\LiquidOperatorTests.cs" />
     <Compile Include="Rock\Lava\LiquidKeywordTests.cs" />
     <Compile Include="Rock\Lava\LavaHelperTests.cs" />
     <Compile Include="Rock\Lava\ContainerVariableTests.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
+    <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
     <Compile Include="Rock\Model\CommunicationTemplateTests.cs" />

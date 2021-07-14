@@ -24,14 +24,14 @@ namespace Rock.Blocks.Example
     /// <summary>
     /// Demonstrates a secondary block.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Person Secondary" )]
     [Category( "Obsidian > Example" )]
     [Description( "Demonstrates a secondary block." )]
     [IconCssClass( "fa fa-flask" )]
 
-    public class PersonSecondary : ObsidianBlockType
+    public class PersonSecondary : RockObsidianBlockType
     {
     }
 }

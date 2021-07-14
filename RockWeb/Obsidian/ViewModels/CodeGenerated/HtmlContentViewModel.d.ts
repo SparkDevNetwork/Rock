@@ -27,20 +27,20 @@ import AttributeValue from './AttributeValueViewModel';
 import { Guid } from '../../Util/Guid';
 
 export default interface HtmlContent extends Entity {
-    Id: number;
-    ApprovedByPersonAliasId: number | null;
-    ApprovedDateTime: RockDateType | null;
-    Attributes: Record<string, AttributeValue> | null;
-    BlockId: number;
-    Content: string | null;
-    EntityValue: string | null;
-    ExpireDateTime: RockDateType | null;
-    IsApproved: boolean;
-    StartDateTime: RockDateType | null;
-    Version: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    approvedByPersonAliasId: number | null;
+    approvedDateTime: RockDateType | null;
+    attributes: Record<string, AttributeValue> | null;
+    blockId: number;
+    content: string | null;
+    entityValue: string | null;
+    expireDateTime: RockDateType | null;
+    isApproved: boolean;
+    startDateTime: RockDateType | null;
+    version: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

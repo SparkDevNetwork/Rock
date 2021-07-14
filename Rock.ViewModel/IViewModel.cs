@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 namespace Rock.ViewModel
 {
     /// <summary>
@@ -24,19 +22,6 @@ namespace Rock.ViewModel
     /// </summary>
     public interface IViewModel
     {
-    }
-
-    /// <summary>
-    /// View Model with Attributes
-    /// </summary>
-    public interface IViewModelWithAttributes : IViewModel
-    {
-        /// <summary>
-        /// Gets or sets the attributes.
-        /// </summary>
-        /// <value>
-        /// The attributes.
-        /// </value>
-        Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+        /* This interface is intentionally empty. */
     }
 }

@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RegistrationRegistrant extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Cost: number;
-    DiscountApplies: boolean;
-    GroupMemberId: number | null;
-    OnWaitList: boolean;
-    PersonAliasId: number | null;
-    RegistrationId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    cost: number;
+    discountApplies: boolean;
+    groupMemberId: number | null;
+    onWaitList: boolean;
+    personAliasId: number | null;
+    registrationId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

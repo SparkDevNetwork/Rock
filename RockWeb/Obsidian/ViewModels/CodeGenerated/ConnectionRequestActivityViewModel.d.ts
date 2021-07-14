@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ConnectionRequestActivity extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ConnectionActivityTypeId: number;
-    ConnectionOpportunityId: number | null;
-    ConnectionRequestId: number;
-    ConnectorPersonAliasId: number | null;
-    Note: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    connectionActivityTypeId: number;
+    connectionOpportunityId: number | null;
+    connectionRequestId: number;
+    connectorPersonAliasId: number | null;
+    note: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

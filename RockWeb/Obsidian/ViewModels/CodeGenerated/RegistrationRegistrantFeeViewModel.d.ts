@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RegistrationRegistrantFee extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Cost: number;
-    Option: string | null;
-    Quantity: number;
-    RegistrationRegistrantId: number;
-    RegistrationTemplateFeeId: number;
-    RegistrationTemplateFeeItemId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    cost: number;
+    option: string | null;
+    quantity: number;
+    registrationRegistrantId: number;
+    registrationTemplateFeeId: number;
+    registrationTemplateFeeItemId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

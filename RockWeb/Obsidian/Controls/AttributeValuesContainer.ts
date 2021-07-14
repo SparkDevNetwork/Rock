@@ -44,23 +44,23 @@ export default defineComponent({
     },
     methods: {
         getAttributeLabel(attributeValue: AttributeValue) {
-            if (this.showAbbreviatedName && attributeValue.Attribute?.AbbreviatedName) {
-                return attributeValue.Attribute.AbbreviatedName;
+            if (this.showAbbreviatedName && attributeValue.attribute?.abbreviatedName) {
+                return attributeValue.attribute.abbreviatedName;
             }
 
-            return attributeValue.Attribute?.Name || '';
+            return attributeValue.attribute?.name || '';
         }
     },
     computed: {
         validAttributeValues(): AttributeValue[] {
-            return this.attributeValues.filter(av => av.Attribute);
+            return this.attributeValues.filter(av => av.attribute);
         },
         valuesToShow(): AttributeValue[] {
             if (this.showEmptyValues) {
                 return this.validAttributeValues;
             }
 
-            return this.validAttributeValues.filter(av => !isNullOrWhitespace(av.Value));
+            return this.validAttributeValues.filter(av => !isNullOrWhitespace(av.value));
         }
     },
     template: `

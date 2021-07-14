@@ -9,7 +9,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-map-marker"></i> Group Finder
+                    <i class="fa fa-map-marker"></i>Group Finder
                 </h1>
             </div>
 
@@ -77,18 +77,64 @@
 
                             <asp:ValidationSummary ID="valSettings" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupFinderSettings" />
 
-                            <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filter Settings" Expanded="true">
+                            <Rock:PanelWidget ID="wpGroups" runat="server" Title="Groups" Expanded="true">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:GroupTypePicker ID="gtpGroupType" runat="server" Label="Group Type" Help="The type of groups to look for."
-                                            AutoPostBack="true" OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged" ValidationGroup="GroupFinderSettings" />
+                                        <Rock:RockListBox
+                                            ID="gtpGroupType"
+                                            runat="server"
+                                            Label="Group Type"
+                                            Help="The type of groups to look for."
+                                            AutoPostBack="true"
+                                            OnSelectedIndexChanged="gtpGroupType_SelectedIndexChanged"
+                                            ValidationGroup="GroupFinderSettings"
+                                            DataTextField="text"
+                                            DataValueField="value" />
+
+                                        <Rock:RockCheckBox
+                                            ID="cbHideOvercapacityGroups"
+                                            runat="server"
+                                            Label="Hide Overcapacity Groups"
+                                            Help="When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden."
+                                            ValidationGroup="GroupFinderSettings" />
+
+                                        <Rock:RockCheckBox
+                                            ID="cbLoadInitialResults"
+                                            runat="server"
+                                            Label="Load Results on Initial Page Load"
+                                            Help="When enabled the group finder will load with all configured groups (no filters enabled)."
+                                            ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="control-label">Location Types</label>
+                                        <Rock:Grid
+                                            runat="server"
+                                            ID="gGroupTypeLocation"
+                                            DisplayType="Light"
+                                            OnRowDataBound="gGroupTypeLocation_RowDataBound">
+                                            <Columns>
+                                                <Rock:RockBoundField DataField="Name" />
+                                                <asp:TemplateField>
+                                                    <ItemTemplate>
+                                                        <Rock:RockDropDownList ID="lLocationList" runat="server" AutoPostBack="true" OnSelectedIndexChanged="lLocationList_SelectedIndexChanged" />
+                                                    </ItemTemplate>
+                                                </asp:TemplateField>
+                                            </Columns>
+                                        </Rock:Grid>
+                                    </div>
+                                </div>
+                            </Rock:PanelWidget>
+                            <Rock:PanelWidget ID="wpFilter" runat="server" Title="Filters" Expanded="true">
+                                <div class="row">
+                                    <div class="col-md-6">
+
                                         <Rock:GroupTypePicker ID="gtpGeofenceGroupType" runat="server" Label="Geofence Group Type"
                                             Help="An optional group type that contains groups with geographic boundary (fence). If specified, user will be prompted for their address, and only groups that are located in the same geographic boundary ( as defined by one or more groups of this type ) will be displayed."
                                             ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockTextBox ID="tbDayOfWeekLabel" runat="server" Label="Day of Week Filter Label" Help="The text above the day of week filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockTextBox ID="tbTimeOfDayLabel" runat="server" Label="Time of Day Filter Label" Help="The text above the time of day filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockTextBox ID="tbCampusLabel" runat="server" Label="Campus Filter Label" Help="The text above the campus filter" AutoPostBack="true" Required="true" ValidationGroup="GroupFinderSettings" />
-                                     </div>
+                                    </div>
                                     <div class="col-md-6">
                                         <Rock:RockRadioButtonList ID="rblFilterDOW" runat="server" Label="Display Day of Week Filter" RepeatDirection="Horizontal"
                                             Help="Flag indicating if and how the Day of Week filter should be displayed to filter groups with 'Weekly' schedules." ValidationGroup="GroupFinderSettings">
@@ -104,8 +150,6 @@
                                             Help="If the page has a campus context its value will be used as a filter" ValidationGroup="GroupFinderSettings" />
                                         <Rock:RockCheckBoxList ID="cblAttributes" runat="server" Label="Display Attribute Filters" RepeatDirection="Horizontal"
                                             Help="The group attributes that should be available for user to filter results by." ValidationGroup="GroupFinderSettings" />
-                                        <Rock:RockCheckBox ID="cbHideOvercapacityGroups" runat="server" Label="Hide Overcapacity Groups" Text="Yes"
-                                            Help="When set to true, groups that are at capacity or whose default GroupTypeRole are at capacity are hidden." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -118,26 +162,179 @@
 
                             <Rock:PanelWidget ID="wpMap" runat="server" Title="Map">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbShowMap" runat="server" Label="Map" Text="Yes"
-                                            Help="Should a map be displayed that shows the location of each group?" ValidationGroup="GroupFinderSettings" />
-                                        <Rock:DefinedValuePicker ID="dvpMapStyle" runat="server" Label="Map Style"
-                                            Help="The map theme that should be used for styling the map." ValidationGroup="GroupFinderSettings" />
-                                        <Rock:NumberBox ID="nbMapHeight" runat="server" Label="Map Height"
-                                            Help="The pixel height to use for the map." ValidationGroup="GroupFinderSettings" />
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox
+                                            ID="cbShowMap"
+                                            runat="server"
+                                            Label="Map"
+                                            Help="Should a map be displayed that shows the location of each group?"
+                                            ValidationGroup="GroupFinderSettings" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes"
-                                            Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
-                                        <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
-                                            Help="The list of colors to use when displaying multiple fences ( there should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
+                                        <Rock:DefinedValuePicker
+                                            ID="dvpMapStyle"
+                                            runat="server"
+                                            Label="Map Style"
+                                            Help="The map theme that should be used for styling the map."
+                                            ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:NumberBox
+                                            ID="nbMapHeight"
+                                            runat="server"
+                                            Label="Map Height"
+                                            Help="The pixel height to use for the map."
+                                            ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:DefinedValuePicker ID="ddlMapMarker" Label="Map Marker" runat="server" ValidationGroup="GroupFinderSettings" Help="The map marker shape to show on the map." />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:ColorPicker runat="server" ID="cpMarkerColor" Label="Marker Color" ValidationGroup="GroupFinderSettings" Help="The color to use for the map marker. If no color is provided the color will come from the group type's color setting." />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockDropDownList ID="ddlMinZoomLevel" Label="Minimum Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the minimum zoom level that the map will allow.">
+                                            <asp:ListItem Text="" Value="" />
+                                            <asp:ListItem Text="0" Value="0" />
+                                            <asp:ListItem Text="1 - World" Value="1" />
+                                            <asp:ListItem Text="2" Value="2" />
+                                            <asp:ListItem Text="3" Value="3" />
+                                            <asp:ListItem Text="4" Value="4" />
+                                            <asp:ListItem Text="5 - Continent" Value="5" />
+                                            <asp:ListItem Text="6" Value="6" />
+                                            <asp:ListItem Text="7" Value="7" />
+                                            <asp:ListItem Text="8" Value="8" />
+                                            <asp:ListItem Text="9" Value="9" />
+                                            <asp:ListItem Text="10 - City" Value="10" />
+                                            <asp:ListItem Text="11" Value="11" />
+                                            <asp:ListItem Text="12" Value="12" />
+                                            <asp:ListItem Text="13" Value="13" />
+                                            <asp:ListItem Text="14" Value="14" />
+                                            <asp:ListItem Text="15 - Streets" Value="15" />
+                                            <asp:ListItem Text="16" Value="16" />
+                                            <asp:ListItem Text="17" Value="17" />
+                                            <asp:ListItem Text="18" Value="18" />
+                                            <asp:ListItem Text="19" Value="19" />
+                                            <asp:ListItem Text="20 - Buildings" Value="20" />
+                                        </Rock:RockDropDownList>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockDropDownList ID="ddlMaxZoomLevel" Label="Maxium Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the maximum zoom level that the map will allow.">
+                                            <asp:ListItem Text="" Value="" />
+                                            <asp:ListItem Text="0" Value="0" />
+                                            <asp:ListItem Text="1 - World" Value="1" />
+                                            <asp:ListItem Text="2" Value="2" />
+                                            <asp:ListItem Text="3" Value="3" />
+                                            <asp:ListItem Text="4" Value="4" />
+                                            <asp:ListItem Text="5 - Continent" Value="5" />
+                                            <asp:ListItem Text="6" Value="6" />
+                                            <asp:ListItem Text="7" Value="7" />
+                                            <asp:ListItem Text="8" Value="8" />
+                                            <asp:ListItem Text="9" Value="9" />
+                                            <asp:ListItem Text="10 - City" Value="10" />
+                                            <asp:ListItem Text="11" Value="11" />
+                                            <asp:ListItem Text="12" Value="12" />
+                                            <asp:ListItem Text="13" Value="13" />
+                                            <asp:ListItem Text="14" Value="14" />
+                                            <asp:ListItem Text="15 - Streets" Value="15" />
+                                            <asp:ListItem Text="16" Value="16" />
+                                            <asp:ListItem Text="17" Value="17" />
+                                            <asp:ListItem Text="18" Value="18" />
+                                            <asp:ListItem Text="19" Value="19" />
+                                            <asp:ListItem Text="20 - Buildings" Value="20" />
+                                        </Rock:RockDropDownList>
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockDropDownList ID="ddlInitialZoomLevel" Label="Initial Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines the initial zoom level the map should use.">
+                                            <asp:ListItem Text="Automatic" Value="" />
+                                            <asp:ListItem Text="0" Value="0" />
+                                            <asp:ListItem Text="1 - World" Value="1" />
+                                            <asp:ListItem Text="2" Value="2" />
+                                            <asp:ListItem Text="3" Value="3" />
+                                            <asp:ListItem Text="4" Value="4" />
+                                            <asp:ListItem Text="5 - Continent" Value="5" />
+                                            <asp:ListItem Text="6" Value="6" />
+                                            <asp:ListItem Text="7" Value="7" />
+                                            <asp:ListItem Text="8" Value="8" />
+                                            <asp:ListItem Text="9" Value="9" />
+                                            <asp:ListItem Text="10 - City" Value="10" />
+                                            <asp:ListItem Text="11" Value="11" />
+                                            <asp:ListItem Text="12" Value="12" />
+                                            <asp:ListItem Text="13" Value="13" />
+                                            <asp:ListItem Text="14" Value="14" />
+                                            <asp:ListItem Text="15 - Streets" Value="15" />
+                                            <asp:ListItem Text="16" Value="16" />
+                                            <asp:ListItem Text="17" Value="17" />
+                                            <asp:ListItem Text="18" Value="18" />
+                                            <asp:ListItem Text="19" Value="19" />
+                                            <asp:ListItem Text="20 - Buildings" Value="20" />
+                                        </Rock:RockDropDownList>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockDropDownList ID="ddlMarkerZoomLevel" Label="Marker Auto Scale Zoom Level" runat="server" ValidationGroup="GroupFinderSettings" Help="The zoom level threshold that will cause the markers to auto resize to keep from showing precise locations on the map. Once this threshold is passed, the marker will begin to auto scale.">
+                                            <asp:ListItem Text="" Value="" />
+                                            <asp:ListItem Text="0" Value="0" />
+                                            <asp:ListItem Text="1 - World" Value="1" />
+                                            <asp:ListItem Text="2" Value="2" />
+                                            <asp:ListItem Text="3" Value="3" />
+                                            <asp:ListItem Text="4" Value="4" />
+                                            <asp:ListItem Text="5 - Continent" Value="5" />
+                                            <asp:ListItem Text="6" Value="6" />
+                                            <asp:ListItem Text="7" Value="7" />
+                                            <asp:ListItem Text="8" Value="8" />
+                                            <asp:ListItem Text="9" Value="9" />
+                                            <asp:ListItem Text="10 - City" Value="10" />
+                                            <asp:ListItem Text="11" Value="11" />
+                                            <asp:ListItem Text="12" Value="12" />
+                                            <asp:ListItem Text="13" Value="13" />
+                                            <asp:ListItem Text="14" Value="14" />
+                                            <asp:ListItem Text="15 - Streets" Value="15" />
+                                            <asp:ListItem Text="16" Value="16" />
+                                            <asp:ListItem Text="17" Value="17" />
+                                            <asp:ListItem Text="18" Value="18" />
+                                            <asp:ListItem Text="19" Value="19" />
+                                            <asp:ListItem Text="20 - Buildings" Value="20" />
+                                        </Rock:RockDropDownList>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:NumberBox runat="server" ID="nbMarkerAutoScaleAmount" Label="Marker Auto Scale Amount" ValidationGroup="GroupFinderSettings" Help="The amount relative to the zoom level that the markers should scale themselves. A value of 2 means the scale will be 2 times the zoom level." />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockDropDownList ID="ddlLocationPrecisionLevel" Label="Location Precision Level" runat="server" ValidationGroup="GroupFinderSettings" Help="Determines how precise of a latitude/longitude to provide to the map. ">
+                                            <asp:ListItem Text="Precise" Value="Precise" />
+                                            <asp:ListItem Text="Narrow" Value="Narrow" />
+                                            <asp:ListItem Text="Close" Value="Close" />
+                                            <asp:ListItem Text="Wide" Value="Wide" />
+                                        </Rock:RockDropDownList>
+                                    </div>
                                     <div class="col-md-12">
                                         <Rock:CodeEditor ID="ceMapInfo" runat="server" Label="Group Window Contents" EditorMode="Lava" EditorTheme="Rock" Height="300"
                                             Help="The Lava template to use for formatting the group information that is displayed when user clicks the group marker on the map."
                                             ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-12">
+                                        <asp:LinkButton
+                                            runat="server"
+                                            ID="lbShowAdditionalMapSettings"
+                                            Text="Additional Geofence Settings"
+                                            OnClick="lbShowAdditionalMapSettings_Click"
+                                            CausesValidation="false"
+                                            CssClass="pull-right" />
+                                    </div>
+                                </div>
+
+                                <div runat="server" id="dMapAdditionalSettings" visible="false" class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbShowFence" runat="server" Label="Show Fence(s)" Text="Yes"
+                                            Help="If a Geofence group type was selected, should that group's boundary be displayed on the map?" ValidationGroup="GroupFinderSettings" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:ValueList ID="vlPolygonColors" runat="server" Label="Fence Polygon Colors"
+                                            Help="The list of colors to use when displaying multiple fences ( there should normally be only one fence)." ValidationGroup="GroupFinderSettings" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

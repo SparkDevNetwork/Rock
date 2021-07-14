@@ -36,16 +36,81 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "SMS Send" )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM, "From", "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).", true, false, "", "", 0 )]
-    [WorkflowTextOrAttribute( "Recipient", "Attribute Value", "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>", true, "", "", 1, "To",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
-    [WorkflowTextOrAttribute( "Message", "Attribute Value", "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>", false, "", "", 2, "Message",
-        new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
-    [WorkflowAttribute( "Attachment", "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.", false, "", "", 3, null,
-        new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
-    [BooleanField( name: "Save Communication History", description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.", defaultValue: false, category: "", order: 4, key: "SaveCommunicationHistory" )]
+    [WorkflowTextOrAttribute(
+        textLabel: "From",
+        attributeLabel: "Attribute Value",
+        description: "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).",
+        required: true,
+        order: 0,
+        key: AttributeKey.From,
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+    [WorkflowTextOrAttribute(
+        textLabel: "Recipient",
+        attributeLabel: "Attribute Value",
+        description: "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>",
+        required: true,
+        order: 1,
+        key: AttributeKey.To,
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+    [WorkflowTextOrAttribute(
+        textLabel: "Message",
+        attributeLabel: "Attribute Value",
+        description: "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
+        required: false,
+        order: 2,
+        key: AttributeKey.Message,
+        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+    [WorkflowAttribute(
+        "Attachment",
+        Description = "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.",
+        IsRequired = false,
+        Order = 3,
+        Key = AttributeKey.Attachment,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
+    [BooleanField(
+        name: "Save Communication History",
+        description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.",
+        defaultValue: false,
+        category: "",
+        order: 4,
+        key: AttributeKey.SaveCommunicationHistory )]
     public class SendSms : ActionComponent
     {
+        #region Workflow Attributes
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// From
+            /// </summary>
+            public const string From = "From";
+
+            /// <summary>
+            /// To
+            /// </summary>
+            public const string To = "To";
+
+            /// <summary>
+            /// Message
+            /// </summary>
+            public const string Message = "Message";
+
+            /// <summary>
+            /// Attachment
+            /// </summary>
+            public const string Attachment = "Attachment";
+
+            /// <summary>
+            /// SaveCommunicationHistory
+            /// </summary>
+            public const string SaveCommunicationHistory = "SaveCommunicationHistory";
+        }
+
+        #endregion Workflow Attributes
+
         /// <summary> 
         /// Executes the specified workflow.
         /// </summary>
@@ -60,17 +125,31 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
 
-            // Get the From value
-            int? fromId = null;
-            Guid? fromGuid = GetAttributeValue( action, "From" ).AsGuidOrNull();
-            if ( fromGuid.HasValue )
+            // If the configured fromGuid is not in the SMS FromDefinedValues, then
+            // that guid is probably from an attribute and therefore we need to get the fromGuid
+            // from the workflow's attribute value instead.
+            Guid fromGuid = GetAttributeValue( action, AttributeKey.From ).AsGuid();
+            var smsFromDefinedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues;
+            if ( !smsFromDefinedValues.Any( a => a.Guid == fromGuid ) )
             {
-                var fromValue = DefinedValueCache.Get( fromGuid.Value, rockContext );
-                if ( fromValue != null )
+                var workflowAttributeValue = action.GetWorkflowAttributeValue( fromGuid );
+
+                if ( workflowAttributeValue.IsNotNullOrWhiteSpace() )
                 {
-                    fromId = fromValue.Id;
+                    fromGuid = workflowAttributeValue.AsGuid();
                 }
             }
+
+            // Now can we do our final check to ensure the guid is a valid inactive reason.
+            if ( !smsFromDefinedValues.Any( a => a.Guid == fromGuid ) )
+            {
+                var msg = string.Format( "Inactive Reason could not be found for selected value ('{0}')!", fromGuid.ToString() );
+                errorMessages.Add( msg );
+                action.AddLogEntry( msg, true );
+                return false;
+            }
+
+            var fromId = smsFromDefinedValues.First( a => a.Guid == fromGuid ).Id;
 
             // Get the recipients
             var recipients = new List<RockSMSMessageRecipient>();
@@ -193,7 +272,7 @@ namespace Rock.Workflow.Action
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );
-                smsMessage.FromNumber = DefinedValueCache.Get( fromId.Value );
+                smsMessage.FromNumber = DefinedValueCache.Get( fromId );
                 smsMessage.Message = message;
                 smsMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
                 smsMessage.communicationName = action.ActionTypeCache.Name;

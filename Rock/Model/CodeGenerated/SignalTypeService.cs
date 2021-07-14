@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// SignalType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SignalType ) )]
     public partial class SignalTypeViewModelHelper : ViewModelHelper<SignalType, Rock.ViewModel.SignalTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -86,8 +86,8 @@ const unknownSingleFamilyGuid = newGuid();
  */
 export function getForcedFamilyGuid ( currentPerson: Person | null, viewModel: RegistrationEntryBlockViewModel )
 {
-    return ( currentPerson && viewModel.RegistrantsSameFamily === RegistrantsSameFamily.Yes ) ?
-        ( currentPerson.PrimaryFamilyGuid || unknownSingleFamilyGuid ) :
+    return ( currentPerson && viewModel.registrantsSameFamily === RegistrantsSameFamily.Yes ) ?
+        ( currentPerson.primaryFamilyGuid || unknownSingleFamilyGuid ) :
         null;
 }
 
@@ -126,11 +126,11 @@ export function getDefaultRegistrantInfo ( currentPerson: Person | null, viewMod
 
 export function getRegistrantBasicInfo ( registrant: RegistrantInfo, registrantForms: RegistrationEntryBlockFormViewModel[] ): RegistrantBasicInfo
 {
-    const fields = registrantForms?.flatMap( f => f.Fields ) || [];
+    const fields = registrantForms?.flatMap( f => f.fields ) || [];
 
-    const firstNameGuid = fields.find( f => f.PersonFieldType === RegistrationPersonFieldType.FirstName )?.Guid || '';
-    const lastNameGuid = fields.find( f => f.PersonFieldType === RegistrationPersonFieldType.LastName )?.Guid || '';
-    const emailGuid = fields.find( f => f.PersonFieldType === RegistrationPersonFieldType.Email )?.Guid || '';
+    const firstNameGuid = fields.find( f => f.personFieldType === RegistrationPersonFieldType.FirstName )?.guid || '';
+    const lastNameGuid = fields.find( f => f.personFieldType === RegistrationPersonFieldType.LastName )?.guid || '';
+    const emailGuid = fields.find( f => f.personFieldType === RegistrationPersonFieldType.Email )?.guid || '';
 
     return {
         FirstName: ( registrant?.FieldValues[ firstNameGuid ] || '' ) as string,
@@ -172,25 +172,25 @@ export default defineComponent( {
         const viewModel = inject( 'configurationValues' ) as RegistrationEntryBlockViewModel;
         const invokeBlockAction = inject( 'invokeBlockAction' ) as InvokeBlockActionFunc;
 
-        if ( !viewModel?.RegistrationAttributesStart )
+        if ( !viewModel?.registrationAttributesStart )
         {
             notFound.value = true;
         }
 
-        const hasPreAttributes = viewModel.RegistrationAttributesStart?.length > 0;
+        const hasPreAttributes = viewModel.registrationAttributesStart?.length > 0;
         let currentStep = steps.intro;
 
-        if ( viewModel.SuccessViewModel )
+        if ( viewModel.successViewModel )
         {
             // This is after having paid via redirect gateway
             currentStep = steps.success;
         }
-        else if ( viewModel.Session && !viewModel.StartAtBeginning )
+        else if ( viewModel.session && !viewModel.startAtBeginning )
         {
             // This is an existing registration, start at the summary
             currentStep = steps.reviewAndPayment;
         }
-        else if ( viewModel.MaxRegistrants === 1 && isNullOrWhitespace( viewModel.InstructionsHtml ) )
+        else if ( viewModel.maxRegistrants === 1 && isNullOrWhitespace( viewModel.instructionsHtml ) )
         {
             // There is no need to show the number of registrants selector or instructions. Start at the second page.
             currentStep = hasPreAttributes ? steps.registrationStartForm : steps.perRegistrantForms;
@@ -203,9 +203,9 @@ export default defineComponent( {
             CurrentStep: currentStep,
             CurrentRegistrantFormIndex: 0,
             CurrentRegistrantIndex: 0,
-            Registrants: viewModel.Session?.Registrants || [ getDefaultRegistrantInfo( null, viewModel, null ) ],
-            RegistrationFieldValues: viewModel.Session?.FieldValues || {},
-            Registrar: viewModel.Session?.Registrar || {
+            Registrants: viewModel.session?.registrants || [ getDefaultRegistrantInfo( null, viewModel, null ) ],
+            RegistrationFieldValues: viewModel.session?.fieldValues || {},
+            Registrar: viewModel.session?.registrar || {
                 NickName: '',
                 LastName: '',
                 Email: '',
@@ -214,13 +214,13 @@ export default defineComponent( {
                 FamilyGuid: null
             },
             GatewayToken: '',
-            DiscountCode: viewModel.Session?.DiscountCode || '',
-            DiscountAmount: viewModel.Session?.DiscountAmount || 0,
-            DiscountPercentage: viewModel.Session?.DiscountPercentage || 0,
-            SuccessViewModel: viewModel.SuccessViewModel,
+            DiscountCode: viewModel.session?.discountCode || '',
+            DiscountAmount: viewModel.session?.discountAmount || 0,
+            DiscountPercentage: viewModel.session?.discountPercentage || 0,
+            SuccessViewModel: viewModel.successViewModel,
             AmountToPayToday: 0,
             SessionExpirationDate: null,
-            RegistrationSessionGuid: viewModel.Session?.RegistrationSessionGuid || newGuid()
+            RegistrationSessionGuid: viewModel.session?.registrationSessionGuid || newGuid()
         } as RegistrationEntryState );
 
         provide( 'registrationEntryState', registrationEntryState );
@@ -229,14 +229,14 @@ export default defineComponent( {
         const getRegistrationEntryBlockArgs: () => RegistrationEntryBlockArgs = () =>
         {
             return {
-                RegistrationSessionGuid: registrationEntryState.RegistrationSessionGuid,
-                GatewayToken: registrationEntryState.GatewayToken,
-                DiscountCode: registrationEntryState.DiscountCode,
-                FieldValues: registrationEntryState.RegistrationFieldValues,
-                Registrar: registrationEntryState.Registrar,
-                Registrants: registrationEntryState.Registrants,
-                AmountToPayNow: registrationEntryState.AmountToPayToday,
-                RegistrationGuid: viewModel.Session?.RegistrationGuid || null
+                registrationSessionGuid: registrationEntryState.RegistrationSessionGuid,
+                gatewayToken: registrationEntryState.GatewayToken,
+                discountCode: registrationEntryState.DiscountCode,
+                fieldValues: registrationEntryState.RegistrationFieldValues,
+                registrar: registrationEntryState.Registrar,
+                registrants: registrationEntryState.Registrants,
+                amountToPayNow: registrationEntryState.AmountToPayToday,
+                registrationGuid: viewModel.session?.registrationGuid || null
             };
         };
 
@@ -245,7 +245,7 @@ export default defineComponent( {
         /** A method to persist the session */
         const persistSession: ( force: boolean ) => Promise<void> = async ( force = false ) =>
         {
-            if ( !force && !viewModel.TimeoutMinutes )
+            if ( !force && !viewModel.timeoutMinutes )
             {
                 return;
             }
@@ -298,11 +298,11 @@ export default defineComponent( {
         },
         mustLogin (): boolean
         {
-            return !this.$store.state.currentPerson && ( this.viewModel.IsUnauthorized || this.viewModel.LoginRequiredToRegister );
+            return !this.$store.state.currentPerson && ( this.viewModel.isUnauthorized || this.viewModel.loginRequiredToRegister );
         },
         isUnauthorized (): boolean
         {
-            return this.viewModel.IsUnauthorized;
+            return this.viewModel.isUnauthorized;
         },
         currentStep (): string
         {
@@ -314,11 +314,11 @@ export default defineComponent( {
         },
         hasPreAttributes (): boolean
         {
-            return this.viewModel.RegistrationAttributesStart.length > 0;
+            return this.viewModel.registrationAttributesStart.length > 0;
         },
         hasPostAttributes (): boolean
         {
-            return this.viewModel.RegistrationAttributesEnd.length > 0;
+            return this.viewModel.registrationAttributesEnd.length > 0;
         },
         progressTrackerIndex (): number
         {
@@ -357,7 +357,7 @@ export default defineComponent( {
         },
         uppercaseRegistrantTerm (): string
         {
-            return StringFilter.toTitleCase( this.viewModel.RegistrantTerm );
+            return StringFilter.toTitleCase( this.viewModel.registrantTerm );
         },
         currentRegistrantTitle (): string
         {
@@ -378,7 +378,7 @@ export default defineComponent( {
         {
             if ( this.currentStep === this.steps.registrationStartForm )
             {
-                return this.viewModel.RegistrationAttributeTitleStart;
+                return this.viewModel.registrationAttributeTitleStart;
             }
 
             if ( this.currentStep === this.steps.perRegistrantForms )
@@ -388,7 +388,7 @@ export default defineComponent( {
 
             if ( this.currentStep === this.steps.registrationEndForm )
             {
-                return this.viewModel.RegistrationAttributeTitleEnd;
+                return this.viewModel.registrationAttributeTitleEnd;
             }
 
             if ( this.currentStep === this.steps.reviewAndPayment )
@@ -398,7 +398,7 @@ export default defineComponent( {
 
             if ( this.currentStep === this.steps.success )
             {
-                return this.registrationEntryState.SuccessViewModel?.TitleHtml || 'Congratulations';
+                return this.registrationEntryState.SuccessViewModel?.titleHtml || 'Congratulations';
             }
 
             return '';
@@ -414,7 +414,7 @@ export default defineComponent( {
                 items.push( {
                     Key: 'Start',
                     Title: 'Start',
-                    Subtitle: this.viewModel.RegistrationTerm
+                    Subtitle: this.viewModel.registrationTerm
                 } );
             }
 
@@ -422,8 +422,8 @@ export default defineComponent( {
             {
                 items.push( {
                     Key: 'Pre',
-                    Title: this.viewModel.RegistrationAttributeTitleStart,
-                    Subtitle: this.viewModel.RegistrationTerm
+                    Title: this.viewModel.registrationAttributeTitleStart,
+                    Subtitle: this.viewModel.registrationTerm
                 } );
             }
 
@@ -431,15 +431,15 @@ export default defineComponent( {
             {
                 items.push( {
                     Key: 'Registrant',
-                    Title: toTitleCase( this.viewModel.RegistrantTerm ),
-                    Subtitle: this.viewModel.RegistrationTerm
+                    Title: toTitleCase( this.viewModel.registrantTerm ),
+                    Subtitle: this.viewModel.registrationTerm
                 } );
             }
 
             for ( let i = 0; i < this.registrationEntryState.Registrants.length; i++ )
             {
                 const registrant = this.registrationEntryState.Registrants[ i ];
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.registrantForms );
 
                 if ( info?.FirstName && info?.LastName )
                 {
@@ -453,7 +453,7 @@ export default defineComponent( {
                 {
                     items.push( {
                         Key: `Registrant-${registrant.Guid}`,
-                        Title: toTitleCase( this.viewModel.RegistrantTerm ),
+                        Title: toTitleCase( this.viewModel.registrantTerm ),
                         Subtitle: toTitleCase( toWord( i + 1 ) )
                     } );
                 }
@@ -463,15 +463,15 @@ export default defineComponent( {
             {
                 items.push( {
                     Key: 'Post',
-                    Title: this.viewModel.RegistrationAttributeTitleEnd,
-                    Subtitle: this.viewModel.RegistrationTerm
+                    Title: this.viewModel.registrationAttributeTitleEnd,
+                    Subtitle: this.viewModel.registrationTerm
                 } );
             }
 
             items.push( {
                 Key: 'Finalize',
                 Title: 'Finalize',
-                Subtitle: this.viewModel.RegistrationTerm
+                Subtitle: this.viewModel.registrationTerm
             } );
 
             return items;
@@ -574,7 +574,7 @@ export default defineComponent( {
     },
     mounted ()
     {
-        if ( this.viewModel.LoginRequiredToRegister && !this.$store.state.currentPerson )
+        if ( this.viewModel.loginRequiredToRegister && !this.$store.state.currentPerson )
         {
             this.$store.dispatch( 'redirectToLogin' );
         }

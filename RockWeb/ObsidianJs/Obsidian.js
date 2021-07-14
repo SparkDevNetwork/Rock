@@ -20,7 +20,7 @@ window.Obsidian = window.Obsidian || {};
     let hasMoreAttempts = true;
 
     // Allow other code to register callbacks for when System JS is ready
-    window.Obsidian.whenReady = function ( callback )
+    window.Obsidian.onReady = function ( callback )
     {
         if ( isReady )
         {

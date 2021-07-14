@@ -2764,6 +2764,9 @@ namespace Rock.Lava
                                 case "FormattedHtmlAddress":
                                     qualifier = qualifier.Replace( match.ToString(), location.FormattedHtmlAddress );
                                     break;
+                                case "Guid":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Guid.ToString() );
+                                    break;
                                 default:
                                     qualifier = qualifier.Replace( match.ToString(), "" );
                                     break;
@@ -5287,6 +5290,14 @@ namespace Rock.Lava
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( dictionaryObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary )
+                    {
+                        var dictionaryObject = value as IDictionary;
+                        if ( dictionaryObject.Contains( selectKey ) )
                         {
                             result.Add( dictionaryObject[selectKey] );
                         }

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// TaggedItem View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( TaggedItem ) )]
     public partial class TaggedItemViewModelHelper : ViewModelHelper<TaggedItem, Rock.ViewModel.TaggedItemViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

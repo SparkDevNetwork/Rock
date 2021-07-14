@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// BackgroundCheck View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( BackgroundCheck ) )]
     public partial class BackgroundCheckViewModelHelper : ViewModelHelper<BackgroundCheck, Rock.ViewModel.BackgroundCheckViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface EventCalendar extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    IconCssClass: string | null;
-    IsActive: boolean;
-    IsIndexEnabled: boolean;
-    Name: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    iconCssClass: string | null;
+    isActive: boolean;
+    isIndexEnabled: boolean;
+    name: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// GroupLocation View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( GroupLocation ) )]
     public partial class GroupLocationViewModelHelper : ViewModelHelper<GroupLocation, Rock.ViewModel.GroupLocationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

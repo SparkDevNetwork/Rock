@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RegistrationSession extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    ClientIpAddress: string | null;
-    ExpirationDateTime: RockDateType;
-    PaymentGatewayReference: string | null;
-    RegistrationCount: number;
-    RegistrationData: string | null;
-    RegistrationId: number | null;
-    RegistrationInstanceId: number;
-    SessionStartDateTime: RockDateType;
-    SessionStatus: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    clientIpAddress: string | null;
+    expirationDateTime: RockDateType;
+    paymentGatewayReference: string | null;
+    registrationCount: number;
+    registrationData: string | null;
+    registrationId: number | null;
+    registrationInstanceId: number;
+    sessionStartDateTime: RockDateType;
+    sessionStatus: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

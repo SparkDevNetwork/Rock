@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// AuthScope View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AuthScope ) )]
     public partial class AuthScopeViewModelHelper : ViewModelHelper<AuthScope, Rock.ViewModel.AuthScopeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

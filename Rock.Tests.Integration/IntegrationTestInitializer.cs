@@ -14,10 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 using Rock.Tests.Integration.Lava;
 
 namespace Rock.Tests.Integration
@@ -32,7 +29,7 @@ namespace Rock.Tests.Integration
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: true, testFluidEngine: true );
+            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true );
         }
 
         /// <summary>

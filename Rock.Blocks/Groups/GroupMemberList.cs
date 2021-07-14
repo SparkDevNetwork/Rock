@@ -30,14 +30,14 @@ namespace Rock.Blocks.Groups
     /// <summary>
     /// Allows the user to authenticate.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Group Member List" )]
     [Category( "Obsidian > Groups" )]
     [Description( "Lists the members of a group." )]
     [IconCssClass( "fa fa-users" )]
 
-    public class GroupMemberList : ObsidianBlockType
+    public class GroupMemberList : RockObsidianBlockType
     {
         #region Actions
 

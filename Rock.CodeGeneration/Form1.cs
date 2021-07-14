@@ -646,10 +646,11 @@ using Rock.Web.Cache;
     /// <summary>
     /// {type.Name} View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( {type.Name} ) )]
     public partial class {type.Name}ViewModelHelper : ViewModelHelper<{type.Name}, Rock.ViewModel.{type.Name}ViewModel>
     {{
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name=""model"">The entity.</param>
         /// <param name=""currentPerson"">The current person.</param>
@@ -910,7 +911,8 @@ namespace Rock.ViewModel
 
             foreach ( var property in viewModelProperties )
             {
-                sb.AppendLine( $"    {property.Name}: {property.TypeScriptType};" );
+                var camelCasePropertyName = $"{property.Name.Substring( 0, 1 ).ToLower()}{property.Name.Substring( 1 )}";
+                sb.AppendLine( $"    {camelCasePropertyName}: {property.TypeScriptType};" );
             }
 
             sb.AppendLine( "}" );
@@ -950,12 +952,12 @@ namespace Rock.ViewModel
         /// <param name="modelType">Type of the model.</param>
         /// <returns></returns>
         private List<ViewModelProperty> GetViewModelProperties( Type viewModelType, Type modelType = null ) {
-            var viewModelTypeProperties = GetEntityProperties( viewModelType, false, true, true );
+            var viewModelTypeProperties = GetEntityProperties( viewModelType, false, true, false );
             var modelProperties = modelType != null?
                 GetEntityProperties( modelType, false, true, true ) :
                 new Dictionary<string, PropertyInfo>();
 
-            var properties = GetEntityProperties( viewModelType, false, true, true )
+            var properties = viewModelTypeProperties
                 .Where( p => p.Value.GetCustomAttribute<ViewModelExcludeAttribute>() == null )
                 .Select( p =>
                 {

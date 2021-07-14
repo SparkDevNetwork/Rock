@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// GroupMemberScheduleTemplate View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( GroupMemberScheduleTemplate ) )]
     public partial class GroupMemberScheduleTemplateViewModelHelper : ViewModelHelper<GroupMemberScheduleTemplate, Rock.ViewModel.GroupMemberScheduleTemplateViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

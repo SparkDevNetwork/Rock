@@ -136,7 +136,7 @@ namespace Rock.Field.Types
             }
 
             if ( controls.Count >= 1 && controls[0] is RockTextBox tbMediaElementPickerLabel )
-            { 
+            {
                 configurationValues[CONFIG_MEDIA_PICKER_LABEL].Value = tbMediaElementPickerLabel.Text;
             }
 
@@ -293,7 +293,7 @@ namespace Rock.Field.Types
 
                 if ( condensed )
                 {
-                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive max-w-grid-img' />";
+                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive grid-img' />";
                 }
                 else
                 {

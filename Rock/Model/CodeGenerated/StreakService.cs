@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// Streak View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Streak ) )]
     public partial class StreakViewModelHelper : ViewModelHelper<Streak, Rock.ViewModel.StreakViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

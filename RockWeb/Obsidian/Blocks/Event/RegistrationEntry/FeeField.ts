@@ -54,15 +54,15 @@ export default defineComponent( {
     methods: {
         getItemLabel( item: RegistrationEntryBlockFeeItemViewModel )
         {
-            const formattedCost = Number.asFormattedString( item.Cost );
+            const formattedCost = Number.asFormattedString( item.cost );
 
-            if ( item.CountRemaining )
+            if ( item.countRemaining )
             {
-                const formattedRemaining = Number.asFormattedString( item.CountRemaining, 0 );
-                return `${item.Name} ($${formattedCost}) (${formattedRemaining} remaining)`;
+                const formattedRemaining = Number.asFormattedString( item.countRemaining, 0 );
+                return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
             }
 
-            return `${item.Name} ($${formattedCost})`;
+            return `${item.name} ($${formattedCost})`;
         }
     },
     computed: {
@@ -70,61 +70,61 @@ export default defineComponent( {
         {
             if ( this.singleItem )
             {
-                const formattedCost = Number.asFormattedString( this.singleItem.Cost );
-                return `${this.fee.Name} ($${formattedCost})`;
+                const formattedCost = Number.asFormattedString( this.singleItem.cost );
+                return `${this.fee.name} ($${formattedCost})`;
             }
 
-            return this.fee.Name;
+            return this.fee.name;
         },
         singleItem(): RegistrationEntryBlockFeeItemViewModel | null
         {
-            if ( this.fee.Items.length !== 1 )
+            if ( this.fee.items.length !== 1 )
             {
                 return null;
             }
 
-            return this.fee.Items[ 0 ];
+            return this.fee.items[ 0 ];
         },
         isHidden(): boolean
         {
-            return !this.fee.Items.length;
+            return !this.fee.items.length;
         },
         isCheckbox(): boolean
         {
-            return !!this.singleItem && !this.fee.AllowMultiple;
+            return !!this.singleItem && !this.fee.allowMultiple;
         },
         isNumberUpDown(): boolean
         {
-            return !!this.singleItem && this.fee.AllowMultiple;
+            return !!this.singleItem && this.fee.allowMultiple;
         },
         isNumberUpDownGroup(): boolean
         {
-            return this.fee.Items.length > 1 && this.fee.AllowMultiple;
+            return this.fee.items.length > 1 && this.fee.allowMultiple;
         },
         isDropDown(): boolean
         {
-            return this.fee.Items.length > 1 && !this.fee.AllowMultiple;
+            return this.fee.items.length > 1 && !this.fee.allowMultiple;
         },
         dropDownListOptions(): DropDownListOption[]
         {
-            return this.fee.Items.map( i => ( {
-                key: i.Guid,
+            return this.fee.items.map( i => ( {
+                key: i.guid,
                 text: this.getItemLabel( i ),
-                value: i.Guid
+                value: i.guid
             } ) );
         },
         numberUpDownGroupOptions(): NumberUpDownGroupOption[]
         {
-            return this.fee.Items.map( i => ( {
-                key: i.Guid,
+            return this.fee.items.map( i => ( {
+                key: i.guid,
                 label: this.getItemLabel( i ),
-                max: i.CountRemaining || 100,
+                max: i.countRemaining || 100,
                 min: 0
             } ) );
         },
         rules(): string
         {
-            return this.fee.IsRequired ? 'required' : '';
+            return this.fee.isRequired ? 'required' : '';
         }
     },
     watch: {
@@ -138,18 +138,18 @@ export default defineComponent( {
                 {
                     this.dropDownValue = '';
 
-                    for ( const item of this.fee.Items )
+                    for ( const item of this.fee.items )
                     {
-                        if ( !this.dropDownValue && this.modelValue[ item.Guid ] )
+                        if ( !this.dropDownValue && this.modelValue[ item.guid ] )
                         {
                             // Pick the first option that has a qty
-                            this.modelValue[ item.Guid ] = 1;
-                            this.dropDownValue = item.Guid;
+                            this.modelValue[ item.guid ] = 1;
+                            this.dropDownValue = item.guid;
                         }
-                        else if ( this.modelValue[ item.Guid ] )
+                        else if ( this.modelValue[ item.guid ] )
                         {
                             // Any other quantities need to be zeroed since only one can be picked
-                            this.modelValue[ item.Guid ] = 0;
+                            this.modelValue[ item.guid ] = 0;
                         }
                     }
                 }
@@ -157,8 +157,8 @@ export default defineComponent( {
                 // Set the checkbox selection
                 if ( this.isCheckbox && this.singleItem )
                 {
-                    this.checkboxValue = !!this.modelValue[ this.singleItem.Guid ];
-                    this.modelValue[ this.singleItem.Guid ] = this.checkboxValue ? 1 : 0;
+                    this.checkboxValue = !!this.modelValue[ this.singleItem.guid ];
+                    this.modelValue[ this.singleItem.guid ] = this.checkboxValue ? 1 : 0;
                 }
             }
         },
@@ -166,19 +166,19 @@ export default defineComponent( {
             immediate: true,
             handler()
             {
-                for ( const item of this.fee.Items )
+                for ( const item of this.fee.items )
                 {
-                    this.modelValue[ item.Guid ] = this.modelValue[ item.Guid ] || 0;
+                    this.modelValue[ item.guid ] = this.modelValue[ item.guid ] || 0;
                 }
             }
         },
         dropDownValue()
         {
             // Drop down implies a quantity of 1. Zero out all items except for the one selected.
-            for ( const item of this.fee.Items )
+            for ( const item of this.fee.items )
             {
-                const isSelected = GuidHelper.areEqual( this.dropDownValue, item.Guid );
-                this.modelValue[ item.Guid ] = isSelected ? 1 : 0;
+                const isSelected = GuidHelper.areEqual( this.dropDownValue, item.guid );
+                this.modelValue[ item.guid ] = isSelected ? 1 : 0;
             }
         },
         checkboxValue()
@@ -186,14 +186,14 @@ export default defineComponent( {
             if ( this.singleItem )
             {
                 // Drop down implies a quantity of 1.
-                this.modelValue[ this.singleItem.Guid ] = this.checkboxValue ? 1 : 0;
+                this.modelValue[ this.singleItem.guid ] = this.checkboxValue ? 1 : 0;
             }
         }
     },
     template: `
 <template v-if="!isHidden">
     <CheckBox v-if="isCheckbox" :label="label" v-model="checkboxValue" :inline="false" :rules="rules" />
-    <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.CountRemaining || 100" v-model="modelValue[singleItem.Guid]" :rules="rules" />
+    <NumberUpDown v-else-if="isNumberUpDown" :label="label" :min="0" :max="singleItem.countRemaining || 100" v-model="modelValue[singleItem.guid]" :rules="rules" />
     <DropDownList v-else-if="isDropDown" :label="label" :options="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
     <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="modelValue" :rules="rules" />
     <Alert v-else alertType="danger">This fee configuration is not supported</Alert>

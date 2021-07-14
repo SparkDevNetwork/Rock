@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface GroupDemographicValue extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    GroupDemographicTypeId: number;
-    GroupId: number;
-    LastCalculatedDateTime: RockDateType | null;
-    RelatedEntityId: number | null;
-    RelatedEntityTypeId: number | null;
-    Value: string | null;
-    ValueAsBoolean: boolean | null;
-    ValueAsGuid: Guid | null;
-    ValueAsNumeric: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    groupDemographicTypeId: number;
+    groupId: number;
+    lastCalculatedDateTime: RockDateType | null;
+    relatedEntityId: number | null;
+    relatedEntityTypeId: number | null;
+    value: string | null;
+    valueAsBoolean: boolean | null;
+    valueAsGuid: Guid | null;
+    valueAsNumeric: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

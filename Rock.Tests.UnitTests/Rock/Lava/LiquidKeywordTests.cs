@@ -61,5 +61,54 @@ Color: green
         }
 
         #endregion
+
+        #region Cycle Tag
+
+        /// <summary>
+        /// Referencing a valid property of an input object should return the property value.
+        /// </summary>
+        [TestMethod]
+        public void CycleTag_UngroupedCycle_ReturnsIteratedOutput()
+        {
+            var template = @"
+{% cycle 'red', 'green', 'blue' %}
+{% cycle 'red', 'green', 'blue' %}
+{% cycle 'red', 'green', 'blue' %}
+";
+
+            var expectedOutput = @"
+red
+green
+blue
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+
+        }
+
+        /// <summary>
+        /// Referencing a valid property of an input object should return the property value.
+        /// </summary>
+        [TestMethod]
+        public void CycleTag_GroupedCycles_ReturnsPropertyValue()
+        {
+            var template = @"
+{% cycle 'colors': 'red', 'green', 'blue' %} - {% cycle 'numbers': 'one', 'two', 'three' %}
+{% cycle 'colors': 'red', 'green', 'blue' %} - {% cycle 'numbers': 'one', 'two', 'three' %}
+{% cycle 'colors': 'red', 'green', 'blue' %} - {% cycle 'numbers': 'one', 'two', 'three' %}
+";
+
+            var expectedOutput = @"
+red - one 
+green - two
+blue - three
+";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+
+        }
+
+        #endregion
+
     }
 }

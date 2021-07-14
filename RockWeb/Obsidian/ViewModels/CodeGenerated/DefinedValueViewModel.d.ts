@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface DefinedValue extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    DefinedTypeId: number;
-    Description: string | null;
-    IsActive: boolean;
-    IsSystem: boolean;
-    Order: number;
-    Value: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    definedTypeId: number;
+    description: string | null;
+    isActive: boolean;
+    isSystem: boolean;
+    order: number;
+    value: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

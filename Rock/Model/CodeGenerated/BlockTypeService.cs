@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// BlockType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( BlockType ) )]
     public partial class BlockTypeViewModelHelper : ViewModelHelper<BlockType, Rock.ViewModel.BlockTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

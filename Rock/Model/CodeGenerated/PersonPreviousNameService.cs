@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// PersonPreviousName View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PersonPreviousName ) )]
     public partial class PersonPreviousNameViewModelHelper : ViewModelHelper<PersonPreviousName, Rock.ViewModel.PersonPreviousNameViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

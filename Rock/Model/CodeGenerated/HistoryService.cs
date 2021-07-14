@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// History View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( History ) )]
     public partial class HistoryViewModelHelper : ViewModelHelper<History, Rock.ViewModel.HistoryViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

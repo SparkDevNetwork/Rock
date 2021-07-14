@@ -137,6 +137,38 @@
     <Compile Include="Migrations\202107062006254_CodeGenerated_0706.Designer.cs">
       <DependentUpon>202107062006254_CodeGenerated_0706.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107062041018_AddMapMarkersDefinedType.cs" />
+    <Compile Include="Migrations\202107062041018_AddMapMarkersDefinedType.Designer.cs">
+      <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107070516013_AddLanguageDefinedType.cs" />
+    <Compile Include="Migrations\202107070516013_AddLanguageDefinedType.Designer.cs">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107071327583_UpdateSignatureDocument.cs" />
+    <Compile Include="Migrations\202107071327583_UpdateSignatureDocument.Designer.cs">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107071721363_CheckinAbilityLevelDetermination.cs" />
+    <Compile Include="Migrations\202107071721363_CheckinAbilityLevelDetermination.Designer.cs">
+      <DependentUpon>202107071721363_CheckinAbilityLevelDetermination.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107072001368_AddLogSettingsBlock.cs" />
+    <Compile Include="Migrations\202107072001368_AddLogSettingsBlock.Designer.cs">
+      <DependentUpon>202107072001368_AddLogSettingsBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs" />
+    <Compile Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.Designer.cs">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107121730176_RegistrationInstanceTimeout.cs" />
+    <Compile Include="Migrations\202107121730176_RegistrationInstanceTimeout.Designer.cs">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202107141721235_CodeGenerated_0714.cs" />
+    <Compile Include="Migrations\202107141721235_CodeGenerated_0714.Designer.cs">
+      <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -644,6 +676,30 @@
     <EmbeddedResource Include="Migrations\202107062006254_CodeGenerated_0706.resx">
       <DependentUpon>202107062006254_CodeGenerated_0706.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107062041018_AddMapMarkersDefinedType.resx">
+      <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107070516013_AddLanguageDefinedType.resx">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107071327583_UpdateSignatureDocument.resx">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107071721363_CheckinAbilityLevelDetermination.resx">
+      <DependentUpon>202107071721363_CheckinAbilityLevelDetermination.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107072001368_AddLogSettingsBlock.resx">
+      <DependentUpon>202107072001368_AddLogSettingsBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.resx">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107121730176_RegistrationInstanceTimeout.resx">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107141721235_CodeGenerated_0714.resx">
+      <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -1015,6 +1071,12 @@
     <Content Include="Migrations\202107061930320_Rollup_0706_update-sparklinesimg.sql">
       <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge.sql">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity.sql">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
@@ -1117,7 +1179,9 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>CD $(SolutionDir)Dev Tools\EntityFramework\

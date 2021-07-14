@@ -50,7 +50,7 @@ export default defineComponent( {
                 return;
             }
 
-            const lastFormIndex = this.registrationEntryState.ViewModel.RegistrantForms.length - 1;
+            const lastFormIndex = this.registrationEntryState.ViewModel.registrantForms.length - 1;
             this.registrationEntryState.CurrentRegistrantIndex--;
             this.registrationEntryState.CurrentRegistrantFormIndex = lastFormIndex;
             await this.persistSession();
@@ -94,24 +94,24 @@ export default defineComponent( {
             {
                 const currentRegistrant = this.registrants[ i ];
 
-                for ( const form of this.registrationEntryState.ViewModel.RegistrantForms )
+                for ( const form of this.registrationEntryState.ViewModel.registrantForms )
                 {
-                    for ( const field of form.Fields )
+                    for ( const field of form.fields )
                     {
-                        if ( !field.IsSharedValue )
+                        if ( !field.isSharedValue )
                         {
                             continue;
                         }
 
-                        const valueToShare = firstRegistrant.FieldValues[ field.Guid ];
+                        const valueToShare = firstRegistrant.FieldValues[ field.guid ];
 
                         if ( valueToShare && typeof valueToShare === 'object' )
                         {
-                            currentRegistrant.FieldValues[ field.Guid ] = { ...valueToShare };
+                            currentRegistrant.FieldValues[ field.guid ] = { ...valueToShare };
                         }
                         else
                         {
-                            currentRegistrant.FieldValues[ field.Guid ] = valueToShare;
+                            currentRegistrant.FieldValues[ field.guid ] = valueToShare;
                         }
                     }
                 }
@@ -135,7 +135,7 @@ export default defineComponent( {
         /** What are the registrants called? */
         registrantTerm(): string
         {
-            return ( this.registrationEntryState.ViewModel.RegistrantTerm || 'registrant' ).toLowerCase();
+            return ( this.registrationEntryState.ViewModel.registrantTerm || 'registrant' ).toLowerCase();
         },
 
         registrants(): RegistrantInfo[]

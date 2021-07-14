@@ -96,11 +96,12 @@
     .full-name,
     .previous-names {
       display: none;
-      font-size: 18px;
+      font-size: @font-size-lg;
     }
 
     .firstname {
-      font-size: .6em;
+      font-size: @persondetails-bio-firstname-font-size;
+      font-weight: @persondetails-bio-firstname-font-weight;
     }
   }
 
@@ -190,7 +191,7 @@
 
     .btn {
       display: inline-block;
-      font-size: 16px;
+      font-size: @font-size-base;
       color: #fff;
       background-color: @gray;
       border: 0;
@@ -288,10 +289,6 @@
   border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
 
   --badge-size: @badge-icon-height;
-
-  .config-bar {
-    font-size: @font-size-base;
-  }
 
   .badge-group {
     margin: @spacing-sm-px 0;
@@ -511,9 +508,11 @@
     }
   }
 
-  &-gap {
-    li {
-      margin-right: 5px;
+  @media (min-width: @screen-lg-min) {
+    &-gap {
+      li {
+        margin-right: 5px;
+      }
     }
   }
 }
@@ -883,7 +882,7 @@
     h1 {
       float: left;
       margin: 0;
-      font-size: 18px;
+      font-size: @font-size-h4;
       font-weight: 600;
       line-height: 25px;
     }
@@ -980,7 +979,7 @@
 
     h4 {
       margin: 0;
-      font-size: 14px;
+      font-size: @font-size-h6;
       font-weight: @font-weight-semibold;
     }
 
@@ -1029,25 +1028,20 @@
 }
 
 // history page
-span.field-name {
-  padding: 2px 4px;
-  font-family: @font-family-monospace;
-  font-size: 90%;
-  color: @pagetitle-text-color;
-  white-space: nowrap;
-  background-color: @pagetitle-bg;
-  border-radius: 4px;
-}
-
-/* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
+span.field-name,
 span.field-value {
   padding: 2px 4px;
   font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
-  white-space: inherit;
-  background-color: @pagetitle-bg;
+  white-space: nowrap;
+  background-color: @gray-100;
   border-radius: 4px;
+}
+
+/* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
+span.field-value {
+  white-space: inherit;
 }
 
 // 8. Add Family Page
@@ -1109,6 +1103,8 @@ span.field-value {
       width: 35%;
       padding-right: 10px;
       font-weight: @grid-column-header-font-weight;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     > tbody > tr {
@@ -1349,7 +1345,7 @@ span.field-value {
 .person-bio {
   div.deceased h1.title.name::after {
     margin-left: 12px;
-    font-size: 14px;
+    font-size: @font-size-small;
     color: @brand-danger;
     content: "Deceased";
   }
@@ -1362,7 +1358,7 @@ span.field-value {
     }
 
     .person-info::after {
-      font-size: 10px;
+      font-size: @font-size-xs;
       color: @brand-danger;
       content: "Deceased";
     }
@@ -1647,7 +1643,7 @@ tr.inactive {
 .add-step-buttons {
   padding: 8px 0;
   margin: -16px -16px 0;
-  background: @drawer-bg;
+  background: @panel-drawer-bg;
   border-bottom: 1px solid @panel-border;
 
   + .row {
@@ -1696,6 +1692,8 @@ tr.inactive {
     -ms-flex-direction: column;
     flex-direction: column;
     -ms-flex-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
     justify-content: center;
     height: 100%;
     padding: 12px;
@@ -1710,7 +1708,6 @@ tr.inactive {
 
   .step-name {
     display: -webkit-box;
-    margin: 0;
     overflow: hidden;
     line-height: 1.3;
     -webkit-box-orient: vertical;

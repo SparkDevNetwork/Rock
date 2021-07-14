@@ -27,13 +27,13 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface AchievementTypePrerequisite extends Entity {
-    Id: number;
-    AchievementTypeId: number;
-    Attributes: Record<string, AttributeValue> | null;
-    PrerequisiteAchievementTypeId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    achievementTypeId: number;
+    attributes: Record<string, AttributeValue> | null;
+    prerequisiteAchievementTypeId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

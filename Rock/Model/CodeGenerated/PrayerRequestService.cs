@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// PrayerRequest View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( PrayerRequest ) )]
     public partial class PrayerRequestViewModelHelper : ViewModelHelper<PrayerRequest, Rock.ViewModel.PrayerRequestViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

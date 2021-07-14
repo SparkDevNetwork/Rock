@@ -27,15 +27,15 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface NotificationRecipient extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    NotificationId: number;
-    PersonAliasId: number;
-    Read: boolean;
-    ReadDateTime: RockDateType | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    notificationId: number;
+    personAliasId: number;
+    read: boolean;
+    readDateTime: RockDateType | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

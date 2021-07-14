@@ -141,7 +141,7 @@ System.register(["../../Util/Bus", "../../Templates/PaneledBlockTemplate", "../.
                     doEdit: function () {
                         var _a;
                         this.personForEditing = this.person ? __assign({}, this.person) : null;
-                        this.campusGuid = ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.Guid) || '';
+                        this.campusGuid = ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.guid) || '';
                         this.birthdate = this.birthdateOrNull ? RockDate_1.toRockDate(this.birthdateOrNull) : null;
                         this.setIsEditMode(true);
                     },
@@ -201,7 +201,7 @@ System.register(["../../Util/Bus", "../../Templates/PaneledBlockTemplate", "../.
                     },
                     campusName: function () {
                         var _a;
-                        return ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.Name) || '';
+                        return ((_a = this.campus) === null || _a === void 0 ? void 0 : _a.name) || '';
                     },
                     blockTitle: function () {
                         return this.person ?
@@ -212,7 +212,7 @@ System.register(["../../Util/Bus", "../../Templates/PaneledBlockTemplate", "../.
                         return Index_1.default.state.currentPerson;
                     },
                     currentPersonGuid: function () {
-                        return this.currentPerson ? this.currentPerson.Guid : null;
+                        return this.currentPerson ? this.currentPerson.guid : null;
                     }
                 },
                 watch: {

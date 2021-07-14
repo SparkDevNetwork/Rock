@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// BenevolenceResult View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( BenevolenceResult ) )]
     public partial class BenevolenceResultViewModelHelper : ViewModelHelper<BenevolenceResult, Rock.ViewModel.BenevolenceResultViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.UI;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -32,7 +33,6 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Examples
 {
     /// <summary>
-    /// A sample block that uses many of the Rock UI controls.
     /// </summary>
     [DisplayName( "Developer Environment Info" )]
     [Category( "Examples" )]
@@ -56,6 +56,8 @@ namespace RockWeb.Blocks.Examples
         {
             base.OnLoad( e );
 
+            ShowDebugSqlStatus();
+
             if ( !Page.IsPostBack )
             {
                 var rockContext = new RockContext();
@@ -74,6 +76,18 @@ Path: {2}",
                     System.Web.Hosting.HostingEnvironment.SiteName,
                     System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
                     System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath );
+            }
+        }
+
+        private void ShowDebugSqlStatus()
+        {
+            if ( DebugHelper.IsEnabled )
+            {
+                lDebugSqlStatus.Text = "<span class='label label-danger'>Enabled</span>";
+            }
+            else
+            {
+                lDebugSqlStatus.Text = "<span class='label label-info'>Disabled </span>";
             }
         }
 
@@ -97,7 +111,9 @@ Path: {2}",
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStartLogSQL_Click( object sender, EventArgs e )
         {
+            DebugHelper.LimitToSessionId( cbLimitToSessionId.Checked );
             DebugHelper.SQLLoggingStart();
+            ShowDebugSqlStatus();
         }
 
         /// <summary>
@@ -108,6 +124,14 @@ Path: {2}",
         protected void btnStopLogSQL_Click( object sender, EventArgs e )
         {
             DebugHelper.SQLLoggingStop();
+            ShowDebugSqlStatus();
+            
+        }
+
+        protected void btnShowSQLLog_Click( object sender, EventArgs e )
+        {
+            ceSqlOutput.Text = DebugHelper.GetSqlOutput();
+            mdSQLOutput.Show();
         }
 
         /// <summary>

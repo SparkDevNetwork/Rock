@@ -107,12 +107,12 @@ System.register(["vue", "../Elements/DropDownList", "../Util/Cache", "../Util/Ht
                 },
                 getByGuid: function (state) {
                     return function (guid) {
-                        return state.items.find(function (i) { return i.Guid === guid; }) || null;
+                        return state.items.find(function (i) { return i.guid === guid; }) || null;
                     };
                 },
                 getById: function (state) {
                     return function (id) {
-                        return state.items.find(function (i) { return i.Id === id; }) || null;
+                        return state.items.find(function (i) { return i.id === id; }) || null;
                     };
                 }
             },

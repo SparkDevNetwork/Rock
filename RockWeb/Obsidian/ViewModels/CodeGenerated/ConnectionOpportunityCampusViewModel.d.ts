@@ -27,14 +27,14 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface ConnectionOpportunityCampus extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CampusId: number;
-    ConnectionOpportunityId: number;
-    DefaultConnectorPersonAliasId: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    campusId: number;
+    connectionOpportunityId: number;
+    defaultConnectorPersonAliasId: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -55,7 +55,7 @@ export default defineComponent( {
         /** Is the registrar option set to UseLoggedInPerson */
         useLoggedInPersonForRegistrar (): boolean
         {
-            return ( !!this.currentPerson ) && this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson;
+            return ( !!this.currentPerson ) && this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson;
         },
 
         /** The person that is currently authenticated */
@@ -85,25 +85,25 @@ export default defineComponent( {
         /** Should the checkbox allowing the registrar to choose to update their email address be shown? */
         doShowUpdateEmailOption (): boolean
         {
-            return !this.viewModel.ForceEmailUpdate && !!this.currentPerson?.Email;
+            return !this.viewModel.forceEmailUpdate && !!this.currentPerson?.email;
         },
 
         /** Info about the registrants made available by .FirstName instead of by field guid */
         registrantInfos (): RegistrantBasicInfo[]
         {
-            return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.RegistrantForms ) );
+            return this.registrationEntryState.Registrants.map( r => getRegistrantBasicInfo( r, this.viewModel.registrantForms ) );
         },
 
         /** The registrant term - plural if there are more than 1 */
         registrantTerm (): string
         {
-            return this.registrantInfos.length === 1 ? this.viewModel.RegistrantTerm : this.viewModel.PluralRegistrantTerm;
+            return this.registrantInfos.length === 1 ? this.viewModel.registrantTerm : this.viewModel.pluralRegistrantTerm;
         },
 
         /** The name of this registration instance */
         instanceName (): string
         {
-            return this.viewModel.InstanceName;
+            return this.viewModel.instanceName;
         },
 
         /** The radio options that are displayed to allow the user to pick another person that this
@@ -113,7 +113,7 @@ export default defineComponent( {
             const options: DropDownListOption[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
-            if ( this.viewModel.RegistrantsSameFamily !== RegistrantsSameFamily.Ask )
+            if ( this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask )
             {
                 return options;
             }
@@ -122,7 +122,7 @@ export default defineComponent( {
             for ( let i = 0; i < this.registrationEntryState.Registrants.length; i++ )
             {
                 const registrant = this.registrationEntryState.Registrants[ i ];
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.registrantForms );
 
                 if ( !usedFamilyGuids[ registrant.FamilyGuid ] && info?.FirstName && info?.LastName )
                 {
@@ -137,12 +137,12 @@ export default defineComponent( {
             }
 
             // Add the current person (registrant) if not already added
-            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName && !usedFamilyGuids[ this.currentPerson.PrimaryFamilyGuid ] )
+            if ( this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ] )
             {
                 options.push( {
-                    key: this.currentPerson.PrimaryFamilyGuid,
-                    text: this.currentPerson.FullName,
-                    value: this.currentPerson.PrimaryFamilyGuid
+                    key: this.currentPerson.primaryFamilyGuid,
+                    text: this.currentPerson.fullName,
+                    value: this.currentPerson.primaryFamilyGuid
                 } );
             }
 
@@ -163,24 +163,24 @@ export default defineComponent( {
 
             // If the option is to prompt or use the current person, prefill the current person if available
             if ( this.currentPerson &&
-                ( this.viewModel.RegistrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar ) )
+                ( this.viewModel.registrarOption === RegistrarOption.UseLoggedInPerson || this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar ) )
             {
-                this.registrar.NickName = this.currentPerson.NickName || this.currentPerson.FirstName || '';
-                this.registrar.LastName = this.currentPerson.LastName || '';
-                this.registrar.Email = this.currentPerson.Email || '';
-                this.registrar.FamilyGuid = this.currentPerson.PrimaryFamilyGuid;
+                this.registrar.NickName = this.currentPerson.nickName || this.currentPerson.firstName || '';
+                this.registrar.LastName = this.currentPerson.lastName || '';
+                this.registrar.Email = this.currentPerson.email || '';
+                this.registrar.FamilyGuid = this.currentPerson.primaryFamilyGuid;
                 return;
             }
 
-            if ( this.viewModel.RegistrarOption === RegistrarOption.PromptForRegistrar )
+            if ( this.viewModel.registrarOption === RegistrarOption.PromptForRegistrar )
             {
                 return;
             }
 
             // If prefill or first-registrant, then the first registrants info is used (as least as a starting point)
-            if ( this.viewModel.RegistrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
+            if ( this.viewModel.registrarOption === RegistrarOption.PrefillFirstRegistrant || this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant )
             {
-                const firstRegistrantInfo = getRegistrantBasicInfo( this.firstRegistrant, this.viewModel.RegistrantForms );
+                const firstRegistrantInfo = getRegistrantBasicInfo( this.firstRegistrant, this.viewModel.registrantForms );
                 this.registrar.NickName = firstRegistrantInfo.FirstName;
                 this.registrar.LastName = firstRegistrantInfo.LastName;
                 this.registrar.Email = firstRegistrantInfo.Email;
@@ -188,7 +188,7 @@ export default defineComponent( {
 
                 const hasAllInfo = ( !!this.registrar.NickName ) && ( !!this.registrar.LastName ) && ( !!this.registrar.Email );
 
-                if ( hasAllInfo && this.viewModel.RegistrarOption === RegistrarOption.UseFirstRegistrant )
+                if ( hasAllInfo && this.viewModel.registrarOption === RegistrarOption.UseFirstRegistrant )
                 {
                     this.isRegistrarPanelShown = false;
                 }

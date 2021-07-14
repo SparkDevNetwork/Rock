@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface NoteWatch extends Entity {
-    Id: number;
-    AllowOverride: boolean;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number | null;
-    EntityTypeId: number | null;
-    IsWatching: boolean;
-    NoteId: number | null;
-    NoteTypeId: number | null;
-    WatcherGroupId: number | null;
-    WatcherPersonAliasId: number | null;
-    WatchReplies: boolean;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    allowOverride: boolean;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number | null;
+    entityTypeId: number | null;
+    isWatching: boolean;
+    noteId: number | null;
+    noteTypeId: number | null;
+    watcherGroupId: number | null;
+    watcherPersonAliasId: number | null;
+    watchReplies: boolean;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

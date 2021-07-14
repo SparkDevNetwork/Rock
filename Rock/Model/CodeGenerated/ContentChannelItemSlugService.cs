@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// ContentChannelItemSlug View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ContentChannelItemSlug ) )]
     public partial class ContentChannelItemSlugViewModelHelper : ViewModelHelper<ContentChannelItemSlug, Rock.ViewModel.ContentChannelItemSlugViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

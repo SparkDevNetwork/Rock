@@ -46,16 +46,16 @@ System.register(["vue", "./Index", "../Controls/DefinedValuePicker", "../Service
                 computed: {
                     selectedDefinedValue: function () {
                         var _this = this;
-                        return this.definedValues.find(function (dv) { return dv.Guid === _this.internalValue; }) || null;
+                        return this.definedValues.find(function (dv) { return dv.guid === _this.internalValue; }) || null;
                     },
                     displayValue: function () {
                         if (!this.selectedDefinedValue) {
                             return '';
                         }
                         if (this.displayDescription) {
-                            return this.selectedDefinedValue.Description || '';
+                            return this.selectedDefinedValue.description || '';
                         }
-                        return this.selectedDefinedValue.Value || '';
+                        return this.selectedDefinedValue.value || '';
                     },
                     displayDescription: function () {
                         var displayDescription = Index_1.getConfigurationValue(ConfigurationValueKey.DisplayDescription, this.configurationValues);
@@ -68,7 +68,7 @@ System.register(["vue", "./Index", "../Controls/DefinedValuePicker", "../Service
                             var definedTypeId = Number_1.toNumberOrNull(definedType);
                             if (definedTypeId) {
                                 var definedType_1 = this.$store.getters['definedTypes/getById'](definedTypeId);
-                                attributes.definedTypeGuid = (definedType_1 === null || definedType_1 === void 0 ? void 0 : definedType_1.Guid) || '';
+                                attributes.definedTypeGuid = (definedType_1 === null || definedType_1 === void 0 ? void 0 : definedType_1.guid) || '';
                             }
                         }
                         if (this.displayDescription) {

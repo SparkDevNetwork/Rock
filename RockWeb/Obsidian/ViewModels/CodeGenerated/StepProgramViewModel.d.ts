@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface StepProgram extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CategoryId: number | null;
-    DefaultListView: number;
-    Description: string | null;
-    IconCssClass: string | null;
-    IsActive: boolean;
-    Name: string | null;
-    Order: number;
-    StepTerm: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    categoryId: number | null;
+    defaultListView: number;
+    description: string | null;
+    iconCssClass: string | null;
+    isActive: boolean;
+    name: string | null;
+    order: number;
+    stepTerm: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -127,7 +127,7 @@ export default defineComponent({
         },
         firstClientRelativeStartTimeMs(): number {
             if (!this.relativeClientViewModels.length) {
-                return 0;
+                return this.serverEndTimeMs;
             }
 
             const viewModel = this.relativeClientViewModels[0];
@@ -135,7 +135,7 @@ export default defineComponent({
         },
         clientRelativeEndTimeMs(): number {
             if (!this.relativeClientViewModels.length) {
-                return 0;
+                return this.serverEndTimeMs;
             }
 
             const lastIndex = this.relativeClientViewModels.length - 1;

@@ -63,7 +63,11 @@ namespace Rock.Web.UI
         public override void RenderControl( HtmlTextWriter writer )
         {
             base.RenderControl( writer );
-            writer.Write( Block.GetControlMarkup() );
+
+            if ( Block is IRockWebBlockType webBlock )
+            {
+                writer.Write( webBlock.GetControlMarkup() );
+            }
         }
 
         #endregion

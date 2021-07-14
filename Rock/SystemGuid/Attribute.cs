@@ -883,6 +883,23 @@ namespace Rock.SystemGuid
 
         #endregion Giving Analytics
 
+        #region Language Defined Type
+        /// <summary>
+        /// Language in ISO639-1
+        /// </summary>
+        public const string ISO639_1 = "F5E8B6D2-6483-0F8D-4C20-07C51E7548AD";
+
+        /// <summary>
+        /// Language in ISO639
+        /// </summary>
+        public const string ISO639_2 = "09225D47-9A4D-D391-49E4-5A99A1DB47B8";
+
+        /// <summary>
+        /// The native language name
+        /// </summary>
+        public const string NativeLanguageName = "55256C99-DAC9-1AB4-4FD2-7CBFE3170245";
+        #endregion
+
         /// <summary>
         /// The currency code symbol
         /// </summary>

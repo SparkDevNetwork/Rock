@@ -16,9 +16,11 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
+
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -31,27 +33,23 @@ namespace Rock.ViewModel
     public static class ViewModelHelper
     {
         /// <summary>
+        /// The cached default helpers for converting models into view models.
+        /// </summary>
+        internal static ConcurrentDictionary<Type, Type> _defaultHelperTypes = new ConcurrentDictionary<Type, Type>();
+
+        /// <summary>
         /// Gets the view model.
         /// </summary>
         /// <param name="model">The model.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public static IViewModel GetViewModel( object model, Person currentPerson = null, bool loadAttributes = true )
+        public static IViewModel GetDefaultViewModel( object model, Person currentPerson = null, bool loadAttributes = true )
         {
+            // Check if it is already a view model.
             if ( model is IViewModel viewModel )
             {
                 return viewModel;
-            }
-
-            if ( model is Person person )
-            {
-                return person.ToViewModel( currentPerson, loadAttributes );
-            }
-
-            if ( model is Group group )
-            {
-                return group.ToViewModel( currentPerson, loadAttributes );
             }
 
             var type = model.GetType();
@@ -61,34 +59,70 @@ namespace Rock.ViewModel
                 type = type.BaseType;
             }
 
-            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+            var helperType = _defaultHelperTypes.GetOrAdd( type, GetDefaultViewModelHelper );
 
-            if ( isModel )
+            if ( helperType == null )
             {
-                var viewModelTypes = Reflection.SearchAssembly( typeof( PersonViewModel ).Assembly, typeof( ViewModelBase ) );
-                var viewModelType = viewModelTypes.GetValueOrNull( $"Rock.ViewModel.{type.Name}ViewModel" );
-
-                if ( viewModelType != null )
-                {
-                    var helperType = typeof( ViewModelHelper<,> ).MakeGenericType( type, viewModelType );
-                    var helper = Activator.CreateInstance( helperType );
-                    var method = helperType.GetMethod( "CreateViewModel" );
-                    return method.Invoke( helper, new object[] { model, currentPerson, loadAttributes } ) as IViewModel;
-                }
+                return null;
             }
 
-            return null;
+            var helper = ( IViewModelHelper ) Activator.CreateInstance( helperType );
+
+            return helper.CreateViewModel( model, currentPerson, loadAttributes );
+        }
+
+        /// <summary>
+        /// Gets the default view model helper.
+        /// </summary>
+        /// <param name="type">The model type to be converted into a view model.</param>
+        /// <returns>The <see cref="IViewModelHelper"/> type that will handle the conversion.</returns>
+        private static Type GetDefaultViewModelHelper( Type type )
+        {
+            var helperType = Reflection.FindTypes( typeof( IViewModelHelper ) )
+                .Select( a => a.Value )
+                .Where( a => a.GetCustomAttribute<DefaultViewModelHelperAttribute>()?.Type == type )
+                .OrderBy( a => a.Namespace.StartsWith( "Rock." ) )
+                .FirstOrDefault();
+
+            if ( helperType != null )
+            {
+                return helperType;
+            }
+
+            var viewModelType = Reflection.FindTypes( typeof( IViewModel ) )
+                .Select( a => a.Value )
+                .Where( a => a.GetCustomAttribute<DefaultViewModelHelperAttribute>()?.Type == type )
+                .OrderBy( a => a.Namespace.StartsWith( "Rock." ) )
+                .FirstOrDefault();
+
+            if ( viewModelType == null )
+            {
+                return null;
+            }
+
+            return typeof( ViewModelHelper<,> ).MakeGenericType( type, viewModelType );
         }
     }
 
     /// <summary>
     /// View Model Helper
     /// </summary>
-    public class ViewModelHelper<TModel, TViewModel>
+    public class ViewModelHelper<TModel, TViewModel> : IViewModelHelper
         where TViewModel : IViewModel, new()
     {
+        /// <inheritdoc/>
+        IViewModel IViewModelHelper.CreateViewModel( object model, Person currentPerson, bool loadAttributes )
+        {
+            if ( model is TModel tModel )
+            {
+                return CreateViewModel( tModel, currentPerson, loadAttributes );
+            }
+
+            return null;
+        }
+
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to the view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
@@ -126,13 +160,13 @@ namespace Rock.ViewModel
                     modelWithAttributes.LoadAttributes();
                 }
 
-                viewModelWithAttributes.Attributes = modelWithAttributes.AttributeValues.Where( av =>
-                {
-                    var attribute = AttributeCache.Get( av.Value.AttributeId );
-                    return attribute?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
-                } ).ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value.ToViewModel() );
+                viewModelWithAttributes.Attributes = modelWithAttributes.AttributeValues
+                    .Where( av =>
+                    {
+                        var attribute = AttributeCache.Get( av.Value.AttributeId );
+                        return attribute?.IsAuthorized( Authorization.VIEW, currentPerson ) ?? false;
+                    } )
+                    .ToDictionary( kvp => kvp.Key, kvp => kvp.Value.ToViewModel() );
             }
         }
 
@@ -152,8 +186,8 @@ namespace Rock.ViewModel
         /// Copies the properties to the destination.
         /// https://stackoverflow.com/a/28814556/13215483
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="destination">The dest.</param>
+        /// <param name="source">The source object to copy properties from.</param>
+        /// <param name="destination">The destination object to copy properties to.</param>
         public static void CopyProperties( object source, object destination )
         {
             if ( source == null || destination == null )

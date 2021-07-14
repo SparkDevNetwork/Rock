@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// StepWorkflowTrigger View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( StepWorkflowTrigger ) )]
     public partial class StepWorkflowTriggerViewModelHelper : ViewModelHelper<StepWorkflowTrigger, Rock.ViewModel.StepWorkflowTriggerViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// SignatureDocument View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SignatureDocument ) )]
     public partial class SignatureDocumentViewModelHelper : ViewModelHelper<SignatureDocument, Rock.ViewModel.SignatureDocumentViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
@@ -84,13 +85,24 @@ namespace Rock.Model
                 AppliesToPersonAliasId = model.AppliesToPersonAliasId,
                 AssignedToPersonAliasId = model.AssignedToPersonAliasId,
                 BinaryFileId = model.BinaryFileId,
+                CompletionEmailSentDateTime = model.CompletionEmailSentDateTime,
                 DocumentKey = model.DocumentKey,
+                EntityId = model.EntityId,
+                EntityTypeId = model.EntityTypeId,
                 InviteCount = model.InviteCount,
                 LastInviteDate = model.LastInviteDate,
                 LastStatusDate = model.LastStatusDate,
                 Name = model.Name,
+                SignatureData = model.SignatureData,
                 SignatureDocumentTemplateId = model.SignatureDocumentTemplateId,
+                SignatureVerficationHash = model.SignatureVerficationHash,
+                SignedByEmail = model.SignedByEmail,
                 SignedByPersonAliasId = model.SignedByPersonAliasId,
+                SignedClientIp = model.SignedClientIp,
+                SignedClientUserAgent = model.SignedClientUserAgent,
+                SignedDateTime = model.SignedDateTime,
+                SignedDocumentText = model.SignedDocumentText,
+                SignedName = model.SignedName,
                 Status = ( int ) model.Status,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -164,15 +176,26 @@ namespace Rock.Model
             target.AppliesToPersonAliasId = source.AppliesToPersonAliasId;
             target.AssignedToPersonAliasId = source.AssignedToPersonAliasId;
             target.BinaryFileId = source.BinaryFileId;
+            target.CompletionEmailSentDateTime = source.CompletionEmailSentDateTime;
             target.DocumentKey = source.DocumentKey;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InviteCount = source.InviteCount;
             target.LastInviteDate = source.LastInviteDate;
             target.LastStatusDate = source.LastStatusDate;
             target.Name = source.Name;
+            target.SignatureData = source.SignatureData;
             target.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
+            target.SignatureVerficationHash = source.SignatureVerficationHash;
+            target.SignedByEmail = source.SignedByEmail;
             target.SignedByPersonAliasId = source.SignedByPersonAliasId;
+            target.SignedClientIp = source.SignedClientIp;
+            target.SignedClientUserAgent = source.SignedClientUserAgent;
+            target.SignedDateTime = source.SignedDateTime;
+            target.SignedDocumentText = source.SignedDocumentText;
+            target.SignedName = source.SignedName;
             target.Status = source.Status;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

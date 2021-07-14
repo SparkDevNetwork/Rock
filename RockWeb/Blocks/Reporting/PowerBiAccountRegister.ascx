@@ -47,7 +47,9 @@
                     <Rock:RockTextBox ID="txtClientSecret" runat="server" Label="Client Secret" Required="true" />
 
                     <Rock:NotificationBox ID="nbRegistrationWarning" runat="server" NotificationBoxType="Warning" Text="Note: If you get an error when registering, wait a minute and try again. It sometimes takes a few extra seconds for the Power BI Website to know about a newly added app." />
-                    <asp:Button ID="btnRegister" runat="server" CssClass="btn btn-primary" Text="Register" OnClick="btnRegister_Click" />
+                    <div class="actions">
+                        <asp:Button ID="btnRegister" runat="server" CssClass="btn btn-primary" Text="Register" OnClick="btnRegister_Click" />
+                    </div>
                 </asp:Panel>
 
                 <asp:Panel ID="pnlResponse" runat="server">

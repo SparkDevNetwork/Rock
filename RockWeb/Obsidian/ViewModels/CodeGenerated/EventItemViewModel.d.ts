@@ -27,20 +27,20 @@ import AttributeValue from './AttributeValueViewModel';
 import { Guid } from '../../Util/Guid';
 
 export default interface EventItem extends Entity {
-    Id: number;
-    ApprovedByPersonAliasId: number | null;
-    ApprovedOnDateTime: RockDateType | null;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    DetailsUrl: string | null;
-    IsActive: boolean;
-    IsApproved: boolean;
-    Name: string | null;
-    PhotoId: number | null;
-    Summary: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    approvedByPersonAliasId: number | null;
+    approvedOnDateTime: RockDateType | null;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    detailsUrl: string | null;
+    isActive: boolean;
+    isApproved: boolean;
+    name: string | null;
+    photoId: number | null;
+    summary: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

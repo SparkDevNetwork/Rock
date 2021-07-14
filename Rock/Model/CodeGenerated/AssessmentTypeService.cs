@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// AssessmentType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AssessmentType ) )]
     public partial class AssessmentTypeViewModelHelper : ViewModelHelper<AssessmentType, Rock.ViewModel.AssessmentTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

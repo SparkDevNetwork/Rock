@@ -88,7 +88,7 @@ System.register(["vue", "../../../Controls/Dialog", "../../../Elements/LoadingIn
                 },
                 computed: {
                     hasWaitlist: function () {
-                        return this.registrationEntryState.ViewModel.WaitListEnabled;
+                        return this.registrationEntryState.ViewModel.waitListEnabled;
                     },
                     allRegistrantCount: function () {
                         return this.registrationEntryState.Registrants.length;
@@ -137,16 +137,16 @@ System.register(["vue", "../../../Controls/Dialog", "../../../Elements/LoadingIn
                                     case 2:
                                         response = _a.sent();
                                         if (response.data) {
-                                            asDate = new Date(response.data.ExpirationDateTime);
+                                            asDate = new Date(response.data.expirationDateTime);
                                             this.registrationEntryState.SessionExpirationDate = asDate;
-                                            this.spotsSecured = response.data.SpotsSecured;
+                                            this.spotsSecured = response.data.spotsSecured;
                                             deficiency = this.nonWaitlistRegistrantCount - this.spotsSecured;
                                             if (!deficiency) {
                                                 this.$emit('success');
                                                 this.close();
                                                 return [2];
                                             }
-                                            this.registrationEntryState.ViewModel.SpotsRemaining = this.spotsSecured;
+                                            this.registrationEntryState.ViewModel.spotsRemaining = this.spotsSecured;
                                             if (!this.hasWaitlist) {
                                                 this.registrationEntryState.Registrants.length = this.spotsSecured;
                                                 return [2];

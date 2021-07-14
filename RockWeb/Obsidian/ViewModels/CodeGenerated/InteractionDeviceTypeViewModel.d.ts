@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface InteractionDeviceType extends Entity {
-    Id: number;
-    Application: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    ClientType: string | null;
-    DeviceTypeData: string | null;
-    Name: string | null;
-    OperatingSystem: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    application: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    clientType: string | null;
+    deviceTypeData: string | null;
+    name: string | null;
+    operatingSystem: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface MetricPartition extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityTypeId: number | null;
-    EntityTypeQualifierColumn: string | null;
-    EntityTypeQualifierValue: string | null;
-    IsRequired: boolean;
-    Label: string | null;
-    MetricId: number;
-    Order: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    entityTypeId: number | null;
+    entityTypeQualifierColumn: string | null;
+    entityTypeQualifierValue: string | null;
+    isRequired: boolean;
+    label: string | null;
+    metricId: number;
+    order: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

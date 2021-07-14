@@ -27,15 +27,15 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface EntitySetItem extends Entity {
-    Id: number;
-    AdditionalMergeValuesJson: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    EntityId: number;
-    EntitySetId: number;
-    Order: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    additionalMergeValuesJson: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    entityId: number;
+    entitySetId: number;
+    order: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

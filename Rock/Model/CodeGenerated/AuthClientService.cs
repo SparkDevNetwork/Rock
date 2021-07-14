@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// AuthClient View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( AuthClient ) )]
     public partial class AuthClientViewModelHelper : ViewModelHelper<AuthClient, Rock.ViewModel.AuthClientViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

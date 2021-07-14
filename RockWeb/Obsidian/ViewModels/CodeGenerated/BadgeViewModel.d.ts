@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Badge extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    BadgeComponentEntityTypeId: number;
-    Description: string | null;
-    EntityTypeId: number | null;
-    EntityTypeQualifierColumn: string | null;
-    EntityTypeQualifierValue: string | null;
-    IsActive: boolean;
-    Name: string | null;
-    Order: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    badgeComponentEntityTypeId: number;
+    description: string | null;
+    entityTypeId: number | null;
+    entityTypeQualifierColumn: string | null;
+    entityTypeQualifierValue: string | null;
+    isActive: boolean;
+    name: string | null;
+    order: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

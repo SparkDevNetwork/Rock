@@ -73,10 +73,11 @@ namespace Rock.Model
     /// <summary>
     /// SignatureDocumentTemplate View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( SignatureDocumentTemplate ) )]
     public partial class SignatureDocumentTemplateViewModelHelper : ViewModelHelper<SignatureDocumentTemplate, Rock.ViewModel.SignatureDocumentTemplateViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
@@ -94,11 +95,16 @@ namespace Rock.Model
                 Id = model.Id,
                 Guid = model.Guid,
                 BinaryFileTypeId = model.BinaryFileTypeId,
+                CompletionSystemCommunicationId = model.CompletionSystemCommunicationId,
                 Description = model.Description,
+                DocumentTerm = model.DocumentTerm,
                 InviteSystemCommunicationId = model.InviteSystemCommunicationId,
+                IsActive = model.IsActive,
+                LavaTemplate = model.LavaTemplate,
                 Name = model.Name,
                 ProviderEntityTypeId = model.ProviderEntityTypeId,
                 ProviderTemplateKey = model.ProviderTemplateKey,
+                SignatureType = ( int ) model.SignatureType,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -169,16 +175,21 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
+            target.CompletionSystemCommunicationId = source.CompletionSystemCommunicationId;
             target.Description = source.Description;
+            target.DocumentTerm = source.DocumentTerm;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             #pragma warning disable 612, 618
             target.InviteSystemEmailId = source.InviteSystemEmailId;
             #pragma warning restore 612, 618
+            target.IsActive = source.IsActive;
+            target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
+            target.SignatureType = source.SignatureType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

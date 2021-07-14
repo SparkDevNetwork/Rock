@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface RegistrationTemplateFee extends Entity {
-    Id: number;
-    AllowMultiple: boolean;
-    Attributes: Record<string, AttributeValue> | null;
-    DiscountApplies: boolean;
-    FeeType: number;
-    HideWhenNoneRemaining: boolean;
-    IsActive: boolean;
-    IsRequired: boolean;
-    Name: string | null;
-    Order: number;
-    RegistrationTemplateId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    allowMultiple: boolean;
+    attributes: Record<string, AttributeValue> | null;
+    discountApplies: boolean;
+    feeType: number;
+    hideWhenNoneRemaining: boolean;
+    isActive: boolean;
+    isRequired: boolean;
+    name: string | null;
+    order: number;
+    registrationTemplateId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

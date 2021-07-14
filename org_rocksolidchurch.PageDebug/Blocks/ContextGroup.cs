@@ -25,14 +25,14 @@ namespace com_rocksolidchurchdemo.PageDebug.Blocks
     /// <summary>
     /// Shows the page's context group.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Context Group" )]
     [Category( "Rock Solid Church Demo > Page Debug" )]
     [Description( "Shows the page's context group" )]
     [IconCssClass( "fa fa-grin-tongue-squint" )]
 
-    public class ContextGroup : ObsidianBlockType
+    public class ContextGroup : RockObsidianBlockType
     {
         /// <summary>
         /// Gets the block markup file identifier.

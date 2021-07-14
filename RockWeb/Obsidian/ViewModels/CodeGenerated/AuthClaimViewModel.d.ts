@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface AuthClaim extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    IsActive: boolean;
-    IsSystem: boolean;
-    Name: string | null;
-    PublicName: string | null;
-    ScopeId: number;
-    Value: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    isActive: boolean;
+    isSystem: boolean;
+    name: string | null;
+    publicName: string | null;
+    scopeId: number;
+    value: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

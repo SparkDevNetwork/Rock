@@ -91,100 +91,100 @@ export enum RegistrantsSameFamily
 
 export interface SessionRenewalResult
 {
-    SpotsSecured: number;
-    ExpirationDateTime: string;
+    spotsSecured: number;
+    expirationDateTime: string;
 }
 
 export interface RegistrationEntryBlockViewModel
 {
-    TimeoutMinutes: number | null;
-    RegistrantsSameFamily: RegistrantsSameFamily;
-    MaxRegistrants: number;
-    RegistrationAttributeTitleStart: string;
-    RegistrationAttributeTitleEnd: string;
-    InstructionsHtml: string;
-    RegistrantTerm: string;
-    RegistrationTerm: string;
-    PluralRegistrationTerm: string;
-    PluralRegistrantTerm: string;
-    PluralFeeTerm: string;
-    RegistrantForms: RegistrationEntryBlockFormViewModel[];
-    Fees: RegistrationEntryBlockFeeViewModel[];
-    FamilyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-    RegistrationAttributesStart: Attribute[];
-    RegistrationAttributesEnd: Attribute[];
-    ForceEmailUpdate: boolean;
-    RegistrarOption: RegistrarOption;
-    Cost: number;
-    GatewayControl: GatewayControlModel,
-    IsRedirectGateway: boolean,
-    SpotsRemaining: number | null,
-    WaitListEnabled: boolean,
-    InstanceName: string,
-    AmountDueToday: number | null,
-    InitialAmountToPay: number | null,
-    Session: RegistrationEntryBlockSession | null,
-    IsUnauthorized: boolean,
-    HasDiscountsAvailable: boolean,
-    RedirectGatewayUrl: string,
-    LoginRequiredToRegister: boolean,
-    SuccessViewModel: RegistrationEntryBlockSuccessViewModel | null,
-    AllowRegistrationUpdates: boolean,
-    StartAtBeginning: boolean,
-    GatewayGuid: Guid | null
+    timeoutMinutes: number | null;
+    registrantsSameFamily: RegistrantsSameFamily;
+    maxRegistrants: number;
+    registrationAttributeTitleStart: string;
+    registrationAttributeTitleEnd: string;
+    instructionsHtml: string;
+    registrantTerm: string;
+    registrationTerm: string;
+    pluralRegistrationTerm: string;
+    pluralRegistrantTerm: string;
+    pluralFeeTerm: string;
+    registrantForms: RegistrationEntryBlockFormViewModel[];
+    fees: RegistrationEntryBlockFeeViewModel[];
+    familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
+    registrationAttributesStart: Attribute[];
+    registrationAttributesEnd: Attribute[];
+    forceEmailUpdate: boolean;
+    registrarOption: RegistrarOption;
+    cost: number;
+    gatewayControl: GatewayControlModel,
+    isRedirectGateway: boolean,
+    spotsRemaining: number | null,
+    waitListEnabled: boolean,
+    instanceName: string,
+    amountDueToday: number | null,
+    initialAmountToPay: number | null,
+    session: RegistrationEntryBlockSession | null,
+    isUnauthorized: boolean,
+    hasDiscountsAvailable: boolean,
+    redirectGatewayUrl: string,
+    loginRequiredToRegister: boolean,
+    successViewModel: RegistrationEntryBlockSuccessViewModel | null,
+    allowRegistrationUpdates: boolean,
+    startAtBeginning: boolean,
+    gatewayGuid: Guid | null
 }
 
 export interface RegistrationEntryBlockFamilyMemberViewModel
 {
-    Guid: Guid;
-    FamilyGuid: Guid;
-    FullName: string;
-    FieldValues: Record<Guid, unknown>;
+    guid: Guid;
+    familyGuid: Guid;
+    fullName: string;
+    fieldValues: Record<Guid, unknown>;
 }
 
 export interface RegistrationEntryBlockFeeViewModel
 {
-    Name: string;
-    Guid: Guid;
-    AllowMultiple: boolean;
-    IsRequired: boolean;
-    Items: RegistrationEntryBlockFeeItemViewModel[];
-    DiscountApplies: boolean;
+    name: string;
+    guid: Guid;
+    allowMultiple: boolean;
+    isRequired: boolean;
+    items: RegistrationEntryBlockFeeItemViewModel[];
+    discountApplies: boolean;
 }
 
 export interface RegistrationEntryBlockFeeItemViewModel
 {
-    Name: string;
-    Guid: Guid;
-    Cost: number;
-    CountRemaining: number | null;
+    name: string;
+    guid: Guid;
+    cost: number;
+    countRemaining: number | null;
 }
 
 export interface RegistrationEntryBlockFormViewModel
 {
-    Fields: RegistrationEntryBlockFormFieldViewModel[];
+    fields: RegistrationEntryBlockFormFieldViewModel[];
 }
 
 export interface RegistrationEntryBlockFormFieldViewModel
 {
-    FieldSource: RegistrationFieldSource;
-    PersonFieldType: RegistrationPersonFieldType;
-    IsRequired: boolean;
-    IsSharedValue: boolean;
-    Attribute: Attribute;
-    VisibilityRuleType: FilterExpressionType;
-    VisibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
-    PreHtml: string;
-    PostHtml: string;
-    ShowOnWaitList: boolean;
-    Guid: Guid;
+    fieldSource: RegistrationFieldSource;
+    personFieldType: RegistrationPersonFieldType;
+    isRequired: boolean;
+    isSharedValue: boolean;
+    attribute: Attribute;
+    visibilityRuleType: FilterExpressionType;
+    visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
+    preHtml: string;
+    postHtml: string;
+    showOnWaitList: boolean;
+    guid: Guid;
 }
 
 export interface RegistrationEntryBlockFormFieldRuleViewModel
 {
-    ComparedToRegistrationTemplateFormFieldGuid: Guid;
-    ComparisonType: ComparisonType;
-    ComparedToValue: string;
+    comparedToRegistrationTemplateFormFieldGuid: Guid;
+    comparisonType: ComparisonType;
+    comparedToValue: string;
 }
 
 export type RegistrantInfo = {
@@ -213,8 +213,8 @@ export type RegistrarInfo = {
 };
 
 export type RegistrationEntryBlockSuccessViewModel = {
-    TitleHtml: string;
-    MessageHtml: string;
-    TransactionCode: string;
-    GatewayPersonIdentifier: string;
+    titleHtml: string;
+    messageHtml: string;
+    transactionCode: string;
+    gatewayPersonIdentifier: string;
 };

@@ -74,9 +74,9 @@ export default defineComponent( {
         options (): DropDownListOption[]
         {
             return this.definedValues.map( dv => ( {
-                key: dv.Guid,
-                value: dv.Guid,
-                text: this.displayDescriptions ? dv.Description : dv.Value
+                key: dv.guid,
+                value: dv.guid,
+                text: this.displayDescriptions ? dv.description : dv.value
             } as DropDownListOption ) );
         }
     },
@@ -114,7 +114,7 @@ export default defineComponent( {
         {
             this.$emit( 'update:modelValue', this.internalValue );
 
-            const definedValue = this.definedValues.find( dv => dv.Guid === this.internalValue ) || null;
+            const definedValue = this.definedValues.find( dv => dv.guid === this.internalValue ) || null;
             this.$emit( 'update:model', definedValue );
         }
     },

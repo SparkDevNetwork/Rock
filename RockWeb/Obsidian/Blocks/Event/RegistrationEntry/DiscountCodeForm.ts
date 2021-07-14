@@ -80,7 +80,7 @@ export default defineComponent( {
         /** Should the discount panel be shown? */
         isDiscountPanelVisible (): boolean
         {
-            return this.viewModel.HasDiscountsAvailable;
+            return this.viewModel.hasDiscountsAvailable;
         },
 
         /** This is the data sent from the C# code behind when the block initialized. */

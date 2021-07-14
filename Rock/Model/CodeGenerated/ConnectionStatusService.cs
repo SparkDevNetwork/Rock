@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// ConnectionStatus View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ConnectionStatus ) )]
     public partial class ConnectionStatusViewModelHelper : ViewModelHelper<ConnectionStatus, Rock.ViewModel.ConnectionStatusViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

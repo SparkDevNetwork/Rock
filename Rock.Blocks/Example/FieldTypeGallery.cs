@@ -24,14 +24,14 @@ namespace Rock.Blocks.Example
     /// <summary>
     /// Allows the user to try out various field types.
     /// </summary>
-    /// <seealso cref="Rock.Blocks.ObsidianBlockType" />
+    /// <seealso cref="Rock.Blocks.RockObsidianBlockType" />
 
     [DisplayName( "Field Type Gallery" )]
     [Category( "Obsidian > Example" )]
     [Description( "Allows the user to try out various field types." )]
     [IconCssClass( "fa fa-flask" )]
 
-    public class FieldTypeGallery : ObsidianBlockType
+    public class FieldTypeGallery : RockObsidianBlockType
     {
     }
 }

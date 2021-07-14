@@ -27,16 +27,16 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface EventItemOccurrenceGroupMap extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    EventItemOccurrenceId: number | null;
-    GroupId: number | null;
-    PublicName: string | null;
-    RegistrationInstanceId: number | null;
-    UrlSlug: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    eventItemOccurrenceId: number | null;
+    groupId: number | null;
+    publicName: string | null;
+    registrationInstanceId: number | null;
+    urlSlug: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

@@ -27,19 +27,19 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface PersonDuplicate extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Capacity: number | null;
-    DuplicatePersonAliasId: number;
-    IgnoreUntilScoreChanges: boolean;
-    IsConfirmedAsNotDuplicate: boolean;
-    PersonAliasId: number;
-    Score: number | null;
-    ScoreDetail: string | null;
-    TotalCapacity: number | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    capacity: number | null;
+    duplicatePersonAliasId: number;
+    ignoreUntilScoreChanges: boolean;
+    isConfirmedAsNotDuplicate: boolean;
+    personAliasId: number;
+    score: number | null;
+    scoreDetail: string | null;
+    totalCapacity: number | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

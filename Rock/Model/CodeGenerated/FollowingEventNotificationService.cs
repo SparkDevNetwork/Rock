@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// FollowingEventNotification View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FollowingEventNotification ) )]
     public partial class FollowingEventNotificationViewModelHelper : ViewModelHelper<FollowingEventNotification, Rock.ViewModel.FollowingEventNotificationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

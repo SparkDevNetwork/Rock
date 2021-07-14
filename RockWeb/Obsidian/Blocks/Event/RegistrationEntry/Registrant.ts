@@ -100,17 +100,17 @@ export default defineComponent( {
         {
             if ( !this.isWaitList )
             {
-                return this.viewModel.RegistrantForms;
+                return this.viewModel.registrantForms;
             }
 
-            return this.viewModel.RegistrantForms.filter( form => form.Fields.some( field => field.ShowOnWaitList ) );
+            return this.viewModel.registrantForms.filter( form => form.fields.some( field => field.showOnWaitList ) );
         },
 
         /** The filtered fields to show on the current form */
         currentFormFields (): RegistrationEntryBlockFormFieldViewModel[]
         {
-            return ( this.currentForm?.Fields || [] )
-                .filter( f => !this.isWaitList || f.ShowOnWaitList );
+            return ( this.currentForm?.fields || [] )
+                .filter( f => !this.isWaitList || f.showOnWaitList );
         },
 
         /** The current fields as pre-post items to allow pre-post HTML to be rendered */
@@ -118,9 +118,9 @@ export default defineComponent( {
         {
             return this.currentFormFields
                 .map( f => ( {
-                    PreHtml: f.PreHtml,
-                    PostHtml: f.PostHtml,
-                    SlotName: f.Guid
+                    PreHtml: f.preHtml,
+                    PostHtml: f.postHtml,
+                    SlotName: f.guid
                 } ) );
         },
         currentPerson (): Person | null
@@ -129,7 +129,7 @@ export default defineComponent( {
         },
         pluralFeeTerm (): string
         {
-            return StringFilter.toTitleCase( this.viewModel.PluralFeeTerm || 'fees' );
+            return StringFilter.toTitleCase( this.viewModel.pluralFeeTerm || 'fees' );
         },
 
         /** The radio options that are displayed to allow the user to pick another person that this
@@ -139,7 +139,7 @@ export default defineComponent( {
             const options: DropDownListOption[] = [];
             const usedFamilyGuids: Record<Guid, boolean> = {};
 
-            if ( this.viewModel.RegistrantsSameFamily !== RegistrantsSameFamily.Ask )
+            if ( this.viewModel.registrantsSameFamily !== RegistrantsSameFamily.Ask )
             {
                 return options;
             }
@@ -148,7 +148,7 @@ export default defineComponent( {
             for ( let i = 0; i < this.registrationEntryState.CurrentRegistrantIndex; i++ )
             {
                 const registrant = this.registrationEntryState.Registrants[ i ];
-                const info = getRegistrantBasicInfo( registrant, this.viewModel.RegistrantForms );
+                const info = getRegistrantBasicInfo( registrant, this.viewModel.registrantForms );
 
                 if ( !usedFamilyGuids[ registrant.FamilyGuid ] && info?.FirstName && info?.LastName )
                 {
@@ -163,12 +163,12 @@ export default defineComponent( {
             }
 
             // Add the current person (registrant) if not already added
-            if ( this.currentPerson?.PrimaryFamilyGuid && this.currentPerson.FullName && !usedFamilyGuids[ this.currentPerson.PrimaryFamilyGuid ] )
+            if ( this.currentPerson?.primaryFamilyGuid && this.currentPerson.fullName && !usedFamilyGuids[ this.currentPerson.primaryFamilyGuid ] )
             {
                 options.push( {
-                    key: this.currentPerson.PrimaryFamilyGuid,
-                    text: this.currentPerson.FullName,
-                    value: this.currentPerson.PrimaryFamilyGuid
+                    key: this.currentPerson.primaryFamilyGuid,
+                    text: this.currentPerson.fullName,
+                    value: this.currentPerson.primaryFamilyGuid
                 } );
             }
 
@@ -195,23 +195,23 @@ export default defineComponent( {
                 .filter( r => r.PersonGuid && r.PersonGuid !== this.currentRegistrant.PersonGuid )
                 .map( r => r.PersonGuid );
 
-            return this.viewModel.FamilyMembers
+            return this.viewModel.familyMembers
                 .filter( fm =>
-                    areEqual( fm.FamilyGuid, selectedFamily ) &&
-                    !usedFamilyMemberGuids.includes( fm.Guid ) )
+                    areEqual( fm.familyGuid, selectedFamily ) &&
+                    !usedFamilyMemberGuids.includes( fm.guid ) )
                 .map( fm => ( {
-                    key: fm.Guid,
-                    text: fm.FullName,
-                    value: fm.Guid
+                    key: fm.guid,
+                    text: fm.fullName,
+                    value: fm.guid
                 } ) );
         },
         uppercaseRegistrantTerm (): string
         {
-            return StringFilter.toTitleCase( this.viewModel.RegistrantTerm );
+            return StringFilter.toTitleCase( this.viewModel.registrantTerm );
         },
         firstName (): string
         {
-            return getRegistrantBasicInfo( this.currentRegistrant, this.viewModel.RegistrantForms ).FirstName;
+            return getRegistrantBasicInfo( this.currentRegistrant, this.viewModel.registrantForms ).FirstName;
         },
         familyMember (): RegistrationEntryBlockFamilyMemberViewModel | null
         {
@@ -222,7 +222,7 @@ export default defineComponent( {
                 return null;
             }
 
-            return this.viewModel.FamilyMembers.find( fm => areEqual( fm.Guid, personGuid ) ) || null;
+            return this.viewModel.familyMembers.find( fm => areEqual( fm.guid, personGuid ) ) || null;
         }
     },
     methods: {
@@ -259,25 +259,25 @@ export default defineComponent( {
             }
 
             // If the family member selection is made then set all form fields where use existing value is enabled
-            for ( const form of this.viewModel.RegistrantForms )
+            for ( const form of this.viewModel.registrantForms )
             {
-                for ( const field of form.Fields )
+                for ( const field of form.fields )
                 {
-                    if ( field.Guid in this.familyMember.FieldValues )
+                    if ( field.guid in this.familyMember.fieldValues )
                     {
-                        const familyMemberValue = this.familyMember.FieldValues[ field.Guid ];
+                        const familyMemberValue = this.familyMember.fieldValues[ field.guid ];
 
                         if ( !familyMemberValue )
                         {
-                            delete this.currentRegistrant.FieldValues[ field.Guid ];
+                            delete this.currentRegistrant.FieldValues[ field.guid ];
                         }
                         else if ( typeof familyMemberValue === 'object' )
                         {
-                            this.currentRegistrant.FieldValues[ field.Guid ] = { ...familyMemberValue };
+                            this.currentRegistrant.FieldValues[ field.guid ] = { ...familyMemberValue };
                         }
                         else
                         {
-                            this.currentRegistrant.FieldValues[ field.Guid ] = familyMemberValue;
+                            this.currentRegistrant.FieldValues[ field.guid ] = familyMemberValue;
                         }
                     }
                 }
@@ -296,11 +296,11 @@ export default defineComponent( {
                 if ( !this.familyMember )
                 {
                     // If the family member selection is cleared then clear all form fields
-                    for ( const form of this.viewModel.RegistrantForms )
+                    for ( const form of this.viewModel.registrantForms )
                     {
-                        for ( const field of form.Fields )
+                        for ( const field of form.fields )
                         {
-                            delete this.currentRegistrant.FieldValues[ field.Guid ];
+                            delete this.currentRegistrant.FieldValues[ field.guid ];
                         }
                     }
                 }
@@ -331,16 +331,16 @@ export default defineComponent( {
         </template>
 
         <ItemsWithPreAndPostHtml :items="prePostHtmlItems">
-            <template v-for="field in currentFormFields" :key="field.Guid" v-slot:[field.Guid]>
-                <RegistrantPersonField v-if="field.FieldSource === fieldSources.PersonField" :field="field" :fieldValues="currentRegistrant.FieldValues" :isKnownFamilyMember="!!currentRegistrant.PersonGuid" />
-                <RegistrantAttributeField v-else-if="field.FieldSource === fieldSources.RegistrantAttribute || field.FieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="currentRegistrant.FieldValues" />
-                <Alert alertType="danger" v-else>Could not resolve field source {{field.FieldSource}}</Alert>
+            <template v-for="field in currentFormFields" :key="field.guid" v-slot:[field.guid]>
+                <RegistrantPersonField v-if="field.fieldSource === fieldSources.PersonField" :field="field" :fieldValues="currentRegistrant.FieldValues" :isKnownFamilyMember="!!currentRegistrant.PersonGuid" />
+                <RegistrantAttributeField v-else-if="field.fieldSource === fieldSources.RegistrantAttribute || field.fieldSource === fieldSources.PersonAttribute" :field="field" :fieldValues="currentRegistrant.FieldValues" />
+                <Alert alertType="danger" v-else>Could not resolve field source {{field.fieldSource}}</Alert>
             </template>
         </ItemsWithPreAndPostHtml>
 
-        <div v-if="!isWaitList && isLastForm && viewModel.Fees.length" class="well registration-additional-options">
+        <div v-if="!isWaitList && isLastForm && viewModel.fees.length" class="well registration-additional-options">
             <h4>{{pluralFeeTerm}}</h4>
-            <template v-for="fee in viewModel.Fees" :key="fee.Guid">
+            <template v-for="fee in viewModel.fees" :key="fee.Guid">
                 <FeeField :fee="fee" v-model="currentRegistrant.FeeItemQuantities" />
             </template>
         </div>

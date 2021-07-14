@@ -35,33 +35,33 @@ export default defineComponent( {
         /** The term to refer to a registrant */
         registrationTerm (): string
         {
-            return this.registrationEntryState.ViewModel.RegistrationTerm.toLowerCase();
+            return this.registrationEntryState.ViewModel.registrationTerm.toLowerCase();
         },
 
         /** The success lava markup */
         messageHtml (): string
         {
-            return this.registrationEntryState.SuccessViewModel?.MessageHtml || `You have successfully completed this ${this.registrationTerm}`;
+            return this.registrationEntryState.SuccessViewModel?.messageHtml || `You have successfully completed this ${this.registrationTerm}`;
         },
 
         /** The financial gateway record's guid */
         gatewayGuid (): Guid | null
         {
-            return this.registrationEntryState.ViewModel.GatewayGuid;
+            return this.registrationEntryState.ViewModel.gatewayGuid;
         },
 
         /** The transaction code that can be used to create a saved account */
         transactionCode (): string
         {
-            return this.registrationEntryState.ViewModel.IsRedirectGateway ?
+            return this.registrationEntryState.ViewModel.isRedirectGateway ?
                 '' :
-                this.registrationEntryState.SuccessViewModel?.TransactionCode || '';
+                this.registrationEntryState.SuccessViewModel?.transactionCode || '';
         },
 
         /** The token returned for the payment method */
         gatewayPersonIdentifier (): string
         {
-            return this.registrationEntryState.SuccessViewModel?.GatewayPersonIdentifier || '';
+            return this.registrationEntryState.SuccessViewModel?.gatewayPersonIdentifier || '';
         }
     },
     template: `

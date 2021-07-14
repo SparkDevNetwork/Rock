@@ -73,10 +73,11 @@ namespace Rock.Model
     /// <summary>
     /// ConnectionOpportunity View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( ConnectionOpportunity ) )]
     public partial class ConnectionOpportunityViewModelHelper : ViewModelHelper<ConnectionOpportunity, Rock.ViewModel.ConnectionOpportunityViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

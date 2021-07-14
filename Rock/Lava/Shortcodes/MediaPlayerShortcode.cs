@@ -239,7 +239,7 @@ it will automatically get the best video URL to use and the thumbnail URL. Even
 better it will automatically track playback sessions and record them in Rock so
 you get metrics about the videos being watched.</p>
 
-<pre>{[ mediaplayer media:'18' ]}[{ endmediaplayer ]}</pre>
+<pre>{[ mediaplayer media:'18' ]}{[ endmediaplayer ]}</pre>
 
 <p>Let's take a look at some of the parameters and options that are available so
 so you can customize this to be exactly what you want.</p>
@@ -408,12 +408,8 @@ so you can customize this to be exactly what you want.</p>
             var elementId = $"mediaplayer_{Guid.NewGuid()}";
 
             // Construct the CSS style for this media player.
-            var style = $@"<style>
-#{elementId} {{
-  --plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};
-  {( width.IsNotNullOrWhiteSpace() ? $"width: {width};" : string.Empty )}
-}}
-</style>";
+            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};";
+            style += $"width: {( width.IsNotNullOrWhiteSpace() ? width : "100%" )};";
 
             // Construct the JavaScript to initialize the player.
             var script = $@"<script>
@@ -422,8 +418,7 @@ so you can customize this to be exactly what you want.</p>
 }})();
 </script>";
 
-            result.WriteLine( style );
-            result.WriteLine( $"<div id=\"{elementId}\"></div>" );
+            result.WriteLine( $"<div id=\"{elementId}\" style=\"{style}\"></div>" );
             result.WriteLine( script );
 
             // If we have a RockPage related to the current request then
@@ -470,7 +465,7 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.HideControls, "true" },
                 { ParameterKeys.Media, "" },
                 { ParameterKeys.Muted, "false" },
-                { ParameterKeys.PrimaryColor, "" },
+                { ParameterKeys.PrimaryColor, "var(--brand-primary)" },
                 { ParameterKeys.RelatedEntityId, "" },
                 { ParameterKeys.RelatedEntityTypeId, "" },
                 { ParameterKeys.SeekTime, "10" },
@@ -479,7 +474,7 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.TrackSession, "true" },
                 { ParameterKeys.Type, "" },
                 { ParameterKeys.Volume, "1" },
-                { ParameterKeys.Width, "" }
+                { ParameterKeys.Width, "100%" }
             };
 
             // Parse each parameter name and value in the format of name:'value'

@@ -27,20 +27,20 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Assessment extends Entity {
-    Id: number;
-    AssessmentResultData: string | null;
-    AssessmentTypeId: number;
-    Attributes: Record<string, AttributeValue> | null;
-    CompletedDateTime: RockDateType | null;
-    LastReminderDate: RockDateType | null;
-    PersonAliasId: number;
-    RequestedDateTime: RockDateType | null;
-    RequestedDueDate: RockDateType | null;
-    RequesterPersonAliasId: number | null;
-    Status: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    assessmentResultData: string | null;
+    assessmentTypeId: number;
+    attributes: Record<string, AttributeValue> | null;
+    completedDateTime: RockDateType | null;
+    lastReminderDate: RockDateType | null;
+    personAliasId: number;
+    requestedDateTime: RockDateType | null;
+    requestedDueDate: RockDateType | null;
+    requesterPersonAliasId: number | null;
+    status: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

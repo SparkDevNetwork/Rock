@@ -27,14 +27,14 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface CommunicationResponseAttachment extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    BinaryFileId: number;
-    CommunicationResponseId: number;
-    CommunicationType: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    binaryFileId: number;
+    communicationResponseId: number;
+    communicationType: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

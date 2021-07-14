@@ -460,13 +460,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToCssClass( string input )
         {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return string.Empty;
+            }
+
             // list from: https://mathiasbynens.be/notes/css-escapes
             Regex ex = new Regex( @"[&*!""#$%'()+,.\/:;<=>?@\[\]\^`{\|}~\s]" );
-
-            if ( input == null )
-            {
-                return input;
-            }
 
             // replace unsupported characters
             input = ex.Replace( input, "-" ).ToLower();
@@ -2937,6 +2937,9 @@ namespace Rock.Lava
                                 case "FormattedHtmlAddress":
                                     qualifier = qualifier.Replace( match.ToString(), location.FormattedHtmlAddress );
                                     break;
+                                case "Guid":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Guid.ToString() );
+                                    break;
                                 default:
                                     qualifier = qualifier.Replace( match.ToString(), "" );
                                     break;
@@ -3107,7 +3110,7 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( Context context, object input, string size )
         {
-            return ZebraPhoto( context, input, size, 1.0, 1.0 );
+            return ZebraPhoto( context, input, size, 1.0M, 1.0M, "LOGO", 0 );
         }
 
         /// <summary>
@@ -3124,9 +3127,9 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast )
         {
-            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO" );
+            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO", 0 );
         }
 
         /// <summary>
@@ -3144,7 +3147,7 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast, string fileName )
         {
             return ZebraPhoto( context, input, size, brightness, contrast, fileName, 0 );
         }
@@ -3165,7 +3168,7 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast, string fileName, int rotationDegree )
         {
             var person = GetPerson( input );
             try
@@ -3213,7 +3216,7 @@ namespace Rock.Lava
                     Bitmap initialBitmap = new Bitmap( initialPhotoStream );
 
                     // Adjust the image if any of the parameters not default
-                    if ( brightness != 1.0 || contrast != 1.0 )
+                    if ( brightness != 1.0M || contrast != 1.0M )
                     {
                         initialBitmap = ImageAdjust( initialBitmap, (float)brightness, (float)contrast );
                     }
@@ -3347,6 +3350,72 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="rotationDegree">The degree of rotation to apply to the image (0, 90, 180, 270).</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal, string, int ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, fileName, rotationDegree );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal, string ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, fileName, 0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness.</param>
+        /// <param name="contrast">The contrast.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, "LOGO", 0 );
         }
 
         /// <summary>
@@ -5493,6 +5562,14 @@ namespace Rock.Lava
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( dictionaryObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary )
+                    {
+                        var dictionaryObject = value as IDictionary;
+                        if ( dictionaryObject.Contains( selectKey ) )
                         {
                             result.Add( dictionaryObject[selectKey] );
                         }

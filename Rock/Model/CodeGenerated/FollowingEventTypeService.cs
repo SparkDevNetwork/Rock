@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// FollowingEventType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( FollowingEventType ) )]
     public partial class FollowingEventTypeViewModelHelper : ViewModelHelper<FollowingEventType, Rock.ViewModel.FollowingEventTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

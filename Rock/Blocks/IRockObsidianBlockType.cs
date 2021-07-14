@@ -18,14 +18,16 @@
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Rock Client (ex: Obsidian, Mobile) Block Type
+    /// Obsidian Block Type
     /// </summary>
-    public interface IRockClientBlockType : IRockBlockType
+    public interface IRockObsidianBlockType : IRockWebBlockType
     {
         /// <summary>
-        /// Gets the property values that will be sent to the block.
+        /// Gets the client block identifier.
         /// </summary>
-        /// <returns>A collection of string/object pairs.</returns>
-        object GetBlockInitialization( RockClientType clientType );
+        /// <value>
+        /// The client block identifier.
+        /// </value>
+        string BlockFileUrl { get; }
     }
 }

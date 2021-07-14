@@ -61,10 +61,11 @@ namespace Rock.Model
     /// <summary>
     /// Step View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( Step ) )]
     public partial class StepViewModelHelper : ViewModelHelper<Step, Rock.ViewModel.StepViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

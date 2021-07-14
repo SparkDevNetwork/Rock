@@ -748,8 +748,8 @@ namespace Rock.Communication
             }
 
             // Subject
-            string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, rockMessageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left( 998 );
-            recipientEmail.Subject = subject;
+            var subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, rockMessageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot ).Left( 998 );
+            recipientEmail.Subject = subject.IsNullOrWhiteSpace() ? subject : Regex.Replace( subject, @"(\r?\n?)", String.Empty );
 
             // Plain Text Message
             recipientEmail.PlainTextMessage = ResolveText( emailMessage.PlainTextMessage, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, rockMessageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
@@ -853,7 +853,7 @@ namespace Rock.Communication
 
             // Subject
             var subject = ResolveText( communication.Subject, emailMessage.CurrentPerson, communication.EnabledLavaCommands, mergeFields, emailMessage.AppRoot );
-            recipientEmail.Subject = subject;
+            recipientEmail.Subject = subject.IsNullOrWhiteSpace() ? subject : Regex.Replace( subject, @"(\r?\n?)", String.Empty );
 
             // Body Plain Text
             if ( mediumAttributes.ContainsKey( "DefaultPlainText" ) )

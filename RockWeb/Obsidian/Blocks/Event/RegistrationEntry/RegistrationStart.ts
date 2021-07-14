@@ -62,14 +62,14 @@ export default defineComponent( {
             immediate: true,
             handler()
             {
-                this.attributeValues = this.registrationEntryState.ViewModel.RegistrationAttributesStart.map( a =>
+                this.attributeValues = this.registrationEntryState.ViewModel.registrationAttributesStart.map( a =>
                 {
-                    const currentValue = this.registrationEntryState.RegistrationFieldValues[ a.Guid ] || '';
+                    const currentValue = this.registrationEntryState.RegistrationFieldValues[ a.guid ] || '';
 
                     return {
-                        Attribute: a,
-                        AttributeId: a.Id,
-                        Value: currentValue
+                        attribute: a,
+                        attributeId: a.id,
+                        value: currentValue
                     } as AttributeValue;
                 } );
             }
@@ -81,11 +81,11 @@ export default defineComponent( {
             {
                 for ( const attributeValue of this.attributeValues )
                 {
-                    const attribute = attributeValue.Attribute;
+                    const attribute = attributeValue.attribute;
 
                     if ( attribute )
                     {
-                        this.registrationEntryState.RegistrationFieldValues[ attribute.Guid ] = attributeValue.Value;
+                        this.registrationEntryState.RegistrationFieldValues[ attribute.guid ] = attributeValue.value;
                     }
                 }
             }

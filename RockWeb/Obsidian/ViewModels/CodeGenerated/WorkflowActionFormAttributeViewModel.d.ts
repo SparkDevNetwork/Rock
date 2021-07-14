@@ -27,21 +27,21 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface WorkflowActionFormAttribute extends Entity {
-    Id: number;
-    AttributeId: number;
-    Attributes: Record<string, AttributeValue> | null;
-    FieldVisibilityRulesJSON: string | null;
-    HideLabel: boolean;
-    IsReadOnly: boolean;
-    IsRequired: boolean;
-    IsVisible: boolean;
-    Order: number;
-    PostHtml: string | null;
-    PreHtml: string | null;
-    WorkflowActionFormId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributeId: number;
+    attributes: Record<string, AttributeValue> | null;
+    fieldVisibilityRulesJSON: string | null;
+    hideLabel: boolean;
+    isReadOnly: boolean;
+    isRequired: boolean;
+    isVisible: boolean;
+    order: number;
+    postHtml: string | null;
+    preHtml: string | null;
+    workflowActionFormId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

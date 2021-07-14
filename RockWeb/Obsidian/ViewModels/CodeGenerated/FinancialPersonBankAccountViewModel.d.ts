@@ -27,14 +27,14 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface FinancialPersonBankAccount extends Entity {
-    Id: number;
-    AccountNumberMasked: string | null;
-    AccountNumberSecured: string | null;
-    Attributes: Record<string, AttributeValue> | null;
-    PersonAliasId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    accountNumberMasked: string | null;
+    accountNumberSecured: string | null;
+    attributes: Record<string, AttributeValue> | null;
+    personAliasId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

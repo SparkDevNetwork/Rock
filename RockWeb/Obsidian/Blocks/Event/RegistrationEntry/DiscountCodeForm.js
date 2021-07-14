@@ -90,7 +90,7 @@ System.register(["vue", "../../../Elements/Alert", "../../../Elements/RockButton
                         return "Your " + discountText + " discount code for all registrants was successfully applied.";
                     },
                     isDiscountPanelVisible: function () {
-                        return this.viewModel.HasDiscountsAvailable;
+                        return this.viewModel.hasDiscountsAvailable;
                     },
                     viewModel: function () {
                         return this.registrationEntryState.ViewModel;

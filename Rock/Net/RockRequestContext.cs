@@ -98,14 +98,6 @@ namespace Rock.Net
         /// </value>
         private IDictionary<string, IEnumerable<string>> Headers { get; set; }
 
-        /// <summary>
-        /// Gets the type of the rock client.
-        /// </summary>
-        /// <value>
-        /// The type of the rock client.
-        /// </value>
-        public RockClientType RockClientType { get; private set; }
-
         #endregion
 
         #region Constructors
@@ -113,21 +105,19 @@ namespace Rock.Net
         /// <summary>
         /// Initializes an empty instance of the <see cref="RockRequestContext"/> class.
         /// </summary>
-        internal RockRequestContext( RockClientType rockClientType )
+        internal RockRequestContext()
         {
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             Headers = new Dictionary<string, IEnumerable<string>>( StringComparer.InvariantCultureIgnoreCase );
             RootUrlPath = string.Empty;
-            RockClientType = rockClientType;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
-        /// <param name="rockClientType">Type of the rock client.</param>
-        internal RockRequestContext( HttpRequest request, RockClientType rockClientType )
+        internal RockRequestContext( HttpRequest request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
@@ -161,16 +151,13 @@ namespace Rock.Net
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders();
-
-            RockClientType = rockClientType;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an API call that we will initialize from.</param>
-        /// <param name="rockClientType">Type of the rock client.</param>
-        internal RockRequestContext( HttpRequestMessage request, RockClientType rockClientType )
+        internal RockRequestContext( HttpRequestMessage request )
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
@@ -199,8 +186,6 @@ namespace Rock.Net
             //
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromHeaders();
-
-            RockClientType = rockClientType;
         }
 
         #endregion

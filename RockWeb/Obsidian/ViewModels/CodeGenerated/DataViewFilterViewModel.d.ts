@@ -27,17 +27,17 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface DataViewFilter extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    DataViewId: number | null;
-    EntityTypeId: number | null;
-    ExpressionType: number;
-    ParentId: number | null;
-    RelatedDataViewId: number | null;
-    Selection: string | null;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    dataViewId: number | null;
+    entityTypeId: number | null;
+    expressionType: number;
+    parentId: number | null;
+    relatedDataViewId: number | null;
+    selection: string | null;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

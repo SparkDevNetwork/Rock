@@ -27,18 +27,18 @@ import { RockDateType } from '../../Util/RockDate';
 import { Guid } from '../../Util/Guid';
 
 export default interface Layout extends Entity {
-    Id: number;
-    Attributes: Record<string, AttributeValue> | null;
-    Description: string | null;
-    FileName: string | null;
-    IsSystem: boolean;
-    LayoutMobilePhone: string | null;
-    LayoutMobileTablet: string | null;
-    Name: string | null;
-    SiteId: number;
-    CreatedDateTime: RockDateType | null;
-    ModifiedDateTime: RockDateType | null;
-    CreatedByPersonAliasId: number | null;
-    ModifiedByPersonAliasId: number | null;
-    Guid: Guid;
+    id: number;
+    attributes: Record<string, AttributeValue> | null;
+    description: string | null;
+    fileName: string | null;
+    isSystem: boolean;
+    layoutMobilePhone: string | null;
+    layoutMobileTablet: string | null;
+    name: string | null;
+    siteId: number;
+    createdDateTime: RockDateType | null;
+    modifiedDateTime: RockDateType | null;
+    createdByPersonAliasId: number | null;
+    modifiedByPersonAliasId: number | null;
+    guid: Guid;
 }

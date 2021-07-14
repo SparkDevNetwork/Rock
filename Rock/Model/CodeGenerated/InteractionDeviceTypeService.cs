@@ -67,10 +67,11 @@ namespace Rock.Model
     /// <summary>
     /// InteractionDeviceType View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( InteractionDeviceType ) )]
     public partial class InteractionDeviceTypeViewModelHelper : ViewModelHelper<InteractionDeviceType, Rock.ViewModel.InteractionDeviceTypeViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>

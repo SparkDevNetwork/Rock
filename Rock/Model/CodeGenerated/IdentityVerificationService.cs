@@ -47,10 +47,11 @@ namespace Rock.Model
     /// <summary>
     /// IdentityVerification View Model Helper
     /// </summary>
+    [DefaultViewModelHelper( typeof( IdentityVerification ) )]
     public partial class IdentityVerificationViewModelHelper : ViewModelHelper<IdentityVerification, Rock.ViewModel.IdentityVerificationViewModel>
     {
         /// <summary>
-        /// Converts to viewmodel.
+        /// Converts the model to a view model.
         /// </summary>
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson">The current person.</param>
