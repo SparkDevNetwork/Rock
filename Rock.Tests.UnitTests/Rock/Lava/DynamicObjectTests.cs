@@ -155,12 +155,13 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void LavaDataObjectType_WithCustomPropertyAccessor_ReturnsPropertyValue()
         {
-            var dynamicObject = new LavaDataObjectWithCustomPropertyAccess();
+            var dynamicObject = LavaDataObjectWithCustomPropertyAccess.NewWithData();
 
             var mergeValues = new LavaDataDictionary { { "Colors", dynamicObject } };
 
             var template = @"Color 1: {{ Colors.Color1 }}, Color 2: {{ Colors.Color2 }}, Color 3: {{ Colors.Color3 }}";
 
+            // This test is only valid for the Fluid Engine.
             TestHelper.AssertTemplateOutput( "Color 1: red, Color 2: green, Color 3: blue", template, mergeValues );
         }
 

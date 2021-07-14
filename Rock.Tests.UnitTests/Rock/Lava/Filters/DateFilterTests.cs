@@ -371,14 +371,23 @@ namespace Rock.Tests.UnitTests.Lava
             // Get an input time of 10:00 AM in the test timezone.
             var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
 
-            // Convert the input time to local server time, which may have a different UTC offset to the input date, then add 7 hours.
-            var serverLocalTimeString = datetimeInput.ToLocalTime().AddHours( 7 ).ToString( "yyyy-MM-dd HH:mm" );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                // The RockLiquid engine cannot process the DateTimeOffset variable type.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
 
-            // Add the input DateTimeOffset object to the Lava context.
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput }, { "serverLocalTime", serverLocalTimeString } };
+                // Convert the input time to local server time, which may have a different UTC offset to the input date, then add 7 hours.
+                var serverLocalTimeString = datetimeInput.ToLocalTime().AddHours( 7 ).ToString( "yyyy-MM-dd HH:mm" );
 
-            // Verify that the difference between the input date and the adjusted local time is 7 hours.
-            TestHelper.AssertTemplateOutput( "7", "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", mergeValues );
+                // Add the input DateTimeOffset object to the Lava context.
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput }, { "serverLocalTime", serverLocalTimeString } };
+
+                // Verify that the difference between the input date and the adjusted local time is 7 hours.
+                TestHelper.AssertTemplateOutput( engine.EngineType, "7", "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", mergeValues );
+            } );
         }
 
         #endregion
@@ -460,19 +469,28 @@ namespace Rock.Tests.UnitTests.Lava
             var tomorrow = RockDateTime.Now.Date.AddDays( 1 ).AddHours( 1 );
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( tomorrow );
 
-            // First, verify that the Lava filter returns "tomorrow" when the DateTimeOffset resolves to local time 1:00am tomorrow.
-            var datetimeInput = new DateTimeOffset( tomorrow );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                // The RockLiquid engine cannot process the DateTimeOffset variable type.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
 
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+                // First, verify that the Lava filter returns "tomorrow" when the DateTimeOffset resolves to local time 1:00am tomorrow.
+                var datetimeInput = new DateTimeOffset( tomorrow );
 
-            TestHelper.AssertTemplateOutput( "tomorrow", "{{ dateTimeInput | DaysFromNow }}", mergeValues );
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            // Now verify that the Lava filter will return "today" if the DateTimeOffset is 11:00pm today.
-            var datetimeInput2 = new DateTimeOffset( tomorrow.Year, tomorrow.Month, tomorrow.Day, tomorrow.Hour, tomorrow.Minute, tomorrow.Second, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+                TestHelper.AssertTemplateOutput( engine.EngineType, "tomorrow", "{{ dateTimeInput | DaysFromNow }}", mergeValues );
 
-            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+                // Now verify that the Lava filter will return "today" if the DateTimeOffset is 11:00pm today.
+                var datetimeInput2 = new DateTimeOffset( tomorrow.Year, tomorrow.Month, tomorrow.Day, tomorrow.Hour, tomorrow.Minute, tomorrow.Second, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
 
-            TestHelper.AssertTemplateOutput( "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
+                var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+                TestHelper.AssertTemplateOutput(engine.EngineType, "today", "{{ dateTimeInput | DaysFromNow }}", mergeValues2 );
+            } );
         }
 
         #endregion
@@ -881,20 +899,29 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
-            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                // The RockLiquid engine cannot process the DateTimeOffset variable type.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
 
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+                // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+                var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 
-            TestHelper.AssertTemplateOutput( "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
-            // crosses the boundary to the previous day when translated to local time.
-            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+                TestHelper.AssertTemplateOutput( engine.EngineType, "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
 
-            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+                // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
+                // crosses the boundary to the previous day when translated to local time.
+                var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
 
-            TestHelper.AssertTemplateOutput( "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+                var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+                TestHelper.AssertTemplateOutput( engine.EngineType, "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+            } );
         }
 
         #endregion
@@ -1012,20 +1039,29 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
-            var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
+            TestHelper.ExecuteTestAction( ( engine ) =>
+            {
+                // The RockLiquid engine cannot process the DateTimeOffset variable type.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
 
-            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+                // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
+                var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 
-            TestHelper.AssertTemplateOutput( "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
+                var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
 
-            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
-            // crosses the boundary to the previous day when translated to local time.
-            var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
+                TestHelper.AssertTemplateOutput( engine.EngineType, "2 weeks", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues );
 
-            var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+                // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
+                // crosses the boundary to the previous day when translated to local time.
+                var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset.Add( new TimeSpan( 2, 0, 0 ) ) );
 
-            TestHelper.AssertTemplateOutput( "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+                var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
+
+                TestHelper.AssertTemplateOutput( engine.EngineType, "1 week", "{{ dateTimeInput | HumanizeTimeSpan:'1-May-2020 1:00 AM' }}", mergeValues2 );
+            } );
         }
 
         #endregion

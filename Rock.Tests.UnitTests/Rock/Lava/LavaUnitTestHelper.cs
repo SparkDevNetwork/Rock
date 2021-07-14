@@ -51,6 +51,12 @@ namespace Rock.Tests.UnitTests.Lava
 
         public static void Initialize( bool testRockLiquidEngine, bool testDotLiquidEngine, bool testFluidEngine )
         {
+            // Verify the test environment: RockLiquidEngine and DotLiquidEngine are mutually exclusive test environments.
+            if ( testRockLiquidEngine && testDotLiquidEngine )
+            {
+                throw new Exception( "RockLiquidEngine/DotLiquidEngine cannot be tested simultaneously because they require different global configurations of the DotLiquid library." );
+            }
+
             RockLiquidEngineIsEnabled = testRockLiquidEngine;
             DotLiquidEngineIsEnabled = testDotLiquidEngine;
             FluidEngineIsEnabled = testFluidEngine;
@@ -110,13 +116,17 @@ namespace Rock.Tests.UnitTests.Lava
 
         private ILavaEngine GetEngineInstance( LavaEngineTypeSpecifier engineType )
         {
-            if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
+            if ( engineType == LavaEngineTypeSpecifier.Fluid )
+            {
+                return _fluidEngine;
+            }
+            else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
             {
                 return _dotliquidEngine;
             }
-            else if ( engineType == LavaEngineTypeSpecifier.Fluid )
+            else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
             {
-                return _fluidEngine;
+                return _rockliquidEngine;
             }
 
             throw new Exception( $"Cannot return an instance of engine type \"{ engineType }\"." );
@@ -213,14 +223,11 @@ namespace Rock.Tests.UnitTests.Lava
         /// <param name="inputTemplate"></param>
         public void ExecuteTestAction( Action<ILavaEngine> testMethod )
         {
-            if ( DotLiquidEngineIsEnabled )
-            {
-                testMethod( _dotliquidEngine );
-            }
+            var engines = GetActiveTestEngines();
 
-            if ( FluidEngineIsEnabled )
+            foreach ( var engine in engines )
             {
-                testMethod( _fluidEngine );
+                testMethod( engine );
             }
         }
 

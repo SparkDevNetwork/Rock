@@ -14,10 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
 using Rock.Tests.UnitTests.Lava;
 
 namespace Rock.Tests.UnitTests
@@ -32,20 +29,7 @@ namespace Rock.Tests.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
-            LavaEngineTypeSpecifier engineType;
-
-            var engineTypeName = context.Properties["LavaEngineType"].ToStringSafe();
-
-            var isValid = Enum.TryParse( engineTypeName, out engineType );
-
-            if ( !isValid )
-            {
-                engineType = LavaEngineTypeSpecifier.DotLiquid;
-
-                Debug.Print( $"WARNING: The LavaEngineType setting is not specified in the current test configuration. Default value is set to \"{engineType}\"." );
-            }
-
-            LavaUnitTestHelper.Initialize( testRockLiquidEngine:false, testDotLiquidEngine:true, testFluidEngine:true );
+            LavaUnitTestHelper.Initialize( testRockLiquidEngine:true, testDotLiquidEngine:false, testFluidEngine:true );
         }
 
         /// <summary>

@@ -54,6 +54,12 @@ namespace Rock.Tests.Integration.Lava
 
         public static void Initialize( bool testRockLiquidEngine, bool testDotLiquidEngine, bool testFluidEngine )
         {
+            // Verify the test environment: RockLiquidEngine and DotLiquidEngine are mutually exclusive test environments.
+            if ( testRockLiquidEngine && testDotLiquidEngine )
+            {
+                throw new Exception( "RockLiquidEngine/DotLiquidEngine cannot be tested simultaneously because they require different global configurations of the DotLiquid library." );
+            }
+
             RockLiquidEngineIsEnabled = testRockLiquidEngine;
             DotLiquidEngineIsEnabled = testDotLiquidEngine;
             FluidEngineIsEnabled = testFluidEngine;
@@ -66,7 +72,7 @@ namespace Rock.Tests.Integration.Lava
             {
                 // Initialize the Rock variant of the DotLiquid Engine
                 engineOptions.FileSystem = new MockFileProvider();
-                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
+                engineOptions.CacheService = new MockTemplateCacheService();
 
                 _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
 
@@ -82,7 +88,7 @@ namespace Rock.Tests.Integration.Lava
             {
                 // Initialize the DotLiquid Engine
                 engineOptions.FileSystem = new MockFileProvider();
-                engineOptions.CacheService = new WebsiteLavaTemplateCacheService();
+                engineOptions.CacheService = new MockTemplateCacheService();
 
                 _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
 
@@ -101,8 +107,7 @@ namespace Rock.Tests.Integration.Lava
 
                 engineOptions.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput;
                 engineOptions.FileSystem = new MockFileProvider();
-                var cacheService = new WebsiteLavaTemplateCacheService();
-                engineOptions.CacheService = cacheService;
+                engineOptions.CacheService = new MockTemplateCacheService();
 
                 _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
 
