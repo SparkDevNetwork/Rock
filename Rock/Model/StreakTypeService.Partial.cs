@@ -23,6 +23,7 @@ using System.Linq.Dynamic;
 using System.Threading.Tasks;
 
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -64,6 +65,50 @@ namespace Rock.Model
         #endregion Constants
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="checkIfUsedByAchievementType">if set to <c>true</c> [check if used by achievement type].</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( StreakType item, out string errorMessage, bool checkIfUsedByAchievementType )
+        {
+
+            if ( !this.CanDelete( item, out errorMessage ) )
+            {
+                return false;
+            }
+            else
+            {
+                if ( checkIfUsedByAchievementType )
+                {
+                    // check if any MatrixAttributes are using this AttributeMatrixTemplate
+                    var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
+                    var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
+
+                    var streakTypeGuid = item.Guid.ToString();
+                    var usedAsAchievementType = new AttributeValueService( new RockContext() ).Queryable()
+                        .Any( av =>
+                            av.Attribute.FieldTypeId == streakTypeFieldTypeId
+                            && av.Value == streakTypeGuid
+                            && av.Attribute.EntityTypeId == entityTypeIdAchievementType
+                            );
+
+                    if ( usedAsAchievementType )
+                    {
+                        errorMessage = string.Format( "This {0} is assigned to an {1}.", StreakType.FriendlyTypeName, Rock.Model.AchievementType.FriendlyTypeName );
+                        return false;
+                    }
+                }
+
+                errorMessage = string.Empty;
+                return true;
+            }
+        }
 
         /// <summary>
         /// Get the most recent engagement bits where there were occurrences for the person
@@ -158,7 +203,8 @@ namespace Rock.Model
 
             // Make sure the enrollment does not already exist for the person
             var rockContext = Context as RockContext;
-            var alreadyEnrolled = new StreakService( rockContext ).IsEnrolled( streakTypeCache.Id, personId );
+            var streakService = new StreakService( rockContext );
+            var alreadyEnrolled = streakService.IsEnrolled( streakTypeCache.Id, personId );
 
             if ( alreadyEnrolled )
             {
@@ -168,7 +214,7 @@ namespace Rock.Model
 
             // Get the person alias id
             var personAliasService = new PersonAliasService( rockContext );
-            var personAliasId = personAliasService.Queryable().AsNoTracking().FirstOrDefault( pa => pa.PersonId == personId )?.Id;
+            var personAliasId = personAliasService.GetPrimaryAliasId( personId );
 
             if ( !personAliasId.HasValue )
             {
@@ -186,31 +232,9 @@ namespace Rock.Model
                 EngagementMap = AllocateNewByteArray( streakTypeCache.OccurrenceMap?.Length )
             };
 
-            // create with a new context and save right away to the database to help prevent duplicate exceptions
-            using ( var newStreakContext = new RockContext() )
-            {
-                lock ( _addStreakLock )
-                {
-                    var streakService = new StreakService( newStreakContext );
-
-                    // double check the streak hasn't been added (this could happen if a new person checks into two services)
-                    var existingStreaks = streakService.GetByStreakTypeAndPerson( streakTypeCache.Id, personId );
-                    if ( !existingStreaks.Any() )
-                    {
-                        streakService.Add( streak );
-                        newStreakContext.SaveChanges();
-                        return streak;
-                    }
-                    else
-                    {
-                        // use existing streak
-                        return existingStreaks.First();
-                    }
-                }
-            }
+            streakService.Add( streak );
+            return streak;
         }
-
-        private static readonly object _addStreakLock = new object();
 
         /// <summary>
         /// Return the locations associated with the streak type structure
@@ -1575,7 +1599,7 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
-            streakTypeService.HandleAttendanceRecordForStreak( attendance, out var errorMessage );
+            streakTypeService.HandleAttendanceRecordForStreak( attendance?.Id, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1595,9 +1619,8 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
-            var safeAttendance = new AttendanceService( rockContext ).Get( attendanceId );
 
-            streakTypeService.HandleAttendanceRecordForStreak( safeAttendance, out var errorMessage );
+            streakTypeService.HandleAttendanceRecordForStreak( attendanceId, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1612,49 +1635,46 @@ namespace Rock.Model
         /// <summary>
         /// Handles the attendance record for streak. This is used when the Attendance object is known to have an active DbContext and can safely use navigation properties.
         /// </summary>
-        /// <param name="attendance">The attendance.</param>
+        /// <param name="attendanceId">The attendance identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        private void HandleAttendanceRecordForStreak( Attendance attendance, out string errorMessage )
+        private void HandleAttendanceRecordForStreak( int? attendanceId, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            if ( attendance == null )
+            if ( attendanceId == null )
             {
                 // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
                 // of an attendance model. We don't even know if this attendance was supposed to be related to a streak type.
                 return;
             }
 
-            if ( attendance.DidAttend != true )
+            var attendanceInfo = new AttendanceService( new RockContext() ).Queryable()
+                .Where( a => a.Id == attendanceId.Value && a.PersonAliasId.HasValue && a.Occurrence.GroupId.HasValue )
+                .Select( s => new
+                {
+                    Id = s.Id,
+                    DidAttend = s.DidAttend,
+                    PersonId = s.PersonAlias.PersonId,
+                    OccurrenceId = s.OccurrenceId,
+                    OccurrenceGroupId = s.Occurrence.GroupId.Value,
+                    OccurrenceGroupTypeId = s.Occurrence.Group.GroupTypeId,
+                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate
+                } ).FirstOrDefault();
+
+            if ( attendanceInfo == null )
+            {
+                return;
+            }
+
+            if ( attendanceInfo.DidAttend != true )
             {
                 // If DidAttend is false, then don't do anything for the streak type. We should not unset the bit for the day/week because
                 // we don't know if they had some other engagement besides this and cannot assume it should be unset.
                 return;
             }
 
-            if ( !attendance.PersonAliasId.HasValue )
-            {
-                // If we don't know what person this attendance is tied to then it is impossible to mark engagement in a streak. This is not
-                // an error because a null PersonAliasId is a valid state for the attendance model.
-                return;
-            }
-
-            if ( attendance.Occurrence == null )
-            {
-                // This is an error state because it is an invalid data scenario.
-                errorMessage = $"The attendance record {attendance.Id} does not have a valid occurrence model.";
-                return;
-            }
-
-            if ( attendance.PersonAlias.Person == null )
-            {
-                // This is an error state because it is an invalid data scenario.
-                errorMessage = $"The person alias {attendance.PersonAliasId.Value} did not produce a valid person record.";
-                return;
-            }
-
             // Get the person's streaks
-            var personId = attendance.PersonAlias.Person.Id;
+            var personId = attendanceInfo.PersonId;
             var streakService = new StreakService( new RockContext() );
             var enrolledInStreakTypeIdQuery = streakService.Queryable()
                 .AsNoTracking()
@@ -1663,11 +1683,13 @@ namespace Rock.Model
             var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
 
             // Calculate the attendance group details
-            var groupId = attendance.Occurrence.GroupId;
-            var groupTypeId = attendance.Occurrence.Group?.GroupTypeId;
-            var purposeId = attendance.Occurrence.Group?.GroupType.GroupTypePurposeValueId;
+            var groupId = attendanceInfo.OccurrenceGroupId;
+            var groupTypeId = attendanceInfo.OccurrenceGroupTypeId;
+            var groupType = GroupTypeCache.Get( groupTypeId );
 
-            var checkInConfigIdList = attendance.Occurrence.Group?.GroupType.ParentGroupTypes.Select( pgt => pgt.Id );
+            var purposeId = groupType.GroupTypePurposeValueId;
+
+            var checkInConfigIdList = groupType.ParentGroupTypes.Select( pgt => pgt.Id );
             var checkInConfigIds = checkInConfigIdList == null ? new HashSet<int>() : new HashSet<int>( checkInConfigIdList );
 
             // Loop through each active streak types that has attendance enabled and mark engagement for it if the person
@@ -1695,7 +1717,7 @@ namespace Rock.Model
 
             foreach ( var streakType in matchedStreakTypes )
             {
-                MarkEngagement( streakType, personId, out errorMessage, attendance.Occurrence.OccurrenceDate, null );
+                MarkEngagement( streakType, personId, out errorMessage, attendanceInfo.OccurrenceOccurrenceDate, null );
             }
         }
 

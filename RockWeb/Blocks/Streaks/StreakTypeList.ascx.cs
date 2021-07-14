@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Streaks
             }
 
             var errorMessage = string.Empty;
-            if ( !streakTypeService.CanDelete( streakType, out errorMessage ) )
+            if ( !streakTypeService.CanDelete( streakType, out errorMessage, true ) )
             {
                 mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;

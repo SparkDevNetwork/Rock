@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -118,6 +119,16 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetFieldVisibility();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSuccessTemplateOverrideDisplayMode control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlSuccessTemplateOverrideDisplayMode_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetFieldVisibility();
         }
@@ -228,6 +239,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, rblAbilityLevelDetermination.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_EnableManagerOption", cbEnableManager.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_EnableOverride", cbEnableOverride.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, listboxAchievementTypes.SelectedValues.AsDelimited(",") );
+
                 groupType.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", nbMaxPhoneLength.Text );
                 groupType.SetAttributeValue( "core_checkin_MaxSearchResults", nbMaxResults.Text );
                 groupType.SetAttributeValue( "core_checkin_MinimumPhoneSearchLength", nbMinPhoneLength.Text );
@@ -331,6 +344,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE, ceStartTemplate.Text );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE, ceFamilySelectTemplate.Text );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE, cePersonSelectTemplate.Text );
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE, ddlSuccessTemplateOverrideDisplayMode.SelectedValue );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, ceSuccessTemplate.Text );
 
                 // Save group type and attributes
@@ -495,6 +510,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 rblAbilityLevelDetermination.SelectedValue = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
                 cbEnableManager.Checked = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
                 cbEnableOverride.Checked = groupType.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
+                listboxAchievementTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues() );
                 nbMaxPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" );
                 nbMaxResults.Text = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" );
                 nbMinPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" );
@@ -572,6 +588,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 ceStartTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
                 ceFamilySelectTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
                 cePersonSelectTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
+
+                ddlSuccessTemplateOverrideDisplayMode.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ) );
                 ceSuccessTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
 
                 // Other GroupType Attributes
@@ -594,6 +612,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_DisplayLocationCount" );
             excludeList.Add( "core_checkin_EnableManagerOption" );
             excludeList.Add( "core_checkin_EnableOverride" );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES );
             excludeList.Add( "core_checkin_MaximumPhoneSearchLength" );
             excludeList.Add( "core_checkin_MaxSearchResults" );
             excludeList.Add( "core_checkin_MinimumPhoneSearchLength" );
@@ -642,6 +661,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
 
@@ -656,6 +676,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             }
         }
 
+        /// <summary>
+        /// Sets the field visibility.
+        /// </summary>
         private void SetFieldVisibility()
         {
             bool familyType = ddlType.SelectedValue == "1";
@@ -677,6 +700,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             nbMinPhoneLength.Visible = showPhoneFields;
             nbMaxPhoneLength.Visible = showPhoneFields;
             ddlPhoneSearchType.Visible = showPhoneFields;
+
+            var successLavaTemplateDisplayMode = ddlSuccessTemplateOverrideDisplayMode.SelectedValueAsEnum<SuccessLavaTemplateDisplayMode>( SuccessLavaTemplateDisplayMode.Never );
+            ceSuccessTemplate.Visible = successLavaTemplateDisplayMode != SuccessLavaTemplateDisplayMode.Never;
         }
 
         /// <summary>
@@ -779,6 +805,19 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
             }
 
+            var achievementTypes = AchievementTypeCache.All()
+                .Where( stat => stat.IsActive )
+                .OrderBy( stat => stat.Name )
+                .ToList();
+
+            listboxAchievementTypes.Items.Clear();
+
+            foreach ( var achievementType in achievementTypes )
+            {
+                var li = new ListItem( achievementType.Name, achievementType.Guid.ToString() );
+                listboxAchievementTypes.Items.Add( li );
+            }
+
             lbKnownRelationshipTypes.Items.Clear();
             lbKnownRelationshipTypes.Items.Add( new ListItem( "Child", "0" ) );
             lbSameFamilyKnownRelationshipTypes.Items.Clear();
@@ -818,9 +857,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbRegistrationRequiredAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
                 lbRegistrationOptionalAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
             }
+
+            ddlSuccessTemplateOverrideDisplayMode.Items.Clear();
+            ddlSuccessTemplateOverrideDisplayMode.BindToEnum<SuccessLavaTemplateDisplayMode>();
         }
 
         #endregion
-
     }
 }

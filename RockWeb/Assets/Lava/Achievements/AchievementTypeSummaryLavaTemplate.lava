@@ -1,0 +1,68 @@
+{% if JustCompleted == true  %}
+    <div class="left-icon">
+        {% if AchievementType.ImageBinaryFileId %}
+            <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
+        {% endif %}
+    </div>
+
+    <div class="checkin-details">
+        <span class="person-name">{{ Person.FullName }}</span>
+        <span class="person-checkin-details">Celebrates {{ AchievementType.Name }}</span>
+    </div>
+
+    <div class="right-icon">
+        <!-- Gold Star -->
+        <svg width="43" height="40" viewBox="0 0 43 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="">
+            <g>
+            <path d="M23.6425 1.39064L28.5173 11.7344L39.4241 13.3985C41.38 13.6953 42.1638 16.2188 40.7454 17.6641L32.8546 25.711L34.721 37.0782C35.0569 39.1328 32.989 40.6719 31.2571 39.711L21.5 34.3438L11.7428 39.711C10.0109 40.6641 7.94301 39.1328 8.27895 37.0782L10.1453 25.711L2.25447 17.6641C0.836067 16.2188 1.61992 13.6953 3.57582 13.3985L14.4826 11.7344L19.3574 1.39064C20.2309 -0.453111 22.7616 -0.476549 23.6425 1.39064Z" fill="#FFC870"></path>
+            </g>
+        </svg>
+    </div>
+{% else %}
+    <div class="celebration-progress">
+        <div class="d-flex">
+            <div class="left-icon">
+                {% if AchievementType.ImageBinaryFileId %}
+                    <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
+                {% endif %}
+            </div>
+
+            <div>
+                <span class="celebration-progress-name">{{ AchievementType.Name }}</span>
+
+                <div>
+                    <!-- Accomplished Stars -->
+                    {% assign goldStarCount = SuccessfulAchievementCount %}
+                    {% for i in (1..goldStarCount) %}
+                        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.0446 1.0082L20.559 8.50743L28.4221 9.71387C29.8321 9.92911 30.3972 11.7586 29.3747 12.8065L23.6859 18.6404L25.0314 26.8817C25.2736 28.3713 23.7828 29.4871 22.5342 28.7904L15.5 24.8992L8.4658 28.7904C7.21719 29.4815 5.72639 28.3713 5.96858 26.8817L7.31406 18.6404L1.62535 12.8065C0.602779 11.7586 1.16788 9.92911 2.57795 9.71387L10.441 8.50743L13.9554 1.0082C14.5851 -0.328515 16.4096 -0.345507 17.0446 1.0082Z" fill="#FFC870"></path>
+                        </svg>
+                    {% endfor%}
+
+                    <!-- InProgress Star -->
+                    {% if InProgressCount > 0 %}
+                        <!-- If there is one in progress, show single Outline Star to represent the one that is in progress -->
+                        <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 28.465264,10.0483 20.272257,8.80044 16.610331,1.04358 c -0.656041,-1.382639 -2.557158,-1.400215 -3.218799,0 L 9.729606,8.80044 1.5365986,10.0483 c -1.46929092,0.2227 -2.0581273,2.115 -0.99256132,3.1989 L 6.4714037,19.2816 5.069517,27.8059 c -0.2524155,1.5408 1.3009805,2.695 2.6019608,1.9744 l 7.3294532,-4.0249 7.329454,4.0249 c 1.30098,0.7147 2.854376,-0.4336 2.60196,-1.9744 l -1.401886,-8.5243 5.927466,-6.0344 c 1.065466,-1.0839 0.476629,-2.9762 -0.992661,-3.1989 z m -7.822884,8.249 1.329082,8.1084 -6.970531,-3.8257 -6.9705309,3.8257 1.3290819,-8.1084 -5.6414485,-5.7415 7.7948815,-1.1834 3.488016,-7.38192 3.488016,7.38192 7.794882,1.1834 z"  fill="#d8d8d8"></path>
+                        </svg>
+                    {% endif %}
+
+                </div>
+
+            </div>
+        </div>
+        <span class="celebration-progress-stat">
+            {% if ProgressCount %}
+                {% if NumberToAchieve %}
+                    <!-- Consecutive Streak -->
+                    <!-- Current Streak: 1 of 10 -->
+                    Current Streak: {{ ProgressCount }} of {{ NumberToAchieve }}
+                {% else %}
+                    <!-- Probably an Accumulative Streak -->
+                    <!-- Current Total: 2 -->
+                    Current Total: {{ ProgressCount }}
+                {% endif %}
+            {% endif %}
+        </span>
+    </div>
+{% endif %}

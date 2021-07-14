@@ -68,6 +68,21 @@ namespace Rock.CheckIn
         public bool EnableOverride => GetSetting( "core_checkin_EnableOverride" ).AsBoolean( true );
 
         /// <summary>
+        /// Gets the <see cref="AchievementTypeCache" >Achievement Types</see> that are enabled for Checkin Celebrations.
+        /// </summary>
+        /// <value>
+        /// The achievement types.
+        /// </value>
+        public AchievementTypeCache[] AchievementTypes
+        {
+            get
+            {
+                var achievementTypeGuids = GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+                return achievementTypeGuids.Select( a => AchievementTypeCache.Get( a ) ).Where( a => a != null ).ToArray();
+            }
+        }
+
+        /// <summary>
         /// Gets the length of the security code alpha numeric.
         /// </summary>
         /// <value>
@@ -296,7 +311,17 @@ namespace Rock.CheckIn
         public string PersonSelectAdditionalInfoLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
 
         /// <summary>
-        /// Gets the success lava template.
+        /// Gets the <see cref="SuccessLavaTemplate" /> display mode.
+        /// </summary>
+        /// <value>
+        /// The success lava template display mode.
+        /// </value>
+        public SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplayMode => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ).ConvertToEnumOrNull<SuccessLavaTemplateDisplayMode>() ?? SuccessLavaTemplateDisplayMode.Never;
+
+        /// <summary>
+        /// Gets the success lava template. By default, this is no longer used,
+        /// and will be rendered based on CheckinCelebration and CheckinSuccess display logic. But this behavior
+        /// can be overridden using the <see cref="SuccessLavaTemplateDisplayMode"/> setting.
         /// </summary>
         /// <value>
         /// The success lava template.
@@ -767,5 +792,28 @@ namespace Rock.CheckIn
         /// Trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
         /// </summary>
         DoNotAsk = 1
+    }
+
+    /// <summary>
+    /// Determines how the custom Success Lava Template is used. By default,
+    /// it <see href="Never">won't be used</see> and the Success Block will display the default results
+    /// which may include Achievements and other logic.
+    /// </summary>
+    public enum SuccessLavaTemplateDisplayMode
+    {
+        /// <summary>
+        /// Hide the custom success template (default).
+        /// </summary>
+        Never = 0,
+
+        /// <summary>
+        /// Replace the current success content with the template.
+        /// </summary>
+        Replace = 1,
+
+        /// <summary>
+        /// Place the success template content under the existing content
+        /// </summary>
+        Append = 2
     }
 }

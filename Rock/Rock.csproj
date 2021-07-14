@@ -586,6 +586,8 @@
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="CheckIn\CheckinResult.cs" />
+    <Compile Include="CheckIn\PersonAchievementType.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\DailyChallengeEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
@@ -733,6 +735,8 @@
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="SystemGuid\AchievementType.cs" />
+    <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -920,12 +924,10 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
     <Compile Include="Security\Authentication\OidcClient.cs" />
-    <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemGuid\BinaryFile.cs" />
     <Compile Include="SystemGuid\FinancialStatementTemplate.cs" />
-    <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="SystemKey\LanguageDefinedValueAttributeKey.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />

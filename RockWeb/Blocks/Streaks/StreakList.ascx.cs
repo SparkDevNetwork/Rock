@@ -221,9 +221,8 @@ namespace RockWeb.Blocks.Streaks
                 if ( streakType != null )
                 {
                     var errorMessage = string.Empty;
-                    var occurrenceEngagements = streakTypeService.GetRecentEngagementBits( streakType.Id, person.Id, 24, out errorMessage );
+                    var occurrenceEngagements = streakTypeService.GetRecentEngagementBits( streakType.Id, person.Id, 24, out errorMessage ) ?? new OccurrenceEngagement[0];
                     var stringBuilder = new StringBuilder();
-
                     foreach ( var occurrence in occurrenceEngagements )
                     {
                         var hasEngagement = occurrence != null && occurrence.HasEngagement;

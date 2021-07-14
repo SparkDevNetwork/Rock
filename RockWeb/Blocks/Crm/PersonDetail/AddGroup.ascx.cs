@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// </summary>
     [DisplayName( "Add Group" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Allows for adding a new group and the people in the group (e.g. New Families." )]
+    [Description( "Allows for adding a new group and the people in the group (e.g. New Families)." )]
 
     #region Block Attributes
 

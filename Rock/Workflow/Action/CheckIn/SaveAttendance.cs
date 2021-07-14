@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
+
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
@@ -30,18 +30,45 @@ using Rock.Web.UI;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Saves the selected check-in data as attendance
     /// </summary>
     [ActionCategory( "Check-In" )]
     [Description( "Saves the selected check-in data as attendance" )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
 
-    [BooleanField( "Enforce Strict Location Threshold", "If enabled, the room capacity will be re-checked prior to saving attendance to reduce the possibility surpassing the room’s capacity threshold.", false, "", 0 )]
-    [CodeEditorField( "Not Checked-In Message Format", " <span class='tip tip-lava'></span>", Web.UI.Controls.CodeEditorMode.Lava, Web.UI.Controls.CodeEditorTheme.Rock, 200, false, @"
-{{ Person.FullName }} was not able to be checked into {{ Group.Name }} in {{ Location.Name }} at {{ Schedule.Name }} due to a capacity limit. Please re-check {{ Person.NickName }} in to a new room.", "", 1 )]
+    [BooleanField(
+        "Enforce Strict Location Threshold",
+        Key = AttributeKey.EnforceStrictLocationThreshold,
+        Description = "If enabled, the room capacity will be re-checked prior to saving attendance to reduce the possibility surpassing the room’s capacity threshold.",
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
+    [CodeEditorField( "Not Checked-In Message Format",
+        Key = AttributeKey.NotCheckedInMessageFormat,
+        Description = " <span class='tip tip-lava'></span>",
+        EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
+        EditorTheme = Web.UI.Controls.CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+         DefaultValue = @"
+{{ Person.FullName }} was not able to be checked into {{ Group.Name }} in {{ Location.Name }} at {{ Schedule.Name }} due to a capacity limit. Please re-check {{ Person.NickName }} in to a new room.",
+        Order = 1 )]
     public class SaveAttendance : CheckInActionComponent
     {
+        private static class AttributeKey
+        {
+            public const string EnforceStrictLocationThreshold = "EnforceStrictLocationThreshold";
+            public const string NotCheckedInMessageFormat = "NotChecked-InMessageFormat";
+        }
+
+        private static class MergeFieldKey
+        {
+            public const string Person = "Person";
+            public const string Group = "Group";
+            public const string Location = "Location";
+            public const string Schedule = "Schedule";
+        }
+
         /// <summary>
         /// Executes the specified workflow.
         /// </summary>
@@ -50,8 +77,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, Model.WorkflowAction action, object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState == null )
@@ -123,67 +149,9 @@ namespace Rock.Workflow.Action.CheckIn
 
                                     // If we're enforcing strict location thresholds, then before we create an attendance record
                                     // we need to check the location-schedule's current count.
-                                    if ( GetAttributeValue( action, "EnforceStrictLocationThreshold" ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
+                                    if ( GetAttributeValue( action, AttributeKey.EnforceStrictLocationThreshold ).AsBoolean() && location.Location.SoftRoomThreshold.HasValue )
                                     {
-                                        var thresHold = location.Location.SoftRoomThreshold.Value;
-                                        if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
-                                        {
-                                            thresHold = location.Location.FirmRoomThreshold.Value;
-                                        }
-
-                                        var currentOccurrence = GetCurrentOccurrence( currentOccurrences, location, schedule, startDateTime.Date );
-
-                                        // The totalAttended is the number of people still checked in (not people who have been checked-out)
-                                        // not counting the current person who may already be checked in,
-                                        // + the number of people we have checked in so far (but haven't been saved yet).
-                                        var attendanceQry = attendanceService.GetByDateOnLocationAndSchedule( startDateTime.Date, location.Location.Id, schedule.Schedule.Id )
-                                            .AsNoTracking()
-                                            .Where( a => a.EndDateTime == null );
-
-                                        // Only process if the current person is NOT already checked-in to this location and schedule
-                                        if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
-                                        {
-                                            var totalAttended = attendanceQry.Count() + ( currentOccurrence == null ? 0 : currentOccurrence.Count );
-
-                                            // If over capacity, remove the schedule and add a warning message.
-                                            if ( totalAttended >= thresHold )
-                                            {
-                                                // Remove the schedule since the location was full for this schedule.  
-                                                location.Schedules.Remove( schedule );
-
-                                                var message = new CheckInMessage()
-                                                {
-                                                    MessageType = MessageType.Warning
-                                                };
-
-                                                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
-                                                mergeFields.Add( "Person", person.Person );
-                                                mergeFields.Add( "Group", group.Group );
-                                                mergeFields.Add( "Location", location.Location );
-                                                mergeFields.Add( "Schedule", schedule.Schedule );
-                                                message.MessageText = GetAttributeValue( action, "NotChecked-InMessageFormat" ).ResolveMergeFields( mergeFields );
-
-                                                // Now add it to the check-in state message list for others to see.
-                                                checkInState.Messages.Add( message );
-                                                continue;
-                                            }
-                                            else
-                                            {
-                                                // Keep track of anyone who was checked in so far.
-                                                if ( currentOccurrence == null )
-                                                {
-                                                    currentOccurrence = new OccurrenceRecord()
-                                                    {
-                                                        Date = startDateTime.Date,
-                                                        LocationId = location.Location.Id,
-                                                        ScheduleId = schedule.Schedule.Id
-                                                    };
-                                                    currentOccurrences.Add( currentOccurrence );
-                                                }
-
-                                                currentOccurrence.Count += 1;
-                                            }
-                                        }
+                                        EnforceStrictLocationThreshold( action, checkInState, attendanceService, currentOccurrences, person, group, location, schedule, startDateTime );
                                     }
 
                                     // Only create one attendance record per day for each person/schedule/group/location
@@ -195,7 +163,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         {
                                             attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
                                                 location.Location.Id, schedule.Schedule.Id, location.CampusId,
-                                                checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType.Id,
+                                                checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType?.Id,
                                                 checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
 
                                             attendance.PersonAlias = primaryAlias;
@@ -205,7 +173,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     attendance.AttendanceCheckInSession = attendanceCheckInSession;
 
                                     attendance.DeviceId = checkInState.Kiosk.Device.Id;
-                                    attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
+                                    attendance.SearchTypeValueId = checkInState.CheckIn.SearchType?.Id;
                                     attendance.SearchValue = checkInState.CheckIn.SearchValue;
                                     attendance.CheckedInByPersonAliasId = checkInState.CheckIn.CheckedInByPersonAliasId;
                                     attendance.SearchResultGroupId = family.Group.Id;
@@ -229,7 +197,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         marked as present). In this case, the same 'Present..' rules apply, but we might need to go so far
                                         as to null-out the previously set 'Present..' property values, hence the conditional operators below.
                                     */
-                                    attendance.PresentDateTime = enablePresence ? (DateTime?)null : startDateTime;
+                                    attendance.PresentDateTime = enablePresence ? ( DateTime? ) null : startDateTime;
                                     attendance.PresentByPersonAliasId = enablePresence ? null : checkInState.CheckIn.CheckedInByPersonAliasId;
 
                                     KioskLocationAttendance.AddAttendance( attendance );
@@ -250,7 +218,25 @@ namespace Rock.Workflow.Action.CheckIn
                 }
             }
 
-            rockContext.SaveChanges();
+            if ( checkInState.CheckInType.AchievementTypes.Any() )
+            {
+                // Get any achievements that were in-progress *prior* to adding these attendance records
+                var configuredAchievementTypeIds = checkInState.CheckInType.AchievementTypes.Select( a => a.Id ).ToList();
+                var attendanceRecordsPersonAliasIds = attendanceRecords.Where( a => a.PersonAliasId.HasValue ).Select( a => a.PersonAliasId.Value ).ToArray();
+                var successfullyCompletedAchievementsPriorToSaveChanges = GetSuccessfullyCompletedAchievementAttempts( rockContext, attendanceRecordsPersonAliasIds, configuredAchievementTypeIds );
+
+                rockContext.SaveChanges();
+
+                AchievementAttemptService.AchievementAttemptWithPersonAlias[] achievementAttemptsAfterSaveChanges =
+                    GetAchievementAttemptsWithPersonAliasQuery( rockContext, attendanceRecordsPersonAliasIds, configuredAchievementTypeIds ).AsNoTracking().ToArray();
+
+                checkInState.CheckIn.SuccessfullyCompletedAchievementsPriorToCheckin = successfullyCompletedAchievementsPriorToSaveChanges;
+                checkInState.CheckIn.AchievementsStateAfterCheckin = achievementAttemptsAfterSaveChanges;
+            }
+            else
+            {
+                rockContext.SaveChanges();
+            }
 
             // Now that the records are persisted, take the Ids and save them to the temp CheckInFamliy object
             family.AttendanceIds = attendanceRecords.Select( a => a.Id ).ToList();
@@ -258,6 +244,42 @@ namespace Rock.Workflow.Action.CheckIn
             attendanceRecords = null;
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the completed achievement attempt ids.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attendanceRecordsPersonAliasIds">The attendance records person alias ids.</param>
+        /// <param name="configuredAchievementTypeIds">The configured achievement type ids.</param>
+        /// <returns></returns>
+        private AchievementAttemptService.AchievementAttemptWithPersonAlias[] GetSuccessfullyCompletedAchievementAttempts( RockContext rockContext, int[] attendanceRecordsPersonAliasIds, List<int> configuredAchievementTypeIds )
+        {
+            var achievementAttemptService = new AchievementAttemptService( new RockContext() );
+            var completedAchievementAttempts = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
+                .Where( x => attendanceRecordsPersonAliasIds.Contains( x.AchieverPersonAlias.Id ) )
+                 .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) )
+                 .Where( a => a.AchievementAttempt.IsSuccessful || a.AchievementAttempt.IsClosed )
+                 .AsNoTracking()
+                 .ToArray();
+
+            return completedAchievementAttempts;
+        }
+
+        /// <summary>
+        /// Gets the achievement attempts with person alias query.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="attendanceRecordsPersonAliasIds">The attendance records person alias ids.</param>
+        /// <param name="configuredAchievementTypeIds">The configured achievement type ids.</param>
+        /// <returns></returns>
+        private IQueryable<AchievementAttemptService.AchievementAttemptWithPersonAlias> GetAchievementAttemptsWithPersonAliasQuery( RockContext rockContext, int[] attendanceRecordsPersonAliasIds, List<int> configuredAchievementTypeIds )
+        {
+            var achievementAttemptService = new AchievementAttemptService( new RockContext() );
+            IQueryable<AchievementAttemptService.AchievementAttemptWithPersonAlias> achievementAttemptsQuery = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
+                 .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) && attendanceRecordsPersonAliasIds.Contains( a.AchieverPersonAlias.Id ) );
+
+            return achievementAttemptsQuery;
         }
 
         /// <summary>
@@ -277,13 +299,93 @@ namespace Rock.Workflow.Action.CheckIn
                         && a.ScheduleId == schedule.Schedule.Id )
                     .FirstOrDefault();
         }
-    }
 
-    class OccurrenceRecord
-    {
-        public int ScheduleId { get; set; }
-        public int LocationId { get; set; }
-        public int Count { get; set; }
-        public DateTime Date { get; set; }
+        /// <summary>
+        /// Enforces the strict location threshold by removing attendances that would have ended up going into full location+schedules.
+        /// Note: The is also checked earlier in the check-in process, so this catches ones that might have just gotten full in the last few seconds.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="checkInState">State of the check in.</param>
+        /// <param name="attendanceService">The attendance service.</param>
+        /// <param name="currentOccurrences">The current occurrences.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="group">The group.</param>
+        /// <param name="location">The location.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        private void EnforceStrictLocationThreshold( WorkflowAction action, CheckInState checkInState, AttendanceService attendanceService, List<OccurrenceRecord> currentOccurrences, CheckInPerson person, CheckInGroup group, CheckInLocation location, CheckInSchedule schedule, DateTime startDateTime )
+        {
+            var thresHold = location.Location.SoftRoomThreshold.Value;
+            if ( checkInState.ManagerLoggedIn && location.Location.FirmRoomThreshold.HasValue && location.Location.FirmRoomThreshold.Value > location.Location.SoftRoomThreshold.Value )
+            {
+                thresHold = location.Location.FirmRoomThreshold.Value;
+            }
+
+            var currentOccurrence = GetCurrentOccurrence( currentOccurrences, location, schedule, startDateTime.Date );
+
+            // The totalAttended is the number of people still checked in (not people who have been checked-out)
+            // not counting the current person who may already be checked in,
+            // + the number of people we have checked in so far (but haven't been saved yet).
+            var attendanceQry = attendanceService.GetByDateOnLocationAndSchedule( startDateTime.Date, location.Location.Id, schedule.Schedule.Id )
+                .AsNoTracking()
+                .Where( a => a.EndDateTime == null );
+
+            // Only process if the current person is NOT already checked-in to this location and schedule
+            if ( !attendanceQry.Where( a => a.PersonAlias.PersonId == person.Person.Id ).Any() )
+            {
+                var totalAttended = attendanceQry.Count() + ( currentOccurrence == null ? 0 : currentOccurrence.Count );
+
+                // If over capacity, remove the schedule and add a warning message.
+                if ( totalAttended >= thresHold )
+                {
+                    // Remove the schedule since the location was full for this schedule.  
+                    location.Schedules.Remove( schedule );
+
+                    var message = new CheckInMessage()
+                    {
+                        MessageType = MessageType.Warning
+                    };
+
+                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
+                    mergeFields.Add( MergeFieldKey.Person, person.Person );
+                    mergeFields.Add( MergeFieldKey.Group, group.Group );
+                    mergeFields.Add( MergeFieldKey.Location, location.Location );
+                    mergeFields.Add( MergeFieldKey.Schedule, schedule.Schedule );
+                    message.MessageText = GetAttributeValue( action, AttributeKey.NotCheckedInMessageFormat ).ResolveMergeFields( mergeFields );
+
+                    // Now add it to the check-in state message list for others to see.
+                    checkInState.Messages.Add( message );
+                    return;
+                }
+                else
+                {
+                    // Keep track of anyone who was checked in so far.
+                    if ( currentOccurrence == null )
+                    {
+                        currentOccurrence = new OccurrenceRecord()
+                        {
+                            Date = startDateTime.Date,
+                            LocationId = location.Location.Id,
+                            ScheduleId = schedule.Schedule.Id
+                        };
+
+                        currentOccurrences.Add( currentOccurrence );
+                    }
+
+                    currentOccurrence.Count += 1;
+                }
+            }
+        }
+
+        private class OccurrenceRecord
+        {
+            public int ScheduleId { get; set; }
+
+            public int LocationId { get; set; }
+
+            public int Count { get; set; }
+
+            public DateTime Date { get; set; }
+        }
     }
 }
