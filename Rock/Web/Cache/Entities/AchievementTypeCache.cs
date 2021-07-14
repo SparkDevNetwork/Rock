@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Achievement;
@@ -137,6 +136,10 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.AchievementType.CategoryId"/>
         [DataMember]
         public int? CategoryId { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.AchievementType.IsPublic"/>
+        [DataMember]
+        public bool IsPublic { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.AchievementType.ImageBinaryFileId"/>
         [DataMember]
@@ -300,6 +303,7 @@ namespace Rock.Web.Cache
             MaxAccomplishmentsAllowed = achievementType.MaxAccomplishmentsAllowed;
             AllowOverAchievement = achievementType.AllowOverAchievement;
             CategoryId = achievementType.CategoryId;
+            IsPublic = achievementType.IsPublic;
             ImageBinaryFileId = achievementType.ImageBinaryFileId;
             CustomSummaryLavaTemplate = achievementType.CustomSummaryLavaTemplate;
         }

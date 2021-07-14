@@ -263,6 +263,7 @@
                 <div class="scroller">
 
                     <ol class="checkin-messages checkin-body-container">
+                        <asp:Literal ID="lMessages" runat="server" Visible="false" />
                     </ol>
 
                     <ol class="checkin-summary checkin-body-container">

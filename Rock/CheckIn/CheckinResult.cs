@@ -20,6 +20,7 @@ using System.Runtime.Serialization;
 
 using Rock;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -28,7 +29,7 @@ namespace Rock.CheckIn
     /// 
     /// </summary>
     [DataContract]
-    public class CheckinResult
+    public class CheckinResult : RockDynamic
     {
         /// <summary>
         /// Gets the person.

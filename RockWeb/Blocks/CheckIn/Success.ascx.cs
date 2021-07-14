@@ -255,6 +255,19 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
+            if ( CurrentCheckInState?.Messages?.Any() == true )
+            {
+                lMessages.Visible = true;
+                StringBuilder sbMessages = new StringBuilder();
+                foreach ( var message in CurrentCheckInState.Messages )
+                {
+                    var messageHtml = $@"<li><div class='alert alert-{ message.MessageType.ConvertToString( false ).ToLower() }'> { message.MessageText }  </div></li>";
+                    sbMessages.AppendLine( messageHtml );
+                }
+
+                lMessages.Text = sbMessages.ToString();
+            }
+
             if ( lbAnother.Visible )
             {
                 var bodyTag = this.Page.Master.FindControl( "body" ) as HtmlGenericControl;
