@@ -5294,6 +5294,14 @@ namespace Rock.Lava
                             result.Add( dictionaryObject[selectKey] );
                         }
                     }
+                    else if ( value is IDictionary )
+                    {
+                        var dictionaryObject = value as IDictionary;
+                        if ( dictionaryObject.Contains( selectKey ) )
+                        {
+                            result.Add( dictionaryObject[selectKey] );
+                        }
+                    }
                 }
 
                 return result;
