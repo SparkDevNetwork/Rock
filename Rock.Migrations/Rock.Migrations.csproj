@@ -169,6 +169,10 @@
     <Compile Include="Migrations\202107141721235_CodeGenerated_0714.Designer.cs">
       <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107141741515_AchievementType.cs" />
+    <Compile Include="Migrations\202107141741515_AchievementType.Designer.cs">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1924,6 +1928,9 @@
     <EmbeddedResource Include="Migrations\202107141721235_CodeGenerated_0714.resx">
       <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107141741515_AchievementType.resx">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -3219,6 +3226,10 @@
     <Content Include="Migrations\202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity.sql">
       <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202107141741515_AchievementType_AddAchievementTypes.sql" />
+    <Content Include="Migrations\202107141741515_AchievementType_AddMedalBinaryFile.sql" />
+    <Content Include="Migrations\202107141741515_AchievementType_AddTrophyBinaryFile.sql" />
+    <Content Include="Migrations\202107141741515_AchievementType_AddWeeklyAttendanceStreakType.sql" />
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>

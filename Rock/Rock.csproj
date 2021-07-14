@@ -756,10 +756,12 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
     <Compile Include="Security\Authentication\OidcClient.cs" />
+    <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemGuid\BinaryFile.cs" />
     <Compile Include="SystemGuid\FinancialStatementTemplate.cs" />
+    <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="SystemKey\LanguageDefinedValueAttributeKey.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
