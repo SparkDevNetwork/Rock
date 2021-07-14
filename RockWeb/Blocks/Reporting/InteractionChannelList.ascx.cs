@@ -44,11 +44,11 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"{% if InteractionChannel != null and InteractionChannel != '' %}
     <a href='{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}'>
-        <div class='panel panel-widget'>
+        <div class='panel panel-widget collapsed'>
             <div class='panel-heading clearfix'>
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
 
-                <div class='panel-labels'> 
+                <div class='panel-labels'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
                     <i class='fa fa-chevron-right margin-l-md'></i>
                 </div>
@@ -312,7 +312,7 @@ namespace RockWeb.Blocks.Reporting
 	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
 	            }
 			}
-			
+
             return personId;
         }
 
