@@ -149,7 +149,7 @@
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 
                         <Rock:ModalAlert ID="mdThemeCompile" runat="server" />
-                        <asp:LinkButton ID="btnCompileTheme" runat="server" Text="Compile Theme" CssClass="btn btn-link pull-right" CausesValidation="false" OnClick="btnCompileTheme_Click" />
+                        <asp:LinkButton ID="btnCompileTheme" runat="server" Text="Compile Theme" CssClass="btn btn-default btn-sm pull-right" CausesValidation="false" OnClick="btnCompileTheme_Click" />
                     </div>
 
                 </fieldset>

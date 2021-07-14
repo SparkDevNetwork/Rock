@@ -28,7 +28,7 @@
                 <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
 
                 <asp:Panel ID="pnlRequiredSignatureDocument" runat="server" CssClass="alert alert-warning" Visible="false" >
-                    
+
                     <div class="row">
                         <div class="col-md-9">
                             <asp:Literal ID="lRequiredSignatureDocumentMessage" runat="server" />
@@ -136,7 +136,7 @@
                         <asp:LinkButton ID="btnReCheckRequirements" runat="server" AccessKey="r" ToolTip="Alt+R" Text="Re-Check Requirements" CssClass="btn btn-default" OnClick="btnReCheckRequirements_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+A" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+C" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
-                        <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
                     </div>
 
                 </div>
@@ -151,7 +151,7 @@
                     <div class="col-md-12">
                         <Rock:RockLiteral ID="lCurrentGroup" runat="server" Label="Current Group" />
                         <Rock:GroupPicker ID="gpMoveGroupMember" runat="server" Required="true" Label="Destination Group" ValidationGroup="vgMoveGroupMember" OnSelectItem="gpMoveGroupMember_SelectItem" />
-                        <Rock:GroupRolePicker ID="grpMoveGroupMember" runat="server" Label="Role" ValidationGroup="vgMoveGroupMember" GroupTypeId="0" />   
+                        <Rock:GroupRolePicker ID="grpMoveGroupMember" runat="server" Label="Role" ValidationGroup="vgMoveGroupMember" GroupTypeId="0" />
                         <Rock:RockCheckBox ID="cbMoveGroupMemberMoveNotes" runat="server" ValidationGroup="vgMoveGroupMember" Label="Move Notes" Help="If this group member has notes, move these notes with them to their new group." />
                         <Rock:RockCheckBox ID="cbMoveGroupMemberFundraisingTransactions" runat="server" ValidationGroup="vgMoveGroupMember" Label="Move Fundraising Financial Transactions" Help="If enabled the related fundraising financial transactions will be re-linked to the new fundraising group. If the new group has different financial accounts configured adjustment financial transactions may be created to move the dollars from one account to another.  This will only occur if the batches for the original accounts are closed. The new transactions will be placed in a new batch." />
                         <Rock:NotificationBox ID="nbMoveGroupMemberWarning" runat="server" NotificationBoxType="Warning" Visible="false" />

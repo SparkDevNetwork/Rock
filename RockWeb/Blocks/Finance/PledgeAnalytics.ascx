@@ -43,7 +43,7 @@
                                 <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                                 <div class="col-md-12">
                                     <div class="panel-actions text-right">
-                                        <asp:LinkButton ID="btnApply" runat="server" OnClick="btnApply_Click" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                        <asp:LinkButton ID="btnApply" runat="server" OnClick="btnApply_Click" CssClass="btn btn-primary pull-right" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                     </div>
                                 </div>
                             </div>

@@ -145,7 +145,7 @@ Sys.Application.add_load( function ()
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $( ".block-configuration" ).on( "mouseenter", function ( e )
                 {
-                    var barWidth = $( '.block-configuration-bar', this ).outerWidth() + 45 + 'px';
+                    var barWidth = $( '.block-configuration-bar', this ).outerWidth() + 30 + 'px';
                     $( this ).stop( true, true ).animate( { width: barWidth }, 200 ).css( { 'z-index': '1049' } );
                 } ).on( "mouseleave", function ()
                 {

@@ -43,6 +43,12 @@ legend {
 
 a.aspNetDisabled {
   opacity: .5;
+
+  &.picker-label {
+    color: @text-muted;
+    background: @input-bg-disabled;
+    opacity: 1;
+  }
 }
 
 .form-group.rock-literal,
@@ -63,11 +69,6 @@ a.aspNetDisabled {
   -webkit-transform: translateY(-@form-group-margin-bottom);
   -ms-transform: translateY(-@form-group-margin-bottom);
   transform: translateY(-@form-group-margin-bottom);
-}
-
-.form-group .checkbox:last-child {
-  // used to adjust checkboxes to look better with labels above
-  margin-bottom: 30px;
 }
 
 .form-group > .form-group {
@@ -401,7 +402,7 @@ dl:not(.dl-horizontal) {
 .month-day-picker .separator {
   float: left;
   margin: 4px 8px 0 -2px;
-  font-size: 20px;
+  font-size: @font-size-lg;
   color: lighten(@text-color, 35%);
 }
 

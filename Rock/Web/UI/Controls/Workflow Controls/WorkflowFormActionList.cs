@@ -193,7 +193,7 @@ namespace Rock.Web.UI.Controls
             }
             valueHtml.Append( @"</select></div>" );
             valueHtml.Append( @"<div class=""col-sm-4""><label class=""control-label d-sm-none"">Response Text</label><input class=""form-action-response form-control mb-3 mb-sm-0 js-form-action-input"" type=""text"" placeholder=""Response Text""></input></div>" );
-            valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-sm btn-square btn-danger form-action-remove""><i class=""fa fa-times""></i></a></div></div>" );
+            valueHtml.Append( @"<div class=""col-sm-1""><a href=""#"" class=""btn btn-square btn-danger form-action-remove""><i class=""fa fa-times""></i></a></div></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-value-html" );
@@ -322,7 +322,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();      // Div.form-action-rows
 
             // Add Actions
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs btn-square btn-action form-action-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );

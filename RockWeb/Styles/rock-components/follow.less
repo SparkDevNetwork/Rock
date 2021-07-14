@@ -4,7 +4,7 @@
 
 .panel .panel-heading.panel-follow {
   position: relative;
-  padding-right: @panel-following-offset-width;
+  padding-right: @panel-follow-offset-width;
 }
 
 .panel .panel-heading.panel-follow-fullscreen {
@@ -17,27 +17,23 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: @panel-following-width;
-  padding: @panel-following-padding;
+  width: @panel-follow-status-width;
+  padding-top:  @panel-following-padding;
   color: @text-color;
   text-align: center;
   cursor: pointer;
   border-left: 1px solid @panel-border;
   opacity: .4;
-  transition: .5s;
+  transition: @btn-transition;
 
   &::before {
     font-family: @fa-font-face;
-    content: @fa-var-star-o;
+    content: @fa-var-star;
   }
 
   &.following {
-    color: #fff;
+    color: @panel-following-active-color;
     background-color: @panel-following-active-bg;
     opacity: 1;
-
-    &::before {
-      content: @fa-var-star;
-    }
   }
 }

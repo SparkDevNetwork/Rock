@@ -127,9 +127,11 @@
                     <i class="fa fa-history"></i>
                     Group History
                 </h1>
-                <a class="btn btn-xs btn-default pull-right margin-l-sm" onclick="javascript: toggleOptions()">
-                    <i title="Options" class="fa fa-gear"></i>
-                </a>
+                <div class="pull-right">
+                  <a class="btn btn-xs btn-default btn-square" onclick="javascript: toggleOptions()">
+                      <i title="Options" class="fa fa-gear"></i>
+                  </a>
+                </div>
             </div>
 
             <asp:Panel ID="pnlOptions" runat="server" Title="Options" CssClass="panel-body js-options" Style="display: none">
@@ -219,7 +221,6 @@
                         currentMousePos.y = e.pageY + $('#<%=groupHistorySwimlanes.ClientID%> .swimlanes-container').scrollTop()
                 });
             });
-
 
         </script>
     </ContentTemplate>

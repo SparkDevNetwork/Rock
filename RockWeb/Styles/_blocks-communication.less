@@ -46,8 +46,15 @@ iframe.email-body {
 .panel-fill-body {
   height: ~"calc(100vh - var(--email-editor-offset, 360px))";
   min-height: 300px;
-  margin: -15px -15px 0 -15px;
-  border-bottom: 1px solid @panel-border;
+  margin: -@panel-body-padding -@panel-body-padding 0 -@panel-body-padding;
+  //border-bottom: 1px solid @panel-border;
+}
+
+// TODO: Find Better Way
+.communication-entry-wizard {
+  .actions {
+    margin-top: 0 !important;
+  }
 }
 
 .panel-actions-bordered {
@@ -60,6 +67,11 @@ iframe.email-body {
   width: 40%;
   padding: (@grid-gutter-width / 2);
   background-color: @panel-heading-bg;
+
+  .actions {
+    margin-left: -(@grid-gutter-width / 2);
+    margin-right: -(@grid-gutter-width / 2);
+  }
 }
 
 

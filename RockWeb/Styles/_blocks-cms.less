@@ -107,6 +107,7 @@
   }
 
   .panel.panel-lavadebug {
+    background-color: lighten(@state-info-bg, 3%);
     border: 0;
 
     .panel-heading {
@@ -118,10 +119,6 @@
       &.collapsed i::before {
         content: @fa-var-chevron-down;
       }
-    }
-
-    .panel-body {
-      background-color: lighten(@state-info-bg, 3%);
     }
   }
 }
@@ -148,11 +145,11 @@
     }
 
     .socialicon-facebook {
-      background-color: #4c66a4;
+      background-color: @brand-facebook;
     }
 
     .socialicon-twitter {
-      background-color: #2c77ba;
+      background-color: @brand-twitter;
     }
 
     .socialicon-email {

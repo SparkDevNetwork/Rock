@@ -171,10 +171,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.WriteLine();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            var addButtonCssClass = "btn btn-action btn-xs key-value-add";
+            var addButtonCssClass = "btn btn-action btn-square btn-xs key-value-add";
             if ( !this.Enabled )
             {
                 addButtonCssClass += " aspNetDisabled disabled";

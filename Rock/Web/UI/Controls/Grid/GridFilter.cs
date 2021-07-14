@@ -257,7 +257,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 bool visible = _hfVisible.Value == "true";
-
+                
                 var filterDisplay = new Dictionary<string, string>();
                 AdditionalFilterDisplay.ToList().ForEach( d => filterDisplay.Add( d.Key, d.Value ) );
 
@@ -324,6 +324,8 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+
 
                 if ( filterDisplay.Any() )
                 {

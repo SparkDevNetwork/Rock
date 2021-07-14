@@ -1147,7 +1147,7 @@
                             </div>
                         </div>
 
-                    <div class="actions clearfix mt-3">
+                    <div class="actions clearfix">
                         <asp:LinkButton ID="btnEmailEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-saveeditorhtml js-wizard-navigation" CausesValidation="false" OnClick="btnEmailEditorPrevious_Click" />
                         <asp:LinkButton ID="btnEmailEditorNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-saveeditorhtml js-wizard-navigation" ValidationGroup="vgEmailEditor" CausesValidation="true" OnClick="btnEmailEditorNext_Click" />
                     </div>

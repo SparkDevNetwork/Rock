@@ -11,68 +11,40 @@
 // 1. Zone Config
 // -------------------------
 
+@adminbar-text-color: #fff;
+
 .zone-instance.outline {
   position: relative;
-  float: left;
   width: 100%;
   min-width: 50px;
   min-height: 30px;
-  outline: 1px dashed #909090;
-  outline-offset: -1px;
-}
-
-.zone-configuration {
-  position: absolute;
-  top: 1px;
-  right: auto;
-  left: 1px;
-  z-index: 1000;
-  display: none;
-  width: 25px;
-  height: 26px;
-  overflow: hidden;
-  cursor: pointer;
-  background: @adminbar-bg;
-  border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
-  border-radius: @border-radius-base;
-
-  p {
-    float: left;
-  }
-}
-
-.zone-configuration-bar {
-  position: absolute;
-  left: 24px;
-  margin-right: -999em;
-  margin-left: 6px;
-  overflow: hidden;
-  color: @adminbar-text-color;
-
-  span {
-    display: block;
-    float: left;
-    padding-right: 20px;
-    margin-top: 4px;
-    font-size: 10px;
-    line-height: 15px;
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+    border: 1px dotted #3e3e3c;
+    outline: 1px dotted #fff;
   }
 }
 
 // 2. Module Config
 // -------------------------
-.block-configuration {
+.block-configuration,
+.zone-configuration {
   position: absolute;
-  top: 2px;
+  top: 0;
   z-index: @zindex-modal - 1;
   display: none;
   width: 26px;
   height: 26px;
   overflow: hidden;
+  color: #fff;
   cursor: pointer;
-  background: @adminbar-bg;
-  border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
-  border-radius: @border-radius-base;
+  background: #0176d3;
+  border-radius: 0;
 }
 
 .block-instance.outline {
@@ -80,26 +52,51 @@
   display: block;
   min-height: 36px;
   clear: both;
+
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+    pointer-events: none;
+  }
+
+  &:hover::after {
+    border: 1px solid #1b96ff;
+  }
 }
 
 .config-bar {
-  box-shadow: 3px 3px 3px 0 rgba(0,0,0, .4);
+  font-size: 16px;
+  line-height: 1.5;
 
-  & > a {
-    padding: 0 !important; // important to keep themes from changing this
+  &,
+  a {
+    color: #fff !important; //@adminbar-text-color
+  }
+
+  a, .delete {
+    float: left;
+    padding: 1px 0 !important; // important to keep themes from changing this
     margin: 0 !important; // important to keep themes from changing this
     text-decoration: none;
+    width: 26px;
+    display: block;
+    text-align: center;
   }
 
-  a i.fa {
-    float: left;
-    margin-top: 3px;
-    margin-right: 10px;
-    margin-left: 5px;
-    font-size: 18px;
-    color: @adminbar-text-color;
-  }
+  // i.fa {
+  //   width: 1.25em;
+  //   text-align: center;
+  // //   font-size: @configbar-font-size;
+  // }
 }
+
+// .block-configuration {
+//   width: 300px !important;
+// }
 
 .zone-configuration-bar,
 .block-configuration-bar {
@@ -108,7 +105,6 @@
   margin-right: -999em;
   margin-left: 6px;
   overflow: hidden;
-  color: @adminbar-text-color;
 
   div {
     display: inline;
@@ -117,10 +113,9 @@
   span {
     display: block;
     float: left;
-    padding-right: 20px;
-    margin-top: 4px;
+    padding-right: 12px;
     font-size: 10px;
-    line-height: 15px;
+    line-height: 26px;
   }
 
   .disabled {

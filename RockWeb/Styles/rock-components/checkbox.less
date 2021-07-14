@@ -230,6 +230,11 @@
           }
         }
       }
+
+      &:checked:disabled ~ .label-text::before {
+        background-color: @custom-control-indicator-checked-color;
+        opacity: .5;
+      }
     }
 
   }

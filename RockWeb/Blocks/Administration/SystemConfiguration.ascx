@@ -30,7 +30,9 @@
                 <Rock:PanelWidget ID="pwExperimentalSettings" runat="server" Title="Experimental Settings" TitleIconCssClass="fa fa-flask" Expanded="false">
                     <Rock:DayOfWeekPicker ID="dowpStartingDayOfWeek" runat="server" Label="Starting Day of Week" DefaultDayOfWeek="Monday" Help="Set this to change how Rock calculates 'Sunday Date'. This setting is retro-active to any data that is stored with SundayDate." />
                     <Rock:NotificationBox ID="nbStartDayOfWeekSaveMessage" runat="server" NotificationBoxType="Warning" Text="This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'." />
-                    <Rock:BootstrapButton ID="btnSaveStartDayOfWeek" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveStartDayOfWeek_Click" Text="Save" DataLoadingText="Updating..." ValidationGroup="Experimental" />
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="btnSaveStartDayOfWeek" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveStartDayOfWeek_Click" Text="Save" DataLoadingText="Updating..." ValidationGroup="Experimental" />
+                    </div>
                 </Rock:PanelWidget>
 
                 <Rock:PanelWidget ID="pwWebConfigSetting" runat="server" Title="Web.Config Settings">

@@ -123,8 +123,8 @@ td.wrap-contents {
   padding: 0;
   color: @grid-filter-color;
   background-color: @grid-filter-bg;
-  border-bottom: 1px solid @grid-border-color;
-  border-radius: @border-radius-base;
+  // border-bottom: 1px solid @grid-border-color;
+  //border-radius: @border-radius-base;
 
   header {
     position: absolute;
@@ -135,14 +135,14 @@ td.wrap-contents {
     h3 {
       display: inline;
       margin: 0 2px 0 6px;
-      font-size: 12px;
+      font-size: @font-size-xs;
       font-weight: @font-weight-light;
       line-height: 16px;
     }
 
-    i {
-      color: lighten(@grid-filter-color, 20%);
-    }
+    // i {
+    //   color: lighten(@grid-filter-color, 20%);
+    // }
 
     fieldset {
       margin-bottom: 0;
@@ -153,7 +153,7 @@ td.wrap-contents {
     position: absolute;
     z-index: 9; // Stack behind Calendars
     margin: @table-cell-padding;
-    color: @ui-5;
+    color: @grid-footer-button-text-color;
     text-decoration: none;
     background: @grid-footer-bg;
 
@@ -163,17 +163,16 @@ td.wrap-contents {
   }
 
   h4 {
-    padding-bottom: 8px;
-    margin: 12px 0 20px;
-    font-weight: @font-weight-light;
+    margin: 0;
+    font-size: @font-size-lg;
+    font-weight: 400;
   }
 
-  .grid-filter-entry {
+  .grid-filter-entry,
+  .grid-filter-overview fieldset {
     padding: @panel-body-padding;
     padding-top: 37px;
     border-bottom: 1px solid darken(@grid-filter-bg, 10%);
-
-    h4 { display: none; }
   }
 
   // adjust the background color of pickers in the filters
@@ -187,15 +186,6 @@ td.wrap-contents {
   margin-top: 0;
 }
 
-.grid-filter-overview {
-  h4 {
-    margin: 0;
-  }
-
-  fieldset {
-    padding: 37px 16px 8px;
-  }
-}
 
 // 4. Column Header
 // -------------------------
@@ -218,7 +208,7 @@ td.wrap-contents {
       font-weight: @fa-theme-weight;
       color: fade(@grid-column-header-text-color, 35%);
       text-decoration: none;
-      content: @fa-var-caret-down;
+      content: @fa-var-sort;
       opacity: 0;
     }
   }
@@ -230,12 +220,13 @@ td.wrap-contents {
   // sorting
   &.descending a:not(.btn)::after {
     color: @grid-column-header-text-color;
+    content: @fa-var-sort-down;
     opacity: 1;
   }
 
   &.ascending a:not(.btn)::after {
     color: @grid-column-header-text-color;
-    content: @fa-var-caret-up;
+    content: @fa-var-sort-up;
     opacity: 1;
   }
 }
@@ -288,14 +279,14 @@ td.wrap-contents {
 
   .pagination-text {
     float: left;
-    font-size: 12px;
+    font-size: @font-size-xs;
   }
 
   .grid-itemcount {
     float: left;
     margin-top: 7px;
     margin-left: 10px;
-    font-size: 12px;
+    font-size: @font-size-xs;
   }
 }
 
@@ -366,7 +357,7 @@ td.grid-col-actions {
 }
 
 .table-empty {
-  opacity: .6;
+  opacity: .7;
 }
 
 // 8. Column Types
@@ -410,7 +401,7 @@ td.grid-col-actions {
     padding: 12px;
 
     &.grid-columncommand {
-      min-width: 48px;
+      min-width: @input-height-small;
     }
 
     &.grid-columnreorder {
@@ -581,10 +572,10 @@ tr.row-highlight {
 // 10. Responsive Columns
 // -------------------------
 .alert.alert-grid {
-  margin-top: -15px;
-  margin-right: -15px;
-  margin-bottom: 15px;
-  margin-left: -15px;
+  margin-top: -@panel-body-padding;
+  margin-right: -@panel-body-padding;
+  margin-bottom: @panel-body-padding;
+  margin-left: -@panel-body-padding;
   border-radius: 0;
 }
 
