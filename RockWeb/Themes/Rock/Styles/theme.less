@@ -406,12 +406,8 @@ textarea,
 }
 
 .label {
-  // display: inline-flex;
-  // align-items: center;
   padding: @label-padding;
-  //margin: 0.16666667em 0;
   font-weight: 500; // make the font light
-  //border-radius: 4px; // labels always have curves
 }
 
 .grid-filter {
@@ -666,7 +662,7 @@ textarea,
 }
 
 .panel-widget {
-  //overflow: hidden; CANNOT HIDE OVERFLOW BECAUSE OF PICKERS :/
+  // DO NOT HIDE OVERFLOW BECAUSE OF PICKERS
   .box-shadow(none);
 
   .panel-heading .btn-link {
@@ -827,7 +823,6 @@ textarea,
     }
   }
 }
-
 
 .panel .panel-heading .panel-options {
   margin: -15px -15px -15px 10px;
@@ -1681,8 +1676,6 @@ body.navbar-side-open {
 .workflow-activity {
   position: relative;
   margin: 0 0 8px;
-  // TODO: FIX so overflow can be used
-  // overflow: hidden;
 
   > .panel-heading {
     background: @white;
@@ -1691,9 +1684,6 @@ body.navbar-side-open {
     &:hover {
       background: @gray-50;
     }
-    // a.btn-link {
-    //   color: @white;
-    // }
 
     > .pull-right {
       align-self: flex-start;
@@ -1828,12 +1818,6 @@ body.navbar-side-open {
 .debug-timings {
   width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
-}
-
-.panel-more {
-  .drawer-pull {
-    display: none;
-  }
 }
 
 /* #endregion */
