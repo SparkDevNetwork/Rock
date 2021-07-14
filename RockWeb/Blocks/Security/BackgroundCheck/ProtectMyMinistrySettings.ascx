@@ -35,7 +35,7 @@
                     <div class="col-md-5">
                         <Rock:RockTextBox ID="tbUserNameNew" runat="server" Label="Username" Required="true" />
                         <Rock:RockTextBox ID="tbPasswordNew" runat="server" Label="Password" Required="true" TextMode="Password" />
-                        <div class="actions">
+                        <div class="panel-actions">
                             <asp:LinkButton ID="lbSaveNew" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="lbSaveNew_Click" />
                         </div>
                     </div>

@@ -77,7 +77,7 @@ namespace Rock.Field.Types
             conditionalScaleRulesControlsRepeater.ItemDataBound += ConditionalScaleRulesControlsRepeater_ItemDataBound;
             pnlRulesEditor.Controls.Add( conditionalScaleRulesControlsRepeater );
 
-            LinkButton btnAddRule = new LinkButton { ID = "btnAddRule", CssClass = "btn btn-action btn-xs margin-b-md", Text = "<i class='fa fa-plus-circle'></i>", CausesValidation = false };
+            LinkButton btnAddRule = new LinkButton { ID = "btnAddRule", CssClass = "btn btn-square btn-action btn-xs margin-b-md", Text = "<i class='fa fa-plus-circle'></i>", CausesValidation = false };
             btnAddRule.Click += BtnAddRule_Click;
             pnlRulesEditor.Controls.Add( btnAddRule );
 
@@ -290,7 +290,7 @@ namespace Rock.Field.Types
             /// <param name="container">The <see cref="T:System.Web.UI.Control" /> object to contain the instances of controls from the inline template.</param>
             public void InstantiateIn( Control container )
             {
-                HtmlGenericContainer conditionalScaleRangeRuleContainer = new HtmlGenericContainer { ID = $"conditionalScaleRangeRuleContainer", CssClass = "row" };
+                HtmlGenericContainer conditionalScaleRangeRuleContainer = new HtmlGenericContainer { ID = $"conditionalScaleRangeRuleContainer", CssClass = "row form-row" };
 
                 var hfRangeGuid = new HiddenField { ID = "hfRangeGuid" };
                 conditionalScaleRangeRuleContainer.Controls.Add( hfRangeGuid );

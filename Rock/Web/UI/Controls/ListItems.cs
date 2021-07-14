@@ -334,7 +334,7 @@ namespace Rock.Web.UI.Controls
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">" );
             valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""fa fa-bars""></i></span><input class=""form-control input-width-lg js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
-            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div></div>" );
+            valueHtml.Append( @"<a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-list-items-html" );
@@ -381,7 +381,7 @@ namespace Rock.Web.UI.Controls
 
                     // Write Remove Button
                     writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-danger list-items-remove" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-square btn-danger list-items-remove" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -401,10 +401,10 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.WriteLine();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-action btn-xs list-items-add" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs btn-action btn-square list-items-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus-circle" );

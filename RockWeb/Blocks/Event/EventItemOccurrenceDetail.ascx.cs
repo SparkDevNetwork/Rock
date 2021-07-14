@@ -585,7 +585,7 @@ namespace RockWeb.Blocks.Event
             if ( eventItemOccurrence.Schedule != null )
             {
                 sbSchedule.iCalendarContent = eventItemOccurrence.Schedule.iCalendarContent;
-                lScheduleText.Text = eventItemOccurrence.Schedule.FriendlyScheduleText;
+                lScheduleText.Text = "<span class='text-sm'>" + eventItemOccurrence.Schedule.FriendlyScheduleText + "</span>";
             }
             else
             {
@@ -614,7 +614,7 @@ namespace RockWeb.Blocks.Event
         protected void sbSchedule_SaveSchedule( object sender, EventArgs e )
         {
             var schedule = new Schedule { iCalendarContent = sbSchedule.iCalendarContent };
-            lScheduleText.Text = schedule.FriendlyScheduleText;
+            lScheduleText.Text = "<span class='text-sm'>" + schedule.FriendlyScheduleText + "</span>";
         }
 
         /// <summary>

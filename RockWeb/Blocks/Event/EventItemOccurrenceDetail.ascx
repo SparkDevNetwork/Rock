@@ -63,7 +63,7 @@
 
                             <asp:Repeater ID="rptRegistrations" runat="server" OnItemDataBound="rptRegistrations_ItemDataBound">
                                 <HeaderTemplate>
-                                    <label class="margin-b-none">Event / Registration / Group Linkages</label>
+                                    <label class="control-label">Event / Registration / Group Linkages</label>
                                     <table class="w-100">
                                 </HeaderTemplate>
                                 <ItemTemplate>
@@ -99,7 +99,7 @@
                                             <asp:LinkButton ID="lbCreateNewRegistration"
                                                 runat="server"
                                                 CssClass="btn btn-primary btn-xs margin-t-sm margin-b-md"
-                                                Text="<i class='fa fa-plus'></i>Add Linkage"
+                                                Text="<i class='fa fa-plus'></i> Add Linkage"
                                                 OnClick="lbCreateNewRegistration_Click" />
                                         </div>
                                     </div>

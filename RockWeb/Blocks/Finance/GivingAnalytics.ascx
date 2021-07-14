@@ -97,8 +97,8 @@
                                 </div>
                             </div>
                             <div class="col-sm-4">
-                                <div class="actions text-right">
-                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                <div class="panel-actions text-right">
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
