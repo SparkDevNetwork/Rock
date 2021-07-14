@@ -37,27 +37,82 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
-// Temporary Fix for Safari 13 Select Rendering Bug
-select {
-  -webkit-font-smoothing: none;
-}
-// End Temporary Fix
-
 main {
   display: block;
 }
 
-h3,
-h4,
-legend {
-  font-weight: 400;
+// h3,
+// h4,
+// legend {
+//   font-weight: 400;
+// }
+
+.text-lg { font-size: @font-size-lg; }
+.text-md { font-size: @font-size-base; }
+.text-sm { font-size: @font-size-sm; }
+.text-xs { font-size: @font-size-xs; }
+
+.control-label {
+  margin-bottom: 4px;
+  font-size: @font-size-sm;
+  line-height: 18px;
 }
 
+.panel-body {
+  // DOES NOT WORK WITH ROWS
+  // > .row {
+  //   margin-left: -@panel-body-padding;
+  //   margin-right: -@panel-body-padding;
+  // }
+
+  > .form-group:last-child {
+    margin-bottom: 0;
+  }
+}
+
+
+.list-group-item {
+  padding-right: 24px;
+  padding-left: 24px;
+}
+
+
 b,
-strong,
-dl:not(.dl-horizontal) dt,
-dt {
+strong {
   font-weight: @font-weight-semibold;
+}
+
+.form-group.rock-check-box {
+  min-height: 64px;
+}
+
+.flex-btn-gap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+dl:not(.dl-horizontal) dt{
+  font-size: @font-size-sm;
+  font-weight: 400;
+  color: @text-muted;
+  letter-spacing: .32px;
+}
+
+.panel-title {
+  font-weight: 500;
+}
+
+.modal-title {
+  font-size: @font-size-h2;
+}
+
+legend {
+  padding-bottom: 8px !important;
+  margin-bottom: 24px !important;
+  font-size: @font-size-h4;
+  font-weight: 500 !important;
+  border-bottom: 1px solid @gray-300;
 }
 
 input[type="text"],
@@ -76,6 +131,19 @@ textarea,
     border: 1px solid @input-border-focus;
     outline: none;
     box-shadow: @input-focus-box-shadow;
+  }
+}
+
+.form-control {
+  &::placeholder {
+    color: #90949c;
+    transition: color 100ms ease-in-out;
+  }
+
+  &:focus {
+    &::placeholder {
+      color: #bec3c9;
+    }
   }
 }
 
@@ -112,20 +180,19 @@ textarea,
 }
 
 .btn-square {
-  width: @input-height-base;
-  height: @input-height-base;
+  width: 38px;
   padding: @padding-base-vertical 0;
 
   &.btn-xs {
-    width: 25px;
-    height: 25px;
-    padding: 0;
+    width: @input-height-xs;
+    height: @input-height-xs;
+    padding: (@padding-xs-vertical - 1) 0;
   }
 
   &.btn-sm {
     width: @input-height-small;
     height: @input-height-small;
-    padding: @padding-small-vertical 0;
+    padding: (@padding-small-vertical - 2) 0;
   }
 
   i.fa {
@@ -133,6 +200,11 @@ textarea,
     line-height: @line-height-base;
     text-align: center;
   }
+}
+
+.block-config-buttons .btn-sm {
+  &:extend(.btn-square);
+  &:extend(.btn-square.btn-sm);
 }
 
 // Show Toggle Buttons without muted colors
@@ -164,7 +236,7 @@ textarea,
 }
 
 .label.btn-label {
-  padding: .2em .5em .3em;
+  padding: @label-padding;
   color: @btn-default-color !important;
   background: @btn-default-bg;
   box-shadow: inset 0 0 0 1px @btn-default-border;
@@ -304,6 +376,7 @@ textarea,
 .alert {
   border-width: 0;
   border-top-width: 3px;
+  border-radius: 0 0 @alert-border-radius @alert-border-radius;
   box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
 }
 
@@ -333,31 +406,53 @@ textarea,
 }
 
 .label {
-  font-weight: 400; // make the font light
-  border-radius: 0; // labels always have curves
+  // display: inline-flex;
+  // align-items: center;
+  padding: @label-padding;
+  //margin: 0.16666667em 0;
+  font-weight: 500; // make the font light
+  //border-radius: 4px; // labels always have curves
 }
 
 .grid-filter {
-  border: 0;
-
   .btn-filter-toggle {
-    margin: 5px 0 0 7px;
+    left: 18px;
+    padding: 4px;
+    margin: 1px 0 0;
+
+    &.is-open {
+      background: @grid-filter-bg;
+    }
+  }
+
+  &.has-criteria .btn-filter-toggle {
+    background: @grid-filter-bg;
   }
 }
 
 .grid-table {
+  font-size: @font-size-base;
+  //TEMP
+  @table-padding-vertical: 16px;
+
+  td, th {
+    &.grid-select-field {
+      width: @custom-control-indicator-size * 3;
+    }
+  }
+
   > tbody > tr > td,
   > tbody > tr > th,
   > thead > tr > td,
   > thead > tr > th {
-    padding: 18px 17px 18px 12px;
+    padding: @table-padding-vertical 16px @table-padding-vertical 12px;
     border-width: @table-column-border-width;
     border-top-width: 1px;
   }
 
   > thead > tr > td,
   > thead > tr > th {
-    padding: 18px 0 18px 12px;
+    padding: @table-padding-vertical 0 @table-padding-vertical 12px;
     vertical-align: middle;
 
     // Remove padding offset on right
@@ -372,7 +467,7 @@ textarea,
   }
 
   > thead > tr.grid-header-bold > th {
-    padding: 18px 17px 18px 12px;
+    padding: @table-padding-vertical 17px @table-padding-vertical 12px;
   }
 
   > tbody > tr > td {
@@ -385,9 +480,8 @@ textarea,
     }
 
     &.grid-columncommand {
-      width: 30px;
-      min-width: 30px;
-      padding: 0 6px;
+      width: @input-height-small;
+      min-width: @input-height-small;
       vertical-align: middle;
     }
 
@@ -409,17 +503,20 @@ textarea,
 
 .grid-columncommand {
   .btn {
-    width: 33px;
-    padding: 5px 7px;
+    width: @input-height-small;
+    padding: @padding-small-vertical 0;
   }
 
   .btn-default,
+  .btn-security,
   .btn-danger {
     background-color: transparent;
     border-color: transparent;
+    box-shadow: none;
   }
 
-  .btn-default {
+  .btn-default,
+  .btn-security {
     &:focus,
     &:hover,
     &:active {
@@ -467,6 +564,41 @@ textarea,
 // 3. Rock Overrides         */
 // -------------------------
 
+
+// .panel-actions,
+.panel-body .actions:last-of-type { // unknown if .panel-body > is doing anything
+  display: flex;
+  align-items: center;
+  padding: (@panel-body-padding/2) @panel-body-padding;
+  margin: -@panel-body-padding;
+  margin-top: @panel-body-padding;
+  border-top: 1px solid #eee;
+  //gap: 8px;
+
+  > * + * {
+    margin-right: 8px;
+    margin-left: 8px;
+  }
+
+  > * + *:last-child {
+    margin-right: 0;
+  }
+}
+
+.panel-body .actions:last-of-type,
+.panel-widget .panel-heading {
+  .pull-right {
+    margin-left: 0 !important;
+    order: 6;
+
+    &:nth-child(2) {order: 6;}
+    &:nth-child(3) {order: 5;}
+    &:nth-child(4) {order: 4;}
+    &:nth-child(5) {order: 3;}
+    &:last-child { margin-left: auto !important; }
+  }
+}
+
 .panel-heading .rollover-item {
   > a {
     color: @gray;
@@ -491,17 +623,9 @@ textarea,
   line-height: 26px;
 }
 
-.config-bar a i.fa {
-  font-size: 16px;
-}
-
 .list-as-blocks {
   ul {
     margin-top: 0;
-  }
-
-  .panel-body {
-    padding: 15px 15px 0;
   }
 }
 
@@ -541,11 +665,17 @@ textarea,
   }
 }
 
-.group-member-list .panel,
 .panel-widget {
+  //overflow: hidden; CANNOT HIDE OVERFLOW BECAUSE OF PICKERS :/
   .box-shadow(none);
-}
 
+  .panel-heading .btn-link {
+    color: @text-color;
+    &:hover {
+      color: @text-muted;
+    }
+  }
+}
 
 .panel-block {
   position: relative;
@@ -556,11 +686,68 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
+    border-bottom: 1px solid @panel-border;
+  }
+
+  > .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: @white;
+
+    .panel-block {
+      height: auto !important;
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+  }
+
+  .wizard {
+    padding: 16px 0;
+    margin: 0;
+    background: @ui-2;
+    border-bottom: 1px solid @panel-border;
+  }
+
+
+
+  .treeview-actions {
+    display: flex;
+    margin: -6px -16px -6px 0 !important;
+
+    .btn-link {
+      width: 28px;
+      padding: 6px 0;
+      font-size: @font-size-sm;
+      color: @text-muted;
+      border: 0;
+      margin-bottom: 0;
+      // height: 19px;
+
+      &:hover {
+        color: @link-color;
+      }
+
+      &.aspNetDisabled {
+        cursor: not-allowed !important;
+        opacity: .4 !important;
+      }
+    }
+  }
+}
+
+.panel-block,
+.panel-note {
+  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
     align-items: center;
-    border-bottom: 1px solid @panel-border;
 
     .row {
       width: 100%;
@@ -593,31 +780,27 @@ textarea,
       display: block;
     }
   }
+}
 
-  > .panel-body {
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
+.group-detail .panel-block > .panel-heading .panel-title i {
+  display: inline;
+}
+
+.panel-widget .panel-heading {
+  display: flex;
+  align-items: center;
+
+  .pull-left {
+    margin-right: auto;
   }
 
-  .is-fullscreen & {
-    height: 100vh !important;
-    margin: 0;
-    overflow: auto;
-    background-color: @white;
-
-    .panel-block {
-      height: auto !important;
-      margin-bottom: 24px;
-      overflow: visible;
-    }
+  .pull-right {
+    margin-left: auto;
   }
+}
 
-  .wizard {
-    padding: 16px 0;
-    margin: 0;
-    background: @ui-2;
-    border-bottom: 1px solid @panel-border;
-  }
+.panel-body p:last-child {
+  margin-bottom: 0;
 }
 
 .panel-follow-status {
@@ -625,16 +808,26 @@ textarea,
   padding: 0;
 
   &::before {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     height: 100%;
+  }
+
+  .panel-more & {
+    position: relative;
+    width: 28px;
+    padding: 2px 0;
+    border: 0;
+    opacity: 1;
+
+    &.following {
+      font-weight: 900;
+      color: @brand-primary;
+      background: transparent;
+    }
   }
 }
 
-.panel .panel-heading.panel-follow {
-  padding-right: 60px;
-}
 
 .panel .panel-heading .panel-options {
   margin: -15px -15px -15px 10px;
@@ -655,14 +848,14 @@ td.grid-actions {
 .grid-actions {
   .btn-grid-action {
     padding: 5px 7px;
-    font-size: 1.125em;
-    color: @ui-5;
-    background-color: transparent;
+    margin: 0 0 0 2px;
+    font-size: @font-size-base;
     border: 0;
+    box-shadow: none;
     transition: color 250ms;
 
     &:hover {
-      color: @link-color;
+      color: @grid-footer-button-hover-text-color;
     }
   }
 
@@ -1165,6 +1358,40 @@ body.nav-open {
         }
       }
 
+      &.open {
+        background-color: @navbarside-sub-bg;
+        box-shadow: inset 3px 0 0 0 @brand-primary;
+
+        @media @sm {
+          &::before {
+            position: absolute;
+            top: -(ceil(@navbarside-width * .35));
+            right: 0;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+
+          &::after {
+            position: absolute;
+            right: 0;
+            bottom: -(ceil(@navbarside-width * .35));
+            z-index: 1;
+            width: ceil(@navbarside-width * .35);
+            height: ceil(@navbarside-width * .35);
+            content: " ";
+          }
+        }
+      }
+
+      &.current,
+      &.current:hover {
+        box-shadow: inset 3px 0 0 0 @brand-primary;
+        > i {
+          color: @white;
+        }
+      }
+
       .nav-childpages {
         position: fixed;
         top: 0;
@@ -1237,7 +1464,7 @@ body.nav-open {
           &.title {
             padding: 24px 20px 27px;
             margin: 0 -20px;
-            font-size: 28px;
+            font-size: @font-size-h1;
             font-weight: @font-weight-light;
             line-height: 1;
             color: @navbarside-color;
@@ -1248,7 +1475,7 @@ body.nav-open {
             padding-left: 5px !important;
             margin-top: 24px;
             margin-bottom: (@line-height-computed / 2);
-            font-size: 11px;
+            font-size: @font-size-xs;
             font-weight: 600;
             line-height: 1;
             color: rgba(167,174,181,.6);
@@ -1278,45 +1505,14 @@ body.nav-open {
           border-radius: 10px;
         }
       }
+    }
 
-      &.open {
-        background-color: @navbarside-sub-bg;
+    > li.open {
+      .nav-childpages {
+        display: inline-block;
 
-        .nav-childpages {
-          display: inline-block;
-
-          li.header {
-            padding-left: 0;
-          }
-        }
-
-        @media @sm {
-          &::before {
-            position: absolute;
-            top: -(ceil(@navbarside-width * .35));
-            right: 0;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-
-          &::after {
-            position: absolute;
-            right: 0;
-            bottom: -(ceil(@navbarside-width * .35));
-            z-index: 1;
-            width: ceil(@navbarside-width * .35);
-            height: ceil(@navbarside-width * .35);
-            content: " ";
-          }
-        }
-      }
-
-      &.current,
-      &.current:hover {
-        box-shadow: inset 3px 0 0 0 @brand-primary;
-        > i {
-          color: @white;
+        li.header {
+          padding-left: 0;
         }
       }
     }
@@ -1382,7 +1578,7 @@ body.navbar-side-open {
 
     .title {
       margin: 0;
-      font-size: 1.75em;
+      font-size: @font-size-h1;
     }
 
     .page-icon {
@@ -1392,7 +1588,7 @@ body.navbar-side-open {
     .breadcrumb {
       padding: 0;
       margin: 0;
-      font-size: 12px;
+      font-size: @font-size-xs;
 
       a:hover {
         text-decoration: underline;
@@ -1483,20 +1679,37 @@ body.navbar-side-open {
 
 // workflow page
 .workflow-activity {
-  & > .panel-heading {
-    color: @white;
-    background-color: @btn-action-bg;
-    border-color: @btn-action-bg;
+  position: relative;
+  margin: 0 0 8px;
+  // TODO: FIX so overflow can be used
+  // overflow: hidden;
 
-    a.btn-link {
-      color: @white;
+  > .panel-heading {
+    background: @white;
+    border-bottom: 0;
+
+    &:hover {
+      background: @gray-50;
+    }
+    // a.btn-link {
+    //   color: @white;
+    // }
+
+    > .pull-right {
+      align-self: flex-start;
+      flex-shrink: 0;
     }
   }
+
 
   .btn-action.add-action {
     color: @panel-heading-text-color;
     background-color: @gray-lighter;
     border-color: darken(@gray-lighter, 10%);
+  }
+
+  &:last-of-type {
+    margin-bottom: 0;
   }
 }
 
@@ -1561,6 +1774,8 @@ body.navbar-side-open {
   padding: 5px 10px 7px;
   background: @white;
   border: 0;
+  border-radius: 0;
+  box-shadow: none;
 
   &:hover,
   &:focus {
@@ -1613,6 +1828,12 @@ body.navbar-side-open {
 .debug-timings {
   width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
+}
+
+.panel-more {
+  .drawer-pull {
+    display: none;
+  }
 }
 
 /* #endregion */

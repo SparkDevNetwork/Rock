@@ -16,7 +16,7 @@
   .toggle-additional-search-fields {
     display: block;
     float: right;
-    font-size: 14px;
+    font-size: @font-size-small;
 
     &.active {
       background-color: darken(@btn-default-bg, 10%);
@@ -120,7 +120,7 @@
 
   h4 {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: @font-size-small;
     font-weight: @font-weight-semibold;
   }
 
@@ -146,11 +146,18 @@
   }
 
   .picker-actions {
+    display: flex;
+    align-items: center;
     padding: @picker-menu-padding;
     margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
     background-color: @picker-action-bg;
     border-top: 1px solid @picker-action-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
+    gap: 0 4px;
+
+    .pull-right {
+      margin-left: auto;
+    }
   }
 
   .picker-select-item {

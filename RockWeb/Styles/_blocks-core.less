@@ -66,12 +66,13 @@
   box-shadow: none !important;
 
   > .panel-heading {
+    position: relative;
     background: @panel-section-heading-bg;
     &::after {
       position: absolute;
-      right: 25px;
-      left: 25px;
-      margin-top: 12px;
+      right: (@panel-body-padding - 4px);
+      bottom: 0;
+      left: (@panel-body-padding - 4px);
       content: "";
       border-bottom: 1px solid @input-border;
     }
@@ -122,7 +123,7 @@
 
     .btn {
       float: right;
-      margin: 0;
+      margin: 0 0 0 auto;
     }
   }
 }
@@ -131,7 +132,7 @@
   position: relative;
   display: inline-block;
   margin-left: 4px;
-  font-size: 12px;
+  font-size: @font-size-xs;
   line-height: 1;
   text-transform: capitalize;
   vertical-align: top;
@@ -148,7 +149,7 @@
 
   .tag-label {
     position: relative;
-    font-size: 12px;
+    font-size: @font-size-xs;
     line-height: 12px;
     color: @text-muted;
     white-space: nowrap;
@@ -242,7 +243,7 @@
 
   .timestamp {
     display: inline-block;
-    font-size: 12px;
+    font-size: @font-size-xs;
     line-height: 1.3;
     color: @text-muted;
     vertical-align: top;
@@ -375,7 +376,7 @@
     -ms-flex-direction: row;
     flex-direction: row;
     margin: 0 0 0 60px;
-    font-size: 12px;
+    font-size: @font-size-xs;
     -webkit-box-orient: horizontal;
     -webkit-box-direction: normal;
 
@@ -396,7 +397,7 @@
       > li > .btn {
         padding: 0;
         margin-left: 32px;
-        font-size: 12px;
+        font-size: @font-size-xs;
         color: @text-muted;
 
         i {
@@ -463,7 +464,7 @@
         .form-control {
           height: 30px;
           padding: 5px 10px;
-          font-size: 12px;
+          font-size: @font-size-xs;
         }
 
         .date {
@@ -486,13 +487,13 @@
       width: auto;
       max-width: 200px;
       height: 30px;
-      font-size: 12px;
+      font-size: @font-size-xs;
     }
 
     .checkbox {
       float: left;
       margin: 3px 5px 0 10px !important;
-      font-size: 12px;
+      font-size: @font-size-xs;
       line-height: 24px;
     }
 
@@ -631,9 +632,6 @@
 }
 
 .workflow-activities-readonly-header {
-  top: auto;
-  left: auto;
-  padding: 8px 0 8px 8px;
   color: @text-color;
 
   &:hover,
@@ -645,33 +643,103 @@
 }
 
 .panel.workflow-activity {
-  &.activated-with-workflow {
-    border-color: @state-success-text;
 
-    & > .panel-heading {
-      color: @state-success-text;
-      background-color: @state-success-bg;
+  &::before {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    left: 0;
+    width: 6px;
+    content: "";
+    background: @brand-info;
+    border-radius: @panel-border-radius 0 0 @panel-border-radius;
+  }
 
-      a.btn-link {
-        color: @state-success-text;
-      }
-
-      .label-default {
-        background-color: @label-success-bg;
-      }
-    }
+  h3.panel-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+    font-size: @font-size-h4;
+    font-weight: 600;
+    line-height: 1.5;
   }
 
   .panel-title::before {
-    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
     font-family: @fa-font-face;
+    font-size: @font-size-small;
     font-weight: @fa-theme-weight;
+    color: @brand-info; // WAS TEXT-MUTED
     content: @fa-var-cubes;
+    background: fade(@brand-info, 20%);
+    border-radius: 20px;
+  }
+
+  a.btn-link {
+    color: @text-color;
+  }
+
+  &.activated-with-workflow:not(.workflow-activity-inactive) {
+    &::before {
+      background-color: @brand-success;
+    }
+
+    .panel-title::before {
+      color: @brand-success;
+      background: fade(@brand-success, 20%);
+    }
+  }
+
+  &.workflow-activity-inactive {
+    &::before {
+      background-color: @brand-danger;
+    }
+
+    .panel-title::before {
+      color: @brand-danger;
+      background: fade(@brand-danger, 20%);
+    }
+  }
+
+  // TODO: Add class activity-type-description
+  > .panel-heading > .filter-toggle > span {
+    margin-left: 36px;
+    font-size: @font-size-small;
+    line-height: 1.5;
+    color: @text-muted;
+  }
+
+  @media (min-width: @screen-md-min) {
+    > .panel-body {
+      padding-left: (@panel-body-padding + 36px);
+    }
   }
 }
 
 .workflow-action {
+  margin-bottom: 12px;
+  // TODO: Re-enable when
+  //overflow: hidden;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    border-color: @brand-primary;
+  }
+
+  > .panel-heading {
+    background: @gray-100 !important;
+  }
+
   .workflow-action-name::before {
+    margin-right: 8px;
     font-family: @fa-font-face;
     font-weight: @fa-theme-weight;
     content: @fa-var-cube;
@@ -838,4 +906,9 @@
     width: auto;
     max-width: 100%;
   }
+}
+
+.rock-fullname {
+  display: none !important;
+  visibility: hidden !important;
 }
