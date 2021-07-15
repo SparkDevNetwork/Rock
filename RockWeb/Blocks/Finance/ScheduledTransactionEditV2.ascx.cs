@@ -573,15 +573,25 @@ mission. We are so grateful for your commitment.</p>
                     - If 'Add Method' is clicked, RadioButtons will disappear and hosted payment will be displayed
              */
 
-            string existingPaymentInfoDisplayText;
+            string paymentName;
 
             if ( scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId.HasValue )
             {
-                existingPaymentInfoDisplayText = string.Format( "Existing Payment Method - {0} ({1})", scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount.Name, scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked );
+                paymentName = scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccount.Name;
             }
             else
             {
-                existingPaymentInfoDisplayText = string.Format( "Existing Payment Method - {0} ({1})", scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue, scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked );
+                paymentName = scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValue?.Value;
+            }
+
+            string existingPaymentInfoDisplayText;
+            if ( scheduledTransaction.FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
+            {
+                existingPaymentInfoDisplayText = $"Existing Payment Method - {paymentName} ({scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked} Expires: {scheduledTransaction.FinancialPaymentDetail.ExpirationDate})";
+            }
+            else
+            {
+                existingPaymentInfoDisplayText = $"Existing Payment Method - {paymentName} ({scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked})";
             }
 
             lUseExistingPaymentMethodNoSavedAccounts.Text = existingPaymentInfoDisplayText;
@@ -686,7 +696,7 @@ mission. We are so grateful for your commitment.</p>
             var financialGateway = this.FinancialGateway;
             if ( financialGateway == null )
             {
-                return new List<PersonSavedAccountInfo>();
+                return new List<FinancialPersonSavedAccount>();
             }
 
             var rockContext = new RockContext();
@@ -719,13 +729,7 @@ mission. We are so grateful for your commitment.</p>
                 && ( a.FinancialPaymentDetail.CurrencyTypeValueId != null )
                 && allowedCurrencyTypeIds.Contains( a.FinancialPaymentDetail.CurrencyTypeValueId.Value ) );
 
-            List<PersonSavedAccountInfo> personSavedAccountList = personSavedAccountsQuery.OrderBy( a => a.Name ).AsNoTracking().Select( a => new PersonSavedAccountInfo
-            {
-                Id = a.Id,
-                Name = a.Name,
-                GatewayPersonIdentifier = a.GatewayPersonIdentifier,
-                AccountNumberMasked = a.FinancialPaymentDetail.AccountNumberMasked,
-            } ).ToList();
+            var personSavedAccountList = personSavedAccountsQuery.OrderBy( a => a.Name ).Include( a => a.FinancialPaymentDetail ).AsNoTracking().ToList();
 
             return personSavedAccountList;
         }
@@ -733,12 +737,21 @@ mission. We are so grateful for your commitment.</p>
         /// <summary>
         /// Binds the person saved accounts.
         /// </summary>
-        private void BindPersonSavedAccounts( List<PersonSavedAccountInfo> personSavedAccountInfoList )
+        private void BindPersonSavedAccounts( List<FinancialPersonSavedAccount> financialPersonSavedAccounts )
         {
             rblExistingPaymentOrPersonSavedAccount.Items.Clear();
-            foreach ( var personSavedAccount in personSavedAccountInfoList )
+            foreach ( var personSavedAccount in financialPersonSavedAccounts )
             {
-                var displayName = string.Format( "{0} ({1})", personSavedAccount.Name, personSavedAccount.AccountNumberMasked );
+                string displayName;
+                if ( personSavedAccount.FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
+                {
+                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked} Expires: {personSavedAccount.FinancialPaymentDetail.ExpirationDate})";
+                }
+                else
+                {
+                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked}";
+                }
+
                 rblExistingPaymentOrPersonSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
             }
         }
@@ -973,17 +986,6 @@ mission. We are so grateful for your commitment.</p>
             pnlUseExistingPaymentNoSavedAccounts.Visible = false;
             pnlUseExistingPaymentWithSavedAccounts.Visible = false;
             pnlHostedPaymentControl.Visible = true;
-        }
-
-        private class PersonSavedAccountInfo
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string GatewayPersonIdentifier { get; set; }
-
-            public string AccountNumberMasked { get; set; }
         }
     }
 

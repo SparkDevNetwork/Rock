@@ -27,6 +27,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -336,6 +337,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public string ExpirationDate
         {
             get
