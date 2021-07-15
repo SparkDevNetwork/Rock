@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Configuration;
@@ -151,6 +152,15 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER, cbIncludeBusinessInPersonPicker.Checked.ToString() );
 
+            var currentConnectionPerUrl = Rock.Web.SystemSettings.GetValue( SystemSetting.MAX_NUMBER_OF_CONNECTIONS_PER_URL ).AsIntegerOrNull() ?? 10;
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.MAX_NUMBER_OF_CONNECTIONS_PER_URL, nbMaxNumberOfConnections.IntegerValue.ToString() );
+
+            if ( currentConnectionPerUrl != ( nbMaxNumberOfConnections.IntegerValue ?? 10 ) )
+            {
+                ServicePointManager.DefaultConnectionLimit = nbMaxNumberOfConnections.IntegerValue ?? 10;
+            }
+
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
             nbGeneralMessage.Title = string.Empty;
             nbGeneralMessage.Text = "Setting saved successfully.";
@@ -217,6 +227,7 @@ namespace RockWeb.Blocks.Administration
         {
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
             cbIncludeBusinessInPersonPicker.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean();
+            nbMaxNumberOfConnections.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.MAX_NUMBER_OF_CONNECTIONS_PER_URL ).AsIntegerOrNull() ?? 10;
         }
 
         /// <summary>

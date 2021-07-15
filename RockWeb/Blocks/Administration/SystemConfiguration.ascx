@@ -21,6 +21,9 @@
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />
                         </div>
+                        <div class="col-md-12">
+                            <Rock:NumberBox ID="nbMaxNumberOfConnections" runat="server" NumberType="Integer" Label="Max Number of Connections per URL" CssClass="input-width-md" MinimumValue="1" MaximumValue="100" ValidationGroup="GeneralSetting"></Rock:NumberBox>
+                        </div>
                     </div>
                     <div class="actions margin-t-lg">
                         <Rock:BootstrapButton ID="btnGeneralSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnGeneralSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="GeneralSetting"></Rock:BootstrapButton>
