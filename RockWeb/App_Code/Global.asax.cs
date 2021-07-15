@@ -32,7 +32,6 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using Rock.SystemKey;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -164,8 +163,7 @@ namespace RockWeb
                 GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
 
                 // set the encryption protocols that are permissible for external SSL connections
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                ServicePointManager.DefaultConnectionLimit = Rock.Web.SystemSettings.GetValue( SystemSetting.MAX_NUMBER_OF_CONNECTIONS_PER_URL ).AsIntegerOrNull() ?? 10;
+                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
