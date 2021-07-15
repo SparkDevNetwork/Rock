@@ -161,10 +161,18 @@ namespace Rock.Workflow.Action.CheckIn
                                         var primaryAlias = personAliasService.GetPrimaryAlias( person.Person.Id );
                                         if ( primaryAlias != null )
                                         {
-                                            attendance = attendanceService.AddOrUpdate( primaryAlias.Id, startDateTime.Date, group.Group.Id,
-                                                location.Location.Id, schedule.Schedule.Id, location.CampusId,
-                                                checkInState.Kiosk.Device.Id, checkInState.CheckIn.SearchType?.Id,
-                                                checkInState.CheckIn.SearchValue, family.Group.Id, attendanceCode.Id );
+                                            attendance = attendanceService.AddOrUpdate(
+                                                primaryAlias.Id,
+                                                startDateTime.Date,
+                                                group.Group.Id,
+                                                location.Location.Id,
+                                                schedule.Schedule.Id,
+                                                location.CampusId,
+                                                checkInState.Kiosk.Device.Id,
+                                                checkInState.CheckIn.SearchType?.Id,
+                                                checkInState.CheckIn.SearchValue,
+                                                family.Group.Id,
+                                                attendanceCode.Id );
 
                                             attendance.PersonAlias = primaryAlias;
                                         }
@@ -258,10 +266,10 @@ namespace Rock.Workflow.Action.CheckIn
             var achievementAttemptService = new AchievementAttemptService( new RockContext() );
             var completedAchievementAttempts = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
                 .Where( x => attendanceRecordsPersonAliasIds.Contains( x.AchieverPersonAlias.Id ) )
-                 .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) )
-                 .Where( a => a.AchievementAttempt.IsSuccessful || a.AchievementAttempt.IsClosed )
-                 .AsNoTracking()
-                 .ToArray();
+                .Where( a => configuredAchievementTypeIds.Contains( a.AchievementAttempt.AchievementTypeId ) )
+                .Where( a => a.AchievementAttempt.IsSuccessful || a.AchievementAttempt.IsClosed )
+                .AsNoTracking()
+                .ToArray();
 
             return completedAchievementAttempts;
         }

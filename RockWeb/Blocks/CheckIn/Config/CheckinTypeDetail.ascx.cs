@@ -814,8 +814,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             foreach ( var achievementType in achievementTypes )
             {
-                var li = new ListItem( achievementType.Name, achievementType.Guid.ToString() );
-                listboxAchievementTypes.Items.Add( li );
+                listboxAchievementTypes.Items.Add( new ListItem( achievementType.Name, achievementType.Guid.ToString() ) );
             }
 
             lbKnownRelationshipTypes.Items.Clear();

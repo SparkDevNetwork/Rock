@@ -177,11 +177,9 @@ namespace Rock.CheckIn
                 .Select( a => a.AchievementAttempt )
                 .ToArray();
 
-
             checkinResult.JustCompletedAchievementAttempts = completedAchievementAttempts
                 .Where( a => !successfullyCompletedAchievementIdsPriorToCheckin.Contains( a.Id ) )
                 .ToArray();
-
 
             checkinResult.CompletedAchievementAttempts = completedAchievementAttempts;
         }

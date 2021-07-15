@@ -100,7 +100,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Includes the AchieverPersonAlias as Rock.Model.PersonAuse for AchievementType that are either a PersonAlias or Person entity type
+        /// Includes the AchieverPersonAlias as Rock.Model.Person for AchievementType that is either a PersonAlias or Person (see <see cref="AchievementType.AchieverEntityTypeId" />)
         /// </summary>
         /// <param name="achieverEntityTypeId">The achiever entity type identifier.</param>
         /// <returns></returns>

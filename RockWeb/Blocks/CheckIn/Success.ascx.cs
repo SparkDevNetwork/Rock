@@ -480,21 +480,6 @@ namespace RockWeb.Blocks.CheckIn
             lCheckinResultsPersonName.Text = checkinResult.Person.ToString();
             lCheckinResultsCheckinMessage.Text = $"{checkinResult.Group} in {checkinResult.Location.Name} at {checkinResult.Schedule}";
 
-            // For each checkin, we only want to show one achievement per AchievementType
-            // If there is one in Progress, include that
-            // otherwise add the first Completed one of each AchievementType
-            List<AchievementAttempt> achievementAttempts = new List<AchievementAttempt>();
-
-            if ( checkinResult.InProgressAchievementAttempts?.Any() == true )
-            {
-                achievementAttempts.AddRange( checkinResult.InProgressAchievementAttempts );
-            }
-
-            if ( checkinResult.CompletedAchievementAttempts?.Any() == true )
-            {
-                achievementAttempts.AddRange( checkinResult.CompletedAchievementAttempts );
-            }
-
             PersonAchievementType[] personAchievementTypes = checkinResult.GetPersonAchievementTypes( false );
 
             if ( personAchievementTypes.Any() == true )

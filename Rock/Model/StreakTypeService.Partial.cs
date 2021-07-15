@@ -77,37 +77,34 @@ namespace Rock.Model
         /// </returns>
         public bool CanDelete( StreakType item, out string errorMessage, bool checkIfUsedByAchievementType )
         {
-
             if ( !this.CanDelete( item, out errorMessage ) )
             {
                 return false;
             }
-            else
+
+            if ( checkIfUsedByAchievementType )
             {
-                if ( checkIfUsedByAchievementType )
+                // check if any MatrixAttributes are using this AttributeMatrixTemplate
+                var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
+                var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
+
+                var streakTypeGuid = item.Guid.ToString();
+                var usedAsAchievementType = new AttributeValueService( new RockContext() ).Queryable()
+                    .Any( av =>
+                        av.Attribute.FieldTypeId == streakTypeFieldTypeId
+                        && av.Value == streakTypeGuid
+                        && av.Attribute.EntityTypeId == entityTypeIdAchievementType
+                        );
+
+                if ( usedAsAchievementType )
                 {
-                    // check if any MatrixAttributes are using this AttributeMatrixTemplate
-                    var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
-                    var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
-
-                    var streakTypeGuid = item.Guid.ToString();
-                    var usedAsAchievementType = new AttributeValueService( new RockContext() ).Queryable()
-                        .Any( av =>
-                            av.Attribute.FieldTypeId == streakTypeFieldTypeId
-                            && av.Value == streakTypeGuid
-                            && av.Attribute.EntityTypeId == entityTypeIdAchievementType
-                            );
-
-                    if ( usedAsAchievementType )
-                    {
-                        errorMessage = string.Format( "This {0} is assigned to an {1}.", StreakType.FriendlyTypeName, Rock.Model.AchievementType.FriendlyTypeName );
-                        return false;
-                    }
+                    errorMessage = string.Format( "This {0} is assigned to an {1}.", StreakType.FriendlyTypeName, Rock.Model.AchievementType.FriendlyTypeName );
+                    return false;
                 }
-
-                errorMessage = string.Empty;
-                return true;
             }
+
+            errorMessage = string.Empty;
+            return true;
         }
 
         /// <summary>

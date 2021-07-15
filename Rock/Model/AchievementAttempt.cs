@@ -44,9 +44,8 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the achiever entity identifier.
-        /// This was originally a Person Alias Id via the Streak.
-        /// NOTE: In the Case of a Person achievement, this could either by PersonAliasId or PersonId
+        /// Gets or sets the achiever entity identifier. The type of AchieverEntity is determined by <see cref="AchievementType.AchieverEntityTypeId" />.
+        /// NOTE: In the case of a Person achievement, this could either by PersonAliasId or PersonId (but probably PersonAliasId)
         /// depending on <seealso cref="AchievementType.AchievementEntityType"/>
         /// </summary>
         [DataMember( IsRequired = true )]
