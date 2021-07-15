@@ -688,7 +688,6 @@
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
