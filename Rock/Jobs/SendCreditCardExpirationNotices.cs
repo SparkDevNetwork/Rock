@@ -230,7 +230,7 @@ namespace Rock.Jobs
             {
                 int? expirationMonth = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationMonth;
                 int? expirationYYYY = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationYear;
-                if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
+                if ( !expirationMonth.HasValue || !expirationYYYY.HasValue )
                 {
                     continue;
                 }

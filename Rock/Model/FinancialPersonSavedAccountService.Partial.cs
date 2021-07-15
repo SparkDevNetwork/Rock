@@ -101,7 +101,7 @@ namespace Rock.Model
             {
                 int? expirationMonth = savedAccountInfo.FinancialPaymentDetail.ExpirationMonth;
                 int? expirationYear = savedAccountInfo.FinancialPaymentDetail.ExpirationYear;
-                if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
+                if ( !expirationMonth.HasValue || !expirationYear.HasValue )
                 {
                     continue;
                 }
