@@ -575,7 +575,7 @@ mission. We are so grateful for your commitment.</p>
                         {% if financialPaymentDetail.CurrencyTypeValue.Value != 'Credit Card' %}
                             {{ financialPaymentDetail.CurrencyTypeValue.Value }}
                         {% else %}
-                            {{ financialPaymentDetail.CreditCardTypeValue.Value }} {{ financialPaymentDetail.AccountNumberMasked }}
+                            {{ financialPaymentDetail.CreditCardTypeValue.Value }} {{ financialPaymentDetail.AccountNumberMasked }} Expires: {{ financialPaymentDetail.ExpirationDate }}
                         {% endif %}
                     </span>
                     <br />
@@ -2428,8 +2428,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 a.Id,
                 a.Name,
-                a.FinancialPaymentDetail.CurrencyTypeValueId,
-                a.FinancialPaymentDetail.AccountNumberMasked,
+                a.FinancialPaymentDetail
             } ).ToList();
 
             // Only show the SavedAccount picker if there are saved accounts. If there aren't any (or if they choose 'Use a different payment method'), a later step will prompt them to enter Payment Info (CC/ACH fields)
@@ -2439,7 +2438,16 @@ mission. We are so grateful for your commitment.</p>
             ddlPersonSavedAccount.Items.Clear();
             foreach ( var personSavedAccount in personSavedAccountList )
             {
-                var displayName = string.Format( "{0} ({1})", personSavedAccount.Name, personSavedAccount.AccountNumberMasked );
+                string displayName;
+                if ( personSavedAccount.FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
+                {
+                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked} Expires: {personSavedAccount.FinancialPaymentDetail.ExpirationDate})";
+                }
+                else
+                {
+                    displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked}";
+                }
+
                 ddlPersonSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
             }
 

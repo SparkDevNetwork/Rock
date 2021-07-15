@@ -1679,17 +1679,30 @@ TransactionAccountDetails: [
                 }
 
                 // Bind the accounts
-                rblSavedAccount.DataSource = savedAccounts
+                savedAccounts = savedAccounts
                     .Where( a =>
                         ccSavedAccountIds.Contains( a.Id ) ||
                         achSavedAccountIds.Contains( a.Id ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new
+                    .ToList();
+
+
+                rblSavedAccount.Items.Clear();
+
+                foreach ( var personSavedAccount in savedAccounts)
+                {
+                    string displayName;
+                    if ( personSavedAccount.FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
                     {
-                        Id = a.Id,
-                        Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
-                    } ).ToList();
-                rblSavedAccount.DataBind();
+                        displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked} Expires: {personSavedAccount.FinancialPaymentDetail.ExpirationDate})";
+                    }
+                    else
+                    {
+                        displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked}";
+                    }
+
+                    rblSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
+                }
+
                 if ( rblSavedAccount.Items.Count > 0 )
                 {
                     rblSavedAccount.Items.Add( new ListItem( "Use a different payment method", "0" ) );

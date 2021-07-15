@@ -262,6 +262,7 @@ namespace RockWeb.Blocks.Finance
                 scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Value );
                 scheduleSummary.Add( "FrequencyDescription", transactionSchedule.TransactionFrequencyValue.Description );
                 scheduleSummary.Add( "Status", transactionSchedule.Status );
+                scheduleSummary.Add( "CardExpirationDate", transactionSchedule.FinancialPaymentDetail.ExpirationDate );
                 scheduleSummary.Add( "CardIsExpired", transactionSchedule.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now );
 
                 List<Dictionary<string, object>> summaryDetails = new List<Dictionary<string, object>>();

@@ -14,7 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -31,6 +35,145 @@ namespace Rock.Model
         public IQueryable<FinancialPersonSavedAccount> GetByPersonId(int personId)
         {
             return this.Queryable().Where( a => a.PersonAlias.PersonId == personId );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal class RemoveExpiredSavedAccountsResult
+        {
+            /// <summary>
+            /// Gets or sets the delete if expired before date.
+            /// </summary>
+            /// <value>
+            /// The delete if expired before date.
+            /// </value>
+            public DateTime DeleteIfExpiredBeforeDate { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the accounts deleted count.
+            /// </summary>
+            /// <value>
+            /// The accounts deleted count.
+            /// </value>
+            public int AccountsDeletedCount { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets the account removal exceptions.
+            /// </summary>
+            /// <value>
+            /// The account removal exceptions.
+            /// </value>
+            public IList<Exception> AccountRemovalExceptions { get; set; } = new List<Exception>();
+        }
+
+        /// <summary>
+        /// Removes the expired saved accounts.
+        /// </summary>
+        /// <param name="removedExpiredSavedAccountDays">The removed expired saved account days.</param>
+        /// <returns></returns>
+        internal RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( int removedExpiredSavedAccountDays )
+        {
+            var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( new RockContext() ).Queryable()
+                .Where( a => a.FinancialPaymentDetail.CardExpirationDate != null )
+                .Where( a => a.PersonAliasId.HasValue || a.GroupId.HasValue )
+                .Where( a => a.FinancialPaymentDetailId.HasValue )
+                .Where( a => a.IsSystem == false )
+                .OrderBy( a => a.Id );
+
+            var savedAccountInfoList = financialPersonSavedAccountQry.Select( a => new 
+            {
+                Id = a.Id,
+                FinancialPaymentDetail = a.FinancialPaymentDetail
+            } ).ToList();
+
+            DateTime now = RockDateTime.Now;
+            int currentMonth = now.Month;
+            int currentYear = now.Year;
+
+            var result = new RemoveExpiredSavedAccountsResult()
+            {
+                // if today is 3/16/2020 and removedExpiredSavedAccountDays is 90, only delete card if it expired before 12/17/2019
+                DeleteIfExpiredBeforeDate = RockDateTime.Today.AddDays( -removedExpiredSavedAccountDays )
+            };
+
+            foreach ( var savedAccountInfo in savedAccountInfoList )
+            {
+                int? expirationMonth = savedAccountInfo.FinancialPaymentDetail.ExpirationMonth;
+                int? expirationYear = savedAccountInfo.FinancialPaymentDetail.ExpirationYear;
+                if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
+                {
+                    continue;
+                }
+
+                if ( expirationMonth.Value < 1 || expirationMonth.Value > 12 || expirationYear <= DateTime.MinValue.Year || expirationYear >= DateTime.MaxValue.Year )
+                {
+                    // invalid month (or year)
+                    continue;
+                }
+
+                // a credit card with an expiration of April 2020 would be expired on May 1st, 2020
+                var cardExpirationDate = new DateTime( expirationYear.Value, expirationMonth.Value, 1 ).AddMonths( 1 );
+
+                /* Example:
+                 Today's Date: 2020-3-16
+                 removedExpiredSavedAccountDays: 90
+                 Expired Before Date: 2019-12-17 (Today (2020-3-16) - removedExpiredSavedAccountDays)
+                 Cards that expired before 2019-12-17 should be deleted
+                 Delete 04/20 (Expires 05/01/2020) card? No
+                 Delete 05/20 (Expires 06/01/2020) card? No
+                 Delete 01/20 (Expires 03/01/2020) card? No
+                 Delete 12/19 (Expires 01/01/2020) card? No
+                 Delete 11/19 (Expires 12/01/2019) card? Yes
+                 Delete 10/19 (Expires 11/01/2019) card? Yes
+
+                 Today's Date: 2020-3-16
+                 removedExpiredSavedAccountDays: 0
+                 Expired Before Date: 2019-03-16 (Today (2020-3-16) - 0)
+                 Cards that expired before 2019-03-16 should be deleted
+                 Delete 04/20 (Expires 05/01/2020) card? No
+                 Delete 05/20 (Expires 06/01/2020) card? No
+                 Delete 01/20 (Expires 03/01/2020) card? Yes
+                 Delete 12/19 (Expires 01/01/2020) card? Yes
+                 Delete 11/19 (Expires 12/01/2019) card? Yes
+                 Delete 10/19 (Expires 11/01/2019) card? Yes
+                 */
+
+                if ( cardExpirationDate >= result.DeleteIfExpiredBeforeDate )
+                {
+                    // We want to only delete cards that expired more than X days ago, so if this card expiration day is after that, skip
+                    continue;
+                }
+
+                // Card expiration date is older than X day ago, so delete it.
+                // Wrapping the following in a try/catch so a single deletion failure doesn't end the process for all deletion candidates.
+                try
+                {
+                    using ( var savedAccountRockContext = new RockContext() )
+                    {
+                        var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( savedAccountRockContext );
+                        var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountInfo.Id );
+                        if ( financialPersonSavedAccount != null )
+                        {
+                            if ( financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out _ ) )
+                            {
+                                financialPersonSavedAccountService.Delete( financialPersonSavedAccount );
+                                savedAccountRockContext.SaveChanges();
+                                result.AccountsDeletedCount++;
+                            }
+                        }
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    // Provide better identifying context in case the caught exception is too vague.
+                    var exception = new Exception( $"Unable to delete FinancialPersonSavedAccount (ID = {savedAccountInfo.Id}).", ex );
+
+                    result.AccountRemovalExceptions.Add( exception );
+                }
+            }
+
+            return result;
         }
     }
 }

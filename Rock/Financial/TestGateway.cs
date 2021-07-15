@@ -237,6 +237,13 @@ namespace Rock.Financial
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
                 scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
                 scheduledTransaction.StatusMessage = "active";
+
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
+                {
+                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo ).PaymentExpirationDate?.Month,
+                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo ).PaymentExpirationDate?.Year
+                };
+
                 return scheduledTransaction;
             }
 
@@ -268,7 +275,7 @@ namespace Rock.Financial
             errorMessage = string.Empty;
             var referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
 
-            if (referencePaymentInfo != null)
+            if ( referencePaymentInfo != null )
             {
                 transaction.TransactionCode = referencePaymentInfo.TransactionCode;
             }
@@ -350,7 +357,6 @@ namespace Rock.Financial
 
                 fakePayments.Add( fakePayment );
             }
-
 
             return fakePayments;
         }

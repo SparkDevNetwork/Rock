@@ -336,6 +336,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [NotMapped]
+        [LavaInclude]
         public string ExpirationDate
         {
             get
