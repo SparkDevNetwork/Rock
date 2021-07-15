@@ -123,6 +123,7 @@ namespace RockWeb.Blocks.Core
 
             schedule.Name = tbScheduleName.Text;
             schedule.IsActive = cbIsActive.Checked;
+            schedule.AutoInactivateWhenComplete = cbAutoComplete.Checked;
             schedule.Description = tbScheduleDescription.Text;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
 
@@ -264,8 +265,8 @@ namespace RockWeb.Blocks.Core
             fakeSchedule.iCalendarContent = sbSchedule.iCalendarContent;
             sbSchedule.ToolTip = fakeSchedule.ToFriendlyScheduleText( true );
 
-            hbSchedulePreview.Text = @"<strong>iCalendar Content</strong>
-<div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />" + sbSchedule.iCalendarContent + "</div>";
+            var sbPreviewHtml = new System.Text.StringBuilder();
+            sbPreviewHtml.Append( $@"<strong>iCalendar Content</strong><div style='white-space: pre' Font-Names='Consolas' Font-Size='9'><br />{ sbSchedule.iCalendarContent }</div>" );
 
             var calendar = Calendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
@@ -273,18 +274,23 @@ namespace RockWeb.Blocks.Core
             if ( calendarEvent.DtStart != null )
             {
                 var nextOccurrences = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( 26 ).ToList();
-
-                string listHtml = "<hr /><strong>Occurrences Preview</strong><ul>";
-                foreach ( var occurrence in nextOccurrences )
+                var sbOccurrenceItems = new System.Text.StringBuilder();
+                if ( nextOccurrences.Any() )
                 {
-                    listHtml += "<li>" + GetOccurrenceText( occurrence ) + "</li>";
+                    foreach ( var occurrence in nextOccurrences )
+                    {
+                        sbOccurrenceItems.Append( $"<li>{GetOccurrenceText( occurrence )}</li>" );
+                    }
+                }
+                else
+                {
+                    sbOccurrenceItems.Append( "<li>No future occurrences</l1>" );
                 }
 
-                listHtml += string.Format( "<li>{0}</li>", "..." );
-                listHtml += "</ul>";
-
-                hbSchedulePreview.Text += listHtml;
+                sbPreviewHtml.Append( $"<hr /><strong>Occurrences Preview</strong><ul>{sbOccurrenceItems}</ul>" );
             }
+
+            litPreview.Text = litPreviewFormat.Text.Replace( "{previewHtml}", sbPreviewHtml.ToString() );
         }
 
         /// <summary>
@@ -406,6 +412,7 @@ namespace RockWeb.Blocks.Core
 
             tbScheduleName.Text = schedule.Name;
             cbIsActive.Checked = schedule.IsActive;
+            cbAutoComplete.Checked = schedule.AutoInactivateWhenComplete;
             tbScheduleDescription.Text = schedule.Description;
 
             sbSchedule.iCalendarContent = schedule.iCalendarContent;
@@ -427,6 +434,7 @@ namespace RockWeb.Blocks.Core
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
             hlInactive.Visible = schedule.IsActive == false;
+            hlAutoComplete.Visible = schedule.AutoInactivateWhenComplete;
 
             if ( schedule.CategoryId.HasValue )
             {

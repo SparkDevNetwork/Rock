@@ -158,6 +158,15 @@ namespace Rock.Model
         [IncludeForReporting]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [auto inactivate when complete].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [auto inactivate when complete]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoInactivateWhenComplete { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
