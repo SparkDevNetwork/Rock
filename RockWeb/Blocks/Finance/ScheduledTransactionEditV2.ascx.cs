@@ -691,7 +691,7 @@ mission. We are so grateful for your commitment.</p>
         /// Gets the saved accounts.
         /// </summary>
         /// <returns></returns>
-        private List<PersonSavedAccountInfo> GetSavedAccounts()
+        private List<FinancialPersonSavedAccount> GetSavedAccounts()
         {
             var financialGateway = this.FinancialGateway;
             if ( financialGateway == null )
@@ -708,7 +708,7 @@ mission. We are so grateful for your commitment.</p>
             {
                 if ( GetAttributeValue( AttributeKey.ImpersonatorCanSeeSavedAccounts ).AsBoolean() == false )
                 {
-                    return new List<PersonSavedAccountInfo>();
+                    return new List<FinancialPersonSavedAccount>();
                 }
             }
 
