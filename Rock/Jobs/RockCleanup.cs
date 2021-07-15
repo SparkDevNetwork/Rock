@@ -231,6 +231,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "validate schedule", () => EnsureScheduleEffectiveStartEndDates() );
 
+            RunCleanupTask( "inactivate completed schedules", () => AutoInactivateCompletedSchedules() );
+
             RunCleanupTask( "set nameless SMS response", () => EnsureNamelessPersonForSMSResponses() );
 
             RunCleanupTask( "merge nameless to person", () => MatchNamelessPersonToRegularPerson() );
@@ -1755,6 +1757,41 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 {
                     if ( schedule.EnsureEffectiveStartEndDates() )
                     {
+                        rowsUpdated++;
+                    }
+                }
+
+                if ( rowsUpdated > 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Inactivates completed one-time schedules.
+        /// </summary>
+        /// <returns></returns>
+        private int AutoInactivateCompletedSchedules()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                var scheduleService = new ScheduleService( rockContext );
+
+                var autoCompleteSchedules = scheduleService.Queryable()
+                    .Where( s => s.AutoInactivateWhenComplete && s.IsActive )
+                    .ToList();
+
+                foreach ( var schedule in autoCompleteSchedules )
+                {
+                    if ( schedule.GetNextStartDateTime( RockDateTime.Now ) == null )
+                    {
+                        schedule.IsActive = false;
                         rowsUpdated++;
                     }
                 }

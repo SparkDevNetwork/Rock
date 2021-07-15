@@ -353,12 +353,12 @@ namespace RockWeb.Blocks.GroupScheduling
             var columnsCount = scheduleOccurrenceDateList.Count() + 1;
             foreach ( var groupLocations in groupLocationsList )
             {
-                var group = groupLocations.Group;
+                var locationGroup = groupLocations.Group;
                 var groupType = GroupTypeCache.Get( groupLocations.Group.GroupTypeId );
                 StringBuilder sbGroupLocations = new StringBuilder();
                 sbGroupLocations.AppendLine( string.Format( "<tbody class='group-locations js-group-locations' data-group-id='{0}' data-locations-expanded='1'>", group.Id ) );
 
-                var groupSchedulingUrl = ResolveRockUrl( string.Format( "~/GroupScheduler/{0}", group.Id ) );
+                var groupSchedulingUrl = ResolveRockUrl( string.Format( "~/GroupScheduler/{0}", locationGroup.Id ) );
 
                 // group header row
                 sbGroupLocations.AppendLine( "<tr class='group-heading js-group-header thead-dark clickable' >" );
