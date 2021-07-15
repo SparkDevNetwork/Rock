@@ -299,8 +299,8 @@ namespace Rock.Financial
 
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
                 {
-                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo ).PaymentExpirationDate?.Month,
-                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo ).PaymentExpirationDate?.Year
+                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
+                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year
                 };
 
                 return scheduledTransaction;
