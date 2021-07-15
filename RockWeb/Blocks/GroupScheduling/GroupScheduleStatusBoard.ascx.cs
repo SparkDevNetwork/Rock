@@ -104,6 +104,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
         private static class PageParameterKey
         {
+            public const string GroupId = "GroupId";
             public const string GroupGuid = "GroupGuid";
         }
 
@@ -164,6 +165,27 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
+        /// Get the <see cref="Group"/> from the Page Parameter.
+        /// </summary>
+        /// <param name="groupService">The <see cref="GroupService"/>.</param>
+        /// <returns>A group if specified in GroupGuid or GroupId Page Parameters; otherwise, null.</returns>
+        private Group GetGroupFromParameter( GroupService groupService )
+        {
+            var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( groupGuid.HasValue )
+            {
+                return groupService.Get( groupGuid.Value );
+            }
+            else if ( groupId.HasValue )
+            {
+                return groupService.Get( groupId.Value );
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Builds the status board.
         /// </summary>
         private void BuildStatusBoard()
@@ -178,32 +200,28 @@ namespace RockWeb.Blocks.GroupScheduling
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
 
-            var groupGuid = PageParameter( PageParameterKey.GroupGuid ).AsGuidOrNull();
-            if ( groupGuid.HasValue )
+            var group = GetGroupFromParameter( groupService );
+            if ( group != null )
             {
                 // If a Group Guid was passed in, make sure the user has permission to schedule the
                 // group (and that scheduling is enabled), and put only that group in the
                 // selectedGroupIds list.
-                var group = groupService.Get( groupGuid.Value );
-                if ( group != null )
+                bool isAuthorized = group.IsAuthorized( Authorization.SCHEDULE, CurrentPerson );
+                if ( !isAuthorized )
                 {
-                    bool isAuthorized = group.IsAuthorized( Authorization.SCHEDULE, CurrentPerson );
-                    if ( !isAuthorized )
-                    {
-                        groupsWarningText = $"You are not authorized to schedule this group.";
-                    }
-                    else if ( !group.GroupType.IsSchedulingEnabled)
-                    {
-                        groupsWarningText = $"Scheduling is not enabled for this group type ({group.GroupType.Name}).";
-                    }
-                    else if ( group.DisableScheduling )
-                    {
-                        groupsWarningText = $"Scheduling is disabled for this group ({group.Name}).";
-                    }
-                    else
-                    {
-                        selectedGroupIds = new List<int> { group.Id };
-                    }
+                    groupsWarningText = $"You are not authorized to schedule this group.";
+                }
+                else if ( !group.GroupType.IsSchedulingEnabled)
+                {
+                    groupsWarningText = $"Scheduling is not enabled for this group type ({group.GroupType.Name}).";
+                }
+                else if ( group.DisableScheduling )
+                {
+                    groupsWarningText = $"Scheduling is disabled for this group ({group.Name}).";
+                }
+                else
+                {
+                    selectedGroupIds = new List<int> { group.Id };
                 }
             }
             else
