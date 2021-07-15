@@ -83,9 +83,6 @@ namespace Rock.Workflow.Action
         /// </summary>
         private static class AttributeKey
         {
-            /// <summary>
-            /// From
-            /// </summary>
             public const string From = "From";
 
             /// <summary>

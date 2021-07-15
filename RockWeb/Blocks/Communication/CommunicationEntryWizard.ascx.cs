@@ -645,7 +645,7 @@ function onTaskCompleted( resultData )
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
-            var smsDefinedValues = smsFromDefinedType.DefinedValues.ToList();
+            var smsDefinedValues = smsFromDefinedType.DefinedValues.Where(v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) ).ToList();
             if ( selectedNumberGuids.Any() )
             {
                 smsDefinedValues = smsDefinedValues.Where( v => selectedNumberGuids.Contains( v.Guid ) ).ToList();
