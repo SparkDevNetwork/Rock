@@ -236,7 +236,7 @@
     <Compile Include="Engine\LavaUtilityHelper.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Utility.cs" />
     <Compile Include="Filters\Generic\TemplateFilters.Dictionaries.cs" />
-    <Compile Include="Implementations\Fluid\FluidGreaterThanExpression.cs" />
+    <Compile Include="Implementations\Fluid\LavaEqualBinaryExpression.cs" />
     <Compile Include="Implementations\Fluid\FluidLessThanExpression.cs" />
     <Compile Include="Implementations\Fluid\LavaDateTimeValue.cs" />
     <Compile Include="Implementations\Fluid\FluidLavaTagStatement.cs" />

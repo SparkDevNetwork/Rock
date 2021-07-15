@@ -90,6 +90,14 @@ namespace Rock.Lava.Fluid
 
             // Replace the default Fluid comparison operators to add support for
             // automatic operand type conversions, date comparisons, and empty string comparisons.
+            this.RegisteredOperators["=="] = ( a, b ) =>
+            {
+                return new LavaEqualBinaryExpression( a, b, failIfEqual: false );
+            };
+            this.RegisteredOperators["!="] = ( a, b ) =>
+            {
+                return new LavaEqualBinaryExpression( a, b, failIfEqual: true );
+            };
             this.RegisteredOperators["<"] = ( a, b ) =>
             {
                 return new LavaLessThanExpression( a, b, failIfEqual: true );
