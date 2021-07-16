@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             string kpi = GetKpiShortCode(
                 "Last 12 Months",
                 FormatAsCurrency( last12MonthTotal ),
-                subValue: string.Format( "<div class=\"d-block mt-2\"><span class=\"badge badge-warning \">First Gift: {0}</span></div>", Person.GetAttributeValue( "core_EraFirstGave" ).AsDateTime().ToShortDateString() ) );
+                subValue: string.Format( "<div class=\"d-block mt-2\"><span class=\"badge badge-info \">First Gift: {0}</span></div>", Person.GetAttributeValue( "core_EraFirstGave" ).AsDateTime().ToShortDateString() ) );
 
             kpi += GetKpiShortCode(
                 "Last 90 Days",
