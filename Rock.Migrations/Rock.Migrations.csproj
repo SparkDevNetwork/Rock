@@ -177,6 +177,10 @@
     <Compile Include="Migrations\202107151238317_OneTimeSchedule.Designer.cs">
       <DependentUpon>202107151238317_OneTimeSchedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107152221207_PersonEntryCampusFilter.cs" />
+    <Compile Include="Migrations\202107152221207_PersonEntryCampusFilter.Designer.cs">
+      <DependentUpon>202107152221207_PersonEntryCampusFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1937,6 +1941,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107151238317_OneTimeSchedule.resx">
       <DependentUpon>202107151238317_OneTimeSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107152221207_PersonEntryCampusFilter.resx">
+      <DependentUpon>202107152221207_PersonEntryCampusFilter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>

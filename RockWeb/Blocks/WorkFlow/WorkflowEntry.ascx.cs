@@ -860,8 +860,32 @@ namespace RockWeb.Blocks.WorkFlow
 
             lPersonEntryPreHtml.Text = form.PersonEntryPreHtml.ResolveMergeFields( mergeFields );
 
-            // NOTE: If there is only one Campus in the system, this control be always be hidden
-            cpPersonEntryCampus.Visible = form.PersonEntryCampusIsVisible;
+            if ( form.PersonEntryCampusIsVisible )
+            {
+                // NOTE: If there is only one Campus in the system, this control be always be hidden
+                cpPersonEntryCampus.Visible = true;
+
+                /* 7/15/2020 - MDP
+                 The list of campus should include Inactive, but limited to
+                 the configured CampusStatus and/or CampusType.
+                 See https://app.asana.com/0/1121505495628584/1200153314028124/f
+                 */
+
+                cpPersonEntryCampus.IncludeInactive = true;
+                if ( form.PersonEntryCampusStatusValueId.HasValue )
+                {
+                    cpPersonEntryCampus.CampusStatusFilter = new List<int> { form.PersonEntryCampusStatusValueId.Value };
+                }
+
+                if ( form.PersonEntryCampusTypeValueId.HasValue )
+                {
+                    cpPersonEntryCampus.CampusTypesFilter = new List<int> { form.PersonEntryCampusTypeValueId.Value };
+                }
+            }
+            else
+            {
+                cpPersonEntryCampus.Visible = false;
+            }
 
             SetPersonEditorOptions( pePerson1, form );
             SetPersonEditorOptions( pePerson2, form );
