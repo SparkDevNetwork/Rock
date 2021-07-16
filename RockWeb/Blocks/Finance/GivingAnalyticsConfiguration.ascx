@@ -12,7 +12,7 @@
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div class="well">
-                    <h4>General Setting</h4>
+                    <h4>General Settings</h4>
                     <span class="text-muted">The settings below help to configure the giving analytics features within Rock.</span>
                     <hr class="margin-t-sm">
                     <div class="row">
