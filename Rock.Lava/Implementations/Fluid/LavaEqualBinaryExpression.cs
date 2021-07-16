@@ -126,36 +126,15 @@ namespace Rock.Lava.Fluid
                 }
             }
 
-            // If either value supports IComparable, attempt to use a built-in comparison.
-            var leftObject = leftValue.ToRealObjectValue();
-            var rightObject = rightValue.ToRealObjectValue();
-
-            if ( leftObject is IComparable leftComparable )
+            // Use the default comparison.
+            if ( FailIfEqual )
             {
-                if ( FailIfEqual )
-                {
-                    return leftComparable.CompareTo( rightObject ) == 0 ? BooleanValue.False : BooleanValue.True;
-                }
-                else
-                {
-                    return leftComparable.CompareTo( rightObject ) == 0 ? BooleanValue.True : BooleanValue.False;
-                }
+                return leftValue.Equals( rightValue ) ? BooleanValue.False : BooleanValue.True;
             }
-
-            if ( rightObject is IComparable rightComparable )
+            else
             {
-                if ( FailIfEqual )
-                {
-                    return rightComparable.CompareTo( leftObject ) == 0 ? BooleanValue.False : BooleanValue.True;
-                }
-                else
-                {
-                    return rightComparable.CompareTo( leftObject ) == 0 ? BooleanValue.True : BooleanValue.False;
-                }
+                return leftValue.Equals( rightValue ) ? BooleanValue.True : BooleanValue.False;
             }
-
-            // The values cannot be compared in a meaningful way.
-            return NilValue.Instance;
         }
     }
 }
