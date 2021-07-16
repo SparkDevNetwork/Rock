@@ -32,6 +32,14 @@ namespace Rock.ViewModel
     public partial class ScheduleViewModel : ViewModelBase
     {
         /// <summary>
+        /// Gets or sets the AutoInactivateWhenComplete.
+        /// </summary>
+        /// <value>
+        /// The AutoInactivateWhenComplete.
+        /// </value>
+        public bool AutoInactivateWhenComplete { get; set; }
+
+        /// <summary>
         /// Gets or sets the CategoryId.
         /// </summary>
         /// <value>

@@ -337,6 +337,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.PersonEntryCampusStatusValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.PersonEntryCampusTypeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.PersonEntryConnectionStatusValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );

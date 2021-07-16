@@ -100,6 +100,8 @@ namespace Rock.Model
                 PersonEntryAutofillCurrentPerson = model.PersonEntryAutofillCurrentPerson,
                 PersonEntryBirthdateEntryOption = ( int ) model.PersonEntryBirthdateEntryOption,
                 PersonEntryCampusIsVisible = model.PersonEntryCampusIsVisible,
+                PersonEntryCampusStatusValueId = model.PersonEntryCampusStatusValueId,
+                PersonEntryCampusTypeValueId = model.PersonEntryCampusTypeValueId,
                 PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
                 PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
                 PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
@@ -201,6 +203,8 @@ namespace Rock.Model
             target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
             target.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
+            target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
