@@ -60,6 +60,12 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
+                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
+
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );

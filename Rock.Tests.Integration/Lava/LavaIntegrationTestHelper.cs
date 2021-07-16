@@ -67,40 +67,64 @@ namespace Rock.Tests.Integration.Lava
             var engineOptions = new LavaEngineConfigurationOptions();
 
             engineOptions.ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput;
+            engineOptions.FileSystem = new MockFileProvider();
+            engineOptions.CacheService = new MockTemplateCacheService();
 
             if ( RockLiquidEngineIsEnabled )
             {
-                // Initialize the Rock variant of the DotLiquid Engine
-                engineOptions.FileSystem = new MockFileProvider();
-                engineOptions.CacheService = new MockTemplateCacheService();
-
-                _rockliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
-
-                RegisterFilters( _rockliquidEngine );
-                RegisterTags( _rockliquidEngine );
-                RegisterBlocks( _rockliquidEngine );
-
-                RegisterStaticShortcodes( _rockliquidEngine );
-                RegisterDynamicShortcodes( _rockliquidEngine );
+                // Initialize the Rock variant of the DotLiquid Engine.
+                _rockliquidEngine = NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
             }
 
             if ( DotLiquidEngineIsEnabled )
+            {
+                // Initialize the Lava library DotLiquid Engine.
+                _dotliquidEngine = NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
+            }
+
+            if ( FluidEngineIsEnabled )
+            {
+                // Initialize the Fluid Engine.
+                _fluidEngine = NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+            }
+
+            _instance = new LavaIntegrationTestHelper();
+        }
+
+        public static ILavaEngine NewEngineInstance( LavaEngineTypeSpecifier engineType, LavaEngineConfigurationOptions engineOptions )
+        {
+            ILavaEngine engine;
+
+            engineOptions = engineOptions ?? new LavaEngineConfigurationOptions();
+
+            if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
+            {
+                // Initialize the Rock variant of the DotLiquid Engine
+                engine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, engineOptions );
+
+                RegisterFilters( engine );
+                RegisterTags( engine );
+                RegisterBlocks( engine );
+
+                RegisterStaticShortcodes( engine );
+                RegisterDynamicShortcodes( engine );
+            }
+            else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
             {
                 // Initialize the DotLiquid Engine
                 engineOptions.FileSystem = new MockFileProvider();
                 engineOptions.CacheService = new MockTemplateCacheService();
 
-                _dotliquidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
+                engine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, engineOptions );
 
-                RegisterFilters( _dotliquidEngine );
-                RegisterTags( _dotliquidEngine );
-                RegisterBlocks( _dotliquidEngine );
+                RegisterFilters( engine );
+                RegisterTags( engine );
+                RegisterBlocks( engine );
 
-                RegisterStaticShortcodes( _dotliquidEngine );
-                RegisterDynamicShortcodes( _dotliquidEngine );
+                RegisterStaticShortcodes( engine );
+                RegisterDynamicShortcodes( engine );
             }
-
-            if ( FluidEngineIsEnabled )
+            else if ( engineType == LavaEngineTypeSpecifier.Fluid )
             {
                 // Initialize Fluid Engine
                 engineOptions = new LavaEngineConfigurationOptions();
@@ -109,17 +133,21 @@ namespace Rock.Tests.Integration.Lava
                 engineOptions.FileSystem = new MockFileProvider();
                 engineOptions.CacheService = new MockTemplateCacheService();
 
-                _fluidEngine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+                engine = global::Rock.Lava.LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
 
-                RegisterFilters( _fluidEngine );
-                RegisterTags( _fluidEngine );
-                RegisterBlocks( _fluidEngine );
+                RegisterFilters( engine );
+                RegisterTags( engine );
+                RegisterBlocks( engine );
 
-                RegisterStaticShortcodes( _fluidEngine );
-                RegisterDynamicShortcodes( _fluidEngine );
+                RegisterStaticShortcodes( engine );
+                RegisterDynamicShortcodes( engine );
+            }
+            else
+            {
+                throw new Exception( "Unknown Engine Type." );
             }
 
-            _instance = new LavaIntegrationTestHelper();
+            return engine;
         }
 
         public ILavaEngine GetEngineInstance( LavaEngineTypeSpecifier engineType )
@@ -552,7 +580,7 @@ namespace Rock.Tests.Integration.Lava
                 {
                     testMethod( engine );
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     // Write the error to debug output.
                     Debug.Print( $"\n** ERROR:\n{ex.ToString()}" );
@@ -667,6 +695,12 @@ namespace Rock.Tests.Integration.Lava
             }
             else
             {
+                if ( options.IgnoreCase )
+                {
+                    expectedOutput = expectedOutput.ToLower();
+                    outputString = outputString.ToLower();
+                }
+
                 if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Equal )
                 {
                     Assert.That.Equal( expectedOutput, outputString );
@@ -869,6 +903,7 @@ namespace Rock.Tests.Integration.Lava
         public string EnabledCommandsDelimiter = ",";
 
         public bool IgnoreWhiteSpace = true;
+        public bool IgnoreCase = false;
 
         public List<string> Wildcards = new List<string>();
 

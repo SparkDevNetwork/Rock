@@ -172,6 +172,44 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Date filter with timezone format string should return a timezone offset component.
+        /// </summary>
+        [TestMethod]
+        public void Date_FormatStringWithTimezone_ResolvesToDateWithTimezone()
+        {
+            // Get an input time of 10:00 AM in the test timezone.
+            var datetimeInput = new DateTime( 2018, 5, 1, 10, 0, 0 );
+
+            var datetimeOffset = new DateTimeOffset( datetimeInput );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( datetimeOffset.ToString( "yyyy-MM-ddTHH:mm:sszzz" ), "{{ dateTimeInput | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
+        }
+
+        /// <summary>
+        /// Date filter with timezone format string should return a timezone offset component.
+        /// </summary>
+        [TestMethod]
+        public void Date_NowInputWithTimeZoneOffsetFormatString_ResolvesToCurrentTimezoneOffset()
+        {
+            var template = @"
+{% assign timezone = 'Now' | Date:'zzz' | Replace:':','' -%}{{ timezone }}
+";
+
+            // Get an input time of 10:00 AM in the test timezone.
+            var datetimeInput = new DateTime( 2018, 5, 1, 10, 0, 0 );
+
+            var datetimeOffset = new DateTimeOffset( datetimeInput );
+
+            // Add the input DateTimeOffset object to the Lava context.
+            var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
+
+            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, "+1000", template, mergeValues );
+        }
+
+        /// <summary>
         /// Adding hours to an input date with a time zone that differs from the server time zone should return the correct result for the input time zone.
         /// </summary>
         [TestMethod]

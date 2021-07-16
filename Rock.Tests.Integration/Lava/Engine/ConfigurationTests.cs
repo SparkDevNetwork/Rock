@@ -62,6 +62,7 @@ namespace Rock.Tests.Integration.Lava
         /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
         /// </summary>
         [TestMethod]
+        [Ignore( "This test fails when run multiple times, because the ClearCache method fails to remove items from the global cache if the Rock Event Bus is not operating." )]
         public void WebsiteLavaTemplateCacheService_WhitespaceTemplatesWithDifferentLengths_AreCachedIndependently()
         {
             var options = new LavaEngineConfigurationOptions();
@@ -72,9 +73,16 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
+                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    Debug.Write( "Template caching cannot be tested by this methodology for the RockLiquid implementation." );
+                    return;
+                }
+
                 // Remove all existing items from the cache.
                 cacheService.ClearCache();
 
+                // Get a new instance of the engine configured to use the test cache.
                 var engine = LavaService.NewEngineInstance( defaultEngineInstance.EngineType, options );
 
                 // Process a zero-length whitespace template - this should be cached separately.
@@ -129,9 +137,10 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.DotLiquid )
+                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.RockLiquid
+                     || defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.DotLiquid )
                 {
-                    Debug.Write( "Shortcode caching is not currently implemented for DotLiquid." );
+                    Debug.Write( "Shortcode caching is not currently implemented for RockLiquid/DotLiquid." );
                     return;
                 }
 

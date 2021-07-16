@@ -33,12 +33,9 @@ namespace Rock.Lava.Fluid
     /// </summary>
     public class FluidEngine : LavaEngineBase
     {
-        #region Static methods
+        private TemplateOptions _templateOptions = null;
+        private readonly LavaFluidParser _parser = new LavaFluidParser();
 
-        private static TemplateOptions _templateOptions = null;
-        private static readonly LavaFluidParser _parser = new LavaFluidParser();
-
-        #endregion
         /// <summary>
         /// The descriptive name of the engine.
         /// </summary>
@@ -532,7 +529,7 @@ namespace Rock.Lava.Fluid
 
             var success = _parser.TryParse( liquidTemplate, out fluidTemplate, out error );
 
-            var fluidTemplateObject = (FluidTemplate)fluidTemplate;
+            var fluidTemplateObject = ( FluidTemplate ) fluidTemplate;
 
             if ( success )
             {

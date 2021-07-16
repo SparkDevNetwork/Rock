@@ -103,22 +103,12 @@ namespace Rock.Lava
                 engine = new FluidEngine();
 
                 options = options ?? new LavaEngineConfigurationOptions();
-
-                if ( options.FileSystem != null )
-                {
-                    options.FileSystem = new FluidFileSystem( options.FileSystem );
-                }
             }
             else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
             {
                 engine = new DotLiquidEngine();
 
                 options = options ?? new LavaEngineConfigurationOptions();
-
-                if ( options.FileSystem != null )
-                {
-                    options.FileSystem = new DotLiquidFileSystem( options.FileSystem );
-                }
             }
             else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
             {

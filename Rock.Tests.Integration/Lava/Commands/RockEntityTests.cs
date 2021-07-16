@@ -32,7 +32,7 @@ namespace Rock.Tests.Integration.Lava
         /// Tests the EventsCalendarItem to make sure that an item's EventItem and EventItem.Summary are returned.
         /// </summary>
         [TestMethod]
-        [Ignore("This test requires specific test data that does not exist in the sample database.")]
+        [Ignore( "This test requires specific test data that does not exist in the sample database." )]
         public void EventCalendarItemAllowsEventItemSummary()
         {
             RockEntityBlock.RegisterEntityCommands( LavaService.GetCurrentEngine() );
@@ -57,14 +57,19 @@ namespace Rock.Tests.Integration.Lava
         }
 
         [TestMethod]
-        //[Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
+        [Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
         // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
+        // Perhaps the "occurrence" variable in the inner loop is not regarded as IEnumerable?
         public void EntityCommandBlock_ContainingForBlock_ExecutesCorrectly()
         {
             var template = @"
 {%- eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' -%}
     {%- for occurrence in EventItems -%}
         <b>Series {{forloop.index}}</b><br>
+
+<br>
+Occurrence Collection Type = {{ occurrence | TypeName }}
+</br>
 
         {%- for item in occurrence -%}
             {%- if forloop.first -%}
@@ -85,7 +90,7 @@ namespace Rock.Tests.Integration.Lava
 ";
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
                 TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
 

@@ -38,6 +38,12 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
+                // This test is not applicable to the RockLiquid engine implementation.
+                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                {
+                    return;
+                }
+
                 var methodInfo = this.GetType().GetMethod( "ThreadAbortFilter" );
 
                 engine.RegisterFilter( methodInfo, "Abort" );

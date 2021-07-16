@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -82,9 +83,7 @@ namespace Rock.Tests.Integration.Lava
             var template = "{{ 'MachineName' | RockInstanceConfig }}";
             var expectedValue = RockInstanceConfig.MachineName;
 
-            var output = template.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedValue, output );
+            TestHelper.AssertTemplateOutput( expectedValue, template );
         }
 
         [TestMethod]
@@ -93,9 +92,7 @@ namespace Rock.Tests.Integration.Lava
             var template = "{{ 'ApplicationDirectory' | RockInstanceConfig }}";
             var expectedValue = RockInstanceConfig.ApplicationDirectory;
 
-            var output = template.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedValue, output );
+            TestHelper.AssertTemplateOutput( expectedValue, template );
         }
 
         [TestMethod]
@@ -104,9 +101,7 @@ namespace Rock.Tests.Integration.Lava
             var template = "{{ 'PhysicalDirectory' | RockInstanceConfig }}";
             var expectedValue = RockInstanceConfig.PhysicalDirectory;
 
-            var output = template.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedValue, output );
+            TestHelper.AssertTemplateOutput( expectedValue, template );
         }
 
         [TestMethod]
@@ -115,13 +110,10 @@ namespace Rock.Tests.Integration.Lava
             var template = "{{ 'IsClustered' | RockInstanceConfig }}";
             var expectedValue = RockInstanceConfig.IsClustered.ToTrueFalse();
 
-            var output = template.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedValue.ToLower(), output.ToLower() );
+            TestHelper.AssertTemplateOutput( expectedValue, template, new LavaTestRenderOptions { IgnoreCase = true } );
         }
 
         [TestMethod]
-        [Ignore( "This test may fail for Fluid if run in series with other tests. Re-test once this bugfix is available: https://github.com/sebastienros/fluid/pull/319" )]
         public void RockInstanceConfigFilter_SystemDateTime_RendersExpectedValue()
         {
             var template = "{{ 'SystemDateTime' | RockInstanceConfig | Date:'yyyy-MM-dd HH:mm:ss' }}";
@@ -165,10 +157,9 @@ namespace Rock.Tests.Integration.Lava
         public void RockInstanceConfigFilter_InvalidParameterName_RendersErrorMessage()
         {
             var template = "{{ 'unknown_setting' | RockInstanceConfig }}";
+            var expectedOutput = "Configuration setting \"unknown_setting\" is not available.";
 
-            var output = template.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( "Configuration setting \"unknown_setting\" is not available.", output );
+            TestHelper.AssertTemplateOutput( expectedOutput, template );
         }
 
         #endregion
@@ -181,6 +172,12 @@ namespace Rock.Tests.Integration.Lava
         [TestMethod]
         public void Fluid_MismatchedFilterParameters_ShowsCorrectErrorMessage()
         {
+            if ( !LavaIntegrationTestHelper.FluidEngineIsEnabled )
+            {
+                Debug.Write( "The Fluid engine is not enabled for this test run." );
+                return;
+            }
+
             var inputTemplate = @"
 {{ '1' | AppendValue:'2' }}
 ";
