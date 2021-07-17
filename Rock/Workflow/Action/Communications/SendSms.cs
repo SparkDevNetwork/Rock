@@ -37,29 +37,29 @@ namespace Rock.Workflow.Action
     [ExportMetadata( "ComponentName", "SMS Send" )]
 
     [WorkflowTextOrAttribute(
-        textLabel: "From",
-        attributeLabel: "Attribute Value",
-        description: "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).",
-        required: true,
-        order: 0,
-        key: AttributeKey.From,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+        "From",
+        "Attribute Value",
+        Description = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.From,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
     [WorkflowTextOrAttribute(
-        textLabel: "Recipient",
-        attributeLabel: "Attribute Value",
-        description: "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>",
-        required: true,
-        order: 1,
-        key: AttributeKey.To,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
+        "Recipient",
+        "Attribute Value",
+        Description = "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.To,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [WorkflowTextOrAttribute(
-        textLabel: "Message",
-        attributeLabel: "Attribute Value",
-        description: "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
-        required: false,
-        order: 2,
-        key: AttributeKey.Message,
-        fieldTypeClassNames: new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
+        "Message",
+        "Attribute Value",
+        Description = "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.Message,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute(
         "Attachment",
         Description = "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.",
@@ -68,12 +68,11 @@ namespace Rock.Workflow.Action
         Key = AttributeKey.Attachment,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
     [BooleanField(
-        name: "Save Communication History",
-        description: "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.",
-        defaultValue: false,
-        category: "",
-        order: 4,
-        key: AttributeKey.SaveCommunicationHistory )]
+        "Save Communication History",
+        Description = "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = AttributeKey.SaveCommunicationHistory )]
     public class SendSms : ActionComponent
     {
         #region Workflow Attributes
@@ -83,29 +82,10 @@ namespace Rock.Workflow.Action
         /// </summary>
         private static class AttributeKey
         {
-            /// <summary>
-            /// From
-            /// </summary>
             public const string From = "From";
-
-            /// <summary>
-            /// To
-            /// </summary>
             public const string To = "To";
-
-            /// <summary>
-            /// Message
-            /// </summary>
             public const string Message = "Message";
-
-            /// <summary>
-            /// Attachment
-            /// </summary>
             public const string Attachment = "Attachment";
-
-            /// <summary>
-            /// SaveCommunicationHistory
-            /// </summary>
             public const string SaveCommunicationHistory = "SaveCommunicationHistory";
         }
 
