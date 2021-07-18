@@ -14,16 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -37,7 +31,7 @@ namespace Rock.Model
     [DataContract]
     public partial class DocumentType : Model<DocumentType>, IOrdered, ICacheable
     {
-        #region Entity Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets a flag indicating if this DocumentType is part of the Rock core system/framework. This property is required.
@@ -159,7 +153,7 @@ namespace Rock.Model
         [DataMember]
         public bool IsImage { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Constructors
 
@@ -171,9 +165,9 @@ namespace Rock.Model
         {
         }
 
-        #endregion
+        #endregion Constructors
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entities that <see cref="Rock.Model.Document">Notes</see> of this DocumentType 
@@ -193,9 +187,9 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFileType BinaryFileType { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -208,31 +202,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return DocumentTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            DocumentTypeCache.UpdateCachedEntity( this.Id, entityState );
-            DocumentTypeCache.RemoveEntityDocumentTypes();
-        }
-
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration

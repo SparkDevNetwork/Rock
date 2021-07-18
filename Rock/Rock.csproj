@@ -676,6 +676,7 @@
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
@@ -1087,7 +1088,7 @@
     <Compile Include="Model\CodeGenerated\AchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\AchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
-    <Compile Include="Model\DocumentTypeService.Partial.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
@@ -1098,7 +1099,7 @@
     <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Core\Document\Document.cs" />
-    <Compile Include="Model\DocumentType.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
@@ -3340,7 +3341,6 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Model\Core\DocumentType\" />
     <Folder Include="Pbx\Provider\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
