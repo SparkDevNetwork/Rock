@@ -2107,11 +2107,11 @@
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
-    <Compile Include="Model\Following.cs" />
+    <Compile Include="Model\Core\Following\Following.cs" />
     <Compile Include="Model\FollowingEventNotification.cs" />
     <Compile Include="Model\FollowingEventSubscription.cs" />
     <Compile Include="Model\FollowingEventType.cs" />
-    <Compile Include="Model\FollowingService.partial.cs" />
+    <Compile Include="Model\Core\Following\FollowingService.cs" />
     <Compile Include="Model\FollowingSuggested.cs" />
     <Compile Include="Model\FollowingSuggestionType.cs" />
     <Compile Include="Model\Group.cs" />

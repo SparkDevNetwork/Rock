@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,8 +30,7 @@ namespace Rock.Model
     [DataContract]
     public partial class Following : Model<Following>
     {
-
-        #region Entity Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets the entity type identifier.
@@ -71,9 +69,9 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PurposeKey { get; set; }
 
-        #endregion
+        #endregion Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -93,12 +91,7 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -119,5 +112,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
