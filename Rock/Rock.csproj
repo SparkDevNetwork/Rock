@@ -676,6 +676,8 @@
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
+    <Compile Include="Model\Core\Document\Document.Logic.cs" />
+    <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
@@ -901,7 +903,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\ConnectionRequestService.Partial.cs" />
-    <Compile Include="Model\DocumentService.Partial.cs" />
+    <Compile Include="Model\Core\Document\DocumentService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeService.Partial.cs" />
@@ -1095,7 +1097,7 @@
     <Compile Include="Model\GroupDemographicType.cs" />
     <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
-    <Compile Include="Model\Document.cs" />
+    <Compile Include="Model\Core\Document\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\SmsPipeline.cs" />
@@ -3338,6 +3340,7 @@
     <None Include="Service References\ServiceObjects.GeoCoder\Rock.ServiceObjects.GeoCoder.ZipCodeInfo.datasource" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Model\Core\DocumentType\" />
     <Folder Include="Pbx\Provider\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>

@@ -14,17 +14,11 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Model
 {
     public partial class DocumentService
     {
-
         /// <summary>
         /// Deletes the specified document and sets its associated BinaryFile to Temporary.
         /// </summary>
