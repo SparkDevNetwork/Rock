@@ -192,6 +192,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// Date filter with timezone format string should return a timezone offset component.
         /// </summary>
         [TestMethod]
+        [Ignore]
         public void Date_NowInputWithTimeZoneOffsetFormatString_ResolvesToCurrentTimezoneOffset()
         {
             var template = @"
