@@ -114,18 +114,9 @@ namespace Rock.Lava.DotLiquid
                 return defaultValue;
             }
 
-            return UnwrapContextValue( _context[key] );
+            return _context[key];
         }
 
-        private object UnwrapContextValue( object contextValue )
-        {
-            if ( contextValue is ILiquidFrameworkDataObjectProxy proxy )
-            {
-                return proxy.GetProxiedDataObject();
-            }
-
-            return contextValue;
-        }
         /// <summary>
         /// Gets the dictionary of values that are active in the local scope.
         /// Values are defined by the outermost container first, and overridden by values defined in a contained scope.

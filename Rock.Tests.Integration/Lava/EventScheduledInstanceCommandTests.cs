@@ -67,9 +67,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"unknown_parameter\"." );
             } );
@@ -82,9 +82,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
@@ -107,9 +107,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
@@ -125,9 +125,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
@@ -141,9 +141,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Event Occurrences not available. An Event reference must be specified." );
             } );
@@ -156,9 +156,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Event Occurrences not available. Cannot find an Event matching the reference \"no_event\"." );
             } );
@@ -171,9 +171,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
                 Assert.That.Contains( output, "<<Staff Meeting|2020-02-26|12:00 AM|All Campuses>>" );
@@ -191,9 +191,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Staff Meeting recurs every 2 weeks, so our date range of 5 weeks should only include 2 occurrences.
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
@@ -210,9 +210,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Staff Meeting recurs every 2 weeks, so our date range of 27d should only include 2 occurrences.
                 Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
@@ -229,9 +229,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "<EventCount = 0>" );
@@ -245,9 +245,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Ensure that the maximum number of occurrences has been retrieved.
                 Assert.That.Contains( output, "<EventCount = 200>" );
@@ -261,9 +261,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Event Occurrences not available. The specified Date Range is invalid." );
             } );            
@@ -280,7 +280,7 @@ namespace Rock.Tests.Integration.Lava
 
                 var output1 = TestHelper.GetTemplateOutput( engine, template1 );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template1, output1 );
+                TestHelper.DebugWriteRenderResult( engine, template1, output1 );
 
                 Assert.That.Contains( output1, "<EventCount = 101>" );
 
@@ -289,7 +289,7 @@ namespace Rock.Tests.Integration.Lava
 
                 var output2 = TestHelper.GetTemplateOutput( engine, template2 );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template2, output2 );
+                TestHelper.DebugWriteRenderResult( engine, template2, output2 );
 
                 Assert.That.Contains( output2, "<EventCount = 100>" );
             } );
@@ -323,9 +323,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\"." );
@@ -361,9 +361,9 @@ namespace Rock.Tests.Integration.Lava
 ";
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "<b>Series 1</b>" );
@@ -380,9 +380,9 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "<Campus: Main Campus>" );

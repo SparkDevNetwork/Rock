@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -130,7 +131,7 @@ namespace Rock.Tests.Integration.Lava
                     throw new System.Exception( $"Invalid DateTime - Output = \"{result.Text}\"" );
                 }
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+                TestHelper.DebugWriteRenderResult( engine, template, result.Text );
 
                 Assert.That.AreProximate( expectedValue, actualDateTime, new System.TimeSpan( 0, 0, 30 ) );
             } );
@@ -145,7 +146,7 @@ namespace Rock.Tests.Integration.Lava
             {
                 var result = engine.RenderTemplate( template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, result.Text );
+                TestHelper.DebugWriteRenderResult( engine, template, result.Text );
 
                 var expectedOutput = RockInstanceConfig.LavaEngineName;
 
@@ -184,7 +185,7 @@ namespace Rock.Tests.Integration.Lava
 
             var expectedOutput = @"12";
 
-            var engine = TestHelper.GetEngineInstance( Rock.Lava.LavaEngineTypeSpecifier.Fluid );
+            var engine = TestHelper.GetEngineInstance( typeof( FluidEngine ) );
 
             // Filters are registered
             var filterMethodValid = typeof( TestLavaLibraryFilter ).GetMethod( "AppendString", new System.Type[] { typeof( object ), typeof( string ) } );
@@ -193,7 +194,7 @@ namespace Rock.Tests.Integration.Lava
             engine.RegisterFilter( filterMethodValid, "AppendValue" );
 
             // This should render correctly.
-            TestHelper.AssertTemplateOutput( Rock.Lava.LavaEngineTypeSpecifier.Fluid, expectedOutput, inputTemplate );
+            TestHelper.AssertTemplateOutput( engine, expectedOutput, inputTemplate );
 
             // This should throw an exception when attempting to render a template containing the invalid filter.
             engine.RegisterFilter( filterMethodInvalid, "AppendValue" );
@@ -355,6 +356,24 @@ namespace Rock.Tests.Integration.Lava
             TestHelper.AssertTemplateOutput( outputExpected,
                 template,
                 options );
+        }
+
+        #endregion
+
+        #region RunLavaFilter
+
+        /// <summary>
+        /// Verify the documentation example for this filter.
+        /// </summary>
+        [TestMethod]
+        public void RunLavaFilter_DocumentationExample_ReturnsExpectedOutput()
+        {
+            var template = @"
+{% capture lava %}{% raw %}{% assign test = 'hello' %}{{ test }}{% endraw %}{% endcapture %}
+{{ lava | RunLava }}
+";
+
+            TestHelper.AssertTemplateOutput( "hello", template );
         }
 
         #endregion

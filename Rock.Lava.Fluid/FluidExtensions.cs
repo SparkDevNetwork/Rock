@@ -105,7 +105,7 @@ namespace Rock.Lava.Fluid
         {
             if ( value.Type == FluidValues.Number )
             {
-                return (int)value.ToNumberValue();
+                return ( int ) value.ToNumberValue();
             }
             else
             {
@@ -142,7 +142,7 @@ namespace Rock.Lava.Fluid
         {
             if ( value.Type == FluidValues.DateTime )
             {
-                var offset = (DateTimeOffset)value.ToObjectValue();
+                var offset = ( DateTimeOffset ) value.ToObjectValue();
 
                 return offset;
             }
@@ -193,7 +193,7 @@ namespace Rock.Lava.Fluid
             {
                 var fieldInfo = value.GetType().GetField( "_value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance );
 
-                var values = (IEnumerable<FluidValue>)fieldInfo.GetValue( value );
+                var values = ( IEnumerable<FluidValue> ) fieldInfo.GetValue( value );
 
                 return values.Select( a => a.ToRealObjectValue() ).ToList();
             }
@@ -206,7 +206,7 @@ namespace Rock.Lava.Fluid
 
                 if ( placeCount == 0 )
                 {
-                    return (int)d;
+                    return ( int ) d;
                 }
 
                 return d;
@@ -247,7 +247,7 @@ namespace Rock.Lava.Fluid
 
             foreach ( var m in methods )
             {
-                collection.AddFilter( m.Name, (FilterDelegate)m.CreateDelegate( typeof( FilterDelegate ) ) );
+                collection.AddFilter( m.Name, ( FilterDelegate ) m.CreateDelegate( typeof( FilterDelegate ) ) );
             }
         }
 

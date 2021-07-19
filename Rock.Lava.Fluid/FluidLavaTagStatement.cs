@@ -122,7 +122,7 @@ namespace Rock.Lava.Fluid
 
         void ILiquidFrameworkElementRenderer.Render( ILiquidFrameworkElementRenderer baseRenderer, ILavaRenderContext context, TextWriter writer, TextEncoder encoder )
         {
-            var fluidContext = ( (FluidRenderContext)context ).FluidContext;
+            var fluidContext = ( ( FluidRenderContext ) context ).FluidContext;
 
             var statements = context.GetInternalField( Constants.ContextKeys.SourceTemplateStatements ) as List<Statement>;
 

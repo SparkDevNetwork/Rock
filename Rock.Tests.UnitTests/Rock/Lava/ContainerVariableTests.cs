@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Model;
 
 namespace Rock.Tests.UnitTests.Lava
@@ -71,7 +72,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             // This use case only works with Lava library implementations that use the LavaDataObject
             // as the default proxy wrapper. It exists here for test coverage, but is not used in any production Lava templates.
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, "Male", "{{ EnumDictionary['Male'] }}", mergeValues );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "Male", "{{ EnumDictionary['Male'] }}", mergeValues );
         }
 
         /// <summary>
@@ -87,7 +88,7 @@ namespace Rock.Tests.UnitTests.Lava
                 { "Case", "mixed" }
             };
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, "lower,upper,mixed", "{{ case }},{{ CASE }},{{ Case }}", mergeValues );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), "lower,upper,mixed", "{{ case }},{{ CASE }},{{ Case }}", mergeValues );
         }
     }
 }

@@ -17,6 +17,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -196,9 +197,9 @@ Color 4: blue
 
                 context.SetEnabledCommands( "RockEntity" );
 
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, context );
+                var output = TestHelper.GetTemplateOutput( engine, input, context );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+                TestHelper.DebugWriteRenderResult( engine, input, output );
 
                 Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
                 Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
@@ -232,9 +233,9 @@ Color 4: blue
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, options );
+                var output = TestHelper.GetTemplateOutput( engine, input, options );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+                TestHelper.DebugWriteRenderResult( engine, input, output );
             } );
         }
 
@@ -570,11 +571,11 @@ Color 4: blue
             {
                 var result = engine.RenderTemplate( input );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
+                TestHelper.DebugWriteRenderResult( engine, input, result.Text );
 
                 var output = result.Text.Replace( " ", string.Empty );
 
-                if ( engine.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
                 {
                     Assert.IsTrue( output.Contains( "person-Rock.Lava.RockLiquid.Blocks.RockEntity" ), "Expected Entity Tag not found." );
                     Assert.IsTrue( output.Contains( "cache-Rock.Lava.RockLiquid.Blocks.Cache" ), "Expected Command Block not found." );

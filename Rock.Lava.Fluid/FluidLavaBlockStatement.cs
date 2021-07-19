@@ -80,6 +80,7 @@ namespace Rock.Lava.Fluid
 
         public override ValueTask<Completion> WriteToAsync( TextWriter writer, TextEncoder encoder, TemplateContext context )
         {
+            
             var lavaContext = new FluidRenderContext( context );
 
             if ( !_factoryMethods.ContainsKey( _tagName ) )
@@ -120,7 +121,7 @@ namespace Rock.Lava.Fluid
         {
             // The default render implementation for the block is to parse the block content into a series of Fluid statements and
             // write the output of those statements to the provided stream.
-            var fluidContext = ( (FluidRenderContext)context ).FluidContext;
+            var fluidContext = ( ( FluidRenderContext ) context ).FluidContext;
 
             // Parse the content of the block into a set of Fluid statements.
             var blockContext = new FluidParseContext( _blockContent );

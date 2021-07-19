@@ -36,6 +36,8 @@ namespace Rock.Lava.Fluid
         private TemplateOptions _templateOptions = null;
         private readonly LavaFluidParser _parser = new LavaFluidParser();
 
+        private static readonly Guid _engineIdentifier = new Guid( "605445FE-6ECC-4E67-9A95-98F7173F7389" );
+
         /// <summary>
         /// The descriptive name of the engine.
         /// </summary>
@@ -48,13 +50,13 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
-        /// The type specifier for the framework.
+        /// The unique identifier of this engine.
         /// </summary>
-        public override LavaEngineTypeSpecifier EngineType
+        public override Guid EngineIdentifier
         {
             get
             {
-                return LavaEngineTypeSpecifier.Fluid;
+                return _engineIdentifier;
             }
         }
 

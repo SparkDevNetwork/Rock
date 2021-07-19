@@ -16,6 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -145,7 +146,7 @@ Illegal Boolean Operator!
             // This test does not apply to the DotLiquid framework.
             if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
             {
-                TestHelper.AssertTemplateIsInvalid( LavaEngineTypeSpecifier.Fluid, input );
+                TestHelper.AssertTemplateIsInvalid( typeof( FluidEngine ), input );
             }
         }
 

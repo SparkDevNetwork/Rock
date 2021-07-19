@@ -33,7 +33,9 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
-            var tags = LavaService.GetRegisteredElements();
+            var engine = context.GetService<ILavaEngine>();
+
+            var tags = engine.GetRegisteredElements();
 
             if ( !tags.Any() )
             {

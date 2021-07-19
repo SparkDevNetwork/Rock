@@ -17,6 +17,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -59,7 +60,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedResult.ToString(), template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -108,9 +109,8 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
-
 
         /// <summary>
         /// Verify the "Less than" comparison operator.
@@ -160,7 +160,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedResult.ToString(), template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True<br>False";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -264,7 +264,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedResult.ToString(), template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof ( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedResult.ToString(), template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -415,7 +415,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True<br>False";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -517,7 +517,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         /// <summary>
@@ -619,7 +619,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var expectedOutput = @"True";
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.Fluid, expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         /// <summary>

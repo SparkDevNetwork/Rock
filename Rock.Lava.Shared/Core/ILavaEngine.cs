@@ -24,7 +24,7 @@ namespace Rock.Lava
     /// <summary>
     /// Represents the Lava Engine that is responsible for compiling and rendering templates.
     /// </summary>
-    public interface ILavaEngine
+    public interface ILavaEngine : ILavaService
     {
         /// <summary>
         /// An event that is triggered when the LavaEngine encounters a processing exception.
@@ -55,7 +55,7 @@ namespace Rock.Lava
         /// <summary>
         /// The Liquid framework currently used to parse and render Lava templates.
         /// </summary>
-        LavaEngineTypeSpecifier EngineType { get; }
+        Guid EngineIdentifier { get; }
 
         /// <summary>
         /// Creates a new render context instance.
@@ -97,14 +97,14 @@ namespace Rock.Lava
 
         /// <summary>
         /// Register one or more filter functions that are implemented by the supplied Type.
-        /// A filter must be defined as a public static function that returns a string.
+        /// A filter must be defined as a public static function that returns a value.
         /// </summary>
         /// <param name="implementingType"></param>
         void RegisterFilters( Type implementingType );
 
         /// <summary>
         /// Register a filter function.
-        /// A filter must be defined as a public static function that returns a string.
+        /// A filter must be defined as a public static function that returns a value.
         /// </summary>
         /// <param name="filterMethod"></param>
         /// <param name="filterName"></param>
@@ -267,16 +267,6 @@ namespace Rock.Lava
     }
 
     #region Enumerations
-
-    public enum LavaEngineTypeSpecifier
-    {
-        // A fork of the DotLiquid framework, customised to include Lava syntax and features.
-        RockLiquid = 1,
-        // DotLiquid is an open-source implementation of the Liquid templating language. [https://github.com/dotliquid/dotliquid]
-        DotLiquid = 2,
-        // Fluid is an open-source implementation of the Liquid templating language. [https://github.com/sebastienros/fluid]
-        Fluid = 3,
-    }
 
     /// <summary>
     /// Specifies a strategy for handling exceptions encountered during the template rendering process.

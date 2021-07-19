@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Reporting
 
                         string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
                             channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
-                            defaultLavaTemplate.Render( channelMergeFields );
+                            LavaService.RenderTemplate( defaultLavaTemplate, channelMergeFields ).Text;
 
                         channelItems.Add( new ChannelItem
                         {

@@ -21,6 +21,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.DotLiquid;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -44,7 +46,7 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaService.NewEngineInstance( engine.EngineType, options );
+                var testEngine = LavaService.NewEngineInstance( engine.GetType(), options );
 
                 var context = testEngine.NewRenderContext();
 
@@ -62,7 +64,7 @@ namespace Rock.Tests.Integration.Lava
         /// Verify that templates with varying amounts of whitespace are correctly cached and return the expected output.
         /// </summary>
         [TestMethod]
-        [Ignore( "This test fails when run multiple times, because the ClearCache method fails to remove items from the global cache if the Rock Event Bus is not operating." )]
+        [Ignore("This test fails intermittently, because Rock cache services rely on a non-deterministic command-queueing mechanism that does not always fire in a timely fashion.")]
         public void WebsiteLavaTemplateCacheService_WhitespaceTemplatesWithDifferentLengths_AreCachedIndependently()
         {
             var options = new LavaEngineConfigurationOptions();
@@ -73,7 +75,7 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.RockLiquid )
+                if ( defaultEngineInstance.GetType() == typeof ( RockLiquidEngine ) )
                 {
                     Debug.Write( "Template caching cannot be tested by this methodology for the RockLiquid implementation." );
                     return;
@@ -82,8 +84,7 @@ namespace Rock.Tests.Integration.Lava
                 // Remove all existing items from the cache.
                 cacheService.ClearCache();
 
-                // Get a new instance of the engine configured to use the test cache.
-                var engine = LavaService.NewEngineInstance( defaultEngineInstance.EngineType, options );
+                var engine = LavaService.NewEngineInstance( defaultEngineInstance.GetType(), options );
 
                 // Process a zero-length whitespace template - this should be cached separately.
                 var input0 = string.Empty;
@@ -137,14 +138,14 @@ namespace Rock.Tests.Integration.Lava
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.RockLiquid
-                     || defaultEngineInstance.EngineType == LavaEngineTypeSpecifier.DotLiquid )
+                if ( defaultEngineInstance.GetType() == typeof( DotLiquidEngine )
+                     || defaultEngineInstance.GetType() == typeof( RockLiquidEngine ) )
                 {
                     Debug.Write( "Shortcode caching is not currently implemented for RockLiquid/DotLiquid." );
                     return;
                 }
 
-                var engine = LavaService.NewEngineInstance( defaultEngineInstance.EngineType, options );
+                var engine = LavaService.NewEngineInstance( defaultEngineInstance.GetType(), options );
 
                 var shortcodeProvider = new TestLavaDynamicShortcodeProvider();
 

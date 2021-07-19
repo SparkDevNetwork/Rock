@@ -60,7 +60,7 @@ namespace Rock.Lava
              * The shortcode can then be processed as a regular custom block by the Fluid templating engine.
              * As a future improvement, we could look at submitting a pull request to the Fluid project to add support for custom parsers.
              */
-            var newBlockName = "{% $1<suffix> $2 %}".Replace( "<suffix>", LavaService.ShortcodeInternalNameSuffix );
+            var newBlockName = "{% $1<suffix> $2 %}".Replace( "<suffix>", Constants.ShortcodeInternalNameSuffix );
 
             inputTemplate = FullShortCodeToken.Replace( inputTemplate, newBlockName );
 

@@ -92,7 +92,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             {
                 var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "<b>Series 1</b>" );
@@ -122,7 +122,7 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
             {
                 var output = TestHelper.GetTemplateOutput( engine, template, engine.NewRenderContext( new List<string> { "All" } ) );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 //Assert.That.Contains( output, "<b>Series 1</b>" );

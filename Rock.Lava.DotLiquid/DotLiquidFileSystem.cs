@@ -24,7 +24,7 @@ namespace Rock.Lava
     /// <summary>
     /// A proxy for a LavaFileSystem component that is compatible with the DotLiquid framework.
     /// </summary>
-    internal class DotLiquidFileSystem : ILavaFileSystem, IFileSystem
+    public class DotLiquidFileSystem : ILavaFileSystem, IFileSystem
     {
         private ILavaFileSystem _lavaFileSystem;
 

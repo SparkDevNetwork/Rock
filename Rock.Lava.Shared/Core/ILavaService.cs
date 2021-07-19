@@ -15,16 +15,29 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Lava
 {
     /// <summary>
-    /// Represents a Lava Template that has been parsed and compiled, and is ready to be rendered.
+    /// Represents a component that is capable of providing extension services to the Lava library.
     /// </summary>
-    public interface ILavaTemplate
+    public interface ILavaService
     {
-        /*
-         * This interface has no properties or methods.
-         * It is used to strong-type parameters for properties and methods in the Lava library.
-         */
+        /// <summary>
+        /// The friendly name of the service.
+        /// </summary>
+        string ServiceName { get; }
+
+        /// <summary>
+        /// A unique identifier for the service.
+        /// </summary>
+        Guid ServiceIdentifier { get; }
+
+        /// <summary>
+        /// Called when an instance of the service is first initialized.
+        /// </summary>
+        /// <param name="settings"></param>
+        void OnInitialize( object settings );
     }
 }

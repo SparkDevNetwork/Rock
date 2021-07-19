@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
 
@@ -24,7 +23,7 @@ namespace Rock.Lava
     /// <summary>
     /// A component that parses and renders a Lava document element by interacting with a Liquid templating framework.
     /// </summary>
-    internal interface ILiquidFrameworkElementRenderer
+    public interface ILiquidFrameworkElementRenderer
     {
         /// <summary>
         /// Render the text output for this document element.

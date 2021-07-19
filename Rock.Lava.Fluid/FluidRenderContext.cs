@@ -126,7 +126,7 @@ namespace Rock.Lava.Fluid
         {
             var localScope = _contextScopeInternalField.GetValue( _context ) as Scope;
 
-            var dictionary = new LavaDataDictionary( GetScopeAggregatedValues( localScope ) );
+            var dictionary = new LavaDataDictionary( this.GetScopeAggregatedValues( localScope ) );
 
             return dictionary;
         }

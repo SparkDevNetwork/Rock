@@ -35,7 +35,13 @@ namespace Rock.Lava.Fluid
             _value = value;
         }
 
-        public override FluidValues Type => FluidValues.DateTime;
+        public override FluidValues Type
+        {
+            get
+            {
+                return FluidValues.DateTime;
+            }
+        }
 
         public override bool Equals( FluidValue other )
         {

@@ -30,6 +30,8 @@ namespace Rock.Lava.RockLiquid
     /// </summary>
     public class RockLiquidEngine : LavaEngineBase
     {
+        private Guid _engineIdentifier = new Guid( "7CE5A54A-54DC-464A-83EE-659658134239" );
+
         /// <summary>
         /// The descriptive name of the engine.
         /// </summary>
@@ -44,11 +46,11 @@ namespace Rock.Lava.RockLiquid
         /// <summary>
         /// The type specifier for the framework.
         /// </summary>
-        public override LavaEngineTypeSpecifier EngineType
+        public override Guid EngineIdentifier
         {
             get
             {
-                return LavaEngineTypeSpecifier.RockLiquid;
+                return _engineIdentifier;
             }
         }
 

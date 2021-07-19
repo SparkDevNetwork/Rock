@@ -25,7 +25,7 @@ namespace Rock.Lava
     /// <summary>
     /// A proxy for a LavaFileSystem component that is compatible with the Fluid framework.
     /// </summary>
-    internal class FluidFileSystem : IFileProvider, ILavaFileSystem
+    public class FluidFileSystem : IFileProvider, ILavaFileSystem
     {
         private ILavaFileSystem _fileSystem = null;
 

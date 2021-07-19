@@ -17,9 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Rock.Lava.DotLiquid;
-using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 
 namespace Rock.Lava
 {
@@ -28,15 +25,12 @@ namespace Rock.Lava
     /// </summary>
     public static class LavaService
     {
-        // A suffix that is added to shortcode elements to avoid naming collisions with other tags and blocks.
-        // Note that a suffix is used because the closing tag of a Liquid language element requires the "end" prefix.
-        // Also, the suffix must match a regular expression word character, either A to Z or "_" to be compatible with the DotLiquid engine parser.
-        public static string ShortcodeInternalNameSuffix = "_";
+        private static LavaServiceProvider _serviceProvider = new LavaServiceProvider();
+        private static ILavaEngine _engine = null;        
 
-        private static ILavaEngine _engine = null;
         private static object _initializationLock = new object();
         private static bool _rockLiquidIsEnabled = true;
-
+        
         /// <summary>
         /// A flag indicating if RockLiquid Lava processing is enabled.
         /// RockLiquid is the Rock-specific fork of the DotLiquid framework that provides Lava rendering for Rock v12 or below.
@@ -58,24 +52,43 @@ namespace Rock.Lava
                     ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw;
                 }
             }
-
         }
 
         /// <summary>
-        /// Initialize the global instance of the Lava Engine with the specified configuration options.
+        /// Register a Lava Engine.
         /// </summary>
-        /// <param name="engineType"></param>
+        /// <typeparam name="TEngine"></typeparam>
+        /// <param name="factoryMethod">A factory method that accepts the implementing Type for the engine, and an object containing the default configuration for new instances.</param>
+        public static void RegisterEngine<TEngine>( Func<Type, object, TEngine> factoryMethod )
+            where TEngine : class, ILavaEngine
+        {
+            _serviceProvider.RegisterService( factoryMethod );
+        }
+
+        /// <summary>
+        /// Sets the global instance of the Lava Engine with the default configuration options.
+        /// </summary>
+        /// <param name="lavaEngineType"></param>
+        public static void SetCurrentEngine( Type lavaEngineType )
+        {
+            SetCurrentEngine( lavaEngineType, null );
+        }
+
+        /// <summary>
+        /// Sets the global instance of the Lava Engine with the specified configuration options.
+        /// </summary>
+        /// <param name="lavaEngineType"></param>
         /// <param name="options"></param>
-        public static void Initialize( LavaEngineTypeSpecifier? engineType, LavaEngineConfigurationOptions options )
+        public static void SetCurrentEngine( Type lavaEngineType, LavaEngineConfigurationOptions options )
         {
             lock ( _initializationLock )
             {
                 // Release the current instance.
                 _engine = null;
 
-                if ( engineType != null )
+                if ( lavaEngineType != null )
                 {
-                    var engine = NewEngineInstance( engineType.GetValueOrDefault( LavaEngineTypeSpecifier.Fluid ), options );
+                    var engine = NewEngineInstance( lavaEngineType, options );
 
                     // Assign the current instance.
                     _engine = engine;
@@ -92,33 +105,20 @@ namespace Rock.Lava
         /// <summary>
         /// Create a new Lava Engine instance with the specified configuration options.
         /// </summary>
-        /// <param name="engineType"></param>
-        /// <param name="options"></param>
-        public static ILavaEngine NewEngineInstance( LavaEngineTypeSpecifier engineType, LavaEngineConfigurationOptions options )
+        /// <param name="lavaEngineType"></param>
+        public static ILavaEngine NewEngineInstance( Type lavaEngineType )
         {
-            ILavaEngine engine = null;
+            return NewEngineInstance( lavaEngineType, null );
+        }
 
-            if ( engineType == LavaEngineTypeSpecifier.Fluid )
-            {
-                engine = new FluidEngine();
-
-                options = options ?? new LavaEngineConfigurationOptions();
-            }
-            else if ( engineType == LavaEngineTypeSpecifier.DotLiquid )
-            {
-                engine = new DotLiquidEngine();
-
-                options = options ?? new LavaEngineConfigurationOptions();
-            }
-            else if ( engineType == LavaEngineTypeSpecifier.RockLiquid )
-            {
-                // Instantiate the default engine.
-                engine = new RockLiquidEngine();
-
-                options = options ?? new LavaEngineConfigurationOptions();
-            }
-
-            engine.Initialize( options );
+        /// <summary>
+        /// Create a new Lava Engine instance with the specified configuration options.
+        /// </summary>
+        /// <param name="lavaEngineType"></param>
+        /// <param name="options"></param>
+        public static ILavaEngine NewEngineInstance( Type lavaEngineType, LavaEngineConfigurationOptions options )
+        {
+            var engine = _serviceProvider.GetService( lavaEngineType, options ) as ILavaEngine;
 
             return engine;
         }
@@ -136,8 +136,8 @@ namespace Rock.Lava
         /// </summary>
         public static void SetCurrentEngine( ILavaEngine engine )
         {
-            /// Set the global instance of the Lava Engine.
-            /// Used for internal test purposes.
+            // Set the global instance of the Lava Engine.
+            // Used for internal test purposes.
             lock ( _initializationLock )
             {
                 _engine = engine;
@@ -158,20 +158,6 @@ namespace Rock.Lava
             }
 
             _engine.ClearTemplateCache();
-        }
-
-        /// <summary>
-        /// Set configuration options for the current Lava engine.
-        /// </summary>
-        /// <param name="options"></param>
-        public static void Initialize( LavaEngineConfigurationOptions options = null )
-        {
-            if ( _engine == null )
-            {
-                return;
-            }
-
-            _engine.Initialize( options );
         }
 
         /// <summary>
@@ -461,6 +447,22 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( string inputTemplate, IDictionary<string, object> mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
+        }
+
+        /// <summary>
         /// Render the provided template in a new context with the specified parameters.
         /// </summary>
         /// <param name="inputTemplate"></param>
@@ -476,6 +478,22 @@ namespace Rock.Lava
             }
 
             return _engine.RenderTemplate( inputTemplate, parameters );
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, ILavaDataDictionary mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
         }
 
         /// <summary>
@@ -500,7 +518,7 @@ namespace Rock.Lava
         /// Render the provided template in a new context with the specified parameters.
         /// </summary>
         /// <param name="inputTemplate"></param>
-        /// <param name="parameters">The settings applied to the rendering process.</param>
+        /// <param name="context">The settings applied to the rendering process.</param>
         /// <returns>
         /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
         /// </returns>
@@ -512,6 +530,22 @@ namespace Rock.Lava
             }
 
             return _engine.RenderTemplate( inputTemplate, context );
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified merge fields.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="mergeFields">The collection of merge fields to be added to the context used to render the template.</param>
+        /// <returns>
+        /// The rendered output of the template.
+        /// If the template is invalid, returns an error message or an empty string according to the current ExceptionHandlingStrategy setting.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, IDictionary<string, object> mergeFields )
+        {
+            var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
+
+            return result;
         }
 
         /// <summary>
@@ -591,11 +625,11 @@ namespace Rock.Lava
         /// <summary>
         /// The Liquid framework currently used to parse and render Lava templates.
         /// </summary>
-        public static LavaEngineTypeSpecifier? CurrentEngineType
+        public static Guid? CurrentEngineIdentifier
         {
             get
             {
-                return _engine?.EngineType;
+                return _engine?.EngineIdentifier;
             }
         }
 
