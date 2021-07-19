@@ -131,6 +131,7 @@ namespace Rock.Rest.Controllers
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/People/GetByEmail/{email}" )]
+        [System.Web.Http.Route( "api/People/GetByEmail" )]
         public IQueryable<Person> GetByEmail( string email )
         {
             var rockContext = new Rock.Data.RockContext();
