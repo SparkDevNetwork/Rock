@@ -171,6 +171,7 @@ namespace Rock.Tests.Integration.Lava
         /// Registering a filter with an invalid parameter type correctly throws a Lava exception.
         /// </summary>
         [TestMethod]
+        [Ignore( "The restriction on parameter types for Fluid has been removed." )]
         public void Fluid_MismatchedFilterParameters_ShowsCorrectErrorMessage()
         {
             if ( !LavaIntegrationTestHelper.FluidEngineIsEnabled )

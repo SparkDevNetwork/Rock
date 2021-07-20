@@ -84,6 +84,36 @@ namespace Rock.Tests.Integration.Lava
 
         #endregion
 
+        #region Notes
+
+        [TestMethod]
+        public void PersonNotes_WithCurrentPersonHavingNotes_ReturnsNotes()
+        {
+            var values = AddPersonTedDeckerToMergeDictionary();
+
+            var person = values["CurrentPerson"] as Person;
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            var template = @"
+{% assign notes = CurrentPerson | Notes:'4,5','asc',2 %}
+{% for note in notes %}
+    <p>{{ note.Text }}</p>
+{% endfor %}
+";
+
+            var outputExpected = @"
+<p>Called Ted and heard that his mother is in the hospital and could use prayer.</p>
+<p>Talked to Ted today about starting a new Young Adults ministry</p>
+";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
+        }
+
+        #endregion
+
         private LavaDataDictionary AddPersonTedDeckerToMergeDictionary( LavaDataDictionary dictionary = null, string mergeKey = "CurrentPerson" )
         {
             var personDecker = TestHelper.GetTestPersonTedDecker();

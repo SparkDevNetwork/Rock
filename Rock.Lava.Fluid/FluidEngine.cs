@@ -466,17 +466,14 @@ namespace Rock.Lava.Fluid
                     lavaArgument = fluidFilterArgument.ToBooleanValue();
                 }
             }
-            else if ( argumentType == typeof( object ) )
+            else
             {
+                // By default, attempt to pass the parameter value as an object;
                 if ( fluidFilterArgument != null )
                 {
                     // Get the object value, ensuring that any Fluid wrapper that has been applied is removed.
                     lavaArgument = fluidFilterArgument.ToRealObjectValue();
                 }
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException( argumentType.Name, $"Parameter type '{argumentType.Name}' is not supported for Fluid filters." );
             }
 
             return lavaArgument;
