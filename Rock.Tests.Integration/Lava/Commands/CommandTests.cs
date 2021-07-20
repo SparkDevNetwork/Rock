@@ -206,6 +206,8 @@ Color 4: blue
             } );
         }
 
+        #region Cache
+
         [TestMethod]
         public void CacheBlock_WithTwoPassOptionEnabled_EmitsCorrectOutput()
         {
@@ -229,15 +231,51 @@ Color 4: blue
 
             input = input.Replace( "`", "\"" );
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache;RockEntity" };
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "Cache,RockEntity",
+                OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+            };
+
+            var expectedOutput = @"
+<divid=`mbb-1`data-topbar-name=`dismiss1Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+<divid=`mbb-2`data-topbar-name=`dismiss2Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+<divid=`mbb-3`data-topbar-name=`dismiss3Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+";
+
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, input, options );
-
-                TestHelper.DebugWriteRenderResult( engine, input, output );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
             } );
         }
+
+        [TestMethod]
+        public void CacheBlock_MultipleRenderingPasses_ProducesSameOutput()
+        {
+            var input = @"
+{%- cache key:'duplicate-test' duration:'10' -%}
+This is the cache content.
+{%- endcache -%}
+";
+
+            input = input.Replace( "`", "\"" );
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Cache" };
+
+            var expectedOutput = @"This is the cache content.";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // Render the template twice to ensure the result is the same.
+                // The result is rendered and cached on the first pass and the same result should be rendered from the cache on the second pass.
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
+        #endregion
 
         #endregion
 

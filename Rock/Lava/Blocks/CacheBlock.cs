@@ -103,7 +103,6 @@ namespace Rock.Lava.Blocks
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
-                base.OnRender( context, result );
                 return;
             }
 
@@ -131,8 +130,6 @@ namespace Rock.Lava.Blocks
                 {
                     result.Write( cachedResult.Content );
                 }
-
-                base.OnRender( context, result );
                 return;
             }
 
