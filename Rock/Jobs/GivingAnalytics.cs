@@ -24,7 +24,9 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Data;
@@ -138,6 +140,9 @@ namespace Rock.Jobs
                 totalStopWatch.Start();
             }
 
+            long progressCount = 0;
+            long totalCount = context.GivingIdsToClassify.Count();
+
             Parallel.ForEach( context.GivingIdsToClassify, givingId =>
             {
                 var perStopWatch = new Stopwatch();
@@ -154,7 +159,12 @@ namespace Rock.Jobs
                     perStopWatch.Stop();
                     elapsedTimesMs.Add( perStopWatch.ElapsedMilliseconds );
                     var ms = perStopWatch.ElapsedMilliseconds.ToString( "G" );
-                    Debug( $"Giving Id {givingId} done in {ms}ms" );
+                    progressCount++;
+                    if ( progressCount % 10 == 0 )
+                    {
+                        Debug( $"Giving Id {givingId} done in {ms}ms, progress: {progressCount}/{totalCount}, totalMS:{totalStopWatch.Elapsed.TotalMilliseconds}, progressCount/minute:{progressCount / totalStopWatch.Elapsed.TotalMinutes}" );
+                    }
+
                     perStopWatch.Reset();
                 }
             } );
@@ -867,7 +877,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     .ToList();
 
                 // This transforms the set of people to classify into distinct giving ids.
-                context.GivingIdsToClassify = givingIds;
+                context.GivingIdsToClassify = givingIds.OrderBy( a => a ).ToList();
             }
         }
 
@@ -965,11 +975,22 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
                 // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
                 var oneYearAgo = context.Now.AddMonths( -12 );
-                var twelveMonthsTransactions = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                var twelveMonthsTransactionsQry = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                     .Where( t =>
                         t.AuthorizedPersonAliasId.HasValue &&
-                        personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
-                        t.TransactionDateTime >= oneYearAgo )
+                        t.TransactionDateTime >= oneYearAgo );
+
+                if ( personAliasIds.Count == 1 )
+                {
+                    var personAliasId = personAliasIds[0];
+                    twelveMonthsTransactionsQry = twelveMonthsTransactionsQry.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+                }
+                else
+                {
+                    twelveMonthsTransactionsQry = twelveMonthsTransactionsQry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                }
+
+                var twelveMonthsTransactions = twelveMonthsTransactionsQry
                     .Select( t => new TransactionView
                     {
                         Id = t.Id,
@@ -1006,14 +1027,22 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 // We need to know if this giving group has other transactions. If they do then we do not need to
                 // extrapolate because we have the complete 12 month data picture.
-                var mostRecentOldTransactionDate = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
-                    .OrderByDescending( t => t.TransactionDateTime )
+                var mostRecentOldTransactionDateQuery = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                     .Where( t =>
                         t.AuthorizedPersonAliasId.HasValue &&
-                        personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
-                        t.TransactionDateTime < oneYearAgo )
-                    .Select( t => t.TransactionDateTime )
-                    .FirstOrDefault();
+                        t.TransactionDateTime < oneYearAgo );
+
+                if ( personAliasIds.Count == 1 )
+                {
+                    var personAliasId = personAliasIds[0];
+                    mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+                }
+                else
+                {
+                    mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                }
+
+                var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
 
                 // If the group doesn't have FirstGiftDate attribute, set it by querying for the value
                 var firstGiftDate = GetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_FIRST_GAVE ).AsDateTime();
@@ -1021,14 +1050,22 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 if ( !firstGiftDate.HasValue )
                 {
-                    firstGiftDate = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                    var firstGiftDateQry = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
                         .Where( t =>
                             t.AuthorizedPersonAliasId.HasValue &&
-                            personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
-                            t.TransactionDateTime.HasValue )
-                        .OrderBy( t => t.TransactionDateTime )
-                        .Select( t => t.TransactionDateTime )
-                        .FirstOrDefault();
+                            t.TransactionDateTime.HasValue );
+
+                    if ( personAliasIds.Count == 1 )
+                    {
+                        var personAliasId = personAliasIds[0];
+                        firstGiftDateQry = firstGiftDateQry.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+                    }
+                    else
+                    {
+                        firstGiftDateQry = firstGiftDateQry.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                    }
+
+                    firstGiftDate = firstGiftDateQry.Min( t => t.TransactionDateTime );
 
                     if ( firstGiftDate.HasValue )
                     {
@@ -1115,18 +1152,28 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                 // Get any recent alerts for these people. These will be used in the "repeat alert prevention" logic
                 var financialTransactionAlertService = new FinancialTransactionAlertService( rockContext );
-                var twelveMonthsAlerts = financialTransactionAlertService.Queryable()
+                var twelveMonthsAlertsQry = financialTransactionAlertService.Queryable()
                     .AsNoTracking()
                     .Where( a =>
-                        personAliasIds.Contains( a.PersonAliasId ) &&
-                        a.AlertDateTime > oneYearAgo )
-                    .Select( a => new AlertView
-                    {
-                        AlertDateTime = a.AlertDateTime,
-                        AlertTypeId = a.AlertTypeId,
-                        AlertType = a.FinancialTransactionAlertType.AlertType,
-                        TransactionId = a.TransactionId
-                    } )
+                        a.AlertDateTime > oneYearAgo );
+
+                if ( personAliasIds.Count == 1 )
+                {
+                    var personAliasId = personAliasIds[0];
+                    twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => t.PersonAliasId == personAliasId );
+                }
+                else
+                {
+                    twelveMonthsAlertsQry = twelveMonthsAlertsQry.Where( t => personAliasIds.Contains( t.PersonAliasId ) );
+                }
+
+                var twelveMonthsAlerts = twelveMonthsAlertsQry.Select( a => new AlertView
+                {
+                    AlertDateTime = a.AlertDateTime,
+                    AlertTypeId = a.AlertTypeId,
+                    AlertType = a.FinancialTransactionAlertType.AlertType,
+                    TransactionId = a.TransactionId
+                } )
                     .OrderBy( a => a.AlertDateTime )
                     .ToList();
 
