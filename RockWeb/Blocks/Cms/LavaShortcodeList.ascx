@@ -8,7 +8,7 @@
         <script>
             Sys.Application.add_load(function () {
                 $('.js-shortcode-toggle').on('click', function () {
-                    $(this).closest('.panel').toggleClass('is-open').find('.panel-body').slideToggle();
+                    $(this).closest('.panel').toggleClass('collapsed').find('.panel-body').slideToggle();
                     $(this).find('.example-toggle i').toggleClass('fa-circle-o fa-circle');
                 });
             });
@@ -26,12 +26,12 @@
             <div class="panel-body">
                 <asp:Repeater ID="rptShortcodes" runat="server" OnItemDataBound="rptShortcodes_ItemDataBound">
                     <ItemTemplate>
-                        <div class="panel panel-widget panel-shortcodeitem">
+                        <div class="panel panel-widget panel-shortcodeitem collapsed">
                           <div class="panel-heading cursor-pointer js-shortcode-toggle clearfix flex-column flex-sm-row align-items-start align-items-sm-center">
 		                        <a name="<%# Eval("TagName").ToString().ToLower() %>"></a>
                             <div>
-                              <h1 class="panel-title"><%# Eval("Name") %></h1>
-                              <p class="text-sm">
+                              <h1 class="panel-title mb-1"><%# Eval("Name") %></h1>
+                              <p class="text-sm text-muted">
                                 <%# Eval("Description") %>
                               </p>
                             </div>
