@@ -59,8 +59,8 @@
     right: 0;
     bottom: 0;
     left: 0;
-    content: "";
     pointer-events: none;
+    content: "";
   }
 
   &:hover::after {
@@ -77,14 +77,15 @@
     color: #fff !important; //@adminbar-text-color
   }
 
-  a, .delete {
+  a,
+  .delete {
+    display: block;
     float: left;
+    width: 26px;
     padding: 1px 0 !important; // important to keep themes from changing this
     margin: 0 !important; // important to keep themes from changing this
-    text-decoration: none;
-    width: 26px;
-    display: block;
     text-align: center;
+    text-decoration: none;
   }
 
   // i.fa {
