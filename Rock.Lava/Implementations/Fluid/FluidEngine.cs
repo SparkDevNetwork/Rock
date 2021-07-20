@@ -306,7 +306,7 @@ namespace Rock.Lava.Fluid
             options.Filters.AddFilter( "Split", global::Fluid.Filters.StringFilters.Split );
             options.Filters.AddFilter( "StripNewlines", global::Fluid.Filters.StringFilters.StripNewLines );
             options.Filters.AddFilter( "Truncate", global::Fluid.Filters.StringFilters.Truncate );
-            options.Filters.AddFilter( "Truncatewords", global::Fluid.Filters.StringFilters.TruncateWords );
+            options.Filters.AddFilter( "TruncateWords", global::Fluid.Filters.StringFilters.TruncateWords );
             options.Filters.AddFilter( "Upcase", global::Fluid.Filters.StringFilters.Upcase );
         }
 
