@@ -190,7 +190,7 @@
                                         Help="If an area and/or group has a grade requirement, check this option to prevent people without a grade from checking in to that area/group." />
 
                                     <Rock:RockRadioButtonList ID="rblAbilityLevelDetermination" runat="server" Label="Ability Level Determination"
-                                        Help="Determines how check-in should gather the individuals current ability level. Ask means that the individual will be asked as a part of each check-in.  Don't Ask will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.">
+                                        Help="Determines how check-in should gather the individual's current ability level. &quot;Ask&quot; means that the individual will be asked as a part of each check-in.  &quot;Don't Ask&quot; will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.">
                                         <asp:ListItem Text="Ask" Value="0" />
                                         <asp:ListItem Text="Don't Ask" Value="1" />
                                     </Rock:RockRadioButtonList>
