@@ -20,7 +20,7 @@
                 <h1 class="panel-title"><i class="fa fa-cube"></i> Lava Shortcodes</h1>
                 <div class="pull-right flex-btn-gap">
                     <Rock:Toggle ID="tglShowActive" runat="server" ButtonSizeCssClass="btn-xs" OnCssClass="btn-success" OffCssClass="btn-warning" OnText="Active" OffText="Inactive" CssClass="" Checked="true" OnCheckedChanged="tglShowActive_CheckedChanged" />
-                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-action btn-square" OnClick="btnAddShortcut_Click" Text="Add Shortcut"><i class="fa fa-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="btnAddShortcut" runat="server" CssClass="btn btn-xs btn-default btn-square" OnClick="btnAddShortcut_Click" Text="Add Shortcut"><i class="fa fa-plus"></i></asp:LinkButton>
                 </div>
             </div>
             <div class="panel-body">
