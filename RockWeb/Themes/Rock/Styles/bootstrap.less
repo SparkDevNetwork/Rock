@@ -10,26 +10,21 @@
 
 
 .label-variant(@color) {
-  color: @color;
-  background-color: fade(@color, 20%);
+  color: darken(@color, 10%);
+  background-color: fade(lighten(@color, 4%), 15%);
 }
 
 .label-default {
   color: @gray-800;
+  background: @label-default-bg;
 }
 
 .label-warning {
   color: #92400e;
-  background: #fef3c7;
 }
 
-.label-info {
-  color: #246d8f;
-  //background: #dbeafe;
-}
-
-.label-success {
-  color: #119c6e;
+.label-type {
+  color: @gray-800 !important;
 }
 
 .label-campus {
