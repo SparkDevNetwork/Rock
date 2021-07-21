@@ -22,7 +22,7 @@ using Rock.Model;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a <see cref="DataView"/> is run.
+    /// Task to update statistics when a <see cref="DataView"/> is run.
     /// </summary>
     public sealed class UpdateDataViewStatistics : BusStartedTask<UpdateDataViewStatistics.Message>
     {
