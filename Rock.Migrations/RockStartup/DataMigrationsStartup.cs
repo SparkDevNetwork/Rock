@@ -67,9 +67,12 @@ namespace Rock.Migrations.RockStartup
             // start a task that will run any incomplete RunOneJobs (one at a time)
             Task.Run( () =>
              {
+                 var rockContext = new Rock.Data.RockContext();
+                 var jobService = new Rock.Model.ServiceJobService( rockContext );
                  foreach ( var runOnceJobId in runOnceJobIds )
                  {
-                     new Transactions.RunJobNowTransaction( runOnceJobId ).Execute();
+                     var job = jobService.Get( runOnceJobId );
+                     jobService.RunNow( job, out _ );
                  }
              } );
         }
