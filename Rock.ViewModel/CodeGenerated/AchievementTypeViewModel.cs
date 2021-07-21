@@ -128,6 +128,14 @@ namespace Rock.ViewModel
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>
+        /// Gets or sets the CustomSummaryLavaTemplate.
+        /// </summary>
+        /// <value>
+        /// The CustomSummaryLavaTemplate.
+        /// </value>
+        public string CustomSummaryLavaTemplate { get; set; }
+
+        /// <summary>
         /// Gets or sets the Description.
         /// </summary>
         /// <value>
@@ -136,12 +144,28 @@ namespace Rock.ViewModel
         public string Description { get; set; }
 
         /// <summary>
+        /// Gets or sets the ImageBinaryFileId.
+        /// </summary>
+        /// <value>
+        /// The ImageBinaryFileId.
+        /// </value>
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
         /// Gets or sets the IsActive.
         /// </summary>
         /// <value>
         /// The IsActive.
         /// </value>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IsPublic.
+        /// </summary>
+        /// <value>
+        /// The IsPublic.
+        /// </value>
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// Gets or sets the MaxAccomplishmentsAllowed.

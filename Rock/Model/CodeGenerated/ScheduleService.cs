@@ -126,6 +126,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
                 CategoryId = model.CategoryId,
                 CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
                 CheckInStartOffsetMinutes = model.CheckInStartOffsetMinutes,
@@ -207,6 +208,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Schedule target, Schedule source )
         {
             target.Id = source.Id;
+            target.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             target.CategoryId = source.CategoryId;
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
             target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;

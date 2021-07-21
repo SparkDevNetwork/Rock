@@ -605,23 +605,37 @@
 
 // Custom Labels { The bootstrap labels use the brand colors. }
 @label-padding:               .333em 0.6em .4em;
+@label-link-color:            inherit;
 
-
-@label-default-bg:            @gray-500;
-// //** Primary label background color
-// @label-primary-bg:            @brand-primary;
-// //** Success label background color
-// @label-success-bg:            @brand-success;
-// //** Info label background color
-// @label-info-bg:               @brand-info;
-// //** Warning label background color
-// @label-warning-bg:            #92400e;
-// //** Danger label background color
-// @label-danger-bg:             @brand-danger;
+@label-default-bg:            @gray-200;
+//** Primary label background color
+@label-primary-bg:            @brand-primary;
+//** Success label background color
+@label-success-bg:            darken(@brand-success, 5%);
+//** Info label background color
+@label-info-bg:               @brand-info;
+//** Warning label background color
+@label-warning-bg:            #e2b503;
+//** Danger label background color
+@label-danger-bg:             @brand-danger;
 
 @label-campus-bg:             #ebe9f1;                      // Used for identifying campuses.
 @label-campus-color:          #766a81;
 @label-type-bg:               @label-default-bg;                          // Used for showing the 'type' of an idea. For instance on the group viewer this highlights the group's type.
+
+
+@badge-bg:                          @gray-500;
+@badge-danger-bg:                   @brand-danger;
+@badge-warning-bg:                  @brand-warning;
+@badge-success-bg:                  @brand-success;
+@badge-info-bg:                     @brand-info;
+@badge-critical-bg:                 @brand-critical;
+
+@badge-danger-color:                #ffffff;
+@badge-warning-color:               #ffffff;
+@badge-success-color:               #ffffff;
+@badge-info-color:                  #ffffff;
+@badge-critical-color:              #ffffff;
 
 // Form States and Actions Colors
 

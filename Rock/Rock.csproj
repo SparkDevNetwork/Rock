@@ -586,6 +586,8 @@
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="CheckIn\CheckinResult.cs" />
+    <Compile Include="CheckIn\PersonAchievementType.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\DailyChallengeEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
@@ -674,19 +676,21 @@
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
     <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
+    <Compile Include="Model\Core\Document\Document.Logic.cs" />
+    <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
     <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Financial\IRedirectionGateway.cs" />
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\LavaService.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
     <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
-    <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
@@ -713,7 +717,9 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
     <Compile Include="Media\MediaPlayerControls.cs" />
     <Compile Include="Media\MediaPlayerInterfaceType.cs" />
@@ -733,6 +739,8 @@
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="SystemGuid\AchievementType.cs" />
+    <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
@@ -786,6 +794,7 @@
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Data\DecimalPrecisionAttribute.cs" />
     <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
+    <Compile Include="Data\Interception\RockEfInterceptor.cs" />
     <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
@@ -799,6 +808,7 @@
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
+    <Compile Include="Financial\FinancialGivingAnalyticsFrequencyLabel.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorHelper.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorRecipientRequest.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorUploadGivingStatementData.cs" />
@@ -837,7 +847,6 @@
     <Compile Include="Lava\Blocks\CalendarEventsBlock.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaElementAttributes.cs" />
-    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\LavaFilters.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />
@@ -897,7 +906,7 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\ConnectionRequestService.Partial.cs" />
-    <Compile Include="Model\DocumentService.Partial.cs" />
+    <Compile Include="Model\Core\Document\DocumentService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
     <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeService.Partial.cs" />
@@ -1081,7 +1090,7 @@
     <Compile Include="Model\CodeGenerated\AchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\AchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
-    <Compile Include="Model\DocumentTypeService.Partial.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
@@ -1091,8 +1100,8 @@
     <Compile Include="Model\GroupDemographicType.cs" />
     <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
-    <Compile Include="Model\Document.cs" />
-    <Compile Include="Model\DocumentType.cs" />
+    <Compile Include="Model\Core\Document\Document.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
@@ -2100,11 +2109,11 @@
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
-    <Compile Include="Model\Following.cs" />
+    <Compile Include="Model\Core\Following\Following.cs" />
     <Compile Include="Model\FollowingEventNotification.cs" />
     <Compile Include="Model\FollowingEventSubscription.cs" />
     <Compile Include="Model\FollowingEventType.cs" />
-    <Compile Include="Model\FollowingService.partial.cs" />
+    <Compile Include="Model\Core\Following\FollowingService.cs" />
     <Compile Include="Model\FollowingSuggested.cs" />
     <Compile Include="Model\FollowingSuggestionType.cs" />
     <Compile Include="Model\Group.cs" />
@@ -3349,6 +3358,14 @@
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
+      <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
+      <Name>Rock.Lava.DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
+      <Project>{afce6f84-bf3a-4182-a816-8fb47afc0305}</Project>
+      <Name>Rock.Lava.Fluid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

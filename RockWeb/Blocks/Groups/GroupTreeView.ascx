@@ -32,10 +32,10 @@
                                         <asp:LinkButton ID="lbAddGroupChild" OnClick="lbAddGroupChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
                                 </ul>
                             </div>
-                            <button class="btn btn-link btn-xs" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()">
+                            <button class="btn btn-link btn-xs" onclick="$(this).closest('.js-grouptreeview').find('.js-group-search').slideToggle()">
                                 <i class="fa fa-search"></i>
                             </button>
-                            <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$('body').find('.js-grouptreeview').find('.js-config-panel').slideToggle()" runat="server">
+                            <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()" runat="server">
                                 <i class="fa fa-ellipsis-v"></i>
                             </button>
                         </asp:Panel>

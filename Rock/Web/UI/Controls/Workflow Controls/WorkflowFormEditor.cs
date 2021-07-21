@@ -70,6 +70,8 @@ namespace Rock.Web.UI.Controls
         private DefinedValuePicker _dvpPersonEntryConnectionStatus;
         private DefinedValuePicker _dvpPersonEntryRecordStatus;
         private DefinedValuePicker _dvpPersonEntryGroupLocationType;
+        private DefinedValuePicker _dvpPersonEntryCampusStatus;
+        private DefinedValuePicker _dvpPersonEntryCampusType;
         private RockDropDownList _ddlPersonEntryPersonAttribute;
         private RockDropDownList _ddlPersonEntrySpouseAttribute;
         private RockDropDownList _ddlPersonEntryFamilyAttribute;
@@ -166,6 +168,8 @@ namespace Rock.Web.UI.Controls
             form.PersonEntryConnectionStatusValueId = _dvpPersonEntryConnectionStatus.SelectedDefinedValueId;
             form.PersonEntryRecordStatusValueId = _dvpPersonEntryRecordStatus.SelectedDefinedValueId;
             form.PersonEntryGroupLocationTypeValueId = _dvpPersonEntryGroupLocationType.SelectedDefinedValueId;
+            form.PersonEntryCampusStatusValueId = _dvpPersonEntryCampusStatus.SelectedDefinedValueId;
+            form.PersonEntryCampusTypeValueId = _dvpPersonEntryCampusType.SelectedDefinedValueId;
 
             form.PersonEntryPersonAttributeGuid = _ddlPersonEntryPersonAttribute.SelectedValueAsGuid();
             form.PersonEntrySpouseAttributeGuid = _ddlPersonEntrySpouseAttribute.SelectedValueAsGuid();
@@ -243,6 +247,12 @@ namespace Rock.Web.UI.Controls
             _dvpPersonEntryConnectionStatus.SetValue( workflowActionForm.PersonEntryConnectionStatusValueId );
             _dvpPersonEntryRecordStatus.SetValue( workflowActionForm.PersonEntryRecordStatusValueId );
             _dvpPersonEntryGroupLocationType.SetValue( workflowActionForm.PersonEntryGroupLocationTypeValueId );
+
+            _dvpPersonEntryCampusStatus.Visible = workflowActionForm.PersonEntryCampusIsVisible;
+            _dvpPersonEntryCampusType.Visible = workflowActionForm.PersonEntryCampusIsVisible;
+
+            _dvpPersonEntryCampusStatus.SetValue( workflowActionForm.PersonEntryCampusStatusValueId );
+            _dvpPersonEntryCampusType.SetValue( workflowActionForm.PersonEntryCampusTypeValueId );
 
             _ddlPersonEntryPersonAttribute.Items.Clear();
             _ddlPersonEntryPersonAttribute.Items.Add( new ListItem() );
@@ -368,6 +378,10 @@ namespace Rock.Web.UI.Controls
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
+
+            target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
+            target.PersonEntryCampusTypeValueId= source.PersonEntryCampusTypeValueId;
+
             target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
             target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
@@ -566,6 +580,10 @@ namespace Rock.Web.UI.Controls
                 Label = "Show Campus"
             };
 
+
+            _cbPersonEntryShowCampus.AutoPostBack = true;
+            _cbPersonEntryShowCampus.CheckedChanged += _cbPersonEntryShowCampus_CheckedChanged;
+
             _cbPersonEntryAutofillCurrentPerson = new RockCheckBox
             {
                 ID = "_cbPersonEntryAutofillCurrentPerson",
@@ -662,6 +680,22 @@ namespace Rock.Web.UI.Controls
                 Label = "Address Type",
                 Required = true,
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+            };
+
+            _dvpPersonEntryCampusStatus = new DefinedValuePicker
+            {
+                ID = "_dvpPersonEntryCampusStatus",
+                Label = "Campus Status",
+                Required = false,
+                DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() )
+            };
+
+            _dvpPersonEntryCampusType = new DefinedValuePicker
+            {
+                ID = "_dvpPersonEntryCampusType",
+                Label = "Campus Type",
+                Required = false,
+                DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() )
             };
 
             _ddlPersonEntryPersonAttribute = new RockDropDownList
@@ -861,6 +895,8 @@ namespace Rock.Web.UI.Controls
 
             pnlPersonEntryRow4Col1.Controls.Add( _dvpPersonEntryRecordStatus );
             pnlPersonEntryRow4Col2.Controls.Add( _dvpPersonEntryGroupLocationType );
+            pnlPersonEntryRow4Col3.Controls.Add( _dvpPersonEntryCampusType );
+            pnlPersonEntryRow4Col4.Controls.Add( _dvpPersonEntryCampusStatus );
 
             /* Person Entry - Row 5*/
             Panel pnlPersonEntryRow5 = new Panel
@@ -934,6 +970,17 @@ namespace Rock.Web.UI.Controls
 
             _mdFieldVisibilityRules.Content.Controls.Add( fvreWorkflowFields );
             Controls.Add( _mdFieldVisibilityRules );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the _cbPersonEntryShowCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _cbPersonEntryShowCampus_CheckedChanged( object sender, EventArgs e )
+        {
+            _dvpPersonEntryCampusStatus.Visible = _cbPersonEntryShowCampus.Checked;
+            _dvpPersonEntryCampusType.Visible = _cbPersonEntryShowCampus.Checked;
         }
 
         /// <summary>

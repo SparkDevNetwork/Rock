@@ -345,7 +345,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// </summary>
         private class LavaDataObjectWithCustomPropertyAccess : LavaDataObject
         {
-            private Dictionary<string, object> _internalDictionary;
+            private Dictionary<string, object> _internalDictionary = new Dictionary<string, object>();
 
 
             public static LavaDataObjectWithCustomPropertyAccess NewWithData()

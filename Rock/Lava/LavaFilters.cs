@@ -2352,10 +2352,12 @@ namespace Rock.Lava
         {
             Person person = null;
 
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
+
             if ( input is int )
             {
                 // If the input is an integer, assume it's a PersonId and retrieve the associated Person.
-                person = new PersonService( new RockContext() ).Get( ( int ) input );
+                person = new PersonService( rockContext ).Get( ( int ) input );
             }
             else if ( input is Person )
             {
@@ -2366,6 +2368,14 @@ namespace Rock.Lava
             if ( person != null )
             {
                 PersonService.SaveUserPreference( person, settingKey, settingValue );
+                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                if ( rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                {
+                    rockContext.QueryMetricDetails.Add( new QueryMetricDetail
+                    {
+                        Sql = "Query metrics are not available for SetUserPreference."
+                    } );
+                }
             }
         }
 
@@ -2380,10 +2390,12 @@ namespace Rock.Lava
         {
             Person person = null;
 
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
+
             if ( input is int )
             {
                 // If the input is an integer, assume it's a PersonId and retrieve the associated Person.
-                person = new PersonService( new RockContext() ).Get( ( int ) input );
+                person = new PersonService( rockContext ).Get( ( int ) input );
             }
             else if ( input is Person )
             {
@@ -2392,6 +2404,14 @@ namespace Rock.Lava
 
             if ( person != null )
             {
+                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                if ( rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                {
+                    rockContext.QueryMetricDetails.Add( new QueryMetricDetail
+                    {
+                        Sql = "Query metrics are not available for GetUserPreference."
+                    } );
+                }
                 return PersonService.GetUserPreference( person, settingKey );
             }
 
@@ -2408,9 +2428,11 @@ namespace Rock.Lava
         {
             Person person = null;
 
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
+
             if ( input is int )
             {
-                person = new PersonService( new RockContext() ).Get( ( int ) input );
+                person = new PersonService( rockContext ).Get( ( int ) input );
             }
             else if ( input is Person )
             {
@@ -2420,6 +2442,14 @@ namespace Rock.Lava
             if ( person != null )
             {
                 PersonService.DeleteUserPreference( person, settingKey );
+                rockContext.QueryCount++; // The service method above won't allow passing in a RockContext so we'll just increment a query manually.
+                if (rockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                {
+                    rockContext.QueryMetricDetails.Add( new QueryMetricDetail
+                    {
+                        Sql = "Query metrics are not available for DeleteUserPreference."
+                    } );
+                }
             }
         }
 
@@ -2443,9 +2473,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            var rockContext = new RockContext();
-
-            return new PersonService( rockContext ).Get( personId );
+            return new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( personId );
         }
 
         /// <summary>
@@ -2465,9 +2493,7 @@ namespace Rock.Lava
 
             if ( personGuid.HasValue )
             {
-                var rockContext = new RockContext();
-
-                return new PersonService( rockContext ).Get( personGuid.Value );
+                return new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( personGuid.Value );
             }
             else
             {
@@ -2492,9 +2518,7 @@ namespace Rock.Lava
 
             if ( personAliasGuid.HasValue )
             {
-                var rockContext = new RockContext();
-
-                return new PersonAliasService( rockContext ).Get( personAliasGuid.Value ).Person;
+                return new PersonAliasService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( personAliasGuid.Value ).Person;
             }
             else
             {
@@ -2522,9 +2546,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            var rockContext = new RockContext();
-
-            return new PersonAliasService( rockContext ).Get( personAliasId ).Person;
+            return new PersonAliasService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( personAliasId ).Person;
         }
 
         /// <summary>
@@ -2548,7 +2570,7 @@ namespace Rock.Lava
             }
 
             var alternateIdSearchTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-            return new PersonSearchKeyService( new RockContext() ).Queryable().AsNoTracking()
+            return new PersonSearchKeyService( LavaHelper.GetRockContextFromLavaContext( context) ).Queryable().AsNoTracking()
                     .Where( k =>
                         k.SearchValue == alternateId
                         && k.SearchTypeValueId == alternateIdSearchTypeValueId )
@@ -2566,9 +2588,11 @@ namespace Rock.Lava
         {
             Person person = null;
 
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
+
             if ( input is int )
             {
-                person = new PersonService( new RockContext() ).Get( ( int ) input );
+                person = new PersonService( rockContext ).Get( ( int ) input );
             }
             else if ( input is Person )
             {
@@ -2578,7 +2602,7 @@ namespace Rock.Lava
             if ( person != null )
             {
                 var alternateIdSearchTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-                return person.GetPersonSearchKeys().Where( k => k.SearchTypeValueId == alternateIdSearchTypeValueId ).FirstOrDefault().SearchValue;
+                return person.GetPersonSearchKeys( rockContext ).Where( k => k.SearchTypeValueId == alternateIdSearchTypeValueId )?.FirstOrDefault()?.SearchValue;
             }
 
             return string.Empty;
@@ -2592,12 +2616,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Parents( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person != null )
             {
                 Guid adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-                var parents = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
+                var parents = new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == adultGuid ).Select( a => a.Person );
                 return parents.ToList();
             }
 
@@ -2612,12 +2636,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Person> Children( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person != null )
             {
                 Guid childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-                var children = new PersonService( new RockContext() ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
+                var children = new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).GetFamilyMembers( person.Id ).Where( m => m.GroupRole.Guid == childGuid ).Select( a => a.Person );
                 return children.ToList();
             }
 
@@ -2634,14 +2658,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string Address( ILavaRenderContext context, object input, string addressType, string qualifier = "" )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person != null )
             {
                 var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
 
                 // Get all GroupMember records tied to this Person and the Family GroupType. Note that a given Person can belong to multiple families.
-                var groupMemberQuery = new GroupMemberService( GetRockContext( context ) )
+                var groupMemberQuery = new GroupMemberService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .Queryable( "GroupLocations.Location" )
                     .AsNoTracking()
                     .Where( m => m.PersonId == person.Id &&
@@ -2789,13 +2813,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person Spouse( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person == null )
             {
                 return null;
             }
-            return person.GetSpouse();
+            return person.GetSpouse( LavaHelper.GetRockContextFromLavaContext( context ) );
         }
 
         /// <summary>
@@ -2806,13 +2830,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Person HeadOfHousehold( ILavaRenderContext context, object input )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person == null )
             {
                 return null;
             }
-            return person.GetHeadOfHousehold();
+            return person.GetHeadOfHousehold( LavaHelper.GetRockContextFromLavaContext( context) );
         }
 
         /// <summary>
@@ -2828,7 +2852,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string FamilySalutation( ILavaRenderContext context, object input, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalfinalSeparator = "&", string separator = "," )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
             if ( person == null )
             {
@@ -2840,7 +2864,8 @@ namespace Rock.Lava
                 IncludeInactive = includeInactive,
                 UseFormalNames = useFormalNames,
                 FinalSeparator = finalfinalSeparator,
-                Separator = separator
+                Separator = separator,
+                RockContext = LavaHelper.GetRockContextFromLavaContext( context)
             };
 
             return Person.CalculateFamilySalutation( person, args );
@@ -2856,14 +2881,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PhoneNumber( ILavaRenderContext context, object input, string phoneType = "Home", bool countryCode = false )
         {
-            Person person = GetPerson( input );
+            Person person = GetPerson( input, context );
 
 
             string phoneNumber = null;
 
             if ( person != null )
             {
-                var phoneNumberQuery = new PhoneNumberService( GetRockContext( context ) )
+                var phoneNumberQuery = new PhoneNumberService( LavaHelper.GetRockContextFromLavaContext( context) )
                             .Queryable()
                             .AsNoTracking()
                             .Where( p =>
@@ -2905,7 +2930,7 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( ILavaRenderContext context, object input, string size = "395", double brightness = 1.0, double contrast = 1.0, string fileName = "LOGO", int rotationDegree = 0 )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             try
             {
                 if ( person != null )
@@ -2913,7 +2938,7 @@ namespace Rock.Lava
                     Stream initialPhotoStream;
                     if ( person.PhotoId.HasValue )
                     {
-                        initialPhotoStream = new BinaryFileService( GetRockContext( context ) ).Get( person.PhotoId.Value ).ContentStream;
+                        initialPhotoStream = new BinaryFileService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( person.PhotoId.Value ).ContentStream;
                     }
                     else
                     {
@@ -3131,12 +3156,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Groups( ILavaRenderContext context, object input, string groupTypeId, string memberStatus = "Active", string groupStatus = "Active" )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                var groupQuery = new GroupMemberService( GetRockContext( context ) )
+                var groupQuery = new GroupMemberService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .Queryable( "Group, GroupRole" )
                     .Where( m =>
                         m.PersonId == person.Id &&
@@ -3172,7 +3197,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.GroupMember> Group( ILavaRenderContext context, object input, string groupId, string status = "Active" )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupId = groupId.AsIntegerOrNull();
 
             if ( string.IsNullOrWhiteSpace( status ) )
@@ -3182,7 +3207,7 @@ namespace Rock.Lava
 
             if ( person != null && numericalGroupId.HasValue )
             {
-                var groupQuery = new GroupMemberService( GetRockContext( context ) )
+                var groupQuery = new GroupMemberService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .Queryable( "Group, GroupRole" )
                     .AsNoTracking()
                     .Where( m =>
@@ -3213,12 +3238,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.Group> GroupsAttended( ILavaRenderContext context, object input, string groupTypeId )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new AttendanceService( GetRockContext( context ) ).Queryable()
+                return new AttendanceService( LavaHelper.GetRockContextFromLavaContext( context) ).Queryable()
                     .AsNoTracking()
                     .Where( a =>
                         a.Occurrence.Group != null &&
@@ -3240,7 +3265,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Attendance LastAttendedGroupOfType( ILavaRenderContext context, object input, string groupTypeId )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person == null && !numericalGroupTypeId.HasValue )
@@ -3248,7 +3273,7 @@ namespace Rock.Lava
                 return new Attendance();
             }
 
-            return new AttendanceService( GetRockContext( context ) ).Queryable()
+            return new AttendanceService( LavaHelper.GetRockContextFromLavaContext( context) ).Queryable()
                 .AsNoTracking()
                 .Where( a =>
                     a.Occurrence.Group != null &&
@@ -3268,12 +3293,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.Group> GeofencingGroups( ILavaRenderContext context, object input, string groupTypeId )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new GroupService( GetRockContext( context ) )
+                return new GroupService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
                     .ToList();
             }
@@ -3291,13 +3316,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static List<Rock.Model.Person> GeofencingGroupMembers( ILavaRenderContext context, object input, string groupTypeId, string groupTypeRoleId )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
             int? numericalGroupTypeRoleId = groupTypeRoleId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue && numericalGroupTypeRoleId.HasValue )
             {
-                return new GroupService( GetRockContext( context ) )
+                return new GroupService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .GetGeofencingGroups( person.Id, numericalGroupTypeId.Value )
                     .SelectMany( g => g.Members.Where( m => m.GroupRole.Id == numericalGroupTypeRoleId ) )
                     .Select( m => m.Person )
@@ -3316,12 +3341,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Rock.Model.Group NearestGroup( ILavaRenderContext context, object input, string groupTypeId )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
             int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
 
             if ( person != null && numericalGroupTypeId.HasValue )
             {
-                return new GroupService( GetRockContext( context ) )
+                return new GroupService( LavaHelper.GetRockContextFromLavaContext( context) )
                     .GetNearestGroup( person.Id, numericalGroupTypeId.Value );
             }
 
@@ -3337,7 +3362,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static object Campus( ILavaRenderContext context, object input, object option = null )
         {
-            var person = GetPerson( input );
+            var person = GetPerson( input, context );
 
             bool getAll = false;
             if ( option != null && option.GetType() == typeof( string ) )
@@ -3361,36 +3386,18 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the rock context.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <returns></returns>
-        private static RockContext GetRockContext( ILavaRenderContext context )
-        {
-            var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
-
-            if ( rockContext == null )
-            { 
-                rockContext = new RockContext();
-
-                context.SetInternalField( "rock_context", rockContext );
-            }
-
-            return rockContext;
-        }
-
-        /// <summary>
         /// Gets the person.
         /// </summary>
         /// <param name="input">The input.</param>
+        /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static Person GetPerson( object input )
+        private static Person GetPerson( object input, ILavaRenderContext context )
         {
             if ( input != null )
             {
                 if ( input is int )
                 {
-                    return new PersonService( new RockContext() ).Get( ( int ) input );
+                    return new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( ( int ) input );
                 }
 
                 var person = input as Person;
@@ -3442,7 +3449,7 @@ namespace Rock.Lava
                 personId = input.ToString().AsInteger();
             }
 
-            bool found = new SignatureDocumentService( new RockContext() )
+            bool found = new SignatureDocumentService( LavaHelper.GetRockContextFromLavaContext( context) )
                 .Queryable().AsNoTracking()
                 .Where( d =>
                     d.SignatureDocumentTemplateId == templateId &&
@@ -3463,7 +3470,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PersonActionIdentifier( ILavaRenderContext context, object input, string action )
         {
-            Person person = GetPerson( input ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
+            Person person = GetPerson( input, context ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
 
             if ( person != null )
             {
@@ -3487,7 +3494,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string PersonTokenCreate( ILavaRenderContext context, object input, int? expireMinutes = null, int? usageLimit = null, int? pageId = null )
         {
-            Person person = GetPerson( input ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
+            Person person = GetPerson( input, context ) ?? PersonById( context, input ) ?? PersonByGuid( context, input );
 
             if ( person != null )
             {
@@ -3499,7 +3506,7 @@ namespace Rock.Lava
 
                 if ( pageId.HasValue )
                 {
-                    var page = new PageService( new RockContext() ).Get( pageId.Value );
+                    var page = new PageService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( pageId.Value );
                     if ( page == null )
                     {
                         // invalid page specified, so don't return a token
@@ -3529,10 +3536,7 @@ namespace Rock.Lava
 
             if ( !string.IsNullOrEmpty( encryptedPersonToken ) )
             {
-                var rockContext = new RockContext();
-
-
-                return new PersonService( rockContext ).GetByImpersonationToken( encryptedPersonToken, incrementUsage, pageId );
+                return new PersonService( LavaHelper.GetRockContextFromLavaContext( context) ).GetByImpersonationToken( encryptedPersonToken, incrementUsage, pageId );
             }
             else
             {
@@ -3561,9 +3565,7 @@ namespace Rock.Lava
 
             if ( groupGuid.HasValue )
             {
-                var rockContext = new RockContext();
-
-                return new GroupService( rockContext ).Get( groupGuid.Value );
+                return new GroupService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( groupGuid.Value );
             }
             else
             {
@@ -3591,9 +3593,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            var rockContext = new RockContext();
-
-            return new GroupService( rockContext ).Get( groupId );
+            return new GroupService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( groupId );
         }
 
         #endregion Group Filters
@@ -4085,8 +4085,7 @@ namespace Rock.Lava
 
             if ( currentPerson != null )
             {
-                var rockContext = new RockContext();
-                followedEntityIds = new FollowingService( rockContext ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
+                followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
                     .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
             }
             else
@@ -4837,24 +4836,24 @@ namespace Rock.Lava
             return input.ToString().AsDateTime();
         }
 
-
         /// <summary>
         /// Creates the short link.
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
         /// <param name="token">The token.</param>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
         /// <param name="randomLength">The random length.</param>
         /// <returns></returns>
-        public static string CreateShortLink( object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10 )
+        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10 )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
             //        it will try to correct it with reasonable defaults. For instance
             //        if you pass in an invalid siteId, the first active site will be used.
 
-            var rockContext = new RockContext();
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
             var shortLinkService = new PageShortLinkService( rockContext );
 
             // Ensure that the provided site exists
@@ -5322,7 +5321,7 @@ namespace Rock.Lava
         {
             if ( input is IEnumerable )
             {
-                var rockContext = GetRockContext( context );
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( context);
                 var inputList = ( input as IEnumerable ).OfType<Attribute.IHasAttributes>().ToList();
                 foreach ( var item in inputList )
                 {
@@ -5534,7 +5533,7 @@ namespace Rock.Lava
                 noteTypeIds = ( ( string ) noteType ).Split( ',' ).Select( Int32.Parse ).ToList();
             }
 
-            var notes = new NoteService( new RockContext() ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
+            var notes = new NoteService( LavaHelper.GetRockContextFromLavaContext( context) ).Queryable().AsNoTracking().Where( n => n.EntityId == entityId );
 
             if ( noteTypeIds.Count > 0 )
             {
@@ -5653,7 +5652,7 @@ namespace Rock.Lava
 
                     if ( entityTypeCache != null )
                     {
-                        RockContext _rockContext = new RockContext();
+                        RockContext _rockContext = LavaHelper.GetRockContextFromLavaContext( context);
 
                         Type entityType = entityTypeCache.GetEntityType();
                         if ( entityType != null )
@@ -5718,7 +5717,7 @@ namespace Rock.Lava
                 }
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() ) // Can't use LavaHelper.GetRockContextFromLavaContext( context) since it's wrapped in a using
             {
                 int followingEntityTypeId = entity.TypeId;
                 var followed = new FollowingService( rockContext ).Queryable()
@@ -5814,7 +5813,7 @@ namespace Rock.Lava
 
             if ( input is int )
             {
-                binaryFile = new BinaryFileService( new RockContext() ).Get( ( int ) input );
+                binaryFile = new BinaryFileService( LavaHelper.GetRockContextFromLavaContext( context) ).Get( ( int ) input );
             }
             else if ( input is BinaryFile )
             {

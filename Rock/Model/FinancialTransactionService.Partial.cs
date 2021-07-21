@@ -356,7 +356,16 @@ namespace Rock.Model
                 settings.TransactionTypeGuids ??
                 new List<Guid> { SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
             var transactionTypeIds = transactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
-            query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
+
+            if ( transactionTypeIds.Count() == 1 )
+            {
+                var transactionTypeId = transactionTypeIds[0];
+                query = query.Where( t => t.TransactionTypeValueId == transactionTypeId );
+            }
+            else
+            {
+                query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
+            }
 
             // Filter accounts, defaults to tax deductible only
             var accountGuids = settings.FinancialAccountGuids ?? new List<Guid>();
@@ -380,7 +389,7 @@ namespace Rock.Model
             query = query.Where( t => !t.Refunds.Any() );
 
             // Remove transactions with $0 or negative amounts
-            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0 );
+            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0M );
 
             return query;
         }
@@ -392,11 +401,17 @@ namespace Rock.Model
         /// <returns></returns>
         public List<MonthlyAccountGivingHistory> GetGivingAnalyticsMonthlyAccountGivingHistory( string givingId )
         {
+            var personAliasIdQry = new PersonAliasService( this.Context as RockContext )
+                .Queryable()
+                .Where( a => a.Person.GivingId == givingId )
+                .Select( a => a.Id );
+
             var views = GetGivingAnalyticsSourceTransactionQuery()
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionDateTime.HasValue &&
-                    t.AuthorizedPersonAlias.Person.GivingId == givingId )
+                    t.AuthorizedPersonAliasId.HasValue &&
+                    personAliasIdQry.Contains( t.AuthorizedPersonAliasId.Value ) )
                 .SelectMany( t => t.TransactionDetails.Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,

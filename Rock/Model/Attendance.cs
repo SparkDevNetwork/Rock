@@ -757,8 +757,10 @@ namespace Rock.Model
 
             if ( !_isDeleted )
             {
-                // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this.Id ) );
+                // Process any streaks that may occur as a result of adding/modifying an attendance record.
+                // If there are any, they need to be processed in this thread in case there are any achievement changes
+                // that need to be detected as a result of this attendance.
+                StreakTypeService.HandleAttendanceRecord( this.Id );
             }
 
             base.PostSaveChanges( dbContext );

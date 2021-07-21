@@ -225,7 +225,7 @@ namespace Rock
                 sbDebug.AppendLine( "\n" );
 
                 StackTrace st = new StackTrace( 2, true );
-                var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                var frames = st.GetFrames().Where( a => a.GetFileName() != null && !a.GetFileName().Contains( "DebugHelper.cs" ) );
 
                 sbDebug.AppendLine( string.Format( "/* Call# {0}*/", incrementedCallCount ) );
 

@@ -51,7 +51,7 @@ namespace Rock.Tests.Integration.Lava
 
                 var output = TestHelper.GetTemplateRenderResult( engine, input, renderOptions );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output.Text );
+                TestHelper.DebugWriteRenderResult( engine, input, output.Text );
 
                 Assert.IsTrue( output.Text.Contains( "No parameters were found in your command." ), "Expected message not found." );
             } );
@@ -92,7 +92,7 @@ namespace Rock.Tests.Integration.Lava
 
                 var outputText = input.ResolveMergeFields( new Dictionary<string, object>() );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, outputText );
+                TestHelper.DebugWriteRenderResult( engine, input, outputText );
 
                 Assert.IsTrue( outputText.StartsWith( "Error resolving Lava merge fields: Unknown tag 'invalidTagName'\n" ) );
             } );

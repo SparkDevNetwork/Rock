@@ -602,7 +602,8 @@ namespace Rock.Tests.Integration.Communications
                 CssInliningEnabled = true,
                 CurrentPerson = actualPerson,
                 EnabledLavaCommands = "RockEntity",
-                Message = "HTML Message",
+                // Since css inlining is true the Message should have the tags.
+                Message = "<html><head></head><body>HTML Message</body></html>",
                 MessageMetaData = new Dictionary<string, string> { { "test", "test1" } },
                 PlainTextMessage = "Text Message",
                 ReplyToEmail = "replyto@email.com",

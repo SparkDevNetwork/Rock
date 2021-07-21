@@ -17,8 +17,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using System.Collections.Generic;
-using Rock.Lava.Fluid;
 using System.Diagnostics;
+using Rock.Model;
+using Rock.Data;
+using System.Linq;
+using Rock.Tests.Shared;
+using Rock.Lava.Fluid;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -26,6 +30,7 @@ namespace Rock.Tests.Integration.Lava
     /// Tests to provide performance metrics for critical components of the Lava engine implementation.
     /// </summary>
     [TestClass]
+    [Ignore( "Enable these tests only when evaluating engine performance." )]
     public class PerformanceTests : LavaIntegrationTestBase
     {
         /// <summary>
@@ -41,7 +46,7 @@ namespace Rock.Tests.Integration.Lava
             // Create a Fluid engine with template caching disabled.
             var engineOptions = new LavaEngineConfigurationOptions { CacheService = new MockTemplateCacheService() };
 
-            var engine = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, engineOptions );
+            var engine = LavaService.NewEngineInstance( typeof ( FluidEngine ), engineOptions );
 
             var standardLavaDictionary = new Dictionary<string, object>();
 
@@ -81,5 +86,51 @@ namespace Rock.Tests.Integration.Lava
 
             Debug.Print( $"Average Time: {totalTime.TotalMilliseconds / totalSets} " );
         }
+
+        /// <summary>
+        /// Verify that creating a second instance of the Fluid engine does not cause any changes to the configuration of the first instance.
+        /// </summary>
+        [TestMethod]
+        public void LavaEngine_CreateSecondInstance_FirstInstanceConfigurationIsUnaffected()
+        {
+            const int mobilePhoneNumberTypeValueId = 12;
+
+            var templateInput = @"
+{{ CurrentPerson.NickName }}'s other contact numbers are: {{ CurrentPerson.PhoneNumbers | Where:'NumberTypeValueId', 12, 'notequal' | Select:'NumberFormatted' | Join:', ' }}.'
+";
+
+            templateInput.Replace( "<mobilePhoneId>", mobilePhoneNumberTypeValueId.ToString() );
+
+            var expectedOutput = @"
+Ted's other contact numbers are: (623) 555-3322,(623) 555-2444.'
+";
+
+            var mergeFields = new Dictionary<string, object> { { "CurrentPerson", GetWhereFilterTestPersonTedDecker() } };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // Create a second instance of the engine, and verify that the template is resolved identically.
+                var secondEngine = LavaIntegrationTestHelper.NewEngineInstance( engine.GetType(), new LavaEngineConfigurationOptions { FileSystem = new MockFileProvider(), CacheService = null } );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+
+                TestHelper.AssertTemplateOutput( secondEngine, expectedOutput, templateInput, new LavaTestRenderOptions { MergeFields = mergeFields } );
+            } );
+        }
+
+        private Person GetWhereFilterTestPersonTedDecker()
+        {
+            var rockContext = new RockContext();
+
+            var personTedDecker = new PersonService( rockContext ).Queryable()
+                .FirstOrDefault( x => x.LastName == "Decker" && x.NickName == "Ted" );
+
+            var phones = personTedDecker.PhoneNumbers;
+
+            Assert.That.IsNotNull( personTedDecker, "Test person not found in current database." );
+
+            return personTedDecker;
+        }
+
     }
 }

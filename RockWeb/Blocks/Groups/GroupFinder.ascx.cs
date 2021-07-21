@@ -1482,7 +1482,9 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                infoWindow = lavaTemplate.Render( mergeFields );
+                                var result = LavaService.RenderTemplate( lavaTemplate, mergeFields );
+
+                                infoWindow = result.Text;
                             }
 
                             // Add a map item for group

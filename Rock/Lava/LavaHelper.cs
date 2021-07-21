@@ -47,6 +47,25 @@ namespace Rock.Lava
         #endregion
 
         /// <summary>
+        /// Gets the rock context from lava context or returns a new one if one does not exist.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public static RockContext GetRockContextFromLavaContext( ILavaRenderContext context )
+        {
+            var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
+
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+
+                context.SetInternalField( "rock_context", rockContext );
+            }
+
+            return rockContext;
+        }
+
+        /// <summary>
         /// Gets the common merge fields for Lava operations. By default it'll include CurrentPerson, Context, PageParameter, and Campuses
         /// </summary>
         /// <param name="rockPage">The rock page.</param>

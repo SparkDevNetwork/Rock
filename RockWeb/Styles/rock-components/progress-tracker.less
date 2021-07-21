@@ -1,7 +1,7 @@
 .progress-tracker {
   display: flex;
-  border: 1px solid @panel-border;
   background: @white;
+  border: 1px solid @panel-border;
   border-radius: @border-radius-base;
 }
 
@@ -18,26 +18,26 @@
   display: flex;
   flex-grow: 1;
   height: 100%;
-  margin: 0;
   padding: 0;
+  margin: 0;
   list-style: none;
 }
 
 .progress-step {
+  position: relative;
   display: flex;
   flex: 1 1 0;
-  position: relative;
-  overflow: hidden;
   min-width: 140px;
+  overflow: hidden;
 }
 
 .progress-tracker-arrow {
-  display: block;
   position: absolute;
   top: 0;
   right: 0;
-  height: 100%;
+  display: block;
   width: 14px;
+  height: 100%;
   color: @panel-border;
 
   svg {
@@ -47,15 +47,15 @@
 }
 
 .progress-step-link {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 6px 12px 6px 8px;
-  line-height: 1.25;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: @gray-light;
   position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 6px 12px 6px 8px;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: @gray-light;
 
   // &:hover {
   //   color: #9ca3af;
@@ -64,21 +64,21 @@
 
 .progress-tracker-icon {
   display: flex;
-  background: @brand-primary;
-  color: @white;
-  justify-content: center;
+  flex-shrink: 0;
   align-items: center;
-  border-radius: 999px;
+  justify-content: center;
   width: 24px;
   height: 24px;
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-  margin-right: 6px;
-  flex-shrink: 0;
-  font-size: 12px;
   padding: 1px 0 0 0;
+  margin-right: 6px;
+  font-size: 12px;
+  color: @white;
+  background: @brand-primary;
+  border-radius: 999px;
+  transition-timing-function: cubic-bezier(.4, 0, .2, 1);
+  transition-duration: 150ms;
+  transition-property:
+ background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
 
   // .progress-step-link:hover & {
   //   background: #d15d10;
@@ -110,22 +110,23 @@
   min-width: 56px;
 
   .progress-step-link {
-    font-size: 24px;
     padding: 4px 14px;
+    font-size: 24px;
   }
 
   & + .progress-tracker-more {
-      display: none;
+    display: none;
   }
 }
 
 .progress-tracker-details {
-  margin-top: 2px;
   min-width: 0;
+  margin-top: 2px;
 }
 
 .current + .progress-tracker-details {
-  .progress-tracker-title, .progress-tracker-subtitle {
+  .progress-tracker-title,
+  .progress-tracker-subtitle {
     color: @brand-primary;
   }
 }
@@ -135,34 +136,34 @@
 }
 
 .progress-tracker-subtitle {
-  font-size: 0.75rem;
+  margin: 0;
+  font-size: .75rem;
+  font-weight: 400;
   line-height: 1rem;
   color: @text-muted;
-  margin: 0;
-  font-weight: 400;
 }
 
 .remaining-time {
   position: relative;
-  margin-left: auto;
-  padding: 6px 20px;
-  text-align: center;
-  border-left: 1px solid @panel-border;
-  justify-content: center;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  padding: 6px 20px;
+  margin-left: auto;
+  text-align: center;
+  border-left: 1px solid @panel-border;
 }
 
 .remaining-time-title {
   font-size: 12px;
-  white-space: nowrap;
-  color: @text-muted;
   line-height: 14px;
+  color: @text-muted;
+  white-space: nowrap;
 }
 
 .remaining-time-countdown {
+  margin: 0;
+  font-weight: 500;
   line-height: 1;
   color: @brand-primary;
-  font-weight: 500;
-  margin: 0;
 }

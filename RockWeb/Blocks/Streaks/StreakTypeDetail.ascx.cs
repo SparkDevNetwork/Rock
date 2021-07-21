@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Streaks
                 var service = GetStreakTypeService();
                 var errorMessage = string.Empty;
 
-                if ( !service.CanDelete( streakType, out errorMessage ) )
+                if ( !service.CanDelete( streakType, out errorMessage, true ) )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
                     return;

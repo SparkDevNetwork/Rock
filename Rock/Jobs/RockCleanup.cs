@@ -106,6 +106,16 @@ namespace Rock.Jobs
         Key = AttributeKey.FixAttendanceRecordsNeverMarkedPresent,
         Category = "Check-in" )]
 
+    [IntegerField(
+        "Remove Expired Saved Accounts after days",
+        Key = AttributeKey.RemovedExpiredSavedAccountDays,
+        Description = "The number of days after a saved account expires to delete the saved account. For example, if a credit card expiration is January 2023, it'll expire on Feb 1st, 2023. Setting this to 0 will delete the saved account on Feb 1st. Leave this blank to not delete expired saved accounts.",
+        DefaultValue = null,
+        IsRequired = false,
+        Category = "Finance",
+        Order = 1
+        )]
+
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
@@ -122,6 +132,7 @@ namespace Rock.Jobs
             public const string BatchCleanupAmount = "BatchCleanupAmount";
             public const string CommandTimeout = "CommandTimeout";
             public const string FixAttendanceRecordsNeverMarkedPresent = "FixAttendanceRecordsNeverMarkedPresent";
+            public const string RemovedExpiredSavedAccountDays = "RemovedExpiredSavedAccountDays";
         }
 
         /// <summary>
@@ -160,7 +171,7 @@ namespace Rock.Jobs
             lastRunDateTime = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME ).AsDateTime() ?? RockDateTime.Now.AddDays( -1 );
             /* IMPORTANT!! MDP 2020-05-05
 
-            1 ) Whenever you do a new RockContext() in RockCleanup make sure to set the commandtimeout, like this:
+            1 ) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
 
                 var rockContext = new RockContext();
                 rockContext.Database.CommandTimeout = commandTimeout;
@@ -168,8 +179,7 @@ namespace Rock.Jobs
             2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
                only shows a one line summary of each task (doesn't wrap)
 
-            3) The cleanupTitle parameter should be in {Verb} [adjective] {noun} format (look below for examples)
-
+            3) The cleanupTitle parameter should be in {noun} format (look below for examples)
 
             */
 
@@ -231,6 +241,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "validate schedule", () => EnsureScheduleEffectiveStartEndDates() );
 
+            RunCleanupTask( "inactivate completed schedules", () => AutoInactivateCompletedSchedules() );
+
             RunCleanupTask( "set nameless SMS response", () => EnsureNamelessPersonForSMSResponses() );
 
             RunCleanupTask( "merge nameless to person", () => MatchNamelessPersonToRegularPerson() );
@@ -244,6 +256,8 @@ namespace Rock.Jobs
             RunCleanupTask( "update sms communication preferences", () => UpdateSmsCommunicationPreferences() );
 
             RunCleanupTask( "remove expired registration sessions", () => RemoveExpiredRegistrationSessions() );
+
+            RunCleanupTask( "remove expired saved accounts", () => RemoveExpiredSavedAccounts( dataMap ) );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_CLEANUP_LAST_RUN_DATETIME, RockDateTime.Now.ToString() );
 
@@ -1769,6 +1783,41 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         }
 
         /// <summary>
+        /// Inactivates completed one-time schedules.
+        /// </summary>
+        /// <returns></returns>
+        private int AutoInactivateCompletedSchedules()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
+                var scheduleService = new ScheduleService( rockContext );
+
+                var autoCompleteSchedules = scheduleService.Queryable()
+                    .Where( s => s.AutoInactivateWhenComplete && s.IsActive )
+                    .ToList();
+
+                foreach ( var schedule in autoCompleteSchedules )
+                {
+                    if ( schedule.GetNextStartDateTime( RockDateTime.Now ) == null )
+                    {
+                        schedule.IsActive = false;
+                        rowsUpdated++;
+                    }
+                }
+
+                if ( rowsUpdated > 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
         /// Ensures the nameless person for SMS responses that have a NULL fromPersonAliasId
         /// </summary>
         /// <returns></returns>
@@ -1810,7 +1859,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 
                 var personService = new PersonService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                
+
                 var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
                 var currentMergeRequestQry = PersonService.GetMergeRequestQuery( rockContext );
 
@@ -1865,7 +1914,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                             namelessPerson.LoadAttributes();
                             existingPerson.LoadAttributes();
 
-                            var defaultAttributeValues = namelessPerson.Attributes.ToDictionary(a => a.Key, a => a.Value.DefaultValue);
+                            var defaultAttributeValues = namelessPerson.Attributes.ToDictionary( a => a.Key, a => a.Value.DefaultValue );
                             var namelessPersonEditedAttributeValues = namelessPerson.AttributeValues.Where( av => av.Value.Value != defaultAttributeValues[av.Key] );
                             var existingPersonEditedAttributeValues = existingPerson.AttributeValues.Where( av => av.Value.Value != defaultAttributeValues[av.Key] );
 
@@ -1876,7 +1925,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                             {
                                 hasDifferentValues = namelessPersonEditedAttributeValues
                                     .Any( av => !existingPersonEditedAttributeValues
-                                        .Any( eav => eav.Key == av.Key && eav.Value.Value.Equals(av.Value.Value, StringComparison.OrdinalIgnoreCase)  ) );
+                                        .Any( eav => eav.Key == av.Key && eav.Value.Value.Equals( av.Value.Value, StringComparison.OrdinalIgnoreCase ) ) );
                             }
 
                             if ( !hasMissingAttributes && !hasDifferentValues )
@@ -1927,6 +1976,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             {
                 var groupTypeIds = new List<int>() { checkInArea.Id };
                 groupTypeIds.AddRange( checkInArea.ChildGroupTypes.Select( a => a.Id ) );
+
                 // Get all Attendance records for the current day and location
                 var attendanceQueryToUpdate = new AttendanceService( rockContext ).Queryable().Where( a =>
                     !a.PresentDateTime.HasValue
@@ -2038,6 +2088,44 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             return updateCount;
+        }
+
+        /// <summary>
+        /// Removes any expired saved accounts (if <see cref="AttributeKey.RemovedExpiredSavedAccountDays" /> is set)
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        /// <returns></returns>
+        private int RemoveExpiredSavedAccounts( JobDataMap dataMap )
+        {
+            int? removedExpiredSavedAccountDays = dataMap.GetString( AttributeKey.RemovedExpiredSavedAccountDays ).AsIntegerOrNull();
+
+            if ( !removedExpiredSavedAccountDays.HasValue )
+            {
+                return 0;
+            }
+
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+            var service = new FinancialPersonSavedAccountService( rockContext );
+            var result = service.RemoveExpiredSavedAccounts( removedExpiredSavedAccountDays.Value );
+
+            if ( result?.AccountRemovalExceptions.Any() == true )
+            {
+                Exception exceptionToLog;
+
+                if ( result.AccountRemovalExceptions.Count == 1 )
+                {
+                    exceptionToLog = new RockJobWarningException( "Remove Expired Saved Accounts completed with warnings.", result.AccountRemovalExceptions[0] );
+                }
+                else
+                {
+                    exceptionToLog = new RockJobWarningException( "Remove Expired Saved Accounts completed with warnings.", new AggregateException( result.AccountRemovalExceptions ) );
+                }
+
+                ExceptionLogService.LogException( exceptionToLog );
+            }
+
+            return result.AccountsDeletedCount;
         }
 
         /// <summary>

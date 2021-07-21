@@ -521,7 +521,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
 
-
         /// <summary>
         /// The SMS Conversation Action
         /// </summary>
@@ -531,5 +530,25 @@ namespace Rock.SystemGuid
         /// Rock.Model.Site EntityType guid
         /// </summary>
         public const string SITE = "7244C10B-5D87-467B-A7F5-12DC29910CA8";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.AccumulativeAchievement"/> 
+        /// </summary>
+        public const string ACCUMULATIVE_ACHIEVEMENT_COMPONENT = "05D8CD17-E07D-4927-B9C4-5018F7C4B715";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.StreakAchievement"/> 
+        /// </summary>
+        public const string STREAK_ACHIEVEMENT_COMPONENT = "174F0AFF-3A5E-4A20-AE8B-D8D83D43BACD";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.StepProgramAchievement"/> 
+        /// </summary>
+        public const string STEP_PROGRAM_ACHIEVEMENT_COMPONENT = "7140BAE3-89E9-423E-A691-6E13544203CA";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
+        /// </summary>
+        public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
     }
 }

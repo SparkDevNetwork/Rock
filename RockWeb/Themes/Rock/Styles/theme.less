@@ -432,7 +432,8 @@ textarea,
   //TEMP
   @table-padding-vertical: 16px;
 
-  td, th {
+  td,
+  th {
     &.grid-select-field {
       width: @custom-control-indicator-size * 3;
     }
@@ -585,13 +586,13 @@ textarea,
 .panel-body .actions:last-of-type,
 .panel-widget .panel-heading {
   .pull-right {
-    margin-left: 0 !important;
     order: 6;
+    margin-left: 0 !important;
 
-    &:nth-child(2) {order: 6;}
-    &:nth-child(3) {order: 5;}
-    &:nth-child(4) {order: 4;}
-    &:nth-child(5) {order: 3;}
+    &:nth-child(2) { order: 6; }
+    &:nth-child(3) { order: 5; }
+    &:nth-child(4) { order: 4; }
+    &:nth-child(5) { order: 3; }
     &:last-child { margin-left: auto !important; }
   }
 }
@@ -712,7 +713,6 @@ textarea,
   }
 
 
-
   .treeview-actions {
     display: flex;
     margin: -6px -16px -6px 0 !important;
@@ -720,10 +720,10 @@ textarea,
     .btn-link {
       width: 28px;
       padding: 6px 0;
+      margin-bottom: 0;
       font-size: @font-size-sm;
       color: @text-muted;
       border: 0;
-      margin-bottom: 0;
       // height: 19px;
 
       &:hover {
@@ -1687,8 +1687,8 @@ body.navbar-side-open {
     }
 
     > .pull-right {
-      align-self: flex-start;
       flex-shrink: 0;
+      align-self: flex-start;
     }
   }
 

@@ -5054,8 +5054,7 @@ namespace RockWeb.Blocks.Connection
             return service.Queryable()
                 .AsNoTracking()
                 .Where( at =>
-                    ( !at.ConnectionTypeId.HasValue ||
-                    at.ConnectionTypeId == connectionType.Id ) &&
+                    at.ConnectionTypeId == connectionType.Id &&
                     at.IsActive );
         }
 

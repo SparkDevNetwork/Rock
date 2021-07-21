@@ -128,6 +128,22 @@ namespace Rock.ViewModel
         public bool PersonEntryCampusIsVisible { get; set; }
 
         /// <summary>
+        /// Gets or sets the PersonEntryCampusStatusValueId.
+        /// </summary>
+        /// <value>
+        /// The PersonEntryCampusStatusValueId.
+        /// </value>
+        public int? PersonEntryCampusStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the PersonEntryCampusTypeValueId.
+        /// </summary>
+        /// <value>
+        /// The PersonEntryCampusTypeValueId.
+        /// </value>
+        public int? PersonEntryCampusTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the PersonEntryConnectionStatusValueId.
         /// </summary>
         /// <value>

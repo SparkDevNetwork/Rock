@@ -100,8 +100,11 @@ namespace Rock.Model
                 CategoryId = model.CategoryId,
                 ComponentConfigJson = model.ComponentConfigJson,
                 ComponentEntityTypeId = model.ComponentEntityTypeId,
+                CustomSummaryLavaTemplate = model.CustomSummaryLavaTemplate,
                 Description = model.Description,
+                ImageBinaryFileId = model.ImageBinaryFileId,
                 IsActive = model.IsActive,
+                IsPublic = model.IsPublic,
                 MaxAccomplishmentsAllowed = model.MaxAccomplishmentsAllowed,
                 Name = model.Name,
                 ResultsLavaTemplate = model.ResultsLavaTemplate,
@@ -187,10 +190,13 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.ComponentConfigJson = source.ComponentConfigJson;
             target.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            target.CustomSummaryLavaTemplate = source.CustomSummaryLavaTemplate;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.ImageBinaryFileId = source.ImageBinaryFileId;
             target.IsActive = source.IsActive;
+            target.IsPublic = source.IsPublic;
             target.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
             target.Name = source.Name;
             target.ResultsLavaTemplate = source.ResultsLavaTemplate;

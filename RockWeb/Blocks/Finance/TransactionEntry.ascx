@@ -141,8 +141,9 @@
                                         <asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                 </div>
                                 <div class="panel-body">
+                           
+                            <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" />
 
-                                    <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
 
                                     <div id="divNewPayment" runat="server" class="radio-content">
 

@@ -363,7 +363,7 @@ namespace Rock.Model
             var eventItemEntity = new EventItemService( new RockContext() ).Get( id );
 
             // Check to ensure that the event item is on a calendar that is indexed
-            if ( eventItemEntity.EventCalendarItems.Any( c => c.EventCalendar.IsIndexEnabled ) )
+            if ( eventItemEntity != null && eventItemEntity.EventCalendarItems.Any( c => c.EventCalendar.IsIndexEnabled ) )
             {
                 var indexItem = EventItemIndex.LoadByModel( eventItemEntity );
                 IndexContainer.IndexDocument( indexItem );
