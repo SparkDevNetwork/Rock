@@ -435,6 +435,44 @@ namespace Rock.Tests.UnitTests.Lava
 
         #endregion
 
+        #region Filter Tests: DatesFromICal
+
+        /// <summary>
+        /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
+        {
+            // Create a new schedule starting at 11am today Rock time.
+            var startDateTime = RockDateTime.Today.AddHours( 11 );
+
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime, endDate: null, eventDuration: new TimeSpan( 1, 0, 0 ), null );
+
+            var endDate = startDateTime.AddDays( 2 );
+
+            var mergeValues = new LavaDataDictionary { { "iCalString", schedule.iCalendarContent } };
+
+            var template = @"
+{% assign nextDates = iCalString | DatesFromICal:3 %}
+{% for nextDate in nextDates %}
+    <li>{{ nextDate | Date:'yyyy-MM-dd HH:mm:ss tt' }}</li>
+{% endfor %}
+";
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the result contains entries for tomorrow and the next day.
+                // Note that the current date will only appear in the results if this test is executed before 11am Rock time.
+                Assert.That.Contains( output, $"<li>{ startDateTime.AddDays( 1 ).ToString( "yyyy-MM-dd HH:mm:ss tt" ) }</li>" );
+                Assert.That.Contains( output, $"<li>{ startDateTime.AddDays( 2 ).ToString( "yyyy-MM-dd HH:mm:ss tt" ) }</li>" );
+            } );
+        }
+
+        #endregion
+
         #region Filter Tests: DaysFromNow
 
         /// <summary>
