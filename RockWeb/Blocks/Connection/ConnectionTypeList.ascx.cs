@@ -26,6 +26,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Connection
 {
@@ -79,7 +81,23 @@ namespace RockWeb.Blocks.Connection
         {
             base.OnInit( e );
             lbAddConnectionType.Visible = UserCanAdministrate;
-            rptConnectionTypes.ItemCommand += rptConnectionTypes_ItemCommand;
+
+            gConnectionType.DataKeyNames = new string[] { "Id" };
+            gConnectionType.Actions.ShowAdd = true;
+            gConnectionType.Actions.AddClick += gConnectionType_Add;
+            gConnectionType.GridReorder += gConnectionType_GridReorder;
+            gConnectionType.GridRebind += gConnectionType_GridRebind;
+
+            // Block Security and special attributes (RockPage takes care of View)
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+            gConnectionType.Actions.ShowAdd = UserCanAdministrate;
+            gConnectionType.IsDeleteEnabled = UserCanAdministrate;
+
+            // Only display reordering column if user can edit the block
+            gConnectionType.ColumnsOfType<ReorderField>().First().Visible = UserCanAdministrate;
+
+            SecurityField securityField = gConnectionType.ColumnsOfType<SecurityField>().First();
+            securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.ConnectionType>().Value;
         }
 
         /// <summary>
@@ -92,7 +110,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
-                GetData();
+                BindGrid();
             }
         }
 
@@ -107,7 +125,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            GetData();
+            BindGrid();
         }
 
         /// <summary>
@@ -123,7 +141,7 @@ namespace RockWeb.Blocks.Connection
                 NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, connectionTypeId.Value );
             }
 
-            GetData();
+            BindGrid();
         }
 
         /// <summary>
@@ -135,34 +153,163 @@ namespace RockWeb.Blocks.Connection
         {
             NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, 0 );
         }
+
+        /// <summary>
+        /// Handles the Add event of the gConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionType_Add( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, 0 );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionType_Edit( object sender, RowEventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, e.RowKeyId );
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionType_Delete( object sender, RowEventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
+                ConnectionTypeService connectionTypeService = new ConnectionTypeService( rockContext );
+                AuthService authService = new AuthService( rockContext );
+                ConnectionType connectionType = connectionTypeService.Get( e.RowKeyId );
+
+                if ( connectionType != null )
+                {
+                    if ( !connectionType.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    {
+                        mdGridWarning.Show( "You are not authorized to delete this connection type.", ModalAlertType.Information );
+                        return;
+                    }
+
+                    // var connectionOppotunityies = new Service<ConnectionOpportunity>( rockContext ).Queryable().All( a => a.ConnectionTypeId == connectionType.Id );
+                    var connectionOpportunities = connectionType.ConnectionOpportunities.ToList();
+                    ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
+                    ConnectionRequestActivityService connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
+                    foreach ( var connectionOpportunity in connectionOpportunities )
+                    {
+                        var connectionRequestActivities = new Service<ConnectionRequestActivity>( rockContext ).Queryable().Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id ).ToList();
+                        foreach ( var connectionRequestActivity in connectionRequestActivities )
+                        {
+                            connectionRequestActivityService.Delete( connectionRequestActivity );
+                        }
+
+                        rockContext.SaveChanges();
+                        string errorMessageConnectionOpportunity;
+                        if ( !connectionOpportunityService.CanDelete( connectionOpportunity, out errorMessageConnectionOpportunity ) )
+                        {
+                            mdGridWarning.Show( errorMessageConnectionOpportunity, ModalAlertType.Information );
+                            return;
+                        }
+
+                        connectionOpportunityService.Delete( connectionOpportunity );
+                    }
+
+                    rockContext.SaveChanges();
+                    string errorMessage;
+                    if ( !connectionTypeService.CanDelete( connectionType, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    connectionTypeService.Delete( connectionType );
+                    rockContext.SaveChanges();
+
+                    ConnectionWorkflowService.RemoveCachedTriggers();
+                }
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionType_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var rockContext = new RockContext();
+
+            var connectionTypes = GetConnectionTypes( rockContext );
+            if ( connectionTypes != null )
+            {
+                new ConnectionTypeService( rockContext ).Reorder( connectionTypes, e.OldIndex, e.NewIndex );
+                rockContext.SaveChanges();
+            }
+
+            BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        private void gConnectionType_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
         #endregion
 
         #region Methods
 
         /// <summary>
-        /// Gets the data.
+        /// Binds the grid.
         /// </summary>
-        private void GetData()
+        private void BindGrid()
         {
-            using ( var rockContext = new RockContext() )
+            var selectQry = GetConnectionTypes( new RockContext() )
+              .Select( a => new
+              {
+                  a.Id,
+                  a.Name,
+                  a.Description,
+                  a.IsActive,
+                  OpportunityCount = a.ConnectionOpportunities.Count(),
+              } );
+
+            gConnectionType.EntityTypeId = EntityTypeCache.GetId<ConnectionType>();
+            gConnectionType.DataSource = selectQry.ToList();
+            gConnectionType.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the connection types.
+        /// </summary>
+        /// <returns></returns>
+        private List<ConnectionType> GetConnectionTypes( RockContext rockContext )
+        {
+            var allConnectionTypes = new ConnectionTypeService( rockContext ).Queryable()
+                .OrderBy( g => g.Order ).ThenBy( g => g.Name )
+                .ToList();
+
+            var authorizedConnectionTypes = new List<ConnectionType>();
+            foreach ( var connectionType in allConnectionTypes )
             {
-                // Get all of the event calendars
-                var allConnectionTypes = new ConnectionTypeService( rockContext ).Queryable()
-                    .OrderBy( w => w.Name )
-                    .ToList();
-
-                var authorizedConnectionTypes = new List<ConnectionType>();
-                foreach ( var connectionType in allConnectionTypes )
+                if ( UserCanEdit || connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
-                    if ( UserCanEdit || connectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ))
-                    {
-                        authorizedConnectionTypes.Add( connectionType );
-                    }
+                    authorizedConnectionTypes.Add( connectionType );
                 }
-
-                rptConnectionTypes.DataSource = authorizedConnectionTypes.ToList();
-                rptConnectionTypes.DataBind();
             }
+
+            return authorizedConnectionTypes;
         }
 
         #endregion

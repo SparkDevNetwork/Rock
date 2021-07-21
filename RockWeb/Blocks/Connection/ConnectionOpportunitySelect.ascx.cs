@@ -456,7 +456,8 @@ namespace RockWeb.Blocks.Connection
                             Opportunities = new List<OpportunitySummary>(),
                             IconMarkup = opportunity.ConnectionType.IconCssClass.IsNullOrWhiteSpace() ?
                                 string.Empty :
-                                string.Format( @"<i class=""{0}""></i>", opportunity.ConnectionType.IconCssClass )
+                                string.Format( @"<i class=""{0}""></i>", opportunity.ConnectionType.IconCssClass ),
+                            Order = opportunity.ConnectionType.Order
                         };
                         SummaryState.Add( connectionTypeSummary );
                     }
@@ -619,7 +620,9 @@ namespace RockWeb.Blocks.Connection
 
             nbNoOpportunities.Visible = !viewableOpportunityIds.Any();
 
-            rptConnnectionTypes.DataSource = SummaryState.Where( t => t.Opportunities.Any( o => viewableOpportunityIds.Contains( o.Id ) ) );
+            rptConnnectionTypes.DataSource = SummaryState
+                .Where( t => t.Opportunities.Any( o => viewableOpportunityIds.Contains( o.Id ) ) )
+                .OrderBy( a => a.Order ).ThenBy( a => a.Name );
             rptConnnectionTypes.DataBind();
 
             // Bind favorites
@@ -651,6 +654,7 @@ namespace RockWeb.Blocks.Connection
             public int? ConnectionRequestDetailPageId { get; set; }
             public int? ConnectionRequestDetailPageRouteId { get; set; }
             public List<OpportunitySummary> Opportunities { get; set; }
+            public int Order { get; set; }
         }
 
         [Serializable]
