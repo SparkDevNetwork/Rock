@@ -17,7 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Tasks;
+using System.Threading.Tasks;
+
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -63,10 +64,14 @@ namespace Rock.Migrations.RockStartup
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
             var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable().Where( a => runOnceJobGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
 
-            foreach ( var runOnceJobId in runOnceJobIds )
-            {
-                new ProcessRunJobNow.Message { JobId = runOnceJobId }.Send();
-            }
+            // start a task that will run any incomplete RunOneJobs (one at a time)
+            Task.Run( () =>
+             {
+                 foreach ( var runOnceJobId in runOnceJobIds )
+                 {
+                     new Transactions.RunJobNowTransaction( runOnceJobId ).Execute();
+                 }
+             } );
         }
     }
 }
