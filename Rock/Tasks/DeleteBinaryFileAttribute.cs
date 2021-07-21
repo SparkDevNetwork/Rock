@@ -16,17 +16,15 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Deletes a binary file
+    /// Deletes a <seealso cref="BinaryFile"/>. Use this to avoid waiting for the binary file to get deleted, which could take a little while depending on how the binary data is stored.
     /// </summary>
     public sealed class DeleteBinaryFileAttribute : BusStartedTask<DeleteBinaryFileAttribute.Message>
     {

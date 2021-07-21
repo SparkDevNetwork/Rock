@@ -16,17 +16,16 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
+using Rock.Data;
+using Rock.UniversalSearch;
 using Rock.Web.Cache;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// 
+    /// Calls <see cref="IRockIndexable.IndexDocument(int)"/> for the specified <see cref="IEntity"/>
     /// </summary>
     public sealed class ProcessEntityTypeIndex : BusStartedTask<ProcessEntityTypeIndex.Message>
     {

@@ -14,18 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Updates metaphone data when a person is added or updated.
+    /// Updates <see cref="Rock.Model.Metaphone"/> data when a person is added or updated.
     /// </summary>
     public sealed class AddNewMetaphones : BusStartedTask<AddNewMetaphones.Message>
     {
