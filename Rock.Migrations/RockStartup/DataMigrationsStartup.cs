@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Model;
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -70,7 +71,15 @@ namespace Rock.Migrations.RockStartup
              {
                  foreach ( var runOnceJobId in runOnceJobIds )
                  {
-                     new Transactions.RunJobNowTransaction( runOnceJobId ).Execute();
+                     try
+                     {
+                         new Transactions.RunJobNowTransaction( runOnceJobId ).Execute();
+                     }
+                     catch ( Exception ex )
+                     {
+                         // this shouldn't happen since the jobs catch and log their own errors, but just in case
+                         ExceptionLogService.LogException( ex );
+                     }
                  }
              } );
         }
