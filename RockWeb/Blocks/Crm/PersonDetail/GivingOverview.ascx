@@ -10,7 +10,7 @@
                         Giving Overview
                     </h1>
                     <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlLastUpdated" runat="server" LabelType="Primary" />
+                        <Rock:HighlightLabel ID="hlLastUpdated" runat="server" LabelType="Default" />
                     </div>
                 </div>
                 <div class="panel-body pt-0">
