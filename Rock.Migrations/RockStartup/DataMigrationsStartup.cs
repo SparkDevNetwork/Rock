@@ -57,6 +57,15 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
+                
+                /* MDP 07-22-2021
+                
+                NOTE: We intentionally are excluding SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID
+                from DataMigrationStartup and will just wait for it to run at 2am.
+                See https://app.asana.com/0/0/1199506067368201/f
+
+                */
+                
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
