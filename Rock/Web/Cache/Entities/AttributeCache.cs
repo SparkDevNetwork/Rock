@@ -588,6 +588,12 @@ namespace Rock.Web.Cache
                 return null;
             }
 
+            var hasAttributeIdControl = attributeControl as IHasAttributeId;
+            if ( hasAttributeIdControl != null )
+            {
+                hasAttributeIdControl.AttributeId = this.Id;
+            }
+
             if ( options.SetId )
             {
                 attributeControl.ClientIDMode = ClientIDMode.AutoID;
