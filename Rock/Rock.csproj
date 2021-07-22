@@ -679,6 +679,7 @@
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSyncServiceExtensions.cs" />
     <Compile Include="Model\Group\Group\AttendanceRecordRequiredForCheckIn.cs" />
     <Compile Include="Model\Group\Group\Group.Logic.cs" />
     <Compile Include="Model\Group\Group\Group.SaveHook.cs" />
@@ -912,7 +913,6 @@
     <Compile Include="Model\ConnectionRequestService.Partial.cs" />
     <Compile Include="Model\Core\Document\DocumentService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
-    <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetricService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
@@ -1848,7 +1848,7 @@
     <Compile Include="Model\GroupLocationHistorical.cs" />
     <Compile Include="Model\GroupMemberHistorical.cs" />
     <Compile Include="Model\GroupHistorical.cs" />
-    <Compile Include="Model\GroupSync.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
     <Compile Include="Model\GroupMemberHistoricalService.Partial.cs" />
     <Compile Include="Model\InteractionComponentService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />

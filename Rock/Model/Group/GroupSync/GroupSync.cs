@@ -131,9 +131,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastRefreshDateTime { get; set; }
-        #endregion
 
-        #region Virtual Properties
+        #endregion
+        #region Navigation Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Group"/>.
         /// </summary>

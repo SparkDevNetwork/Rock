@@ -19,11 +19,8 @@ using System.Linq;
 
 namespace Rock.Model
 {
-    public partial class GroupSyncService
-    {
-    }
-
     #region Extension Methods
+
     /// <summary>
     /// Extension methods used to query GroupSync.
     /// </summary>
@@ -61,5 +58,6 @@ namespace Rock.Model
                                     || DbFunctions.AddMinutes( x.LastRefreshDateTime, x.ScheduleIntervalMinutes ) < RockDateTime.Now );
         }
     }
+
     #endregion
 }
