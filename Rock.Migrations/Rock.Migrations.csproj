@@ -189,6 +189,10 @@
     <Compile Include="Migrations\202107202021122_Rollup_0720.Designer.cs">
       <DependentUpon>202107202021122_Rollup_0720.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107221854506_RenameUpdateStepProgramCompletionJobClass.cs" />
+    <Compile Include="Migrations\202107221854506_RenameUpdateStepProgramCompletionJobClass.Designer.cs">
+      <DependentUpon>202107221854506_RenameUpdateStepProgramCompletionJobClass.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
