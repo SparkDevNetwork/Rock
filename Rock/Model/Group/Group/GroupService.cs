@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -22,7 +23,6 @@ using System.Linq;
 using System.Text;
 using Rock.Data;
 using Rock.Web.Cache;
-
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
