@@ -63,10 +63,11 @@
 }
 
 .kpi-stat {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   align-self: flex-start;
   padding: 8px 16px;
   overflow: hidden;
+  min-width: 0;
 
   .kpi-icon + & {
     align-self: center;
@@ -106,7 +107,7 @@
   align-items: center;
   justify-content: center;
   // min-width: 50px;
-  // max-width: 35%;
+  max-width: 35%;
   height: 100%;
   font-size: 32px;
   vertical-align: top;
@@ -150,7 +151,7 @@
     opacity: 0;
 
     .kpi-card > & {
-      width: auto;
+      //width: 100%;
       height: 100%;
       border-radius: 0;
     }
