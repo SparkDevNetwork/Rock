@@ -122,6 +122,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS = "584F899B-B974-4847-9473-15099AADD577";
 
         /// <summary>
+        /// The Job to run Post v12.5 Data Migrations for Update Step Program Completion
+        /// </summary>
+        public const string DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION = "E7C54AAB-451E-4E89-8083-CF398D37416E";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -186,10 +191,5 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.
         /// </summary>
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
-
-        /// <summary>
-        /// The Job to run Post v125 Update Step Program Completion
-        /// </summary>
-        public const string POST_V125_UPDATE_STEP_PROGRAM_COMPLETION = "E7C54AAB-451E-4E89-8083-CF398D37416E";
     }
 }
