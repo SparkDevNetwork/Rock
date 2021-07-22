@@ -16,10 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
@@ -36,7 +34,6 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -87,7 +84,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
-
         /// <summary>
         /// Gets or sets the maximum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have who 
         /// belong to this GroupRole.
@@ -108,7 +104,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? MinCount { get; set; }
-
 
         /// <summary>
         /// Gets or sets a flag indicating if this is a group leader role.  
@@ -157,7 +152,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
@@ -169,49 +164,6 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            // doesn't apply
-            return null;
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            if ( this.GroupTypeId.HasValue )
-            {
-                GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> containing Name of the GroupRole that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> containing the Name of the GroupRole that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -231,5 +183,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
