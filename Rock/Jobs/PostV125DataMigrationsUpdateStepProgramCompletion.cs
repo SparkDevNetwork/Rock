@@ -45,7 +45,7 @@ namespace Rock.Jobs
         Category = "General",
         Order = 1,
         Key = AttributeKey.CommandTimeout )]
-    public class PostV125UpdateStepProgramCompletion : IJob
+    public class PostV125DataMigrationsUpdateStepProgramCompletion : IJob
     {
         #region Keys
 

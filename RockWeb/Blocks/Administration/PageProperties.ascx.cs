@@ -451,7 +451,7 @@ namespace RockWeb.Blocks.Administration
             {
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
-                btnDelete.Visible = true;
+                btnDelete.Visible = !page.IsSystem;
                 btnDelete.Enabled = pageService.CanDelete( page, out errorMessage );
                 btnDelete.ToolTip = btnDelete.Enabled ? string.Empty : errorMessage;
 

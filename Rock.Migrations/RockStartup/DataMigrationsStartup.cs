@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Model;
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -56,9 +57,19 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
+                
+                /* MDP 07-22-2021
+                
+                NOTE: We intentionally are excluding SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID
+                from DataMigrationStartup and will just wait for it to run at 2am.
+                See https://app.asana.com/0/0/1199506067368201/f
+
+                */
+                
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
@@ -71,8 +82,16 @@ namespace Rock.Migrations.RockStartup
                  var jobService = new Rock.Model.ServiceJobService( rockContext );
                  foreach ( var runOnceJobId in runOnceJobIds )
                  {
-                     var job = jobService.Get( runOnceJobId );
-                     jobService.RunNow( job, out _ );
+                     try
+                     {
+                         var job = jobService.Get( runOnceJobId );
+                         jobService.RunNow( job, out _ );
+                     }
+                     catch ( Exception ex )
+                     {
+                         // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
+                         ExceptionLogService.LogException( ex );
+                     }
                  }
              } );
         }
