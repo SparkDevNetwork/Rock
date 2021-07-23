@@ -57,8 +57,11 @@ namespace Rock.Tasks
     }
 
     /// <summary>
-    /// Bus Started Task
+    /// Bus Started Task for the <see cref="BusStartedTaskMessage" />
     /// </summary>
+    /// <remarks>
+    /// <inheritdoc cref="BusStartedTaskMessage"/>
+    /// </remarks>
     public abstract class BusStartedTask<TMessage> : RockConsumer<StartTaskQueue, TMessage>
         where TMessage : BusStartedTaskMessage
     {
