@@ -11,6 +11,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Shared.Utility
@@ -401,21 +402,6 @@ namespace Rock.Tests.Shared.Utility
 
                 return DefinedValueCache.Get( definedValue.Id, rockContext );
             }
-        }
-
-        /// <summary>
-        /// Adds a transaction to add the meta-phone stuff for each person we've added.
-        /// </summary>
-        private void AddMetaphone( Person person )
-        {
-            var addNewMetaphonesMsg = new AddNewMetaphones.Message
-            {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                NickName = person.NickName
-            };
-
-            addNewMetaphonesMsg.Send();
         }
 
         /// <summary>
@@ -2734,7 +2720,7 @@ namespace Rock.Tests.Shared.Utility
 
                 groupMember.Person = person;
 
-                AddMetaphone( person );
+                new SaveMetaphoneTransaction( person ).Enqueue();
 
                 if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {

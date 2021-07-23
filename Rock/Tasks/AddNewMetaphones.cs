@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,9 +23,17 @@ using Rock.Model;
 
 namespace Rock.Tasks
 {
+    /* 7-22-2021 MDP
+        We can continue to use the ITransaction Queue version (SaveMetaphoneTransaction) instead of the Bus.
+
+        Reason: The Transaction Queue is still an acceptable method to queue tasks. We don't have to switch everything over to the message Bus.
+     */
+
     /// <summary>
     /// Updates <see cref="Rock.Model.Metaphone"/> data when a person is added or updated.
     /// </summary>
+    [Obsolete( "Use SaveMetaphoneTransaction Transaction instead." )]
+    [RockObsolete( "1.13" )]
     public sealed class AddNewMetaphones : BusStartedTask<AddNewMetaphones.Message>
     {
         /// <summary>
