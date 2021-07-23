@@ -24,9 +24,9 @@
                         <Rock:FileUploader ID="fupFontAwesomeProPackage" runat="server" Label="Font Awesome Pro Package Upload" />
                     </div>
                 </div>
+                <Rock:NotificationBox ID="nbInstallSuccess" runat="server" NotificationBoxType="Success" Text="" />
 
                 <div class="actions">
-                    <Rock:NotificationBox ID="nbInstallSuccess" runat="server" NotificationBoxType="Success" Text="" />
                     <asp:LinkButton ID="btnInstallUpdate" runat="server" CssClass="btn btn-primary" Text="Update" OnClick="btnInstallUpdate_Click" />
                 </div>
             </div>
