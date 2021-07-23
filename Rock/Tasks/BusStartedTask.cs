@@ -23,9 +23,14 @@ using Rock.Bus.Queue;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// A bus started task message.
-    /// For carrying arguments needed to execute a task.
+    /// A message for carrying arguments needed to execute a task. This should be a small simple POCO class.
+    /// For larger tasks, use <see cref="Rock.Transactions.ITransaction"></see> instead.
     /// </summary>
+    /// <remarks>
+    /// IMPORTANT: The serialized size of a BusStartedTaskMessage needs to less than 64KB.
+    /// See https://stackoverflow.com/questions/66664488/what-is-the-maximum-size-in-a-masstransit-message which says
+    /// "From a guidance perspective, messages over 64k can really slow down broker performance, messages over 256k are a definite no for many systems."
+    /// </remarks>
     public abstract class BusStartedTaskMessage : ICommandMessage<StartTaskQueue>
     {
         /// <summary>
