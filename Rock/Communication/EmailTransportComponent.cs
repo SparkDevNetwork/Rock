@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -1089,19 +1090,16 @@ namespace Rock.Communication
             // Create the communication record
             if ( recipientEmailMessage.CreateCommunicationRecord )
             {
-                var recipients = new List<RockEmailMessageRecipient>() { ( RockEmailMessageRecipient ) rockMessageRecipient };
-                var addCommunicationRecipientsMsg = new AddCommunicationRecipients.Message()
-                {
-                    Recipients = recipients,
-                    FromName = recipientEmailMessage.FromName,
-                    FromAddress = recipientEmailMessage.FromEmail,
-                    Subject = recipientEmailMessage.Subject,
-                    HtmlMessage = recipientEmailMessage.Message,
-                    RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull(),
-                    RecipientStatus = result.Status
-                };
+                var transaction = new SaveCommunicationTransaction(
+                    rockMessageRecipient,
+                    recipientEmailMessage.FromName,
+                    recipientEmailMessage.FromEmail,
+                    recipientEmailMessage.Subject,
+                    recipientEmailMessage.Message );
 
-                addCommunicationRecipientsMsg.Send();
+                transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
+                transaction.RecipientStatus = result.Status;
+                RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
             return sendResult;

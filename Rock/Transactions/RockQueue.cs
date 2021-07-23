@@ -32,8 +32,6 @@ namespace Rock.Transactions
         /// <value>
         /// The currently executing transaction progress.
         /// </value>
-        [Obsolete( "Use Rock.Tasks instead of transactions" )]
-        [RockObsolete( "1.13" )]
         public static int? CurrentlyExecutingTransactionProgress { get; private set; }
 
         /// <summary>
