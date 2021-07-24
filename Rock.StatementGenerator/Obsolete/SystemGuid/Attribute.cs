@@ -23,7 +23,7 @@ namespace Rock.StatementGenerator.SystemGuid
     /// </summary>
 
     [Obsolete( "Use FinancialStatementTemplate instead" )]
-    [RockObsolete( "12.4" )]
+    [RockObsolete( "1.12.4" )]
     public static class Attribute
     {
         /// <summary>

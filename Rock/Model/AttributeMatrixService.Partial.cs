@@ -34,7 +34,7 @@ namespace Rock.Model
         /// </summary>
         /// <returns></returns>
         [Obsolete("No longer used. It could have returned false positives, especially if Plugins reference this.") ]
-        [RockObsolete("12.5")]
+        [RockObsolete( "1.12.5" )]
         public IEnumerable<AttributeMatrix> GetOrphanedAttributeMatrices()
         {
             /* 07-22-2021 MDP
