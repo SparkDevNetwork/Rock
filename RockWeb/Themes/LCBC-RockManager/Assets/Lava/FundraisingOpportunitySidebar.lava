@@ -1,0 +1,116 @@
+﻿{% if RegistrationInstance %}
+<div class='well margin-t-md'>
+    {% assign daysTillStartDate = 'Now' | DateDiff:RegistrationInstance.StartDateTime,'m' %}
+    {% assign daysTillEndDate = 'Now' | DateDiff:RegistrationInstance.EndDateTime,'m' %}
+    {% assign showRegistration = true %}
+    {% assign registrationMessage = '' %}
+
+    {% if RegistrationInstance.RegistrationTemplate.WaitListEnabled %}
+      {% assign waitListEnabled = true %}
+    {% else %}
+      {% assign waitListEnabled = false %}
+    {% endif %}
+
+    {% if daysTillStartDate and daysTillStartDate > 0 %}
+    {% assign showRegistration = false %}
+    {% capture registrationMessage %}<p>Registration opens on {{ RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+    {% endif %}
+
+    {% if daysTillEndDate and daysTillEndDate < 0 %}
+    {% assign showRegistration = false %}
+    {% capture registrationMessage %}<p>Registration closed on {{ RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+    {% endif %}
+
+    {% if RegistrationSpotsAvailable %}
+      {% if RegistrationSpotsAvailable <= 0 %}
+        {% assign registrationFull = true %}
+      {% else %}
+        {% assign registrationFull = false %}
+      {% endif %}
+    {% else %}
+      {% assign registrationFull = false %}
+    {% endif %}
+
+    {% if showRegistration %}
+      {% if registrationFull and waitListEnabled != true %}
+        <div class='label label-default text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Full</div>
+      {% else %}
+        <div class='label label-success text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Open</div>
+      {% endif %}
+    {% else %}
+      <div class='label label-default text-center' style='display: block; padding: 8px; margin-bottom: 12px;'>Registration Closed</div>
+    {% endif %}
+
+    {% if RegistrationInstance.ContactPersonAliasId != null or RegistrationInstance.ContactEmail != '' or RegistrationInstance.ContactPhone != '' %}
+    <p>
+        <strong>Contact</strong><br />
+        {% if RegistrationInstance.ContactPersonAliasId != null %}
+        {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} <br />
+        {% endif %}
+
+        {% if RegistrationInstance.ContactEmail != '' %}
+        {{ RegistrationInstance.ContactEmail }} <br />
+        {% endif %}
+
+        {{ RegistrationInstance.ContactPhone }}
+    </p>
+    {% endif %}
+
+    {% assign locationText = Group | Attribute:'Location' %}
+
+    {% if locationText != '' %}
+    <p>
+        <strong> Location</strong> <br />
+        locationText
+    </p>
+    {% endif %}
+
+    {% assign registrationNotes = Group | Attribute:'RegistrationNotes' %}
+
+    {% if registrationNotes != '' %}
+    <strong>Registration Notes</strong><br />
+    {{ registrationNotes }}
+    {% endif %}
+
+    {% if registrationFull and waitListEnabled %}
+      {% assign registrationButtonText = 'Join Wait List' %}
+    {% else %}
+      {% assign registrationButtonText = 'Register' %}
+    {% endif %}
+
+    {% if registrationFull and waitListEnabled == false %}
+      {% assign showRegistration = false %}
+    {% endif %}
+
+    {% if showRegistration %}
+        {% assign registrationInstanceLinkagesCount = RegistrationInstanceLinkages | Size %}
+        {% if registrationInstanceLinkagesCount > 0 %}
+            {% for registrationInstanceLinkage in RegistrationInstanceLinkages %}
+                {% assign registrationButtonText = 'Register for ' | Append:registrationInstanceLinkage.PublicName %}
+                {% if registrationInstanceLinkage.UrlSlug != '' %}
+                  <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&Slug={{registrationInstanceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                {% else %}
+                  <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}&EventOccurrenceID={{ registrationInstanceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+          <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ RegistrationInstance.Id }}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+        {% endif %}
+    {% else %}
+        {{ registrationMessage }}
+    {% endif %}
+
+    <small>
+        {% if RegistrationSpotsAvailable == 1 %}
+        {{ RegistrationSpotsAvailable }} spot available
+        {% elseif RegistrationSpotsAvailable > 1 %}
+        {{ RegistrationSpotsAvailable }} spots available
+        {% elseif RegistrationSpotsAvailable <= 0 %}
+            {% if waitListEnabled == true %}
+              Registration full, waitlist available.
+            {% endif %}
+        {% endif %}
+    </small>
+
+</div>
+{% endif %}
