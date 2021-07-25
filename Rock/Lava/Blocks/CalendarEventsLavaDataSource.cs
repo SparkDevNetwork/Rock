@@ -100,7 +100,7 @@ namespace Rock.Lava.Blocks
                 throw new Exception( $"Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\"." );
             }
 
-            if (rockContext == null )
+            if ( rockContext == null )
             {
                 rockContext = new RockContext();
             }
@@ -502,19 +502,19 @@ namespace Rock.Lava.Blocks
         {
             qryOccurrences = qryOccurrences.Where( x => x.EventItem.IsActive && x.EventItem.IsApproved );
 
-            // Filter by Audience
+            // Filter by Audience. Events with no specified audience are not included.
             if ( audienceIdList != null && audienceIdList.Any() )
             {
                 qryOccurrences = qryOccurrences.Where( i => i.EventItem.EventItemAudiences.Any( c => audienceIdList.Contains( c.DefinedValueId ) ) );
             }
 
-            // Filter by Campus
+            // Filter by Campus. Events with no specified campus are included.
             if ( campusIdList != null && campusIdList.Any() )
             {
-                qryOccurrences = qryOccurrences.Where( i => campusIdList.Contains( i.CampusId.Value ) );
+                qryOccurrences = qryOccurrences.Where( i => i.CampusId == null || campusIdList.Contains( i.CampusId.Value ) );
             }
 
-            // Get the occurrences
+            // Determine the size of the result set.
             if ( maxOccurrences < 1 || maxOccurrences > MaximumResultSetSize )
             {
                 maxOccurrences = 100;
@@ -557,11 +557,12 @@ namespace Rock.Lava.Blocks
 
             var eventOccurrenceSummaries = new List<EventOccurrenceSummary>();
 
-            bool finished = false;
-
+            // Pass 1: Add a summary of each event occurrence that occurs within the period of interest.
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
+
+                var eventItemOccurrenceSummaries = new List<EventOccurrenceSummary>();
 
                 foreach ( var scheduleOccurrence in occurrenceDates.ScheduleOccurrences )
                 {
@@ -571,7 +572,7 @@ namespace Rock.Lava.Blocks
                     if ( datetime >= startDate
                          && ( endDate == null || datetime < endDate ) )
                     {
-                        eventOccurrenceSummaries.Add( new EventOccurrenceSummary
+                        eventItemOccurrenceSummaries.Add( new EventOccurrenceSummary
                         {
                             EventItemOccurrence = eventItemOccurrence,
                             Name = eventItemOccurrence.EventItem.Name,
@@ -591,20 +592,22 @@ namespace Rock.Lava.Blocks
                             AudienceNames = eventItemOccurrence.EventItem.EventItemAudiences.Select( x => x.DefinedValue.Value ).ToList(),
                         } );
 
-                        // Exit if the occurrence limit has been reached.
-                        if ( eventOccurrenceSummaries.Count >= maxOccurrences )
+                        // Exit if the number of instance of this specific event has exceeded the occurrence limit.
+                        if ( eventItemOccurrenceSummaries.Count >= maxOccurrences )
                         {
-                            finished = true;
                             break;
                         }
                     }
                 }
 
-                if ( finished )
-                {
-                    break;
-                }
+                eventOccurrenceSummaries.AddRange( eventItemOccurrenceSummaries );
             }
+
+            // Pass 2: Sort all of the event occurrences by date, and then apply the occurrence limit.
+            eventOccurrenceSummaries = eventOccurrenceSummaries
+                .OrderBy( x => x.DateTime )
+                .Take( maxOccurrences )
+                .ToList();
 
             return eventOccurrenceSummaries;
         }
