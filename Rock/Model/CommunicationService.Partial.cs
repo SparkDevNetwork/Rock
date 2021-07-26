@@ -94,7 +94,6 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
-        [Obsolete( "TEMP Use CreateEmailCommunication( createEmailCommunicationArgs ) instead", true )]
         public Communication CreateEmailCommunication
         (
             List<RockEmailMessageRecipient> recipients,
@@ -309,10 +308,8 @@ namespace Rock.Model
         /// <param name="responseCode">The response code. If null/empty/whitespace then one is generated</param>
         /// <param name="communicationName">Name of the communication.</param>
         /// <returns></returns>
-        [Obsolete("TEMP", true)]
         public Communication CreateSMSCommunication( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, string communicationName )
         {
-
             var args = new CreateSMSCommunicationArgs
             {
                 FromPerson = fromPerson,
