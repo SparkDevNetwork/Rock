@@ -249,14 +249,20 @@
 
                 const date = new moment(item.DateTime);
 
-                $date.html(date.format("dddd") + "<br />" + date.format("MMM D, YYYY") + "<br />" + date.format("h:mm a"));
+                $row.data("date", date.format("MMM D, YYYY"));
+
+                const lastDate = $panel.find("> .individual-play-row").last().data("date");
+                console.log(lastDate, $date.data("date"), $panel.find("> .individual-play-row").last());
+                if ($row.data("date") !== lastDate) {
+                    $date.html(date.format("dddd") + "<br />" + date.format("MMM D, YYYY") + "<br />" + date.format("h:mm a"));
+                }
+                else {
+                    $date.html(date.format("h:mm a"));
+                }
 
                 $person.append(getPerson(item))
 
                 $chart.append(getHeatMap(item.Data.WatchMap));
-                if (Math.floor(item.Data.WatchedPercentage) == 100) {
-                    console.log(item.Data);
-                }
                 $percent.text(Math.floor(item.Data.WatchedPercentage) + "%");
 
                 $row.insertBefore($btn);
@@ -265,8 +271,9 @@
 
         const getPerson = function (item) {
             const photo = document.createElement("div");
+            const url = item.PhotoUrl + (item.PhotoUrl.indexOf("?") === -1 ? "?w=50" : "&w=50");
             photo.setAttribute("class", "photo-icon photo-round photo-round-xs pull-left margin-r-sm");
-            photo.setAttribute("style", "background-image: url('" + item.PhotoUrl + "&w=50'); background-size: cover; background-repeat: no-repeat;");
+            photo.setAttribute("style", "background-image: url('" + url + "'); background-size: cover; background-repeat: no-repeat;");
 
             const name = document.createElement("span");
             name.textContent = item.FullName;
