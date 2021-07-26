@@ -127,12 +127,20 @@ namespace Rock.Transactions
         public Guid? RecipientGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that communication was sent.
+        /// Gets or sets the DateTime that communication was sent.
         /// </summary>
         /// <value>
         /// The send date time.
         /// </value>
         public DateTime? SendDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication identifier.
+        /// </summary>
+        /// <value>
+        /// The system communication identifier.
+        /// </value>
+        public int? SystemCommunicationId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
@@ -258,11 +266,29 @@ namespace Rock.Transactions
                 if ( this.Recipients?.Any() == true )
                 {
                     var emailRecipients = this.Recipients.OfType<RockEmailMessageRecipient>().ToList();
-                    communication = new CommunicationService( rockContext ).CreateEmailCommunication( emailRecipients, FromName, FromAddress, ReplyTo, Subject, HtmlMessage, BulkCommunication, SendDateTime, RecipientStatus, senderPersonAliasId );
-
-                    if ( communication != null && communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                    var createEmailCommunicationArgs = new CommunicationService.CreateEmailCommunicationArgs
                     {
-                        communication.Recipients.First().Guid = RecipientGuid.Value;
+                        Recipients = emailRecipients,
+                        FromName = this.FromName,
+                        FromAddress = this.FromAddress,
+                        ReplyTo = this.ReplyTo,
+                        Subject = this.Subject,
+                        Message = this.HtmlMessage,
+                        BulkCommunication = this.BulkCommunication,
+                        SendDateTime = this.SendDateTime,
+                        RecipientStatus = this.RecipientStatus,
+                        SenderPersonAliasId = senderPersonAliasId,
+                        SystemCommunicationId = this.SystemCommunicationId
+                    };
+
+                    communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
+
+                    if ( communication != null  )
+                    {
+                        if ( communication.Recipients.Count() == 1 && RecipientGuid.HasValue )
+                        {
+                            communication.Recipients.First().Guid = RecipientGuid.Value;
+                        }
                     }
 
                     rockContext.SaveChanges();

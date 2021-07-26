@@ -125,6 +125,7 @@ namespace Rock.Communication
             OpenAction = systemCommunication.PushOpenAction;
             OpenMessage = systemCommunication.PushOpenMessage;
             Data = Newtonsoft.Json.JsonConvert.DeserializeObject<PushData>( systemCommunication.PushData );
+            this.SystemCommunicationId = systemCommunication.Id;
         }
 
         /// <summary>

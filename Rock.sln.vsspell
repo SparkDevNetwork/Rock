@@ -19,6 +19,7 @@
     <Ignore>Autofill</Ignore>
     <Ignore>birthdate</Ignore>
     <Ignore>birthyear</Ignore>
+    <Ignore>cancelled</Ignore>
     <Ignore>Checkin</Ignore>
     <Ignore>columncommand</Ignore>
     <Ignore>deserialize</Ignore>
@@ -41,7 +42,7 @@
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
     <Ignore>workflows</Ignore>
-    <Ignore>cancelled</Ignore>
+    <Ignore>outlier</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>

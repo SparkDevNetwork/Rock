@@ -70,6 +70,7 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)

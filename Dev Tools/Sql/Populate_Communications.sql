@@ -14,16 +14,8 @@ DECLARE @recipientPersonAliasId INT
 
     -- it does a batch communications around 5% of the time, and then a random number of recipients (up to 500) for each batch communication
     ,@maxCommunicationRecipientBatchCount INT = 500
-	,@maxPersonAliasIdForCommunications INT = (
-		SELECT max(Id)
-		FROM (
-			SELECT TOP 4000 Id
-			FROM PersonAlias
-			ORDER BY Id
-			) x
-		)
-	,/* limit to first 4000 persons in the database */
-	@communicationDateTime DATETIME
+    ,@personSampleSize int = 10000 -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
+	,@communicationDateTime DATETIME
 	,@futureSendDateTime DATETIME
 	,@communicationSubject NVARCHAR(max)
 	,@communicationId INT
@@ -50,48 +42,52 @@ BEGIN
  delete [CommunicationRecipient]
  delete [Communication]
 */
+
+    IF CURSOR_STATUS('global','senderPersonAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE senderPersonAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each communication
+	declare senderPersonAliasIdCursor cursor LOCAL FAST_FORWARD for 
+        select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
+        not in (select Id from Person where (IsDeceased = 1  and RecordStatusValueId != 3)) order by newid();
+	open senderPersonAliasIdCursor;
+
+    IF CURSOR_STATUS('global','recipientPersonAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE recipientPersonAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each communication
+	declare recipientPersonAliasIdCursor cursor LOCAL FAST_FORWARD for 
+        select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
+        not in (select Id from Person where (IsDeceased = 1  and RecordStatusValueId != 3)) order by newid();
+	open recipientPersonAliasIdCursor;
 	
     
     SET @communicationDateTime = DATEADD(DAY, - @daysBack, SYSDATETIME())
 
 	WHILE @communicationCounter < @maxCommunicationCount
 	BEGIN
-		SET @communicationSubject = 'Random Subject ' + convert(NVARCHAR(max), rand());
-		SET @recipientPersonAliasId = (
-				SELECT TOP 1 Id
-				FROM PersonAlias
-				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-				ORDER BY Id DESC
-				);
+		fetch next from recipientPersonAliasIdCursor into @recipientPersonAliasId;
 
-		WHILE @recipientPersonAliasId IS NULL
-		BEGIN
-			-- Try again just in case we didn't get anybody
-			SET @recipientPersonAliasId = (
-					SELECT TOP 1 Id
-					FROM PersonAlias
-					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-					ORDER BY Id DESC
-					);
-		END
+		if (@@FETCH_STATUS != 0) begin
+		   close recipientPersonAliasIdCursor;
+		   open recipientPersonAliasIdCursor;
+		   fetch next from recipientPersonAliasIdCursor into @recipientPersonAliasId;
+		end
 
-		SET @senderPersonAliasId = (
-				SELECT TOP 1 Id
-				FROM PersonAlias
-				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-				ORDER BY Id DESC
-				);
+        fetch next from senderPersonAliasIdCursor into @senderPersonAliasId;
 
-		WHILE @senderPersonAliasId IS NULL
-		BEGIN
-			-- Try again just in case we didn't get anybody
-			SET @senderPersonAliasId = (
-					SELECT TOP 1 Id
-					FROM PersonAlias
-					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-					ORDER BY Id DESC
-					);
-		END
+		if (@@FETCH_STATUS != 0) begin
+		   close senderPersonAliasIdCursor;
+		   open senderPersonAliasIdCursor;
+		   fetch next from senderPersonAliasIdCursor into @senderPersonAliasId;
+		end
+        
+        
+        SET @communicationSubject = 'Random Subject ' + convert(NVARCHAR(max), rand());
 
 		SET @futureSendDateTime = DATEADD(DAY, round(50 * rand(), 0) - 1, @communicationDateTime)
 
@@ -119,8 +115,8 @@ BEGIN
 		    ORDER BY newid()
         end
 
-		-- generate a bulk about 1/20th of the time
-		SELECT @isbulk = CASE CAST(ROUND(RAND() * 20, 0) AS BIT)
+		-- generate a bulk about 1/100th of the time
+		SELECT @isbulk = CASE CAST(ROUND(RAND() * 100, 0) AS BIT)
 				WHEN 1
 					THEN 0
 				ELSE 1
@@ -295,7 +291,7 @@ BEGIN
 			,NEWID()
 			)
 
-        if (@communicationCounter % 50 = 0)
+        if (@communicationCounter % 1000 = 0)
 		begin
   		  print @communicationCounter  
         end
@@ -304,6 +300,10 @@ BEGIN
         
 		SET @communicationDateTime = DATEADD(ss, (86000 * @daysBack / @maxCommunicationCount), @communicationDateTime);
 	END
+
+    close senderPersonAliasIdCursor;
+    close recipientPersonAliasIdCursor;
+    
 END;
 
 select count(*) [Total Communications] from Communication 
