@@ -770,7 +770,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 if ( response.StatusCode == HttpStatusCode.OK )
                 {
-                    var xdocResult = GetXmlResponse( response );
+                    var xdocResult = GetXmlResponse( response, true );
                     var subscriptionNode = xdocResult.Root.Element( "subscription" );
                     if ( subscriptionNode == null )
                     {
@@ -1120,7 +1120,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             try
             {
                 var response = restClient.Execute( restRequest );
-                var xdocResult = GetXmlResponse( response );
+                var xdocResult = GetXmlResponse( response, true );
                 if ( xdocResult == null )
                 {
                     return null;
@@ -1202,17 +1202,50 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// Gets the response as an XDocument
         /// </summary>
         /// <param name="response">The response.</param>
+        /// <param name="logErrors">Flag indicating whether to log errors (default = false).</param>
         /// <returns></returns>
-        private XDocument GetXmlResponse( IRestResponse response )
+        private XDocument GetXmlResponse( IRestResponse response, bool logErrors = false )
         {
-            if ( response.StatusCode == HttpStatusCode.OK &&
-                response.Content.Trim().Length > 0 &&
-                response.Content.Contains( "<?xml" ) )
+            if ( response.StatusCode != HttpStatusCode.OK )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  HTTP Status Code {response.StatusCode}" );
+                }
+                return null;
+            }
+
+            var responseContent = response.Content.Trim();
+            if ( responseContent.Length <= 0 )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  No content." );
+                }
+                return null;
+            }
+
+            if ( !responseContent.Contains( "<?xml" ) )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  Content is not XML." );
+                }
+                return null;
+            }
+
+            try
             {
                 return XDocument.Parse( response.Content );
             }
-
-            return null;
+            catch ( Exception ex )
+            {
+                // This error condition is always logged, regardless of the logErrors flag, because it indicates something
+                // went wrong while converting what appears to be an XML response, which shoud never happen.
+                var loggedException = new Exception( "Invalid Response From NMI Gateway:  Unknown error.", ex );
+                ExceptionLogService.LogException( loggedException );
+                return null;
+            }
         }
 
         /// <summary>
