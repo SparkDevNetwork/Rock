@@ -84,8 +84,12 @@ namespace Rock.Communication
                     // Create the communication record
                     if ( recipientEmailMessage.CreateCommunicationRecord )
                     {
-                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, recipientEmailMessage.FromName, recipientEmailMessage.FromEmail, recipientEmailMessage.Subject, recipientEmailMessage.Message );
-                        transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
+                        var transaction = new SaveCommunicationTransaction( rockMessageRecipient, recipientEmailMessage.FromName, recipientEmailMessage.FromEmail, recipientEmailMessage.Subject, recipientEmailMessage.Message )
+                        {
+                            RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull(),
+                            SystemCommunicationId = recipientEmailMessage.SystemCommunicationId
+                        };
+
                         RockQueue.TransactionQueue.Enqueue( transaction );
                     }
                 }
@@ -417,6 +421,7 @@ namespace Rock.Communication
             }
 
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
+            templateRockEmailMessage.SystemCommunicationId = emailMessage.SystemCommunicationId;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
@@ -591,6 +596,7 @@ namespace Rock.Communication
 
 
             Guid? recipientGuid = null;
+            recipientEmail.SystemCommunicationId = emailMessage.SystemCommunicationId;
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             if ( emailMessage.CreateCommunicationRecord )
             {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -60,9 +61,23 @@ namespace Rock.Model
             var recipients = new PersonService( ( RockContext ) Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
+                .ToList()
+                .Select( a => new RockEmailMessageRecipient( a, null ) )
                 .ToList();
 
-            return this.CreateEmailCommunication( recipients.Select( a => new RockEmailMessageRecipient( a, null ) ).ToList(), fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+            return CreateEmailCommunication( new CreateEmailCommunicationArgs
+            {
+                Recipients = recipients,
+                FromName = fromName,
+                FromAddress = fromAddress,
+                ReplyTo = replyTo,
+                Subject = subject,
+                Message = message,
+                BulkCommunication = bulkCommunication,
+                SendDateTime = sendDateTime,
+                RecipientStatus = recipientStatus,
+                SenderPersonAliasId = senderPersonAliasId
+            } );
         }
 
         /// <summary>
@@ -79,6 +94,7 @@ namespace Rock.Model
         /// <param name="recipientStatus">The recipient status.</param>
         /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
         /// <returns></returns>
+        [Obsolete( "TEMP Use CreateEmailCommunication( createEmailCommunicationArgs ) instead", true )]
         public Communication CreateEmailCommunication
         (
             List<RockEmailMessageRecipient> recipients,
@@ -92,6 +108,135 @@ namespace Rock.Model
             CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
             int? senderPersonAliasId = null )
         {
+            return CreateEmailCommunication( new CreateEmailCommunicationArgs
+            {
+                Recipients = recipients,
+                FromName = fromName,
+                FromAddress = fromAddress,
+                ReplyTo = replyTo,
+                Subject = subject,
+                Message = message,
+                BulkCommunication = bulkCommunication,
+                SendDateTime = sendDateTime,
+                RecipientStatus = recipientStatus,
+                SenderPersonAliasId = senderPersonAliasId,
+                SystemCommunicationId = null
+            } );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public sealed class CreateEmailCommunicationArgs
+        {
+            /// <summary>
+            /// Gets or sets the recipients.
+            /// </summary>
+            /// <value>
+            /// The recipients.
+            /// </value>
+            public List<RockEmailMessageRecipient> Recipients { get; set; }
+
+            /// <summary>
+            /// Gets or sets from name.
+            /// </summary>
+            /// <value>
+            /// From name.
+            /// </value>
+            public string FromName { get; set; }
+
+            /// <summary>
+            /// Gets or sets from address.
+            /// </summary>
+            /// <value>
+            /// From address.
+            /// </value>
+            public string FromAddress { get; set; }
+
+            /// <summary>
+            /// Gets or sets the reply to.
+            /// </summary>
+            /// <value>
+            /// The reply to.
+            /// </value>
+            public string ReplyTo { get; set; }
+
+            /// <summary>
+            /// Gets or sets the subject.
+            /// </summary>
+            /// <value>
+            /// The subject.
+            /// </value>
+            public string Subject { get; set; }
+
+            /// <summary>
+            /// Gets or sets the message.
+            /// </summary>
+            /// <value>
+            /// The message.
+            /// </value>
+            public string Message { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [bulk communication].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [bulk communication]; otherwise, <c>false</c>.
+            /// </value>
+            public bool BulkCommunication { get; set; }
+
+            /// <summary>
+            /// Gets or sets the send date time.
+            /// </summary>
+            /// <value>
+            /// The send date time.
+            /// </value>
+            public DateTime? SendDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the recipient status.
+            /// </summary>
+            /// <value>
+            /// The recipient status.
+            /// </value>
+            public CommunicationRecipientStatus RecipientStatus { get; set; } = CommunicationRecipientStatus.Delivered;
+
+            /// <summary>
+            /// Gets or sets the sender person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The sender person alias identifier.
+            /// </value>
+            public int? SenderPersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the system communication identifier.
+            /// </summary>
+            /// <value>
+            /// The system communication identifier.
+            /// </value>
+            public int? SystemCommunicationId { get; set; }
+        }
+
+        /// <summary>
+        /// Creates the email communication.
+        /// </summary>
+        /// <param name="createEmailCommunicationArgs">The create email communication arguments.</param>
+        /// <returns></returns>
+        public Communication CreateEmailCommunication( CreateEmailCommunicationArgs createEmailCommunicationArgs )
+        {
+            var recipients = createEmailCommunicationArgs.Recipients;
+            var senderPersonAliasId = createEmailCommunicationArgs.SenderPersonAliasId;
+            var fromName = createEmailCommunicationArgs.FromName;
+            var fromAddress = createEmailCommunicationArgs.FromAddress;
+            var replyTo = createEmailCommunicationArgs.ReplyTo;
+            var subject = createEmailCommunicationArgs.Subject;
+            var message = createEmailCommunicationArgs.Message;
+            var bulkCommunication = createEmailCommunicationArgs.BulkCommunication;
+            var sendDateTime = createEmailCommunicationArgs.SendDateTime;
+            var recipientStatus = createEmailCommunicationArgs.RecipientStatus;
+            var systemCommunicationId = createEmailCommunicationArgs.SystemCommunicationId;
+
             var recipientsWithPersonIds = recipients.Where( a => a.PersonId.HasValue ).Select( a => a.PersonId ).ToList();
             var recipientEmailsUnknownPersons = recipients.Where( a => a.PersonId == null ).Select( a => a.EmailAddress );
 
@@ -131,6 +276,7 @@ namespace Rock.Model
             communication.IsBulkCommunication = bulkCommunication;
             communication.FutureSendDateTime = null;
             communication.SendDateTime = sendDateTime;
+            communication.SystemCommunicationId = systemCommunicationId;
             Add( communication );
 
             // add each person as a recipient to the communication
@@ -163,9 +309,101 @@ namespace Rock.Model
         /// <param name="responseCode">The response code. If null/empty/whitespace then one is generated</param>
         /// <param name="communicationName">Name of the communication.</param>
         /// <returns></returns>
+        [Obsolete("TEMP", true)]
         public Communication CreateSMSCommunication( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, string communicationName )
         {
+
+            var args = new CreateSMSCommunicationArgs
+            {
+                FromPerson = fromPerson,
+                ToPersonAliasId = toPersonAliasId,
+                CommunicationName = communicationName,
+                FromPhone = fromPhone,
+                Message = message,
+                ResponseCode = responseCode,
+                SystemCommunicationId = null
+            };
+
+            return CreateSMSCommunication( args );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public sealed class CreateSMSCommunicationArgs
+        {
+            /// <summary>
+            /// Gets or sets from person.
+            /// </summary>
+            /// <value>
+            /// From person.
+            /// </value>
+            public Person FromPerson { get; set; }
+
+            /// <summary>
+            /// Converts to personaliasid.
+            /// </summary>
+            /// <value>
+            /// To person alias identifier.
+            /// </value>
+            public int? ToPersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the message.
+            /// </summary>
+            /// <value>
+            /// The message.
+            /// </value>
+            public string Message { get; set; }
+
+            /// <summary>
+            /// Gets or sets from phone.
+            /// </summary>
+            /// <value>
+            /// From phone.
+            /// </value>
+            public DefinedValueCache FromPhone { get; set; }
+
+            /// <summary>
+            /// Gets or sets the response code.
+            /// </summary>
+            /// <value>
+            /// The response code.
+            /// </value>
+            public string ResponseCode { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the communication.
+            /// </summary>
+            /// <value>
+            /// The name of the communication.
+            /// </value>
+            public string CommunicationName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the system communication identifier.
+            /// </summary>
+            /// <value>
+            /// The system communication identifier.
+            /// </value>
+            public int? SystemCommunicationId { get; set; }
+        }
+
+        /// <summary>
+        /// Creates an SMS communication with a CommunicationRecipient and adds it to the context.
+        /// </summary>
+        /// <param name="createSMSCommunicationArgs">The create SMS communication arguments.</param>
+        /// <returns></returns>
+        public Communication CreateSMSCommunication( CreateSMSCommunicationArgs createSMSCommunicationArgs )
+        {
             RockContext rockContext = ( RockContext ) this.Context;
+            var responseCode = createSMSCommunicationArgs.ResponseCode;
+            var communicationName = createSMSCommunicationArgs.CommunicationName;
+            var fromPerson = createSMSCommunicationArgs.FromPerson;
+            var message = createSMSCommunicationArgs.Message;
+            var fromPhone = createSMSCommunicationArgs.FromPhone;
+            var systemCommunicationId = createSMSCommunicationArgs.SystemCommunicationId;
+            var toPersonAliasId = createSMSCommunicationArgs.ToPersonAliasId;
 
             if ( responseCode.IsNullOrWhiteSpace() )
             {
@@ -184,9 +422,10 @@ namespace Rock.Model
                 SenderPersonAliasId = fromPerson?.PrimaryAliasId,
                 IsBulkCommunication = false,
                 SMSMessage = message,
-                SMSFromDefinedValueId = fromPhone.Id
+                SMSFromDefinedValueId = fromPhone.Id,
+                SystemCommunicationId = systemCommunicationId
             };
-            
+
             if ( toPersonAliasId != null )
             {
                 var recipient = new Rock.Model.CommunicationRecipient();

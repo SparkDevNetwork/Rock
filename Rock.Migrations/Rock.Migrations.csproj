@@ -193,6 +193,10 @@
     <Compile Include="Migrations\202107221854506_RenameUpdateStepProgramCompletionJobClass.Designer.cs">
       <DependentUpon>202107221854506_RenameUpdateStepProgramCompletionJobClass.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107261748077_AddSystemCommunicationIdColumn.cs" />
+    <Compile Include="Migrations\202107261748077_AddSystemCommunicationIdColumn.Designer.cs">
+      <DependentUpon>202107261748077_AddSystemCommunicationIdColumn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1965,6 +1969,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107221854506_RenameUpdateStepProgramCompletionJobClass.resx">
       <DependentUpon>202107221854506_RenameUpdateStepProgramCompletionJobClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107261748077_AddSystemCommunicationIdColumn.resx">
+      <DependentUpon>202107261748077_AddSystemCommunicationIdColumn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
