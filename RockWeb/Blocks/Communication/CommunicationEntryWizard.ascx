@@ -188,10 +188,10 @@
                                     </Rock:Grid>
                                     </div>
                                 </div>
-                                <div class="mt-3">
+                                <div class="my-3">
                                         <asp:LinkButton ID="btnDeleteSelectedRecipients"
                                             runat="server"
-                                            CssClass="btn btn-sm btn-outline-primary"
+                                            CssClass="btn btn-xs btn-outline-primary"
                                             OnClick="btnDeleteSelectedRecipients_Click"
                                             Text="Remove Selected" />
                                 </div>
