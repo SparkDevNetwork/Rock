@@ -2899,7 +2899,6 @@ namespace Rock.Slingshot
         {
             return inputDictionary.Values
                 .GroupBy( k => k.Value ).Select( grp => grp.First() )
-                .ToList()
                 .ToDictionary( v => v.Value, p => p, StringComparer.OrdinalIgnoreCase );
         }
     }
