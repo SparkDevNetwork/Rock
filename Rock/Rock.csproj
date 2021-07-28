@@ -701,6 +701,9 @@
     <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
     <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
     <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkSectionOrderService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkSectionService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
     <Compile Include="Model\CodeGenerated\StepProgramCompletionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
@@ -717,6 +720,9 @@
     <Compile Include="Model\MediaElementService.Partial.cs" />
     <Compile Include="Model\MediaFolder.cs" />
     <Compile Include="Model\MediaFolderService.Partial.cs" />
+    <Compile Include="Model\PersonalLink.cs" />
+    <Compile Include="Model\PersonalLinkSection.cs" />
+    <Compile Include="Model\PersonalLinkSectionOrder.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\StepProgramCompletion.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
