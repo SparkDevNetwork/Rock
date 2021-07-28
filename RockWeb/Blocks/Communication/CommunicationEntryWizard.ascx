@@ -156,15 +156,20 @@
                                         NotificationBoxType="Validation" />
 
                                     <div class="d-flex margin-b-md">
-                                        <div class="ml-sm-auto">
+                                        <div class="mr-sm-auto">
                                             <Rock:PersonPicker
                                                 ID="ppAddPerson"
                                                 runat="server"
-                                                CssClass="picker-menu-right"
+                                                CssClass="picker-menu-left"
                                                 Label="Person"
                                                 PersonName="Add Person"
                                                 OnSelectPerson="ppAddPerson_SelectPerson"
                                                 EnableSelfSelection="true" />
+                                        </div>
+                                        <div class="ml-sm-auto mt-auto form-group">
+                                            <asp:Panel ID="pnlIndividualRecipientListCount" runat="server" CssClass="label label-info">
+                                                <asp:Literal ID="lIndividualRecipientListCount" runat="server" Text="" />
+                                            </asp:Panel>
                                         </div>
                                     </div>
                                 </div>

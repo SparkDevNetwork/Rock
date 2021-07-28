@@ -1041,7 +1041,7 @@ function onTaskCompleted( resultData )
                     listCount = groupMemberQuery.Count();
                     pnlRecipientFromListCount.Visible = true;
 
-                    lRecipientFromListCount.Text = string.Format( "{0} {1} selected", listCount, "recipient".PluralizeIf( listCount != 1 ) );
+                    lRecipientFromListCount.Text = string.Format( "Recipients: {0}", listCount );
                 }
                 else
                 {
@@ -1055,6 +1055,11 @@ function onTaskCompleted( resultData )
                 // Individuals Selection Count.
                 listCount = this.IndividualRecipientPersonIds.Count();
             }
+
+            // Refresh the individual list count, to address the case where the last item in the selection list has been removed.
+            lIndividualRecipientListCount.Text = string.Format( "Recipients: {0}", listCount );
+
+            pnlIndividualRecipientListCount.Visible = listCount > 0;
         }
 
         /// <summary>
