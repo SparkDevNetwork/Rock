@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Crm
 
             _bbtnVerify.Text = "Verify";
             _bbtnVerify.Click += new EventHandler( bbtnVerify_Click );
-            _bbtnVerify.CssClass = "btn btn-primary pull-left";
+            _bbtnVerify.CssClass = "btn btn-primary btn-grid-custom-action pull-left";
             gList.Actions.AddCustomActionControl( _bbtnVerify );
             gList.Actions.ShowExcelExport = false;
             gList.Actions.ShowMergeTemplate = false;

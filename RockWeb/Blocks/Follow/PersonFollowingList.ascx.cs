@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Follow
 
             var lbUnfollow = new LinkButton();
             lbUnfollow.ID = "lbUnfollow";
-            lbUnfollow.CssClass = "btn btn-default btn-sm pull-left js-unfollow";
+            lbUnfollow.CssClass = "btn btn-default btn-sm pull-left btn-grid-custom-action js-unfollow";
             lbUnfollow.Text = "<i class='fa fa-flag-o'></i> Unfollow";
             lbUnfollow.Click += lbUnfollow_Click;
             gFollowings.Actions.AddCustomActionControl( lbUnfollow );
