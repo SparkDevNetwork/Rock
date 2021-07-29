@@ -29,7 +29,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            WindowsCheckinClientDownloadLinkUp();
             UniversalSearchEventItemResultTemplates();
             UpdateCheckinManagerBackButtons();
         }
@@ -39,35 +38,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            WindowsCheckinClientDownloadLinkDown();
-        }
-
-        /// <summary>
-        /// Updates the Rock Windows Check-in Client download link.
-        /// </summary>
-        private void WindowsCheckinClientDownloadLinkUp()
-        {
-            Sql( @"
-                DECLARE @winCheckinClientDefinedValueId INT = (SELECT Id FROM [DefinedValue] WHERE [Guid] = 'C162F21E-7D86-4BB4-A72C-7F4A0E5B02C3')
-                DECLARE @downloadUrlAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'E0AF9B30-15EA-413B-BAC4-25B286D91FD9')
-
-                UPDATE [AttributeValue]
-                SET [Value] = 'https://storage.rockrms.com/externalapplications/sparkdevnetwork/windowscheckin/1.12.4/checkinclient.msi'
-                WHERE AttributeId = @downloadUrlAttributeId and EntityId = @winCheckinClientDefinedValueId" );
-        }
-
-        /// <summary>
-        /// Restores the old Rock Windows Check-in Client download link.
-        /// </summary>
-        private void WindowsCheckinClientDownloadLinkDown()
-        {
-            Sql( @"
-                DECLARE @winCheckinClientDefinedValueId INT = (SELECT Id FROM [DefinedValue] WHERE [Guid] = 'C162F21E-7D86-4BB4-A72C-7F4A0E5B02C3')
-                DECLARE @downloadUrlAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = 'E0AF9B30-15EA-413B-BAC4-25B286D91FD9')
-
-                UPDATE [AttributeValue]
-                SET [Value] = 'https://storage.rockrms.com/externalapplications/sparkdevnetwork/windowscheckin/1.11.1/checkinclient.msi'
-                WHERE AttributeId = @downloadUrlAttributeId and EntityId = @winCheckinClientDefinedValueId" );
         }
 
         /// <summary>

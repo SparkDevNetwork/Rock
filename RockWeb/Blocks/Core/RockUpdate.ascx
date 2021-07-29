@@ -137,7 +137,7 @@
                             <asp:Literal ID="lSuccessVersion" runat="server" />
                             .</p>
 
-                        <div class="text-left margin-t-md">
+                        <div class="text-center margin-t-md">
                             <strong>Below is a summary of the new toys you have to play with...</strong>
                             <asp:Literal ID="nbSuccess" runat="server"></asp:Literal>
                         </div>
@@ -169,7 +169,7 @@
 
                 <a href="/RockUpdateLegacy" class="pull-right">Legacy Updater</a>
             </div>
-            
+
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>

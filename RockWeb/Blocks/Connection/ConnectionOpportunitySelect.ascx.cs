@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Connection
                             Opportunities = new List<OpportunitySummary>(),
                             IconMarkup = opportunity.ConnectionType.IconCssClass.IsNullOrWhiteSpace() ?
                                 string.Empty :
-                                string.Format( @"<i class=""{0}""></i>", opportunity.ConnectionType.IconCssClass ),
+                                $@"<i class=""{opportunity.ConnectionType.IconCssClass}""></i>",
                             Order = opportunity.ConnectionType.Order
                         };
                         SummaryState.Add( connectionTypeSummary );

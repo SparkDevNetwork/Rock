@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -492,12 +494,17 @@ namespace Rock.SystemGuid
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
-        /// The guid for the Rock.Model.WorkflowType entity
+        /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
+        /// </summary>
+        public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowType"/>
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
 
         /// <summary>
-        /// The guid for the Rock.Model.WorkflowType entity
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowActionType"/>
         /// </summary>
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
 

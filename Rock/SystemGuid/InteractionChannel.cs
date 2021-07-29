@@ -55,5 +55,10 @@ namespace Rock.SystemGuid
         /// Interaction Channel GUID for bible events.
         /// </summary>
         public const string BIBLE_EVENTS = "45B6C8CD-5016-4FCF-9AED-A7EECFE00C5E";
+
+        /// <summary>
+        /// Interaction Channel GUID Views and Completions for Workflow Entry Forms.
+        /// </summary>
+        public const string WORKFLOW_LAUNCHES = "DAA17190-7119-4901-B105-26C6B5E4CDB4";
     }
 }
