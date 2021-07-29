@@ -1,22 +1,35 @@
 
 @enable-global-custom-controls: true;
 
+// @white:    #fff;
+// @black:    #000;
+// @gray-50:  #fcfcfc;
+// @gray-100: #F8F9FA;
+// @gray-200: #e9ecef;
+// @gray-300: #dee2e6;
+// @gray-400: #ced4da;
+// @gray-500: #adb5bd;
+// @gray-600: #6c757d;
+// @gray-700: #495057;
+// @gray-800: #343A40;
+// @gray-900: #212529;
+
 @white:    #fff;
 @black:    #000;
 @gray-50:  #fcfcfc;
-@gray-100: #f7f7f7;
+@gray-100: #F8F9FA;
 @gray-200: #eeeeee;
 @gray-300: #dfe0e1;
 @gray-400: #bcbcbd;
 @gray-500: #9e9ea0;
 @gray-600: #737475;
 @gray-700: #606162;
-@gray-800: #444445;
+@gray-800: #343A40;
 @gray-900: #2d2e31;
 
 // Theme Colors *show in editor*
 @brand-color:                 #ee7725;  // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
-@body-background:             #f7f7f7;  // The page background color. #color
+@body-background:             #f0f0f0;  // The page background color. #color
 @text-color:                  @gray-800;  // The default text color. #color
 @text-muted:                  @gray-600;  // The muted color for text #color
 @headings-small-color:        @gray-500;
@@ -54,10 +67,10 @@
 @gray-lighter:                @gray-200; // #color
 @gray-lightest:               @gray-100; // #color
 //--
-@ui-2:                        #fff;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
-@ui-3:                        #f0f3f6;                        // Modal footer background. #color
-@ui-4:                        #dbdbdb;                        // Table, panel, well, and hr border color. #color
-@ui-5:                        #aaa;                        // Grid action button color. #color
+@ui-2:                        @white;                        // Used for well and picker backgrounds. (Lightest UI Color) #color
+@ui-3:                        @gray-100;                        // Modal footer background. #color
+@ui-4:                        @gray-100;                        // Table, panel, well, and hr border color. #color
+@ui-5:                        @gray-600;                        // Grid action button color. #color
 
 // Text *show in editor* *advanced options*
 @text-selection-background:   #bcd9ea;                      // Text selection background color (used when people select text with the mouse). #color
@@ -109,6 +122,8 @@
 @modal-backdrop-opacity:      1;
 @modal-footer-text-color:     @white;
 
+@close-color:                 @gray-100;
+
 @brand-primary:               @brand-color;
 
 //== Components
@@ -129,6 +144,7 @@
 
 @line-height-large:           1.3333333;                      // extra decimals for Win 8.1 Chrome
 @line-height-small:           16px;
+@line-height-xs:              16px;
 
 @input-padding-y:                       @padding-base-vertical;
 @input-padding-x:                       12px;
@@ -209,7 +225,7 @@
 @full-worksurface-offset:     (@navbar-top-height + 72px);
 
 @input-height-small:             34px;
-@input-height-xs:                (@line-height-small + (@padding-xs-vertical * 2) + 2);
+@input-height-xs:                (@line-height-xs + (@padding-xs-vertical * 2) + 2);
 
 // Theme Defaults
 @border-radius-base:          4px;                              // The global setting for rounding corners.
@@ -324,10 +340,10 @@
 @panel-bg:                    @white;                         // The background color of the panel body.
 @panel-body-padding:          24px;
 @panel-heading-padding:       14px 24px;
-@panel-heading-bg:            @white;                 // The background color of the panel's header.
+@panel-heading-bg:            @gray-100;                 // The background color of the panel's header.
 @panel-text:                  @text-color;                    // The text color of the panel.
-@panel-border:                @ui-4;                          // The panel's border color.
-@panel-top-border-color:      @ui-4;                          // Color of the panel's top border often used as an accent color.
+@panel-border:                @gray-300;                          // The panel's border color.
+@panel-top-border-color:      @panel-border;                          // Color of the panel's top border often used as an accent color.
 @panel-border-radius:         @border-radius-base;            // Panel Border Radius subtracts 1, so set to 1 so there's not invalid CSS
 @panel-subheading:            @ui-2;
 
@@ -338,7 +354,7 @@
 //--
 @panel-heading-text-color:    @text-color;                      // The heading's text color.
 @panel-heading-icon-color:    @gray-600;
-@panel-heading-border:        @panel-heading-bg;              // The headings border color.
+@panel-heading-border:        @panel-border;              // The headings border color.
 //--
 @panel-following-active-color:#ffffff;
 @panel-following-active-bg:   @brand-color;                   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
@@ -376,7 +392,7 @@
 //// Row Striping
 @grid-row-odd-bg:             @panel-bg;                      // The even rows background color.
 @grid-row-odd-color:          @text-color;                    // The even rows text color.
-@grid-row-even-bg:            #F8F8F8;                      // The odd rows background color.
+@grid-row-even-bg:            @gray-100;                      // The odd rows background color.
 @grid-row-even-color:         @text-color;                    // The odd rows text color.
 
 //// Hover
@@ -444,7 +460,7 @@
 @persondetails-bio-photo-following:     @text-color;
 
 //// Badge Bar
-@persondetails-badge-bg:                lighten(@body-background, 2%);
+@persondetails-badge-bg:                @gray-50;
 @persondetails-badge-color:             @ui-5;
 
 //// Family Bar
@@ -554,7 +570,7 @@
 @wizard-item-icon-bg:                   @white;
 
 // Tree Viewer
-@tree-rollover-bg:            #f3f2f2;  // Background color of the rollover for items in the treeview.
+@tree-rollover-bg:            @gray-100;  // Background color of the rollover for items in the treeview.
 @tree-rollover-color:         @text-color;             // Text color of the rollover for items in the treeview.
 @tree-selected-bg:            #1589ee;                        // Background color of selected items in the treeview.
 @tree-selected-color:         @text-color;                           // Text color of selected items in the treeview.
@@ -566,7 +582,7 @@
 //--
 @btn-default-color:           @gray-800;
 @btn-default-bg:              @white;
-@btn-default-border:          @ui-4;
+@btn-default-border:          @gray-300;
 //--
 @btn-primary-color:           @white;
 @btn-primary-bg:              @brand-primary;
