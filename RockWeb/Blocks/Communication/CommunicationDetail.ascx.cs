@@ -322,8 +322,19 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
+                    var isAuthorized = true;
+                    if ( _Communication.CommunicationTemplateId.HasValue && !_Communication.CommunicationTemplate.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        isAuthorized = false;
+                    }
+
+                    if ( _Communication.SystemCommunicationId.HasValue && !_Communication.SystemCommunication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    {
+                        isAuthorized = false;
+                    }
+
                     // If user is not authorized to View, hide all content.
-                    if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) || !isAuthorized )
                     {
                         this.Visible = false;
                     }
@@ -1882,13 +1893,13 @@ namespace RockWeb.Blocks.Communication
             bool showSmsTab = false;
             bool showPushTab = false;
 
-            sb.AppendLine("<ul class='nav nav-pills' role='tablist'>");
+            sb.AppendLine( "<ul class='nav nav-pills' role='tablist'>" );
 
             if ( communication.CommunicationType == CommunicationType.Email || communication.CommunicationType == CommunicationType.RecipientPreference && communication.Message.IsNotNullOrWhiteSpace() )
             {
                 firstTabRendered = true;
                 showEmailTab = true;
-                sb.AppendLine("<li class='active'><a href='#emailTabContent' role='tab' id='email-tab' data-toggle='tab' aria-controls='email'>Email</a></li>");
+                sb.AppendLine( "<li class='active'><a href='#emailTabContent' role='tab' id='email-tab' data-toggle='tab' aria-controls='email'>Email</a></li>" );
             }
 
             if ( communication.CommunicationType == CommunicationType.SMS || communication.CommunicationType == CommunicationType.RecipientPreference )
@@ -1896,15 +1907,15 @@ namespace RockWeb.Blocks.Communication
                 showSmsTab = true;
                 if ( firstTabRendered )
                 {
-                    sb.AppendLine("<li>");
+                    sb.AppendLine( "<li>" );
                 }
                 else
                 {
                     firstTabRendered = true;
-                    sb.AppendLine("<li class='active'>");
+                    sb.AppendLine( "<li class='active'>" );
                 }
 
-                sb.AppendLine("<a href='#smsTabContent' role='tab' id='sms-tab' data-toggle='tab' aria-controls='sms'>SMS</a></li>");
+                sb.AppendLine( "<a href='#smsTabContent' role='tab' id='sms-tab' data-toggle='tab' aria-controls='sms'>SMS</a></li>" );
             }
 
             if ( communication.CommunicationType == CommunicationType.PushNotification || communication.CommunicationType == CommunicationType.RecipientPreference && communication.PushMessage.IsNotNullOrWhiteSpace() )
@@ -1912,18 +1923,18 @@ namespace RockWeb.Blocks.Communication
                 showPushTab = true;
                 if ( firstTabRendered )
                 {
-                    sb.AppendLine("<li>");
+                    sb.AppendLine( "<li>" );
                 }
                 else
                 {
                     firstTabRendered = true;
-                    sb.AppendLine("<li class='active'>");
+                    sb.AppendLine( "<li class='active'>" );
                 }
 
-                sb.AppendLine("<a href='#pushTabContent' role='tab' id='push-tab' data-toggle='tab' aria-controls='push'>Push</a></li>");
+                sb.AppendLine( "<a href='#pushTabContent' role='tab' id='push-tab' data-toggle='tab' aria-controls='push'>Push</a></li>" );
             }
 
-            sb.AppendLine("</ul><hr/>");
+            sb.AppendLine( "</ul><hr/>" );
 
 
             sb.AppendLine( "<div class='tab-content flex-fill'>" );
@@ -1934,7 +1945,7 @@ namespace RockWeb.Blocks.Communication
                 sb.AppendLine( "<div class='row'>" );
 
                 AppendStaticControlMediumData( sb, "From",
-                string.Format( "{0} ({1})", communication.FromName, communication.FromEmail ));
+                string.Format( "{0} ({1})", communication.FromName, communication.FromEmail ) );
 
                 AppendStaticControlMediumData( sb, "Subject", communication.Subject, "col-sm-8" );
                 sb.AppendLine( "</div>" );
@@ -2010,8 +2021,9 @@ namespace RockWeb.Blocks.Communication
 
                 AppendStaticControlMediumData( sb, "Title", communication.PushTitle, "col-sm-8" );
 
-                if ( communication.PushOpenAction != null ) {
-                    AppendMediumData( sb, "Open Action", Regex.Replace( communication.PushOpenAction.ToStringSafe(), @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1" ));
+                if ( communication.PushOpenAction != null )
+                {
+                    AppendMediumData( sb, "Open Action", Regex.Replace( communication.PushOpenAction.ToStringSafe(), @"(\B[A-Z]+?(?=[A-Z][^A-Z])|\B[A-Z]+?(?=[^A-Z]))", " $1" ) );
                 }
                 AppendStaticControlMediumData( sb, "Message", communication.PushMessage, "col-sm-12" );
 
