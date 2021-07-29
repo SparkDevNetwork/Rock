@@ -122,6 +122,12 @@ namespace RockWeb.Blocks.Communication
                 gEmailTemplates.Actions.ShowAdd = true;
                 gEmailTemplates.Actions.AddClick += gEmailTemplates_AddClick;
                 gEmailTemplates.GridRebind += gEmailTemplates_GridRebind;
+
+                var securityField = gEmailTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
+                if ( securityField != null )
+                {
+                    securityField.EntityTypeId = EntityTypeCache.Get( typeof( SystemCommunication ) ).Id;
+                }
             }
         }
 

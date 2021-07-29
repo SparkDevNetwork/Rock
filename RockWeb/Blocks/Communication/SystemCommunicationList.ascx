@@ -25,6 +25,7 @@
                             <Rock:RockBoundField DataField="From" HeaderText="From Address" SortExpression="From" />
                             <Rock:RockLiteralField ID="lSupports" HeaderText="Supports" />
                             <Rock:BoolField DataField="IsActive" SortExpression="IsActive" HeaderText="Active" />
+                            <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gEmailTemplates_Delete" />
                         </Columns>
                     </Rock:Grid>
