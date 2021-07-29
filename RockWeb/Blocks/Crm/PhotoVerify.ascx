@@ -11,7 +11,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
-            <div class="panel-heading text-right">
+            <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-camera"></i> Verify Photo List</h1>
                 <div class="pull-right">
                     <Rock:RockCheckBox runat="server" ID="cbShowAll" Text="Show verified photos" OnCheckedChanged="cbShowAll_CheckedChanged" AutoPostBack="true" />
