@@ -201,6 +201,10 @@
     <Compile Include="Migrations\202107281739146_AddPersonalLink.Designer.cs">
       <DependentUpon>202107281739146_AddPersonalLink.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107291902405_WorkflowEntryInteractions.cs" />
+    <Compile Include="Migrations\202107291902405_WorkflowEntryInteractions.Designer.cs">
+      <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1979,6 +1983,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202107281739146_AddPersonalLink.resx">
       <DependentUpon>202107281739146_AddPersonalLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107291902405_WorkflowEntryInteractions.resx">
+      <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
