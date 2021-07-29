@@ -385,15 +385,19 @@ textarea,
   box-shadow: none;
 }
 
-.has-error .form-control,
-.has-error .input-group-addon {
-  box-shadow: none;
+.has-error {
+  .form-control,
+  .input-group-addon {
+    box-shadow: none;
+  }
+
+  .chosen-container-active.chosen-with-drop .chosen-single,
+  .form-control:focus {
+    border-color: @brand-danger;
+    box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
+  }
 }
 
-.has-error .form-control:focus {
-  border-color: @brand-danger;
-  box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
-}
 
 .has-error .control-label {
   color: @brand-danger;
@@ -489,7 +493,7 @@ textarea,
   }
 
   > tfoot {
-    border-top: 1px solid @ui-4;
+    border-top: 1px solid @grid-border-color;
     > tr > td,
     > tr > th {
       color: @text-color;
