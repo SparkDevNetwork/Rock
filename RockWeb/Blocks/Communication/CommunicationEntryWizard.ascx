@@ -64,7 +64,7 @@
                                     <hr />
                                 </div>
 
-                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-warning" />
+                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-validation" />
 
                                 <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
@@ -295,7 +295,7 @@
                                     <hr/>
                                 </div>
 
-                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
+                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
                                 <div class="row template-selection">
                                     <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                                         <ItemTemplate>
