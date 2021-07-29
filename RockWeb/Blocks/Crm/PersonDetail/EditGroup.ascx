@@ -45,7 +45,7 @@
                 <div class="panel panel-widget editgroup-list">
                     <div class="panel-heading clearfix">
                         <h3 class="panel-title pull-left"><%=GroupTypeName %> Members</h3>
-                        <div class="pull-right">
+                        <div class="panel-labels">
                             <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddPerson_Click" CausesValidation="false">Add Person<i class="btn-icon fa fa-user"></i></asp:LinkButton>
                         </div>
                     </div>
@@ -77,7 +77,7 @@
                 <div class="panel panel-widget">
                     <div class="panel-heading clearfix">
                         <h4 class="panel-title pull-left">Addresses</h4>
-                        <div class="pull-right">
+                        <div class="panel-labels">
                             <asp:LinkButton ID="lbMoved" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbMoved_Click" CausesValidation="false"><i class="fa fa-truck fa-flip-horizontal"></i> <%=GroupTypeName %> Moved</asp:LinkButton>
                         </div>
                     </div>
