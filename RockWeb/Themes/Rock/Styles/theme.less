@@ -493,7 +493,11 @@ textarea,
   }
 
   > tfoot {
-    border-top: 1px solid @grid-border-color;
+    > tr:first-child > td,
+    & {
+      border-top: 1px solid @grid-border-color;
+    }
+
     > tr > td,
     > tr > th {
       color: @text-color;
