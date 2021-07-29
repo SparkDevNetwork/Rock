@@ -619,12 +619,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="page">The page.</param>
         public static void AddLinksForMediaToPage( string mediaUrl, Page page )
         {
-            RockPage.AddScriptLink( page, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.js", false );
-            RockPage.AddCSSLink( page, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.css", false );
+            RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/plyr.min.js", false );
+            RockPage.AddCSSLink( page, "~/Scripts/plyr/3.6.8/plyr.min.css", false );
 
             if ( mediaUrl != null && mediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
             {
-                RockPage.AddScriptLink( page, "https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js", false );
+                RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/hls.min.js", false );
             }
 
             RockPage.AddScriptLink( page, page.ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
