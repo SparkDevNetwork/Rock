@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( SystemCommunication item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring Communication,SystemCommunicationId 
  
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
             {
