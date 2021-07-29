@@ -253,6 +253,9 @@
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
+    <Compile Include="CodeGenerated\PersonalLink.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSection.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSectionOrder.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonExport.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />

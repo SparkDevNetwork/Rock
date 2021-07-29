@@ -85,6 +85,7 @@ namespace Rock.Communication
         /// The name of the communication.
         /// </value>
         [Obsolete( "Use CommunicationName instead" )]
+        [RockObsolete("1.12")]
         public string communicationName
         {
             get => CommunicationName;

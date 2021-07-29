@@ -304,6 +304,14 @@ namespace Rock.ViewModel
         public string Subject { get; set; }
 
         /// <summary>
+        /// Gets or sets the SystemCommunicationId.
+        /// </summary>
+        /// <value>
+        /// The SystemCommunicationId.
+        /// </value>
+        public int? SystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the UrlReferrer.
         /// </summary>
         /// <value>

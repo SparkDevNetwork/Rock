@@ -55,6 +55,8 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            // ignoring Communication,SystemCommunicationId
+
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );

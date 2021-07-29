@@ -192,6 +192,9 @@
     <Compile Include="CodeGenerated\PageShortLinkViewModel.cs" />
     <Compile Include="CodeGenerated\PageViewModel.cs" />
     <Compile Include="CodeGenerated\PersonalDeviceViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSectionOrderViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSectionViewModel.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkViewModel.cs" />
     <Compile Include="CodeGenerated\PersonDuplicateViewModel.cs" />
     <Compile Include="CodeGenerated\PersonPreviousNameViewModel.cs" />
     <Compile Include="CodeGenerated\PersonScheduleExclusionViewModel.cs" />
