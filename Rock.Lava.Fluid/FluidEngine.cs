@@ -123,6 +123,20 @@ namespace Rock.Lava.Fluid
              * 3. Return a FluidValue as quickly as possible, to avoid executing subsequent value converters in the collection.
              */
 
+            // TODO: Fluid executes value converters prior to internal converters.
+            // Performance test this implementation with short-circuiting for basic types.
+            templateOptions.ValueConverters.Add( ( value ) =>
+            {
+                // If the value is an Enum, render the value name.
+                if ( value is Enum e )
+                {
+                    return e.ToString();
+                }
+
+                // This converter cannot process the value.
+                return null;
+            } );
+
             // Substitute the default Fluid DateTimeValue with an implementation that renders in the General DateTime format
             // rather than in UTC format.
             templateOptions.ValueConverters.Add( ( value ) =>
