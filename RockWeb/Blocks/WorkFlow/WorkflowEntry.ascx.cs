@@ -1770,14 +1770,6 @@ namespace RockWeb.Blocks.WorkFlow
             var urlInteractionStartDateTime = this.PageParameter( PageParameterKey.InteractionStartDateTime ).AsDateTime();
             this.InteractionStartDateTime = urlInteractionStartDateTime ?? RockDateTime.Now;
 
-            if ( this.GetAttributeValue( AttributeKey.LogInteractionOnCompletion ).AsBoolean() || this.GetAttributeValue( AttributeKey.LogInteractionOnView ).AsBoolean() )
-            {
-                if ( _action != null && _action.Id == 0 )
-                {
-                    new WorkflowService( new RockContext() ).PersistImmediately( _action );
-                }
-            }
-
             if ( this.GetAttributeValue( AttributeKey.LogInteractionOnView ).AsBoolean() )
             {
                 // if this is the First Viewed Form (which we can detect if the URL doesn't contain a StartDateTime) log a FormView interaction
@@ -1830,7 +1822,14 @@ namespace RockWeb.Blocks.WorkFlow
                 LogCrawlers = false
             };
 
-            // If we have Interaction Logging enabled, we would have ForcePersisted it, but just in case
+            /* 7-30-2021 MDP
+
+             If the workflow isn't persisted, the WorkflowId would be 0. If so, just leave the InteractionEntityId
+             null. The InteractionData will still have WorkflowType and ActionType, which are the main things that will
+             be needed when looking at WorkflowEntry Interactions. So, leaving InteractionEntityId null (workflow.Id)
+             is OK.
+             see https://app.asana.com/0/0/1200679813013532/f
+            */
             if ( workflow.Id > 0 )
             {
                 interactionTransactionInfo.InteractionEntityId = workflow.Id;
