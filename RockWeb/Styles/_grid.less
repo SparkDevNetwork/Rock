@@ -94,6 +94,16 @@ td.wrap-contents {
   .grid-table {
     border: 0 !important;
   }
+
+  tfoot > tr:last-child {
+    td:first-child {
+      border-bottom-left-radius: @panel-border-radius;
+    }
+
+    td:last-child {
+      border-bottom-right-radius: @panel-border-radius;
+    }
+  }
 }
 
 // rwd responsive table override
