@@ -3,8 +3,6 @@
 <style>
     .mobile-app-preview {
         padding: 20px;
-        border: 1px solid #bbb;
-        border-radius: 18px;
     }
     .mobile-app-preview img {
         width: 100%;
