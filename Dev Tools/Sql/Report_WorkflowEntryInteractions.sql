@@ -8,6 +8,11 @@ SELECT ii.Id [InteractionId]
     , wf_actiontype.Name [ActionTypeName]
     , ii.Operation
     , ii.InteractionDateTime
+    , ii.Source
+    , ii.Medium
+    , ii.Campaign
+    , ii.Content
+    , ii.Term
     , ii.InteractionLength [TimeOnFormsSeconds]
     , wa_form.Id [WorkflowActionForm.Id]
 FROM Interaction ii
@@ -35,8 +40,7 @@ WHERE ii_channel.Guid = @CHANNEL_WORKFLOW_LAUNCHES
 ORDER BY ii.InteractionDateTime DESC
     , wf_activitytype.[Order]
     , wf_actiontype.[Order]
-
-/*
+    /*
 SELECT *
 FROM INTERACTION
 WHERE Operation LIKE '%Form%'
