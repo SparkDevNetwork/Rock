@@ -679,6 +679,7 @@
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
     <Compile Include="Model\Group\GroupType\AttendanceRule.cs" />
     <Compile Include="Model\Group\GroupType\CheckinAreaPath.cs" />
     <Compile Include="Model\Group\GroupType\GroupCapacityRule.cs" />
@@ -1238,8 +1239,8 @@
     <Compile Include="Financial\AutomatedPaymentArgs.cs" />
     <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
     <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
-    <Compile Include="Model\Assessment.cs" />
-    <Compile Include="Model\AssessmentService.Partial.cs" />
+    <Compile Include="Model\CRM\Assessment\Assessment.cs" />
+    <Compile Include="Model\CRM\Assessment\AssessmentService.cs" />
     <Compile Include="Model\AssessmentType.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />

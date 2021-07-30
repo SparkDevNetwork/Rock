@@ -19,7 +19,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Text;
 using Rock.Data;
 using Rock.Lava;
 
@@ -36,7 +35,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the person <see cref="Rock.Model.Person"/> who is associated with the assesment.
+        /// Gets or sets the Id of the person <see cref="Rock.Model.Person"/> who is associated with the assessment.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the PersonAliasId of <see cref="Rock.Model.PersonAlias"/> associated with the Assessment.
@@ -122,7 +121,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
         
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.AssessmentType"/> that represents the type of the assessment.
@@ -137,7 +136,7 @@ namespace Rock.Model
         /// Gets or sets the person alias <see cref="Rock.Model.Person"/> associated with the Assessment.
         /// </summary>
         /// <value>
-        /// A person alias <see cref="Rock.Model.PersonAlias"/> asssociated to this Assessment.
+        /// A person alias <see cref="Rock.Model.PersonAlias"/> associated to this Assessment.
         /// </value>
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
@@ -189,22 +188,4 @@ namespace Rock.Model
 
     #endregion
 
-    #region Enumerations
-    /// <summary>
-    /// Gets the status of the Assessment  (i.e. Pending, Complete)
-    /// Complete should only be used if the Assessment was actually completed, everything else is pending.
-    /// </summary>
-    public enum AssessmentRequestStatus
-    {
-        /// <summary>
-        /// Pending Status, anything that wasn't completed.
-        /// </summary>
-        Pending = 0,
-
-        /// <summary>
-        /// Complete Status, only use if assessment was actually completed
-        /// </summary>
-        Complete = 1,
-    }
-    #endregion
 }
