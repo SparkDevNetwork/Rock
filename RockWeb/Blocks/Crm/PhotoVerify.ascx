@@ -43,6 +43,11 @@
                                     <asp:Literal runat="server" ID="lStatus"></asp:Literal>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
+                            <Rock:RockTemplateFieldUnselected HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand">
+                                <ItemTemplate>
+                                    <a class="btn btn-default btn-sm" href='<%# FormatPersonLink(Eval("PersonId").ToString()) %>'><i class="fa fa-user"></i></a>
+                                </ItemTemplate>
+                            </Rock:RockTemplateFieldUnselected>
                             <Rock:DeleteField OnClick="rGrid_Delete" />
                         </Columns>
                     </Rock:Grid>
