@@ -1640,20 +1640,21 @@ tr.inactive {
 @steps-breakpoint: @screen-lg-min;
 
 .add-step-buttons {
-  padding: 8px 0;
-  margin: -16px -16px 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px @panel-body-padding;
+  margin: -@panel-body-padding -@panel-body-padding 0;
   background: @panel-drawer-bg;
   border-bottom: 1px solid @panel-border;
 
-  + .row {
-    margin-top: 16px;
+  .add-step-label {
+    margin: 0 4px 0 0;
+    font-size: @font-size-small;
   }
 
-  .add-step-label {
-    float: left;
-    padding: (@padding-small-vertical + 1) 0;
-    margin: 0 6px 0 0;
-    font-size: @font-size-small;
+  .btn {
+    margin: 2px;
   }
 }
 
