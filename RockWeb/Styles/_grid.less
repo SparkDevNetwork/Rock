@@ -527,6 +527,12 @@ tr.row-highlight {
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 
+  // If .table-responsive is inside of a grid assume that the block will style correctly
+  .grid & {
+    margin-bottom: 0;
+    border: 0;
+  }
+
   // classes to show and hide columns based on their priority
   th[data-priority],
   td[data-priority] {
