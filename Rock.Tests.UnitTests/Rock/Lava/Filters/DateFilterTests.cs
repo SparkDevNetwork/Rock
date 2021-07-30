@@ -16,10 +16,12 @@
 //
 using System;
 using System.Globalization;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -412,7 +414,7 @@ namespace Rock.Tests.UnitTests.Lava
             // Get an input time of 10:00 AM in the test timezone.
             var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )
@@ -510,7 +512,7 @@ namespace Rock.Tests.UnitTests.Lava
             var tomorrow = RockDateTime.Now.Date.AddDays( 1 ).AddHours( 1 );
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( tomorrow );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )
@@ -940,10 +942,10 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
-                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
                 {
                     return;
                 }
@@ -1080,7 +1082,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )
