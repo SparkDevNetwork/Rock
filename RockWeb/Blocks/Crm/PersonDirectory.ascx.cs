@@ -262,6 +262,7 @@ namespace RockWeb.Blocks.Crm
             phLetters.Visible = _showAllPeople;
 
             lbOptInOut.Visible = CurrentPerson != null && _optOutGroupGuid.HasValue;
+            pnlOptOut.Visible = lbOptInOut.Visible;
 
             BuildLetters();
         }
