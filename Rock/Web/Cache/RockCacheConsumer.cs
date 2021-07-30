@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
@@ -67,7 +68,7 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            _applyMethod.MakeGenericMethod( type ).Invoke( this, new[] { message.Key, message.Region } );
+            _applyMethod.MakeGenericMethod( type ).Invoke( this, new[] { message } );
         }
 
         /// <summary>
@@ -96,21 +97,16 @@ namespace Rock.Web.Cache
         /// Applies the cache message.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="key">The key.</param>
-        /// <param name="region">The region.</param>
-        private void ApplyCacheMessage<T>( string key, string region )
+        /// <param name="message">The message.</param>
+        private void ApplyCacheMessage<T>( CacheWasUpdatedMessage message )
         {
-            if ( key != null && region != null )
+            if ( message?.Key != null )
             {
-                RockCacheManager<T>.Instance.ReceiveRemoveMessage( key, region );
-            }
-            else if ( key != null )
-            {
-                RockCacheManager<T>.Instance.ReceiveRemoveMessage( key );
+                RockCacheManager<T>.Instance.ReceiveRemoveMessage( message );
             }
             else
             {
-                RockCacheManager<T>.Instance.ReceiveClearMessage();
+                RockCacheManager<T>.Instance.ReceiveClearMessage( message );
             }
         }
     }
