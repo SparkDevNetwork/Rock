@@ -85,5 +85,9 @@ namespace Rock.Logging
         /// The lava
         /// </summary>
         public const string Lava = "LAVA";
+        /// <summary>
+        /// Bus evtns
+        /// </summary>
+        public const string Bus = "BUS";
     }
 }

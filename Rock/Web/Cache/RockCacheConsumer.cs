@@ -23,6 +23,7 @@ using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Logging;
 
 namespace Rock.Web.Cache
 {
@@ -60,6 +61,8 @@ namespace Rock.Web.Cache
             {
                 return;
             }
+
+            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Cache Update message. Key: {message.Key}, Region: {message.Region}, CacheTypeName: {message.CacheTypeName}." );
 
             var type = FindCacheType( message.CacheTypeName );
 
