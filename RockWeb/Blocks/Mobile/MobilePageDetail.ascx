@@ -160,7 +160,7 @@
                                         <div class="drag-container js-drag-container list-unstyled panel-body mobile-pages-container" style="min-height: 100px;">
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
-                                                    <div class="panel panel-widget">
+                                                    <div class="panel panel-widget collapsed">
                                                         <div class="panel-heading js-block clearfix" data-block-id="<%# Eval( "Id" ) %>">
 
                                                             <i class="<%# Eval( "IconCssClass" ) %>"></i>
