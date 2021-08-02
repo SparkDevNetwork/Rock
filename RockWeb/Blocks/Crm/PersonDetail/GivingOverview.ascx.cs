@@ -59,9 +59,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Constants
 
         /// <summary>
-        /// The "plus or minus" symbol to use for markup strings
+        /// The HTML escaped "plus or minus" symbol to use for markup strings.
         /// </summary>
-        private const string PlusOrMinus = "±";
+        private const string PlusOrMinus = "&#177;";
 
         #endregion Constants
 
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             kpi += GetKpiShortCode( "Gifts Last 12 Months", last12MonthCount.ToStringSafe() );
             kpi += GetKpiShortCode( "Gifts Last 90 Days", last90DayCount.ToStringSafe() );
-            lLastGiving.Text = string.Format( @"{{[kpis size:'lg' columnmin:'200px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
+            lLastGiving.Text = string.Format( @"{{[kpis size:'lg' style:'edgeless' columnmin:'200px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
 
             GetGivingAnalyticsKPI( rockContext );
 
@@ -487,7 +487,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     hasAlertListLink ? "</a>" : string.Empty ), // 3
                 icon: "fa-fw fa-comment-alt" ) );
 
-            lGivingAnalytics.Text = string.Format( @"{{[kpis columnmin:'200px' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
+            lGivingAnalytics.Text = string.Format( @"{{[kpis columnmin:'200px' style:'edgeless' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
