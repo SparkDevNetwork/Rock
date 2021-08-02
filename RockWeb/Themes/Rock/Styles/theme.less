@@ -3,7 +3,6 @@
 // http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
 // http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
 
-
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
@@ -684,6 +683,7 @@ body.nav-open {
 }
 
 .rock-top-header {
+  display: flex;
   margin-bottom: 0;
   background-color: @brand-primary;
   background-color: var(--brand-primary, @brand-primary);
@@ -710,6 +710,23 @@ body.nav-open {
   }
 
   .navbar-zone-header {
+    flex-grow: 1;
+
+    .zone-content {
+      display: flex;
+      justify-content: flex-end;
+
+      .smart-search {
+        flex: 1 1 auto;
+      }
+
+      @media @sm {
+        .smart-search {
+          flex: none;
+        }
+      }
+    }
+
     .zone-content > .block-instance {
       display: none;
 
@@ -719,6 +736,7 @@ body.nav-open {
       }
     }
 
+    .zone-content > .personal-links,
     .zone-content > .smart-search {
       display: block;
       @media @sm {
@@ -730,7 +748,7 @@ body.nav-open {
   }
 
   .navbar-toggle {
-    float: left;
+    position: absolute;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0 28px;
@@ -797,42 +815,8 @@ body.nav-open {
     }
   }
 
-  // Bookmarks
-  //
-  // .bookmarks {
-  //   margin: 0;
-
-  //   & > li {
-  //     padding-bottom: 12px;
-  //   }
-
-  //   a {
-  //     padding: 0 16px;
-  //     font-size: 1em;
-  //     line-height: 14px;
-  //     color: @navbartop-color;
-
-  //     &:hover,
-  //     &:focus {
-  //       background-color: transparent;
-  //       opacity: .8;
-  //     }
-
-  //     @media (min-width: @screen-sm-min) {
-  //       margin-left: 24px;
-  //       line-height: @navbar-top-height;
-
-  //       & > li {
-  //         float: left;
-  //         padding-bottom: 24px;
-  //       }
-  //     }
-  //   }
-  // }
-
   .smartsearch {
-    float: right;
-    width: ~"calc(100% - 160px)";
+    width: 100%;
     height: 50px;
     padding: 0;
     margin: 15px 0;
@@ -902,6 +886,7 @@ body.nav-open {
         color: @navbartop-color;
 
         @media (max-width: @screen-sm-max) {
+          padding: 0 12px;
           .fa-caret-down {
             display: none;
           }
@@ -909,13 +894,16 @@ body.nav-open {
 
         .profile-photo {
           float: left;
-          width: 43px;
-          height: 43px;
-          margin-top: 17px;
+          width: 36px;
+          height: 36px;
+          margin-top: 22px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
           @media (min-width: @screen-sm-min) {
+            width: 43px;
+            height: 43px;
+            margin-top: 17px;
             margin-right: 12px;
           }
 
@@ -998,6 +986,13 @@ body.nav-open {
     }
   }
 
+  .header-content {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 100%;
+    margin-left: @navbarside-width;
+
+  }
 }
 
 .navbar-brand-side {
@@ -1589,6 +1584,20 @@ body.navbar-side-open {
   }
 }
 
+.rock-bookmark {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 15px 2px 15px 0;
+  font-size: 20px;
+  color: #fff !important;
+  opacity: .75;
+
+  &:hover,
+  &:active {
+    color: #fff;
+    opacity: .5;
+  }
+}
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {

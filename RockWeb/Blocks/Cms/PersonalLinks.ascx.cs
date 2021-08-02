@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = false;
             pnlAddSection.Visible = true;
             pnlAddLink.Visible = false;
-            quickreturns.AddCssClass( "d-none" );
+            //pnlView.AddCssClass( "d-none" );
             tbSectionName.Text = string.Empty;
         }
 
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = false;
             pnlAddSection.Visible = false;
             pnlAddLink.Visible = true;
-            quickreturns.AddCssClass( "d-none" );
+            //pnlView.AddCssClass( "d-none" );
             tbLinkName.Text = RockPage.Title;
             urlLink.Text = Page.Request.Url.ToString();
             BindSectionDropdown();
@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = true;
             pnlAddSection.Visible = false;
             pnlAddLink.Visible = false;
-            quickreturns.RemoveCssClass( "d-none" );
+            pnlView.RemoveCssClass( "d-none" );
         }
 
         #endregion
