@@ -583,7 +583,17 @@ namespace Rock.Model
         {
             get
             {
-                return this.CommunicationTemplate ?? base.ParentAuthority;
+                if ( this.CommunicationTemplate != null )
+                {
+                    return this.CommunicationTemplate;
+                }
+
+                if ( this.SystemCommunication != null )
+                {
+                    return this.SystemCommunication;
+                }
+
+                return base.ParentAuthority;
             }
         }
 
