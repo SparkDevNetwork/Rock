@@ -60,7 +60,7 @@
 
                     <Rock:NumberBox runat="server" ID="nbAverageWeeklyAttendance" Label="Average Weekend Attendance" Required="true" NumberType="Integer" />
 
-                    <div class="margin-t-md">
+                    <div class="actions">
                         <asp:Button ID="btnSaveAttendance" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAttendance_Click" />
                     </div>
 
@@ -69,7 +69,7 @@
                 <asp:Panel ID="pnlComplete" runat="server" Visible="false">
                     <asp:Literal ID="lCompleteMessage" runat="server" />
 
-                    <div class="margin-t-md">
+                    <div class="actions">
                         <asp:Button ID="btnContinue" runat="server" CssClass="btn btn-primary" Text="Continue" OnClick="btnContinue_Click" />
                     </div>
                 </asp:Panel>

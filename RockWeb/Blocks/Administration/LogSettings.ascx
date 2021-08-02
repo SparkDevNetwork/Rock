@@ -15,7 +15,9 @@
                 <asp:Panel runat="server" ID="pnlReadOnlySettings">
                     <Rock:RockLiteral runat="server" ID="litVerbosityLevel" Label="Verbosity Level" CssClass="col-sm-3" />
                     <Rock:RockLiteral runat="server" ID="litDomains" Label="Domains" CssClass="col-sm-9" />
-                    <asp:Button runat="server" ID="btnEdit" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                    <div class="actions">
+                        <asp:Button runat="server" ID="btnEdit" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                    </div>
                 </asp:Panel>
 
                 <asp:Panel runat="server" ID="pnlEditSettings" Visible="false">
@@ -44,7 +46,7 @@
 
                     <p>Logs could take up to <span id="maxLogSize">400</span> MB on the server's filesystem.</p>
 
-                    <div class="actions margin-t-lg">
+                    <div class="actions">
                         <Rock:BootstrapButton
                             ID="btnLoggingSave"
                             runat="server"
