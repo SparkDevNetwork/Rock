@@ -14,8 +14,11 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-download"></i>Rock Update</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-cloud-download"></i>
+                    Rock Update</h1>
             </div>
+
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
                      <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
@@ -133,9 +136,11 @@
                     <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
                         <i class="fa fa-exclamation-triangle"></i>
-                        <p>Update completed successfully... You're now running
+                        <p>
+                            Update completed successfully... You're now running
                             <asp:Literal ID="lSuccessVersion" runat="server" />
-                            .</p>
+                            .
+                        </p>
 
                         <div class="text-center margin-t-md">
                             <strong>Below is a summary of the new toys you have to play with...</strong>
