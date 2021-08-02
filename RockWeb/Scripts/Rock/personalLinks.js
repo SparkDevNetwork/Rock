@@ -34,6 +34,10 @@
                     });
                 }
 
+                // Check if the return items already has this exact entry, if so remove it. This allows the new item to be at the top
+                this.removeDuplicates(returnItem);
+
+                // Add new item
                 _returnItemArray.push(returnItem);
 
                 _returnItemArray.sort(function (a, b) {
@@ -52,6 +56,34 @@
                 }
 
                 this.setLocalStorage();
+            },
+            removeDuplicates: function (newReturnItem) {
+                for (var i = 0; i < _returnItemArray.length; i++) {
+                    if (this.returnItemIsEqual(_returnItemArray[i], newReturnItem)) {
+                        _returnItemArray.splice(i, 1);
+                    }
+                }
+            },
+            // Determines if the two return items are the same item
+            returnItemIsEqual: function (returnItemA, returnItemB) {
+                var isEqual = true;
+
+                if (returnItemA.type != returnItemB.type) {
+                    isEqual = false;
+                }
+
+                if (returnItemA.typeOrder != returnItemB.typeOrder) {
+                    isEqual = false;
+                }
+
+                if (returnItemA.itemName != returnItemB.itemName) {
+                    isEqual = false;
+                }
+
+                if (returnItemA.url != returnItemB.url) {
+                    isEqual = false;
+                }
+                return isEqual;
             },
             getQuickReturns: function () {
                 this.getLocalStorage();
@@ -111,7 +143,7 @@
                         }
                      });
                     $(window).on("resize.personalLinks", function(e) { Rock.personalLinks.positionPersonalLinks(trigger, element) });
-                    element.appendTo('body').removeClass('d-none')
+                    element.removeClass('d-none')
 
                     Rock.personalLinks.buildQuickReturn();
                 } else {
