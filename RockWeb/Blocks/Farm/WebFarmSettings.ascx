@@ -24,6 +24,7 @@
         justify-content: space-between;
         padding: 0 8px;
         background: transparent;
+        align-items: center;
     }
 
     .server-meta {
