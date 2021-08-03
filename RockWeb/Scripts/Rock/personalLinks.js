@@ -40,19 +40,9 @@
                 // Add new item
                 _returnItemArray.push(returnItem);
 
-                _returnItemArray.sort(function (a, b) {
-                    // Sort by count
-                    var dtypeOrder = a.typeOrder - b.typeOrder;
-                    if (dtypeOrder) return dtypeOrder;
-
-                    // If there is a tie, sort by year
-                    var dCreatedDateTime = new Date(b.createdDateTime) - new Date(a.createdDateTime);
-                    return dCreatedDateTime;
-                });
-
                 var arrLength = _returnItemArray.length;
                 if (arrLength > 20) {
-                    _returnItemArray.splice(20, arrLength - 20);
+                    _returnItemArray.splice(0, arrLength - 20);
                 }
 
                 this.setLocalStorage();
@@ -87,13 +77,24 @@
             },
             getQuickReturns: function () {
                 this.getLocalStorage();
+                var cloneItemArray = _returnItemArray.slice(0);
+                cloneItemArray.sort(function (a, b) {
+                    // Sort by count
+                    var dtypeOrder = a.typeOrder - b.typeOrder;
+                    if (dtypeOrder) return dtypeOrder;
+
+                    // If there is a tie, sort by year
+                    var dCreatedDateTime = new Date(b.createdDateTime) - new Date(a.createdDateTime);
+                    return dCreatedDateTime;
+                });
+
                 var types = {};
-                for (var i = 0; i < _returnItemArray.length; i++) {
-                    var type = _returnItemArray[i].type;
+                for (var i = 0; i < cloneItemArray.length; i++) {
+                    var type = cloneItemArray[i].type;
                     if (!types[type]) {
                         types[type] = [];
                     }
-                    types[type].push(_returnItemArray[i]);
+                    types[type].push(cloneItemArray[i]);
                 }
                 var itemsByType = [];
                 for (var itemType in types) {
