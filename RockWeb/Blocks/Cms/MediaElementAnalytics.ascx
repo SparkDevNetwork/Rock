@@ -12,27 +12,26 @@
 
             <div class="panel-body">
                 <div class="row">
-                    <div class="col-md-6 col-lg-7">
-                        <div class="margin-b-lg">
-                            <asp:Literal ID="lDescription" runat="server" />
+                    <div class="col-md-6">
+                        <Rock:MediaPlayer ID="mpMedia" runat="server" AutoResumeInDays="0" CombinePlayStatisticsInDays="0" TrackSession="false" />
+                        <div class="d-none">
+                            <Rock:HighlightLabel ID="hlDuration" runat="server" LabelType="Default" />
                         </div>
                     </div>
 
-                    <div class="col-md-6 col-lg-5">
-                        <Rock:MediaPlayer ID="mpMedia" runat="server" AutoResumeInDays="0" CombinePlayStatisticsInDays="0" TrackSession="false" />
-                        <div class="text-right">
-                            <Rock:HighlightLabel ID="hlDuration" runat="server" LabelType="Default" />
+                    <div class="col-md-6">
+                        <div class="margin-b-lg">
+                            <asp:Literal ID="lDescription" runat="server" />
+
+                            <asp:Panel ID="pnlProviderAnalytics" CssClass="provider-analytics" runat="server">
+                                <dl class="mb-0"><dt>Provider Analytics</dt></dl>
+                                <asp:Literal ID="lMetricData" runat="server" />
+                            </asp:Panel>
                         </div>
                     </div>
                 </div>
 
-                <asp:Panel ID="pnlProviderAnalytics" runat="server">
-                    <div><dt>Provider Analytics</dt></div>
 
-                    <div class="well">
-                        <asp:Literal ID="lMetricData" runat="server" />
-                    </div>
-                </asp:Panel>
 
                 <Rock:NotificationBox ID="nbNoData" runat="server" NotificationBoxType="Info" Visible="false" Text="No statistical data is available yet." CssClass="margin-t-md" />
 
@@ -41,7 +40,7 @@
                     <asp:HiddenField ID="hfLast12MonthsVideoData" runat="server" Value="" />
                     <asp:HiddenField ID="hfLast90DaysVideoData" runat="server" Value="" />
 
-                    <ul class="nav nav-tabs">
+                    <ul class="nav nav-segment mt-4 mb-2">
                       <li role="presentation" class="active">
                           <a href="#<%= pnlLast90DaysDetails.ClientID %>" data-toggle="tab" data-video-data="#<%= hfLast90DaysVideoData.ClientID %>" data-days-back="90">Last 90 Days</a>
                       </li>
