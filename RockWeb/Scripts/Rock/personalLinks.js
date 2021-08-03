@@ -134,14 +134,6 @@
             showPersonalLinks: function (element, trigger) {
                 if (typeof trigger !== "undefined" && element !== null && element.hasClass( 'd-none' )) {
                     Rock.personalLinks.positionPersonalLinks(trigger, element);
-                    $(document).on("mouseup.personalLinks", function(e) {
-                        // if the target of the click isn't the container or a descendant of the container
-                        if (!element.is(e.target) && element.has(e.target).length === 0) {
-                            if (!$(".js-rock-bookmark").is(e.target) && $(".js-rock-bookmark").has(e.target).length === 0) {
-                                Rock.personalLinks.showPersonalLinks(null, true);
-                            }
-                        }
-                     });
                     $(window).on("resize.personalLinks", function(e) { Rock.personalLinks.positionPersonalLinks(trigger, element) });
                     element.removeClass('d-none')
 

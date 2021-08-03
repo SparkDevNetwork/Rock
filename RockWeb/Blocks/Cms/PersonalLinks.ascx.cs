@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var personalLinkSections = GetPersonalLinkSections( rockContext, true );
             var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            rptPersonalLinkSection.DataSource = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders );
+            rptPersonalLinkSection.DataSource = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders, false );
             rptPersonalLinkSection.DataBind();
         }
 
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             var personalLinkSections = GetPersonalLinkSections( rockContext, false );
             var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            var orderedPersonalLinkSection = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders );
+            var orderedPersonalLinkSection = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders, true );
 
             ddlSection.DataSource = orderedPersonalLinkSection;
             ddlSection.DataTextField = "Name";
@@ -340,10 +340,10 @@ namespace RockWeb.Blocks.Cms
             return qry.ToList();
         }
 
-        private IEnumerable<PersonalLinkSection> GetOrderedPersonalLinkSection( List<PersonalLinkSection> personalLinkSections, List<PersonalLinkSectionOrder> personalLinkSectionOrders )
+        private IEnumerable<PersonalLinkSection> GetOrderedPersonalLinkSection( List<PersonalLinkSection> personalLinkSections, List<PersonalLinkSectionOrder> personalLinkSectionOrders, bool includeSectionsWithoutPersonalLinks )
         {
             return personalLinkSections
-                .Where( a => a.PersonalLinks.Any() )
+                .Where( a => a.PersonalLinks.Any() || includeSectionsWithoutPersonalLinks )
                 .Select( a => new
                 {
                     PersonalLinkSection = a,
