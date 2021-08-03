@@ -2817,5 +2817,25 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202107141741515_AchievementType_AddWeeklyAttendanceStreakType", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///The panel shortcode allows you to easily add a 
+        ///&lt;a href=&quot;https://community.rockrms.com/styling/components/panels&quot; target=&quot;_blank&quot;&gt;Bootstrap panel&lt;/a&gt; to your markup. This is a pretty simple shortcode, but it does save you some time.
+        ///&lt;/p&gt;
+        ///
+        ///&lt;p&gt;Basic Usage:&lt;br&gt;  
+        ///&lt;/p&gt;&lt;pre&gt;{[ panel title:&apos;&apos;Important Stuff&apos;&apos; icon:&apos;&apos;fa fa-star&apos;&apos; ]}&lt;br&gt;  
+        ///This is a super simple panel.&lt;br&gt; 
+        ///{[ endpanel ]}&lt;/pre&gt;
+        ///
+        ///&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+        ///As you can see the body of the shortcode is placed in the bod [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202108031829239_Rollup_0803_LavaDocumentationUpdates {
+            get {
+                return ResourceManager.GetString("_202108031829239_Rollup_0803_LavaDocumentationUpdates", resourceCulture);
+            }
+        }
     }
 }

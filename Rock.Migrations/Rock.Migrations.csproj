@@ -205,6 +205,14 @@
     <Compile Include="Migrations\202107291902405_WorkflowEntryInteractions.Designer.cs">
       <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202108031829239_Rollup_0803.cs" />
+    <Compile Include="Migrations\202108031829239_Rollup_0803.Designer.cs">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202108031853278_CodeGenerated_0803.cs" />
+    <Compile Include="Migrations\202108031853278_CodeGenerated_0803.Designer.cs">
+      <DependentUpon>202108031853278_CodeGenerated_0803.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -1987,6 +1995,12 @@
     <EmbeddedResource Include="Migrations\202107291902405_WorkflowEntryInteractions.resx">
       <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108031829239_Rollup_0803.resx">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108031853278_CodeGenerated_0803.resx">
+      <DependentUpon>202108031853278_CodeGenerated_0803.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -3293,6 +3307,9 @@
     </Content>
     <Content Include="Migrations\202107141741515_AchievementType_AddWeeklyAttendanceStreakType.sql">
       <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202108031829239_Rollup_0803_LavaDocumentationUpdates.sql">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
