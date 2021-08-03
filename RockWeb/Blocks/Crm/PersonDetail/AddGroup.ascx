@@ -105,8 +105,10 @@
                 <Rock:NotificationBox ID="nbMessages" runat="server"></Rock:NotificationBox>
 
                 <div class="actions clearfix">
-                    <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnNext_Click" />
-                    <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link pull-right" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+                    <div class="pull-right">
+                        <asp:LinkButton ID="btnPrevious" runat="server" Text="Previous" CssClass="btn btn-link" OnClick="btnPrevious_Click" Visible="false" CausesValidation="false" />
+                        <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+                    </div>
                 </div>
             </div>
         </div>
