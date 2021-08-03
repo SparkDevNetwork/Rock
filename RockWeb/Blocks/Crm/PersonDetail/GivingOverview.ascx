@@ -10,7 +10,7 @@
                         Giving Overview
                     </h1>
                     <div class="panel-labels">
-                        <Rock:HighlightLabel ID="hlLastUpdated" runat="server" LabelType="Primary" />
+                        <Rock:HighlightLabel ID="hlLastUpdated" runat="server" LabelType="Default" />
                     </div>
                 </div>
                 <div class="panel-body pt-0">
@@ -40,7 +40,7 @@
                             <div class="col-xs-10 col-sm-4 col-lg-3 percentile-giving mx-auto mt-3 m-sm-0">
                                 <h5 class="kpi-lg-label mt-0 mb-2">Community View</h5>
                                 <div class="d-flex flex-row rollover-container">
-                                    <div class="rollover-item inset-0 z-10 bg-gray-100 p-1 small"><asp:Literal ID="lHelpText" runat="server" /></div>
+                                    <div class="rollover-item inset-0 z-10 well m-0 border-0 small"><asp:Literal ID="lHelpText" runat="server" /></div>
                                     <div class="pr-2">
                                         <span class="stat-value-lg"><asp:Literal ID="lPercent" runat="server" />%</span>
                                         <span class="stat-label">Percentile<span class="d-block small">Bin <asp:Literal ID="lGivingBin" runat="server" /></span></span>

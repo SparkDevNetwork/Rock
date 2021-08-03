@@ -576,6 +576,13 @@ iframe.email-body {
   }
 }
 
+.mobile-block-types {
+  .form-control {
+    border-color: transparent;
+    border-radius: 0;
+  }
+}
+
 .sms-actions-container {
   padding: 20px !important;
   counter-reset: section;
@@ -669,9 +676,10 @@ iframe.email-body {
 }
 
 .panel-palette {
-  margin: 20px;
-  border: 1px solid @panel-border;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
+  margin: 0;
+  border: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid @panel-border;
 
   .panel-heading {
     font-weight: 500;
@@ -711,12 +719,12 @@ iframe.email-body {
   }
 
   h4 {
-    padding: 12px 15px;
-    margin: 1px -15px 16px;
+    padding: 12px @panel-body-padding;
+    margin: 1px -@panel-body-padding 16px;
     font-size: 18px;
     font-weight: 500;
     background: @panel-heading-bg;
-    border-top: 1px solid fade(@panel-border, 100%);
+    border-top: 1px solid @panel-border;
   }
 
   .component.gu-transit {

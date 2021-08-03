@@ -122,6 +122,7 @@ namespace Rock.Model
                 SMSMessage = model.SMSMessage,
                 Status = ( int ) model.Status,
                 Subject = model.Subject,
+                SystemCommunicationId = model.SystemCommunicationId,
                 UrlReferrer = model.UrlReferrer,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -228,6 +229,7 @@ namespace Rock.Model
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;
             target.Subject = source.Subject;
+            target.SystemCommunicationId = source.SystemCommunicationId;
             target.UrlReferrer = source.UrlReferrer;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -1,10 +1,6 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PersonGroupHistory.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.PersonGroupHistory" %>
 
 <style>
-.panel-fullwidth {
-    margin: -15px -15px 0 -15px;
-}
-
 .swimlanes .grid-background {
   fill: none; }
 
@@ -84,7 +80,7 @@
 
 .swimlanes-container {
   position: relative;
-  overflow: scroll;
+  overflow: auto;
   font-size: 12px; }
   .swimlanes-container .popup-wrapper {
     position: absolute;
@@ -148,11 +144,11 @@
                 </div>
             </asp:Panel>
 
-            <div class="panel-body">
+            <div class="panel-body styled-scroll">
+                <asp:Panel ID="groupHistorySwimlanes" CssClass="panel-fullwidth" runat="server" />
                 <div class="js-no-group-history" style="display:none">
                     <Rock:NotificationBox ID="nbNoGroupHistoryFound" runat="server" NotificationBoxType="Info" Text="No Group History Available" />
                 </div>
-                 <asp:Panel ID="groupHistorySwimlanes" CssClass="panel-fullwidth" runat="server" />
 
                 <div class="grouptype-legend">
                     <label>Group Types</label>

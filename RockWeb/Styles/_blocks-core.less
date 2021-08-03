@@ -62,7 +62,7 @@
 }
 
 .panel-section {
-  border-width: 0;
+  border-color: @panel-section-border;
   box-shadow: none !important;
 
   > .panel-heading {
@@ -88,6 +88,7 @@
 .styled-scroll {
   ::-webkit-scrollbar {
     width: 8px;
+    height: 8px;
     background-color: rgba(0,0,0,.03);
     border-radius: 4px;
   }
@@ -107,13 +108,11 @@
 // -------------------------
 .panel-note {
   border-top-color: @panel-top-border-color;
-  // panel extensions    ->      .panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 
   .panel-variant(@panel-border; @panel-heading-text-color; @panel-heading-bg; @panel-heading-border;);
 
   .panel-body {
     padding: 0;
-    background-color: @white;
   }
 
   .panel-heading {
@@ -123,7 +122,7 @@
 
     .btn {
       float: right;
-      margin: 0 0 0 auto;
+      margin: -4px 0 -4px auto;
     }
   }
 }
@@ -303,7 +302,10 @@
 }
 
 .note {
-  border-top: 1px solid @panel-border;
+  + .note {
+    border-top: 1px solid @panel-border;
+  }
+
   .flag {
     padding: 6px 8px;
     margin: -12px -12px 8px;
@@ -487,7 +489,10 @@
       width: auto;
       max-width: 200px;
       height: 30px;
+      padding-top: 0;
+      padding-bottom: 0;
       font-size: @font-size-xs;
+      line-height: 30px;
     }
 
     .checkbox {

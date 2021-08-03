@@ -27,6 +27,7 @@ namespace Rock.Tasks
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "This should not be used due to size limitations for BusStartedTask message. Use SaveMetaphoneTransaction instead " )]
     public sealed class AddCommunicationRecipients : BusStartedTask<AddCommunicationRecipients.Message>
     {
         /// <summary>

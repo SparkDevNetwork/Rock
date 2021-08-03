@@ -223,6 +223,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalDevice.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonAlias.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalLink.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalLinkSection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonalLinkSectionOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonExport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\PersonPreviousName.cs" />

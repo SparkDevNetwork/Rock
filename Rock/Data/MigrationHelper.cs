@@ -3856,6 +3856,7 @@ BEGIN
 
         /// <summary>
         /// Adds a new DefinedValue for the given DefinedType.
+        /// Note: you probably should use <seealso cref="UpdateDefinedValue(string, string, string, string, bool, int?, string)"/> instead.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type GUID.</param>
         /// <param name="value">The value.</param>
@@ -3891,6 +3892,7 @@ BEGIN
 
         /// <summary>
         /// Adds the defined value.
+        /// Note: you probably should use <seealso cref="UpdateDefinedValue(string, string, string, string, bool, int?, string)"/> instead.
         /// </summary>
         /// <param name="definedTypeGuid">The defined type unique identifier.</param>
         /// <param name="value">The value.</param>

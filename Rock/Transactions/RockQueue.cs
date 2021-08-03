@@ -21,7 +21,7 @@ using System.Linq;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// 
+    /// Queue for <see cref="ITransaction" /> Transactions (not the Bus queue)
     /// </summary>
     static public class RockQueue
     {
@@ -32,8 +32,6 @@ namespace Rock.Transactions
         /// <value>
         /// The currently executing transaction progress.
         /// </value>
-        [Obsolete( "Use Rock.Tasks instead of transactions" )]
-        [RockObsolete( "1.13" )]
         public static int? CurrentlyExecutingTransactionProgress { get; private set; }
 
         /// <summary>

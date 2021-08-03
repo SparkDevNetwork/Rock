@@ -318,6 +318,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Determines if an anonymous playback session should be tracked and stored as an
+        /// <see cref="Rock.Model.Interaction"/> in the system. This is required
+        /// to provide play metrics.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if an anonymous playback session should be tracked in the Interactions table; otherwise, <c>false</c>.
+        /// </value>
+        [DefaultValue( true )]
+        public bool TrackAnonymousSession
+        {
+            get => ViewState[nameof( TrackAnonymousSession )] as bool? ?? true;
+            set => ViewState[nameof( TrackAnonymousSession )] = value;
+        }
+
+        /// <summary>
         /// Determines if the user's session should be tracked and stored as an
         /// <see cref="Rock.Model.Interaction"/> in the system. This is required
         /// to provide play metrics as well as use the resume feature later.
@@ -604,12 +619,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="page">The page.</param>
         public static void AddLinksForMediaToPage( string mediaUrl, Page page )
         {
-            RockPage.AddScriptLink( page, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.js", false );
-            RockPage.AddCSSLink( page, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.css", false );
+            RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/plyr.min.js", false );
+            RockPage.AddCSSLink( page, "~/Scripts/plyr/3.6.8/plyr.min.css", false );
 
             if ( mediaUrl != null && mediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
             {
-                RockPage.AddScriptLink( page, "https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js", false );
+                RockPage.AddScriptLink( page, "~/Scripts/plyr/3.6.8/hls.min.js", false );
             }
 
             RockPage.AddScriptLink( page, page.ResolveUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
@@ -676,7 +691,7 @@ namespace Rock.Web.UI.Controls
                 TrackProgress = true,
                 Type = MediaType == MediaPlayerInterfaceType.Automatic ? string.Empty : MediaType.ToString().ToLower(),
                 Volume = Volume,
-                WriteInteraction = TrackSession
+                WriteInteraction = rockPage?.CurrentPerson != null ? TrackSession : TrackAnonymousSession
             };
 
             // Update the options with any values from the MediaElement.

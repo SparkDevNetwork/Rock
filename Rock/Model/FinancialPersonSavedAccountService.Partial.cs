@@ -32,7 +32,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> to retrieve saved accounts for.</param>
         /// <returns>A queryable collection of <see cref="Rock.Model.FinancialPersonSavedAccount">Saved Accounts</see> belonging to the specified <see cref="Rock.Model.Person"/>.</returns>
-        public IQueryable<FinancialPersonSavedAccount> GetByPersonId(int personId)
+        public IQueryable<FinancialPersonSavedAccount> GetByPersonId( int personId )
         {
             return this.Queryable().Where( a => a.PersonAlias.PersonId == personId );
         }
@@ -75,13 +75,14 @@ namespace Rock.Model
         internal RemoveExpiredSavedAccountsResult RemoveExpiredSavedAccounts( int removedExpiredSavedAccountDays )
         {
             var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( new RockContext() ).Queryable()
-                .Where( a => a.FinancialPaymentDetail.CardExpirationDate != null )
-                .Where( a => a.PersonAliasId.HasValue || a.GroupId.HasValue )
-                .Where( a => a.FinancialPaymentDetailId.HasValue )
-                .Where( a => a.IsSystem == false )
+                .Where( a =>
+                    a.FinancialPaymentDetail.CardExpirationDate != null
+                    && ( a.PersonAliasId.HasValue || a.GroupId.HasValue )
+                    && a.FinancialPaymentDetailId.HasValue
+                    && a.IsSystem == false )
                 .OrderBy( a => a.Id );
 
-            var savedAccountInfoList = financialPersonSavedAccountQry.Select( a => new 
+            var savedAccountInfoList = financialPersonSavedAccountQry.Select( a => new
             {
                 Id = a.Id,
                 FinancialPaymentDetail = a.FinancialPaymentDetail

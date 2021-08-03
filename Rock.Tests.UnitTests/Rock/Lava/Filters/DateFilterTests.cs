@@ -15,11 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Globalization;
+using System.Collections.Generic;
+//using System.Globalization;
+using System.Linq;
+using Ical.Net;
+using Ical.Net.DataTypes;
+using Ical.Net.Interfaces.DataTypes;
+using Ical.Net.Serialization.iCalendar.Serializers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -29,6 +36,49 @@ namespace Rock.Tests.UnitTests.Lava
         // Defines the UTC offset for the comparison dates used in unit tests in this class.
         // Modifying this value simulates executing the test set for a different timezone, but should have no impact on the result.
         private static TimeSpan _utcBaseOffset = new TimeSpan( 4, 0, 0 );
+
+        private static CalendarSerializer serializer = new CalendarSerializer();
+        private static RecurrencePattern weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
+        private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
+
+        private static readonly DateTime today = RockDateTime.Today;
+        private static readonly DateTime nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
+        private static readonly DateTime firstSaturdayOfMonth = RockDateTime.Now.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
+
+        private static readonly Calendar weeklySaturday430 = new Calendar()
+        {
+            Events =
+            {
+                new Event
+                    {
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
+                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
+                        RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
+                        Sequence = 0,
+                        Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
+                    }
+                }
+        };
+
+        private static readonly Calendar monthlyFirstSaturday = new Calendar()
+        {
+            Events =
+            {
+                new Event
+                    {
+                        DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0 ),
+                        DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day ),
+                        RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
+                        Sequence = 0,
+                        Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
+                    }
+                }
+        };
+
+        private static readonly string iCalStringSaturday430 = serializer.SerializeToString( weeklySaturday430 );
+        private static readonly string iCalStringFirstSaturdayOfMonth = serializer.SerializeToString( monthlyFirstSaturday );
 
         #region Filter Tests: Date
 
@@ -54,7 +104,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var dateTimeInput = new DateTime( 2018, 5, 1, 10, 0, 0 );
 
-            var culture = CultureInfo.CurrentCulture;
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
 
             // Convert the input time to local server time, which most likely has a different UTC offset to the input date.
             var serverLocalTimeString = dateTimeInput.ToString( "G", culture );
@@ -412,7 +462,7 @@ namespace Rock.Tests.UnitTests.Lava
             // Get an input time of 10:00 AM in the test timezone.
             var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, _utcBaseOffset );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )
@@ -429,6 +479,140 @@ namespace Rock.Tests.UnitTests.Lava
                 // Verify that the difference between the input date and the adjusted local time is 7 hours.
                 TestHelper.AssertTemplateOutput( engine, "7", "{{ dateTimeInput | DateDiff:serverLocalTime,'h' }}", mergeValues );
             } );
+        }
+
+        #endregion
+
+        #region Filter Tests: DatesFromICal
+
+        private void VerifyDatesExistInDatesFromICalResult( string iCalString, List<DateTime> dates, string filterOption = "all" )
+        {
+            var mergeValues = new LavaDataDictionary { { "iCalString", iCalString } };
+
+            var template = @"
+{% assign nextDates = iCalString | DatesFromICal:$filterOption %}
+{% for nextDate in nextDates %}
+    <li>{{ nextDate | Date:'yyyy-MM-dd HH:mm:ss tt' }}</li>
+{% endfor %}
+";
+
+            template = template.Replace( "$filterOption", filterOption );
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the result contains the expected entries.
+                var now = RockDateTime.Now;
+
+                foreach ( var date in dates )
+                {
+                    Assert.That.Contains( output, $"<li>" + date.ToString( "yyyy-MM-dd HH:mm:ss tt" ) + "</li>" );
+                }
+            } );
+        }
+
+        private DateTime GetExpectedTestResultDate( DateTime expectedDate1, DateTime expectedDate2 )
+        {
+            var now = RockDateTime.Now;
+
+            // Note that due to the implementation of the DatesFromICal filter, the current date will only appear in the results
+            // if this unit test is executed when the current system time is prior to the scheduled time of the event.
+            // If the expected date is today but the time is prior to the current system time,
+            // adjust the expected date to the next date in the schedule.
+            if ( expectedDate1.Date == now.Date
+                 && expectedDate1.TimeOfDay <= now.TimeOfDay )
+            {
+                return expectedDate2;
+            }
+            else
+            {
+                return expectedDate1;
+            }
+        }
+
+        /// <summary>
+        /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
+        {
+            // Create a new schedule starting at 11am today Rock time.
+            var startDateTime = RockDateTime.Today.AddHours( 11 );
+
+            var schedule = ScheduleTestHelper.GetScheduleWithDailyRecurrence( startDateTime,
+                endDate: null,
+                eventDuration: new TimeSpan( 1, 0, 0 ),
+                null );
+
+            var expectedDate1 = GetExpectedTestResultDate( startDateTime, startDateTime.AddDays( 1 ) );
+
+            VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
+                new List<DateTime> { expectedDate1, expectedDate1.AddDays( 1 ), expectedDate1.AddDays( 2 ) },
+                "3" );
+        }
+
+        /// <summary>
+        /// Return the next occurrence for Rock's sample data Saturday 4:30PM service datetime.
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_Saturday430ServiceScheduleNextDate_ReturnsNextSaturday()
+        {
+            var now = RockDateTime.Now;
+
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) now.DayOfWeek + 7 ) % 7;
+
+            var nextSaturday = now.Date.AddDays( daysUntilSaturday );
+
+            var expectedDate = nextSaturday.AddHours( 16 ).AddMinutes( 30 );
+
+            expectedDate = GetExpectedTestResultDate( expectedDate, expectedDate.AddDays( 7 ) );
+
+            VerifyDatesExistInDatesFromICalResult( iCalStringSaturday430,
+                new List<DateTime> { expectedDate },
+                "1" );
+        }
+
+        /// <summary>
+        /// Returns the end datetime for the next occurrence for Rock's sample Saturday 4:30PM service datetime (which ends at 5:30PM).
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_WithEndDateTimeParameter_ReturnsEndDateTimeOfEvent()
+        {
+            DateTime today = RockDateTime.Today;
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
+            var nextSaturday = today.AddDays( daysUntilSaturday );
+
+            var expectedDateTime = nextSaturday.AddHours( 17 ).AddMinutes( 30 );
+
+            expectedDateTime = GetExpectedTestResultDate( expectedDateTime, expectedDateTime.AddDays( 7 ) );
+
+            VerifyDatesExistInDatesFromICalResult( iCalStringSaturday430,
+                new List<DateTime> { expectedDateTime },
+                "1,'enddatetime'" );
+        }
+
+        /// <summary>
+        /// Returns the end datetime occurrence for the fictitious, first Saturday of the month event for Saturday a year from today.
+        /// </summary>
+        [TestMethod]
+        public void DatesFromICal_Saturday430ServiceScheduleNextYearDate_ReturnsSaturdayNextYear()
+        {
+            // Next year's Saturday (from last month). iCal can only get 12 months of data starting from the current month.
+            // So 12 months from now would be the previous month next year.
+            // The event ends at 10:00am.
+            DateTime expectedDateTime = RockDateTime.Today.AddHours( 11 )
+                .AddMonths( -1 )
+                .StartOfMonth()
+                .AddYears( 1 )
+                .GetNextWeekday( DayOfWeek.Saturday )
+                .AddHours( 10 );
+
+            VerifyDatesExistInDatesFromICalResult( iCalStringFirstSaturdayOfMonth,
+                new List<DateTime> { expectedDateTime },
+                "12,'enddatetime'" );
         }
 
         #endregion
@@ -510,7 +694,7 @@ namespace Rock.Tests.UnitTests.Lava
             var tomorrow = RockDateTime.Now.Date.AddDays( 1 ).AddHours( 1 );
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( tomorrow );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )
@@ -940,10 +1124,10 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
-                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
                 {
                     return;
                 }
@@ -1080,7 +1264,7 @@ namespace Rock.Tests.UnitTests.Lava
         {
             var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // The RockLiquid engine cannot process the DateTimeOffset variable type.
                 if ( engine.GetType() == typeof( RockLiquidEngine ) )

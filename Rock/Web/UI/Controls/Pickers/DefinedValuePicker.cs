@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
@@ -79,6 +80,28 @@ namespace Rock.Web.UI.Controls
                 DefinedValuePicker.LoadDropDownItems( this, true );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the selectable defined values identifier.
+        /// </summary>
+        /// <value>
+        /// The selectable defined values identifier.
+        /// </value>
+        public int[] SelectableDefinedValuesId
+        {
+            get
+            {
+                return _selectableDefinedValuesId;
+            }
+
+            set
+            {
+                _selectableDefinedValuesId = value;
+                DefinedValuePicker.LoadDropDownItems( this, false );
+            }
+        }
+
+        private int[] _selectableDefinedValuesId;
 
         /// <summary>
         /// Gets or sets the selected defined value identifier.
@@ -199,13 +222,17 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var dt = DefinedTypeCache.Get( picker.DefinedTypeId.Value );
-                var definedValuesList = dt?.DefinedValues
-                    .Where( a => a.IsActive || picker.IncludeInactive || selectedItems.Contains( a.Id ) )
-                    .OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+                var definedValuesList = dt?.DefinedValues.Where( a => ( a.IsActive || picker.IncludeInactive || selectedItems.Contains( a.Id ) ) );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( picker.SelectableDefinedValuesId != null && picker.SelectableDefinedValuesId.Any() )
                 {
-                    foreach ( var definedValue in definedValuesList )
+                    definedValuesList = definedValuesList.Where( a => picker.SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+                if ( filteredList != null && filteredList.Any() )
+                {
+                    foreach ( var definedValue in filteredList )
                     {
                         var text = picker.DisplayDescriptions && definedValue.Description.IsNotNullOrWhiteSpace() ? definedValue.Description : definedValue.Value;
 
@@ -262,5 +289,13 @@ namespace Rock.Web.UI.Controls
         /// The selected defined values identifier.
         /// </value>
         int[] SelectedDefinedValuesId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selectable defined values identifier.
+        /// </summary>
+        /// <value>
+        /// The selectable defined values identifier.
+        /// </value>
+        int[] SelectableDefinedValuesId { get; set; }
     }
 }

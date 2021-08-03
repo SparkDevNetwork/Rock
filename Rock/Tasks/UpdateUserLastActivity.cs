@@ -16,17 +16,14 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a person is viewed.
+    /// Updates <see cref="UserLogin.LastActivityDateTime"/> and <see cref="UserLogin.IsOnLine"/> based on user activity
     /// </summary>
     public sealed class UpdateUserLastActivity : BusStartedTask<UpdateUserLastActivity.Message>
     {

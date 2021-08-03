@@ -22,7 +22,7 @@
                             <Rock:RockCheckBox ID="cbIncludeBusinessInPersonPicker" runat="server" Label="Always Show Businesses in Person Picker" ValidationGroup="GeneralSetting" Help="When enabled, businesses will always be included in the search results of the person picker." />
                         </div>
                     </div>
-                    <div class="actions margin-t-lg">
+                    <div class="actions">
                         <Rock:BootstrapButton ID="btnGeneralSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnGeneralSave_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="GeneralSetting"></Rock:BootstrapButton>
                     </div>
                 </Rock:PanelWidget>
@@ -44,7 +44,7 @@
                         <Rock:NumberBox ID="numCookieTimeout" runat="server" NumberType="Integer" Label="Cookie Persistence Length" CssClass="input-width-lg" MinimumValue="1" AppendText="minutes" ValidationGroup="WebConfigSetting" Help="The length a cookie persists in minutes. A longer or bigger setting adds convenience, while a smaller setting enhances security and requires more frequent authentication." />
                         <Rock:RockCheckBox ID="cbEnableAdoNetPerformanceCounters" runat="server" Label="Enable Database Performance Counters" Text="Yes" Help="When checked, metric values regarding the counts of active and available database connections will be collected, for reporting within the 'Hosting Metrics' category. Note that website performance can be impacted when this option is enabled; consider using only when investigating possible database performance issues." ValidationGroup="WebConfigSetting" />
                     </fieldset>
-                    <div class="actions margin-t-lg">
+                    <div class="actions">
                         <Rock:BootstrapButton ID="btnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSaveConfig_Click" Text="Save" DataLoadingText="Saving..." ValidationGroup="WebConfigSetting"></Rock:BootstrapButton>
                     </div>
 

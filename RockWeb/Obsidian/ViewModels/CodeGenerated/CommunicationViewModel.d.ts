@@ -63,6 +63,7 @@ export default interface Communication extends Entity {
     sMSMessage: string | null;
     status: number;
     subject: string | null;
+    systemCommunicationId: number | null;
     urlReferrer: string | null;
     createdDateTime: RockDateType | null;
     modifiedDateTime: RockDateType | null;

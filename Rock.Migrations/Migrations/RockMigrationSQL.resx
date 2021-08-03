@@ -235,4 +235,7 @@
   <data name="_202107141741515_AchievementType_AddWeeklyAttendanceStreakType" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>202107141741515_achievementtype_addweeklyattendancestreaktype.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_202108031829239_Rollup_0803_LavaDocumentationUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202108031829239_rollup_0803_lavadocumentationupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

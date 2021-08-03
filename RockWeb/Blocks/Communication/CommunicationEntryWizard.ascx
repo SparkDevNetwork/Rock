@@ -64,7 +64,7 @@
                                     <hr />
                                 </div>
 
-                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-warning" />
+                                <asp:ValidationSummary ID="vsRecipientSelection" runat="server" HeaderText="Please correct the following:" ValidationGroup="vgRecipientSelection" CssClass="alert alert-validation" />
 
                                 <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
@@ -156,15 +156,20 @@
                                         NotificationBoxType="Validation" />
 
                                     <div class="d-flex margin-b-md">
-                                        <div class="ml-sm-auto">
+                                        <div class="mr-sm-auto">
                                             <Rock:PersonPicker
                                                 ID="ppAddPerson"
                                                 runat="server"
-                                                CssClass="picker-menu-right"
+                                                CssClass="picker-menu-left"
                                                 Label="Person"
                                                 PersonName="Add Person"
                                                 OnSelectPerson="ppAddPerson_SelectPerson"
                                                 EnableSelfSelection="true" />
+                                        </div>
+                                        <div class="ml-sm-auto mt-auto form-group">
+                                            <asp:Panel ID="pnlIndividualRecipientListCount" runat="server" CssClass="label label-info">
+                                                <asp:Literal ID="lIndividualRecipientListCount" runat="server" Text="" />
+                                            </asp:Panel>
                                         </div>
                                     </div>
                                 </div>
@@ -188,10 +193,10 @@
                                     </Rock:Grid>
                                     </div>
                                 </div>
-                                <div class="mt-3">
+                                <div class="my-3">
                                         <asp:LinkButton ID="btnDeleteSelectedRecipients"
                                             runat="server"
-                                            CssClass="btn btn-sm btn-outline-primary"
+                                            CssClass="btn btn-xs btn-outline-primary"
                                             OnClick="btnDeleteSelectedRecipients_Click"
                                             Text="Remove Selected" />
                                 </div>
@@ -295,7 +300,7 @@
                                     <hr/>
                                 </div>
 
-                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Danger" Visible="false" />
+                                <Rock:NotificationBox ID="nbTemplateSelectionWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
                                 <div class="row template-selection">
                                     <asp:Repeater ID="rptSelectTemplate" runat="server" OnItemDataBound="rptSelectTemplate_ItemDataBound">
                                         <ItemTemplate>

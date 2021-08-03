@@ -23,7 +23,7 @@ namespace Rock.Lava
     /// Represents an object model that can be used with Lava.
     /// This is a Rock-specific superset of the same-named DotLiquid interface.
     /// </summary>
-    [RockObsolete( "13.0" )] // "Implement the Rock.Lava.ILavaDataDictionary interface instead."
+    [RockObsolete( "1.13.0" )] // "Implement the Rock.Lava.ILavaDataDictionary interface instead."
     public interface ILiquidizable : global::DotLiquid.ILiquidizable, global::DotLiquid.IIndexable
     {
         /// <summary>

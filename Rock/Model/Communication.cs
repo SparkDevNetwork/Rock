@@ -425,6 +425,16 @@ namespace Rock.Model
         [DataMember]
         public bool ExcludeDuplicateRecipientAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="SystemCommunication"/> that this communication is associated with.
+        /// </summary>
+        /// <value>
+        /// The system communication.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        public int? SystemCommunicationId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -581,6 +591,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate SendSourceDate { get; set; }
+
+        /// <inheritdoc cref="SystemCommunicationId"/>
+        [DataMember]
+        public virtual SystemCommunication SystemCommunication { get; set;  }
+
         #endregion
 
         #region ISecured
@@ -594,7 +609,17 @@ namespace Rock.Model
         {
             get
             {
-                return this.CommunicationTemplate ?? base.ParentAuthority;
+                if ( this.CommunicationTemplate != null )
+                {
+                    return this.CommunicationTemplate;
+                }
+
+                if ( this.SystemCommunication != null )
+                {
+                    return this.SystemCommunication;
+                }
+
+                return base.ParentAuthority;
             }
         }
 
@@ -849,23 +874,28 @@ namespace Rock.Model
 
         /// <summary>
         /// Determines the medium entity type identifier.
-        /// Given the email and sms medium entity type ids and the available communication preferences
+        /// Given the email, SMS medium, and Push entity type ids, along with the available communication preferences,
         /// this method will determine which medium entity type id should be used and return that id.
-        /// If a preference could not be determined the email medium entity type id will be returned.
         /// </summary>
+        /// <remarks>
+        ///  NOTE: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///  the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned. If none is available,
+        ///  it will return the email medium entity type id.  Typically is expected that the ordered params list eventually has either
+        ///  CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.
+        /// </remarks>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
         /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
-        /// <param name="recipientPreference">The recipient preference.</param>
+        /// <param name="communicationTypePreference">An array of ordered communication type preferences.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - recipientPreference</exception>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - communicationTypePreference</exception>
         /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
-        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] communicationTypePreference )
         {
-            for ( var i = 0; i < recipientPreference.Length; i++ )
+            for ( var i = 0; i < communicationTypePreference.Length; i++ )
             {
-                var currentCommunicationPreference = recipientPreference[i];
-                var hasNextCommunicaitonPreference = ( i + 1 ) < recipientPreference.Length;
+                var currentCommunicationPreference = communicationTypePreference[i];
+                var hasNextCommunicationPreference = ( i + 1 ) < communicationTypePreference.Length;
 
                 switch ( currentCommunicationPreference )
                 {
@@ -876,14 +906,14 @@ namespace Rock.Model
                     case CommunicationType.PushNotification:
                         return pushMediumEntityTypeId;
                     case CommunicationType.RecipientPreference:
-                        if ( hasNextCommunicaitonPreference )
+                        if ( hasNextCommunicationPreference )
                         {
                             break;
                         }
 
                         return emailMediumEntityTypeId;
                     default:
-                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "recipientPreference" );
+                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "communicationTypePreference" );
                 }
             }
 
@@ -1130,6 +1160,9 @@ namespace Rock.Model
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( r => r.SendSourceDate ).WithMany().HasForeignKey( r => r.SendDateKey ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a ON DELETE SET NULL for SystemCommunicationId
+            this.HasOptional( r => r.SystemCommunication ).WithMany().HasForeignKey( r => r.SystemCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 

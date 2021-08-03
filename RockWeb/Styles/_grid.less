@@ -94,6 +94,16 @@ td.wrap-contents {
   .grid-table {
     border: 0 !important;
   }
+
+  tfoot > tr:last-child {
+    td:first-child {
+      border-bottom-left-radius: @panel-border-radius;
+    }
+
+    td:last-child {
+      border-bottom-right-radius: @panel-border-radius;
+    }
+  }
 }
 
 // rwd responsive table override
@@ -309,6 +319,11 @@ td.grid-col-actions {
     background-color: @grid-footer-button-bg;
     border-color: @grid-footer-button-border;
   }
+
+  .btn-grid-custom-action {
+    margin-bottom: 8px;
+    margin-bottom: 8px;
+  }
 }
 
 // 6. Light Style
@@ -521,6 +536,12 @@ tr.row-highlight {
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
+
+  // If .table-responsive is inside of a grid assume that the block will style correctly
+  .grid & {
+    margin-bottom: 0;
+    border: 0;
+  }
 
   // classes to show and hide columns based on their priority
   th[data-priority],

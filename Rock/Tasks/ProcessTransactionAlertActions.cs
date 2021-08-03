@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using Rock.Bus;
+
 using Rock.Bus.Message;
 using Rock.Communication;
 using Rock.Data;
@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Handles any actions that an alert should trigger after it has been created.
+    /// Handles any actions for the specified <see cref="FinancialTransactionAlert" /> that trigger after it the alert has been created.
     /// </summary>
     public sealed class ProcessTransactionAlertActions : BusStartedTask<ProcessTransactionAlertActions.Message>
     {

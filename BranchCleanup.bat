@@ -31,6 +31,12 @@ RMDIR "Rock.DownhillCss\Obj" /S /Q
 RMDIR "Rock.Lava\Bin" /S /Q
 RMDIR "Rock.Lava\Obj" /S /Q
 
+RMDIR "Rock.Lava.DotLiquid\Bin" /S /Q
+RMDIR "Rock.Lava.DotLiquid\Obj" /S /Q
+
+RMDIR "Rock.Lava.Fluid\Bin" /S /Q
+RMDIR "Rock.Lava.Fluid\Obj" /S /Q
+
 RMDIR "Rock.Lava.Shared\Bin" /S /Q
 RMDIR "Rock.Lava.Shared\Obj" /S /Q
 
@@ -100,8 +106,14 @@ RMDIR "Rock.Tests.UnitTests\Obj" /S /Q
 RMDIR "Rock.Tests\Bin" /S /Q
 RMDIR "Rock.Tests\Obj" /S /Q
 
+RMDIR "Rock.Update\Bin" /S /Q
+RMDIR "Rock.Update\Obj" /S /Q
+
 RMDIR "Rock.Version\Bin" /S /Q
 RMDIR "Rock.Version\Obj" /S /Q
+
+RMDIR "Rock.ViewModel\Bin" /S /Q
+RMDIR "Rock.ViewModel\Obj" /S /Q
 
 RMDIR "Rock.WebStartup\Bin" /S /Q
 RMDIR "Rock.WebStartup\Obj" /S /Q

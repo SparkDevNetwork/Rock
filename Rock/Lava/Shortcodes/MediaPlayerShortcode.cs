@@ -161,6 +161,14 @@ namespace Rock.Lava.Shortcodes
             public const string Thumbnail = "thumbnail";
 
             /// <summary>
+            /// Determines if an anonymous user's session should be tracked
+            /// and stored as an Interaction in the system. This is required
+            /// to provide play metrics for non-logged in users but will not
+            /// provide the resume feature. The default value is true.
+            /// </summary>
+            public const string TrackAnonymousSession = "trackanonymoussession";
+
+            /// <summary>
             /// Determines if the user's session should be tracked and stored
             /// as an Interaction in the system. This is required to provide
             /// play metrics as well as use the resume feature later. The
@@ -209,6 +217,7 @@ namespace Rock.Lava.Shortcodes
             + "," + ParameterKeys.SeekTime
             + "," + ParameterKeys.Source
             + "," + ParameterKeys.Thumbnail
+            + "," + ParameterKeys.TrackAnonymousSession
             + "," + ParameterKeys.TrackSession
             + "," + ParameterKeys.Type
             + "," + ParameterKeys.Volume
@@ -261,6 +270,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>seektime</strong> (10) - The number of seconds to seek forward or backward when the fast-forward or rewind controls are clicked.</li>
     <li><strong>src</strong> - The URL of the media file to be played.</li>
     <li><strong>thumbnail</strong> - The thumbnail image URL to display before the video starts playing. This only works with HTML5 style videos, it will not work with embed links such as YouTube uses.</li>
+    <li><strong>trackanonymoussession</strong> (true) - Determines if an anonymous user's session should be tracked and stored as an Interaction in the system. This is required to provide play metrics for non-logged in users but will not provide the resume feature.
     <li><strong>tracksession</strong> (true) - Determines if the user's session should be tracked and stored as an Interaction in the system. This is required to provide play metrics as well as use the resume feature later.</li>
     <li><strong>type</strong> - Specifies the type of media to be played. Can be either ""audio"" or ""video"". Default is to auto-detect.</li>
     <li><strong>volume</strong> (1) - The initial volume to start the media player at. This is a value between 0 and 1, with 1 meaning full volume.</li>
@@ -392,7 +402,9 @@ so you can customize this to be exactly what you want.</p>
                 TrackProgress = true,
                 Type = parms[ParameterKeys.Type],
                 Volume = parms[ParameterKeys.Volume].AsDoubleOrNull() ?? 1.0,
-                WriteInteraction = parms[ParameterKeys.TrackSession].AsBoolean( true )
+                WriteInteraction = currentPerson != null
+                    ? parms[ParameterKeys.TrackSession].AsBoolean( true )
+                    : parms[ParameterKeys.TrackAnonymousSession].AsBoolean( true )
             };
 
             // Get the rest of the parameters in easy to access variables.
@@ -471,6 +483,7 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.SeekTime, "10" },
                 { ParameterKeys.Source, "" },
                 { ParameterKeys.Thumbnail, "" },
+                { ParameterKeys.TrackAnonymousSession, "true" },
                 { ParameterKeys.TrackSession, "true" },
                 { ParameterKeys.Type, "" },
                 { ParameterKeys.Volume, "1" },

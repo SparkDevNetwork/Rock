@@ -1059,6 +1059,14 @@ namespace Rock.Lava
 
         #region DateTime Filters
 
+        /* [2021-07-31] DL
+         * 
+         * Lava Date filters may return DateTime, DateTimeOffset, or string values according to their purpose.
+         * Where possible, a filter should return a DateTime value specified in UTC, or a DateTimeOffset.
+         * Local DateTime values may give unexpected results if the Rock timezone setting is different from the server timezone.
+         * Where a date string is accepted as an input parameter, the Rock timezone is implied unless a timezone is specified.
+         */
+
         /// <summary>
         /// Formats a date using a .NET date format string
         /// </summary>
@@ -1159,7 +1167,7 @@ namespace Rock.Lava
         /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
         /// <param name="option">The quantity option (either an integer or "all").</param>
         /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
-        /// <returns>a list of datetimes</returns>
+        /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
         public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
@@ -1204,26 +1212,26 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the occurrence dates.
+        /// Gets the occurrence dates from an iCalendar string expressed in RFC-5545 format.
         /// </summary>
-        /// <param name="iCalString">The i cal string.</param>
+        /// <param name="iCalString">The iCal string.</param>
         /// <param name="returnCount">The return count.</param>
         /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
-        /// <returns>a list of datetimes</returns>
+        /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
         private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
             var calendarEvent = calendar.Events[0] as Event;
-            
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+                return dates.Select( d => d.Period.StartTime.AsUtc ).ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
                 List<Occurrence> dates = calendar.GetOccurrences( RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.EndTime.Value ).ToList();
+                return dates.Select( d => d.Period.EndTime.AsUtc ).ToList();
             }
             else
             {
@@ -2089,6 +2097,8 @@ namespace Rock.Lava
 
         #region Attribute Filters
 
+        private const int _maxRecursionDepth = 10;
+
         /// <summary>
         /// DotLiquid Attribute Filter
         /// </summary>
@@ -2111,7 +2121,7 @@ namespace Rock.Lava
             int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
-            if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
+            if ( ( input is string ) && input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
                 var globalAttributeCache = GlobalAttributesCache.Get();
                 attribute = globalAttributeCache.Attributes
@@ -2125,6 +2135,12 @@ namespace Rock.Lava
                         // Global attributes may reference other global attributes, so try to resolve this value again
                         var mergeFields = context.GetMergeFields();
 
+                        // Verify that the recursion depth is not exceeded.
+                        if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                        {
+                            return "## Lava Error: Recursive reference ##";
+                        }
+
                         rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
@@ -2137,18 +2153,24 @@ namespace Rock.Lava
             /*
                 04/28/2020 - Shaun
                 The "SystemSetting" filter argument does not retrieve the Attribute from the database
-                or perform any authorization checks.  It simply returns the value of the of the specified
+                or perform any authorization checks.  It simply returns the value of the specified
                 SystemSetting attribute (with any merge fields evaluated).  This is intentional.
             */
 
             // If Input is "SystemSetting" then look for a SystemSetting attribute with key
-            else if ( input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
+            else if ( ( input is string ) && input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
             {
                 string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
                 if ( theValue.HasMergeFields() )
                 {
                     // SystemSetting attributes may reference other global attributes, so try to resolve this value again
                     var mergeFields = context.GetMergeFields();
+
+                    // Verify that the recursion depth has not been exceeded.
+                    if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                    {
+                        return "## Lava Error: Recursive reference ##";
+                    }
 
                     rawValue = theValue.ResolveMergeFields( mergeFields );
                 }
@@ -2260,6 +2282,29 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Increment the specified recursion tracking key in the supplied Lava context
+        /// and verify that the recursion limit has not been exceeded.
+        /// </summary>
+        /// <param name="recursionDepthKey"></param>
+        /// <param name="mergeFields"></param>
+        /// <returns></returns>
+        private static bool IncrementRecursionTracker( string recursionDepthKey, IDictionary<string, object> mergeFields )
+        {
+            int currentRecursionDepth = mergeFields.GetValueOrDefault( recursionDepthKey, 0 ).ToStringSafe().AsInteger();
+
+            currentRecursionDepth++;
+
+            if ( currentRecursionDepth > _maxRecursionDepth )
+            {
+                return false;
+            }
+
+            mergeFields[recursionDepthKey] = currentRecursionDepth.ToString();
+
+            return true;
         }
 
         /// <summary>

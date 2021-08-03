@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -338,12 +339,12 @@ namespace Rock.Tests.Integration.Lava
         public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
         {
             var template = @"
-{%- eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' -%}
-    {%- for occurrence in EventItems -%}
+{% eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' %}
+    {% for occurrence in EventItems %}
         <b>Series {{forloop.index}}</b><br>
 
-        {%- for item in occurrence -%}
-            {%- if forloop.first -%}
+        {% for item in occurrence %}
+            {% if forloop.first %}
                 {{ item.Name }}
                 <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
                 <ol>
@@ -351,7 +352,7 @@ namespace Rock.Tests.Integration.Lava
 
             <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
 
-            {%- if forloop.last -%}
+            {% if forloop.last %}
                 </ol>
             {% endif %}
         {% endfor %}
@@ -434,6 +435,17 @@ namespace Rock.Tests.Integration.Lava
             var template = GetTestTemplate( "eventid:'Staff Meeting' campusids:'no_campus'" );
 
             TestHelper.AssertTemplateOutput( "Event Occurrences not available. Cannot apply a campus filter for the reference \"no_campus\".",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusSpecified_RetrievesEventsWithMatchingCampusAndUnspecifiedCampus()
+        {
+            // The "Warrior Youth Event" is not assigned to a specific Campus, so it should be returned for all campus filter values.
+            var template = GetTestTemplate( $"eventid:'Warrior Youth Event' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: All Campuses>",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }

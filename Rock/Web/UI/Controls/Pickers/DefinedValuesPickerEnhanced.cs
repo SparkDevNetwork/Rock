@@ -62,6 +62,28 @@ namespace Rock.Web.UI.Controls
         public bool DisplayDescriptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the selectable defined values identifier.
+        /// </summary>
+        /// <value>
+        /// The selectable defined values identifier.
+        /// </value>
+        public int[] SelectableDefinedValuesId
+        {
+            get
+            {
+                var selectableValues = ViewState["SelectableValues"] as string;
+                return selectableValues.IsNullOrWhiteSpace() ? selectableValues.SplitDelimitedValues().AsIntegerList().ToArray() : new int[0];
+            }
+
+            set
+            {
+                var selectableValues = string.Join( ",", value );
+                ViewState["SelectableValues"] = selectableValues;
+                DefinedValuePicker.LoadDropDownItems( this, false );
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the selected defined value Ids
         /// </summary>
         /// <value>

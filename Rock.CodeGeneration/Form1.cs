@@ -26,8 +26,6 @@ namespace Rock.CodeGeneration
     /// </summary>
     public partial class Form1 : Form
     {
-        PluralizationService pls = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Form1" /> class.
         /// </summary>
@@ -1317,6 +1315,31 @@ namespace Rock.ViewModel
             return sqlconn;
         }
 
+        public string PluralizeTypeName( Type type )
+        {
+            // This uses PluralizationService (Entity Framework) , which is designed to pluralize the names of types (not necessarily real worlds)
+            // For Example, AttendanceOccurrence gets pluralized as AttendanceOccurrences, because it knows that Attendance and Occurrence
+            // It figures out the last word in a CamelCased type name and pluralizes it.
+            // are separate words using CamelCasing.
+
+            var str = type.Name;
+
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+
+                case "CAMPUS":
+                    return str + "ES";
+
+                default:
+                    var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
+        }
+
         /// <summary>
         /// Writes the REST file for a given type
         /// </summary>
@@ -1324,7 +1347,7 @@ namespace Rock.ViewModel
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
-            string pluralizedName = type.Name.Pluralize();
+            string pluralizedName = PluralizeTypeName( type );
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
             string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 

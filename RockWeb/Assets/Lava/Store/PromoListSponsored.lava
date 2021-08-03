@@ -13,15 +13,15 @@
                         </div>
                         <div class="packagesummary-body">
                             <h2>{{ promo.PackageName }}</h2>
-                            <p class="vendor">
+                            <p class="vendor text-sm text-muted">
                                 {{ promo.PackageVendor }}
                             </p>
                         </div>
                         <div class="packagesummary-footer clearfix">
-                            <div class="rating pull-left">
+                            <div class="rating text-warning pull-left">
                                 {{ promo.PackageRating | RatingMarkup }}
                             </div>
-                            <div class="cost pull-right">
+                            <div class="cost text-color pull-right">
                                 {% if promo.PackagePrice == 0 %}
                                     Free
                                 {% elseif promo.PackagePrice != null %}

@@ -425,6 +425,7 @@ th[align="right"] {
     .panel-labels {
       float: right;
       margin-top: -(round(@font-size-base * .3125, 1));
+      margin-bottom: -(round(@font-size-base * .3125, 1));
 
       .panel-text {
         float: left;
@@ -580,7 +581,11 @@ th[align="right"] {
   background-color: @white;
 
   .panel-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     .actions {
+      margin: -4px 0 -4px auto;
       a {
         margin-left: 4px;
       }
@@ -599,6 +604,7 @@ th[align="right"] {
         padding-right: 12px;
         text-align: right;
         font-size: @font-size-base;
+        line-height: @line-height-base;
       }
 
       .form-control-static {
@@ -658,7 +664,8 @@ th[align="right"] {
   }
 
   .panel-body {
-      .grid.grid-panel {
+    .panel-fullwidth,
+    .grid.grid-panel {
       margin: 0 -@panel-body-padding;
       // TODO: WAS NEEDED FOR BORDER RADIUS TRIM
       // overflow: hidden;
@@ -723,10 +730,12 @@ th[align="right"] {
 
   .filter-options {
     border-bottom-left-radius: @panel-border-radius;
+    border-right: 1px solid @panel-border;
   }
 
   .analysis-types {
     margin-bottom: (@grid-gutter-width / 2);
+    border-bottom: 1px solid @panel-border;
   }
 }
 
@@ -1112,5 +1121,50 @@ div.aspNetDisabled {
 
   .badge {
     background-color: inherit;
+  }
+}
+
+// Rock Popovers
+.rock-popover {
+  display: flex;
+  flex-wrap: wrap;
+  width: 500px;
+  max-width: 100%;
+  font-size: 14px;
+  z-index: @zindex-modal;
+  border-radius: 4px;;
+
+  @media (min-width: 480px) {
+    flex-wrap: nowrap;
+    max-height: 383px;
+  }
+
+  .popover-title {
+    min-height: 40px;
+    padding-right: 0;
+  }
+
+  .dropdown-menu a {
+    font-size: 14px;
+    line-height: 24px;
+  }
+
+  > .popover-panel + .popover-panel {
+    border-left: 1px solid @panel-border;
+  }
+
+  .popover-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    @media (min-width: 480px) {
+      width: 50%;
+    }
+
+    .popover-content {
+      overflow: auto;
+      min-height: 100px;
+    }
   }
 }

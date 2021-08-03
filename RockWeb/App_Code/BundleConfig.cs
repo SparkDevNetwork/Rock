@@ -59,6 +59,7 @@ public class BundleConfig
             "~/Scripts/Rock/dialogs.js",
             "~/Scripts/Rock/settings.js",
             "~/Scripts/Rock/utility.js",
+            "~/Scripts/Rock/personalLinks.js",
             "~/Scripts/Rock/Controls/*.js",
             "~/Scripts/Rock/reportingInclude.js" ) );
 

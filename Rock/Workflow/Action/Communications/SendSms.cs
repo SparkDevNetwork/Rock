@@ -255,7 +255,7 @@ namespace Rock.Workflow.Action
                 smsMessage.FromNumber = DefinedValueCache.Get( fromId );
                 smsMessage.Message = message;
                 smsMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
-                smsMessage.communicationName = action.ActionTypeCache.Name;
+                smsMessage.CommunicationName = action.ActionTypeCache.Name;
 
                 if ( binaryFile != null )
                 {

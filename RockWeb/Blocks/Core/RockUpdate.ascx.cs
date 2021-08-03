@@ -108,19 +108,20 @@ namespace RockWeb.Blocks.Core
                     pnlEarlyAccessEnabled.Visible = true;
                 }
 
-                var result = VersionValidationHelper.CheckFrameworkVersion();
+                var checkFrameworkVersionResultResult = VersionValidationHelper.CheckFrameworkVersion();
 
                 _isOkToProceed = true;
 
-                if ( result == DotNetVersionCheckResult.Fail )
+                if ( checkFrameworkVersionResultResult == DotNetVersionCheckResult.Fail )
                 {
-
+                    // Starting with v13, .NET 4.7.2 is required. So, show a warning if they haven't updated yet.
                     nbVersionIssue.Visible = true;
                     nbVersionIssue.Text += "<p>You will need to upgrade your hosting server in order to proceed with the v13 update.</p>";
                     nbBackupMessage.Visible = false;
                 }
-                else if ( result == DotNetVersionCheckResult.Unknown )
+                else if ( checkFrameworkVersionResultResult == DotNetVersionCheckResult.Unknown )
                 {
+                    // Starting with v13, .NET 4.7.2 is required. So, show a warning if can't determine if they have updated yet.
                     nbVersionIssue.Visible = true;
                     nbVersionIssue.Text += "<p>You may need to upgrade your hosting server in order to proceed with the v13 update. We were <b>unable to determine which Framework version</b> your server is using.</p>";
                     nbVersionIssue.Details += "<div class='alert alert-warning'>We were unable to check your server to verify that the .Net 4.7.2 Framework is installed! <b>You MUST verify this manually before you proceed with the update</b> otherwise your Rock application will be broken until you update the server.</div>";
@@ -138,10 +139,12 @@ namespace RockWeb.Blocks.Core
 
                 if ( _releases.Count > 0 )
                 {
-                    if ( new Version( _releases.Last().SemanticVersion ) >= new Version( "1.13.0" ) )
+                    if ( checkFrameworkVersionResultResult != DotNetVersionCheckResult.Pass && new Version( _releases.Last().SemanticVersion ) >= new Version( "1.13.0" ) )
                     {
+                        // if VersionIssue is visible, and they are updating to v13 or later, show the version Warning as an Danger instead.
                         nbVersionIssue.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     }
+
                     pnlUpdatesAvailable.Visible = true;
                     pnlUpdates.Visible = true;
                     pnlNoUpdates.Visible = false;

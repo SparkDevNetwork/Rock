@@ -358,7 +358,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         {
             var orderedOutput = _TestOrderedList.JoinStrings( ";" ) + ";";
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // Add a copy of the test list to the context, as it will be modified during the rendering process.
                 var mergeValues = new LavaDataDictionary { { "OrderedList", new List<string>( _TestOrderedList ) } };

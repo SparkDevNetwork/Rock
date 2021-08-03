@@ -53,6 +53,10 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.EnabledLavaCommands )]
+    [BooleanField( "Enable Quick Return",
+        Description = "When enabled, viewing the block will cause it to be added to the Quick Return list in the bookmarks feature.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.EnableQuickReturn )]
 
     // Custom Settings
     [CodeEditorField( "Query",
@@ -262,6 +266,7 @@ namespace RockWeb.Blocks.Reporting
             public const string ShowLaunchWorkflow = "ShowLaunchWorkflow";
             public const string GridHeaderContent = "GridHeaderContent";
             public const string GridFooterContent = "GridFooterContent";
+            public const string EnableQuickReturn = "EnableQuickReturn";
         }
 
         #endregion Keys
@@ -753,6 +758,14 @@ namespace RockWeb.Blocks.Reporting
                         RockPage.BrowserTitle = title;
                         RockPage.PageTitle = title;
                         RockPage.Header.Title = title;
+                    }
+
+                    if ( GetAttributeValue( AttributeKey.EnableQuickReturn ).AsBoolean() && setData && RockPage.PageTitle.IsNotNullOrWhiteSpace() )
+                    {
+                        string quckReturnLava = "{{ Title | AddQuickReturn:'Dynamic Data', 80 }}";
+                        var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        quckReturnMergeFields.Add( "Title", RockPage.PageTitle );
+                        quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
                     }
 
                     if ( formattedOutput.IsNullOrWhiteSpace() )

@@ -362,7 +362,7 @@ namespace Rock.CheckIn
         /// <param name="currentDateTime">The current date time.</param>
         /// <param name="attendanceList">The attendance list.</param>
         /// <returns></returns>
-        [RockObsolete( "12.4" )]
+        [RockObsolete( "1.12.4" )]
         [Obsolete( "No longer supported. Use FilterByActiveCheckins RosterAttendeeAttendance instead", error: true )]
         public static List<Attendance> FilterByActiveCheckins( DateTime currentDateTime, List<Attendance> attendanceList )
         {

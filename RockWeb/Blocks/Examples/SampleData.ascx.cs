@@ -684,22 +684,7 @@ namespace RockWeb.Blocks.Examples
                 GetHubContext().Clients.All.receiveNotification( "sampleDataImport", x );
             }
         }
-
-        /// <summary>
-        /// Adds a transaction to add the meta-phone stuff for each person we've added.
-        /// </summary>
-        private void AddMetaphone( Person person )
-        {
-            var addNewMetaphonesMsg = new AddNewMetaphones.Message
-            {
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-                NickName = person.NickName
-            };
-
-            addNewMetaphonesMsg.Send();
-        }
-
+        
         /// <summary>
         /// Adds any registration templates given in the XML file.
         /// </summary>
@@ -3072,7 +3057,7 @@ namespace RockWeb.Blocks.Examples
 
                 groupMember.Person = person;
 
-                AddMetaphone( person );
+                new Rock.Transactions.SaveMetaphoneTransaction( person ).Enqueue();
 
                 if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {

@@ -37,6 +37,7 @@ using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -2099,13 +2100,7 @@ namespace Rock.Model
 
             if ( this.IsValid )
             {
-                var addNewMetaphonesMsg = new AddNewMetaphones.Message()
-                {
-                    FirstName = this.FirstName,
-                    LastName = this.LastName,
-                    NickName = this.NickName
-                };
-                addNewMetaphonesMsg.Send();
+                new SaveMetaphoneTransaction( this ).Enqueue();
             }
 
             HistoryChanges = new History.HistoryChangeList();
@@ -2423,7 +2418,7 @@ namespace Rock.Model
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
-        [RockObsolete( "12.4" )]
+        [RockObsolete( "1.12.4" )]
         [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
         {

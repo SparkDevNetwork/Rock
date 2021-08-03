@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Communication
@@ -261,9 +262,10 @@ namespace Rock.Communication
 
                     var result = SendEmail( recipientEmailMessage );
 
-                    var sendMesaageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
 
-                    errorMessages.AddRange( sendMesaageResult.Errors );
+                    var sendMessageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
+
+                    errorMessages.AddRange( sendMessageResult.Errors );
                 }
                 catch ( Exception ex )
                 {
@@ -594,6 +596,7 @@ namespace Rock.Communication
             }
 
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
+            templateRockEmailMessage.SystemCommunicationId = emailMessage.SystemCommunicationId;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
@@ -770,6 +773,7 @@ namespace Rock.Communication
             recipientEmail.Message = body;
 
             Guid? recipientGuid = null;
+            recipientEmail.SystemCommunicationId = emailMessage.SystemCommunicationId;
             recipientEmail.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
             if ( emailMessage.CreateCommunicationRecord )
             {
@@ -1089,19 +1093,18 @@ namespace Rock.Communication
             // Create the communication record
             if ( recipientEmailMessage.CreateCommunicationRecord )
             {
-                var recipients = new List<RockEmailMessageRecipient>() { ( RockEmailMessageRecipient ) rockMessageRecipient };
-                var addCommunicationRecipientsMsg = new AddCommunicationRecipients.Message()
-                {
-                    Recipients = recipients,
-                    FromName = recipientEmailMessage.FromName,
-                    FromAddress = recipientEmailMessage.FromEmail,
-                    Subject = recipientEmailMessage.Subject,
-                    HtmlMessage = recipientEmailMessage.Message,
-                    RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull(),
-                    RecipientStatus = result.Status
-                };
+                var transaction = new SaveCommunicationTransaction(
+                    rockMessageRecipient,
+                    recipientEmailMessage.FromName,
+                    recipientEmailMessage.FromEmail,
+                    recipientEmailMessage.Subject,
+                    recipientEmailMessage.Message );
 
-                addCommunicationRecipientsMsg.Send();
+                transaction.SystemCommunicationId = recipientEmailMessage.SystemCommunicationId;
+
+                transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
+                transaction.RecipientStatus = result.Status;
+                RockQueue.TransactionQueue.Enqueue( transaction );
             }
 
             return sendResult;

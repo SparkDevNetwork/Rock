@@ -1225,25 +1225,6 @@ namespace Rock.Jobs
         {
             int recordsDeleted = 0;
 
-            // Cleanup AttributeMatrix records that are no longer associated with an attribute value
-            using ( RockContext rockContext = new RockContext() )
-            {
-                rockContext.Database.CommandTimeout = commandTimeout;
-
-                AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
-                AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
-
-                var orphanedAttributeMatrices = attributeMatrixService.GetOrphanedAttributeMatrices().ToList();
-
-                if ( orphanedAttributeMatrices.Any() )
-                {
-                    recordsDeleted += orphanedAttributeMatrices.Count;
-                    attributeMatrixItemService.DeleteRange( orphanedAttributeMatrices.SelectMany( a => a.AttributeMatrixItems ) );
-                    attributeMatrixService.DeleteRange( orphanedAttributeMatrices );
-                    rockContext.SaveChanges();
-                }
-            }
-
             // clean up other orphaned entity attributes
             Type rockContextType = typeof( Rock.Data.RockContext );
             foreach ( var cachedType in EntityTypeCache.All().Where( e => e.IsEntity ) )

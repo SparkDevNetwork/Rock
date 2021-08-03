@@ -211,16 +211,16 @@ namespace Rock.Tests.Integration.Lava
         private static void RegisterTags( ILavaEngine engine )
         {
             // Get all tags and call OnStartup methods
-            if (engine.GetType() == typeof(RockLiquidEngine))
+            if ( engine.GetType() == typeof( RockLiquidEngine ) )
             {
                 // Find all tag elements that implement IRockStartup.
-                var elementTypes = Rock.Reflection.FindTypes(typeof(DotLiquid.Tag)).Select(a => a.Value).ToList();
+                var elementTypes = Rock.Reflection.FindTypes( typeof( DotLiquid.Tag ) ).Select( a => a.Value ).ToList();
 
-                foreach (var elementType in elementTypes)
+                foreach ( var elementType in elementTypes )
                 {
-                    var instance = Activator.CreateInstance(elementType) as IRockStartup;
+                    var instance = Activator.CreateInstance( elementType ) as IRockStartup;
 
-                    if (instance == null)
+                    if ( instance == null )
                     {
                         continue;
                     }
@@ -230,16 +230,16 @@ namespace Rock.Tests.Integration.Lava
                         // RockLiquid blocks register themselves with the DotLiquid framework during their startup process.
                         instance.OnStartup();
                     }
-                    catch (Exception ex)
+                    catch ( Exception ex )
                     {
-                        var lavaException = new Exception(string.Format("Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName), ex);
+                        var lavaException = new Exception( string.Format( "Lava component initialization failure. Startup failed for Lava Tag \"{0}\".", elementType.FullName ), ex );
 
-                        ExceptionLogService.LogException(lavaException, null);
+                        ExceptionLogService.LogException( lavaException, null );
                     }
                 }
             }
 
-            if ( engine.GetType() == typeof ( RockLiquidEngine ) )
+            if ( engine.GetType() == typeof( RockLiquidEngine ) )
             {
                 return;
             }
@@ -672,7 +672,42 @@ namespace Rock.Tests.Integration.Lava
         /// </summary>
         /// <param name="expectedOutput"></param>
         /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            ExecuteForActiveEngines( ( engine ) =>
+            {
+                AssertTemplateOutput( engine, expectedOutputs, inputTemplate, options );
+            } );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( Type engineType, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            var engine = GetEngineInstance( engineType );
+
+            AssertTemplateOutput( engine, expectedOutputs, inputTemplate, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, string expectedOutput, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            AssertTemplateOutput( engine, new List<string> { expectedOutput }, inputTemplate, options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="expectedOutput"></param>
+        /// <param name="inputTemplate"></param>
+        public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
         {
             options = options ?? new LavaTestRenderOptions();
 
@@ -682,51 +717,65 @@ namespace Rock.Tests.Integration.Lava
 
             DebugWriteRenderResult( engine, inputTemplate, outputString );
 
-            // If ignoring whitespace, strip it from the input and output.
+            // Apply formatting options to the output.
             if ( options.IgnoreWhiteSpace )
             {
                 outputString = Regex.Replace( outputString, @"\s*", string.Empty );
-                expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
             }
 
-            var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx
-                || ( options.Wildcards != null && options.Wildcards.Any() );
-
-            if ( matchRegex )
+            if ( options.IgnoreCase )
             {
-                // Replace wildcards with a non-Regex symbol.
-                foreach ( var wildcard in options.Wildcards )
-                {
-                    expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
-                }
-
-                expectedOutput = Regex.Escape( expectedOutput );
-
-                expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
-
-                var regex = new Regex( expectedOutput );
-
-                StringAssert.Matches( outputString, regex );
+                outputString = outputString.ToLower();
             }
-            else
+
+            foreach ( var expectedOutputString in expectedOutputs )
             {
-                if ( options.IgnoreCase )
+                var expectedOutput = expectedOutputString;
+
+                // If ignoring whitespace, strip it from the comparison string.
+                if ( options.IgnoreWhiteSpace )
                 {
-                    expectedOutput = expectedOutput.ToLower();
-                    outputString = outputString.ToLower();
+                    expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
                 }
 
-                if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx
+                    || ( options.Wildcards != null && options.Wildcards.Any() );
+
+                if ( matchRegex )
                 {
-                    Assert.That.Equal( expectedOutput, outputString );
+                    // Replace wildcards with a non-Regex symbol.
+                    foreach ( var wildcard in options.Wildcards )
+                    {
+                        expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
+                    }
+
+                    expectedOutput = Regex.Escape( expectedOutput );
+
+                    expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.*)" );
+
+                    var regex = new Regex( expectedOutput );
+
+                    StringAssert.Matches( outputString, regex );
                 }
-                else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                else
                 {
-                    Assert.That.Contains( outputString, expectedOutput );
-                }
-                else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
-                {
-                    Assert.That.DoesNotContain( outputString, expectedOutput );
+                    if ( options.IgnoreCase )
+                    {
+                        expectedOutput = expectedOutput.ToLower();
+                    }
+
+                    if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Equal )
+                    {
+                        Assert.That.Equal( expectedOutput, outputString );
+                    }
+                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                    {
+                        Assert.That.Contains( outputString, expectedOutput );
+                    }
+                    else if ( options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
+                    {
+                        Assert.That.DoesNotContain( outputString, expectedOutput );
+                    }
                 }
             }
         }

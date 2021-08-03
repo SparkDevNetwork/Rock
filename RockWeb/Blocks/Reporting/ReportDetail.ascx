@@ -60,9 +60,7 @@
                                 <header class="panel-heading clearfix">
                                     <h3 class="panel-title pull-left">Fields</h3>
                                     <div class="pull-right">
-                                        <div class="btn-group btn-group-xs">
-                                            <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton></td>
-                                        </div>
+                                        <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-xs btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton>
                                     </div>
                                 </header>
                                 <div class="panel-body panel-widget-sort-container">

@@ -15,17 +15,12 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Transaction to process changes that occur to a streak type exclusionm   
+    /// Task to process changes that occur to a streak type exclusion by calling <see cref="StreakTypeService.HandlePostSaveChanges"/> for the specified StreakType
     /// </summary>
     public sealed class ProcessStreakTypeExclusionChange : BusStartedTask<ProcessStreakTypeExclusionChange.Message>
     {

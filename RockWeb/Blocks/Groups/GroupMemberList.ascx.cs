@@ -24,6 +24,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -442,7 +443,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-danger'></i>" );
                     }
-                    else if ( _groupMemberIdsWithWarnings.Contains( groupMember.Id) )
+                    else if ( _groupMemberIdsWithWarnings.Contains( groupMember.Id ) )
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-warning'></i>" );
                     }
@@ -1171,6 +1172,10 @@ namespace RockWeb.Blocks.Groups
                     var trigger = _group.GetGroupMemberWorkflowTriggers().FirstOrDefault( a => a.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() );
                     if ( trigger != null )
                     {
+                        // create a transaction for the selected trigger (before deleting the groupMember)
+                        groupMember.LoadAttributes();
+                        var groupMemberPlacedElsewhereTransaction = new Rock.Transactions.GroupMemberPlacedElsewhereTransaction( groupMember, tbPlaceElsewhereNote.Text, trigger );
+
                         // Un-link any registrant records that point to this group member.
                         foreach ( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
                             .Where( r => r.GroupMemberId == groupMember.Id ) )
@@ -1183,26 +1188,8 @@ namespace RockWeb.Blocks.Groups
 
                         rockContext.SaveChanges();
 
-                        if ( trigger.IsActive )
-                        {
-                            groupMember.LoadAttributes();
-
-                            // create a transaction for the selected trigger
-                            var launchGroupMemberPlacedElsewhereWorkflowMsg = new LaunchGroupMemberPlacedElsewhereWorkflow.Message()
-                            {
-                                GroupMemberWorkflowTriggerName = trigger.Name,
-                                WorkflowTypeId = trigger.WorkflowTypeId,
-                                GroupId = groupMember.GroupId,
-                                PersonId = groupMember.PersonId,
-                                GroupMemberStatusName = groupMember.GroupMemberStatus.ConvertToString(),
-                                GroupMemberRoleName = groupMember.GroupRole.ToString(),
-                                GroupMemberAttributeValues = groupMember.AttributeValues.ToDictionary( k => k.Key, v => v.Value.Value ),
-                                Note = tbPlaceElsewhereNote.Text
-                            };
-
-                            // queue up the transaction
-                            launchGroupMemberPlacedElsewhereWorkflowMsg.Send();
-                        }
+                        // queue a transaction for the selected trigger
+                        groupMemberPlacedElsewhereTransaction.Enqueue();
                     }
                 }
 
