@@ -51,11 +51,10 @@
   margin: 0 8px 16px;
   overflow-y: hidden;
   font-size: 26px;
-  color: #aeaeae;
+  color: @persondetails-badge-color;
 }
 
 .kpi-card {
-  color: #c0cbd1;
   background: @white;
   border: 1px solid #000;
   border-color: currentColor;
@@ -65,9 +64,9 @@
 .kpi-stat {
   flex: 1 1 0;
   align-self: flex-start;
+  min-width: 0;
   padding: 8px 16px;
   overflow: hidden;
-  min-width: 0;
 
   .kpi-icon + & {
     align-self: center;

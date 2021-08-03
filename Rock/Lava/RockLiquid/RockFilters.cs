@@ -5389,7 +5389,7 @@ namespace Rock.Lava
 
             if ( input.IsNotNullOrWhiteSpace() )
             {
-                RockPage.AddScriptToHead( page, string.Format( @"$( document ).ready(function () {{ personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
+                RockPage.AddScriptToHead( page, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
                 typeName,
                 typeOrder,
                 input.ToString().EscapeQuotes() ), true );

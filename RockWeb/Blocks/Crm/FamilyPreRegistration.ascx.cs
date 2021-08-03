@@ -415,16 +415,8 @@ namespace RockWeb.Blocks.Crm
 
         private static class BlockAttributeDescription
         {
-            public const string WorkflowTypes = @"
-The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the 
-following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.
-";
-            public const string RedirectURL = @"
-The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family 
-that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a
-comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is 
-the value entered for the Planned Visit Date field if it was displayed.
-";
+            public const string WorkflowTypes = @"The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.";
+            public const string RedirectURL = @"The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is the value entered for the Planned Visit Date field if it was displayed.";
         }
 
         private static class ListSource

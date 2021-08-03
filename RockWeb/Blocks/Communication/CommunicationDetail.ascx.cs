@@ -26,7 +26,9 @@ using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Humanizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -322,19 +324,8 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    var isAuthorized = true;
-                    if ( _Communication.CommunicationTemplateId.HasValue && !_Communication.CommunicationTemplate.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                    {
-                        isAuthorized = false;
-                    }
-
-                    if ( _Communication.SystemCommunicationId.HasValue && !_Communication.SystemCommunication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
-                    {
-                        isAuthorized = false;
-                    }
-
                     // If user is not authorized to View, hide all content.
-                    if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) || !isAuthorized )
+                    if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
                         this.Visible = false;
                     }

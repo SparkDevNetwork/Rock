@@ -261,15 +261,11 @@ namespace RockWeb.Blocks.Cms
 <h1>{{ Item.Title }}</h1>
 {{ Item.Content }}";
 
-        private const string ContentChannelQueryParameterDescription = @"
-Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
-The type of the value will determine how the content channel item will be determined as follows:
+        private const string ContentChannelQueryParameterDescription = @"Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is. The type of the value will determine how the content channel item will be determined as follows:
 
 Integer - ContentChannelItem Id
 String - ContentChannelItem Slug
-Guid - ContentChannelItem Guid
-
-";
+Guid - ContentChannelItem Guid";
 
         private const string OutputCacheDurationDescription = @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.";
 
