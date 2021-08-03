@@ -48,13 +48,18 @@
                 this.setLocalStorage();
             },
             removeDuplicates: function (newReturnItem) {
+
+                // Find duplicate items
                 for (var i = 0; i < _returnItemArray.length; i++) {
                     if (this.returnItemIsEqual(_returnItemArray[i], newReturnItem)) {
                         _returnItemArray.splice(i, 1);
+                        i--; // Decrement index as we just removed an item so we need to reset it back one
                     }
                 }
             },
             // Determines if the two return items are the same item
+            // Equality is defined as matching: type, typeOrder and itemName. Url is not considered to prevent
+            // multiple items for the person profile pages. 
             returnItemIsEqual: function (returnItemA, returnItemB) {
                 var isEqual = true;
 
@@ -70,9 +75,6 @@
                     isEqual = false;
                 }
 
-                if (returnItemA.url != returnItemB.url) {
-                    isEqual = false;
-                }
                 return isEqual;
             },
             getQuickReturns: function () {
