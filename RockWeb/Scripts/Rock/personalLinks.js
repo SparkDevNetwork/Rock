@@ -137,6 +137,28 @@
             showPersonalLinks: function (element, trigger) {
                 if (typeof trigger !== "undefined" && element !== null && element.hasClass( 'd-none' )) {
                     Rock.personalLinks.positionPersonalLinks(trigger, element);
+
+                    $(document).off("mouseup.personalLinks").on("mouseup.personalLinks", function (e) {
+                        // if the target of the click isn't the container or a descendant of the container
+                        if (!element.is(e.target) && element.has(e.target).length === 0) {
+
+                            var isBookmarkButton = $(".js-rock-bookmark").is(e.target) || $(".js-rock-bookmark").has(e.target).length != 0;
+
+                            // 'js-rock-bookmark' has it's own handler, so ignore if this is from js-rock-bookmark
+                            if (!isBookmarkButton) {
+
+                                // if one of the configuration options is open (AddLink or AddSection), don't hide the links
+                                var bookMarkConfigurationMode = $(".js-bookmark-configuration").length > 0;
+                                console.log('bookMarkConfigurationMode:' + bookMarkConfigurationMode);
+
+                                if (!bookMarkConfigurationMode) {
+                                    // hide the bookmark links
+                                    Rock.personalLinks.showPersonalLinks(null, true);
+                                }
+                            }
+                        }
+                    });
+
                     $(window).on("resize.personalLinks", function(e) { Rock.personalLinks.positionPersonalLinks(trigger, element) });
                     element.removeClass('d-none')
 
