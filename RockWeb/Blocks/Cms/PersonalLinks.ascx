@@ -5,9 +5,17 @@
     Sys.Application.add_load(function () {
         Rock.personalLinks.buildQuickReturn();
 
-        $(".js-rock-bookmark").on("click", function (e) {
+        $(".js-rock-bookmark").off("click").on("click", function (e) {
             e.preventDefault();
-            Rock.personalLinks.showPersonalLinks($('#<%= upnlContent.ClientID %>'), $(this))
+
+            // if one of the configuration options is open (AddLink or AddSection), don't hide the links
+            var bookMarkConfigurationMode = $(".js-bookmark-configuration").length > 0;
+            
+            if (!bookMarkConfigurationMode) {
+                
+                // Show/hide the personalLinks
+                Rock.personalLinks.showPersonalLinks($('#<%= upnlContent.ClientID %>'), $(this))
+            }
         });
     })
 </script>
@@ -57,7 +65,7 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlAddSection" runat="server" CssClass="popover-panel w-100" Visible="false">
+        <asp:Panel ID="pnlAddSection" runat="server" CssClass="popover-panel w-100 js-bookmark-configuration js-bookmark-add-section" Visible="false">
             <h3 class="popover-title">Personal Link Section</h3>
             <div class="panel-body">
                 <fieldset>
@@ -70,7 +78,7 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlAddLink" runat="server" CssClass="popover-panel w-100" Visible="false">
+        <asp:Panel ID="pnlAddLink" runat="server" CssClass="popover-panel w-100 js-bookmark-configuration js-bookmark-add-link" Visible="false">
             <h3 class="popover-title">Personal Link</h3>
             <div class="panel-body">
                 <fieldset>

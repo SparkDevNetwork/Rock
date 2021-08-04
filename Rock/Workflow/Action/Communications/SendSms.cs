@@ -36,20 +36,29 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "SMS Send" )]
 
-    [WorkflowTextOrAttribute(
+    [DefinedValueField(
         "From",
-        "Attribute Value",
         Description = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers).",
-        IsRequired = true,
-        Order = 0,
-        Key = AttributeKey.From,
+        Key = AttributeKey.FromFromDropDown,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
+        IsRequired = false,
+        AllowMultiple = false,
+        DisplayDescription = true,
+        Order = 0 )]
+    [WorkflowAttribute(
+        "From (From Attribute)",
+        Description = "The number to originate message from (configured under Admin Tools > Communications > SMS Phone Numbers). This will be used if a value is not entered for the From value above.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.FromFromAttribute,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.DefinedValueFieldType" } )]
+
     [WorkflowTextOrAttribute(
         "Recipient",
         "Attribute Value",
         Description = "The phone number or an attribute that contains the person or phone number that message should be sent to. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        Order = 1,
+        Order = 2,
         Key = AttributeKey.To,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.PersonFieldType", "Rock.Field.Types.GroupFieldType", "Rock.Field.Types.SecurityRoleFieldType" } )]
     [WorkflowTextOrAttribute(
@@ -57,21 +66,21 @@ namespace Rock.Workflow.Action
         "Attribute Value",
         Description = "The message or an attribute that contains the message that should be sent. <span class='tip tip-lava'></span>",
         IsRequired = false,
-        Order = 2,
+        Order = 3,
         Key = AttributeKey.Message,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [WorkflowAttribute(
         "Attachment",
         Description = "Workflow attribute that contains the attachment to be added. Note that when sending attachments with MMS; jpg, gif, and png images are supported for all carriers. Support for other file types is dependent upon each carrier and device. So make sure to test sending this to different carriers and phone types to see if it will work as expected.",
         IsRequired = false,
-        Order = 3,
+        Order = 4,
         Key = AttributeKey.Attachment,
         FieldTypeClassNames = new string[] { "Rock.Field.Types.FileFieldType", "Rock.Field.Types.ImageFieldType" } )]
     [BooleanField(
         "Save Communication History",
         Description = "Should a record of this communication be saved. If a person is provided then it will save to the recipient's profile. If a phone number is provided then the communication record is saved but a communication recipient is not.",
         DefaultBooleanValue = false,
-        Order = 4,
+        Order = 5,
         Key = AttributeKey.SaveCommunicationHistory )]
     public class SendSms : ActionComponent
     {
@@ -82,7 +91,8 @@ namespace Rock.Workflow.Action
         /// </summary>
         private static class AttributeKey
         {
-            public const string From = "From";
+            public const string FromFromDropDown = "From";
+            public const string FromFromAttribute = "FromFromAttribute";
             public const string To = "To";
             public const string Message = "Message";
             public const string Attachment = "Attachment";
@@ -99,37 +109,47 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
             var mergeFields = GetMergeFields( action );
 
-            // If the configured fromGuid is not in the SMS FromDefinedValues, then
-            // that guid is probably from an attribute and therefore we need to get the fromGuid
-            // from the workflow's attribute value instead.
-            Guid fromGuid = GetAttributeValue( action, AttributeKey.From ).AsGuid();
-            var smsFromDefinedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues;
-            if ( !smsFromDefinedValues.Any( a => a.Guid == fromGuid ) )
+            // Get the From value
+            int? fromId = null;
+            Guid? fromGuid = GetAttributeValue( action, AttributeKey.FromFromDropDown ).AsGuidOrNull();
+            if ( fromGuid.HasValue )
             {
-                var workflowAttributeValue = action.GetWorkflowAttributeValue( fromGuid );
-
-                if ( workflowAttributeValue.IsNotNullOrWhiteSpace() )
+                var fromValue = DefinedValueCache.Get( fromGuid.Value, rockContext );
+                if ( fromValue != null )
                 {
-                    fromGuid = workflowAttributeValue.AsGuid();
+                    fromId = fromValue.Id;
                 }
             }
 
-            // Now can we do our final check to ensure the guid is a valid inactive reason.
-            if ( !smsFromDefinedValues.Any( a => a.Guid == fromGuid ) )
+            if ( !fromId.HasValue )
             {
-                var msg = string.Format( "Inactive Reason could not be found for selected value ('{0}')!", fromGuid.ToString() );
+                Guid fromGuidFromAttribute = GetAttributeValue( action, AttributeKey.FromFromAttribute ).AsGuid();
+
+                fromGuid = action.GetWorkflowAttributeValue( fromGuidFromAttribute ).AsGuidOrNull();
+
+                var fromValue = DefinedValueCache.Get( fromGuid.Value, rockContext );
+                if ( fromValue != null )
+                {
+                    fromId = fromValue.Id;
+                }
+            }
+
+            var smsFromDefinedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues;
+
+            // Now can we do our final check to ensure the guid is a valid SMS From Defined Value
+            if ( !fromId.HasValue || !smsFromDefinedValues.Any( a => a.Id == fromId ) )
+            {
+                var msg = string.Format( $"'From' could not be found for selected value ('{fromGuid}')" );
                 errorMessages.Add( msg );
                 action.AddLogEntry( msg, true );
                 return false;
             }
-
-            var fromId = smsFromDefinedValues.First( a => a.Guid == fromGuid ).Id;
 
             // Get the recipients
             var recipients = new List<RockSMSMessageRecipient>();
@@ -151,6 +171,7 @@ namespace Rock.Workflow.Action
                                     recipients.Add( RockSMSMessageRecipient.CreateAnonymous( smsNumber, mergeFields ) );
                                     break;
                                 }
+
                             case "Rock.Field.Types.PersonFieldType":
                                 {
                                     Guid personAliasGuid = toAttributeValue.AsGuid();
@@ -175,6 +196,7 @@ namespace Rock.Workflow.Action
                                             recipient.MergeFields.Add( recipient.PersonMergeFieldKey, person );
                                         }
                                     }
+
                                     break;
                                 }
 
@@ -190,10 +212,9 @@ namespace Rock.Workflow.Action
                                     {
                                         qry = new GroupMemberService( rockContext ).GetByGroupId( groupId.Value );
                                     }
-
-                                    // Handle situations where the attribute value stored is the Guid
                                     else if ( groupGuid.HasValue )
                                     {
+                                        // Handle situations where the attribute value stored is the Guid
                                         qry = new GroupMemberService( rockContext ).GetByGroupGuid( groupGuid.Value );
                                     }
                                     else
@@ -219,6 +240,7 @@ namespace Rock.Workflow.Action
                                             }
                                         }
                                     }
+
                                     break;
                                 }
                         }
@@ -252,7 +274,7 @@ namespace Rock.Workflow.Action
             {
                 var smsMessage = new RockSMSMessage();
                 smsMessage.SetRecipients( recipients );
-                smsMessage.FromNumber = DefinedValueCache.Get( fromId );
+                smsMessage.FromNumber = DefinedValueCache.Get( fromId.Value );
                 smsMessage.Message = message;
                 smsMessage.CreateCommunicationRecord = GetAttributeValue( action, "SaveCommunicationHistory" ).AsBoolean();
                 smsMessage.CommunicationName = action.ActionTypeCache.Name;
