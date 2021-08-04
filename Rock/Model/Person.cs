@@ -3171,6 +3171,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade abbreviation attribute based on graduation year.
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGraduationYear( int? graduationYear )
+        {
+            return GradeAbbreviationFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
         /// Formats the grade based on grade offset
         /// </summary>
         /// <param name="gradeOffset">The grade offset.</param>
@@ -3187,6 +3199,38 @@ namespace Rock.Model
                     if ( schoolGradeValue != null )
                     {
                         return schoolGradeValue.Description;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the grade abbreviation attribute based on grade offset.
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            {
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                if ( schoolGrades != null )
+                {
+                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                    if ( schoolGradeValue != null )
+                    {
+                        bool AttributeExists = schoolGradeValue.Attributes.ContainsKey( "Abbreviation" );
+                        string abbreviationValue = "";
+                        if ( AttributeExists )
+                        {
+                            abbreviationValue = schoolGradeValue.GetAttributeValue( "Abbreviation" );
+                        }
+                        return abbreviationValue;
                     }
                 }
             }
