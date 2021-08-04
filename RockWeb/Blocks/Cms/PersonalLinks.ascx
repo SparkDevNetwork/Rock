@@ -72,8 +72,8 @@
                     <Rock:DataTextBox ID="tbSectionName" runat="server" SourceTypeName="Rock.Model.PersonalLinkSection, Rock" PropertyName="Name" ValidationGroup="vgAddSection" />
                 </fieldset>
                 <div class="actions">
-                    <asp:LinkButton ID="btnSectionSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-rebuild-links" OnClick="btnSectionSave_Click" ValidationGroup="vgAddSection" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSectionSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-xs js-rebuild-links" OnClick="btnSectionSave_Click" ValidationGroup="vgAddSection" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link btn-xs js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
         </asp:Panel>
@@ -88,8 +88,8 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnLinkSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-rebuild-links" OnClick="btnLinkSave_Click" ValidationGroup="vgAddLink" />
-                    <asp:LinkButton ID="btnLinkCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnLinkSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-xs js-rebuild-links" OnClick="btnLinkSave_Click" ValidationGroup="vgAddLink" />
+                    <asp:LinkButton ID="btnLinkCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link btn-xs js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
         </asp:Panel>
