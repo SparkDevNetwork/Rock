@@ -10,9 +10,9 @@
 
             // if one of the configuration options is open (AddLink or AddSection), don't hide the links
             var bookMarkConfigurationMode = $(".js-bookmark-configuration").length > 0;
-            
+
             if (!bookMarkConfigurationMode) {
-                
+
                 // Show/hide the personalLinks
                 Rock.personalLinks.showPersonalLinks($('#<%= upnlContent.ClientID %>'), $(this))
             }
@@ -30,18 +30,20 @@
             <div class="popover-panel">
                 <h3 class="popover-title">Personal Links
 
-                    <div class="dropdown pull-right">
-                        <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-ellipsis-v"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><asp:LinkButton runat="server" ID="lbManageLinks" OnClick="lbManageLinks_Click">Manage Links</asp:LinkButton></li>
-                        </ul>
-                    </div>
-                    <div class="dropdown pull-right">
-                        <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-plus"></i></a>
-                        <ul class="dropdown-menu">
-                            <li><asp:LinkButton runat="server" ID="lbAddLink" OnClick="lbAddLink_Click">Add Link</asp:LinkButton></li>
-                            <li><asp:LinkButton runat="server" ID="lbAddSection" OnClick="lbAddSection_Click">Add Section</asp:LinkButton></li>
-                        </ul>
+                    <div class="ml-auto">
+                        <div class="dropdown pull-right">
+                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-ellipsis-v"></i></a>
+                            <ul class="dropdown-menu">
+                                <li><asp:LinkButton runat="server" ID="lbManageLinks" OnClick="lbManageLinks_Click">Manage Links</asp:LinkButton></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown pull-right">
+                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-plus"></i></a>
+                            <ul class="dropdown-menu">
+                                <li><asp:LinkButton runat="server" ID="lbAddLink" OnClick="lbAddLink_Click">Add Link</asp:LinkButton></li>
+                                <li><asp:LinkButton runat="server" ID="lbAddSection" OnClick="lbAddSection_Click">Add Section</asp:LinkButton></li>
+                            </ul>
+                        </div>
                     </div>
                 </h3>
                 <div class="popover-content">
@@ -72,8 +74,8 @@
                     <Rock:DataTextBox ID="tbSectionName" runat="server" SourceTypeName="Rock.Model.PersonalLinkSection, Rock" PropertyName="Name" ValidationGroup="vgAddSection" />
                 </fieldset>
                 <div class="actions">
-                    <asp:LinkButton ID="btnSectionSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-rebuild-links" OnClick="btnSectionSave_Click" ValidationGroup="vgAddSection" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSectionSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-xs js-rebuild-links" OnClick="btnSectionSave_Click" ValidationGroup="vgAddSection" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link btn-xs js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
         </asp:Panel>
@@ -88,8 +90,8 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnLinkSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-rebuild-links" OnClick="btnLinkSave_Click" ValidationGroup="vgAddLink" />
-                    <asp:LinkButton ID="btnLinkCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnLinkSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary btn-xs js-rebuild-links" OnClick="btnLinkSave_Click" ValidationGroup="vgAddLink" />
+                    <asp:LinkButton ID="btnLinkCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link btn-xs js-rebuild-links" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
         </asp:Panel>
