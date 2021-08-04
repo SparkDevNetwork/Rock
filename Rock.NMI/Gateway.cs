@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -834,6 +835,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var paymentList = new List<Payment>();
 
             var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
+
+            // set timeout to 10 minutes (default is 100 seconds). This will help in situations where a large number of payments are returned from the gateway.
+            restClient.Timeout = ( int ) new TimeSpan( 0, 10, 0 ).TotalMilliseconds;
+
             var restRequest = new RestRequest( Method.GET );
 
             restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
@@ -843,16 +848,33 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
             try
             {
+                var stopwatchRequest = Stopwatch.StartNew();
                 var response = restClient.Execute( restRequest );
+                stopwatchRequest.Stop();
+
                 if ( response == null )
                 {
                     errorMessage = "Empty response returned From gateway.";
                     return paymentList;
                 }
 
+                if ( response.ResponseStatus == ResponseStatus.TimedOut )
+                {
+                    errorMessage = $"Request Timed Out after { Math.Round( stopwatchRequest.Elapsed.TotalSeconds, 2 )} seconds.";
+                    return paymentList;
+                }
+
                 if ( response.StatusCode != HttpStatusCode.OK )
                 {
-                    errorMessage = $"Status code of {response.StatusCode} returned From gateway.";
+                    if ( response.ResponseStatus != ResponseStatus.Completed )
+                    {
+                        errorMessage = $"Response Status code {response.ResponseStatus.ConvertToString()} returned From gateway request. Status Code: {response.StatusCode}. ";
+                    }
+                    else
+                    {
+                        errorMessage = $"Status code of {response.StatusCode} returned From gateway. ";
+                    }
+
                     return paymentList;
                 }
 
@@ -2016,7 +2038,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
-                if ( tokenResponse?.HasValidationError() == true)
+                if ( tokenResponse?.HasValidationError() == true )
                 {
                     errorMessage = tokenResponse.ValidationMessage;
                 }
