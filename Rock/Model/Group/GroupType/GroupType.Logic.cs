@@ -96,18 +96,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
-        {
-            
-
-            base.PreSaveChanges( dbContext, state );
-        }
-
-        /// <summary>
         /// Gets a list of GroupType Ids, including our own Id, that identifies the
         /// inheritance tree.
         /// </summary>
