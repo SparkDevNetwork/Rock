@@ -31,6 +31,7 @@ using Humanizer;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -324,10 +325,13 @@ namespace RockWeb.Blocks.Communication
                 }
                 else
                 {
-                    // If user is not authorized to View, hide all content.
+                    // If user is not authorized to View, don't show details. Just a warning.
                     if ( !_Communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     {
-                        this.Visible = false;
+                        nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToView( Rock.Model.Communication.FriendlyTypeName );
+
+                        pnlCommunicationView.Visible = false;
                     }
                     else
                     {
