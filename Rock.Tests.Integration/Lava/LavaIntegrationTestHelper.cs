@@ -321,7 +321,10 @@ namespace Rock.Tests.Integration.Lava
             {
                 try
                 {
+                    // Get Lava block components, except shortcodes which are registered separately.
                     var elementTypes = Rock.Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
+
+                    elementTypes = elementTypes.Where( x => !( typeof( ILavaShortcode ).IsAssignableFrom( x ) ) ).ToList();
 
                     foreach ( var elementType in elementTypes )
                     {

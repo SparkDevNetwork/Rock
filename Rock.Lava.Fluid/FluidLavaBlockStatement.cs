@@ -64,14 +64,19 @@ namespace Rock.Lava.Fluid
         private readonly string _attributesMarkup;
         private readonly string _blockContent;
         private readonly string _tagName;
+        private LavaTagFormatSpecifier _tagFormat;
 
         private readonly LavaFluidParser _parser;
 
-        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, in TextSpan attributesMarkup, in TextSpan blockContent )
+        internal FluidLavaBlockStatement( LavaFluidParser parser, string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup, in TextSpan blockContent )
         {
             _parser = parser;
             _tagName = tagName;
+            _tagFormat = tagFormat;
+
             _attributesMarkup = attributesMarkup.ToString() ?? string.Empty;
+
+            _attributesMarkup = _attributesMarkup.Trim();
 
             _blockContent = blockContent.ToString() ?? string.Empty;
         }
@@ -80,17 +85,18 @@ namespace Rock.Lava.Fluid
 
         public override ValueTask<Completion> WriteToAsync( TextWriter writer, TextEncoder encoder, TemplateContext context )
         {
-            
             var lavaContext = new FluidRenderContext( context );
 
-            if ( !_factoryMethods.ContainsKey( _tagName ) )
+            var registeredTagName = _tagName + ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode ? "_" : string.Empty );
+
+            ILavaBlock lavaBlock = null;
+
+            if ( _factoryMethods.ContainsKey( registeredTagName ) )
             {
-                throw new Exception( "Block proxy cannot be rendered." );
+                var factoryMethod = _factoryMethods[registeredTagName];
+
+                lavaBlock = factoryMethod( _tagName );
             }
-
-            var factoryMethod = _factoryMethods[_tagName];
-
-            var lavaBlock = factoryMethod( _tagName );
 
             var elementRenderer = lavaBlock as ILiquidFrameworkElementRenderer;
 
@@ -104,7 +110,14 @@ namespace Rock.Lava.Fluid
 
             // Custom Lava blocks expect to be passed a set of tokens for the block that excludes the opening tag and includes the closing tag.
             // This behavior needs to be preserved for compatibility with prior implementations of the Lava library.
-            tokens.Add( $"{{% end{_tagName} %}}" );
+            if ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode )
+            {
+                tokens.Add( $"{{[ end{_tagName} ]}}" );
+            }
+            else
+            {
+                tokens.Add( $"{{% end{_tagName} %}}" );
+            }
 
             // Initialize the block, then allow it to post-process the tokens parsed from the source template.
             lavaBlock.OnInitialize( _tagName, _attributesMarkup, tokens );

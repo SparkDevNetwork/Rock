@@ -59,12 +59,16 @@ namespace Rock.Lava.Fluid
 
         private readonly string _attributesMarkup;
         private readonly string _tagName;
+        private LavaTagFormatSpecifier _tagFormat;
 
-        internal FluidLavaTagStatement( string tagName, in TextSpan attributesMarkup )
+        internal FluidLavaTagStatement( string tagName, LavaTagFormatSpecifier tagFormat, in TextSpan attributesMarkup )
         {
             _tagName = tagName;
+            _tagFormat = tagFormat;
 
             _attributesMarkup = attributesMarkup.ToString() ?? string.Empty;
+
+            _attributesMarkup = _attributesMarkup.Trim();
         }
 
         #endregion
@@ -74,15 +78,22 @@ namespace Rock.Lava.Fluid
             var lavaContext = new FluidRenderContext( context );
 
             // Create an instance of the tag.
-            var factoryMethod = _factoryMethods[_tagName];
+            var registeredTagName = _tagName + ( _tagFormat == LavaTagFormatSpecifier.LavaShortcode ? "_" : string.Empty );
 
-            var lavaTag = factoryMethod( _tagName );
+            ILavaTag lavaTag = null;
+
+            if ( _factoryMethods.ContainsKey( registeredTagName ) )
+            {
+                var factoryMethod = _factoryMethods[registeredTagName];
+
+                lavaTag = factoryMethod( _tagName );
+            }
 
             var elementRenderer = lavaTag as ILiquidFrameworkElementRenderer;
 
             if ( elementRenderer == null )
             {
-                throw new Exception( "Block proxy cannot be rendered." );
+                throw new Exception( $"FluidLavaTag factory failed. Could not create an instance of block \"${_tagName}\"." );
             }
 
             // Initialize the tag with the attributes markup and a list of empty tokens to represent the child content.

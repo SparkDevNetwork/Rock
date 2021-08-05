@@ -526,6 +526,8 @@ namespace Rock.Lava.Fluid
             }
         }
 
+        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
+
         /// <summary>
         /// Pre-parses a Lava template to ensure it is using Liquid-compliant syntax, and creates a new template object.
         /// </summary>
@@ -536,7 +538,7 @@ namespace Rock.Lava.Fluid
         {
             FluidTemplate template;
 
-            liquidTemplate = ConvertToLiquid( lavaTemplate );
+            liquidTemplate = _lavaToLiquidConverter.RemoveLavaComments( lavaTemplate );
 
             string error;
             IFluidTemplate fluidTemplate;
@@ -597,7 +599,14 @@ namespace Rock.Lava.Fluid
             // Therefore, we register the tag as a factory that can produce the requested element on demand.
             FluidLavaTagStatement.RegisterFactory( name, factoryMethod );
 
-            _parser.RegisterLavaTag( name );
+            if ( name.EndsWith( "_" ) )
+            {
+                _parser.RegisterLavaTag( name, LavaTagFormatSpecifier.LavaShortcode );
+            }
+            else
+            {
+                _parser.RegisterLavaTag( name, LavaTagFormatSpecifier.LiquidTag );
+            }
         }
 
         /// <summary>
@@ -620,7 +629,14 @@ namespace Rock.Lava.Fluid
             // To implement this behaviour, register the tag as a factory that can create the requested element on demand.
             FluidLavaBlockStatement.RegisterFactory( name, factoryMethod );
 
-            _parser.RegisterLavaBlock( name );
+            if ( name.EndsWith( "_" ) )
+            {
+                _parser.RegisterLavaBlock( name, LavaTagFormatSpecifier.LavaShortcode );
+            }
+            else
+            {
+                _parser.RegisterLavaBlock( name, LavaTagFormatSpecifier.LiquidTag );
+            }
         }
 
         protected override ILavaTemplate OnParseTemplate( string lavaTemplate )
