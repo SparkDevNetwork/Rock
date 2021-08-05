@@ -93,7 +93,7 @@ namespace Rock.Tests.Shared.Utility
         /// <summary>
         /// A random number generator for use when calculating random attendance data and financial giving frequency (skipping).
         /// </summary>
-        private static Random _random = new Random( ( int ) DateTime.Now.Ticks );
+        private static Random _random = new Random( ( int ) RockDateTime.Now.Ticks );
 
         /// <summary>
         /// The number of characters (length) that security codes should be.
@@ -225,7 +225,7 @@ namespace Rock.Tests.Shared.Utility
                 return true;
             }
 
-            var random = new Random( ( int ) DateTime.Now.Ticks );
+            var random = new Random( ( int ) RockDateTime.Now.Ticks );
             var saveFile = Path.Combine( AppContext.BaseDirectory, "sampledata1.xml" );
 
             if ( DownloadFile( xmlFileUrl, saveFile ) )
@@ -377,7 +377,7 @@ namespace Rock.Tests.Shared.Utility
         {
             if ( xmlFileUrl.StartsWith( "http://storage.rockrms.com/sampledata/" ) )
             {
-                Web.SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, DateTime.Now.ToString() );
+                Web.SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
             }
         }
 
@@ -393,7 +393,7 @@ namespace Rock.Tests.Shared.Utility
                     IsSystem = false,
                     Value = stringValue,
                     Description = string.Empty,
-                    CreatedDateTime = DateTime.Now,
+                    CreatedDateTime = RockDateTime.Now,
                     DefinedTypeId = definedType.Id
                 };
 

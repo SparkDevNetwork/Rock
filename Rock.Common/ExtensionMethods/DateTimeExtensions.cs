@@ -481,7 +481,7 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToRfc822DateTime(this DateTime dateTime )
+        public static string ToRfc822DateTime( this DateTime dateTime )
         {
             int offset = TimeZoneInfo.Local.GetUtcOffset( DateTime.Now ).Hours;
             string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );

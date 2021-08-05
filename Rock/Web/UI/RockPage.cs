@@ -930,7 +930,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = DateTime.Now.AddDays( -1 );
+                    cookie.Expires = RockDateTime.Now.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -2568,7 +2568,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = DateTime.Now.AddDays( -1 );
+                    wiFiCookie.Expires = RockDateTime.Now.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }

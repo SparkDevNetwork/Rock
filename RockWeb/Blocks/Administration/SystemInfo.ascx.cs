@@ -527,7 +527,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( currentProcess != null && currentProcess.StartTime != null )
             {
-                lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
+                lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + RockInstanceConfig.SystemDateTime.ToString( "zzz" );
             }
             else
             {

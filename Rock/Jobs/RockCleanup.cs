@@ -854,7 +854,7 @@ namespace Rock.Jobs
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.Status.Equals( "Completed" )
-                && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
+                && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
             List<int> workflowIdsSafeToDelete = new List<int>();
@@ -905,7 +905,7 @@ namespace Rock.Jobs
             var workflowIdsOlderThanLogRetentionPeriodQuery = workflowService.Queryable()
                 .Where( w =>
                     w.WorkflowType.LogRetentionPeriod.HasValue
-                    && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod )
+                    && RockDateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod )
                     && workflowLogs.Any( wl => wl.WorkflowId == w.Id ) )
                 .Select( w => w.Id );
 

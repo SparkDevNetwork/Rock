@@ -30,7 +30,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
                         Interaction = new InteractionImportInteraction
                         {
                             Operation = "Test Operation",
-                            InteractionDateTime = DateTime.Now,
+                            InteractionDateTime = RockDateTime.Now,
                             InteractionSummary = $"Test Summary {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithChannelTypeMediumValueGuid)}",
                             InteractionData = $"Test Data {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithChannelTypeMediumValueGuid)}",
                             ForeignKey = interactionChannelForeignKey
@@ -76,7 +76,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
                         Interaction = new InteractionImportInteraction
                         {
                             Operation = "Test Operation",
-                            InteractionDateTime = DateTime.Now,
+                            InteractionDateTime = RockDateTime.Now,
                             InteractionSummary = $"Test Summary {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithChannelTypeMediumValueId)}",
                             InteractionData = $"Test Data {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithChannelTypeMediumValueId)}",
                             ForeignKey = interactionChannelForeignKey
@@ -119,7 +119,7 @@ namespace Rock.Tests.Integration.Rest.ControllersTests
                         Interaction = new InteractionImportInteraction
                         {
                             Operation = "Test Operation",
-                            InteractionDateTime = DateTime.Now,
+                            InteractionDateTime = RockDateTime.Now,
                             InteractionSummary = $"Test Summary {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithNoChannelTypeMediumValue)}",
                             InteractionData = $"Test Data {nameof(BulkInteractionImportShouldCreateNewInteractionChannelWithNoChannelTypeMediumValue)}",
                             ForeignKey = interactionChannelForeignKey

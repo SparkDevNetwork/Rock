@@ -862,7 +862,7 @@ namespace Rock.Security
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = DateTime.Now.AddDays( -1d );
+                authCookie.Expires = RockDateTime.Now.AddDays( -1d );
                 RockPage.AddOrUpdateCookie( authCookie );
 
                 domainCookie = new HttpCookie( domainCookieName )
@@ -871,7 +871,7 @@ namespace Rock.Security
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = DateTime.Now.AddDays( -1d )
+                    Expires = RockDateTime.Now.AddDays( -1d )
                 };
 
                 RockPage.AddOrUpdateCookie( domainCookie );
@@ -979,7 +979,7 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
+            httpcookie.Expires = RockDateTime.Now.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 

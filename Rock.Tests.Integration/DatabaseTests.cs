@@ -302,7 +302,7 @@ DROP DATABASE [{name}];";
             {
                 FileInfo fi = new FileInfo( file );
 
-                if ( fi.CreationTime < DateTime.Now.AddDays( -90 ) )
+                if ( fi.CreationTime < RockDateTime.Now.AddDays( -90 ) )
                 {
                     fi.Delete();
                 }
