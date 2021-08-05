@@ -819,7 +819,7 @@ namespace Rock.Migrations.Migrations {
         ///{[ endpanel ]}&lt;/pre&gt;
         ///
         ///&lt;p&gt;&lt;/p&gt;&lt;p&gt;
-        ///As you can see the body of the shortcode is placed in the bod [rest of string was truncated]&quot;;.
+        ///As you can see the body of the shortcode is placed [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202108031829239_Rollup_0803_LavaDocumentationUpdates {
             get {

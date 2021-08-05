@@ -3007,8 +3007,10 @@ namespace Rock.MyWell
 
             if ( value == "cancelled" || value == "canceled" )
             {
-                //// The canceled statuses, MyWell spells it 'cancelled' (British spelling), but just in case they change it to 'canceled'
-                //// https://www.grammarly.com/blog/canceled-vs-cancelled/
+                /*
+                    The canceled statuses, MyWell spells it 'cancelled' (British spelling), but just in case they change it to 'canceled'
+                    https://www.grammarly.com/blog/canceled-vs-cancelled/
+                */
                 return MyWellSubscriptionStatus.canceled;
             }
 
