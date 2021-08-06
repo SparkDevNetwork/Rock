@@ -2693,6 +2693,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
                     int? sourceConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                    int sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
 
                     nbTranferFailed.Visible = false;
 
@@ -2759,7 +2760,7 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         // if the Opportunity and Connector haven't changed then don't transfer.
-                        if ( connectionRequest.ConnectionOpportunityId == newOpportunityId && connectionRequest.ConnectorPersonAliasId == sourceConnectorPersonAliasId )
+                        if ( connectionRequest.ConnectionOpportunityId == sourceOpportunityId && connectionRequest.ConnectorPersonAliasId == sourceConnectorPersonAliasId )
                         {
                             nbTranferFailed.Visible = true;
                             return;
