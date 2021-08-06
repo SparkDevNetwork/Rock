@@ -40,6 +40,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -930,7 +931,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = RockDateTime.Now.AddDays( -1 );
+                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -2474,7 +2475,7 @@ Sys.Application.add_load(function () {
             }
 
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
 
             AddOrUpdateCookie( contextCookie );
 
@@ -2507,7 +2508,7 @@ Sys.Application.add_load(function () {
             }
 
             contextCookie.Values[entityType.FullName] = null;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
 
             AddOrUpdateCookie( contextCookie );
 
@@ -2568,7 +2569,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = RockDateTime.Now.AddDays( -1 );
+                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }
@@ -2594,7 +2595,7 @@ Sys.Application.add_load(function () {
         {
             var cookie = new HttpCookie( name )
             {
-                Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                Expires = expirationDate ?? RockInstanceConfig.SystemDateTime.AddYears( 1 ),
                 Value = value
             };
 

@@ -4490,7 +4490,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = RockDateTime.Now.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );

@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Utility.Settings;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -391,7 +392,7 @@ Home: (623)555-3322 <br>
 
                     var cookie = GetExistingCookie( simulator, "cookie1" );
 
-                    Assert.That.AreProximate( cookie.Expires, RockDateTime.Now, new System.TimeSpan( 0, 35, 0 ) );
+                    Assert.That.AreProximate( cookie.Expires, RockInstanceConfig.SystemDateTime, new System.TimeSpan( 0, 35, 0 ) );
                 }
             } );
         }

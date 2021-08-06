@@ -26,6 +26,7 @@ using System.Web.Security;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -778,8 +779,8 @@ namespace Rock.Security
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
-                RockDateTime.Now,
-                RockDateTime.Now.Add( FormsAuthentication.Timeout ),
+                RockInstanceConfig.SystemDateTime,
+                RockInstanceConfig.SystemDateTime.Add( FormsAuthentication.Timeout ),
                 isPersisted,
                 IsImpersonated.ToString(),
                 FormsAuthentication.FormsCookiePath );
@@ -862,7 +863,7 @@ namespace Rock.Security
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = RockDateTime.Now.AddDays( -1d );
+                authCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d );
                 RockPage.AddOrUpdateCookie( authCookie );
 
                 domainCookie = new HttpCookie( domainCookieName )
@@ -871,7 +872,7 @@ namespace Rock.Security
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = RockDateTime.Now.AddDays( -1d )
+                    Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d )
                 };
 
                 RockPage.AddOrUpdateCookie( domainCookie );
@@ -891,7 +892,7 @@ namespace Rock.Security
         {
             if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
             {
-                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.Now.AddDays( -1d ) );
+                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockInstanceConfig.SystemDateTime.AddDays( -1d ) );
             }
         }
 
@@ -979,7 +980,7 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = RockDateTime.Now.AddYears( 1 );
+            httpcookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 
