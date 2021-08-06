@@ -773,17 +773,15 @@ namespace Rock.Security
             return Encoding.UTF8.GetString( b );
         }
 
+#if !NET5_0_OR_GREATER
         /// <summary>
         /// Sets the auth cookie.
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
-        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
         {
-#if NET5_0_OR_GREATER
-            throw new NotImplementedException();
-#else
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
@@ -794,11 +792,48 @@ namespace Rock.Security
                 FormsAuthentication.FormsCookiePath );
 
             var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
+
             if ( ticket.IsPersistent )
             {
                 authCookie.Expires = ticket.Expiration;
             }
 
+            return authCookie;
+        }
+
+        /// <summary>
+        /// Gets the simple authentication cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <returns></returns>
+        public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, IsImpersonated );
+
+            if ( authCookie == null )
+            {
+                return null;
+            }
+
+            return new SimpleCookie
+            {
+                Expires = authCookie.Expires,
+                Name = authCookie.Name,
+                Value = authCookie.Value
+            };
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
+        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, IsImpersonated );
             RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
@@ -819,8 +854,8 @@ namespace Rock.Security
                 };
 
             RockPage.AddOrUpdateCookie( domainCookie );
-#endif
         }
+#endif
 
         /// <summary>
         /// Signs a user out of rock by deleting the appropriate forms authentication cookies
@@ -838,7 +873,7 @@ namespace Rock.Security
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = DateTime.Now.AddDays( -1d );
+                authCookie.Expires = RockDateTime.Now.AddDays( -1d );
                 RockPage.AddOrUpdateCookie( authCookie );
 
                 domainCookie = new HttpCookie( domainCookieName )
@@ -847,7 +882,7 @@ namespace Rock.Security
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = DateTime.Now.AddDays( -1d )
+                    Expires = RockDateTime.Now.AddDays( -1d )
                 };
 
                 RockPage.AddOrUpdateCookie( domainCookie );
@@ -897,7 +932,6 @@ namespace Rock.Security
 
             return httpCookie;
         }
-
 
         /// <summary>
         /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
@@ -960,7 +994,7 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
+            httpcookie.Expires = RockDateTime.Now.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 #endif

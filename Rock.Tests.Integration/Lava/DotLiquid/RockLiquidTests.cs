@@ -19,6 +19,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -61,7 +62,7 @@ namespace Rock.Tests.Integration.Lava
 
             var options = new LavaTestRenderOptions { MergeFields = values };
 
-            TestHelper.AssertTemplateOutput( LavaEngineTypeSpecifier.RockLiquid, expectedOutput, inputTemplate, options );
+            TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedOutput, inputTemplate, options );
         }
 
         #endregion

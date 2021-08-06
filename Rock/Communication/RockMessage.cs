@@ -106,6 +106,14 @@ namespace Rock.Communication
         public List<BinaryFile> Attachments { get; set; } = new List<BinaryFile>();
 
         /// <summary>
+        /// Gets or sets the system communication identifier.
+        /// </summary>
+        /// <value>
+        /// The system communication identifier.
+        /// </value>
+        public int? SystemCommunicationId { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockMessage"/> class.
         /// </summary>
         public RockMessage()

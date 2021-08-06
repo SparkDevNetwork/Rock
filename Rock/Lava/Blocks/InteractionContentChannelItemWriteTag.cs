@@ -85,13 +85,12 @@ namespace Rock.Lava.Blocks
             }
 
             ContentChannelItem contentChannelItem = null;
-            using ( var rockContext = new RockContext() )
-            {
-                contentChannelItem = new ContentChannelItemService( rockContext )
-                    .Queryable( "ContentChannel" )
-                    .AsNoTracking()
-                    .FirstOrDefault( c => c.Id == contentChannelItemId.Value );
-            }
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+            contentChannelItem = new ContentChannelItemService( rockContext )
+                .Queryable( "ContentChannel" )
+                .AsNoTracking()
+                .FirstOrDefault( c => c.Id == contentChannelItemId.Value );
+
 
             ContentChannel contentChannel = contentChannelItem.ContentChannel;
             if ( contentChannelItem == null || contentChannel == null )

@@ -145,12 +145,13 @@ html {
   }
 }
 
+/* stylelint-disable */
 // Only Replace with PNG when using the default image
 .ie-fix (@welcome-image);
 .ie-fix( @welcome-image ) when (@welcome-image = "../Assets/KidsIllustration.svg") {
   .is-ie .welcome .checkin-active::before { background-image: url("../Assets/KidsIllustration.png"); }
 }
-
+/* stylelint-enable */
 .welcome-cover-mixin(@welcome-background-cover-mode);
 
 @import "_css-overrides.less";

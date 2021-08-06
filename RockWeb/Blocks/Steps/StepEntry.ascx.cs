@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -614,9 +615,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BuildDynamicControls( bool editMode )
         {
-            var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
-            var excludedAttributes = AttributeCache.All()
-                .Where( a => a.EntityTypeId == stepEntityTypeId )
+            var excludedAttributes = AttributeCache.AllForEntityType<Step>()
                 .Where( a => a.Key == "Order" || a.Key == "Active" );
             avcAttributes.ExcludedAttributes = excludedAttributes.ToArray();
 

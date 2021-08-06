@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
-    Width="480"
-    Height="560"
+    Width="550"
+    Height="600"
     AllowsTransparency="True"
     Background="Transparent"
     FontSize="14"
@@ -71,11 +71,12 @@
                         Width="320"
                         Style="{StaticResource textboxStyle}" />
                     <Button
+                        Name="btnSelectFolder"
                         Width="100"
                         Margin="8,4,0,0"
-                        Name="btnSelectFolder"
+                        Click="btnSelectFolder_Click"
                         Content="Select Folder"
-                        Style="{StaticResource buttonStyleMini}" Click="btnSelectFolder_Click"/>
+                        Style="{StaticResource buttonStyleMini}" />
                 </StackPanel>
 
                 <Label
@@ -123,18 +124,20 @@
                     Margin="4,10,0,0"
                     Content="Include International Addresses"
                     Style="{StaticResource checkboxStyle}" />
+
+                <CheckBox
+                    x:Name="cbDoNotIncludeIncompleteAddresses"
+                    Margin="4,10,0,0"
+                    Content="Do not include incomplete addresses (address line and zip code required)"
+                    Style="{StaticResource checkboxStyle}" />
+
                 <CheckBox
                     x:Name="cbDoNotIncludeStatementsForThoseWhoHaveOptedOut"
                     Margin="4,10,0,0"
-                    Content="Do not included statements for those who have opted out."
+                    Content="Do not include statements for families with an individual who has opted out"
                     Style="{StaticResource checkboxStyle}" />
 
             </StackPanel>
-
-
-
-
-
 
             <StackPanel
                 Grid.Row="2"
@@ -148,9 +151,10 @@
                     HorizontalAlignment="Left"
                     Click="btnSaveChanges_Click"
                     Style="{StaticResource buttonStylePrimaryMini}">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Save" Style="{StaticResource labelStyleButtonTextPrimary}" />
-                    </StackPanel>
+                    <Label
+                        Margin="0,0,0,2"
+                        Content="Save"
+                        Style="{StaticResource labelStyleButtonTextPrimary}" />
                 </Button>
                 <Button
                     x:Name="btnCancel"
@@ -158,9 +162,12 @@
                     HorizontalAlignment="Left"
                     Click="btnCancel_Click"
                     Style="{StaticResource buttonStyleMini}">
-                    <StackPanel Orientation="Horizontal">
-                        <Label Content="Cancel" Style="{StaticResource labelStyleButtonText}" />
-                    </StackPanel>
+
+                    <Label
+                        Margin="0,0,0,0"
+                        Content="Cancel"
+                        Style="{StaticResource labelStyleButtonText}" />
+
                 </Button>
             </StackPanel>
 

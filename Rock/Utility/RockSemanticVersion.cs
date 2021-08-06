@@ -433,7 +433,9 @@ namespace Rock.Utility
         /// <param name="info">The <see cref="T:System.Runtime.Serialization.SerializationInfo" /> to populate with data.</param>
         /// <param name="context">The destination (see <see cref="T:System.Runtime.Serialization.StreamingContext" />) for this serialization.</param>
         /// <exception cref="System.ArgumentNullException">info</exception>
+#if !NET5_0_OR_GREATER
         [SecurityPermission( SecurityAction.Demand, SerializationFormatter = true )]
+#endif
         public void GetObjectData( SerializationInfo info, StreamingContext context )
         {
             if ( info == null ) throw new ArgumentNullException( "info" );

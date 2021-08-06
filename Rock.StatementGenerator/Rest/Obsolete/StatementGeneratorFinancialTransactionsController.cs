@@ -103,7 +103,7 @@ namespace Rock.StatementGenerator.Rest
                 // These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
                 // to determine which address(es) the statements need to be mailed to 
                 var groupTypeIdFamily = GroupTypeCache.GetFamilyGroupType().Id;
-                var groupMembersQry = new GroupMemberService( rockContext ).Queryable().Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
+                var groupMembersQry = new GroupMemberService( rockContext ).Queryable( true ).Where( m => m.Group.GroupTypeId == groupTypeIdFamily );
 
                 var qryIndividualGiversThatHaveTransactions = financialTransactionQry
                     .Where( a => !a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue )
@@ -150,7 +150,7 @@ namespace Rock.StatementGenerator.Rest
                 else if ( options.OrderBy == OrderBy.LastName )
                 {
                     // get a query to look up LastName for recipients that give as a group
-                    var qryLastNameAsGroup = new PersonService( rockContext ).Queryable( false, true )
+                    var qryLastNameAsGroup = new PersonService( rockContext ).Queryable( true, true )
                         .Where( a => a.GivingLeaderId == a.Id && a.GivingGroupId.HasValue )
                         .Select( a => new
                         {
@@ -160,7 +160,7 @@ namespace Rock.StatementGenerator.Rest
                         } );
 
                     // get a query to look up LastName for recipients that give as individuals
-                    var qryLastNameAsIndividual = new PersonService( rockContext ).Queryable( false, true );
+                    var qryLastNameAsIndividual = new PersonService( rockContext ).Queryable( true, true );
 
                     unionJoinLocationQry = unionJoinLocationQry.Select( a => new
                     {
@@ -346,7 +346,7 @@ namespace Rock.StatementGenerator.Rest
         /// LayoutDefinedValueGuid option must be specified
         /// </exception>
         private static StatementGeneratorRecipientResult GenerateStatementGeneratorRecipientResult( int groupId, int? personId, Guid? locationGuid, Person currentPerson, StatementGeneratorOptions options )
-        { 
+        {
             if ( options == null )
             {
                 throw new Exception( "StatementGenerationOption options must be specified" );
@@ -377,7 +377,7 @@ namespace Rock.StatementGenerator.Rest
                 {
                     // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                     GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                    personList = groupMemberService.GetByGroupId( groupId ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person ).Include( a => a.Aliases ).ToList();
+                    personList = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person ).Include( a => a.Aliases ).ToList();
                     person = personList.FirstOrDefault();
                 }
 
@@ -463,25 +463,37 @@ namespace Rock.StatementGenerator.Rest
                 var humanFriendlyEndDate = options.EndDate.HasValue ? options.EndDate.Value.AddDays( -1 ) : RockDateTime.Now.Date;
                 mergeFields.Add( "StatementEndDate", humanFriendlyEndDate );
 
-                string familyTitle;
-                if ( person != null && person.PrimaryFamilyId == groupId )
+                string salutation;
+                if ( personId.HasValue )
                 {
-                    // this is how familyTitle should able to be determined in most cases
-                    familyTitle = person.PrimaryFamily.GroupSalutation;
+                    // if the person gives as an individual, the salutation should be just the person's name
+                    salutation = person.FullName;
                 }
                 else
                 {
-                    // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
-                    familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                    // if giving as a group, the salutation is family title
+                    string familyTitle;
+                    if ( person != null && person.PrimaryFamilyId == groupId )
+                    {
+                        // this is how familyTitle should able to be determined in most cases
+                        familyTitle = person.PrimaryFamily.GroupSalutation;
+                    }
+                    else
+                    {
+                        // This could happen if the person is from multiple families, and specified groupId is not their PrimaryFamily
+                        familyTitle = new GroupService( rockContext ).GetSelect( groupId, s => s.GroupSalutation );
+                    }
+
+                    if ( familyTitle.IsNullOrWhiteSpace() )
+                    {
+                        // shouldn't happen, just in case the familyTitle is blank, just return the person's name
+                        familyTitle = person.FullName;
+                    }
+
+                    salutation = familyTitle;
                 }
 
-                if ( familyTitle.IsNullOrWhiteSpace() )
-                {
-                    // shouldn't happen, just in case the familyTitle is blank, just return the person's name
-                    familyTitle = person.FullName;
-                }
-
-                mergeFields.Add( "Salutation", familyTitle );
+                mergeFields.Add( "Salutation", salutation );
 
                 Location mailingAddress;
 
@@ -735,7 +747,7 @@ namespace Rock.StatementGenerator.Rest
                 }
 
                 mergeFields.Add( "Options", options );
-                
+
                 result.Html = lavaTemplateLava.ResolveMergeFields( mergeFields, currentPerson );
                 if ( !string.IsNullOrEmpty( lavaTemplateFooterLava ) )
                 {
@@ -889,11 +901,18 @@ namespace Rock.StatementGenerator.Rest
                         if ( options.ExcludeInActiveIndividuals )
                         {
                             int recordStatusValueIdActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                            pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+
+                            // If the ExcludeInActiveIndividuals is enabled, don't include Pledges from Inactive Individuals, but only if they give as individuals.
+                            // Pledges from Giving Groups should always be included regardless of the ExcludeInActiveIndividuals option.
+                            // See https://app.asana.com/0/0/1200512694724254/f
+                            pledgeQry = pledgeQry.Where( a => ( a.PersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive ) || a.PersonAlias.Person.GivingGroupId.HasValue );
                         }
 
-                        // Only include Non-Deceased People even if we are including inactive individuals
-                        pledgeQry = pledgeQry.Where( a => a.PersonAlias.Person.IsDeceased == false );
+                        /* 06/23/2021 MDP
+                         * Don't exclude pledges from Deceased. If the person pledged during the specified Date/Time range (probably while they weren't deceased), include them regardless of Deceased Status.
+                         * 
+                         * see https://app.asana.com/0/0/1200512694724244/f
+                         */
                     }
                 }
             }
@@ -986,12 +1005,20 @@ namespace Rock.StatementGenerator.Rest
                         if ( options.ExcludeInActiveIndividuals )
                         {
                             int recordStatusValueIdActive = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive );
+
+                            // If the ExcludeInActiveIndividuals is enabled, don't include transactions from Inactive Individuals, but only if they give as individuals.
+                            // Transactions from Giving Groups should always be included regardless of the ExcludeInActiveIndividuals option.
+                            // See https://app.asana.com/0/0/1200512694724254/f
+                            financialTransactionQry = financialTransactionQry.Where( a => ( a.AuthorizedPersonAlias.Person.RecordStatusValueId == recordStatusValueIdActive ) || a.AuthorizedPersonAlias.Person.GivingGroupId.HasValue );
                         }
                     }
 
-                    // Only include Non-Deceased People even if we are including inactive individuals
-                    financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAlias.Person.IsDeceased == false );
+                    /* 06/23/2021 MDP
+                      Don't exclude transactions from Deceased. If the person gave doing the specified Date/Time
+                      range (probably while they weren't deceased), include them regardless of Deceased Status.
+
+                      see https://app.asana.com/0/0/1200512694724244/f
+                    */
                 }
             }
 

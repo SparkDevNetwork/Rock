@@ -16,6 +16,8 @@
 //
 using System;
 using System.Linq;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -291,6 +293,33 @@ namespace Rock.Model
             }
 
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Attribute View Model Helper
+    /// </summary>
+    public partial class AttributeViewModelHelper
+    {
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Attribute model, AttributeViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            var attributeCache = AttributeCache.Get( model.Id );
+
+            viewModel.FieldTypeGuid = FieldTypeCache.Get( attributeCache.FieldTypeId ).Guid;
+            viewModel.CategoryGuids = attributeCache.Categories.Select( c => c.Guid ).ToArray();
+            viewModel.QualifierValues = attributeCache.QualifierValues.ToDictionary( kvp => kvp.Key, kvp => new ViewModel.NonEntities.AttributeConfigurationValue
+            {
+                Name = kvp.Value.Name,
+                Value = kvp.Value.Value,
+                Description = kvp.Value.Description
+            } );
         }
     }
 }

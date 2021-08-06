@@ -43,15 +43,14 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"{% if InteractionChannel != null and InteractionChannel != '' %}
-    <a href = '{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}' >
-        <div class='panel panel-widget'>
+    <a href='{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}'>
+        <div class='panel panel-widget collapsed'>
             <div class='panel-heading clearfix'>
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
 
-                <div class='pull-right margin-l-md'><i class='fa fa-chevron-right'></i></div>
-                
-                <div class='panel-labels'> 
+                <div class='panel-labels'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
+                    <i class='fa fa-chevron-right margin-l-md'></i>
                 </div>
             </div>
         </div>
@@ -275,7 +274,7 @@ namespace RockWeb.Blocks.Reporting
 
                         string html = channel.ChannelListTemplate.IsNotNullOrWhiteSpace() ?
                             channel.ChannelListTemplate.ResolveMergeFields( channelMergeFields ) :
-                            defaultLavaTemplate.Render( channelMergeFields );
+                            LavaService.RenderTemplate( defaultLavaTemplate, channelMergeFields ).Text;
 
                         channelItems.Add( new ChannelItem
                         {
@@ -313,7 +312,7 @@ namespace RockWeb.Blocks.Reporting
 	                personId = new PersonAliasService( new RockContext() ).GetPersonId( personAliasId.Value );
 	            }
 			}
-			
+
             return personId;
         }
 

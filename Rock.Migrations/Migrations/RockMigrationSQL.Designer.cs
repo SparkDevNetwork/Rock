@@ -551,5 +551,280 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202105280103566_StatementGenerator_RockDefaultTemplateReportSettings", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {% assign publicApplicationRoot = &apos;Global&apos; | Attribute:&apos;PublicApplicationRoot&apos; %}
+        ///{% assign organizationName = &apos;Global&apos; | Attribute:&apos;OrganizationName&apos; %}
+        ///{% assign organizationAddress = &apos;Global&apos; | Attribute:&apos;OrganizationAddress&apos; %}
+        ///{% assign organizationWebsite = &apos;Global&apos; | Attribute:&apos;OrganizationWebsite&apos; %}
+        ///{% assign organizationEmail = &apos;Global&apos; | Attribute:&apos;OrganizationEmail&apos; %}
+        ///{% assign organizationPhone = &apos;Global&apos; | Attribute:&apos;OrganizationPhone&apos; %}
+        ///{% assign currencySymbol = &apos;Global&apos; | Attribute: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate {
+            get {
+                return ResourceManager.GetString("_202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid]) VALUES (N&apos;Google Heatmap&apos;, N&apos;Add an interactive visualization to depict the intensity of data at geographical points.&apos;, N&apos;&lt;p&gt;
+        ///This shortcode makes it easy to add responsive Heatmaps from Google Maps to your site. And uses similar options to the Google Map shortcode to make things as easy as possible. Let&apos;&apos;s start with a simple example and  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106081803525_Rollup_0608_LavaHeatMap {
+            get {
+                return ResourceManager.GetString("_202106081803525_Rollup_0608_LavaHeatMap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode]
+        ///SET 
+        ///[Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[ trendchart ]}
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;January&apos;&apos; value:&apos;&apos;120&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;February&apos;&apos; value:&apos;&apos;45&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;March&apos;&apos; value:&apos;&apos;38&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;April&apos;&apos; value:&apos;&apos;34&apos;&apos; ]]&lt;/span&gt; &lt;span&gt;[[ enddataitem ]]&lt;/span&gt;
+        ///    &lt;span&gt;[[ dataitem label:&apos;&apos;May&apos;&apos;  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106081803525_Rollup_0608_UpdateTrendChart {
+            get {
+                return ResourceManager.GetString("_202106081803525_Rollup_0608_UpdateTrendChart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [FinancialStatementTemplate] SET [ReportTemplate]=N&apos;{% assign publicApplicationRoot = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;PublicApplicationRoot&apos;&apos; %}
+        ///{% assign organizationName = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationName&apos;&apos; %}
+        ///{% assign organizationAddress = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationAddress&apos;&apos; %}
+        ///{% assign organizationWebsite = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationWebsite&apos;&apos; %}
+        ///{% assign organizationEmail = &apos;&apos;Global&apos;&apos; | Attribute:&apos;&apos;OrganizationEmail&apos;&apos; %}
+        ///{% assign organizationPhone = &apos;&apos;Global&apos;&apos; | A [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202106221850270_Rollup_06221_UpdateStatementGenerator {
+            get {
+                return ResourceManager.GetString("_202106221850270_Rollup_06221_UpdateStatementGenerator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look at eac [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_chartupdate {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_chartupdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_KPIShortCode {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_KPIShortCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Easy Pie Chart is the perfect solution when you need to display a single percentage value on a chart. In fact it&apos;&apos;s as simple as &lt;code&gt;{[easypie value:&apos;&apos;60&apos;&apos;]}{[endeasypie]}&lt;/code&gt;&lt;/p&gt;
+        ///&lt;p&gt;&lt;img src=&quot;https://rockrms.blob.core.windows.net/documentation/Lava/Shortcodes/easypie-main.png&quot; class=&quot;img-responsive&quot; alt=&quot;Easy Pie&quot; width=&quot;100&quot; height=&quot;100&quot; loading=&quot;lazy&quot;&gt;&lt;/p&gt;
+        ///
+        ///&lt;p&gt;Each has the following basic settings settings:&lt;/p&gt;
+        ///&lt;ul&gt;
+        ///&lt;li&gt;&lt;strong&gt;value&lt;/strong&gt; (0)  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_update_easypie {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_update_easypie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[ sparkline type:&apos;&apos;line&apos;&apos; data:&apos;&apos;5,6,7,9,9,5,3,2,2,4,6,7&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;bar&apos;&apos; data:&apos;&apos;5,6,7,2,0,-4,-2,4 &apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;tristate&apos;&apos; data:&apos;&apos;1,1,0,1,-1,-1,1,-1,0,0,1,1&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;discrete&apos;&apos; data:&apos;&apos;4,6,7,7,4,3,2,1,4,4&apos;&apos; ]}
+        ///
+        ///{[ sparkline type:&apos;&apos;bullet&apos;&apos; data:&apos;&apos;10,12,12,9,7&apos;&apos; ]}
+        ///
+        ///{[ spark [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107061930320_Rollup_0706_update_sparklinesimg {
+            get {
+                return ResourceManager.GetString("_202107061930320_Rollup_0706_update_sparklinesimg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMer" +
+                        "ge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [EntityType] SET [IndexResultTemplate]=N&apos;{% if IndexDocument.IndexModelType == &quot;Rock.UniversalSearch.IndexModels.PersonIndex&quot; %}
+        ///
+        ///    {% assign url = &quot;~/Person/&quot; | ResolveRockUrl %}
+        ///    
+        ///    {% if DisplayOptions.Person-Url and DisplayOptions.Person-Url != null and DisplayOptions.Person-Url != &apos;&apos;&apos;&apos; %}
+        ///        {% assign url = DisplayOptions.Person-Url | ResolveRockUrl %}
+        ///    {% endif %}
+        ///    
+        ///    
+        ///    &lt;div class=&quot;row model-cannavigate&quot; data-href=&quot;{{ url }}{{ IndexDocument.Id }}&quot;&gt;
+        ///        &lt;div  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity {
+            get {
+                return ResourceManager.GetString("_202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @EntityTypeIdAccumulativeAchievementComponent INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM EntityType
+        ///        WHERE [Guid] = &apos;05D8CD17-E07D-4927-B9C4-5018F7C4B715&apos;
+        ///        )
+        ///    , @EntityTypeIdStreakAchievementComponent INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM EntityType
+        ///        WHERE [Guid] = &apos;174F0AFF-3A5E-4A20-AE8B-D8D83D43BACD&apos;
+        ///        )
+        ///    , @EntityTypeIdStreak INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM EntityType
+        ///        WHERE [Guid] = &apos;D953B0A5-0065-4624-8844-10010DE01E5C&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107141741515_AchievementType_AddAchievementTypes {
+            get {
+                return ResourceManager.GetString("_202107141741515_AchievementType_AddAchievementTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE
+        ///	@BinaryFileId int
+        ///	,@BinaryFileTypeIdDefault int = (SELECT TOP 1 Id from [BinaryFileType] where [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;)
+        ///	,@StorageEntityTypeIdDatabase int = (SELECT TOP 1 Id FROM [EntityType] WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;)
+        ///	
+        ///	-- Add AchievementMedal.svg
+        ///	IF NOT EXISTS (SELECT * FROM [BinaryFile] WHERE [Guid] = &apos;80331F03-4F4B-46B3-B789-8D34C12B4F42&apos; )
+        ///	BEGIN
+        ///	INSERT INTO [BinaryFile] ([IsTemporary], [IsSystem], [BinaryFileTypeId], [FileName],  [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107141741515_AchievementType_AddMedalBinaryFile {
+            get {
+                return ResourceManager.GetString("_202107141741515_AchievementType_AddMedalBinaryFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @BinaryFileId INT
+        ///    , @BinaryFileTypeIdDefault INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM [BinaryFileType]
+        ///        WHERE [Guid] = &apos;C1142570-8CD6-4A20-83B1-ACB47C1CD377&apos;
+        ///        )
+        ///    , @StorageEntityTypeIdDatabase INT = (
+        ///        SELECT TOP 1 Id
+        ///        FROM [EntityType]
+        ///        WHERE [Guid] = &apos;0AA42802-04FD-4AEC-B011-FEB127FC85CD&apos;
+        ///        )
+        ///
+        ///-- Add AchievementTrophy.svg
+        ///IF NOT EXISTS (
+        ///        SELECT *
+        ///        FROM [BinaryFile]
+        ///        WHERE [Guid] = &apos;9A1503BC-D965-4BD4-AEA4-803 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107141741515_AchievementType_AddTrophyBinaryFile {
+            get {
+                return ResourceManager.GetString("_202107141741515_AchievementType_AddTrophyBinaryFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///        SELECT *
+        ///        FROM StreakType
+        ///        WHERE [Guid] = &apos;B9FADD97-38A4-4141-B6DB-48154563A2A9&apos;
+        ///        )
+        ///BEGIN
+        ///    INSERT INTO [dbo].[StreakType] (
+        ///        [Name]
+        ///        , [Description]
+        ///        , [StructureType]
+        ///        , [StructureEntityId]
+        ///        , [EnableAttendance]
+        ///        , [RequiresEnrollment]
+        ///        , [OccurrenceFrequency]
+        ///        , [StartDate]
+        ///        , [OccurrenceMap]
+        ///        , [IsActive]
+        ///        , [Guid]
+        ///        , [FirstDayOfWeek]
+        ///        )
+        ///    VALUES [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202107141741515_AchievementType_AddWeeklyAttendanceStreakType {
+            get {
+                return ResourceManager.GetString("_202107141741515_AchievementType_AddWeeklyAttendanceStreakType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;
+        ///The panel shortcode allows you to easily add a 
+        ///&lt;a href=&quot;https://community.rockrms.com/styling/components/panels&quot; target=&quot;_blank&quot;&gt;Bootstrap panel&lt;/a&gt; to your markup. This is a pretty simple shortcode, but it does save you some time.
+        ///&lt;/p&gt;
+        ///
+        ///&lt;p&gt;Basic Usage:&lt;br&gt;  
+        ///&lt;/p&gt;&lt;pre&gt;{[ panel title:&apos;&apos;Important Stuff&apos;&apos; icon:&apos;&apos;fa fa-star&apos;&apos; ]}&lt;br&gt;  
+        ///This is a super simple panel.&lt;br&gt; 
+        ///{[ endpanel ]}&lt;/pre&gt;
+        ///
+        ///&lt;p&gt;&lt;/p&gt;&lt;p&gt;
+        ///As you can see the body of the shortcode is placed [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202108031829239_Rollup_0803_LavaDocumentationUpdates {
+            get {
+                return ResourceManager.GetString("_202108031829239_Rollup_0803_LavaDocumentationUpdates", resourceCulture);
+            }
+        }
     }
 }

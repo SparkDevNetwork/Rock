@@ -27,6 +27,7 @@ using Amazon.S3.Model;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -574,7 +575,7 @@ namespace Rock.Storage.AssetStorage
                 {
                     BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                     Key = asset.Key,
-                    Expires = DateTime.Now.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
+                    Expires = RockDateTime.Now.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
                 };
 
                 url = client.GetPreSignedURL( request );

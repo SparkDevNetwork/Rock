@@ -62,7 +62,7 @@ namespace Rock.Apps.CheckScannerUtility
             var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
             if ( !validSchemes.Contains( rockUrl.Scheme ) )
             {
-                txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+                txtRockUrl.Text = "https://" + rockUrl.AbsoluteUri;
             }
 
             RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );

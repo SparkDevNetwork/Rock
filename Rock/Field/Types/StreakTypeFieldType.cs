@@ -36,7 +36,7 @@ namespace Rock.Field.Types
         protected override string OnFormatValue( Guid entityGuid )
         {
             var entity = GetEntity( entityGuid.ToString() ) as StreakType;
-            return entity.Name;
+            return entity?.Name;
         }
 
         /// <summary>

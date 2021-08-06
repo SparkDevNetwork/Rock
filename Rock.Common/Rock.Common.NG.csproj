@@ -1,30 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Rock.Lava</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Rock</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="bin\**" />
-    <Compile Remove="Implementations\DotLiquid\**" />
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="bin\**" />
-    <EmbeddedResource Remove="Implementations\DotLiquid\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="bin\**" />
-    <None Remove="Implementations\DotLiquid\**" />
     <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <None Remove=".gitignore" />
+    <None Remove="app.config" />
+    <None Remove="packages.config" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj" />
+    <PackageReference Include="Humanizer.Core" Version="2.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 
 </Project>

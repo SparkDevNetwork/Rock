@@ -51,11 +51,6 @@
 
                 <StackPanel Name="pnlAllIndividualsOptions" Style="{StaticResource indentStyle}">
                     <CheckBox
-                        Name="ckIncludeIndividualsWithNoAddress"
-                        Content="Include individuals that don't have a mailing address"
-                        IsChecked="False"
-                        Style="{StaticResource checkboxStyle}" />
-                    <CheckBox
                         Name="ckExcludeInActiveIndividuals"
                         Content="Exclude inactive individuals"
                         IsChecked="False"

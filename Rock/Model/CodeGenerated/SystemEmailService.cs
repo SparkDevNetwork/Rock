@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,42 +54,42 @@ namespace Rock.Model
         public bool CanDelete( SystemEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -167,5 +170,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

@@ -28,7 +28,10 @@
                     <Rock:RockTextBox ID="txtUsername" runat="server" Label="Rock RMS Username" />
                     <Rock:RockTextBox ID="txtPassword" TextMode="Password" runat="server" Label="Rock RMS Password" />
 
-                    <asp:Button ID="btnRetrieveOrganization" CssClass="btn btn-primary" runat="server" OnClick="btnRetrieveOrganization_Click" Text="Retrieve Organization" />
+                    <div class="actions">
+                        <asp:Button ID="btnRetrieveOrganization" CssClass="btn btn-primary" runat="server" OnClick="btnRetrieveOrganization_Click" Text="Retrieve Organization" />
+                    </div>
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSelectOrganization" runat="server" Visible="false">
@@ -57,7 +60,7 @@
 
                     <Rock:NumberBox runat="server" ID="nbAverageWeeklyAttendance" Label="Average Weekend Attendance" Required="true" NumberType="Integer" />
 
-                    <div class="margin-t-md">
+                    <div class="actions">
                         <asp:Button ID="btnSaveAttendance" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="btnSaveAttendance_Click" />
                     </div>
 
@@ -66,7 +69,7 @@
                 <asp:Panel ID="pnlComplete" runat="server" Visible="false">
                     <asp:Literal ID="lCompleteMessage" runat="server" />
 
-                    <div class="margin-t-md">
+                    <div class="actions">
                         <asp:Button ID="btnContinue" runat="server" CssClass="btn btn-primary" Text="Continue" OnClick="btnContinue_Click" />
                     </div>
                 </asp:Panel>

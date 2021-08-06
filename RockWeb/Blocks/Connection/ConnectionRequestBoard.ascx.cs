@@ -29,6 +29,7 @@ using NuGet;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemKey;
@@ -794,7 +795,15 @@ namespace RockWeb.Blocks.Connection
                 viewModel.IsUnassigned
             };
 
-            mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", DotLiquid.Hash.FromAnonymousObject( connectionRequestStatusIcons ) );
+            }
+            else
+            {
+                mergeFields.Add( "ConnectionRequestStatusIcons", connectionRequestStatusIcons );
+            }
+
             mergeFields.Add( "IdleTooltip", string.Format( "Idle (no activity in {0} days)", daysUntilRequestIdle ) );
             return connectionRequestStatusIconTemplate.ResolveMergeFields( mergeFields );
         }
@@ -2683,12 +2692,8 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null )
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
+                    int? sourceConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
 
-                    if ( connectionRequest.ConnectionOpportunityId == newOpportunityId )
-                    {
-                        nbTranferFailed.Visible = true;
-                        return;
-                    }
                     nbTranferFailed.Visible = false;
 
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
@@ -2751,6 +2756,13 @@ namespace RockWeb.Blocks.Connection
                             }
 
                             connectionRequest.ConnectorPersonAliasId = connectorPersonAliasId;
+                        }
+
+                        // if the Opportunity and Connector haven't changed then don't transfer.
+                        if ( connectionRequest.ConnectionOpportunityId == newOpportunityId && connectionRequest.ConnectorPersonAliasId == sourceConnectorPersonAliasId )
+                        {
+                            nbTranferFailed.Visible = true;
+                            return;
                         }
 
                         // Add a new request activity to log the transfer
@@ -4699,6 +4711,7 @@ namespace RockWeb.Blocks.Connection
                         Name = ct.Name,
                         IconCssClass = ct.IconCssClass,
                         DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
+                        Order = ct.Order,
                         ConnectionOpportunities = ct.ConnectionOpportunities
                             .Where( co => co.IsActive )
                             .Select( co => new ConnectionOpportunityViewModel
@@ -4718,7 +4731,8 @@ namespace RockWeb.Blocks.Connection
                             .ToList()
                     } )
                     .ToList()
-                    .OrderBy( ct => ct.Name )
+                    .OrderBy( ct => ct.Order )
+                    .ThenBy( ct => ct.Name )
                     .ThenBy( ct => ct.Id )
                     .ToList();
 
@@ -5044,10 +5058,7 @@ namespace RockWeb.Blocks.Connection
 
             return service.Queryable()
                 .AsNoTracking()
-                .Where( at =>
-                    ( !at.ConnectionTypeId.HasValue ||
-                    at.ConnectionTypeId == connectionType.Id ) &&
-                    at.IsActive );
+                .Where( at => at.ConnectionTypeId == connectionType.Id && at.IsActive );
         }
 
         /// <summary>
@@ -5311,6 +5322,11 @@ namespace RockWeb.Blocks.Connection
             /// Gets or sets the icon CSS class.
             /// </summary>
             public string IconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the order.
+            /// </summary>
+            public int Order { get; set; }
 
             /// <summary>
             /// Gets or sets the days until request idle.

@@ -25,7 +25,7 @@ namespace Rock.StatementGenerator.Migrations
     /// </summary>
     [MigrationNumber( 2, "1.6.10" )]
     [Obsolete( "Use FinancialStatementTemplate instead" )]
-    [RockObsolete( "12.4" )]
+    [RockObsolete( "1.12.4" )]
     public class StatementGeneratorUpdateTemplates : Migration
     {
         /// <summary>

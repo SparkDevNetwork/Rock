@@ -80,6 +80,11 @@ namespace Rock.Media
         {
             get
             {
+                if ( Size == 0 )
+                {
+                    return string.Empty;
+                }
+
                 return Size.FormatAsMemorySize();
             }
         }
@@ -95,6 +100,11 @@ namespace Rock.Media
         {
             get
             {
+                if ( Width == 0 && Height == 0 )
+                {
+                    return string.Empty;
+                }
+
                 return string.Format( "{0}x{1}", Width, Height );
             }
         }

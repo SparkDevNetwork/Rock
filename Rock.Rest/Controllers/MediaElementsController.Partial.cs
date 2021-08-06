@@ -167,13 +167,6 @@ namespace Rock.Rest.Controllers
                 personAliasId = GetPersonAliasId( rockContext );
             }
 
-            // Verify we have a person alias, otherwise bail out.
-            if ( !personAliasId.HasValue )
-            {
-                var errorResponse = Request.CreateErrorResponse( HttpStatusCode.BadRequest, $"The personAliasId could not be determined." );
-                throw new HttpResponseException( errorResponse );
-            }
-
             var mediaElement = new MediaElementService( rockContext ).GetNoTracking( mediaInteraction.MediaElementGuid );
 
             // Ensure we have our required MediaElement.
@@ -195,14 +188,15 @@ namespace Rock.Rest.Controllers
                 // check that the RelatedEntityTypeId/RelatedEntityId values
                 // are either null or match what was passed by the user.
                 // Finally also make sure the Interaction Person Alias is
-                // either the one for this user or if there is a Person
+                // either the one for this user OR if there is a Person
                 // record attached to that alias that the alias Id we have is
-                // also attached to that Person record.
+                // also attached to that Person record OR the interaction is
+                // not tied to a person.
                 interaction = interactionService.Queryable()
                     .Where( a => a.Guid == mediaInteraction.InteractionGuid.Value && a.InteractionComponentId == interactionComponentId )
                     .Where( a => !a.RelatedEntityTypeId.HasValue || !mediaInteraction.RelatedEntityTypeId.HasValue || a.RelatedEntityTypeId == mediaInteraction.RelatedEntityTypeId )
                     .Where( a => !a.RelatedEntityId.HasValue || !mediaInteraction.RelatedEntityId.HasValue || a.RelatedEntityId == mediaInteraction.RelatedEntityId )
-                    .Where( a => a.PersonAliasId == personAliasId || a.PersonAlias.Person.Aliases.Any( b => b.Id == personAliasId ) )
+                    .Where( a => !a.PersonAliasId.HasValue || a.PersonAliasId == personAliasId || a.PersonAlias.Person.Aliases.Any( b => b.Id == personAliasId ) )
                     .SingleOrDefault();
             }
 
@@ -215,6 +209,7 @@ namespace Rock.Rest.Controllers
 
                 interaction.InteractionData = data.ToJson();
                 interaction.InteractionEndDateTime = RockDateTime.Now;
+                interaction.PersonAliasId = interaction.PersonAliasId ?? personAliasId;
 
                 if ( mediaInteraction.RelatedEntityTypeId.HasValue )
                 {

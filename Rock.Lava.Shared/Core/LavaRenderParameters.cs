@@ -25,11 +25,20 @@ namespace Rock.Lava
     {
         #region Factory Methods
 
+        /// <summary>
+        /// Create a new instance with a specified render context.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public static LavaRenderParameters WithContext( ILavaRenderContext context )
         {
             return new LavaRenderParameters { Context = context };
         }
 
+        /// <summary>
+        /// Create a new default instance.
+        /// </summary>
+        /// <returns></returns>
         public static LavaRenderParameters Default()
         {
             return new LavaRenderParameters();

@@ -40,6 +40,8 @@ namespace Rock.Utility.Settings
         {
             get
             {
+                /* This property intentionally returns the system date of the local server.  This property should
+                 * be used whenever it is necessary to use the local server clock instead of RockDateTime.Now. */
                 return DateTime.Now;
             }
         }

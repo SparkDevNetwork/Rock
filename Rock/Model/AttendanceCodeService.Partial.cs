@@ -68,6 +68,8 @@ namespace Rock.Model
             "5XL", "6XL", "7XL", "8XL", "9XL", "XXL"
         };
 
+        private static readonly string timeoutExceptionMessage = "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem.";
+
         /// <summary>
         /// Determines whether the provided code is already in use for today by querying the DB.
         /// </summary>
@@ -150,7 +152,7 @@ namespace Rock.Model
                     {
                         if ( attempts == _maxAttempts )
                         {
-                            throw new TimeoutException( "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem." );
+                            throw new TimeoutException( timeoutExceptionMessage );
                         }
 
                         if ( alphaNumericLength > 0 )
@@ -182,7 +184,7 @@ namespace Rock.Model
                         // Check if code is already in use or contains bad unallowed strings.
                         if ( noGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
                         {
-                            lastCode = numericCode;
+                            lastCode = code;
                             alphaNumericCode = string.Empty;
                             alphaCode = string.Empty;
                             numericCode = string.Empty;
@@ -195,7 +197,7 @@ namespace Rock.Model
                         {
                             if ( service.IsCodeAlreadyInUse( code ) )
                             {
-                                lastCode = numericCode;
+                                lastCode = code;
                                 alphaNumericCode = string.Empty;
                                 alphaCode = string.Empty;
                                 numericCode = string.Empty;
@@ -249,7 +251,7 @@ namespace Rock.Model
                     // We're only going to attempt this a million times...
                     if ( attempts > _maxAttempts )
                     {
-                        throw new TimeoutException( "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem." );
+                        throw new TimeoutException( timeoutExceptionMessage );
                     }
 
                     numericCode = GenerateRandomNumericCode( numericLength );
@@ -262,6 +264,24 @@ namespace Rock.Model
                     var maxCode = lastCode.Substring( alphaNumericLength + alphaLength );
                     int nextCode = maxCode.AsInteger() + 1;
                     numericCode = nextCode.ToString( "D" + numericLength );
+                    if ( numericCode.Length > numericLength )
+                    {
+                        throw new Exception( $"Error generating numeric check-in code {numericCode}. The number of digits exceeds the configured length of {numericLength}. Check the check-in system 'Security Code Length to adjust this." );
+                    }
+
+                    while ( noGood.Any( s => numericCode.Contains( s ) ) )
+                    {
+                        attempts++;
+
+                        // We're only going to attempt this a million times...
+                        if ( attempts > _maxAttempts )
+                        {
+                            throw new TimeoutException( timeoutExceptionMessage );
+                        }
+
+                        nextCode++;
+                        numericCode = nextCode.ToString( "D" + numericLength );
+                    }
                 }
                 else
                 {

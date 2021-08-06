@@ -342,7 +342,9 @@ namespace RockWeb.Blocks.Cms
                     }
                     else
                     {
-                        content = GetLavaTemplate().Render( feedDictionary );
+                        var result = LavaService.RenderTemplate( GetLavaTemplate(), feedDictionary );
+
+                        content = result.Text;
                     }
 
                     if ( content.Contains( "No such template" ) )

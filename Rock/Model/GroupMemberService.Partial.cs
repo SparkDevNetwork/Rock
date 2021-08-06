@@ -560,6 +560,14 @@ namespace Rock.Model
                 }
             }
 
+            // As discussed in https://github.com/SparkDevNetwork/Rock/issues/4697, we are going to delete
+            // the association from any group member assignments that have a reference to this group member.
+            var groupMemberAssignmentService  = new GroupMemberAssignmentService( this.Context as RockContext );
+            foreach ( var groupMemberAssignment in groupMemberAssignmentService.Queryable().Where( a => a.GroupMemberId == item.Id ) )
+            {
+                groupMemberAssignmentService.Delete( groupMemberAssignment );
+            }
+
             return base.Delete( item );
         }
 

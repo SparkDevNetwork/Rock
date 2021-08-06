@@ -71,11 +71,7 @@ namespace Rock.Model
         /// The attendances.
         /// </value>
         [DataMember]
-#if NET5_0_OR_GREATER
         public virtual ICollection<Attendance> Attendances { get; set; }
-#else
-        public ICollection<Attendance> Attendances { get; set; }
-#endif
     }
 
     /// <summary>

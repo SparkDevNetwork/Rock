@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// 
     /// </summary>
     [DataContract]
-    public class CheckInMessage : ILavaDataDictionary
+    public class CheckInMessage : ILavaDataDictionary, ILiquidizable
     {
         /// <summary>
         /// Gets or sets the message text.
@@ -134,7 +134,6 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
         public object GetValue( object key )
         {
             return this[key];

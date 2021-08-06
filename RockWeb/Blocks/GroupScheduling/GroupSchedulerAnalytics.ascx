@@ -72,7 +72,7 @@
                         <div class="row analysis-types">
 
                             <div class="col-md-12">
-                                <div class="actions text-right">
+                                <div class="controls text-right">
                                     <asp:LinkButton ID="btnUpdate" runat="server" OnClick="btnUpdate_Click" CssClass="btn btn-primary" ToolTip="Update the chart"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>

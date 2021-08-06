@@ -14,6 +14,8 @@
 
                 <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
+                <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Title" />

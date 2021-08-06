@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Model;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -64,6 +65,21 @@ namespace Rock.Blocks
 
         #endregion
 
+        #region Methods
+
+        /// <inheritdoc/>
+        public abstract object GetBlockInitialization( RockClientType clientType );
+
+
+        /// <summary>
+        /// Gets the control markup.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetControlMarkup()
+        {
+            return string.Empty;
+        }
+
         /// <summary>
         /// Gets the attribute value.
         /// </summary>
@@ -75,6 +91,36 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public object GetAttributeValueAsFieldType( string key )
+        {
+            var stringValue = GetAttributeValue( key );
+            var attribute = BlockCache.Attributes.GetValueOrNull( key );
+            var field = attribute?.FieldType?.Field;
+
+            if ( field == null )
+            {
+                return stringValue;
+            }
+
+            return field.ValueAsFieldType( stringValue, attribute.QualifierValues );
+        }
+
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T GetAttributeValueAsFieldType<T>( string key ) where T : class
+        {
+            var asObject = GetAttributeValueAsFieldType( key );
+            return asObject as T;
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <returns></returns>
@@ -82,6 +128,8 @@ namespace Rock.Blocks
         {
             return RequestContext.CurrentPerson;
         }
+
+        #endregion
 
         #region Action Response Methods
 

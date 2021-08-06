@@ -9,6 +9,7 @@ using Rock.Web.UI.Controls;
 
 namespace Rock.Field
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class FieldType : IFieldType
     {
         public virtual ComparisonType FilterComparisonType => ComparisonHelper.BinaryFilterComparisonTypes;
@@ -36,6 +37,9 @@ namespace Rock.Field
 
         public string FormatFilterValues( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues )
             => throw new NotImplementedException();
+
+        public string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+            => value;
 
         public string FormatValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
             => value;
@@ -134,6 +138,9 @@ namespace Rock.Field
 
         public object SortValue( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
             => FormatValue( parentControl, value, configurationValues, true );
+
+        public object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
+            => value;
 
         public object ValueAsFieldType( object parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
             => value;
@@ -284,4 +291,5 @@ namespace Rock.Field.Types
         /// </summary>
         Unavailable = 3
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

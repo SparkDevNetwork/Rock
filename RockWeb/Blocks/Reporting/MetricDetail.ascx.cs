@@ -71,6 +71,7 @@ namespace RockWeb.Blocks.Reporting
         "Combine Chart Series",
         Key = AttributeKey.CombineChartSeries,
         Order = 3 )]
+    #endregion Block Attributes
 
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
@@ -206,9 +207,20 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                     pnlDetails.Visible = false;
                 }
             }
-        }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                var metricService = new MetricService( new RockContext() );
+                var metric = metricService.Get( hfMetricId.Value.AsInteger() );
 
-        #endregion
+                if ( metric == null )
+                {
+                    return;
+                }
+
+                CreateChart( metric );
+            }
+        }
 
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
@@ -249,6 +261,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         }
 
         #endregion Base Control Methods
+
         #region Events
 
         // handlers called by the controls on your block
@@ -1187,14 +1200,7 @@ The Lava can include Lava merge fields:";
             }
 
             var chartFactory = GetChartJsFactory( metric );
-            pnlActivityChart.Visible = chartFactory.HasData && GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
-            nbActivityChartMessage.Visible = !chartFactory.HasData;
-
-            if ( !chartFactory.HasData )
-            {
-                nbActivityChartMessage.Text = "There are no completed Steps matching the current filter.";
-                return;
-            }
+            pnlActivityChart.Visible = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             // Add client script to construct the chart.
             var chartDataJson = chartFactory.GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs

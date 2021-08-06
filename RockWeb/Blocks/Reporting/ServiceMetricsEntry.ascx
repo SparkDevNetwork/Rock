@@ -1,7 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ServiceMetricsEntry.ascx.cs" Inherits="RockWeb.Blocks.Reporting.ServiceMetricsEntry" %>
 
-
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -12,6 +10,13 @@
             </div>
 
             <div class="panel-body">
+
+                <asp:Panel ID="pnlConfigurationError" runat="server" Visible="false">
+                    <Rock:NotificationBox ID="nbNoCampuses" runat="server" NotificationBoxType="Warning"
+                        Heading="No Campuses Available"
+                        Text="There are no campuses available based on the campus filter settings."
+                        Visible="false" />
+                </asp:Panel>
 
                 <asp:Panel ID="pnlSelection" runat="server">
 
@@ -28,13 +33,13 @@
 
                 <asp:Panel ID="pnlMetrics" runat="server" Visible="false">
 
-                    <div class="btn-group btn-group-justified margin-b-lg panel-settings-group">
-                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
-                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                    <div class="panel-settings-group margin-b-lg">
+                        <Rock:ButtonDropDownList ID="bddlCampus" runat="server" Label="Campus" FormGroupCssClass="m-0" OnSelectionChanged="bddl_SelectionChanged" />
+                        <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" Label="Week of" FormGroupCssClass="m-0" OnSelectionChanged="bddl_SelectionChanged" />
                         <asp:Panel ID="pnlNoServices" CssClass="btn" runat="server">
                             No Services Available
                         </asp:Panel>
-                        <Rock:ButtonDropDownList ID="bddlService" runat="server" OnSelectionChanged="bddl_SelectionChanged" />
+                        <Rock:ButtonDropDownList ID="bddlService" runat="server" Label="Service" FormGroupCssClass="m-0" OnSelectionChanged="bddl_SelectionChanged" />
                     </div>
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />

@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public List<AttributeCache> AttributeList
         {
-            get 
+            get
             {
                 if ( _attributeList == null )
                 {
@@ -60,7 +60,7 @@ namespace Rock.Web.UI.Controls
                 }
                 return _attributeList;
             }
-            set 
+            set
             {
                 _attributeList = value;
                 ViewState["AttributeList"] = _attributeList;
@@ -104,7 +104,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-groupmembers table-groupmemberattributes" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );

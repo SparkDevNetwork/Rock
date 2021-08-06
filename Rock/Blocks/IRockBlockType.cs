@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using Rock.Net;
 using Rock.Web.Cache;
 
@@ -55,5 +56,12 @@ namespace Rock.Blocks
         /// The request context.
         /// </value>
         RockRequestContext RequestContext { get; set; }
+
+        /// <summary>
+        /// Gets the object that will be used to initialize the block by the client.
+        /// </summary>
+        /// <param name="clientType">The type of client that is requesting the configuration data.</param>
+        /// <returns>An object that will be JSON encoded and sent to the client.</returns>
+        object GetBlockInitialization( RockClientType clientType );
     }
 }

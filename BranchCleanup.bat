@@ -4,6 +4,12 @@ RMDIR "DotLiquid\Obj" /S /Q
 RMDIR "Rock\Bin" /S /Q
 RMDIR "Rock\Obj" /S /Q
 
+RMDIR "org_rocksolidchurch.PageDebug\Bin" /S /Q
+RMDIR "org_rocksolidchurch.PageDebug\Obj" /S /Q
+
+RMDIR "Rock.Blocks\Bin" /S /Q
+RMDIR "Rock.Blocks\Obj" /S /Q
+
 RMDIR "Rock.Checkr\Bin" /S /Q
 RMDIR "Rock.Checkr\Obj" /S /Q
 
@@ -24,6 +30,12 @@ RMDIR "Rock.DownhillCss\Obj" /S /Q
 
 RMDIR "Rock.Lava\Bin" /S /Q
 RMDIR "Rock.Lava\Obj" /S /Q
+
+RMDIR "Rock.Lava.DotLiquid\Bin" /S /Q
+RMDIR "Rock.Lava.DotLiquid\Obj" /S /Q
+
+RMDIR "Rock.Lava.Fluid\Bin" /S /Q
+RMDIR "Rock.Lava.Fluid\Obj" /S /Q
 
 RMDIR "Rock.Lava.Shared\Bin" /S /Q
 RMDIR "Rock.Lava.Shared\Obj" /S /Q
@@ -94,14 +106,31 @@ RMDIR "Rock.Tests.UnitTests\Obj" /S /Q
 RMDIR "Rock.Tests\Bin" /S /Q
 RMDIR "Rock.Tests\Obj" /S /Q
 
+RMDIR "Rock.Update\Bin" /S /Q
+RMDIR "Rock.Update\Obj" /S /Q
+
 RMDIR "Rock.Version\Bin" /S /Q
 RMDIR "Rock.Version\Obj" /S /Q
+
+RMDIR "Rock.ViewModel\Bin" /S /Q
+RMDIR "Rock.ViewModel\Obj" /S /Q
 
 RMDIR "Rock.WebStartup\Bin" /S /Q
 RMDIR "Rock.WebStartup\Obj" /S /Q
 
 RMDIR "SignNowSDK\Bin" /S /Q
 RMDIR "SignNowSDK\Obj" /S /Q
+
+RMDIR "Applications\Wpf\CheckScannerUtility\Bin" /S /Q
+RMDIR "Applications\Wpf\CheckScannerUtility\Obj" /S /Q
+
+RMDIR "Applications\Wpf\StatementGenerator\Bin" /S /Q
+RMDIR "Applications\Wpf\StatementGenerator\Obj" /S /Q
+
+RMDIR "Applications\Wpf\Rock.Wpf\Bin" /S /Q
+RMDIR "Applications\Wpf\Rock.Wpf\Obj" /S /Q
+
+
 
 REN RockWeb\Bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll Microsoft.CodeDom.Providers.DotNetCompilerPlatform.bak
 REN RockWeb\Bin\Rock.Common.Mobile.dll Rock.Common.Mobile.bak

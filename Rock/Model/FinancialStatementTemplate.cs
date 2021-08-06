@@ -178,16 +178,27 @@ namespace Rock.Model
         {
             if ( LogoBinaryFileId.HasValue )
             {
-                var originalLogoBinaryFileId = entry.OriginalValues["LogoBinaryFileId"].ToStringSafe().AsIntegerOrNull();
-                var isLogoBinaryFileIdModified = entry.State == EntityState.Modified &&
-                                        ( ( originalLogoBinaryFileId.HasValue && originalLogoBinaryFileId.Value != LogoBinaryFileId.Value ) || !originalLogoBinaryFileId.HasValue );
-                if ( entry.State == EntityState.Added || isLogoBinaryFileIdModified )
+                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                var binaryFile = binaryFileService.Get( LogoBinaryFileId.Value );
+                if ( binaryFile != null )
                 {
-                    BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                    var binaryFile = binaryFileService.Get( LogoBinaryFileId.Value );
-                    if ( binaryFile != null && binaryFile.IsTemporary )
+
+                    switch ( entry.State )
                     {
-                        binaryFile.IsTemporary = false;
+                        case EntityState.Added:
+                        case EntityState.Modified:
+                            {
+
+                                binaryFile.IsTemporary = false;
+
+                                break;
+                            }
+
+                        case EntityState.Deleted:
+                            {
+                                binaryFile.IsTemporary = true;
+                                break;
+                            }
                     }
                 }
             }

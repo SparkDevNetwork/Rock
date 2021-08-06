@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,6 +57,48 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// EventCalendar View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( EventCalendar ) )]
+    public partial class EventCalendarViewModelHelper : ViewModelHelper<EventCalendar, Rock.ViewModel.EventCalendarViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.EventCalendarViewModel CreateViewModel( EventCalendar model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.EventCalendarViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                Description = model.Description,
+                IconCssClass = model.IconCssClass,
+                IsActive = model.IsActive,
+                IsIndexEnabled = model.IsIndexEnabled,
+                Name = model.Name,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -116,6 +161,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsIndexEnabled = source.IsIndexEnabled;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
@@ -125,5 +171,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.EventCalendarViewModel ToViewModel( this EventCalendar model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new EventCalendarViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

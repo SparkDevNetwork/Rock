@@ -43,7 +43,7 @@
                 <h1 class="panel-title"><i class="fa fa-tachometer"></i>Cache Manager</h1>
                 <span id="spRedisStatus" runat="server"></span>
 
-                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right margin-b-md" OnClick="btnClearCache_Click" CausesValidation="false">
+                <asp:LinkButton ID="btnClearCache" runat="server" CssClass="btn btn-primary btn-xs pull-right" OnClick="btnClearCache_Click" CausesValidation="false">
                     <i class="fa fa-repeat"></i> Clear Cache
                 </asp:LinkButton>
             </div>
@@ -97,15 +97,8 @@
                                     <div class="row"><div class="col-md-12">Database Number<br /><asp:Label ID="lblDatabaseNumber" runat="server"></asp:Label></div></div>
                                 </div>
 
-                                <br />
-                                <br />
-
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="actions">
-                                            <asp:LinkButton ID="btnEditRedis" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit Settings" CssClass="btn btn-primary" OnClick="btnEditRedis_Click" CausesValidation="false" />
-                                        </div>
-                                    </div>
+                                <div class="actions">
+                                    <asp:LinkButton ID="btnEditRedis" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit Settings" CssClass="btn btn-primary" OnClick="btnEditRedis_Click" CausesValidation="false" />
                                 </div>
 
                             </div>

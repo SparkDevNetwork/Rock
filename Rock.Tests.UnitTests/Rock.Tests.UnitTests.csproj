@@ -91,8 +91,11 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rock\Lava\LavaTestHelper.cs" />
+    <Compile Include="Rock\Lava\LiquidOperatorTests.cs" />
     <Compile Include="Rock\Lava\LiquidKeywordTests.cs" />
     <Compile Include="Rock\Lava\LavaHelperTests.cs" />
+    <Compile Include="Rock\Lava\ContainerVariableTests.cs" />
     <Compile Include="Rock\Lava\RockFiltersTests.cs" />
     <Compile Include="Rock\Lava\Filters\CollectionFilterTests.cs" />
     <Compile Include="Rock\Lava\Filters\ColorFilterTests.cs" />
@@ -106,9 +109,13 @@
     <Compile Include="Rock\Lava\DynamicObjectTests.cs" />
     <Compile Include="Rock\Lava\LavaUnitTestHelper.cs" />
     <Compile Include="Rock\Lava\LavaTypeAttributesTests.cs" />
+    <Compile Include="Rock\Lava\RenderTests.cs" />
+    <Compile Include="Rock\Security\EncryptionTests.cs" />
     <Compile Include="Rock\UnitTestInitializer.cs" />
     <Compile Include="Rock\Utilities\DateTimeAssert.cs" />
+    <Compile Include="Rock\Utilities\ScheduleTestHelper.cs" />    
     <Compile Include="Rock\Lava\Filters\TestPerson.cs" />
+    <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
     <Compile Include="Rock\Model\BlockTests.cs" />
     <Compile Include="Rock\Model\BlockTypeTests.cs" />
     <Compile Include="Rock\Model\CommunicationTemplateTests.cs" />
@@ -150,6 +157,18 @@
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
+      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
+      <Name>Rock.Lava.DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
+      <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>
+      <Name>Rock.Lava.Fluid</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
       <Name>Rock.Lava.Shared</Name>
@@ -173,6 +192,7 @@
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>
       <Name>Rock</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -2456,7 +2456,7 @@ namespace RockWeb.Blocks.Event
                 var aProfileLink = new HtmlAnchor();
                 aProfileLink.HRef = ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) );
                 divLabels.Controls.Add( aProfileLink );
-                aProfileLink.AddCssClass( "btn btn-default btn-xs margin-l-sm" );
+                aProfileLink.AddCssClass( "btn btn-default btn-xs btn-square margin-l-sm" );
                 var iProfileLink = new HtmlGenericControl( "i" );
                 iProfileLink.AddCssClass( "fa fa-user" );
                 aProfileLink.Controls.Add( iProfileLink );

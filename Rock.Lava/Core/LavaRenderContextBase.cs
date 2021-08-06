@@ -13,14 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 
-using Rock.Common;
-
 namespace Rock.Lava
 {
+
     /// <summary>
     /// Stores the configuration and data used by the Lava Engine to resolve a Lava template.
     /// </summary>
@@ -217,5 +215,35 @@ namespace Rock.Lava
         /// Exits the current scope that has been created by <see cref="EnterChildScope" />.
         /// </summary>
         public abstract void ExitChildScope();
+
+        /// <summary>
+        /// Get an instance of a Lava service component of the specified type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        public TService GetService<TService>()
+            where TService : class, ILavaService
+        {
+            return GetService( typeof(TService), null ) as TService;
+        }
+
+        /// <summary>
+        /// Get an instance of a Lava service component of the specified type.
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
+        public ILavaService GetService( Type serviceType )
+        {
+            return GetService( serviceType, null );
+        }
+
+        private ILavaService GetService( Type serviceType, object configuration )
+        {
+            var key = LavaUtilityHelper.GetContextKeyFromType( serviceType );
+
+            var service = this.GetInternalField( key );
+
+            return service as ILavaService;
+        }
     }
 }

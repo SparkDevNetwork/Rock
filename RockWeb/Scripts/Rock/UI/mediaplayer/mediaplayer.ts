@@ -31,11 +31,11 @@
 
     2. CDN Resources
     ------------------
-    5/12/2021 - DSH
+    6/8/2021 - DSH
     The following CDN resources are used by this script and must be included on
     the page in order for this script to work correctly:
-    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.js
-    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.css
+    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.js
+    https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.8/plyr.min.css
     https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js
 
 
@@ -216,6 +216,13 @@ namespace Rock.UI {
             return this.percentWatchedInternal;
         }
 
+        /**
+         * Get the duration of the video.
+         */
+        public get duration(): number {
+            return this.player.duration;
+        }
+
         // #endregion
 
         // #region Private Properties
@@ -224,7 +231,7 @@ namespace Rock.UI {
         private options: Options;
 
         /** The identifier of the timer that is updating the watch map. */
-        private timerId = -1;
+        private timerId: NodeJS.Timeout | null = null;
 
         /** The core player. */
         private player!: Plyr;
@@ -300,6 +307,15 @@ namespace Rock.UI {
         // #endregion
 
         // #region Methods
+
+        /**
+         * Seek to the specified position in the video.
+         * 
+         * @param positionInSeconds The position in seconds, this can be a floating point number.
+         */
+        public seek(positionInSeconds: number) {
+            this.player.currentTime = positionInSeconds;
+        }
 
         /**
          * Configure the options that will be passed to the initializePlayer
@@ -574,6 +590,10 @@ namespace Rock.UI {
          * the DOM player element has the media metadata downloaded.
          */
         private prepareForPlay() {
+            if (this.watchBitsInitialized !== false) {
+                return;
+            }
+
             this.writeDebugMessage("Preparing the player.");
 
             this.initializeMap();
@@ -647,6 +667,12 @@ namespace Rock.UI {
             this.writeDebugMessage(`Map provided in .map property: ${existingMapString}`);
 
             this.watchBits = MediaPlayer.rleToArray(existingMapString);
+
+            // Get count of watched bits
+            const watchedItemCount = this.watchBits.filter(item => item > 0).length;
+
+            // Calculate percent watched
+            this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
         }
 
         /**
@@ -662,7 +688,6 @@ namespace Rock.UI {
             }
         }
 
-        // Method: Creates a blank map of the size of the current media
         /**
          * Creates a blank map of the length of the current media
          */
@@ -675,6 +700,7 @@ namespace Rock.UI {
             }
 
             this.watchBits = new Array(mapSize).fill(0);
+            this.percentWatchedInternal = 0;
 
             this.writeDebugMessage(`Blank map created of size: ${this.watchBits.length}`);
         }
@@ -741,9 +767,7 @@ namespace Rock.UI {
                 // Check that player is prepped. In an HTML 5 media this will
                 // have already happened. But embedded players do not support
                 // the events we need.
-                if (this.watchBitsInitialized === false) {
-                    this.prepareForPlay();
-                }
+                this.prepareForPlay();
 
                 // Start play timer
                 if (this.options.trackProgress) {
@@ -771,7 +795,10 @@ namespace Rock.UI {
             // Define pause event
             this.player.on("pause", () => {
                 // Clear timer
-                clearInterval(this.timerId);
+                if ( this.timerId )
+                {
+                    clearInterval( this.timerId );
+                }
 
                 // Check if we need to write a watch bit. Not checking here can
                 // lead to gaps in the map depending on the timing of the

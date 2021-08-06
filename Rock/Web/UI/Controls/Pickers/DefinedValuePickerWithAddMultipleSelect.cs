@@ -88,21 +88,23 @@ namespace Rock.Web.UI.Controls
             if ( DefinedTypeId.HasValue )
             {
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
-                var definedValuesList = definedTypeCache?.DefinedValues
-                    .Where( a => a.IsActive || IncludeInactive || SelectedDefinedValuesId.Contains( a.Id ) )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
+                var definedValuesList = definedTypeCache?.DefinedValues.Where( a => a.IsActive || IncludeInactive || SelectedDefinedValuesId.Contains( a.Id ) );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( SelectableDefinedValuesId != null && SelectableDefinedValuesId.Any() )
+                {
+                    definedValuesList = definedValuesList.Where( a => SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+                if ( filteredList != null && filteredList.Any() )
                 {
                     if ( EnhanceForLongLists )
                     {
-                        LoadListBox( definedValuesList );
+                        LoadListBox( filteredList );
                     }
                     else
                     {
-                        LoadCheckBoxList( definedValuesList );
+                        LoadCheckBoxList( filteredList );
                     }
                 }
             }

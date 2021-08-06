@@ -354,7 +354,7 @@ namespace Rock.Utility.SparkDataApi
 
             try
             {
-                DateTime dt = DateTime.Now;
+                var dt = RockDateTime.Now;
                 int start = 1;
                 int end = 1000;
                 int step = 1000;

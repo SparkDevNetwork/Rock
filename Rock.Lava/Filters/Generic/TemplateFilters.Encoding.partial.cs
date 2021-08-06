@@ -16,7 +16,6 @@
 //
 
 using System;
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -64,7 +63,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string Md5( object input )
         {
-            return ExtensionMethods.Md5Hash( input.ToStringSafe() );
+            return input.ToStringSafe().Md5Hash();
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string HmacSha1( object input, string key )
         {
-            return ExtensionMethods.HmacSha1Hash( input.ToStringSafe(), key );
+            return input.ToStringSafe().HmacSha1Hash( key );
         }
 
         /// <summary>
@@ -88,7 +87,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string HmacSha256( object input, string key )
         {
-            return ExtensionMethods.HmacSha256Hash( input.ToStringSafe(), key );
+            return input.ToStringSafe().HmacSha256Hash( key );
         }
 
         /// <summary>
@@ -100,7 +99,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string Sha1( object input )
         {
-            return ExtensionMethods.Sha1Hash( input.ToStringSafe() );
+            return input.ToStringSafe().Sha1Hash();
         }
 
         /// <summary>
@@ -112,7 +111,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string Sha256( object input )
         {
-            return ExtensionMethods.Sha256Hash( input.ToStringSafe() );
+            return input.ToStringSafe().Sha256Hash();
         }
     }
 }

@@ -15,6 +15,7 @@
     <Compile Remove="Field\Types\**" />
     <Compile Remove="Jobs\**" />
     <Compile Remove="Lava\RockLiquid\**" />
+    <Compile Remove="Model\*\*\*.WebForms.cs" />
     <Compile Remove="obj\**" />
     <Compile Remove="PersonProfile\**" />
     <Compile Remove="Plugin\**" />
@@ -23,6 +24,7 @@
     <Compile Remove="Services\**" />
     <Compile Remove="SqlServerTypes\**" />
     <Compile Remove="Transactions\**" />
+    <Compile Remove="Utility\ExtensionMethods\Obsolete\**" />
     <Compile Remove="Web\**" />
     <EmbeddedResource Remove="Badge\**" />
     <EmbeddedResource Remove="bin\**" />
@@ -31,6 +33,7 @@
     <EmbeddedResource Remove="Field\Types\**" />
     <EmbeddedResource Remove="Jobs\**" />
     <EmbeddedResource Remove="Lava\RockLiquid\**" />
+    <EmbeddedResource Remove="Model\*\*\*.WebForms.cs" />
     <EmbeddedResource Remove="obj\**" />
     <EmbeddedResource Remove="PersonProfile\**" />
     <EmbeddedResource Remove="Plugin\**" />
@@ -39,6 +42,7 @@
     <EmbeddedResource Remove="Services\**" />
     <EmbeddedResource Remove="SqlServerTypes\**" />
     <EmbeddedResource Remove="Transactions\**" />
+    <EmbeddedResource Remove="Utility\ExtensionMethods\Obsolete\**" />
     <EmbeddedResource Remove="Web\**" />
     <None Remove="Badge\**" />
     <None Remove="bin\**" />
@@ -47,6 +51,7 @@
     <None Remove="Field\Types\**" />
     <None Remove="Jobs\**" />
     <None Remove="Lava\RockLiquid\**" />
+    <None Remove="Model\*\*\*.WebForms.cs" />
     <None Remove="obj\**" />
     <None Remove="PersonProfile\**" />
     <None Remove="Plugin\**" />
@@ -55,6 +60,7 @@
     <None Remove="Services\**" />
     <None Remove="SqlServerTypes\**" />
     <None Remove="Transactions\**" />
+    <None Remove="Utility\ExtensionMethods\Obsolete\**" />
     <None Remove="Web\**" />
   </ItemGroup>
 
@@ -111,6 +117,7 @@
     <Compile Remove="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Remove="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Remove="Tasks\ProcessRunJobNow.cs" />
+    <Compile Remove="UniversalSearch\IndexComponents\ElasticSearch.cs" />
     <Compile Remove="Utility\DebugHelper.cs" />
     <Compile Remove="Utility\ExcelHelper.cs" />
     <Compile Remove="Utility\ExtensionMethods\ControlExtensions.cs" />
@@ -155,6 +162,9 @@
     <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
+    <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
+    <Compile Include="Transactions\SendPaymentReceipts.cs" />
+    <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
@@ -227,6 +237,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.2" />
     <PackageReference Include="CacheManager.Core" Version="1.2.0" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
@@ -246,7 +257,6 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
-    <PackageReference Include="NEST" Version="2.5.8" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
@@ -265,9 +275,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.NG.csproj" />
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.NG.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.NG.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.NG.csproj" />
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.NG.csproj" />
   </ItemGroup>
 
   <ItemGroup>

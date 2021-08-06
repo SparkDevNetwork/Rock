@@ -28,7 +28,7 @@ namespace Rock.CheckIn
     /// A location option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInLocation : ILavaDataDictionary
+    public class CheckInLocation : ILavaDataDictionary, ILiquidizable
     {
         /// <summary>
         /// Gets or sets the location.
@@ -322,7 +322,6 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
         public object GetValue( object key )
         {
             return this[key];

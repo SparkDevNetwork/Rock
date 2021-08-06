@@ -16,6 +16,7 @@
 //
 
 using Rock.Bus.Queue;
+using Rock.Logging;
 
 namespace Rock.Bus.Message
 {
@@ -108,6 +109,8 @@ namespace Rock.Bus.Message
             };
 
             _ = RockMessageBus.PublishAsync<CacheEventQueue, CacheWasUpdatedMessage>( message );
+
+            RockLogger.Log.Debug( RockLogDomains.Bus, $"Published Cache Update message. Key: {message.Key}, Region: {message.Region}, CacheTypeName: {message.CacheTypeName}." );
         }
     }
 }

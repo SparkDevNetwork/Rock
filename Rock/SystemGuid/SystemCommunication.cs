@@ -42,6 +42,12 @@ namespace Rock.SystemGuid
         public const string FINANCE_PLEDGE_CONFIRMATION = "73E8D035-61BB-495A-A87F-39007B98834C";
 
         /// <summary>
+        /// The financial transaction alert notification summary.
+        /// <see cref="Rock.Model.FinancialTransactionAlertType.AlertSummaryNotificationGroupId"/>
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_ALERT_NOTIFICATION_SUMMARY = "FDF323F5-31FA-4F98-9B4C-A8C26A10840E";
+
+        /// <summary>
         /// Gets the template guid for group attendance reminder
         /// </summary>
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";

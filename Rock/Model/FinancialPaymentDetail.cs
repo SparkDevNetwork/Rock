@@ -32,6 +32,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -122,7 +123,13 @@ namespace Rock.Model
                 // We are only checking null here because empty string is valid.
                 if ( _nameOnCard.IsNull() && _nameOnCardEncrypted.IsNotNullOrWhiteSpace() )
                 {
-                    return Encryption.DecryptString( _nameOnCardEncrypted );
+                    /* MDP 07-20-2021
+
+                    If Decryption Fails, just set NameOnCard to EmptyString (not null).
+                    This will prevent it from endlessly trying to decrypt it.
+
+                    */
+                    return Encryption.DecryptString( _nameOnCardEncrypted ) ?? string.Empty;
                 }
                 return _nameOnCard;
             }
@@ -189,12 +196,14 @@ namespace Rock.Model
         }
 
         private DateTime? _cardExpirationDate = null;
+
         /// <summary>
         /// Gets the card expiration date.
         /// </summary>
         /// <value>
         /// The card expiration date.
         /// </value>
+        [DataMember]
         public DateTime? CardExpirationDate
         {
             get
@@ -279,7 +288,14 @@ namespace Rock.Model
             {
                 if ( _expirationMonth == null && _expirationMonthEncrypted != null )
                 {
-                    return Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull();
+                    /* MDP 07-20-2021
+
+                     If Decryption Fails, just set Month Year to 01/99
+                     This will help prevent endlessly trying to decrypt it 
+
+                    */
+
+                    return Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull() ?? 01;
                 }
 
                 return _expirationMonth;
@@ -308,7 +324,14 @@ namespace Rock.Model
             {
                 if ( _expirationYear == null && _expirationYearEncrypted != null )
                 {
-                    return ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() );
+                    /* MDP 07-20-2021
+
+                     If Decryption Fails, just set Month Year to 01/99 (which would mean a 4 digit year of 1999, depending on Calendar.TwoDigitYearMax)
+                     This will help prevent endlessly trying to decrypt it 
+
+                    */
+
+                    return ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() ) ?? 99;
                 }
 
                 return _expirationYear;
@@ -339,6 +362,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public string ExpirationDate
         {
             get
@@ -360,6 +384,7 @@ namespace Rock.Model
                 return null;
             }
         }
+
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
@@ -459,7 +484,8 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberMasked;
+            // Return the Account Number, or an empty string to avoid potential downstream issues caused by an unexpected null value.
+            return this.AccountNumberMasked.ToStringSafe();
         }
 
         /// <summary>

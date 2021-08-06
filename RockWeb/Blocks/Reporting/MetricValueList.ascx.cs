@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Reporting
 
             }
 
-            BindGrid();
+            NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -395,6 +395,11 @@ namespace RockWeb.Blocks.Reporting
                 List<string> seriesNames = new List<string>();
                 foreach ( var metricValuePartition in metricValuePartitions.Where( a => a.EntityId.HasValue && a.MetricPartition.EntityTypeId.HasValue ) )
                 {
+                    if ( !_entityTypeEntityNameLookup.ContainsKey( metricValuePartition.MetricPartition.EntityTypeId.Value ) )
+                    {
+                        continue;
+                    }
+
                     var entityNameLookup = _entityTypeEntityNameLookup[metricValuePartition.MetricPartition.EntityTypeId.Value];
                     if ( !entityNameLookup.ContainsKey( metricValuePartition.EntityId.Value ) )
                     {
@@ -475,6 +480,11 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var entityTypeEntity in entityTypeEntityList )
             {
+                if ( !_entityTypeEntityNameLookup.ContainsKey( entityTypeEntity.EntityTypeId.Value ) )
+                {
+                    continue;
+                }
+
                 if ( entityTypeEntity.EntityTypeId.HasValue && entityTypeEntity.EntityId.HasValue )
                 {
                     qry = qry.Where( a => a.MetricValuePartitions.Any( x => x.MetricPartition.EntityTypeId == entityTypeEntity.EntityTypeId && x.EntityId == entityTypeEntity.EntityId ) );

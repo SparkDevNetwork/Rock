@@ -166,7 +166,7 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
-            var rockContext = new RockContext();
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
             // Get enabled security commands
             _enabledSecurityCommands = context.GetEnabledCommands().JoinStrings( "," );

@@ -29,6 +29,7 @@ using EntityFramework.Utilities;
 #endif
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -39,6 +40,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceDate" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceDate
     {
         #region Entity Properties

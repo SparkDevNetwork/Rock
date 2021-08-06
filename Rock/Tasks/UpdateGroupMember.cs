@@ -22,8 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data.Entity;
 #endif
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -291,7 +290,7 @@ namespace Rock.Tasks
             /// The entity state.
             /// </value>
             public EntityState State { get; set; }
-            
+
             /// <summary>
             /// Gets or sets the group member unique identifier.
             /// </summary>

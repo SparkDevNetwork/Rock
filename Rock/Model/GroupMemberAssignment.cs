@@ -42,6 +42,7 @@ namespace Rock.Model
 #if !NET5_0_OR_GREATER
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
 #endif
+        [IgnoreCanDelete]
         public int GroupMemberId { get; set; }
 
         /// <summary>

@@ -35,7 +35,7 @@ using UAParser;
 namespace Rock.Lava
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public static class LavaHelper
     {
@@ -47,6 +47,25 @@ namespace Rock.Lava
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the rock context from lava context or returns a new one if one does not exist.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        public static RockContext GetRockContextFromLavaContext( ILavaRenderContext context )
+        {
+            var rockContext = context.GetInternalField( "rock_context", null ) as RockContext;
+
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+
+                context.SetInternalField( "rock_context", rockContext );
+            }
+
+            return rockContext;
+        }
 
         /// <summary>
         /// Gets the common merge fields for Lava operations. By default it'll include CurrentPerson, Context, PageParameter, and Campuses
@@ -105,19 +124,7 @@ namespace Rock.Lava
 #if !NET5_0_OR_GREATER
             if ( options.GetPageContext && rockPage != null )
             {
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var contextEntityType in rockPage.GetContextEntityTypes() )
-                {
-                    var contextEntity = rockPage.GetCurrentContext( contextEntityType );
-                    if ( contextEntity != null && IsLavaDataObject( contextEntity ) )
-                    {
-                        var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
-                        if ( type != null )
-                        {
-                            contextObjects.Add( type.Name, contextEntity );
-                        }
-                    }
-                }
+                var contextObjects = rockPage.GetContextEntities();
 
                 if ( contextObjects.Any() )
                 {
@@ -470,12 +477,12 @@ namespace Rock.Lava
         /// Remove Lava-style comments from a Lava template.
         /// Lava comments provide a shorthand alternative to the Liquid {% comment %}{% endcomment %} block,
         /// and can can be in one of the following forms:
-        /// 
+        ///
         /// /- This Lava block comment style...
         ///    ... can span multiple lines -/
         ///
         /// //- This Lava line comment style can be appended to any single line.
-        /// 
+        ///
         /// </summary>
         /// <param name="lavaTemplate"></param>
         /// <returns></returns>

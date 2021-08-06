@@ -169,6 +169,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             var clientOs = string.Empty;
             var ipAddress = RequestContext.ClientInformation.IpAddress;
             var site = MobileHelper.GetCurrentApplicationSite( false, rockContext );
+            var siteName = site?.Name ?? "Unknown";
             var now = RockDateTime.Now;
 
             //
@@ -185,9 +186,9 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
             recipient.Status = CommunicationRecipientStatus.Opened;
             recipient.OpenedDateTime = now;
-            recipient.OpenedClient = $"{clientOs} {site.Name} ({clientType})";
+            recipient.OpenedClient = $"{clientOs} {siteName} ({clientType})";
 
-            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, now, site.Name, clientOs, clientType, string.Empty, ipAddress, null );
+            interactionService.AddInteraction( interactionComponent.Id, recipient.Id, "Opened", "", recipient.PersonAliasId, now, siteName, clientOs, clientType, string.Empty, ipAddress, null );
 
             rockContext.SaveChanges();
         }
@@ -224,13 +225,15 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return GetNotFoundContent();
                 }
 
+                var person = recipient.PersonAlias?.Person ?? recipient.PersonalDevice?.PersonAlias?.Person;
+
                 //
                 // Configure the standard merge fields.
                 //
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "CurrentPage", PageCache );
                 mergeFields.AddOrReplace( "Communication", recipient.Communication );
-                mergeFields.AddOrReplace( "Person", recipient.PersonAlias?.Person );
+                mergeFields.AddOrReplace( "Person", person );
 
                 //
                 // Add in all the additional merge fields from grids.
@@ -242,6 +245,10 @@ namespace Rock.Blocks.Types.Mobile.Communication
                         mergeFields.Add( mergeField.Key, mergeField.Value );
                     }
                 }
+
+                var communicationContent = recipient.Communication.PushOpenMessage.ResolveMergeFields( mergeFields );
+
+                mergeFields.AddOrReplace( "Content", communicationContent );
 
                 var content = Template.ResolveMergeFields( mergeFields, null, EnabledLavaCommands );
 

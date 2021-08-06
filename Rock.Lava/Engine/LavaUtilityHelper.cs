@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 
 namespace Rock.Lava
 {
@@ -25,10 +26,67 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="shortcodeName"></param>
         /// <returns></returns>
+        public static string GetContextKeyFromType( Type objectType )
+        {
+            if ( objectType == null )
+            {
+                return null;
+            }
+
+            return GetContextKeyFromTypeName( objectType.FullName );
+        }
+
+        /// <summary>
+        /// Get a valid Liquid document element name from a Rock shortcode.
+        /// Applies decorations to the shortcode name to prevent naming collisions with other custom tags and blocks.
+        /// </summary>
+        /// <param name="shortcodeName"></param>
+        /// <returns></returns>
+        public static string GetContextKeyFromTypeName( string typeName )
+        {
+            if ( string.IsNullOrWhiteSpace( typeName ) )
+            {
+                return null;
+            }
+
+            var key = $"type:{typeName.Trim()}";
+
+            return key;
+        }
+
+        /// <summary>
+        /// Get a valid Liquid document element name from a Rock shortcode.
+        /// Applies decorations to the shortcode name to prevent naming collisions with other custom tags and blocks.
+        /// </summary>
+        /// <param name="shortcodeName"></param>
+        /// <returns></returns>
+        public static string GetTypeNameFromContextKey( string key )
+        {
+            if ( key == null )
+            {
+                return null;
+            }
+
+            var typeName = key.Trim();
+
+            if ( typeName.StartsWith("type:") )
+            {
+                typeName = typeName.Substring( "type:".Length );
+            }
+
+            return typeName;
+        }
+
+        /// <summary>
+        /// Get a valid Liquid document element name from a Rock shortcode.
+        /// Applies decorations to the shortcode name to prevent naming collisions with other custom tags and blocks.
+        /// </summary>
+        /// <param name="shortcodeName"></param>
+        /// <returns></returns>
         public static string GetLiquidElementNameFromShortcodeName( string shortcodeName )
         {
-            // Note that Liquid names are case-sensitive, so we need to preserve the casing of the element name.
-            var internalName = shortcodeName.Trim() + LavaService.ShortcodeInternalNameSuffix;
+            // Note that Liquid names are case-s ensitive, so we need to preserve the casing of the element name.
+            var internalName = shortcodeName.Trim() + Constants.ShortcodeInternalNameSuffix;
 
             return internalName;
         }
@@ -42,9 +100,9 @@ namespace Rock.Lava
         public static string GetShortcodeNameFromLiquidElementName( string shortcodeName )
         {
             if ( shortcodeName != null
-                 && shortcodeName.EndsWith( LavaService.ShortcodeInternalNameSuffix ) )
+                 && shortcodeName.EndsWith( Constants.ShortcodeInternalNameSuffix ) )
             {
-                return shortcodeName.Substring( 0, shortcodeName.Length - LavaService.ShortcodeInternalNameSuffix.Length );
+                return shortcodeName.Substring( 0, shortcodeName.Length - Constants.ShortcodeInternalNameSuffix.Length );
             }
 
             return shortcodeName;

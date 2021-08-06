@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Data.Entity;
+using Rock.Data.Interception;
 
 namespace Rock.Data
 {
@@ -31,6 +32,9 @@ namespace Rock.Data
         {
             // default Initializer is CreateDatabaseIfNotExists, so set it to NULL so that nothing happens if there isn't a database yet
             this.SetDatabaseInitializer<RockContext>( null );
+
+            // Enable Rock's command interceptor
+            this.AddInterceptor( new RockEfInterceptor() );
         }
     }
 }

@@ -110,11 +110,11 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            DateTime sendreminderDateTime = DateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
+            var sendreminderDateTime = RockDateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
             int cutOffDays = dataMap.GetInt( AttributeKeys.CutoffDays );
             var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();
 
-            DateTime currentDate = DateTime.Now.Date;
+            var currentDate = RockDateTime.Now.Date;
             var result = new SendMessageResult();
 
             using ( var rockContext = new RockContext() )

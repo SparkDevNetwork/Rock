@@ -13,34 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 
-namespace Rock.Common
+/*
+ * 2020-11-16 ETD
+ * IMPORTANT!
+ * This class is used by the CheckScanner which does not have the Rock dll. This file cannot contain any dependencies on that assembly or NuGet packages.
+ */
+
+namespace Rock
 {
     /// <summary>
-    /// Dictionary Extensions that don't reference Rock
+    /// Extension methods for the Dictionary types.
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class DictionaryExtensions
     {
+        /*** NOTE: When using these extensions against a <see cref="System.Collections.Concurrent.ConcurrentDictionary"/>, it will end up using the ThreadSafe versions of these methods. See https://stackoverflow.com/a/10112281/1755417  ***/
+
         #region Dictionary<TKey, TValue> extension methods
 
         /// <summary>
         /// Adds or replaces an item in a Dictionary.
-        /// </summary>
-        /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        public static void AddOrReplace<TKey, TValue>( this Dictionary<TKey, TValue> dictionary, TKey key, TValue value )
-        {
-            AddOrReplace( ( IDictionary<TKey, TValue> ) dictionary, key, value );
-        }
-
-        /// <summary>
-        /// Adds the or replace.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -76,7 +71,7 @@ namespace Rock.Common
         }
 
         /// <summary>
-        /// Adds if not empty.
+        /// Adds a string value to a Dictionary if it is not blank.
         /// </summary>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
@@ -101,7 +96,7 @@ namespace Rock.Common
         }
 
         /// <summary>
-        /// Gets value for the specified key, or null if the dictionary doesn't contain the key
+        /// Gets value for the specified key, or null if the dictionary doesn't contain the key.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -233,33 +228,6 @@ namespace Rock.Common
             else
             {
                 return defaultValue;
-            }
-        }
-
-        /// <summary>
-        /// Adds or replaces the items from the source Dictionary in the target Dictionary.
-        /// </summary>
-        /// <typeparam name="TKey">The type of the key.</typeparam>
-        /// <typeparam name="TValue">The type of the value.</typeparam>
-        /// <param name="dictionary">The target dictionary.</param>
-        /// <param name="fromDictionary">The source dictionary.</param>
-        public static void AddOrReplace<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> fromDictionary )
-        {
-            if ( fromDictionary == null )
-            {
-                return;
-            }
-
-            foreach ( var key in fromDictionary.Keys )
-            {
-                if ( dictionary.ContainsKey( key ) )
-                {
-                    dictionary[key] = fromDictionary[key];
-                }
-                else
-                {
-                    dictionary.Add( key, fromDictionary[key] );
-                }
             }
         }
 

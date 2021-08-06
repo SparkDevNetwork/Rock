@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Logging;
 using Rock.SystemKey;
@@ -56,6 +57,10 @@ namespace Rock.Tests.Integration.Logging
 
             Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, "garbage" );
 
+            // System Settings are now updated via the bus and so we have to allow time for that to happen.
+            Thread.Sleep( 1000 );
+            RockLogger.Log.ReloadConfiguration();
+
             var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
 
             Assert.That.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
@@ -70,12 +75,12 @@ namespace Rock.Tests.Integration.Logging
         {
             void AssertListIsCorrect( List<string> expectedDomains )
             {
-                RockLoggingHelpers.SaveRockLogConfiguration( expectedDomains );
+                RockLoggingHelpers.SaveRockLogConfiguration( expectedDomains, maxFiles: 25, maxFileSize: 1 );
 
-                var rockLogConfig = ReflectionHelper.InstantiateInternalObject<IRockLogConfiguration>( "Rock.Logging.RockLogConfiguration" );
-
-                Assert.That.IsNotNull( rockLogConfig, "Rock Log Configuration was not created." );
-                Assert.That.AreEqual( expectedDomains, rockLogConfig.DomainsToLog );
+                // System Settings are now updated via the bus and so we have to allow time for that to happen.
+                Thread.Sleep( 1000 );
+                RockLogger.Log.ReloadConfiguration();
+                Assert.That.AreEqual( expectedDomains, RockLogger.Log.LogConfiguration.DomainsToLog );
             }
 
             AssertListIsCorrect( new List<string> { } );

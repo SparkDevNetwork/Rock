@@ -43,6 +43,12 @@ legend {
 
 a.aspNetDisabled {
   opacity: .5;
+
+  &.picker-label {
+    color: @text-muted;
+    background: @input-bg-disabled;
+    opacity: 1;
+  }
 }
 
 .form-group.rock-literal,
@@ -63,11 +69,6 @@ a.aspNetDisabled {
   -webkit-transform: translateY(-@form-group-margin-bottom);
   -ms-transform: translateY(-@form-group-margin-bottom);
   transform: translateY(-@form-group-margin-bottom);
-}
-
-.form-group .checkbox:last-child {
-  // used to adjust checkboxes to look better with labels above
-  margin-bottom: 30px;
 }
 
 .form-group > .form-group {
@@ -352,6 +353,32 @@ dl:not(.dl-horizontal) {
   }
 }
 
+// Add btn using PrependText or AppendText
+.input-group-addon {
+  > .btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: @input-height-base;
+    margin: -(@padding-base-vertical + 1) -(@padding-base-horizontal + 1);
+    border-radius: @input-border-radius;
+
+    &:focus {
+      z-index: 3;
+    }
+  }
+
+  &:first-child > .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  &:last-child > .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
 .date-parts-picker {
   display: flex;
   flex-wrap: wrap;
@@ -375,7 +402,7 @@ dl:not(.dl-horizontal) {
 .month-day-picker .separator {
   float: left;
   margin: 4px 8px 0 -2px;
-  font-size: 20px;
+  font-size: @font-size-lg;
   color: lighten(@text-color, 35%);
 }
 

@@ -129,6 +129,12 @@ namespace Rock.Lava.Blocks
                     // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
                     var dbContext = Reflection.GetDbContextForEntityType( entityType );
 
+                    // Check if there is a RockContext in the Lava context, if so (and the entity is using a RockContext) we should use that one
+                    if ( dbContext is RockContext )
+                    {
+                        dbContext = LavaHelper.GetRockContextFromLavaContext( context );
+                    }
+
 #if !NET5_0_OR_GREATER
                     // Disable change-tracking for this data context to improve performance - objects supplied to a Lava context are read-only.
                     dbContext.Configuration.AutoDetectChangesEnabled = false;

@@ -263,7 +263,7 @@ namespace Rock.Model
             var batch = batchService.GetByNameAndDate( batchName, refundTransaction.TransactionDateTime.Value, timespan );
 
             // If this is a new Batch, SaveChanges so that we can get the Batch.Id
-            if ( batch.Id == 0)
+            if ( batch.Id == 0 )
             {
                 rockContext.SaveChanges();
             }
@@ -360,9 +360,18 @@ namespace Rock.Model
                 settings.TransactionTypeGuids ??
                 new List<Guid> { SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
             var transactionTypeIds = transactionTypeGuids.Select( DefinedValueCache.Get ).Select( dv => dv.Id ).ToList();
-            query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
 
-            // Filter accounts, defaults to tax deductable only
+            if ( transactionTypeIds.Count() == 1 )
+            {
+                var transactionTypeId = transactionTypeIds[0];
+                query = query.Where( t => t.TransactionTypeValueId == transactionTypeId );
+            }
+            else
+            {
+                query = query.Where( t => transactionTypeIds.Contains( t.TransactionTypeValueId ) );
+            }
+
+            // Filter accounts, defaults to tax deductible only
             var accountGuids = settings.FinancialAccountGuids ?? new List<Guid>();
 
             if ( !accountGuids.Any() )
@@ -384,9 +393,100 @@ namespace Rock.Model
             query = query.Where( t => !t.Refunds.Any() );
 
             // Remove transactions with $0 or negative amounts
-            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0 );
+            query = query.Where( t => t.TransactionDetails.Sum( d => d.Amount ) > 0M );
 
             return query;
         }
+
+        /// <summary>
+        /// Gets the giving analytics monthly account giving history. This is used for the Giving Overview block's monthly
+        /// bar chart and also yearly summary.
+        /// </summary>
+        /// <returns></returns>
+        public List<MonthlyAccountGivingHistory> GetGivingAnalyticsMonthlyAccountGivingHistory( string givingId )
+        {
+            var personAliasIdQry = new PersonAliasService( this.Context as RockContext )
+                .Queryable()
+                .Where( a => a.Person.GivingId == givingId )
+                .Select( a => a.Id );
+
+            var views = GetGivingAnalyticsSourceTransactionQuery()
+                .AsNoTracking()
+                .Where( t =>
+                    t.TransactionDateTime.HasValue &&
+                    t.AuthorizedPersonAliasId.HasValue &&
+                    personAliasIdQry.Contains( t.AuthorizedPersonAliasId.Value ) )
+                .SelectMany( t => t.TransactionDetails.Select( td => new
+                {
+                    TransactionDateTime = t.TransactionDateTime.Value,
+                    td.AccountId,
+                    td.Amount
+                } ) )
+                .ToList();
+
+            var objects = views
+                .GroupBy( a => new { a.TransactionDateTime.Year, a.TransactionDateTime.Month, a.AccountId } )
+                .Select( t => new MonthlyAccountGivingHistory
+                {
+                    Year = t.Key.Year,
+                    Month = t.Key.Month,
+                    AccountId = t.Key.AccountId,
+                    Amount = t.Sum( d => d.Amount )
+                } )
+                .OrderByDescending( a => a.Year )
+                .ThenByDescending( a => a.Month )
+                .ToList();
+
+            return objects;
+        }
+
+        /// <summary>
+        /// Gets the giving analytics monthly account giving history that was stored as JSON in an attribute. This is used for the
+        /// Giving Overview block's monthly bar chart and also yearly summary.
+        /// </summary>
+        /// <returns></returns>
+        public static List<MonthlyAccountGivingHistory> GetGivingAnalyticsMonthlyAccountGivingHistoryFromJson( string json )
+        {
+            var objects = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
+            return objects ?? new List<MonthlyAccountGivingHistory>();
+        }
+    }
+
+    /// <summary>
+    /// A POCO that represents a single month of giving history for a single financial account
+    /// </summary>
+    public sealed class MonthlyAccountGivingHistory
+    {
+        /// <summary>
+        /// Gets or sets the year.
+        /// </summary>
+        /// <value>
+        /// The year.
+        /// </value>
+        public int Year { get; set; }
+
+        /// <summary>
+        /// Gets or sets the month. 1 = January (not zero based)
+        /// </summary>
+        /// <value>
+        /// The month.
+        /// </value>
+        public int Month { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account identifier.
+        /// </summary>
+        /// <value>
+        /// The account identifier.
+        /// </value>
+        public int AccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the amount.
+        /// </summary>
+        /// <value>
+        /// The amount.
+        /// </value>
+        public decimal Amount { get; set; }
     }
 }

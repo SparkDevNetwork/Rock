@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -32,7 +33,7 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class CalendarEventsCommandTests : LavaIntegrationTestBase
     {
-        private static string LavaTemplateCalendarEvents = @";
+        private static string LavaTemplateCalendarEvents = @"
 {% calendarevents {parameters} %}
   {% assign eventScheduledInstanceCount = EventScheduledInstances | Size %}
   <<EventCount = {{ EventScheduledInstances | Size }}>>
@@ -222,6 +223,20 @@ namespace Rock.Tests.Integration.Lava
             var template = GetTestTemplate( $"calendarid:'Public' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
 
             TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void CalendarEventsCommand_WithCampusSpecified_RetrievesEventsWithMatchingCampusAndUnspecifiedCampus()
+        {
+            var rockContext = new RockContext();
+
+            var campusId = new CampusService( rockContext ).Get( MainCampusGuidString.AsGuid() ).Id;
+
+            var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( new List<string> { "<Campus: Main Campus>", "<Campus: All Campuses>" },
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }

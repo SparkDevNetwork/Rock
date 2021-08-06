@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( SetFilterControls() )
                 {
-                    SelectedDate = DateTime.Now.Date;
+                    SelectedDate = RockDateTime.Now.Date;
                     pnlDetails.Visible = true;
                     BindData();
                 }

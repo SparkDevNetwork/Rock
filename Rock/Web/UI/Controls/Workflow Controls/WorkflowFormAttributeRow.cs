@@ -17,6 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Field;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,6 +35,7 @@ namespace Rock.Web.UI.Controls
         private CheckBox _cbPostHtml;
         private RockTextBox _tbPreHtml;
         private RockTextBox _tbPostHtml;
+        private LinkButton _lbFilter;
 
         /// <summary>
         /// Gets or sets the attribute unique identifier.
@@ -57,6 +59,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["AttributeName"] as string ?? string.Empty; }
             set { ViewState["AttributeName"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the attribute used by the row.
+        /// </summary>
+        /// <value>
+        /// The attribute.
+        /// </value>
+        public Model.Attribute Attribute
+        {
+            get { return ViewState["Attribute"] as Model.Attribute; }
+            set { ViewState["Attribute"] = value; }
         }
 
         /// <summary>
@@ -214,6 +228,34 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the visibility rules.
+        /// </summary>
+        /// <value>
+        /// The visibility rules.
+        /// </value>
+        public FieldVisibilityRules VisibilityRules
+        {
+            get
+            {
+                EnsureChildControls();
+                return ViewState["VisibilityRules"] as FieldVisibilityRules;
+            }
+            set
+            {
+                EnsureChildControls();
+                ViewState["VisibilityRules"] = value;
+                if ( value.RuleList.Count > 0 )
+                {
+                    _lbFilter.CssClass = "btn btn-warning btn-xs btn-square";
+                }
+                else
+                {
+                    _lbFilter.CssClass = "btn btn-default btn-xs btn-square";
+                }
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -280,8 +322,48 @@ namespace Rock.Web.UI.Controls
             _tbPostHtml.TextMode = TextBoxMode.MultiLine;
             _tbPostHtml.Rows = 3;
             _tbPostHtml.ValidateRequestMode = System.Web.UI.ValidateRequestMode.Disabled;
-
             Controls.Add( _tbPostHtml );
+
+            _lbFilter = new LinkButton();
+            _lbFilter.ID = $"{ID}{nameof( _lbFilter )}";
+            _lbFilter.Text = "<i class=\"fa fa-filter\"></i>";
+            _lbFilter.CssClass = "btn btn-default btn-xs btn-square";
+            _lbFilter.Click += _lbFilter_Click;
+            Controls.Add( _lbFilter );
+
+        }
+
+        /// <summary>
+        /// Event args for when the filter button is clicked.
+        /// </summary>
+        /// <seealso cref="System.EventArgs" />
+        public class FilterEventArgs : EventArgs
+        {
+            /// <summary>
+            /// Gets or sets the workflow form attribute row.
+            /// </summary>
+            /// <value>
+            /// The workflow form attribute row.
+            /// </value>
+            public WorkflowFormAttributeRow WorkflowFormAttributeRow { get; set; }
+        }
+
+        /// <summary>
+        /// The filter click event.
+        /// </summary>
+        public EventHandler<FilterEventArgs> FilterClick;
+
+        /// <summary>
+        /// Handles the Click event of the _lbFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void _lbFilter_Click( object sender, EventArgs e )
+        {
+            if ( FilterClick != null)
+            {
+                FilterClick( sender, new FilterEventArgs { WorkflowFormAttributeRow = this } );
+            }
         }
 
         /// <summary>
@@ -320,7 +402,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row d-flex align-items-center" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row no-gutters d-flex align-items-center" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-3" );
@@ -331,37 +413,42 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-9" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbVisible.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbEditable.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbRequired.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbHideLabel.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPreHtml.RenderControl( writer );
                 writer.RenderEndTag();
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-xs-2 grid-select-field" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "flex-eq grid-select-field" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _cbPostHtml.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex flex-eq justify-content-center grid-select-field" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _lbFilter.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();      // row

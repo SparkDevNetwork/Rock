@@ -188,8 +188,12 @@
     </Compile>
     <Compile Include="ReportOptions.cs" />
     <Compile Include="Extensions\RestSharpExtensions.cs" />
+    <Compile Include="ResultsSummary.cs" />
     <Compile Include="ReportSettings.xaml.cs">
       <DependentUpon>ReportSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ResultsSummaryPage.xaml.cs">
+      <DependentUpon>ResultsSummaryPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="RockConfig.cs" />
     <Compile Include="RockExtensions\EnumExtensions.cs" />
@@ -210,6 +214,7 @@
     <Compile Include="StartPage.xaml.cs">
       <DependentUpon>StartPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="StatementGeneratorException.cs" />
     <Page Include="images\rock-logo-sm.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -248,6 +253,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="ReportSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ResultsSummaryPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,21 +54,69 @@ namespace Rock.Model
         public bool CanDelete( SignatureDocumentTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<Group>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTemplateId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentTemplate.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RequiredSignatureDocumentTemplateId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SignatureDocumentTemplate.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// SignatureDocumentTemplate View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( SignatureDocumentTemplate ) )]
+    public partial class SignatureDocumentTemplateViewModelHelper : ViewModelHelper<SignatureDocumentTemplate, Rock.ViewModel.SignatureDocumentTemplateViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.SignatureDocumentTemplateViewModel CreateViewModel( SignatureDocumentTemplate model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.SignatureDocumentTemplateViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                BinaryFileTypeId = model.BinaryFileTypeId,
+                CompletionSystemCommunicationId = model.CompletionSystemCommunicationId,
+                Description = model.Description,
+                DocumentTerm = model.DocumentTerm,
+                InviteSystemCommunicationId = model.InviteSystemCommunicationId,
+                IsActive = model.IsActive,
+                LavaTemplate = model.LavaTemplate,
+                Name = model.Name,
+                ProviderEntityTypeId = model.ProviderEntityTypeId,
+                ProviderTemplateKey = model.ProviderTemplateKey,
+                SignatureType = ( int ) model.SignatureType,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -124,16 +175,21 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.BinaryFileTypeId = source.BinaryFileTypeId;
+            target.CompletionSystemCommunicationId = source.CompletionSystemCommunicationId;
             target.Description = source.Description;
+            target.DocumentTerm = source.DocumentTerm;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             #pragma warning disable 612, 618
             target.InviteSystemEmailId = source.InviteSystemEmailId;
             #pragma warning restore 612, 618
+            target.IsActive = source.IsActive;
+            target.LavaTemplate = source.LavaTemplate;
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;
+            target.SignatureType = source.SignatureType;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -142,5 +198,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.SignatureDocumentTemplateViewModel ToViewModel( this SignatureDocumentTemplate model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new SignatureDocumentTemplateViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

@@ -593,7 +593,7 @@ namespace Rock.Data
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [Obsolete("Use ContainsKey(string) instead.")]
-        [RockObsolete("13.0")]
+        [RockObsolete( "1.13.0" )]
         public override bool ContainsKey( object key )
         {
             return ContainsKey( key.ToStringSafe() );

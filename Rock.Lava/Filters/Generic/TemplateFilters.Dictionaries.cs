@@ -19,8 +19,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock.Common;
-
 namespace Rock.Lava.Filters
 {
     public static partial class TemplateFilters

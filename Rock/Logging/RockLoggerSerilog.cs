@@ -811,7 +811,7 @@ namespace Rock.Logging
                      fileSizeLimitBytes: rockLogConfiguration.MaxFileSize * 1024 * 1024 )
                  .CreateLogger();
 
-            _ConfigurationLastLoaded = DateTime.Now;
+            _ConfigurationLastLoaded = RockDateTime.Now;
         }
 
         /// <summary>
@@ -832,7 +832,7 @@ namespace Rock.Logging
         public void ReloadConfiguration()
         {
             Close();
-            
+
             // The ctor loads up all the settings from the DB.
             LogConfiguration = new RockLogConfiguration();
             LoadConfiguration( LogConfiguration );

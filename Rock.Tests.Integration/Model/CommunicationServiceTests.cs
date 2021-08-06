@@ -166,7 +166,7 @@ namespace Rock.Tests.Integration.Model
                 Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime > expectedEndWindow && c.FutureSendDateTime == null ), "Query returned communications that are greater then the expected end window." );
                 Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime < expectedBeginWindow && c.FutureSendDateTime == null ), "Query returned communications that are less then the expected begin window." );
                 Assert.That.IsFalse( qry.Any( c => c.ReviewedDateTime == null && c.FutureSendDateTime == null ), "Query returned communications without a created date." );
-                Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime > DateTime.Now ), "Query returned communications that are greater then the expected end window." );
+                Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime > RockDateTime.Now ), "Query returned communications that are greater then the expected end window." );
                 Assert.That.IsFalse( qry.Any( c => c.FutureSendDateTime < expectedBeginWindow ), "Query returned communications that are less then the expected begin window." );
             }
         }

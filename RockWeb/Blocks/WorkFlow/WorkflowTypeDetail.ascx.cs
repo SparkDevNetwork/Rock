@@ -459,8 +459,27 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                                     newFormAttribute.Attribute = new Rock.Model.Attribute
                                     {
                                         Guid = guidXref[formAttribute.Attribute.Guid],
-                                        Name = formAttribute.Attribute.Name
+                                        Name = formAttribute.Attribute.Name,
+                                        FieldTypeId = formAttribute.Attribute.FieldTypeId,
+                                        AttributeQualifiers = formAttribute.Attribute.AttributeQualifiers
                                     };
+
+                                    if ( newFormAttribute.FieldVisibilityRules != null )
+                                    {
+                                        var visibilityRules = newFormAttribute.FieldVisibilityRules.Clone();
+
+                                        foreach ( var rule in visibilityRules.RuleList )
+                                        {
+                                            if ( rule.ComparedToFormFieldGuid != null && guidXref.ContainsKey( rule.ComparedToFormFieldGuid.Value ) )
+                                            {
+                                                rule.ComparedToFormFieldGuid = guidXref[rule.ComparedToFormFieldGuid.Value];
+                                            }
+                                        }
+
+                                        newFormAttribute.FieldVisibilityRules = visibilityRules;
+                                    }
+
+
                                     newWorkflowForm.FormAttributes.Add( newFormAttribute );
                                 }
                             }
@@ -823,6 +842,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                             formAttribute.HideLabel = editorAttribute.HideLabel;
                             formAttribute.PreHtml = editorAttribute.PreHtml;
                             formAttribute.PostHtml = editorAttribute.PostHtml;
+                            formAttribute.FieldVisibilityRules = editorAttribute.FieldVisibilityRules;
                         }
                     }
                 }
@@ -901,7 +921,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             ParseControls();
 
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             ShowAttributeEdit( attributeGuid );
         }
 
@@ -930,7 +950,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         {
             ParseControls();
 
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             AttributesState.RemoveEntity( attributeGuid );
 
             BindAttributesGrid();
@@ -1286,7 +1306,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             if ( workflowType.IsSystem )
             {
-                readOnly = true; 
+                readOnly = true;
                 nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( WorkflowType.FriendlyTypeName );
             }
@@ -1431,7 +1451,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             tbLogRetention.Text = workflowType.LogRetentionPeriod.ToStringSafe();
             tbCompletedRetention.Text = workflowType.CompletedWorkflowRetentionPeriod.ToStringSafe();
             cbIsPersisted.Checked = workflowType.IsPersisted;
-            ddlLoggingLevel.SetValue( (int)workflowType.LoggingLevel );
+            ddlLoggingLevel.SetValue( ( int ) workflowType.LoggingLevel );
             tbIconCssClass.Text = workflowType.IconCssClass;
             ceSummaryViewText.Text = workflowType.SummaryViewText;
             ceNoActionMessage.Text = workflowType.NoActionMessage;
@@ -1698,7 +1718,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                     if ( !formAttributes.Select( a => a.Attribute.Guid ).Contains( attribute.Key ) )
                     {
                         var formAttribute = new WorkflowActionFormAttribute();
-                        formAttribute.Attribute = new Rock.Model.Attribute { Guid = attribute.Key, Name = attribute.Value.Name };
+                        formAttribute.Attribute = new Attribute { Guid = attribute.Key, Name = attribute.Value.Name, FieldTypeId = attribute.Value.FieldTypeId };
                         formAttribute.Guid = Guid.NewGuid();
                         formAttribute.Order = formAttributes.Any() ? formAttributes.Max( a => a.Order ) + 1 : 0;
                         formAttribute.IsVisible = false;

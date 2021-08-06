@@ -18,7 +18,6 @@ using System;
 using System.Globalization;
 
 using Humanizer;
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -32,7 +31,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static bool AsBoolean( object input, bool resultIfNullOrEmpty = false )
         {
-            return ExtensionMethods.AsBoolean( input.ToStringSafe(), resultIfNullOrEmpty );
+            return input.ToStringSafe().AsBoolean( resultIfNullOrEmpty );
         }
 
         /// <summary>
@@ -42,7 +41,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static decimal AsDecimal( object input )
         {
-            return ExtensionMethods.AsDecimal( input.ToStringSafe() );
+            return input.ToStringSafe().AsDecimal();
         }
 
         /// <summary>
@@ -52,7 +51,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static double AsDouble( object input )
         {
-            return ExtensionMethods.AsDouble( input.ToStringSafe() );
+            return input.ToStringSafe().AsDouble();
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static int AsInteger( object input )
         {
-            return ExtensionMethods.AsInteger( input.ToStringSafe() );
+            return input.ToStringSafe().AsInteger();
         }
 
         /// <summary>
@@ -256,6 +255,26 @@ namespace Rock.Lava.Filters
             }
 
             return inputString.ToQuantity( numericQuantity );
+        }
+
+        /// <summary>
+        /// Generates a random number greater than or equal to 0 and less than
+        /// the input as a number.
+        /// </summary>
+        /// <param name="input">The input number to provide the upper range.</param>
+        /// <returns>A random number.</returns>
+        /// <exception cref="Exception">Must provide an integer value as input.</exception>
+        /// <remarks>If you pass in a value of 100 as input, you will get a random number of 0-99.</remarks>
+        public static int RandomNumber( object input )
+        {
+            var number = input.ToStringSafe().AsIntegerOrNull();
+
+            if ( !number.HasValue )
+            {
+                throw new Exception( "Must provide an integer value as input." );
+            }
+
+            return _randomNumberGenerator.Next( number.Value );
         }
     }
 }

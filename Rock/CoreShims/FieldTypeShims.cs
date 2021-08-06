@@ -1,5 +1,6 @@
-namespace Rock.Field.Types
+﻿namespace Rock.Field.Types
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public partial class AccountFieldType : Rock.Field.FieldType
     {
     }
@@ -580,4 +581,5 @@ namespace Rock.Field.Types
     public partial class SelectFromListFieldType : Rock.Field.FieldType
     {
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

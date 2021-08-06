@@ -16,6 +16,8 @@
 //
 using System.Linq;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 #if NET5_0_OR_GREATER
 using Microsoft.EntityFrameworkCore;
@@ -149,5 +151,23 @@ namespace Rock.Model
         }
 
         #endregion Static Methods
+    }
+
+    /// <summary>
+    /// AttributeValue View Model Helper
+    /// </summary>
+    public partial class AttributeValueViewModelHelper
+    {
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeValue model, AttributeValueViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            viewModel.Attribute = AttributeCache.Get( model.AttributeId ).ToViewModel();
+        }
     }
 }

@@ -159,16 +159,22 @@ namespace Rock.UniversalSearch.IndexModels
         public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
         {
             var result = base.FormatSearchResult( person, displayOptions );
+            bool isSecurityDisabled = false;
+            result.IsViewAllowed = false;
 
-            // check security on the group
+            if ( displayOptions != null )
+            {
+                if ( displayOptions.ContainsKey( "Group-IsSecurityDisabled" ) )
+                {
+                    isSecurityDisabled = displayOptions["Group-IsSecurityDisabled"].ToString().AsBoolean();
+                }
+            }
+
+            // Check security on the group if security is enabled
             var group = new GroupService(new Data.RockContext()).Get( (int)this.Id );
             if ( group != null )
             {
-                result.IsViewAllowed = group.IsAuthorized( Rock.Security.Authorization.VIEW, person );
-            }
-            else
-            {
-                result.IsViewAllowed = false;
+                result.IsViewAllowed = group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) || isSecurityDisabled;
             }
 
             return result;

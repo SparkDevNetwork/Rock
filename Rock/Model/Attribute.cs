@@ -32,6 +32,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -112,6 +113,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
+        [TypeScriptType( "string" )]
         public string Key { get; set; }
 
         /// <summary>

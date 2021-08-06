@@ -25,6 +25,7 @@ using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -35,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimPersonHistorical" )]
     [DataContract]
+    [ViewModelExclude]
     public class AnalyticsDimPersonHistorical : AnalyticsDimPersonBase<AnalyticsDimPersonHistorical>
     {
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields

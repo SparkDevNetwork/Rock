@@ -282,6 +282,28 @@ namespace Rock.Model
         public int? PersonEntryGroupLocationTypeValueId { get; set; }
 
         /// <summary>
+        /// Gets or sets the person entry campus status value identifier.
+        /// This and <seealso cref="PersonEntryCampusTypeValueId"/> will determine which campuses will selectable
+        /// </summary>
+        /// <value>
+        /// The person entry campus status value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( Rock.SystemGuid.DefinedType.CAMPUS_STATUS )]
+        public int? PersonEntryCampusStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person entry campus type value identifier.
+        /// This and <seealso cref="PersonEntryCampusStatusValueId"/> will determine which campuses will selectable
+        /// </summary>
+        /// <value>
+        /// The person entry campus type value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( Rock.SystemGuid.DefinedType.CAMPUS_TYPE )]
+        public int? PersonEntryCampusTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the person entry person workflow attribute unique identifier. (The one used to set the Added/Edited Person to)
         /// </summary>
         /// <value>
@@ -373,6 +395,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue PersonEntryGroupLocationTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person entry campus status value.
+        /// </summary>
+        /// <value>
+        /// The person entry campus status value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PersonEntryCampusStatusValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person entry campus type value.
+        /// </summary>
+        /// <value>
+        /// The person entry campus type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PersonEntryCampusTypeValue{ get; set; }
 
         #endregion Virtual Properties
 
@@ -648,6 +688,9 @@ namespace Rock.Model
             this.HasOptional( f => f.PersonEntryConnectionStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryRecordStatusValue ).WithMany().HasForeignKey( f => f.PersonEntryRecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.PersonEntryGroupLocationTypeValue ).WithMany().HasForeignKey( f => f.PersonEntryGroupLocationTypeValueId ).WillCascadeOnDelete( false );
+
+            this.HasOptional( f => f.PersonEntryCampusStatusValue).WithMany().HasForeignKey( f => f.PersonEntryCampusStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.PersonEntryCampusTypeValue ).WithMany().HasForeignKey( f => f.PersonEntryCampusTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 

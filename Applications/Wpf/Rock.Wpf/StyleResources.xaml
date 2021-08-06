@@ -399,7 +399,7 @@
         Grid related Styles
     -->
 
-    <!--  Grid Style  -->
+    <!--  Grid Style (white)  -->
 
     <Style x:Key="gridStyleWhite" TargetType="{x:Type DataGrid}">
         <Setter Property="Background" Value="Transparent" />
@@ -479,7 +479,7 @@
     </Style>
 
 
-    <Style x:Key="gridStyleGrey" TargetType="{x:Type DataGrid}">
+    <Style x:Key="gridStyle" TargetType="{x:Type DataGrid}">
         <Setter Property="ColumnHeaderStyle">
             <Setter.Value>
                 <Style TargetType="{x:Type DataGridColumnHeader}">
@@ -489,8 +489,12 @@
         </Setter>
     </Style>
 
+
+    <!--  Grid Style (Legacy/Grey, used by Check Scanner)  -->
+
+
     <!--  Grid Column Header style  -->
-    <Style x:Key="gridHeaderStyleGrey" TargetType="{x:Type DataGridColumnHeader}">
+    <Style x:Key="gridHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
         <Setter Property="FontFamily" Value="./resources/#Roboto-Bold" />
         <Setter Property="Padding" Value="6" />
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -502,7 +506,6 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="BorderBrush" Value="#dddddd" />
     </Style>
-
 
     <Style
         x:Key="gridHeaderStyleWide"
@@ -543,7 +546,7 @@
     </Style>
 
     <!--  Grid Cell Style  -->
-    <Style x:Key="gridCellStyleGrey" TargetType="{x:Type DataGridCell}">
+    <Style x:Key="gridCellStyle" TargetType="{x:Type DataGridCell}">
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="#d4d4d4" />
@@ -567,7 +570,6 @@
 
     </Style>
 
-
     <Style
         x:Key="gridCellStyleIfVariance"
         BasedOn="{StaticResource gridCellStyle}"
@@ -581,17 +583,17 @@
     </Style>
 
     <Style
-        x:Key="gridCellStyleNumberGreyAlignRight"
+        x:Key="gridCellStyleNumberAlignRight"
         BasedOn="{StaticResource gridCellStyle}"
         TargetType="{x:Type DataGridCell}" />
     <Style
-        x:Key="gridCellStyleNumberGrey"
+        x:Key="gridCellStyleNumber"
         BasedOn="{StaticResource gridCellStyle}"
         TargetType="{x:Type DataGridCell}">
         <Setter Property="HorizontalAlignment" Value="Center" />
     </Style>
     <Style
-        x:Key="gridCellStyleDateTimeGrey"
+        x:Key="gridCellStyleDateTime"
         BasedOn="{StaticResource gridCellStyle}"
         TargetType="{x:Type DataGridCell}">
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -600,7 +602,7 @@
     </Style>
 
     <Style
-        x:Key="gridCellStyleAmountGrey"
+        x:Key="gridCellStyleAmount"
         BasedOn="{StaticResource gridCellStyle}"
         TargetType="{x:Type DataGridCell}">
         <Setter Property="HorizontalAlignment" Value="Left" />
@@ -746,18 +748,14 @@
         <Setter Property="FontFamily" Value="Roboto-Regular" />
     </Style>
 
-    <!--  Button Style: Mini Icon  -->
-    <Style
-        x:Key="buttonStyleGridColumnIcon"
-        BasedOn="{StaticResource buttonStyle}"
-        TargetType="{x:Type Button}">
+    <!--  Button Style: Grid Command  -->
+    <Style x:Key="buttonStyleGridColumnIcon" TargetType="{x:Type Button}">
         <Setter Property="FontFamily" Value="./resources/#FontAwesome" />
         <Setter Property="Height" Value="24" />
-        <Setter Property="Width" Value="40" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="24" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="15" />
     </Style>
 
     <!--  Button Style: Mini  -->
@@ -1101,6 +1099,14 @@
     <!--  https://fontawesome.com/cheatsheet?from=io  -->
     <FontFamily x:Key="FontAwesome">./resources/#FontAwesome</FontFamily>
 
+    <!--  Label style: Icon (FontAwesome Icon)  -->
+    <Style x:Key="windowCommandIcon" TargetType="{x:Type Label}">
+        <Setter Property="FontFamily" Value="./resources/#FontAwesome" />
+        <Setter Property="Label.FontSize" Value="12" />
+        <Setter Property="Opacity" Value=".8" />
+        <Setter Property="Label.Foreground" Value="#FFF" />
+    </Style>
+
 
     <!--  Custom Window Style and Control Template Targets Window Title Bar  -->
     <local:WindowMinimizeCommand x:Key="MinimizeCommand" />
@@ -1151,18 +1157,15 @@
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <Button
                             x:Name="btnMinimize"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center"
                             Command="{StaticResource MinimizeCommand}"
                             CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
                             DockPanel.Dock="Right"
                             Style="{StaticResource WindowButton}">
-                            <fa:ImageAwesome
-                                Height="4"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Icon="WindowMinimize" />
+                            <Label
+                                Height="20"
+                                Margin="0,0,0,10"
+                                Content="&#xf2d1;"
+                                Style="{StaticResource windowCommandIcon}" />
                         </Button>
                         <Button
                             x:Name="btnMaximze"
@@ -1171,12 +1174,7 @@
                             DockPanel.Dock="Right"
                             Style="{StaticResource WindowButton}"
                             Visibility="Visible">
-                            <fa:ImageAwesome
-                                Height="12"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Icon="WindowMaximize" />
+                            <Label Content="&#xf2d0;" Style="{StaticResource windowCommandIcon}" />
                         </Button>
                         <Button
                             x:Name="btnRestore"
@@ -1185,26 +1183,17 @@
                             DockPanel.Dock="Right"
                             Style="{StaticResource WindowButton}"
                             Visibility="Collapsed">
-                            <fa:ImageAwesome
-                                Height="12"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Icon="WindowRestore" />
+                            <Label Content="&#xf2d2;" Style="{StaticResource windowCommandIcon}" />
                         </Button>
                         <Button
                             Command="{StaticResource CloseCommand}"
                             CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}}"
                             DockPanel.Dock="Right"
-                            FontFamily="Roboto"
-                            FontWeight="ExtraBold"
                             Style="{StaticResource WindowButton}">
-                            <fa:ImageAwesome
-                                Height="12"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Foreground="White"
-                                Icon="Remove" />
+                            <Label
+                                Content="&#xf00d;"
+                                FontSize="14"
+                                Style="{StaticResource windowCommandIcon}" />
                         </Button>
                     </StackPanel>
                 </Grid>

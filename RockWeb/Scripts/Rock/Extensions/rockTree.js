@@ -451,7 +451,7 @@
 
 				    var countInfoHtml = '';
 				    if (typeof (node.countInfo) != 'undefined' && node.countInfo != null) {
-				        countInfoHtml = '<span class="label label-tree margin-l-sm">' + node.countInfo + '</span>';
+				        countInfoHtml = '<span class="label label-tree">' + node.countInfo + '</span>';
 				    }
 
 				    $li.append('<span class="rocktree-name" title="' + nodeText.trim() + '"> ' + node.name + countInfoHtml + '</span>');
@@ -781,10 +781,10 @@
         categorySelection: true,
         categoryPrefix: '',
         showSelectChildren: false,
-        loadingHtml: '<span class="rocktree-loading"><i class="fa fa-refresh fa-spin"></i></span>',
+        loadingHtml: '<span class="rocktree-loading"><i class="fa fa-spinner fa-spin"></i></span>',
         iconClasses: {
-            branchOpen: 'fa fa-fw fa-caret-down',
-            branchClosed: 'fa fa-fw fa-caret-right',
+            branchOpen: 'fa fa-fw fa-chevron-down',
+            branchClosed: 'fa fa-fw fa-chevron-right',
             leaf: ''
         },
         mapping: {

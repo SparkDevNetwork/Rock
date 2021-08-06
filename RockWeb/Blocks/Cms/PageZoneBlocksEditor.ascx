@@ -14,9 +14,7 @@
                 <Rock:HighlightLabel ID="hlInvalidZoneWarning" runat="server" LabelType="Danger" CssClass="margin-l-md" Text="Invalid Zone" ToolTip="This zone is no longer part of the zones for this layout." Visible="false" />
 
                 <div class="pull-right">
-                    <div class="input-group input-group-sm">
-                        <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" />
-                    </div>
+                    <Rock:RockDropDownList ID="ddlZones" runat="server" Label="" AutoPostBack="true" OnSelectedIndexChanged="ddlZones_SelectedIndexChanged" CssClass="input-xs" />
                 </div>
             </div>
             <div class="panel-body">
@@ -24,7 +22,7 @@
                 <div class="site-blocks-sort-container">
                     <asp:Repeater ID="rptSiteBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
-                            
+
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
                                 <asp:HiddenField ID="hfSiteBlockId" runat="server" Value='<%# Eval("Id") %>' />
                             </asp:Panel>
@@ -37,7 +35,7 @@
                 <div class="layout-blocks-sort-container">
                     <asp:Repeater ID="rptLayoutBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
-                            
+
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
                                 <asp:HiddenField ID="hfLayoutBlockId" runat="server" Value='<%# Eval("Id") %>' />
                             </asp:Panel>
@@ -51,7 +49,7 @@
                 <div class="page-blocks-sort-container">
                     <asp:Repeater ID="rptPageBlocks" runat="server" OnItemDataBound="rptBlocks_ItemDataBound">
                         <ItemTemplate>
-                            
+
                             <asp:Panel ID="pnlBlockEditWidget" runat="server" CssClass="panel panel-widget">
                                 <asp:HiddenField ID="hfPageBlockId" runat="server" Value='<%# Eval("Id") %>' />
                             </asp:Panel>
@@ -89,7 +87,7 @@
             <Content>
                 <asp:ValidationSummary ID="vsAddBlock" runat="server" ValidationGroup="vgAddBlock" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:RockTextBox ID="tbNewBlockName" runat="server" Label="Name" Required="true" ValidationGroup="vgAddBlock" />
-                
+
                 <div class="row">
                     <div class="col-sm-6">
                         <Rock:RockDropDownList ID="ddlBlockType" runat="server" Label="Type" AutoPostBack="true" OnSelectedIndexChanged="ddlBlockType_SelectedIndexChanged" EnhanceForLongLists="true" />

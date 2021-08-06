@@ -16,6 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -26,6 +27,20 @@ namespace Rock.Tests.Integration.Lava
     [TestClass]
     public class LiquidLanguageCompatibilityTests : LavaIntegrationTestBase
     {
+        [TestMethod]
+        public void Variables_VariableNamesThatDifferOnlyByCase_AreReferencedAsDifferentVariables()
+        {
+            var input = @"
+{%- assign text = 'lowercase' -%}
+{%- assign TEXT = 'uppercase' -%}
+Text (lower) = {{ text }}, Text (upper) = {{ TEXT }}
+";
+            var expectedOutput = @"Text (lower) = lowercase, Text (upper) = uppercase";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+
         [TestMethod]
         public void Whitespace_TrimInOutputTagWithVariable_RemovesWhitespace()
         {
@@ -131,7 +146,7 @@ Illegal Boolean Operator!
             // This test does not apply to the DotLiquid framework.
             if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
             {
-                TestHelper.AssertTemplateIsInvalid( LavaEngineTypeSpecifier.Fluid, input );
+                TestHelper.AssertTemplateIsInvalid( typeof( FluidEngine ), input );
             }
         }
 
