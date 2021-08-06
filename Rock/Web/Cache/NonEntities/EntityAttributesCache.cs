@@ -113,6 +113,16 @@ namespace Rock.Web.Cache
         {
             var entityAttributes = new AttributeService( rockContext )
                 .Queryable().AsNoTracking()
+#if NET5_0_OR_GREATER
+                .Select( a => new
+                {
+                    a.Id,
+                    a.EntityTypeId,
+                    a.EntityTypeQualifierColumn,
+                    a.EntityTypeQualifierValue
+                } )
+                .ToList()
+#endif
                 .GroupBy( a => new
                 {
                     a.EntityTypeId,
