@@ -151,7 +151,7 @@
                                     <Rock:NumberBox ID="nbNcoaRecurrenceInterval" runat="server" AppendText="days" CssClass="input-width-md" Label="Recurrence Interval" NumberType="Integer" Text="95" Required="true" ValidationGroup="NcoaValidationGroup" Help="After how many days should the job automatically start after the last successful run" OnTextChanged="nbNcoaRecurrenceInterval_TextChanged" AutoPostBack="true" />
                                 </div>
                             </div>
-                            <div class="actions margin-t-lg">
+                            <div class="actions">
                                 <Rock:BootstrapButton ID="bbtnNcoaSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" ToolTip="Alt+s" OnClick="bbtnNcoaSaveConfig_Click" Text="Save" Enabled="false"
                                     DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving" ValidationGroup="NcoaValidationGroup"
                                     CompletedText="Done" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3">
