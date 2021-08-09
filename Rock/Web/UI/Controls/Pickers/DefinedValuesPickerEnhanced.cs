@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                var selectableValues = string.Join( ",", value );
+                var selectableValues = value != null ? string.Join( ",", value ) : string.Empty;
                 ViewState["SelectableValues"] = selectableValues;
                 DefinedValuePicker.LoadDropDownItems( this, false );
             }
