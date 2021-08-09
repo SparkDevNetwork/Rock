@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -69,7 +68,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
         #endregion Attribute Keys
 
-        DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
+        private DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -126,7 +125,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( connectRequest.CampusId.HasValue )
                     {
-
                         connectionName = string.Format( "{0} ({1})", connectRequest.ConnectionOpportunity, CampusCache.Get( connectRequest.CampusId.Value ) );
                     }
                     else
@@ -165,8 +163,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             // Close previous connection type.
                             headerHtml = "</ul></li>" + headerHtml;
                         }
+
                         listHtml = headerHtml + listHtml;
                     }
+
                     lConnectionOpportunityList.Text = listHtml;
                 }
             }
@@ -226,12 +226,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         private int _currentConnectionTypeId = 0;
+
         protected bool ShowNewConnectionType(int connectionTypeId )
         {
-            if(_currentConnectionTypeId == connectionTypeId )
+            if (_currentConnectionTypeId == connectionTypeId )
             {
                 return false;
             }
+
             _currentConnectionTypeId = connectionTypeId;
             return true;
         }
@@ -240,16 +242,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected class ConnectionRequestViewModel
         {
             public int? CampusId { get; set; }
+
             public int ConnectionRequestId { get; set; }
+
             public ConnectionState ConnectionRequestConnectionState { get; set; }
+
             public ConnectionOpportunity ConnectionOpportunity { get; set; }
+
             public int? ConnectionRequestDetailPageId { get; set; }
+
             public int? ConnectionRequestDetailPageRouteId { get; set; }
+
             public ConnectionStatus ConnectionStatus { get; set; }
+
             public int PersonId { get; set; }
+
             public bool IsActive { get; set; }
+
             public ConnectionState ConnectionState { get; set; }
+
             public DateTime? FollowupDate { get; set; }
+
             public ConnectionType ConnectionType { get; set; }
         }
     }
