@@ -38,11 +38,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view connection requests of a particular person." )]
 
-    [BooleanField(
-        "Hide Inactive Connection Requests",
-        Key = AttributeKey.HideInactiveConnectionRequests,
-        Description = "Show only connection requests that are active?",
-        DefaultBooleanValue = false,
+    [EnumsField(
+        "Hide Connection Requests With These States",
+        Key = AttributeKey.HideRequestStates,
+        Description = "Any of the states you select here will be excluded from the list.",
+        EnumSourceType = typeof( ConnectionState ),
+        IsRequired = false,
         Order = 0 )]
 
     [LinkedPage(
@@ -50,6 +51,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         Key = AttributeKey.ConnectionRequestDetail,
         Description = "The Connection Request Detail page.",
         Order = 1 )]
+
     [BooleanField(
         "Use Connection Request Detail Page From Connection Type",
         Key = AttributeKey.UseConnectionRequestDetailPageFromConnectionType,
@@ -61,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #region Attribute Keys
         private static class AttributeKey
         {
-            public const string HideInactiveConnectionRequests = "HideInactive";
+            public const string HideRequestStates = "HideRequestStates";
             public const string ConnectionRequestDetail = "ConnectionRequestDetail";
             public const string UseConnectionRequestDetailPageFromConnectionType = "UseConnectionRequestDetailPageFromConnectionType";
         }
@@ -179,7 +181,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                var hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
+                var hideRequestStates = GetAttributeValue( AttributeKey.HideRequestStates ).SplitDelimitedValues().ToList().Select( x => Enum.Parse( typeof( ConnectionState ), x ) );
                 using ( var rockContext = new RockContext() )
                 {
                     var connectionTypeService = new ConnectionTypeService( rockContext );
@@ -205,16 +207,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         } )
                         .Where( crvm => crvm.PersonId == Person.Id );
 
-                    if ( hideInactive )
+                    // If hiding inactive ConnectionRequest.ConnectionStatus also filter out inactive ConnectionOpportunity instances (ConnectionOpportunity.IsActive).
+                    if ( hideRequestStates.Contains( ConnectionState.Inactive ) )
                     {
-                        connectionTypesList = connectionTypesList
-                            .Where( t => t.IsActive )
-                            .Where( t => t.ConnectionState == ConnectionState.Active ||
-                                            ( t.ConnectionState == ConnectionState.FutureFollowUp && t.FollowupDate.HasValue && t.FollowupDate.Value <= _midnightTomorrow ) );
+                        connectionTypesList = connectionTypesList.Where( t => t.IsActive );
                     }
 
                     rConnectionTypes.DataSource = connectionTypesList
                         .ToList()
+                        .Where( crm => !hideRequestStates.Contains( crm.ConnectionState ) )
                         .Where( crm => crm.ConnectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .Where( crm => crm.ConnectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .OrderBy( a => a.ConnectionType.Order )
