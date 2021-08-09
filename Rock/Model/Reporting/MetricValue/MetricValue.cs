@@ -14,15 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Chart;
 using Rock.Data;
 using Rock.Lava;
@@ -119,7 +118,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the metric.
@@ -152,31 +151,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate MetricValueSourceDate { get; set; }
+
         #endregion
 
-        #region Methods
-
-        /// <summary>
-        /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
-        /// </summary>
-        /// <value>
-        /// The metric value javascript time stamp.
-        /// </value>
-        [DataMember]
-        public long DateTimeStamp
-        {
-            get
-            {
-                if ( this.MetricValueDateTime.HasValue )
-                {
-                    return this.MetricValueDateTime.Value.ToJavascriptMilliseconds();
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        }
+        #region Public Methods
 
         /// <summary>
         /// Gets or sets the name of the series. This will be the default name of the series if MetricValuePartitionEntityIds can't be resolved
@@ -190,40 +168,6 @@ namespace Rock.Model
             get
             {
                 return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the metric value partitions as a comma-delimited list of EntityTypeId|EntityId
-        /// </summary>
-        /// <value>
-        /// The metric value entityTypeId,EntityId partitions
-        /// </value>
-        [DataMember]
-        public virtual string MetricValuePartitionEntityIds
-        {
-            get
-            {
-                if ( _metricValuePartitionEntityIds == null )
-                {
-                    var list = this.MetricValuePartitions.Select( a => new { a.MetricPartition.EntityTypeId, a.EntityId } ).ToList();
-                    _metricValuePartitionEntityIds = list.Select( a => string.Format( "{0}|{1}", a.EntityTypeId, a.EntityId ) ).ToList().AsDelimited( "," );
-                }
-
-                return _metricValuePartitionEntityIds;
-            }
-        }
-
-        private string _metricValuePartitionEntityIds;
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Metric != null ? this.Metric : base.ParentAuthority;
             }
         }
 
@@ -272,26 +216,6 @@ namespace Rock.Model
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( r => r.MetricValueSourceDate ).WithMany().HasForeignKey( r => r.MetricValueDateKey ).WillCascadeOnDelete( false );
         }
-    }
-
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The type of Metric Value that a Metric Value represents
-    /// </summary>
-    public enum MetricValueType
-    {
-        /// <summary>
-        /// Metric Value represents something that was measured (for example: Fundraising Total)
-        /// </summary>
-        Measure = 0,
-
-        /// <summary>
-        /// Metric Value represents a goal (for example: Fundraising Goal)
-        /// </summary>
-        Goal = 1
     }
 
     #endregion

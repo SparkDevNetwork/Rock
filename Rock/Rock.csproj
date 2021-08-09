@@ -744,6 +744,11 @@
     <Compile Include="Model\Core\Tag\TagService.cs" />
     <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Model\Reporting\MetricCategory\MetricCategory.Logic.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValue.Logic.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
+    <Compile Include="Model\Reporting\Metric\Metric.Logic.cs" />
+    <Compile Include="Model\Reporting\Metric\MetricNumericDataType.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
     <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
@@ -1872,7 +1877,7 @@
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
-    <Compile Include="Model\MetricService.Partial.cs" />
+    <Compile Include="Model\Reporting\Metric\MetricService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\Attribute.cs" />
@@ -2170,11 +2175,11 @@
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\Metaphone.cs" />
-    <Compile Include="Model\Metric.cs" />
-    <Compile Include="Model\MetricCategory.cs" />
-    <Compile Include="Model\MetricPartition.cs" />
-    <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\Reporting\Metric\Metric.cs" />
+    <Compile Include="Model\Reporting\MetricCategory\MetricCategory.cs" />
+    <Compile Include="Model\Reporting\MetricPartition\MetricPartition.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValue.cs" />
+    <Compile Include="Model\Reporting\MetricValuePartition\MetricValuePartition.cs" />
     <Compile Include="Model\NcoaHistory.cs" />
     <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
