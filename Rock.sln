@@ -57,6 +57,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.StatementGenerator", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.shepherdchurch.Misc", "..\rock-misc\com.shepherdchurch.Misc.csproj", "{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.WebStartup", "Rock.WebStartup\Rock.WebStartup.csproj", "{515E22E4-4B9B-4886-8477-E5B312B75EB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Checkr", "Rock.Checkr\Rock.Checkr.csproj", "{94A5F880-31AE-4889-B9BE-BA1FDC258E83}"
@@ -100,6 +102,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj", "{79AA470A-DC63-4CB4-B0B6-77285F60C69B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apollosProject.OneSignal", "..\apollos-onesignal\apollosProject.OneSignal.csproj", "{237D789F-52EF-48EF-A213-8D2284A6DE6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -175,6 +179,10 @@ Global
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5055F482-72C7-4CC9-8ED0-A77090C777DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B8836DB-D759-42E2-9C4F-E8740CC9DEF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{515E22E4-4B9B-4886-8477-E5B312B75EB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -251,6 +259,10 @@ Global
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B98E49F8-A987-49C9-9CC3-40616BEAC9FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

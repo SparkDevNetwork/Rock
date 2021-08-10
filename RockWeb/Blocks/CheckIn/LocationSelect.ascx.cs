@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string MultiPersonFirstPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonFirstPage;
             public const string MultiPersonDonePage = CheckInBlockMultiPerson.AttributeKey.MultiPersonDonePage;
         }
-        
+
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ), 
+                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ),
                                 person.Person.NickName,
                                 person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
                         }
@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.CheckIn
             var locationSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.LocationSelectHeaderLavaTemplate ?? string.Empty;
             return locationSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
-        
+
         /// <summary>
         /// Handles the ItemCommand event of the rSelection control.
         /// </summary>
@@ -407,7 +407,7 @@ namespace RockWeb.Blocks.CheckIn
         protected string FormatCount( int locationId )
         {
             if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
-            { 
+            {
                 return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Get( locationId ).CurrentCount );
             }
 
