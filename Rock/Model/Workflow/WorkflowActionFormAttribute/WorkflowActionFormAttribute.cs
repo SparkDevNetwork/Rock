@@ -14,15 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.Lava;
+using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -34,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class WorkflowActionFormAttribute : Model<WorkflowActionFormAttribute>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -131,9 +129,9 @@ namespace Rock.Model
         [DataMember]
         public string FieldVisibilityRulesJSON { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the workflow action form.
@@ -153,72 +151,13 @@ namespace Rock.Model
         [DataMember]
         public virtual Attribute Attribute { get; set; }
 
-        /// <summary>
-        /// Gets or sets the field visibility rules.
-        /// </summary>
-        /// <value>
-        /// The field visibility rules.
-        /// </value>
-        [NotMapped]
-        public virtual Field.FieldVisibilityRules FieldVisibilityRules
-        {
-            get
-            {
-                if ( FieldVisibilityRulesJSON.IsNullOrWhiteSpace() )
-                {
-                    return new Field.FieldVisibilityRules();
-                }
-                return FieldVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
-            }
-            set
-            {
-                if ( value == null || value.RuleList.Count == 0 )
-                {
-                    FieldVisibilityRulesJSON = null;
-                }
-                else
-                {
-                    FieldVisibilityRulesJSON = value.ToJson();
-                }
-            }
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return WorkflowActionFormAttributeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            WorkflowActionFormCache.UpdateCachedEntity( this.WorkflowActionFormId, EntityState.Modified );
-            WorkflowActionFormAttributeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
-
-        #region Methods
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// Workflow Form attribute Configuration class.
+    /// WorkflowActionFormAttribute Configuration class.
     /// </summary>
     public partial class WorkflowActionFormAttributeConfiguration : EntityTypeConfiguration<WorkflowActionFormAttribute>
     {
@@ -232,7 +171,6 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
 
