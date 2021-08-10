@@ -14,11 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-
 namespace Rock.Model
 {
-    #region Enums
-
     /// <summary>
     /// Type of authentication service used to authenticate user
     /// </summary>
@@ -34,6 +31,4 @@ namespace Rock.Model
         /// </summary>
         External = 1,
     }
-
-    #endregion
 }
