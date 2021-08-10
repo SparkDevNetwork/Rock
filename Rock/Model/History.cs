@@ -1903,7 +1903,7 @@ namespace Rock.Model
             /// <returns></returns>
             public HistoryChange AddChange( HistoryVerb historyVerb, HistoryChangeType historyChangeType, string valueName, string oldValue, string newValue )
             {
-                var historyChange = new HistoryChange( historyVerb, historyChangeType, valueName, newValue, oldValue );
+                var historyChange = new HistoryChange( historyVerb, historyChangeType, valueName, oldValue, newValue );
                 this.Add( historyChange );
                 return historyChange;
             }
