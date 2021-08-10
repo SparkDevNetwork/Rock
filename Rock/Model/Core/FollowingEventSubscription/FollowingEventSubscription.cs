@@ -14,11 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -30,7 +29,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FollowingEventSubscription : Model<FollowingEventSubscription>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -51,9 +49,9 @@ namespace Rock.Model
         [DataMember]
         public int PersonAliasId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -73,18 +71,13 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias PersonAlias { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// File Configuration class.
+    /// Following Event Subscription Configuration class.
     /// </summary>
     public partial class FollowingEventSubscriptionConfiguration : EntityTypeConfiguration<FollowingEventSubscription>
     {
@@ -98,6 +91,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

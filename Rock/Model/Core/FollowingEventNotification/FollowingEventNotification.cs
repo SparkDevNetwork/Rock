@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -31,7 +30,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FollowingEventNotification : Model<FollowingEventNotification>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -61,9 +59,9 @@ namespace Rock.Model
         [DataMember]
         public DateTime LastNotified { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the following event.
@@ -74,23 +72,18 @@ namespace Rock.Model
         [DataMember]
         public virtual FollowingEventType FollowingEventType { get; set; }
 
-        #endregion
-
-        #region Public Methods
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// File Configuration class.
+    /// Following Event Notification Configuration class.
     /// </summary>
     public partial class FollowingEventNotificationConfiguration : EntityTypeConfiguration<FollowingEventNotification>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FollowingConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="FollowingEventNotificationConfiguration"/> class.
         /// </summary>
         public FollowingEventNotificationConfiguration()
         {
@@ -98,6 +91,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

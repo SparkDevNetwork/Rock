@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Follow;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -90,12 +87,7 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [send on weekends].
@@ -133,9 +125,9 @@ namespace Rock.Model
         [DataMember]
         public string EntityNotificationFormatLava { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the event entity.
@@ -154,40 +146,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual EntityType FollowedEntityType { get; set; }
-        
-        #endregion
 
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FollowingEventType"/> class.
-        /// </summary>
-        public FollowingEventType()
-        {
-            IsActive = true;
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
-
-        /// <summary>
-        /// Gets the event component.
-        /// </summary>
-        /// <returns></returns>
-        public virtual EventComponent GetEventComponent()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return EventContainer.GetComponent( entityType.Name );
-                }
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this FollowingEvent.
@@ -200,8 +162,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -221,6 +182,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

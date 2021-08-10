@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -31,7 +30,6 @@ namespace Rock.Model
     [DataContract]
     public partial class FollowingSuggested : Model<FollowingSuggested>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -97,9 +95,9 @@ namespace Rock.Model
         [DataMember]
         public FollowingSuggestedStatus Status { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -127,13 +125,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FollowingSuggestionType SuggestionType { get; set; }
-        
-        #endregion
 
-        #region Public Methods
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -154,32 +147,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The person's email preference
-    /// </summary>
-    public enum FollowingSuggestedStatus
-    {
-        /// <summary>
-        /// The pending notification
-        /// </summary>
-        PendingNotification = 0,
-
-        /// <summary>
-        /// Emails can be sent to person
-        /// </summary>
-        Suggested = 1,
-
-        /// <summary>
-        /// No Mass emails should be sent to person
-        /// </summary>
-        Ignored = 2,
-    }
-
-    #endregion
-
-
+    #endregion Entity Configuration
 }

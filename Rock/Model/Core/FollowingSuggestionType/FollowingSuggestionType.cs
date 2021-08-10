@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Follow;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -100,12 +97,7 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets how an entity should be formatted when included in the suggestion notification to follower.
@@ -116,9 +108,9 @@ namespace Rock.Model
         [DataMember]
         public string EntityNotificationFormatLava { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the type of the suggestion entity.
@@ -129,39 +121,9 @@ namespace Rock.Model
         [DataMember]
         public virtual EntityType EntityType { get; set; }
 
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FollowingSuggestionType"/> class.
-        /// </summary>
-        public FollowingSuggestionType()
-        {
-            IsActive = true;
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
-
-        /// <summary>
-        /// Gets the suggestion component.
-        /// </summary>
-        /// <returns></returns>
-        public virtual SuggestionComponent GetSuggestionComponent()
-        {
-            if ( EntityTypeId.HasValue )
-            {
-                var entityType = EntityTypeCache.Get( EntityTypeId.Value );
-                if ( entityType != null )
-                {
-                    return SuggestionContainer.GetComponent( entityType.Name );
-                }
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this FollowingSuggestion.
@@ -174,8 +136,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
-
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -194,6 +155,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
