@@ -14,29 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
-using Rock.Data;
-using Rock.ViewModel;
-
 namespace Rock.Model
 {
-    /// <summary>
-    /// AnalyticsDimFamilyHistorical is SQL View based on AnalyticsSourceFamilyHistorical
-    /// and represents the historic and current records from AnalyticsSourceFamilyHistorical
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsDimFamilyHistorical" )]
-    [DataContract]
-    [ViewModelExclude]
-    public class AnalyticsDimFamilyHistorical : AnalyticsDimFamilyBase<AnalyticsDimFamilyHistorical>
-    {
-        // intentionally blank. See AnalyticsDimFamilyBase, etc for the fields
-    }
-
     /// <summary>
     /// *Another* Abstract Layer since AnalyticDimFamilyHistorical and AnalyticsDimFamilyCurrent share all the same fields
     /// </summary>
@@ -46,6 +30,8 @@ namespace Rock.Model
     public abstract class AnalyticsDimFamilyBase<T> : AnalyticsSourceFamilyBase<T>, IAnalyticsAddresses
         where T : AnalyticsDimFamilyBase<T>, new()
     {
+        #region Entity Properties
+
         #region Denormalized Lookup Values
 
         /// <summary>
@@ -66,9 +52,9 @@ namespace Rock.Model
         [DataMember]
         public string CampusShortCode { get; set; }
 
-        #endregion
+        #endregion Denormalized Lookup Values
 
-        #region Primary Mailing Address
+        #region Mailing Address
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -198,9 +184,9 @@ namespace Rock.Model
         [DataMember]
         public string MailingAddressFull { get; set; }
 
-        #endregion
+        #endregion Mailing Address
 
-        #region Primary Mailing Address
+        #region Mapped Address
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -330,6 +316,8 @@ namespace Rock.Model
         [DataMember]
         public string MappedAddressFull { get; set; }
 
-        #endregion
+        #endregion Mapped Address
+
+        #endregion Entity Properties
     }
 }

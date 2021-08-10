@@ -14,31 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the source record for the AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent views.
-    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourcePersonHistorical" )]
-    [DataContract]
-    [HideFromReporting]
-    [ViewModelExclude]
-    public class AnalyticsSourcePersonHistorical : AnalyticsSourcePersonBase<AnalyticsSourcePersonHistorical>
-    {
-        // intentionally blank
-    }
-
     /// <summary>
     /// AnalyticsSourcePersonHistorical is a real table, and AnalyticsDimPersonHistorical and AnalyticsDimPersonCurrent are VIEWs off of AnalyticsSourcePersonHistorical, so they share lots of columns
     /// </summary>
@@ -46,7 +29,7 @@ namespace Rock.Model
     public abstract class AnalyticsSourcePersonBase<T> : Entity<T>
         where T : AnalyticsSourcePersonBase<T>, new()
     {
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the person identifier.
@@ -103,7 +86,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE:  This always has a (hard-coded) value of 1. It is stored in the table to assist with analytics calculations.
         /// </summary>
         /// <value>
         /// The count.
@@ -111,9 +94,9 @@ namespace Rock.Model
         [DataMember]
         public int Count { get; set; } = 1;
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
 
-        #region Entity Properties from Rock.Model.Person
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the Id of the Person Record Type <see cref="Rock.Model.DefinedValue" /> representing what type of Person Record this is.
@@ -445,10 +428,10 @@ namespace Rock.Model
         [DataMember]
         public int? ViewedCount { get; set; }
 
-        #endregion
-        
-        #region Virtual
-        
+        #endregion Entity Properties
+
+        #region Navigation Properties (must be set by inheriting class's configuration class)
+
         /// <summary>
         /// Gets or sets the birth date dim.
         /// </summary>
@@ -458,26 +441,6 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsSourceDate BirthDateDim { get; set; }
 
-        #endregion
+        #endregion Navigation Properties (must be set by inheriting class's configuration class)
     }
-
-    #region Entity Configuration
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class AnalyticsSourcePersonHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourcePersonHistorical>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsSourcePersonHistoricalConfiguration"/> class.
-        /// </summary>
-        public AnalyticsSourcePersonHistoricalConfiguration()
-        {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
-            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-            this.HasOptional( t => t.BirthDateDim ).WithMany().HasForeignKey( t => t.BirthDateKey ).WillCascadeOnDelete( false );
-        }
-    }
-
-    #endregion
 }

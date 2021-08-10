@@ -14,29 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
-using Rock.Data;
-using Rock.ViewModel;
-
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the source record for the AnalyticDimCampus view in Rock.
-    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourceCampus" )]
-    [DataContract]
-    [HideFromReporting]
-    [ViewModelExclude]
-    public class AnalyticsSourceCampus : AnalyticsSourceCampusBase<AnalyticsSourceCampus>
-    {
-        // intentionally blank
-    }
-
     /// <summary>
     /// AnalyticSourceCampus is a real table, and AnalyticsFactCampus is a VIEW off of AnalyticSourceCampus, so they share lots of columns
     /// </summary>
@@ -151,13 +135,13 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE:  This always has a (hard-coded) value of 1. It is stored in the table to assist with analytics calculations.
         /// </summary>
         /// <value>
         /// The count.
@@ -165,6 +149,6 @@ namespace Rock.Model
         [DataMember]
         public int Count { get; set; }
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
     }
 }

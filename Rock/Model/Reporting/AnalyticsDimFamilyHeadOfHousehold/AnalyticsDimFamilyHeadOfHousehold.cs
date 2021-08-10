@@ -14,24 +14,23 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.ViewModel;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// AnalyticsDimFamilyCurrent is SQL View off of AnalyticsDimFamilyHistorical
-    /// and represents the CurrentRow record from AnalyticsDimFamilyHistorical
+    /// AnalyticsDimFamilyHeadOfHousehold is straight SQL View off of AnalyticsDimPersonCurrent
     /// </summary>
     [RockDomain( "Reporting" )]
-    [Table( "AnalyticsDimFamilyCurrent" )]
+    [Table( "AnalyticsDimFamilyHeadOfHousehold" )]
     [DataContract]
+    [HideFromReporting]
     [ViewModelExclude]
-    public class AnalyticsDimFamilyCurrent : AnalyticsDimFamilyBase<AnalyticsDimFamilyCurrent>
+    public class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimPersonBase<AnalyticsDimFamilyHeadOfHousehold>
     {
-        // intentionally blank. See AnalyticsDimFamilyBase, etc for the fields
+        // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 }

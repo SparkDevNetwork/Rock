@@ -14,29 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
 
-using Rock.Data;
-using Rock.ViewModel;
-
 namespace Rock.Model
 {
-    /// <summary>
-    /// AnalyticsDimPersonHistorical is SQL View based on AnalyticsSourcePersonHistorical
-    /// and represents the historic and current records from AnalyticsSourcePersonHistorical
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsDimPersonHistorical" )]
-    [DataContract]
-    [ViewModelExclude]
-    public class AnalyticsDimPersonHistorical : AnalyticsDimPersonBase<AnalyticsDimPersonHistorical>
-    {
-        // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
-    }
-
     /// <summary>
     /// *Another* Abstract Layer since AnalyticDimPersonHistorical and AnalyticsDimPersonCurrent share all the same fields
     /// </summary>
@@ -46,6 +30,8 @@ namespace Rock.Model
     public abstract class AnalyticsDimPersonBase<T> : AnalyticsSourcePersonBase<T>, IAnalyticsAddresses
         where T : AnalyticsDimPersonBase<T>, new()
     {
+        #region Entity Properties
+
         #region Denormalized Lookup Values
 
         /// <summary>
@@ -66,8 +52,7 @@ namespace Rock.Model
         /// The connection status.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a Connection Status from ConnectionStatusValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a Connection Status from ConnectionStatusValueId
         public string ConnectionStatus { get; set; }
 
         /// <summary>
@@ -77,8 +62,7 @@ namespace Rock.Model
         /// The review reason.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a ReviewReason from ReviewReasonValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a ReviewReason from ReviewReasonValueId
         public string ReviewReason { get; set; }
 
         /// <summary>
@@ -88,8 +72,7 @@ namespace Rock.Model
         /// The record status.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a RecordStatus from RecordStatusValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordStatus from RecordStatusValueId
         public string RecordStatus { get; set; }
 
         /// <summary>
@@ -99,8 +82,7 @@ namespace Rock.Model
         /// The record status reason.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a RecordStatusReason from RecordStatusReasonValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordStatusReason from RecordStatusReasonValueId
         public string RecordStatusReason { get; set; }
 
         /// <summary>
@@ -110,8 +92,7 @@ namespace Rock.Model
         /// The record type value.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a RecordType from RecordTypeValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a RecordType from RecordTypeValueId
         public string RecordType { get; set; }
 
         /// <summary>
@@ -121,8 +102,7 @@ namespace Rock.Model
         /// The suffix value.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a Suffix from SuffixValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a Suffix from SuffixValueId
         public string Suffix { get; set; }
 
         /// <summary>
@@ -132,13 +112,12 @@ namespace Rock.Model
         /// The title value.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a Title from TitleValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a Title from TitleValueId
         public string Title { get; set; }
 
-        #endregion
+        #endregion Denormalized Lookup Values
 
-        #region Enums as Text
+        #region Enum Values Converted to Text
 
         /// <summary>
         /// Gets or sets the gender text.
@@ -147,8 +126,7 @@ namespace Rock.Model
         /// The gender text.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already show Text value of the Gender enum
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already show Text value of the Gender enum
         public string GenderText { get; set; }
 
         /// <summary>
@@ -158,9 +136,10 @@ namespace Rock.Model
         /// The email preference text.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already show the Text value of EmailPreferenceEnum
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already show the Text value of EmailPreferenceEnum
         public string EmailPreferenceText { get; set; }
+
+        #endregion Enum Values Converted to Text
 
         /// <summary>
         /// Gets or sets the primary family key which relates to the AnalyticsDimFamily tables/views
@@ -171,9 +150,7 @@ namespace Rock.Model
         [DataMember]
         public int? PrimaryFamilyKey { get; set; }
 
-        #endregion
-
-        #region Campus (of the person's primary family)
+        #region Campus (of the Person's Primary Family)
 
         /// <summary>
         /// Gets or sets the campus identifier (based on the Family's Address/Location record's CampusId)
@@ -202,9 +179,9 @@ namespace Rock.Model
         [DataMember]
         public string CampusShortCode { get; set; }
 
-        #endregion
+        #endregion Campus (of the Person's Primary Family)
 
-        #region Primary Mailing Address (of the person's primary family)
+        #region Mailing Address (of the Person's Primary Family)
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -334,9 +311,9 @@ namespace Rock.Model
         [DataMember]
         public string MailingAddressFull { get; set; }
 
-        #endregion
+        #endregion Mailing Address (of the Person's Primary Family)
 
-        #region Primary Mailing Address (of the person's primary family)
+        #region Mapped Address (of the Person's Primary Family)
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -466,6 +443,8 @@ namespace Rock.Model
         [DataMember]
         public string MappedAddressFull { get; set; }
 
-        #endregion
+        #endregion Mapped Address (of the Person's Primary Family)
+
+        #endregion Entity Properties
     }
 }

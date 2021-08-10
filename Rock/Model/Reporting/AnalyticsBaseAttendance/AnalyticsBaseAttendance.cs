@@ -14,29 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the source record for an Analytic Fact Attendance record in Rock.
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourceAttendance" )]
-    [DataContract]
-    [HideFromReporting]
-    [ViewModelExclude]
-    public class AnalyticsSourceAttendance : AnalyticsBaseAttendance<AnalyticsSourceAttendance>
-    {
-        // intentionally blank
-    }
-
     /// <summary>
     /// AnalyticSourceAttendance is a real table, and AnalyticsFactAttendance is a VIEW off of AnalyticSourceAttendance, so they share lots of columns
     /// </summary>
@@ -46,7 +30,7 @@ namespace Rock.Model
     public abstract class AnalyticsBaseAttendance<T> : Entity<T>
         where T : AnalyticsBaseAttendance<T>, new()
     {
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the attendance identifier from the original Attendance.Id value
@@ -132,7 +116,7 @@ namespace Rock.Model
         [DataMember]
         public int? CurrentPersonKey { get; set; }
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
 
         #region Entity Properties
 
@@ -255,9 +239,9 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime SundayDate { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties (must be set by inheriting class's configuration class)
 
         /// <summary>
         /// Gets or sets the attendance date.
@@ -277,29 +261,6 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsDimAttendanceLocation Location { get; set; }
 
-        #endregion
+        #endregion Navigation Properties (must be set by inheriting class's configuration class)
     }
-
-    #region Entity Configuration
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class AnalyticsSourceAttendanceConfiguration : EntityTypeConfiguration<AnalyticsSourceAttendance>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsSourceAttendanceConfiguration"/> class.
-        /// </summary>
-        public AnalyticsSourceAttendanceConfiguration()
-        {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier TransactionDates that aren't in the AnalyticsSourceDate table
-            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-            this.HasRequired( t => t.AttendanceDate ).WithMany().HasForeignKey( t => t.AttendanceDateKey ).WillCascadeOnDelete( false );
-
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-            this.HasOptional( t => t.Location ).WithMany().HasForeignKey( t => t.LocationId ).WillCascadeOnDelete( false );
-        }
-    }
-
-    #endregion
 }

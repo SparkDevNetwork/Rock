@@ -14,32 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.Web.UI.Controls;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the source record for an Analytic Fact Financial Transaction in Rock.
-    /// Note that this represents a combination of the FinancialTransaction and the FinancialTransactionDetail, 
-    /// so if a person contributed to multiple accounts in a transaction, there will be multiple AnalyticSourceFinancialRecords.
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourceFinancialTransaction" )]
-    [DataContract]
-    [HideFromReporting]
-    [ViewModelExclude]
-    public class AnalyticsSourceFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsSourceFinancialTransaction>
-    {
-        // intentionally blank
-    }
-
     /// <summary>
     /// AnalyticSourceFinancialTransaction is a real table, and AnalyticsFactFinancialTransation is a VIEW off of AnalyticSourceFinancialTransaction, so they share lots of columns
     /// </summary>
@@ -49,7 +32,7 @@ namespace Rock.Model
     public abstract class AnalyticsBaseFinancialTransaction<T> : Entity<T>
         where T : AnalyticsBaseFinancialTransaction<T>, new()
     {
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the transaction key in the form of "{Transaction.Id}_{TransactionDetail.Id}"
@@ -164,7 +147,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE:  This always has a (hard-coded) value of 1. It is stored in the table to assist with analytics calculations.
         /// </summary>
         /// <value>
         /// The count.
@@ -172,7 +155,7 @@ namespace Rock.Model
         [DataMember]
         public int Count { get; set; } = 1;
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
 
         #region Entity Properties
 
@@ -346,7 +329,7 @@ namespace Rock.Model
         /// The amount.
         /// </value>
         [DataMember]
-        [BoundFieldTypeAttribute( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        [BoundFieldType( typeof( CurrencyField ) )]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -358,9 +341,9 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ModifiedDateTime { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties (must be set by inheriting class's configuration class)
 
         /// <summary>
         /// Gets or sets the transaction date.
@@ -389,30 +372,6 @@ namespace Rock.Model
         [DataMember]
         public virtual AnalyticsDimFinancialAccount Account { get; set; }
 
-        #endregion
+        #endregion Navigation Properties (must be set by inheriting class's configuration class)
     }
-
-    #region Entity Configuration
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class AnalyticsSourceFinancialTransactionConfiguration : EntityTypeConfiguration<AnalyticsSourceFinancialTransaction>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsSourceFinancialTransactionConfiguration"/> class.
-        /// </summary>
-        public AnalyticsSourceFinancialTransactionConfiguration()
-        {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier TransactionDates that aren't in the AnalyticsSourceDate table
-            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-            this.HasRequired( t => t.TransactionDate ).WithMany().HasForeignKey( t => t.TransactionDateKey ).WillCascadeOnDelete( false );
-
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-            this.HasOptional( t => t.Batch ).WithMany().HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasRequired( t => t.Account ).WithMany().HasForeignKey( t => t.AccountId ).WillCascadeOnDelete( false );
-        }
-    }
-
-    #endregion
 }

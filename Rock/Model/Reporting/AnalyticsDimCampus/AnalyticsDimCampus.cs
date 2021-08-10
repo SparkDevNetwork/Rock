@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.ViewModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -33,6 +32,8 @@ namespace Rock.Model
     [ViewModelExclude]
     public class AnalyticsDimCampus : AnalyticsSourceCampusBase<AnalyticsDimCampus>
     {
+        // Note:  Additional fields inherited from AnalyticsSourceCampusBase.
+
         #region Entity Properties
 
         /// <summary>
@@ -53,9 +54,7 @@ namespace Rock.Model
         [DataMember]
         public int? LeaderPersonId { get; set; }
 
-        #endregion
-
-        #region Address
+        #region Address Fields
 
         /// <summary>
         /// Gets or sets the first line of the Location's Street/Mailing Address.
@@ -185,6 +184,8 @@ namespace Rock.Model
         [DataMember]
         public string AddressFull { get; set; }
 
-        #endregion
+        #endregion Address Fields
+
+        #endregion Entity Properties
     }
 }

@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.ViewModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -148,13 +147,13 @@ namespace Rock.Model
         [DataMember]
         public string CreditCardType { get; set; }
 
-        #endregion
+        #endregion Entity Properties
     }
 
     #region Entity Configuration
 
     /// <summary>
-    /// 
+    /// AnalyticsFactFinancialTransaction Configuration Class
     /// </summary>
     public partial class AnalyticsFactFinancialTransactionConfiguration : EntityTypeConfiguration<AnalyticsFactFinancialTransaction>
     {
@@ -173,5 +172,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

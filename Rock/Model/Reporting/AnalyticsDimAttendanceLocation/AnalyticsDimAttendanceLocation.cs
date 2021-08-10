@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.ViewModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -183,13 +182,13 @@ namespace Rock.Model
         [DataMember]
         public string FullAddress { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE:  This always has a (hard-coded) value of 1. It is stored in the table to assist with analytics calculations.
         /// </summary>
         /// <value>
         /// The count.
@@ -197,6 +196,6 @@ namespace Rock.Model
         [DataMember]
         public int Count { get; set; }
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
     }
 }

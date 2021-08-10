@@ -14,31 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.ViewModel;
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the source record for the AnalyticsDimFamilyHistorical and AnalyticsDimFamilyCurrent views
-    /// NOTE: Rock.Jobs.ProcessBIAnalytics dynamically adds additional columns to this table for any Attribute that is marked for Analytics
-    /// </summary>
-    [RockDomain( "Reporting" )]
-    [Table( "AnalyticsSourceFamilyHistorical" )]
-    [DataContract]
-    [HideFromReporting]
-    [ViewModelExclude]
-    public class AnalyticsSourceFamilyHistorical : AnalyticsSourceFamilyBase<AnalyticsSourceFamilyHistorical>
-    {
-        // intentionally blank
-    }
-
     /// <summary>
     /// AnalyticsSourceFamilyHistorical is a real table, and AnalyticsDimFamilyHistorical and AnalyticsDimFamilyCurrent are VIEWs off of AnalyticsSourceFamilyHistorical, so they share lots of columns
     /// </summary>
@@ -46,7 +29,7 @@ namespace Rock.Model
     public abstract class AnalyticsSourceFamilyBase<T> : Entity<T>
         where T : AnalyticsSourceFamilyBase<T>, new()
     {
-        #region Entity Properties specific to Analytics
+        #region Entity Properties Specific to Analytics
 
         /// <summary>
         /// Gets or sets the FamilyId (which is really a GroupId)  (the live [Group] record of GroupTypeFamily that represents the family)
@@ -93,7 +76,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the count.
-        /// NOTE: this always has a hardcoded value of 1. It is stored in the table because it is supposed to help do certain types of things in analytics
+        /// NOTE:  This always has a (hard-coded) value of 1. It is stored in the table to assist with analytics calculations.
         /// </summary>
         /// <value>
         /// The count.
@@ -101,9 +84,9 @@ namespace Rock.Model
         [DataMember]
         public int Count { get; set; } = 1;
 
-        #endregion
+        #endregion Entity Properties Specific to Analytics
 
-        #region Other Entity Properties
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the name (the value from Group.Name )
@@ -207,31 +190,6 @@ namespace Rock.Model
         [DataMember]
         public int? MappedAddressLocationId { get; set; }
 
-        #endregion
-
-        #region Virtual
-
-        #endregion
+        #endregion Entity Properties
     }
-
-    #region Entity Configuration
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public partial class AnalyticsSourceFamilyHistoricalConfiguration : EntityTypeConfiguration<AnalyticsSourceFamilyHistorical>
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AnalyticsSourceFamilyHistorical"/> class.
-        /// </summary>
-        public AnalyticsSourceFamilyHistoricalConfiguration()
-        {
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for any of these since they are views
-
-            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
-            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
-        }
-    }
-
-    #endregion
 }
