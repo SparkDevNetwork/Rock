@@ -27,7 +27,7 @@ namespace Rock.Reporting.DataFilter.Person
     /// <summary>
     ///     A Data Filter to select Donor by their Connection Requests from a Connection Request View.
     /// </summary>
-    [Description( "Select Person by their Connection Requests from a Benevolence Connection View." )]
+    [Description( "Select Person by their Connection Requests from a Connection Request View." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Connection Request View" )]
     public class ConnectionRequestDataViewFilter : RelatedDataViewFilterBase<Rock.Model.Person, Rock.Model.ConnectionRequest>
@@ -65,7 +65,7 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             var connectionRequestPersonsKey = connectionRequestQuery.Select( a => a.PersonAliasId );
-            // Get all of the Person corresponding to the qualifying Benevolence Requests.
+            // Get all of the Person corresponding to the qualifying Connection Requests.
             var qry = new PersonService( context ).Queryable()
                                                   .Where( g => g.Aliases.Any( k => connectionRequestPersonsKey.Contains( k.Id ) ) );
 
