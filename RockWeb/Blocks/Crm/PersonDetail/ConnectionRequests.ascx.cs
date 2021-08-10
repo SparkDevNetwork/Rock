@@ -68,7 +68,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
         #endregion Attribute Keys
 
-        private DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
+        #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upPanel );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -91,6 +104,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 upPanel.Visible = false;
             }
         }
+
+        #endregion
+
+        #region Events
+
+        // Handlers called by the controls on your block.
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            BindData();
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles the ItemDataBound event of the rConnectionTypes control.
