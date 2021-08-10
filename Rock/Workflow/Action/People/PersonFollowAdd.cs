@@ -37,12 +37,49 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Follow Add" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person who is following the entity.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [EntityTypeField( "Entity Type", "Workflow attribute that contains the entity type to follow.", true, "", 1, "EntityType" )]
+    #region Block Attributes
+
+    [WorkflowAttribute(
+        "Person",
+        Description = "Workflow attribute that contains the person who is following the entity.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = null,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+
+    [EntityTypeField(
+        "Entity Type",
+        Description = "Workflow attribute that contains the entity type to follow.",
+        IsRequired = true,
+        DefaultValue = "",
+        Order = 1,
+        Key = AttributeKey.EntityType )]
+
     [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity" )]
+
+    [TextField(
+        "Purpose Key",
+        Description = "The custom purpose to identify the type of Following.  Leave blank if you are unsure of the desired behavior since some components (such as SendFollowingEvents) expect the PurposeKey to be blank.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 2,
+        Key = AttributeKey.PurposeKey )]
+
+    #endregion
     public class PersonFollowAdd : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string EntityType = "EntityType";
+            public const string Entity = "Entity";
+            public const string PurposeKey = "PurposeKey";
+        }
+
+        #endregion Attribute Keys
         /// <summary>
         /// Executes the action.
         /// </summary>
@@ -92,6 +129,8 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            string purposeKey = GetAttributeValue( action, "PurposeKey" );
+
             var followingService = new FollowingService( rockContext );
 
             //get entity(ies)
@@ -100,11 +139,14 @@ namespace Rock.Workflow.Action
             {
                 foreach ( var entityToFollow in entitiesToFollow )
                 {
+                    //query FollowingService to find whether the requested Following already exists 
                     var following = followingService.Queryable()
                         .FirstOrDefault( f =>
                             f.EntityTypeId == entityType.Id &&
                             f.EntityId == entityToFollow.Id &&
-                            string.IsNullOrEmpty( f.PurposeKey ) &&
+                            //result must have a null / empty PurposeKey in Following & null / empty PurposeKey text field
+                            //or have a Following PurposeKey that matches the value in the PurposeKey text field
+                            ( ( string.IsNullOrEmpty( f.PurposeKey ) && string.IsNullOrEmpty( purposeKey ) ) || f.PurposeKey == purposeKey ) &&
                             f.PersonAlias.Person.Id == personAlias.PersonId );
 
                     if ( following == null )
@@ -113,6 +155,19 @@ namespace Rock.Workflow.Action
                         following.EntityTypeId = entityType.Id;
                         following.EntityId = entityToFollow.Id;
                         following.PersonAliasId = personAlias.Id;
+                        /*
+                            8/10/2021 - CWR
+                            If the Workflow creator wants to include a custom purpose text value for a Following add, they can add text to this "Purpose Key" TextField.
+                            Some components (such as SendFollowingEvents) expect the PurposeKey to be blank, so be aware.
+                            
+                            See here for the introduction of PurposeKey to Following
+                            https://github.com/SparkDevNetwork/Rock/commit/f92f4502772f6a19edc945b5c021115ad11d48a9
+                        */
+                        //if the PurposeKey is not null or empty, add a PurposeKey to the Following
+                        if ( !string.IsNullOrEmpty( purposeKey ) )
+                        {
+                            following.PurposeKey = purposeKey;
+                        }
                         followingService.Add( following );
                     }
                 }
