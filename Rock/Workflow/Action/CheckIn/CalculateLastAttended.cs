@@ -49,218 +49,231 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( RockContext rockContext, Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             var checkInState = GetCheckInState( entity, out errorMessages );
-            if ( checkInState != null )
+            if ( checkInState == null )
             {
-                DateTime preSelectCutoff = RockDateTime.Today.AddDays( 0 - checkInState.CheckInType.AutoSelectDaysBack );
+                return false;
+            }
 
-                var attendanceService = new AttendanceService( rockContext );
+            DateTime preSelectCutoff = RockDateTime.Today.AddDays( 0 - checkInState.CheckInType.AutoSelectDaysBack );
 
-                // Find all the schedules that are used for check-in
-                var checkinSchedules = new ScheduleService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( s => s.CheckInStartOffsetMinutes.HasValue )
-                    .ToList();
+            var attendanceService = new AttendanceService( rockContext );
 
-                DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
+            // Find all the schedules that are used for check-in.
+            var checkinSchedules = new ScheduleService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( s => s.CheckInStartOffsetMinutes.HasValue )
+                .ToList();
 
-                foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
+            DateTime sixMonthsAgo = RockDateTime.Today.AddMonths( -6 );
+
+            foreach ( var family in checkInState.CheckIn.GetFamilies( true ) )
+            {
+                foreach ( var person in family.People.Union( family.OriginalPeople ) )
                 {
-                    foreach ( var person in family.People.Union( family.OriginalPeople )  )
+                    // Find all of the attendance records for this person for any of the check-in types that are currently available for this kiosk and person.
+                    var groupTypeIds = person.GroupTypes.Select( t => t.GroupType.Id ).ToList();
+                    if ( checkInState.AllowCheckout )
                     {
-                        // Find all of the attendance records for this person for any of the check-in types that are currently available for this kiosk and person
-                        var groupTypeIds = person.GroupTypes.Select( t => t.GroupType.Id ).ToList();
+                        groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
+                    }
+
+
+                    var personAttendanceQuery = attendanceService
+                        .Queryable().AsNoTracking()
+                        .Where( a =>
+                            a.PersonAlias != null &&
+                            a.Occurrence.Group != null &&
+                            a.Occurrence.Schedule != null &&
+                            a.PersonAlias.PersonId == person.Person.Id &&
+                            a.StartDateTime >= sixMonthsAgo &&
+                            a.DidAttend.HasValue &&
+                            a.DidAttend.Value == true );
+
+                    if ( groupTypeIds.Count() == 1 )
+                    {
+                        var groupTypeId = groupTypeIds[0];
+                        personAttendanceQuery = personAttendanceQuery.Where( a => a.Occurrence.Group.GroupTypeId == groupTypeId );
+                    }
+                    else
+                    {
+                        personAttendanceQuery = personAttendanceQuery.Where( a => groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) );
+                    }
+
+                    var personAttendance = personAttendanceQuery
+                        .Select( a => new PersonAttendanceInfo
+                        {
+                            AttendanceId = a.Id,
+                            StartDateTime = a.StartDateTime,
+                            EndDateTime = a.EndDateTime,
+                            PersonId = a.PersonAlias.PersonId,
+                            GroupTypeId = a.Occurrence.Group.GroupTypeId,
+                            GroupId = a.Occurrence.GroupId,
+                            LocationId = a.Occurrence.LocationId,
+                            ScheduleId = a.Occurrence.ScheduleId,
+                            Schedule = a.Occurrence.Schedule
+                        } )
+                        .ToList();
+
+                    // If there are any previous attendance records start evaluating them for last check-in and if options
+                    // should be preselected.
+                    if ( personAttendance.Any() )
+                    {
+                        // Determine who from the family can check-out and add them to the
+                        // family's CheckOutPeople collection.
                         if ( checkInState.AllowCheckout )
                         {
-                            groupTypeIds.AddRange( checkInState.ConfiguredGroupTypes );
+                            var todaysAttendance = personAttendance.Where( a => a.StartDateTime > DateTime.Today ).ToList();
+                            foreach ( var kioskGroupType in checkInState.Kiosk.ActiveForCheckOutGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                            {
+                                // If the group is active for check-out...
+                                foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive || g.IsCheckOutActive ) )
+                                {
+                                    foreach ( var kioskLocation in kioskGroup.KioskLocations )
+                                    {
+                                        AddPeopleToFamilyCheckOutPeopleCollection( checkinSchedules, family, person, kioskLocation, todaysAttendance.Where( a => a.LocationId == kioskLocation.Location.Id ).ToList() );
+                                    }
+                                }
+                            }
                         }
 
-                        var personAttendance = attendanceService
-                            .Queryable().AsNoTracking()
-                            .Where( a =>
-                                a.PersonAlias != null &&
-                                a.Occurrence.Group != null &&
-                                a.Occurrence.Schedule != null &&
-                                a.PersonAlias.PersonId == person.Person.Id &&
-                                groupTypeIds.Contains( a.Occurrence.Group.GroupTypeId ) &&
-                                a.StartDateTime >= sixMonthsAgo &&
-                                a.DidAttend.HasValue &&
-                                a.DidAttend.Value == true )
-                            .Select( a => new PersonAttendanceInfo
-                            {
-                                AttendanceId = a.Id,
-                                StartDateTime = a.StartDateTime,
-                                EndDateTime = a.EndDateTime,
-                                PersonId = a.PersonAlias.PersonId,
-                                GroupTypeId = a.Occurrence.Group.GroupTypeId,
-                                GroupId = a.Occurrence.GroupId,
-                                LocationId = a.Occurrence.LocationId,
-                                ScheduleId = a.Occurrence.ScheduleId,
-                                Schedule = a.Occurrence.Schedule
-                            } )
-                            .ToList();
+                        person.FirstTime = false;
 
-                        // If there are any previous attendance records start evaluating them for last check-in and if options should be preselected.
-                        if ( personAttendance.Any() )
+                        // Get the date time that person last checked in.
+                        person.LastCheckIn = personAttendance.Max( a => a.StartDateTime );
+
+                        // If the date they last checked in is greater than the PreSelect cutoff date, then get all the group/location/schedules 
+                        // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
+                        // only consider the most recent group/location per schedule.
+                        var previousCheckins = new List<CheckinInfo>();
+                        if ( person.LastCheckIn.HasValue &&
+                             preSelectCutoff.CompareTo( RockDateTime.Today ) < 0 &&
+                             person.LastCheckIn.Value.CompareTo( preSelectCutoff ) >= 0 )
                         {
-                            // Determine who from the family can check-out and add them to the
-                            // family's CheckOutPeople collection.
-                            if ( checkInState.AllowCheckout )
+                            foreach ( var item in personAttendance
+                                .Where( a => a.StartDateTime.Date == person.LastCheckIn.Value.Date )
+                                .OrderBy( a => a.Schedule.StartTimeOfDay )
+                                .ThenByDescending( a => a.StartDateTime ) )
                             {
-                                var todaysAttendance = personAttendance.Where( a => a.StartDateTime > DateTime.Today ).ToList();
-                                foreach ( var kioskGroupType in checkInState.Kiosk.ActiveForCheckOutGroupTypes( checkInState.ConfiguredGroupTypes ) )
+                                if ( item.ScheduleId.HasValue && !previousCheckins.Any( i => i.ScheduleId == item.ScheduleId ) )
                                 {
-                                    // if the group is active for check-out...
-                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.IsCheckInActive || g.IsCheckOutActive ) )
+                                    previousCheckins.Add( new CheckinInfo
                                     {
-                                        foreach ( var kioskLocation in kioskGroup.KioskLocations )
-                                        {
-                                            AddPeopleToFamilyCheckOutPeopleCollection( checkinSchedules, family, person, kioskLocation, todaysAttendance.Where( a => a.LocationId == kioskLocation.Location.Id ).ToList() );
-                                        }
-                                    }
+                                        ScheduleId = item.ScheduleId.Value,
+                                        GroupId = item.GroupId.Value,
+                                        LocationId = item.LocationId
+                                    } );
                                 }
                             }
+                        }
 
-                            person.FirstTime = false;
+                        var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
 
-                            // Get the date time that person last checked in
-                            person.LastCheckIn = personAttendance.Max( a => a.StartDateTime );
-
-                            // If the date they last checked in is greater than the PreSelect cutoff date, then get all the group/location/schedules 
-                            // that the person checked into on that date (if they somehow checked into multiple group/locations during same schedule, 
-                            // only consider the most recent group/location per schedule
-                            var previousCheckins = new List<CheckinInfo>();
-                            if ( person.LastCheckIn.HasValue &&
-                                 preSelectCutoff.CompareTo( RockDateTime.Today ) < 0 &&
-                                 person.LastCheckIn.Value.CompareTo( preSelectCutoff  ) >= 0 )
+                        foreach ( var groupType in person.GroupTypes )
+                        {
+                            // Find the previous attendance for this group type and save the most recent attendance date
+                            var groupTypeAttendance = personAttendance.Where( a => a.GroupTypeId == groupType.GroupType.Id ).ToList();
+                            if ( groupTypeAttendance.Any() )
                             {
-                                foreach ( var item in personAttendance
-                                    .Where( a => a.StartDateTime.Date == person.LastCheckIn.Value.Date )
-                                    .OrderBy( a => a.Schedule.StartTimeOfDay )
-                                    .ThenByDescending( a => a.StartDateTime ) )
-                                {
-                                    if ( item.ScheduleId.HasValue && !previousCheckins.Any( i => i.ScheduleId == item.ScheduleId ) )
-                                    {
-                                        previousCheckins.Add( new CheckinInfo
-                                        {
-                                            ScheduleId = item.ScheduleId.Value,
-                                            GroupId = item.GroupId.Value,
-                                            LocationId = item.LocationId
-                                        } );
-                                    }
-                                }
+                                groupType.LastCheckIn = groupTypeAttendance.Max( a => a.StartDateTime );
                             }
 
-                            var selectedSchedules = new List<int>();    // Used to keep track of which schedules have already had options preselected.
-                            
-                            foreach ( var groupType in person.GroupTypes )
+                            foreach ( var group in groupType.Groups )
                             {
-                                // Find the previous attendance for this group type and save the most recent attendance date
-                                var groupTypeAttendance = personAttendance.Where( a => a.GroupTypeId == groupType.GroupType.Id ).ToList();
-                                if ( groupTypeAttendance.Any() )
+                                // Find the previous attendance for this group and save the most recent attendance date.
+                                var groupAttendance = groupTypeAttendance.Where( a => a.GroupId == group.Group.Id ).ToList();
+                                if ( groupAttendance.Any() )
                                 {
-                                    groupType.LastCheckIn = groupTypeAttendance.Max( a => a.StartDateTime );
+                                    group.LastCheckIn = groupAttendance.Max( a => a.StartDateTime );
                                 }
 
-                                foreach ( var group in groupType.Groups )
+                                // If person checked into this group on last visit, preselect it for now.
+                                var previousGroupCheckins = previousCheckins.Where( c => c.GroupId == group.Group.Id ).ToList();
+                                if ( previousGroupCheckins.Any() )
                                 {
-                                    // Find the previous attendance for this group and save the most recent attendance date
-                                    var groupAttendance = groupTypeAttendance.Where( a => a.GroupId == group.Group.Id ).ToList();
-                                    if ( groupAttendance.Any() )
+                                    group.PreSelected = true;
+                                }
+
+                                foreach ( var location in group.Locations )
+                                {
+                                    // Find the previous attendance for this location and save the most recent attendance date.
+                                    var locationAttendance = groupAttendance.Where( a => a.LocationId == location.Location.Id ).ToList();
+                                    if ( locationAttendance.Any() )
                                     {
-                                        group.LastCheckIn = groupAttendance.Max( a => a.StartDateTime );
+                                        location.LastCheckIn = locationAttendance.Max( a => a.StartDateTime );
                                     }
 
-                                    // If person checked into this group on last visit, preselect it for now
-                                    var previousGroupCheckins = previousCheckins.Where( c => c.GroupId == group.Group.Id ).ToList();
-                                    if ( previousGroupCheckins.Any() )
+                                    if ( group.PreSelected )
                                     {
-                                        group.PreSelected = true;
-                                    }
-
-                                    foreach ( var location in group.Locations )
-                                    {
-                                        // Find the previous attendance for this location and save the most recent attendance date
-                                        var locationAttendance = groupAttendance.Where( a => a.LocationId == location.Location.Id ).ToList();
-                                        if ( locationAttendance.Any() )
+                                        var previousLocationCheckins = previousGroupCheckins.Where( c => c.LocationId == location.Location.Id );
+                                        if ( previousLocationCheckins.Any() )
                                         {
-                                            location.LastCheckIn = locationAttendance.Max( a => a.StartDateTime );
-                                        }
+                                            // If person checked into this group and location on last visit, preselect the location for now.
+                                            location.PreSelected = true;
 
-                                        if ( group.PreSelected )
-                                        {
-                                            var previousLocationCheckins = previousGroupCheckins.Where( c => c.LocationId == location.Location.Id );
-                                            if ( previousLocationCheckins.Any() )
+                                            // Try to find a schedule.
+                                            var availableSchedules = location.Schedules
+                                                .Where( s => !selectedSchedules.Contains( s.Schedule.Id ) )
+                                                .OrderBy( s => s.StartTime );
+                                            foreach ( var schedule in availableSchedules )
                                             {
-                                                // If person checked into this group and location on last visit, preselect the location for now
-                                                location.PreSelected = true;
-
-                                                // Try to find a schedule
-                                                var availableSchedules = location.Schedules
-                                                    .Where( s => !selectedSchedules.Contains( s.Schedule.Id ) )
-                                                    .OrderBy( s => s.StartTime );
-                                                foreach ( var schedule in availableSchedules )
+                                                // If person checked into this group/location/schedule on last visit, preselect it for now.
+                                                if ( previousLocationCheckins.Any( c => c.ScheduleId == schedule.Schedule.Id ) )
                                                 {
-                                                    // If person checked into this group/location/schedule on last visit, preselect it for now
-                                                    if ( previousLocationCheckins.Any( c => c.ScheduleId == schedule.Schedule.Id ) )
-                                                    {
-                                                        schedule.PreSelected = true;
-                                                        selectedSchedules.Add( schedule.Schedule.Id );
-                                                    }
-                                                }
-                                                if ( !location.Schedules.Any( s => s.PreSelected ) && availableSchedules.Any() )
-                                                {
-                                                    var schedule = availableSchedules.First();
                                                     schedule.PreSelected = true;
                                                     selectedSchedules.Add( schedule.Schedule.Id );
                                                 }
                                             }
+                                            if ( !location.Schedules.Any( s => s.PreSelected ) && availableSchedules.Any() )
+                                            {
+                                                var schedule = availableSchedules.First();
+                                                schedule.PreSelected = true;
+                                                selectedSchedules.Add( schedule.Schedule.Id );
+                                            }
                                         }
-                                    }
-
-                                    // If the group was preselected, but could not preselect the location, try to preselect the first location and schedule
-                                    if ( group.PreSelected && !group.Locations.Any( l => l.PreSelected ) && group.Locations.Any() )
-                                    {
-                                        var location = group.Locations.First();
-                                        var schedule = location.Schedules
-                                                    .Where( s => !selectedSchedules.Contains( s.Schedule.Id ) )
-                                                    .OrderBy( s => s.StartTime )
-                                                    .FirstOrDefault();
-                                        if ( schedule != null )
-                                        {
-                                            location.PreSelected = true;
-                                            schedule.PreSelected = true;
-                                            selectedSchedules.Add( schedule.Schedule.Id );
-                                        }
-                                    }
-
-                                    // If there were still not any location/schedules able to be preselected for this group, unselect the group.
-                                    if ( group.PreSelected && !group.Locations.Any( l => l.PreSelected ) )
-                                    {
-                                        group.PreSelected = false;
                                     }
                                 }
 
-                                groupType.PreSelected = groupType.Groups.Any( g => g.PreSelected );
+                                // If the group was preselected, but could not preselect the location, try to preselect the first location and schedule.
+                                if ( group.PreSelected && !group.Locations.Any( l => l.PreSelected ) && group.Locations.Any() )
+                                {
+                                    var location = group.Locations.First();
+                                    var schedule = location.Schedules
+                                                .Where( s => !selectedSchedules.Contains( s.Schedule.Id ) )
+                                                .OrderBy( s => s.StartTime )
+                                                .FirstOrDefault();
+                                    if ( schedule != null )
+                                    {
+                                        location.PreSelected = true;
+                                        schedule.PreSelected = true;
+                                        selectedSchedules.Add( schedule.Schedule.Id );
+                                    }
+                                }
+
+                                // If there were still not any location/schedules able to be preselected for this group, unselect the group.
+                                if ( group.PreSelected && !group.Locations.Any( l => l.PreSelected ) )
+                                {
+                                    group.PreSelected = false;
+                                }
                             }
 
-                            person.PreSelected = person.GroupTypes.Any( t => t.PreSelected );
+                            groupType.PreSelected = groupType.Groups.Any( g => g.PreSelected );
                         }
-                        else
-                        {
-                            // Person hasn't had any attendance to selected group types in last 6 months, so check to see if this is the 
-                            // first time that this person has ever checked into anything
-                            person.FirstTime = !attendanceService
-                                .Queryable().AsNoTracking()
-                                .Where( a => a.PersonAlias.PersonId == person.Person.Id )
-                                .Any();
-                        }
+
+                        person.PreSelected = person.GroupTypes.Any( t => t.PreSelected );
+                    }
+                    else
+                    {
+                        // Person hasn't had any attendance to selected group types in last 6 months, so check
+                        // to see if this is the first time that this person has ever checked into anything.
+                        person.FirstTime = !attendanceService
+                            .Queryable().AsNoTracking()
+                            .Where( a => a.PersonAlias.PersonId == person.Person.Id )
+                            .Any();
                     }
                 }
-
-                return true;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>

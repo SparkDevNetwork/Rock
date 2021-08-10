@@ -50,6 +50,9 @@ namespace Rock.Client
         public int? FinancialPaymentDetailId { get; set; }
 
         /// <summary />
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -57,6 +60,9 @@ namespace Rock.Client
 
         /// <summary />
         public string GatewayScheduleId { get; set; }
+
+        /// <summary />
+        public DateTime? InactivateDateTime { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; } = true;
@@ -83,6 +89,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime StartDate { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.FinancialScheduledTransactionStatus? Status { get; set; }
+
+        /// <summary />
+        public string StatusMessage { get; set; }
 
         /// <summary />
         public string Summary { get; set; }
@@ -134,9 +146,11 @@ namespace Rock.Client
             this.EndDate = source.EndDate;
             this.FinancialGatewayId = source.FinancialGatewayId;
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
+            this.ForeignCurrencyCodeValueId = source.ForeignCurrencyCodeValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GatewayScheduleId = source.GatewayScheduleId;
+            this.InactivateDateTime = source.InactivateDateTime;
             this.IsActive = source.IsActive;
             this.LastRemindedDate = source.LastRemindedDate;
             this.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
@@ -145,6 +159,8 @@ namespace Rock.Client
             this.NumberOfPayments = source.NumberOfPayments;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.StartDate = source.StartDate;
+            this.Status = source.Status;
+            this.StatusMessage = source.StatusMessage;
             this.Summary = source.Summary;
             this.TransactionCode = source.TransactionCode;
             this.TransactionFrequencyValueId = source.TransactionFrequencyValueId;

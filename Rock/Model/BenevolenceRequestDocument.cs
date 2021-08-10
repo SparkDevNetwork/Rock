@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -67,16 +68,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the package.
+        /// Gets or sets the <see cref="Rock.Model.BenevolenceRequest" />.
         /// </summary>
         /// <value>
         /// The package.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BenevolenceRequest BenevolenceRequest { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile" />.
         /// </summary>
         /// <value>
         /// The binary file.

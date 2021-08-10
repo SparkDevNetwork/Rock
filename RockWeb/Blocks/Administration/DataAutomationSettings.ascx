@@ -53,6 +53,15 @@
                                 </div>
                             </div>
 
+                             <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbRegisteredInAnyEvent" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbRegisteredInAnyEvent" runat="server" Label="Any family member has registered for any event in the last" AppendText="days" CssClass="input-width-md" Text="90" />
+                                </div>
+                            </div>
+
                             <div class="clearfix margin-b-lg">
                                 <div class="pull-left" style="width: 40px">
                                     <Rock:RockCheckBox ID="cbAttendanceInGroupType" runat="server" />
@@ -201,6 +210,15 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="clearfix margin-b-lg">
+                                <div class="pull-left" style="width: 40px">
+                                    <Rock:RockCheckBox ID="cbNoRegistrationInAnyEvent" runat="server" />
+                                </div>
+                                <div class="pull-left">
+                                    <Rock:NumberBox ID="nbNoRegistrationInAnyEvent" runat="server" Label="No family member has registered for any event  in the last" AppendText="days" CssClass="input-width-md" Text="500" />
                                 </div>
                             </div>
 
@@ -411,7 +429,7 @@
 
                 </fieldset>
 
-                <div class="actions margin-t-lg">
+                <div class="actions">
                     <Rock:BootstrapButton ID="bbtnSaveConfig" runat="server" CssClass="btn btn-primary" AccessKey="s" ToolTip="Alt+s" OnClick="bbtnSaveConfig_Click" Text="Save"
                         DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
                         CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"></Rock:BootstrapButton>

@@ -28,6 +28,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -570,30 +571,48 @@ namespace Rock.Model
         [DataMember]
         public RegistrarOption RegistrarOption { get; set; }
 
+        /// <summary>
+        /// Gets or sets the payment redirect vendor.
+        /// </summary>
+        /// <value>
+        /// The payment redirect vendor.
+        /// </value>
+        [DataMember]
+        public PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is registration metering enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is registration metering enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsRegistrationMeteringEnabled { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the category.
+        /// Gets or sets the <see cref="Rock.Model.Category"/>.
         /// </summary>
         /// <value>
         /// The category.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType">type</see> of the group.
         /// </summary>
         /// <value>
         /// The type of the group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial gateway.
+        /// Gets or sets the <see cref="Rock.Model.FinancialGateway"/>.
         /// </summary>
         /// <value>
         /// The financial gateway.
@@ -602,7 +621,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the workflow type to launch at end of registration.
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> to launch at end of registration.
         /// </summary>
         /// <value>
         /// The Workflow Type.
@@ -611,7 +630,7 @@ namespace Rock.Model
         public virtual WorkflowType RegistrationWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the required signature document.
+        /// Gets or sets the type of the required <see cref="Rock.Model.SignatureDocumentTemplate">signature document</see>.
         /// </summary>
         /// <value>
         /// The type of the required signature document.
@@ -620,7 +639,7 @@ namespace Rock.Model
         public virtual SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the discounts.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateDiscount">discounts</see>.
         /// </summary>
         /// <value>
         /// The discounts.
@@ -635,7 +654,7 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateDiscount> _discounts;
 
         /// <summary>
-        /// Gets or sets the placements.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplatePlacement">placements</see>.
         /// </summary>
         /// <value>
         /// The placements.
@@ -650,7 +669,7 @@ namespace Rock.Model
         private ICollection<RegistrationTemplatePlacement> _placements;
 
         /// <summary>
-        /// Gets or sets the fees.
+        /// Gets or sets the <see cref="Rock.Model.RegistrationTemplateFee">fees</see>.
         /// </summary>
         /// <value>
         /// The fees.
@@ -665,12 +684,12 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateFee> _fees;
 
         /// <summary>
-        /// Gets or sets the collection of the current page's child pages.
+        /// Gets or sets the collection of the current template's child <see cref="Rock.Model.RegistrationInstance">instances</see>.
         /// </summary>
         /// <value>
         /// Collection of child pages
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<RegistrationInstance> Instances
         {
             get { return _registrationInstances ?? ( _registrationInstances = new Collection<RegistrationInstance>() ); }
@@ -868,6 +887,17 @@ namespace Rock.Model
         /// For example, if EmailAddress wasn't known, Email would be prompted vs readonly.
         /// </summary>
         UseLoggedInPerson = 3
+    }
+
+    /// <summary>
+    /// Payment processor vendors which handle payment directly through a redirect.
+    /// </summary>
+    public enum PaymentRedirectVendor
+    {
+        /// <summary>
+        /// Pushpay
+        /// </summary>
+        Pushpay = 1
     }
 
     #endregion

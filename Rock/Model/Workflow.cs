@@ -29,6 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -47,7 +48,7 @@ namespace Rock.Model
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that this Workflow instance is executing.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the WorkflowTypeId fo the <see cref="Rock.Model.WorkflowType"/> that is being executed.
+        /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is being executed.
         /// </value>
         [DataMember]
         public int WorkflowTypeId { get; set; }
@@ -176,7 +177,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowType"/> that is being executed in this persisted Workflow instance.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowType WorkflowType { get; set; }
 
         /// <summary>
@@ -185,7 +186,7 @@ namespace Rock.Model
         /// <value>
         /// The workflow type cache.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowTypeCache WorkflowTypeCache
         {
             get

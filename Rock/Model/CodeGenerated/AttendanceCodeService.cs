@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,12 +54,12 @@ namespace Rock.Model
         public bool CanDelete( AttendanceCode item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceCode.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -87,6 +90,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this AttendanceCode object to a new AttendanceCode object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static AttendanceCode CloneWithoutIdentity( this AttendanceCode source )
+        {
+            var target = new AttendanceCode();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another AttendanceCode object to this AttendanceCode object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -102,5 +124,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

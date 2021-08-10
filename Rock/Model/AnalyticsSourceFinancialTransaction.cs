@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -33,6 +34,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceFinancialTransaction" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsSourceFinancialTransaction>
     {
         // intentionally blank

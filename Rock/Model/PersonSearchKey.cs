@@ -57,7 +57,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SEARCH_KEYS )]
-        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 1 )]
+        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 1 )]
         public int SearchTypeValueId { get; set; }
 
         /// <summary>
@@ -68,8 +68,18 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
-        [Index( "IDX_SearchTypeValueIdSearchValue", IsUnique = false, Order = 2 )]
+        [Index( "IX_SearchTypeValueId_SearchValue", IsUnique = false, Order = 2 )]
         public string SearchValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this value is private.
+        /// If the search key is private, it should not be shown in the UI.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is value private; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsValuePrivate { get; set; }
 
         #endregion
 

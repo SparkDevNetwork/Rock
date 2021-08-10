@@ -30,8 +30,9 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using System.Text;
-using DotLiquid;
 using System.Runtime.Serialization;
+using Rock.Utility;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Utility
 {
@@ -213,7 +214,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( cacheDuration > 0 && _currentPage == 0 )
             {
-                var serializedCachedItem = RockCache.Get( cacheKey );
+                var serializedCachedItem = RockCache.Get( cacheKey, true );
                 if ( serializedCachedItem != null
                     && serializedCachedItem is string
                     && !string.IsNullOrWhiteSpace( ( string ) serializedCachedItem ) )
@@ -230,15 +231,32 @@ namespace RockWeb.Blocks.Utility
             }
             else
             {
+                var channel = ContentChannelCache.Get( contentChannelGuid.Value );
 
                 // Get latest content channel items, get two so we know if a previous one exists for paging
-                var contentChannelItems = new ContentChannelItemService( rockContext ).Queryable().AsNoTracking()
-                                            .Where( i => i.ContentChannel.Guid == contentChannelGuid
-                                                            && i.Status == ContentChannelItemStatus.Approved )
-                                            .OrderByDescending( i => i.StartDateTime )
-                                            .Take( 2 )
-                                            .Skip( _currentPage )
-                                            .ToList();
+                var contentChannelItemsQry = new ContentChannelItemService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( i => i.ContentChannel.Guid == contentChannelGuid
+                        && i.Status == ContentChannelItemStatus.Approved
+                        && i.StartDateTime <= RockDateTime.Now );
+
+                if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
+                {
+                    if ( channel.ContentChannelType.IncludeTime )
+                    {
+                        contentChannelItemsQry = contentChannelItemsQry.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
+                    }
+                    else
+                    {
+                        contentChannelItemsQry = contentChannelItemsQry.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
+                    }
+                }
+
+                var contentChannelItems = contentChannelItemsQry.OrderByDescending( i => i.StartDateTime )
+                    .Take( 2 )
+                    .Skip( _currentPage )
+                    .ToList();
 
                 if ( contentChannelItems.IsNull() || contentChannelItems.Count == 0 )
                 {
@@ -358,7 +376,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
 		[Serializable]
         [DataContract]
-        protected class MetricResult : Drop
+        protected class MetricResult : RockDynamic
         {
             /// <summary>
             /// Gets or sets the identifier.
@@ -431,7 +449,7 @@ namespace RockWeb.Blocks.Utility
         /// </summary>
 		[Serializable]
         [DataContract]
-        protected class MetricValue : Drop
+        protected class MetricValue : RockDynamic
         {
             /// <summary>
             /// Gets or sets the date time.

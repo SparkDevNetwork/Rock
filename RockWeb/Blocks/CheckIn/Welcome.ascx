@@ -335,13 +335,13 @@
         </asp:Panel>
 
         <%-- Panel for active checkin --%>
-        <asp:Panel ID="pnlActive" runat="server" CssClass="js-active">
+        <asp:Panel ID="pnlActive" runat="server" CssClass="checkin-active js-active">
 
             <div class="checkin-body">
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
                         <%-- lStartButtonHtml will be the button HTML from Lava  --%>
-                        <div class="js-start-button-container">
+                        <div class="start-button-container js-start-button-container">
                             <asp:Literal ID="lStartButtonHtml" runat="server" />
                         </div>
                     </div>

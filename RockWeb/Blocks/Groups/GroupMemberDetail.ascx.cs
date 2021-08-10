@@ -785,7 +785,7 @@ namespace RockWeb.Blocks.Groups
                 Note = _FundRaisingBatchNote,
                 Status = BatchStatus.Open,
                 ControlAmount = 0,
-                BatchStartDateTime = DateTime.Now,
+                BatchStartDateTime = RockDateTime.Now,
                 Guid = Guid.NewGuid()
             };
 

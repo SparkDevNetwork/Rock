@@ -3,8 +3,6 @@
 <style>
     .mobile-app-preview {
         padding: 20px;
-        border: 1px solid #bbb;
-        border-radius: 18px;
     }
     .mobile-app-preview img {
         width: 100%;
@@ -24,17 +22,16 @@
     <ContentTemplate>
         <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" />
         <Rock:ModalAlert ID="mdWarning" runat="server" />
-        <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-default">
+        <asp:Panel ID="pnlOverview" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h3 class="panel-title">
                     <i class="fa fa-mobile"></i>
                     <asp:Literal ID="ltAppName" runat="server" />
-
-                    <div class="panel-labels">
-                        <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
-                        <asp:Literal ID="lLastDeployDate" runat="server" />
-                    </div>
                 </h3>
+                <div class="panel-labels">
+                    <span class="label label-default">Site Id: <asp:Literal ID="lSiteId" runat="server" /></span>
+                    <asp:Literal ID="lLastDeployDate" runat="server" />
+                </div>
             </div>
 
             <div class="panel-body">
@@ -174,7 +171,7 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" style="display:none">
                                     <div class="row">
-                                        
+
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>
@@ -276,19 +273,25 @@
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+                    <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
+                        <Rock:RockCheckBox ID="cbEnableNotificationsAutomatically" runat="server" Label="Enable Notifications Automatically" Help="When turned on the mobile application will automatically request push notifications permission from the user at launch." />
 
-                    <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
+                        <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
 
-                    <div class="row">
-                        <%--<div class="col-md-4">
-                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
-                        </div>--%>
+                        <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
 
-                        <div class="col-md-4">
-                            <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
+                        <Rock:CodeEditor ID="ceEditHomepageRoutingLogic" runat="server" Label="Homepage Routing Logic" Help="The Lava to be executed at application start to determine which page to open initially. Should output blank or a page Guid." EditorMode="Lava" Required="false" />
+
+                        <div class="row">
+                            <%--<div class="col-md-4">
+                                <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                            </div>--%>
+
+                            <div class="col-md-4">
+                                <Rock:ImageUploader ID="imgEditPreviewThumbnail" runat="server" Label="Preview Thumbnail" Help="Preview thumbnail to be used by Rock to distinguish application." />
+                            </div>
                         </div>
-                    </div>
+                    </Rock:PanelWidget>
 
                     <div class="actions margin-t-md">
                         <asp:LinkButton ID="lbEditSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbEditSave_Click" AccessKey="s" ToolTip="Alt+s" />

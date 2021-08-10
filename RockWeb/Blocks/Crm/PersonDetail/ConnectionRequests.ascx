@@ -14,13 +14,12 @@
                 <ul class="connectiontype-list list-unstyled">
                     <asp:Repeater ID="rConnectionTypes" runat="server" OnItemDataBound="rConnectionTypes_ItemDataBound">
                         <ItemTemplate>
-                            <li>
-                                <asp:Label runat="server" CssClass="control-label" ID="lConnectionTypeName" Text='<%#Eval("Name") %>' />
-                                <ul class="connectionopportunity-list list-unstyled margin-l-md">
-                                    <asp:Literal runat="server" ID="lConnectionOpportunityList" />
+                            <asp:Literal runat="server" ID="lConnectionOpportunityList" />
+                        </ItemTemplate>
+                        <FooterTemplate>
                                 </ul>
                             </li>
-                        </ItemTemplate>
+                        </FooterTemplate>
                     </asp:Repeater>
                 </ul>
             </div>

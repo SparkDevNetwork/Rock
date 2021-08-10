@@ -29,6 +29,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -117,7 +118,7 @@ namespace Rock.Model
         /// <value>
         /// The parent DataViewFilter.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual DataViewFilter Parent { get; set; }
 
         /// <summary>
@@ -352,8 +353,15 @@ namespace Rock.Model
                     {
                         if ( dataViewFilterOverride.IncludeFilter == false )
                         {
-                            // if the dataview filter should not be included, don't have this filter filter anything
-                            return Expression.Constant( true );
+                            /*
+                            1/15/2021 - Shaun
+                            This should not assume that returning Expression.Constant( true ) is equivalent to not filtering as this predicate
+                            may be joined to other predicates and the AND/OR logic may result in an inappropriate filter.  Instead, we simply
+                            return null and allow the caller to handle this in a manner appropriate to the given filter.
+                            */
+
+                            // If the dataview filter should not be included, don't have this filter filter anything. 
+                            return null;
                         }
                         else
                         {
@@ -412,7 +420,6 @@ namespace Rock.Model
                         }
                         else
                         {
-
                             andExp = Expression.AndAlso( andExp, exp );
                         }
                     }
@@ -426,7 +433,7 @@ namespace Rock.Model
 
                     if ( andExp == null )
                     {
-                        // if there aren't and child filters for a GroupAll/GroupAnyFalse. That is OK, so just don't filter anything
+                        // If there aren't any child filters for a GroupAll/GroupAnyFalse. That is OK, so just don't filter anything.
                         return Expression.Constant( true );
                     }
 
@@ -441,8 +448,19 @@ namespace Rock.Model
                         Expression exp = filter.GetExpression( dataViewEntityTypeType, serviceInstance, parameter, dataViewFilterOverrides );
                         if ( exp == null )
                         {
-                            // If a DataFilter component returned a null expression, that probably means that it decided not to filter anything. So, we'll interpret that as "Don't Filter"
-                            exp = Expression.Constant( true );
+                            /*
+                            1/15/2021 - Shaun
+                            Filter expressions of these types (GroupAny/GroupAllFalse) are joined with an OR clause,
+                            so they must either be defaulted to false or excluded from the where expression altogether
+                            (otherwise they will return every Person record in the database, because a "True OrElse
+                            <anything>" predicate will always be true).
+
+                            Therefore, if this child filter is null, we can simply ignore it and move on to the next one.
+
+                            Reason: Correcting behavior of dynamic reports where a group is deselected at run time.
+                            */
+
+                            continue;
                         }
 
                         if ( orExp == null )
@@ -464,7 +482,7 @@ namespace Rock.Model
 
                     if ( orExp == null )
                     {
-                        // if there aren't and child filters for a GroupAny/GroupAllFalse. That is OK, so just don't filter anything
+                        // If there aren't any child filters for a GroupAny/GroupAllFalse. That is OK, so just don't filter anything.
                         return Expression.Constant( true );
                     }
 
@@ -644,6 +662,14 @@ namespace Rock.Model
                 return $@"IgnoreDataViewPersistedValues for DataViewIds: {IgnoreDataViewPersistedValues.ToList().AsDelimited( "," )},DataViewFilterOverrides.Count:{this.Count}";
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether stats for this dataview filter should be logged].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [should log statics]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShouldUpdateStatics { get; set; } = true;
     }
 
     /// <summary>

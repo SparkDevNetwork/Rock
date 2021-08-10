@@ -24,8 +24,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -40,7 +42,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the content channel type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelType"/> identifier.
         /// </summary>
         /// <value>
         /// The content channel type identifier.
@@ -153,7 +155,7 @@ namespace Rock.Model
         public ContentControlType ContentControlType { get; set; }
 
         /// <summary>
-        /// Gets or sets the root image directory to use when the Html control type is used
+        /// Gets or sets the root image directory to use when the HTML control type is used
         /// </summary>
         /// <value>
         /// The image root directory.
@@ -205,7 +207,7 @@ namespace Rock.Model
         /// The structure content tool value identifier.
         /// </value>
         [DataMember]
-        [DefinedValue]
+        [DefinedValue( SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS )]
         public int? StructuredContentToolValueId { get; set; }
 
         #endregion
@@ -213,7 +215,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the content channel.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelType">type</see> of the content channel.
         /// </summary>
         /// <value>
         /// The type of the content channel.
@@ -222,7 +224,7 @@ namespace Rock.Model
         public virtual ContentChannelType ContentChannelType { get; set; }
 
         /// <summary>
-        /// Gets or sets the item tag category.
+        /// Gets or sets the item tag <see cref="Rock.Model.Category"/>.
         /// </summary>
         /// <value>
         /// The item tag category.
@@ -240,12 +242,12 @@ namespace Rock.Model
         public virtual DefinedValue StructuredContentToolValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the items.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem">items</see>.
         /// </summary>
         /// <value>
         /// The items.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /*
@@ -265,7 +267,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of ContentChannels that this ContentChannel allows as children.
         /// </value>
-        [DataMember, LavaIgnore, JsonIgnore]
+        [DataMember, LavaHidden, JsonIgnore]
         public virtual ICollection<ContentChannel> ChildContentChannels
         {
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }
@@ -365,8 +367,13 @@ namespace Rock.Model
 
             foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var transaction = new DeleteIndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
-                transaction.Enqueue();
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = contentChannelItemEntityTypeId,
+                    EntityId = contentChannelItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
             }
         }
 
@@ -387,8 +394,13 @@ namespace Rock.Model
 
             foreach ( var contentChannelItemId in contentChannelItemIds )
             {
-                var transaction = new IndexEntityTransaction { EntityId = contentChannelItemId, EntityTypeId = contentChannelItemEntityTypeId };
-                transaction.Enqueue();
+                var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                {
+                    EntityTypeId = contentChannelItemEntityTypeId,
+                    EntityId = contentChannelItemId
+                };
+
+                processEntityTypeIndexMsg.Send();
             }
         }
 
@@ -507,7 +519,7 @@ namespace Rock.Model
         CodeEditor = 0,
 
         /// <summary>
-        /// Html Editor control
+        /// HTML Editor control
         /// </summary>
         HtmlEditor = 1
     }

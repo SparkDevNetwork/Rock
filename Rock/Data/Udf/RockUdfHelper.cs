@@ -105,6 +105,8 @@ namespace Rock.Data
         /// <param name="GroupPersonIds">If GroupId is specified, set this as a comma-delimited list of PersonIds that you want to limit the family members to. NULL means don't restrict.</param>
         /// <param name="UseNickName">if set to <c>true</c> [use nick name].</param>
         /// <returns></returns>
+        [RockObsolete( "1.12.4" )]
+        [Obsolete( "Get FamilyTitle from Group.GroupSalutation (or Person.PrimaryFamily.GroupSalution" )]
         public static string ufnCrm_GetFamilyTitle( RockContext rockContext, int? PersonId, int? GroupId, string GroupPersonIds, bool UseNickName )
         {
             return ufnCrm_GetFamilyTitle( rockContext, PersonId, GroupId, GroupPersonIds, UseNickName, true );
@@ -121,14 +123,16 @@ namespace Rock.Data
         /// <param name="UseNickName">if set to <c>true</c> [use nick name].</param>
         /// <param name="IncludeInactive">if set to <c>true</c> [include inactive].</param>
         /// <returns></returns>
+        [RockObsolete( "1.12.4" )]
+        [Obsolete( "Get FamilyTitle from Group.GroupSalutation (or Person.PrimaryFamily.GroupSalution)." )]
         public static string ufnCrm_GetFamilyTitle( RockContext rockContext, int? PersonId, int? GroupId, string GroupPersonIds, bool UseNickName, bool IncludeInactive )
         {
             var result = rockContext.Database.SqlQuery(
                 typeof( string ),
                 "SELECT TOP 1 [PersonNames] FROM dbo.ufnCrm_GetFamilyTitleIncludeInactive(@PersonId, @GroupId, @GroupPersonIds, @UseNickName, @IncludeInactive)",
-                new SqlParameter( "@PersonId", PersonId.HasValue ? (object)PersonId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
-                new SqlParameter( "@GroupId", GroupId.HasValue ? (object)GroupId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
-                new SqlParameter( "@GroupPersonIds", string.IsNullOrWhiteSpace( GroupPersonIds ) ? DBNull.Value : (object)GroupPersonIds ) { SqlDbType = SqlDbType.Text, IsNullable = true },
+                new SqlParameter( "@PersonId", PersonId.HasValue ? ( object ) PersonId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
+                new SqlParameter( "@GroupId", GroupId.HasValue ? ( object ) GroupId.Value : DBNull.Value ) { SqlDbType = SqlDbType.Int, IsNullable = true },
+                new SqlParameter( "@GroupPersonIds", string.IsNullOrWhiteSpace( GroupPersonIds ) ? DBNull.Value : ( object ) GroupPersonIds ) { SqlDbType = SqlDbType.Text, IsNullable = true },
                 new SqlParameter( "@UseNickName", UseNickName ),
                 new SqlParameter( "@IncludeInactive", IncludeInactive ) );
 

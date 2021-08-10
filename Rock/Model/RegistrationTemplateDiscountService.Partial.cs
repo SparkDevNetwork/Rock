@@ -16,9 +16,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -40,7 +42,7 @@ namespace Rock.Model
                 return Queryable();
             }
 
-            var registrationInstanceService = new RegistrationInstanceService( (RockContext)this.Context );
+            var registrationInstanceService = new RegistrationInstanceService( ( RockContext ) this.Context );
             int registrationTemplateId = registrationInstanceService
                 .Queryable()
                 .Where( r => r.Id == registrationInstanceId )
@@ -57,7 +59,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<TemplateDiscountReport> GetRegistrationInstanceDiscountCodeReport( int registrationInstanceId )
         {
-            string currencySymbol = GlobalAttributesCache.Value( "CurrencySymbol" );
+            var currencySymbol = RockCurrencyCodeInfo.GetCurrencySymbol();
 
             string query = $@"
                 WITH
@@ -119,6 +121,77 @@ namespace Rock.Model
             var param = new System.Data.SqlClient.SqlParameter( "@RegistrationInstanceId", registrationInstanceId );
 
             return Context.Database.SqlQuery<TemplateDiscountReport>( query, param );
+        }
+
+        /// <summary>
+        /// Gets the discount by the code if valid. This checks if the code exists, is within it's defined date range, and
+        /// has usages remaining.
+        /// </summary>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="code">The code.</param>
+        /// <returns></returns>
+        public RegistrationTemplateDiscountWithUsage GetDiscountByCodeIfValid( int registrationInstanceId, string code )
+        {
+            if ( code.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var discount = Queryable()
+                    .FirstOrDefault( d =>
+                        d.RegistrationTemplate.Instances.Any( i => i.Id == registrationInstanceId ) &&
+                        d.Code.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+
+                if ( discount == null )
+                {
+                    // The code is not found
+                    return null;
+                }
+
+                // Validate the date range
+                var today = RockDateTime.Today;
+
+                if ( discount.StartDate.HasValue && today < discount.StartDate.Value )
+                {
+                    // Before the discount starts
+                    return null;
+                }
+
+                if ( discount.EndDate.HasValue && today.AddDays( 1 ) > discount.EndDate.Value )
+                {
+                    // Discount has expired
+                    return null;
+                }
+
+                int? usagesRemaining = null;
+
+                if ( discount.MaxUsage.HasValue )
+                {
+                    // Check the number of people that have already used this code
+                    var usageCount = new RegistrationService( Context as RockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Count( r =>
+                            r.RegistrationInstanceId == registrationInstanceId &&
+                            r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase ) );
+
+                    usagesRemaining = discount.MaxUsage.Value - usageCount;
+
+                    if ( usagesRemaining <= 0 )
+                    {
+                        // Discount has been used up
+                        return null;
+                    }
+                }
+
+                return new RegistrationTemplateDiscountWithUsage
+                {
+                    RegistrationTemplateDiscount = discount,
+                    UsagesRemaining = usagesRemaining
+                };
+            }
         }
     }
 
@@ -243,5 +316,27 @@ namespace Rock.Model
         /// The registration cost.
         /// </value>
         public decimal RegistrationCost { get; set; }
+    }
+
+    /// <summary>
+    /// RegistrationTemplateDiscount and the Remaining Usages
+    /// </summary>
+    public sealed class RegistrationTemplateDiscountWithUsage
+    {
+        /// <summary>
+        /// Gets or sets the registration template discount.
+        /// </summary>
+        /// <value>
+        /// The registration template discount.
+        /// </value>
+        public RegistrationTemplateDiscount RegistrationTemplateDiscount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the usages remaining. If the discount has a cap on usages, then this property will be set to the number of usages remaining.
+        /// </summary>
+        /// <value>
+        /// The usages remaining.
+        /// </value>
+        public int? UsagesRemaining { get; set; }
     }
 }

@@ -24,7 +24,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Xml;
+
 using ImageSafeInterop;
+
 using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Client;
 using Rock.Client.Enums;
@@ -529,7 +531,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( config.CampusIdFilter.HasValue )
             {
-                if ((this.SelectedFinancialBatch?.CampusId.HasValue == true) && (this.SelectedFinancialBatch.CampusId.Value != config.CampusIdFilter.Value) )
+                if ( ( this.SelectedFinancialBatch?.CampusId.HasValue == true ) && ( this.SelectedFinancialBatch.CampusId.Value != config.CampusIdFilter.Value ) )
                 {
                     this.SelectedFinancialBatch = null;
                     origSelectedBatchId = null;

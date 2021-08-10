@@ -143,13 +143,14 @@ namespace RockWeb.Blocks.Crm
             gValues.ShowActionRow = false;
             gValues.RowDataBound += gValues_RowDataBound;
 
-            string resetConfirmation =
-                GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() ?
-                @"While this person will be prompted to reconfirm their login(s) using the email address you select, you may wish to manually confirm the validity of the request before completing this merge." :
-                @"Because of this, make sure to confirm the validity of the request before completing this merge.";
+            var resetConfirmation = string.Empty;
+            if ( GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() )
+            {
+                resetConfirmation = @"<br>Additionally, this person will be prompted to reconfirm before they can login using the email address you select.";
+            }
 
             nbSecurityNotice.Text = string.Format(
-                @"Because there are two different emails associated with this merge, and at least one of the records has a login, be sure to proceed with caution. It is possible that the new record was created in an attempt to gain access to the account through the merge process. {0}",
+                @"There are two different emails associated with this merge, and at least one of the records has a login.  It is possible that the new record was created in an attempt to gain access to the account through the merge process. Because all email addresses are saved and used when searching for this person,<b> remove any invalid email address before you perform this merge </b>. {0}",
                 resetConfirmation );
         }
 
@@ -258,14 +259,21 @@ namespace RockWeb.Blocks.Crm
 
                 // Load the set of people specified by query string parameters.
                 if ( selectedPersonIds != null )
-                { 
+                {
                     if ( selectedPersonIds.Count == 0 )
                     {
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
                     }
 
                     // Get the selected people.
-                    var people = new PersonService( new RockContext() ).Queryable( true ).Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.Users )
+                    var people = new PersonService( new RockContext() )
+                        .Queryable( new PersonService.PersonQueryOptions
+                        {
+                            IncludeDeceased = true,
+                            IncludeNameless = true,
+                        } )
+                        .Include( a => a.CreatedByPersonAlias.Person )
+                        .Include( a => a.Users )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
 
@@ -273,7 +281,7 @@ namespace RockWeb.Blocks.Crm
 
                     // Create the data structure used to build the grid.
                     MergeData = new MergeData( people, headingKeys, CurrentPerson, IsUserAuthorized( PersonMerge.SecurityActionKey.ViewAllAttributes ) );
-                    
+
                     if ( setId != null )
                     {
                         MergeData.EntitySetId = setId.Value;
@@ -284,7 +292,6 @@ namespace RockWeb.Blocks.Crm
                     {
                         MergeData.PrimaryPersonId = selectedPersonIds.FirstOrDefault();
                     }
-
 
                     BuildColumns();
                     BindGrid();
@@ -1104,7 +1111,7 @@ namespace RockWeb.Blocks.Crm
                     personCol.PersonId = person.Id;
                     personCol.PersonName = person.FullName;
                     personCol.ID = "person_" + person.Id;
-                    personCol.HeaderContent = GetValuesColumnHeader( person.Id, person.IsBusiness );
+                    personCol.HeaderContent = GetValuesColumnHeader( person.Id, person.IsBusiness, person.IsNameless );
                     personCol.ModifiedDateTime = person.ModifiedDateTime;
                     personCol.ModifiedBy = person.ModifiedBy;
                     personCol.OnDelete += personCol_OnDelete;
@@ -1119,7 +1126,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="personId">The person identifier.</param>
         /// <param name="isBusiness">Whether it should be business?</param>
         /// <returns></returns>
-        private string GetValuesColumnHeader( int personId , bool isBusiness )
+        private string GetValuesColumnHeader( int personId, bool isBusiness, bool isNameless )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
@@ -1139,6 +1146,11 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 sbHeaderData.Append( "<div class='js-person-header'>" );
+            }
+
+            if ( isNameless )
+            {
+                sbHeaderData.Append( "<div class='merge-heading-family'>Nameless Person</div>" );
             }
 
             foreach ( var family in families )
@@ -1565,7 +1577,7 @@ namespace RockWeb.Blocks.Crm
                     var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
                                             || grantPermissionForAllAttributes;
 
-                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );                    
+                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                 }
             }
 
@@ -1579,7 +1591,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     AddProperty( FAMILY_VALUES, FAMILY_VALUES.SplitCase(), 0, string.Empty );
                 }
-                
+
                 var family = person.GetFamily();
                 if ( family != null )
                 {
@@ -1623,7 +1635,10 @@ namespace RockWeb.Blocks.Crm
             }
 
             var primaryPerson = people.OrderBy( p => p.CreatedDateTime ).FirstOrDefault();
-            SetPrimary( primaryPerson.Id, primaryPerson.Guid );
+            if ( primaryPerson != null )
+            {
+                SetPrimary( primaryPerson.Id, primaryPerson.Guid );
+            }
         }
 
         #endregion
@@ -1950,6 +1965,8 @@ namespace RockWeb.Blocks.Crm
 
         public bool IsBusiness { get; set; }
 
+        public bool IsNameless { get; set; }
+
         public Guid Guid { get; set; }
 
         public MergePerson( Person person )
@@ -1962,6 +1979,7 @@ namespace RockWeb.Blocks.Crm
             HasLogins = person.Users.Any();
             Guid = person.Guid;
             IsBusiness = person.IsBusiness();
+            IsNameless = person.IsNameless();
             if ( person.ModifiedByPersonAlias != null &&
                 person.ModifiedByPersonAlias.Person != null )
             {

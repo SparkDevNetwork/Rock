@@ -431,7 +431,8 @@ namespace Rock.Rest.Controllers
                     var childItems = GetCategorizedItems( serviceInstance, parentId, showUnnamedEntityItems, excludeInactiveItems, itemFilterPropertyName, itemFilterPropertyValue );
                     if ( childItems != null )
                     {
-                        foreach ( var categorizedItem in childItems.OrderBy( c => c.Name ) )
+                        var sortedChildren = childItems.ToList().OrderBy( c => c.Name );
+                        foreach ( var categorizedItem in sortedChildren )
                         {
                             if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                             {

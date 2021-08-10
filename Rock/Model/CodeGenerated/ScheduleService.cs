@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,53 +54,103 @@ namespace Rock.Model
         public bool CanDelete( Schedule item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring AttendanceOccurrence,ScheduleId 
- 
+
+            // ignoring AttendanceOccurrence,ScheduleId
+
             if ( new Service<EventItemOccurrence>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Group>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupLocationHistoricalSchedule>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupLocationHistoricalSchedule.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupMemberAssignment.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupMemberScheduleTemplate>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, GroupMemberScheduleTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Metric>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, Metric.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Schedule View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( Schedule ) )]
+    public partial class ScheduleViewModelHelper : ViewModelHelper<Schedule, Rock.ViewModel.ScheduleViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.ScheduleViewModel CreateViewModel( Schedule model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.ScheduleViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AutoInactivateWhenComplete = model.AutoInactivateWhenComplete,
+                CategoryId = model.CategoryId,
+                CheckInEndOffsetMinutes = model.CheckInEndOffsetMinutes,
+                CheckInStartOffsetMinutes = model.CheckInStartOffsetMinutes,
+                Description = model.Description,
+                EffectiveEndDate = model.EffectiveEndDate,
+                EffectiveStartDate = model.EffectiveStartDate,
+                iCalendarContent = model.iCalendarContent,
+                IsActive = model.IsActive,
+                Name = model.Name,
+                Order = model.Order,
+                WeeklyDayOfWeek = ( int? ) model.WeeklyDayOfWeek,
+                WeeklyTimeOfDay = model.WeeklyTimeOfDay,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -125,6 +178,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this Schedule object to a new Schedule object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static Schedule CloneWithoutIdentity( this Schedule source )
+        {
+            var target = new Schedule();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another Schedule object to this Schedule object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -132,6 +208,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Schedule target, Schedule source )
         {
             target.Id = source.Id;
+            target.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             target.CategoryId = source.CategoryId;
             target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
             target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
@@ -154,5 +231,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.ScheduleViewModel ToViewModel( this Schedule model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new ScheduleViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

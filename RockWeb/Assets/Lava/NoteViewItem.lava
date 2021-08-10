@@ -1,64 +1,64 @@
-{%- comment -%}
+{% comment %}
 ##Important Notes when customizing##
 any CSS Classes that are prefixed with 'js-' are hooks that are required for editing notes (see noteEditor.js and NoteContainer.cs)
-{%- endcomment -%}
-{%- assign viewableChildNotesCount = note.ViewableDescendentsCount -%}
-{%- if note.IsAlert -%}
-    {%- assign wrapperClass = 'is-alert' -%}
-{%- elseif note.IsPrivateNote -%}
-    {%- assign wrapperClass = 'is-personal' -%}
-{%- else -%}
-    {%- assign wrapperClass = '' -%}
-{%- endif -%}
-{%- assign noteTypeName = note.NoteType.Name | ToCssClass | Prepend:' note-type-' -%}
-{%- assign wrapperClass =  wrapperClass | Append:noteTypeName -%}
-{%- assign wrapperStyle = '' -%}
-{%- if noteReplyDepth == '0' -%}
-{%- capture fontStyle -%}{%- if note.NoteType.FontColor and note.NoteType.FontColor != '' -%}color: {{ note.NoteType.FontColor }};{%- endif -%}{%- endcapture -%}
-{%- capture borderStyle -%}{%- if note.NoteType.BorderColor and note.NoteType.BorderColor != '' -%}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{%- endif -%}{%- endcapture -%}
-{%- capture backgroundStyle -%}{%- if note.NoteType.BackgroundColor and note.NoteType.BackgroundColor != '' -%}background-color: {{ note.NoteType.BackgroundColor }};{%- endif -%}{%- endcapture -%}
-{%- capture wrapperStyle -%}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{%- endcapture -%}
-{%- if wrapperStyle != '' -%}{%- capture wrapperStyle -%}style="{{ wrapperStyle }}"{%- endcapture -%}{%- endif -%}
-{%- endif -%}
+{% endcomment %}
+{% assign viewableChildNotesCount = note.ViewableDescendentsCount %}
+{% if note.IsAlert %}
+    {% assign wrapperClass = 'is-alert' %}
+{% elseif note.IsPrivateNote %}
+    {% assign wrapperClass = 'is-personal' %}
+{% else %}
+    {% assign wrapperClass = '' %}
+{% endif %}
+{% assign noteTypeName = note.NoteType.Name | ToCssClass | Prepend:' note-type-' %}
+{% assign wrapperClass =  wrapperClass | Append:noteTypeName %}
+{% assign wrapperStyle = '' %}
+{% if noteReplyDepth == '0' %}
+{% capture fontStyle %}{% if note.NoteType.FontColor and note.NoteType.FontColor != '' %}color: {{ note.NoteType.FontColor }};{% endif %}{% endcapture %}
+{% capture borderStyle %}{% if note.NoteType.BorderColor and note.NoteType.BorderColor != '' %}box-shadow: inset 5px 0 0 0 {{ note.NoteType.BorderColor }};{% endif %}{% endcapture %}
+{% capture backgroundStyle %}{% if note.NoteType.BackgroundColor and note.NoteType.BackgroundColor != '' %}background-color: {{ note.NoteType.BackgroundColor }};{% endif %}{% endcapture %}
+{% capture wrapperStyle %}{{ borderStyle }}{{ fontStyle }}{{ backgroundStyle }}{% endcapture %}
+{% if wrapperStyle != '' %}{% capture wrapperStyle %}style="{{ wrapperStyle }}"{% endcapture %}{% endif %}
+{% endif %}
 
-{%- assign noteDateTime = note.CreatedDateTime -%}
-{%- assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime -%}
-{%- if note.EditedDateTime > note.CreatedDateTime -%}
-    {%- assign noteDateTime = note.EditedDateTime -%}
-    {%- capture editedLabel -%}edited {{ note.EditedDateTime | HumanizeDateTime }}{%- endcapture -%}
-    {%- if note.EditedByPersonName != note.CreatedByPersonName -%}
-        {%- assign editedLabel = editedLabel | Append:' by ' | Append:note.EditedByPersonName -%}
-    {%- endif -%}
-    {%- assign noteDateTimeText =  noteDateTimeText | Append:' (' | Append:editedLabel | Append:')'%}
-{%- endif -%}
+{% assign noteDateTime = note.CreatedDateTime %}
+{% assign noteDateTimeText = note.CreatedDateTime | HumanizeDateTime %}
+{% if note.EditedDateTime > note.CreatedDateTime %}
+    {% assign noteDateTime = note.EditedDateTime %}
+    {% capture editedLabel %}edited {{ note.EditedDateTime | HumanizeDateTime }}{% endcapture %}
+    {% if note.EditedByPersonName != note.CreatedByPersonName %}
+        {% assign editedLabel = editedLabel | Append:' by ' | Append:note.EditedByPersonName %}
+    {% endif %}
+    {% assign noteDateTimeText =  noteDateTimeText | Append:' (' | Append:editedLabel | Append:')'%}
+{% endif %}
 
-{%- assign allowsWatching = note.NoteType.AllowsWatching -%}
+{% assign allowsWatching = note.NoteType.AllowsWatching %}
 
-{%- assign canReply = note.NoteType.AllowsReplies -%}
-{%- if canReply and note.NoteType.MaxReplyDepth -%}
-  {%- if noteReplyDepth >= note.NoteType.MaxReplyDepth -%}
-    {%- assign canReply = false -%}
-  {%- endif -%}
-{%- endif -%}
+{% assign canReply = note.NoteType.AllowsReplies %}
+{% if canReply and note.NoteType.MaxReplyDepth %}
+  {% if noteReplyDepth >= note.NoteType.MaxReplyDepth %}
+    {% assign canReply = false %}
+  {% endif %}
+{% endif %}
 
 {%- assign noteText = note.Text | Escape | Linkify | FromMarkdown | NewlineToBr -%}
-{%- comment -%}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{%- endcomment -%}
+{% comment %}If this note requires approval and is not yet approved, we might see it if the current person created the note or is an approver, so render its approval status and approval actions{% endcomment %}
 {%- assign approvalStatusHtml = '' -%}
 {%- assign approvalActionsHtml = '' -%}
-{%- if note.NoteType.RequiresApprovals and.ApprovalStatus != 'Approved' -%}
+{%- if note.NoteType.RequiresApprovals and note.ApprovalStatus != 'Approved' -%}
     {%- assign canApprove = note | HasRightsTo:'Approve' -%}
 
-    {%- capture approvalStatusHtml -%}
-        {%- if note.ApprovalStatus == 'Denied' -%}
-            {%- assign approver = note.ApprovedByPersonAliasId | PersonByAliasId -%}
+    {% capture approvalStatusHtml %}
+        {% if note.ApprovalStatus == 'Denied' %}
+            {% assign approver = note.ApprovedByPersonAliasId | PersonByAliasId %}
             Approval denied By <a href="/person/{{ approver.Id }}">{{ approver.FullName }}</a> on {{ note.ApprovedDateTime }}
-        {%- elsif note.ApprovalStatus == 'PendingApproval' -%}
+        {% elsif note.ApprovalStatus == 'PendingApproval' %}
             Pending Approval
-        {%- endif -%}
-    {%- endcapture -%}
+        {% endif %}
+    {% endcapture %}
 
-    {%- capture approvalActionsHtml -%}
-        {%- if canApprove -%}
+    {% capture approvalActionsHtml %}
+        {% if canApprove %}
         <div class="pull-right">
             <a class="approve-note btn btn-xs btn-success" href="#" style="{{ fontStyle }}" onclick="{{ note.Id | Postback:'ApproveNote' }}">
                 Approve
@@ -67,17 +67,17 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 Deny
             </a>
         </div>
-        {%- endif -%}
-    {%- endcapture -%}
-{%- endif -%}
+        {% endif %}
+    {% endcapture %}
+{% endif %}
 
-{%- if noteReplyDepth == 0 -%}
-     {%- assign avatarSize = "lg" -%}
-    {%- assign noteClass = "" -%}
-{%- else -%}
-    {%- assign avatarSize = "md" -%}
-    {%- assign noteClass = "note-nested" -%}
-{%- endif -%}
+{% if noteReplyDepth == 0 %}
+     {% assign avatarSize = "lg" %}
+    {% assign noteClass = "" %}
+{% else %}
+    {% assign avatarSize = "md" %}
+    {% assign noteClass = "note-nested" %}
+{% endif %}
 
 <li class="note js-note {{ noteClass }}">
     <article class="note-view-item js-noteviewitem {{ wrapperClass }}" {{ wrapperStyle }} data-note-id="{{ note.Id }}" data-notetype-id="{{ note.NoteTypeId }}" id="{{ note.NoteAnchorId }}">
@@ -86,127 +86,150 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             Alert: {{ note.NoteType.Name }}
         </hgroup>
         {% endif %}
-        {%- if approvalStatusHtml != '' -%}
-            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{% endif %}{{- -}}">
+        {% if approvalStatusHtml != '' %}
+            <hgroup class="flag clearfix {% if note.ApprovalStatus == 'PendingApproval' %}warning{%- endif %}">
                 {{ approvalStatusHtml }}
                 {{ approvalActionsHtml }}
             </hgroup>
-        {%- endif -%}
+        {% endif %}
 
         <header class="meta">
             <div class="meta-figure">
-                {%- if NoteOptions.DisplayType == "Light" or NoteOptions.UsePersonIcon and note.CreatedByPersonId -%}
+                {% if NoteOptions.DisplayType == "Light" or NoteOptions.UsePersonIcon and note.CreatedByPersonId %}
                     <a href="/person/{{ note.CreatedByPersonId }}" class="avatar avatar-{{ avatarSize }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
-                {%- else -%}
-                    <div class="avatar avatar-icon avatar-{{ avatarSize }}" {%- if note.IsAlert or note.NoteType.FontColor != '' -%}style="{%- if note.IsAlert -%}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
-                {%- endif -%}
+                {% else %}
+                    <div class="avatar avatar-icon avatar-{{ avatarSize }}" {% if note.IsAlert or note.NoteType.FontColor != '' %}style="{% if note.IsAlert %}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
+                {% endif %}
             </div>
             <div class="meta-body">
                 <div class="flex">
                     <p>
-                        {%- if NoteOptions.DisplayNoteTypeHeading -%}
+                        {% if NoteOptions.DisplayNoteTypeHeading %}
                         {{ note.NoteType.Name }}
-                        {%- endif -%}
-                        {%- comment -%}Private notes always have a caption, so go by the person instead.{%- endcomment -%}
-                        {%- if note.Caption == '' or note.IsPrivateNote -%}
-                            {%- if note.CreatedByPersonId -%}
+                        {% endif %}
+                        {% comment %}Private notes always have a caption, so go by the person instead.{% endcomment %}
+                        {% if note.Caption == '' or note.IsPrivateNote %}
+                            {% if note.CreatedByPersonId %}
                                 <a href="/person/{{ note.CreatedByPersonId }}">{{ note.CreatedByPersonName }}</a>
-                            {%- else -%}
+                            {% else %}
                                 {{ note.NoteType.Name }}
-                            {%- endif -%}
+                            {% endif %}
                         {% else %}
                         {{ note.Caption }}
-                        {%- endif -%}
+                        {% endif %}
                     </p>
 
-                    {%- assign canEdit = note | HasRightsTo:'Edit' -%}
-                    {%- if canEdit or canReply or allowsWatching -%}
+                    {% assign canEdit = note | HasRightsTo:'Edit' %}
+                    {% if canEdit or canReply or allowsWatching %}
                     <div class="dropdown">
                         <button id="{{ note.Id }}-options" class="btn btn-link btn-overflow" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-ellipsis-h"></i></button>
                         <ul class="dropdown-menu" id="{{ note.Id }}-optionsmenu" aria-labelledby="{{ note.Id }}-options">
-                            {%- if canReply and note.ApprovalStatus != "Denied" -%}
+                            {% if canReply and note.ApprovalStatus != "Denied" %}
                                 <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
-                            {%- endif -%}
-                            {%- if canEdit -%}
-                            {%- assign isPrivateVisible = 0  -%}
-                            {%- if CurrentPerson.Id == note.CreatedByPersonId -%}
-                            {%- assign isPrivateVisible = 1 -%}
-                            {%- endif -%}
+                            {% endif %}
+                            {% if canEdit %}
+                            {% assign isPrivateVisible = 0  %}
+                            {% if CurrentPerson.Id == note.CreatedByPersonId %}
+                            {% assign isPrivateVisible = 1 %}
+                            {% endif %}
                             <li><button type="button" class="dropdown-item btn-link js-editnote" data-isprivatevisible="{{ isPrivateVisible }}">Edit</button></li>
                             {% endif %}
-                            {%- if allowsWatching and note.ApprovalStatus != "Denied" -%}
+                            {% if allowsWatching and note.ApprovalStatus != "Denied" %}
                                 <li>
-                                    {%- if note.IsCurrentPersonWatching -%}
+                                    {% if note.IsCurrentPersonWatching %}
                                     <a class="button unwatch-note" href="#" onclick="{{ note.Id | Postback:'UnwatchNote' }}">Unwatch</a>
-                                    {%- else -%}
+                                    {% else %}
                                     <a class="button watch-note" href="#" onclick="{{ note.Id | Postback:'WatchNote' }}">Watch</a>
-                                    {%- endif -%}
+                                    {% endif %}
                                 </li>
-                            {%- endif -%}
-                            {%- if canEdit -%}
+                            {% endif %}
+                            {% if canEdit %}
                             <li><a class="dropdown-item-danger remove-note js-removenote" href='#'>Delete</a></li>
-                            {%- endif -%}
+                            {% endif %}
                         </ul>
                     </div>
-                    {%- endif -%}
+                    {% endif %}
                 </div>
 
                 <div class="note-details">
-                {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' -%}
-                    {%- assign approver = note.ApprovedByPersonAliasId | PersonByAliasId -%}
+                {% if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' %}
+                    {% assign approver = note.ApprovedByPersonAliasId | PersonByAliasId %}
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp"{% if note.ApprovedByPersonAliasId %} data-toggle="tooltip" data-placement="top" title="Approved By {{ approver.FullName }} on {{ note.ApprovedDateTime }}"{% endif %}>
                     <time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</time>
                 </a>
-                {%- else -%}
+                {% else %}
                     <a href="#{{ note.NoteAnchorId }}" class="timestamp" data-toggle="tooltip" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">
                         <time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</time>
                     </a>
-                {%- endif -%}
+                {% endif %}
 
-                {%- unless NoteOptions.DisplayType == 'Light' -%}
-                    {%- if note.NoteType.Name != 'Personal Note' and note.NoteType.Name != 'Prayer Comment' -%}<span class="tag-flair">{%- if note.NoteType.BorderColor != '' -%}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{%- endif -%}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{%- endif -%}
-                {%- endunless -%}
+                {% unless NoteOptions.DisplayType == 'Light' %}
+                    {% if note.NoteType.Name != 'Personal Note' and note.NoteType.Name != 'Prayer Comment' %}<span class="tag-flair">{% if note.NoteType.BorderColor != '' %}<span class="tag-color" style="background-color:{{ note.NoteType.BorderColor }}"></span>{% endif %}<span class="tag-label">{{ note.NoteType.Name }}</span></span>{% endif %}
+                {% endunless %}
                 </div>
             </div>
 
         </header>
         <div class="note-content">
             {{ noteText }}
+
+            {% comment %}Only Display Attibute Markup if Exists, and only if the current person has rights to view it{% endcomment %}
+            {% assign totalAttributes = note.AttributeValues | Size %}
+            {% assign totalEmptyAttributes = note.AttributeValues | Where:'ValueFormatted','' | Size %}
+            {% if totalAttributes != totalEmptyAttributes %}
+                <div class="note-attributes">
+                    <div class="row">
+                        {% for attribute in note.AttributeValues %}
+                            {% assign canViewAttribute = attribute.AttributeId | FromCache:'Attribute'  | HasRightsTo:'View' %}
+                            {% if canViewAttribute %}
+                                {% if attribute.ValueFormatted != '' %}
+                                <div class="col-lg-4 col-md-6 col-sm-1">
+                                    <dl class="note-attribute">
+                                        <dt>{{ attribute.AttributeName }}</dt>
+                                        <dd>{{ attribute.ValueFormatted }}</dd>
+                                    </dl>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
         <footer class="note-footer">
             {% comment %} <ul class="note-footer-actions-list list-horizontal">
 
             </ul> {% endcomment %}
             <ul class="note-footer-meta-list list-horizontal">
-                {%- if viewableChildNotesCount > 0 -%}
+                {% if viewableChildNotesCount > 0 %}
                     <li><button type="button" class="btn btn-link js-expandreply">{{ 'Reply' | ToQuantity:viewableChildNotesCount }}</button></li>
-                {%- endif -%}
+                {% endif %}
             </ul>
         </footer>
     </article>
 
-    {%- comment -%}
+    {% comment %}
     Maintain the noteReplyDepth by incrementing here (for every note), and then decrementing after each child to indicate we are at the same level
-    {%- endcomment -%}
-    {%- assign noteReplyDepth = noteReplyDepth | Plus:1 -%}
-    {%- assign childNotesStyle = '' -%}
-    {%- if viewableChildNotesCount > 0 -%}
-        {%- assign expandNote = ExpandedNoteIds | Contains:note.Id -%}
-        {%- if noteReplyDepth == 1 -%}
-            {%- unless NoteOptions.ExpandReplies or expandNote -%}
-                {%- assign childNotesStyle = 'display: none;' -%}
-            {%- endunless -%}
-            {{- -}}<div class="note-comments">
-        {%- endif -%}
+    {% endcomment %}
+    {% assign noteReplyDepth = noteReplyDepth | Plus:1 %}
+    {% assign childNotesStyle = '' %}
+    {% if viewableChildNotesCount > 0 %}
+        {% assign expandNote = ExpandedNoteIds | Contains:note.Id %}
+        {% if noteReplyDepth == 1 %}
+            {% unless NoteOptions.ExpandReplies or expandNote %}
+                {% assign childNotesStyle = 'display: none;' %}
+            {% endunless %}
+            <div class="note-comments">
+        {% endif %}
 
         <ul class="list-unstyled note-list note-list-nested js-childnotes" style="{{ childNotesStyle }}">
-        {%- for note in note.ViewableChildNotes -%}
-            {%- include '~~/Assets/Lava/NoteViewItem.lava' -%}
-            {%- assign noteReplyDepth = noteReplyDepth | Minus:1 -%}
-        {%- endfor -%}
+        {% for note in note.ViewableChildNotes %}
+            {% include '~~/Assets/Lava/NoteViewItem.lava' %}
+            {% assign noteReplyDepth = noteReplyDepth | Minus:1 %}
+        {% endfor %}
         </ul>
-        {%- if noteReplyDepth == 1 -%}
-            {{- -}}</div>
-        {%- endif -%}
-    {%- endif -%}
+        {% if noteReplyDepth == 1 %}
+            </div>
+        {% endif %}
+    {% endif %}
 </li>

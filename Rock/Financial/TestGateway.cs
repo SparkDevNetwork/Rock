@@ -59,7 +59,14 @@ namespace Rock.Financial
         Key = AttributeKey.GenerateFakeGetPayments,
         DefaultBooleanValue = false,
         Order = 3 )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent
+
+    [BooleanField(
+        "Prompt for Name on Card",
+        Description = "This will tell the Gateway to prompt for the name on card.",
+        Key = AttributeKey.PromptForNameOnCard,
+        DefaultBooleanValue = false,
+        Order = 4 )]
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
 
@@ -72,10 +79,49 @@ namespace Rock.Financial
             public const string GenerateFakeGetPayments = "GenerateFakeGetPayments";
             public const string MaxExpirationYears = "MaxExpirationYears";
             public const string DeclinedCVV = "DeclinedCVV";
+            public const string PromptForNameOnCard = "PromptForNameOnCard";
         }
 
         #endregion
 
+        #region Obsidian
+
+        /// <summary>
+        /// Creates the customer account using a token received and returns a customer account token that can be used for future transactions.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            return Guid.NewGuid().ToString( "N" );
+        }
+
+        /// <summary>
+        /// Gets the obsidian control file URL.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/Obsidian/Controls/TestGatewayControl.js";
+        }
+
+        /// <summary>
+        /// Gets the obsidian control settings.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        {
+            return new
+            {
+            };
+        }
+
+        #endregion Obsidian
 
         #region Automated Gateway Component
 
@@ -114,6 +160,7 @@ namespace Rock.Financial
             return new Payment
             {
                 TransactionCode = transaction.TransactionCode,
+                NameOnCard = $"{paymentInfo.FirstName} {paymentInfo.LastName}",
                 Amount = paymentInfo.Amount
             };
         }
@@ -152,7 +199,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
-            return false;
+            return GetAttributeValue( financialGateway, AttributeKey.PromptForNameOnCard ).AsBoolean();
         }
 
         /// <summary>
@@ -165,7 +212,7 @@ namespace Rock.Financial
         /// </value>
         public override bool PromptForBillingAddress( FinancialGateway financialGateway )
         {
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -189,6 +236,26 @@ namespace Rock.Financial
             return null;
         }
 
+        /// <summary>
+        /// Authorizes the specified payment information.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Authorize( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
+            {
+                var transaction = new FinancialTransaction();
+                transaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
+                return transaction;
+            }
+
+            return null;
+        }
         /// <summary>
         /// Credits the specified transaction.
         /// </summary>
@@ -227,6 +294,15 @@ namespace Rock.Financial
                 scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
                 scheduledTransaction.GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
+                scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
+                scheduledTransaction.StatusMessage = "active";
+
+                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
+                {
+                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
+                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year
+                };
+
                 return scheduledTransaction;
             }
 
@@ -258,7 +334,7 @@ namespace Rock.Financial
             errorMessage = string.Empty;
             var referencePaymentInfo = paymentInfo as ReferencePaymentInfo;
 
-            if (referencePaymentInfo != null)
+            if ( referencePaymentInfo != null )
             {
                 transaction.TransactionCode = referencePaymentInfo.TransactionCode;
             }
@@ -340,7 +416,6 @@ namespace Rock.Financial
 
                 fakePayments.Add( fakePayment );
             }
-
 
             return fakePayments;
         }

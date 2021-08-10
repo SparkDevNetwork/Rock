@@ -13,7 +13,7 @@
 </script>
 
 <style>
-    .filter-options .rock-check-box-list label {
+    .clickable-label label {
         cursor: pointer;
     }
 </style>
@@ -60,7 +60,7 @@
                         <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
                         <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
-                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" EnhanceForLongLists="true" />
+                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnValueChanged="dvpDataView_ValueChanged" EnhanceForLongLists="true" />
                             <Rock:RockControlWrapper ID="rcwAccounts" runat="server" Label="Available Accounts">
                             <div class="row">
                                 <div class="col-sm-5">
@@ -73,8 +73,8 @@
                             </Rock:RockControlWrapper>
                             <Rock:DefinedValuesPicker ID="dvpTransactionType" runat="server" Label="Transaction Types" RepeatDirection="Vertical" />
                         </div>
-                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list js-currency-list" Label="Currency Types" RepeatDirection="Vertical" />
-                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list js-source-list" Label="Transaction Source" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpCurrencyTypes" runat="server" FormGroupCssClass="currency-list clickable-label js-select-all" Label="Currency Types" RepeatDirection="Vertical" />
+                        <Rock:DefinedValuesPicker ID="dvpTransactionSource" runat="server" FormGroupCssClass="source-list clickable-label js-select-all" Label="Transaction Source" RepeatDirection="Vertical" />
                         <asp:PlaceHolder ID="phAccounts" runat="server" />
 
                     </div>
@@ -97,8 +97,8 @@
                                 </div>
                             </div>
                             <div class="col-sm-4">
-                                <div class="actions text-right">
-                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                <div class="panel-actions text-right">
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
@@ -300,8 +300,8 @@
                 });
 
                 // Set checkbox labels to toggle child checkboxes when clicked
-                $('div.rock-check-box-list').find('label.control-label').prop('data-selected', false);
-                $('div.rock-check-box-list').find('label.control-label').on('click', function (e) {
+                $('.js-select-all').find('label.control-label').prop('data-selected', false);
+                $('.js-select-all').find('label.control-label').on('click', function (e) {
                     var selected = $(this).prop('data-selected')
                     $(this).siblings().find('input:checkbox').prop('checked', !selected);
                     $(this).prop('data-selected', !selected);

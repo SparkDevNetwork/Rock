@@ -42,8 +42,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" ToolTip="Copy Connection Type" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
                 </div>
@@ -68,10 +68,34 @@
                             <Rock:PagePicker ID="ppConnectionRequestDetail" runat="server" Label="Connection Request Detail Page" Required="false" PromptForPageRoute="true" Help="Choose a page that should be used for viewing connection requests of this type. This is useful if you have different detail pages with different settings. A default page will be used if this is left blank." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />
-                            <Rock:RockCheckBox ID="cbFullActivityList" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFullActivityList" Label="Enable Full Activity List" />
-                            <Rock:RockCheckBox ID="cbRequiresPlacementGroup" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="RequiresPlacementGroupToConnect" Label="Requires Placement Group To Connect" />
-                            <Rock:RockCheckBox ID="cbEnableRequestSecurity" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableRequestSecurity" Label="Enable Request Security" />
+                            <Rock:RockCheckBox
+                                ID="cbFutureFollowUp"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableFutureFollowUp"
+                                Label="Enable Future Follow-up"
+                                Help="Allows a request to be frozen until a specific date, at which point a job will turn it back to Active." />
+                            <Rock:RockCheckBox
+                                ID="cbFullActivityList"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableFullActivityList"
+                                Label="Enable Full Activity List"
+                                Help="Show activities from other requests made by the same individual." />
+                            <Rock:RockCheckBox
+                                ID="cbRequiresPlacementGroup"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="RequiresPlacementGroupToConnect"
+                                Label="Requires Placement Group To Connect"
+                                Help="If checked, this will prevent the Connect button from activating on a Request unless a Placement Group is set."/>
+                            <Rock:RockCheckBox
+                                ID="cbEnableRequestSecurity"
+                                runat="server"
+                                SourceTypeName="Rock.Model.ConnectionType, Rock"
+                                PropertyName="EnableRequestSecurity"
+                                Label="Enable Request Security"
+                                Help="If enabled, connection request blocks will have an additional setting allowing security to be applied to individual requests. A special rule is also applied, which automatically allows an assigned connector to view or edit their requests when the connector doesn't have security to the connection opportunity or type. Enabling this setting will noticeably impact performance when there are a significant amount of requests." />
                         </div>
                     </div>
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">
@@ -121,8 +145,9 @@
 
                     <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
                         <div class="grid">
-                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false" >
+                            <Rock:Grid ID="gStatuses" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Status" ShowConfirmDeleteDialog="false" OnGridReorder="gStatuses_GridReorder" >
                                 <Columns>
+                                    <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                     <Rock:BoolField DataField="IsDefault" HeaderText="Is Default" />
@@ -173,7 +198,7 @@
 
         <Rock:ModalDialog ID="dlgConnectionActivityTypes" runat="server" ScrollbarEnabled="false" SaveButtonText="Add" OnSaveClick="btnAddConnectionActivityType_Click" Title="Create Activity" ValidationGroup="ConnectionActivityType">
             <Content>
-                <asp:HiddenField ID="hfConnectionTypeAddConnectionActivityTypeGuid" runat="server" />                
+                <asp:HiddenField ID="hfConnectionTypeAddConnectionActivityTypeGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbConnectionActivityTypeName" SourceTypeName="Rock.Model.ConnectionActivityType, Rock" PropertyName="Name" Label="Activity Name" runat="server" ValidationGroup="ConnectionActivityType" />
@@ -200,13 +225,14 @@
                 <Rock:DataTextBox ID="tbConnectionStatusDescription" SourceTypeName="Rock.Model.ConnectionStatus, Rock" PropertyName="Description" Label="Description" runat="server" ValidationGroup="ConnectionStatus" TextMode="MultiLine" Rows="3" />
                 <div class="row">
                     <div class="col-md-6">
+                        <Rock:ColorPicker ID="cpStatus" runat="server" Label="Highlight Color" Help="The highlight color for this status." />
+                    </div>
+                    <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsCritical" runat="server" Label="Is Critical" ValidationGroup="ConnectionStatus" Help="Requires immediate action." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="ConnectionStatus" />
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbAutoInactivateState" runat="server" Label="Auto-Inactivate State" ValidationGroup="ConnectionStatus" Help="Selecting this status will change the state to Inactive." />
                     </div>
@@ -223,7 +249,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" 
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When"
                             OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="ConnectionWorkflow" >
                             <asp:ListItem Value="0" Text="Request Started" />
                             <asp:ListItem Value="8" Text="Request Assigned" />

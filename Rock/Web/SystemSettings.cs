@@ -23,6 +23,7 @@ using System.Threading;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Web
@@ -181,6 +182,11 @@ namespace Rock.Web
 
             // NOTE: Service Layer will automatically update this Cache (see Attribute.cs UpdateCache)
             rockContext.SaveChanges();
+
+            if ( key == Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK )
+            {
+                RockDateTime.FirstDayOfWeek = value.ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
+            }
         }
 
         /// <summary>
@@ -278,7 +284,7 @@ namespace Rock.Web
                 systemSettings.SystemSettingsValues = new ConcurrentDictionary<string, string>( keyValueLookup, StringComparer.OrdinalIgnoreCase );
             }
 
-            systemSettings.ConcurrentLastUpdated = DateTime.Now;
+            systemSettings.ConcurrentLastUpdated = RockDateTime.Now;
             return systemSettings;
         }
 

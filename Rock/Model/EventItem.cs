@@ -19,12 +19,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.UniversalSearch;
+using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -34,7 +38,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventItem" )]
     [DataContract]
-    public partial class EventItem : Model<EventItem>, IHasActiveFlag
+    public partial class EventItem : Model<EventItem>, IHasActiveFlag, IRockIndexable
     {
         #region Entity Properties
 
@@ -101,28 +105,28 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets a flag indicating if the prayer request has been approved.
+        /// Gets or sets a flag indicating if the event has been approved.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this prayer request has been approved; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this event has been approved; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsApproved { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who approved this prayer request.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who approved this event.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who approved this prayer request.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who approved this event.
         /// </value>
         [DataMember]
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the date this prayer request was approved.
+        /// Gets or sets the date this event was approved.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the date that this prayer request was approved.
+        /// A <see cref="System.DateTime"/> representing the date that this event was approved.
         /// </value>
         [DataMember]
         public DateTime? ApprovedOnDateTime { get; set; }
@@ -146,7 +150,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventCalendarItem">EventCalendarItems</see> that belong to this EventItem.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<EventCalendarItem> EventCalendarItems
         {
             get { return _eventCalenderItems ?? ( _eventCalenderItems = new Collection<EventCalendarItem>() ); }
@@ -176,7 +180,7 @@ namespace Rock.Model
         /// <value>
         /// A collection containing a collection of the <see cref="Rock.Model.EventItemAudience">EventItemAudiences</see> that belong to this EventItem.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<EventItemAudience> EventItemAudiences
         {
             get { return _calendarItemAudiences ?? ( _calendarItemAudiences = new Collection<EventItemAudience>() ); }
@@ -186,7 +190,7 @@ namespace Rock.Model
         private ICollection<EventItemAudience> _calendarItemAudiences;
 
         /// <summary>
-        /// Gets or sets the approved by person alias.
+        /// Gets or sets the approved by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The approved by person alias.
@@ -211,6 +215,14 @@ namespace Rock.Model
                     .Min();
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether [allows interactive bulk indexing].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allows interactive bulk indexing]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowsInteractiveBulkIndexing => true;
 
         #endregion
 
@@ -298,6 +310,110 @@ namespace Rock.Model
             // Find all the calendar Ids this event item is present on.
             //
             return this.EventCalendarItems.Select( c => c.Id ).ToList();
+        }
+        #endregion
+
+        #region Indexing Methods
+        /// <summary>
+        /// Bulks the index documents.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void BulkIndexDocuments()
+        {
+            var indexableItems = new List<IndexModelBase>();
+
+            var eventItems = new EventItemService( new RockContext() )
+                                .GetIndexableActiveItems()
+                                .Include( i => i.EventItemAudiences )
+                                .Include( i => i.EventItemOccurrences )
+                                .Include( i => i.EventItemOccurrences.Select( s => s.Schedule ) )
+                                .Include( i => i.EventCalendarItems.Select( c => c.EventCalendar ) )
+                                .AsNoTracking()
+                                .ToList();
+
+            int recordCounter = 0;
+            foreach ( var eventItem in eventItems )
+            {
+                var indexableEventItem = EventItemIndex.LoadByModel( eventItem );
+
+                if ( indexableEventItem.IsNotNull() )
+                {
+                    indexableItems.Add( indexableEventItem );
+                }
+
+                recordCounter++;
+
+                if ( recordCounter > 100 )
+                {
+                    IndexContainer.IndexDocuments( indexableItems );
+                    indexableItems = new List<IndexModelBase>();
+                    recordCounter = 0;
+                }
+            }
+
+            IndexContainer.IndexDocuments( indexableItems );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public void IndexDocument( int id )
+        {
+            var eventItemEntity = new EventItemService( new RockContext() ).Get( id );
+
+            // Check to ensure that the event item is on a calendar that is indexed
+            if ( eventItemEntity != null && eventItemEntity.EventCalendarItems.Any( c => c.EventCalendar.IsIndexEnabled ) )
+            {
+                var indexItem = EventItemIndex.LoadByModel( eventItemEntity );
+                IndexContainer.IndexDocument( indexItem );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the indexed document.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public void DeleteIndexedDocument( int id )
+        {
+            Type indexType = Type.GetType( "Rock.UniversalSearch.IndexModels.EventItemIndex" );
+            IndexContainer.DeleteDocumentById( indexType, id );
+        }
+
+        /// <summary>
+        /// Deletes the indexed documents.
+        /// </summary>
+        public void DeleteIndexedDocuments()
+        {
+            IndexContainer.DeleteDocumentsByType<EventItemIndex>();
+        }
+
+        /// <summary>
+        /// Indexes the name of the model.
+        /// </summary>
+        /// <returns></returns>
+        public Type IndexModelType()
+        {
+            return typeof( EventItemIndex );
+        }
+
+        /// <summary>
+        /// Gets the index filter values.
+        /// </summary>
+        /// <returns></returns>
+        public ModelFieldFilterConfig GetIndexFilterConfig()
+        {
+            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+
+        }
+
+        /// <summary>
+        /// Gets the index filter field.
+        /// </summary>
+        /// <returns></returns>
+        public bool SupportsIndexFieldFiltering()
+        {
+            return true;
         }
 
         #endregion

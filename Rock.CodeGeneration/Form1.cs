@@ -15,18 +15,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
+
 using Rock;
+using Rock.ViewModel;
 
 namespace Rock.CodeGeneration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public partial class Form1 : Form
     {
-        PluralizationService pls = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
-        Assembly rockAssembly = null;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Form1" /> class.
         /// </summary>
@@ -37,7 +36,7 @@ namespace Rock.CodeGeneration
 
         private void Form1_Load( object sender, EventArgs e )
         {
-            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
             FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
             lblAssemblyPath.Text = fi.FullName;
             lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
@@ -73,6 +72,8 @@ namespace Rock.CodeGeneration
             var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
             tbServiceFolder.Text = Path.Combine( RootFolder().FullName, projectName );
+            tbViewModelFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".ViewModel" );
+            tbViewModelTsFolder.Text = Path.Combine( RootFolder().FullName, projectName + "Web", "Obsidian", "ViewModels" );
             tbRestFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Rest" );
             tbClientFolder.Text = Path.Combine( RootFolder().FullName, projectName + ".Client" );
             tbDatabaseFolder.Text = Path.Combine( RootFolder().FullName, "Database" );
@@ -107,12 +108,17 @@ namespace Rock.CodeGeneration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void btnGenerate_Click( object sender, EventArgs e )
         {
+            var viewModelTypes = GetViewModelTypes();
+
             tbResults.Text = string.Empty;
             string serviceFolder = tbServiceFolder.Text;
+            var viewModelFolder = tbViewModelFolder.Text;
+            var viewModelTypescriptFolder = tbViewModelTsFolder.Text;
             string restFolder = tbRestFolder.Text;
             string rockClientFolder = tbClientFolder.Text;
 
             Cursor = Cursors.WaitCursor;
+            entityPropertyShouldBeVirtualWarnings = new List<string>();
 
             progressBar1.Visible = true;
             progressBar1.Maximum = cblModels.CheckedItems.Count;
@@ -151,6 +157,16 @@ namespace Rock.CodeGeneration
                             {
                                 WriteRESTFile( restFolder, type );
                             }
+
+                            if ( cbViewModel.Checked )
+                            {
+                                WriteViewModelFile( viewModelFolder, type );
+                            }
+
+                            if ( cbViewModelTs.Checked )
+                            {
+                                WriteViewModelTypeScriptFile( viewModelTypescriptFolder, type, viewModelTypes );
+                            }
                         }
 
                         if ( cbClient.Checked )
@@ -177,6 +193,11 @@ namespace Rock.CodeGeneration
                     {
                         EnsureCopyrightHeaders( rootFolder.FullName );
                     }
+
+                    if ( cbHofixMigrations.Checked )
+                    {
+                        DisableHotFixMigrations( rootFolder.FullName );
+                    }
                 }
             }
 
@@ -194,7 +215,7 @@ namespace Rock.CodeGeneration
         {
             StringBuilder missingDbSetWarnings = new StringBuilder();
             StringBuilder rockObsoleteWarnings = new StringBuilder();
-            StringBuilder singletonClassVariablesWarnings = new StringBuilder();
+            List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteList = new List<string>();
             List<Assembly> rockAssemblyList = new List<Assembly>();
             rockAssemblyList.Add( typeof( Rock.Data.RockContext ).Assembly );
@@ -333,7 +354,7 @@ namespace Rock.CodeGeneration
                                         string fullyQualifiedFieldName = $"{type.FullName}.{fieldOrPropertyName}";
                                         if ( !ignoredThreadSafeFieldWarning.Contains( fullyQualifiedFieldName ) )
                                         {
-                                            singletonClassVariablesWarnings.AppendLine( $" - {fullyQualifiedFieldName}" );
+                                            singletonClassVariablesWarnings.Add( $" - {fullyQualifiedFieldName}", true );
                                         }
                                     }
                                 }
@@ -346,15 +367,29 @@ namespace Rock.CodeGeneration
             }
 
             StringBuilder warnings = new StringBuilder();
-            if ( singletonClassVariablesWarnings.Length > 0 )
+            if ( entityPropertyShouldBeVirtualWarnings.Count > 0 )
             {
+                warnings.AppendLine( "Model Properties that should be marked virtual" );
+                foreach ( var warning in entityPropertyShouldBeVirtualWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
+            }
+
+
+            if ( singletonClassVariablesWarnings.Count > 0 )
+            {
+                warnings.AppendLine();
                 warnings.AppendLine( "Singleton non-threadsafe class variables." );
-                warnings.Append( singletonClassVariablesWarnings );
+                foreach ( var warning in singletonClassVariablesWarnings )
+                {
+                    warnings.AppendLine( warning );
+                }
             }
 
             if ( missingDbSetWarnings.Length > 0 )
             {
-                warnings.AppendLine();
+
                 warnings.AppendLine( "RockContext missing DbSet<T>s" );
                 warnings.Append( missingDbSetWarnings );
             }
@@ -362,7 +397,7 @@ namespace Rock.CodeGeneration
             if ( rockObsoleteWarnings.Length > 0 )
             {
                 warnings.AppendLine();
-                warnings.AppendLine( "[Obsolete] that does't have [RockObsolete]" );
+                warnings.AppendLine( "[Obsolete] that doesn't have [RockObsolete]" );
                 warnings.Append( rockObsoleteWarnings );
             }
 
@@ -542,10 +577,13 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
-            var properties = GetEntityProperties( type, false, true );
+            var isObsolete = type.GetCustomAttribute<ObsoleteAttribute>() != null;
+            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+            var hasViewModel = !isObsolete && isModel && type.GetCustomAttribute<ViewModelExcludeAttribute>() == null;
+            var properties = GetEntityProperties( type, false, true, true );
+            var viewModelProperties = GetViewModelProperties( type );
 
             var sb = new StringBuilder();
-
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <auto-generated>" );
             sb.AppendLine( "//     This code was generated by the Rock.CodeGeneration project" );
@@ -567,13 +605,16 @@ GO
             sb.AppendLine( "// See the License for the specific language governing permissions and" );
             sb.AppendLine( "// limitations under the License." );
             sb.AppendLine( "// </copyright>" );
-            sb.AppendLine( "//" );
+            sb.AppendLine( "" );
 
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Linq;" );
             sb.AppendLine( "" );
-            sb.AppendLine( "using Rock.Data;" );
-            sb.AppendLine( "" );
+            sb.AppendLine( @"using Rock.Attribute;
+using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
+" );
 
             sb.AppendFormat( "namespace {0}" + Environment.NewLine, type.Namespace );
             sb.AppendLine( "{" );
@@ -595,6 +636,52 @@ GO
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
+
+            if ( hasViewModel )
+            {
+
+                sb.AppendLine( $@"
+    /// <summary>
+    /// {type.Name} View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( {type.Name} ) )]
+    public partial class {type.Name}ViewModelHelper : ViewModelHelper<{type.Name}, Rock.ViewModel.{type.Name}ViewModel>
+    {{
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name=""model"">The entity.</param>
+        /// <param name=""currentPerson"">The current person.</param>
+        /// <param name=""loadAttributes"">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.{type.Name}ViewModel CreateViewModel( {type.Name} model, Person currentPerson = null, bool loadAttributes = true )
+        {{
+            if ( model == null )
+            {{
+                return default;
+            }}
+
+            var viewModel = new Rock.ViewModel.{type.Name}ViewModel
+            {{
+                Id = model.Id,
+                Guid = model.Guid," );
+
+                foreach ( var property in viewModelProperties )
+                {
+                    var cast = property.IsEnum ? $"( int{( property.IsNullable ? "?" : string.Empty )} ) " : string.Empty;
+                    sb.AppendLine( $"                {property.Name} = {cast}model.{property.Name}," );
+                }
+
+                sb.AppendLine( $@"            }};
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }}
+    }}
+" );
+
+            }
 
             sb.AppendFormat( @"
     /// <summary>
@@ -621,7 +708,37 @@ GO
                 return target;
             }}
         }}
-", type.Name );
+
+        /// <summary>
+        /// Clones this {0} object to a new {0} object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name=""source"">The source.</param>
+        /// <returns></returns>
+        public static {0} CloneWithoutIdentity( this {0} source )
+        {{
+            var target = new {0}();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;", type.Name );
+
+            // Only include these properties if the type is a model
+            if ( type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> ) )
+            {
+                sb.AppendFormat( @"
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;", type.Name );
+            }
+
+            sb.AppendLine( "" );
+            sb.AppendLine( "" );
+            sb.AppendLine( "            return target;" );
+            sb.AppendLine( "        }" );
 
             sb.AppendFormat( @"
         /// <summary>
@@ -654,8 +771,27 @@ GO
                 }
             }
 
-            sb.Append( @"
-        }
+            sb.AppendLine( $@"
+        }}");
+
+            if ( hasViewModel )
+            {
+                sb.AppendLine( $@"
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name=""model"">The entity.</param>
+        /// <param name=""currentPerson"" >The currentPerson.</param>
+        /// <param name=""loadAttributes"" >Load attributes?</param>
+        public static Rock.ViewModel.{type.Name}ViewModel ToViewModel( this {type.Name} model, Person currentPerson = null, bool loadAttributes = false )
+        {{
+            var helper = new {type.Name}ViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }}" );
+            }
+
+            sb.AppendLine(@"
     }
 " );
             sb.AppendLine( "}" );
@@ -665,7 +801,324 @@ GO
         }
 
         /// <summary>
-        /// 
+        /// Writes the ViewModel file for a given type
+        /// </summary>
+        /// <param name="rootFolder"></param>
+        /// <param name="type"></param>
+        private void WriteViewModelFile( string rootFolder, Type type )
+        {
+            var isModel = type.BaseType.GetGenericTypeDefinition() == typeof( Rock.Data.Model<> );
+
+            if ( !isModel || type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
+            {
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine( AutoGeneratedLicense );
+            var properties = GetViewModelProperties( type );
+
+            sb.AppendLine( $@"
+using System;
+using System.Linq;
+
+namespace Rock.ViewModel
+{{
+    /// <summary>
+    /// {type.Name} View Model
+    /// </summary>
+    public partial class {type.Name}ViewModel : ViewModelBase
+    {{" );
+
+            foreach ( var property in properties )
+            {
+                sb.AppendLine( $@"        /// <summary>
+        /// Gets or sets the {property.Name}.
+        /// </summary>
+        /// <value>
+        /// The {property.Name}.
+        /// </value>
+        public {property.TypeName} {property.Name} {{ get; set; }}
+" );
+            }
+
+            sb.AppendLine( @"    }
+}" );
+
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", type.Name + "ViewModel.cs" ) );
+            WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Writes the ViewModel typescript file for a given type
+        /// </summary>
+        /// <param name="rootFolder"></param>
+        /// <param name="type"></param>
+        private void WriteViewModelTypeScriptFile( string rootFolder, Type type, List<Type> viewModelTypes )
+        {
+            if ( type.GetCustomAttribute<ViewModelExcludeAttribute>() != null )
+            {
+                return;
+            }
+
+            var viewModelType = viewModelTypes.FirstOrDefault( vmt => vmt.Name == $"{type.Name}ViewModel" );
+
+            if ( viewModelType == null )
+            {
+                return;
+            }
+
+            var sb = new StringBuilder();
+            var imports = new HashSet<string> {
+                "import Entity from '../Entity';"
+            };
+
+            sb.AppendLine( AutoGeneratedLicense );
+            sb.AppendLine();
+
+            var viewModelProperties = GetViewModelProperties( viewModelType, type );
+            var fileName = $"{type.Name}ViewModel";
+
+            foreach ( var property in viewModelProperties )
+            {
+                if ( property.TypeScriptImports is null )
+                {
+                    continue;
+                }
+
+                foreach ( var import in property.TypeScriptImports )
+                {
+                    imports.Add( import );
+                }
+            }
+
+            foreach ( var import in imports )
+            {
+                if ( !import.Contains( fileName ) )
+                {
+                    sb.AppendLine( import );
+                }
+            }
+
+            if ( imports.Any() )
+            {
+                sb.AppendLine();
+            }
+
+            sb.AppendLine( $"export default interface {type.Name} extends Entity {{" );
+
+            foreach ( var property in viewModelProperties )
+            {
+                var camelCasePropertyName = $"{property.Name.Substring( 0, 1 ).ToLower()}{property.Name.Substring( 1 )}";
+                sb.AppendLine( $"    {camelCasePropertyName}: {property.TypeScriptType};" );
+            }
+
+            sb.AppendLine( "}" );
+
+            var file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", $"{fileName}.d.ts" ) );
+            WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Gets the type of the view model.
+        /// </summary>
+        /// <returns></returns>
+        private static List<Type> GetViewModelTypes()
+        {
+            var viewModelType = typeof( IViewModel );
+            var rockViewModelAssembly = viewModelType.Assembly;
+            var fileInfo = new FileInfo( new Uri( rockViewModelAssembly.CodeBase ).AbsolutePath );
+            var assemblyFileName = fileInfo.FullName;
+            var assembly = Assembly.LoadFrom( assemblyFileName );
+            var types = new List<Type>();
+
+            foreach ( var type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
+            {
+                if ( !type.IsAbstract && viewModelType.IsAssignableFrom( type ) )
+                {
+                    types.Add( type );
+                }
+            }
+
+            return types;
+        }
+
+        /// <summary>
+        /// Gets the view model properties.
+        /// </summary>
+        /// <param name="viewModelType">Type of the view model.</param>
+        /// <param name="modelType">Type of the model.</param>
+        /// <returns></returns>
+        private List<ViewModelProperty> GetViewModelProperties( Type viewModelType, Type modelType = null ) {
+            var viewModelTypeProperties = GetEntityProperties( viewModelType, false, true, false );
+            var modelProperties = modelType != null?
+                GetEntityProperties( modelType, false, true, true ) :
+                new Dictionary<string, PropertyInfo>();
+
+            var properties = viewModelTypeProperties
+                .Where( p => p.Value.GetCustomAttribute<ViewModelExcludeAttribute>() == null )
+                .Select( p =>
+                {
+                    var obsolete = p.Value.GetCustomAttribute<ObsoleteAttribute>();
+                    var underlyingType = Nullable.GetUnderlyingType( p.Value.PropertyType );
+                    var isNullable = underlyingType != null;
+                    var isEnum = isNullable ? underlyingType.IsEnum : p.Value.PropertyType.IsEnum;
+
+                    var originalType = viewModelTypeProperties.GetValueOrNull( p.Key );
+                    var propertyType = p.Value.PropertyType;
+                    var isRequired = originalType?.GetCustomAttribute<RequiredAttribute>() != null;
+                    var typeAttribute = p.Value.GetCustomAttribute<TypeScriptTypeAttribute>();
+                    var tsType = typeAttribute?.TsType;
+                    HashSet<string> imports = null;
+
+                    if ( tsType.IsNullOrWhiteSpace() )
+                    {
+                        var modelProperty = modelProperties.GetValueOrNull( p.Key );
+
+                        if ( modelProperty != null )
+                        {
+                            typeAttribute = modelProperty.GetCustomAttribute<TypeScriptTypeAttribute>();
+                            tsType = typeAttribute?.TsType;
+                        }
+                    }
+
+                    if ( tsType.IsNullOrWhiteSpace() )
+                    {
+                        (tsType, imports) = GetTypescriptType( propertyType, isRequired );
+                    }
+                    else if ( !typeAttribute.ImportStatement.IsNullOrWhiteSpace() )
+                    {
+                        imports = new HashSet<string> { typeAttribute.ImportStatement };
+                    }
+
+                    return new ViewModelProperty
+                    {
+                        Name = p.Key,
+                        IsObsolete = obsolete != null,
+                        IsEnum = isEnum,
+                        IsNullable = isNullable,
+                        TypeName =
+                            ( isNullable && isEnum ) ? "int?" :
+                            isEnum ? "int" :
+                            PropertyTypeName( p.Value.PropertyType ),
+                        TypeScriptImports = imports,
+                        TypeScriptType = tsType
+                    };
+                } )
+                .Where( p => !p.IsObsolete )
+                .ToList();
+
+            return properties;
+        }
+
+        /// <summary>
+        /// Gets the type of the typescript.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        private static (string type, HashSet<string> imports) GetTypescriptType( Type type, bool isRequired )
+        {
+            var imports = new HashSet<string>();
+            var underlyingType = Nullable.GetUnderlyingType( type );
+            var isNullable = underlyingType != null;
+
+            if ( isNullable )
+            {
+                type = underlyingType;
+            }
+
+            // Default to "unknown" type
+            var tsType = "unknown";
+
+            // Switch on the typecode
+            switch ( Type.GetTypeCode( type ) )
+            {
+                case TypeCode.Object:
+                    if ( type == typeof( Guid ) )
+                    {
+                        tsType = "Guid";
+                        imports.Add( "import { Guid } from '../../Util/Guid';" );
+                    }
+                    else if ( type.IsArray )
+                    {
+                        var (itemType, innerImports) = GetTypescriptType( type.GetElementType(), false );
+                        tsType = $"({itemType})[]";
+
+                        foreach ( var import in innerImports )
+                        {
+                            imports.Add( import );
+                        }
+                    }
+                    else
+                    {
+                        tsType = "Record<string, unknown>";
+                    }
+                    break;
+                case TypeCode.DateTime:
+                    imports.Add( "import { RockDateType } from '../../Util/RockDate';" );
+                    tsType = "RockDateType";
+                    break;
+                case TypeCode.Boolean:
+                    tsType = "boolean";
+                    break;
+                case TypeCode.String:
+                    tsType = "string";
+                    isNullable = !isRequired;
+                    break;
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                    tsType = "number";
+                    break;
+            }
+
+            if ( isNullable )
+            {
+                return ($"{tsType} | null", imports);
+            }
+
+            return (tsType, imports);
+        }
+
+        /// <summary>
+        /// Gets the license for an automatic generated code file.
+        /// </summary>
+        /// <value>
+        /// The automatic generated license.
+        /// </value>
+        private string AutoGeneratedLicense => @"//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by the Rock.CodeGeneration project
+//     Changes to this file will be lost when the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the ""License"");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an ""AS IS"" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//";
+
+        /// <summary>
+        ///
         /// </summary>
         private class TableColumnInfo
         {
@@ -716,7 +1169,7 @@ GO
                 string parentTable = reader["FKTABLE_NAME"] as string;
                 string columnName = reader["FKCOLUMN_NAME"] as string;
                 bool isCascadeDelete = reader["DELETE_RULE"] as short? == 0;
-                
+
                 bool ignoreCanDelete = false;
                 bool hasEntityModel = true;
 
@@ -779,8 +1232,8 @@ GO
                 if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
-        @"            
-            // ignoring {0},{1} 
+        @"
+            // ignoring {0},{1}
 ", item.Table, item.Column );
                     continue;
                 }
@@ -821,12 +1274,12 @@ GO
                 }
 
                 canDeleteMiddle +=
-        $@" 
+        $@"
             if ( new Service<{parentTable}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
             {{
                 errorMessage = string.Format( ""This {{0}} {relationShipText} {{1}}."", {type.Name}.FriendlyTypeName, {parentTable}.FriendlyTypeName{pluralizeCode} );
                 return false;
-            }}  
+            }}
 ";
 
                 if ( obsolete != null && obsolete.IsError == false )
@@ -862,6 +1315,31 @@ GO
             return sqlconn;
         }
 
+        public string PluralizeTypeName( Type type )
+        {
+            // This uses PluralizationService (Entity Framework) , which is designed to pluralize the names of types (not necessarily real worlds)
+            // For Example, AttendanceOccurrence gets pluralized as AttendanceOccurrences, because it knows that Attendance and Occurrence
+            // It figures out the last word in a CamelCased type name and pluralizes it.
+            // are separate words using CamelCasing.
+
+            var str = type.Name;
+
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+
+                case "CAMPUS":
+                    return str + "ES";
+
+                default:
+                    var pluralizationService = PluralizationService.CreateService( new CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
+        }
+
         /// <summary>
         /// Writes the REST file for a given type
         /// </summary>
@@ -869,7 +1347,7 @@ GO
         /// <param name="type"></param>
         private void WriteRESTFile( string rootFolder, Type type )
         {
-            string pluralizedName = type.Name.Pluralize();
+            string pluralizedName = PluralizeTypeName( type );
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
             string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
@@ -946,7 +1424,7 @@ GO
         /// <returns></returns>
         private DirectoryInfo RootFolder()
         {
-            // Should probably be read from config file, or selected from directory dialog.  
+            // Should probably be read from config file, or selected from directory dialog.
             // For now, just traverses parent folders looking for Rock.sln file
             var dirInfo = new DirectoryInfo( Path.GetDirectoryName( lblAssemblyPath.Text ) );
             while ( dirInfo != null && !dirInfo.GetDirectories().Any( a => a.Name == "RockWeb" ) )
@@ -1075,7 +1553,7 @@ GO
         {
             if ( type.IsEnum )
             {
-                if ( type.Namespace == "Rock.Model" )
+                if ( type.Namespace == "Rock.Model" || type.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
                 {
                     return "Rock.Client.Enums." + type.Name;
                 }
@@ -1090,20 +1568,24 @@ GO
             }
         }
 
+        private List<string> entityPropertyShouldBeVirtualWarnings = null;
+
         /// <summary>
         /// Gets the entity properties.
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="includeRockClientIncludes">if set to <c>true</c> [include rock client includes].</param>
         /// <param name="includeObsolete">if set to <c>true</c> [include obsolete].</param>
+        /// <param name="reportVirtualPropertyWarnings">if set to <c>true</c> [report virtual property warnings].</param>
         /// <returns></returns>
-        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete )
+        private Dictionary<string, PropertyInfo> GetEntityProperties( Type type, bool includeRockClientIncludes, bool includeObsolete, bool reportVirtualPropertyWarnings )
         {
             var properties = new Dictionary<string, PropertyInfo>();
 
             var interfaces = type.GetInterfaces();
+            var typeProperties = type.GetProperties().SortByStandardOrder();
 
-            foreach ( var property in type.GetProperties().SortByStandardOrder() )
+            foreach ( var property in typeProperties )
             {
                 bool include = false;
                 if ( includeRockClientIncludes && property.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
@@ -1146,6 +1628,15 @@ GO
                         if ( property.SetMethod != null && property.SetMethod.IsPublic && property.GetMethod.IsPublic )
                         {
                             properties.Add( property.Name, property );
+
+                            if ( reportVirtualPropertyWarnings )
+                            {
+                                if ( property.PropertyType.IsClass
+                                && !property.PropertyType.Namespace.StartsWith( "System" ) )
+                                {
+                                    entityPropertyShouldBeVirtualWarnings.Add( $" - {type.FullName} {property.Name}", true );
+                                }
+                            }
                         }
                     }
                 }
@@ -1160,7 +1651,7 @@ GO
         /// <param name="rootFolder">The root folder.</param>
         private void WriteRockClientEnumsFile( string rootFolder )
         {
-            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <auto-generated>" );
@@ -1194,7 +1685,10 @@ GO
 
             foreach ( var enumType in rockAssembly.GetTypes().Where( a => a.IsEnum ).OrderBy( a => a.Name ) )
             {
-                if ( enumType.Namespace == "Rock.Model" )
+                bool rockModelGenerateClientEnum = enumType.Namespace == "Rock.Model";
+                bool rockClientIncludeAttributeEnum = enumType.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null;
+
+                if ( rockModelGenerateClientEnum || rockClientIncludeAttributeEnum )
                 {
                     sb.AppendLine( "    /// <summary>" );
                     sb.AppendLine( "    /// </summary>" );
@@ -1241,7 +1735,7 @@ GO
         /// <param name="rootFolder">The root folder.</param>
         private void WriteRockClientSystemGuidFiles( string rootFolder )
         {
-            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
             StringBuilder sb = new StringBuilder();
             sb.AppendLine( "//------------------------------------------------------------------------------" );
             sb.AppendLine( "// <auto-generated>" );
@@ -1264,7 +1758,7 @@ GO
             sb.AppendLine( "// See the License for the specific language governing permissions and" );
             sb.AppendLine( "// limitations under the License." );
             sb.AppendLine( "// </copyright>" );
-            sb.AppendLine( "//" );
+            sb.AppendLine( "" );
             sb.AppendLine( "using System;" );
             sb.AppendLine( "using System.Collections.Generic;" );
             sb.AppendLine( "" );
@@ -1303,7 +1797,12 @@ GO
         /// <param name="alreadyIncludedTypes">The already included types.</param>
         private void WriteRockClientIncludeClientFiles( string rootFolder, IEnumerable<Type> alreadyIncludedTypes )
         {
-            foreach ( var rockClientIncludeType in rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ).OrderBy( a => a.Name ) )
+            var rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            var rockRestAssembly = typeof( Rock.Rest.ApiController<> ).Assembly;
+            var rockClientIncludeAttributeTypes = rockAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null )
+                    .Union( rockRestAssembly.GetTypes().Where( a => a.GetCustomAttribute<Rock.Data.RockClientIncludeAttribute>() != null ) ).OrderBy( a => a.Name ).ToList();
+
+            foreach ( var rockClientIncludeType in rockClientIncludeAttributeTypes )
             {
                 if ( !alreadyIncludedTypes.Any( a => a == rockClientIncludeType ) )
                 {
@@ -1320,7 +1819,7 @@ GO
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
+            var entityProperties = GetEntityProperties( type, true, true, false ).ToDictionary( k => k.Key, v => v.Value );
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1606,6 +2105,24 @@ GO
             }
         }
 
+        private void tbViewModelFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdServiceOutput.SelectedPath = tbViewModelFolder.Text;
+            if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbViewModelFolder.Text = fbdServiceOutput.SelectedPath;
+            }
+        }
+
+        private void tbViewModelTsFolder_MouseDoubleClick( object sender, MouseEventArgs e )
+        {
+            fbdServiceOutput.SelectedPath = tbViewModelTsFolder.Text;
+            if ( fbdServiceOutput.ShowDialog() == DialogResult.OK )
+            {
+                tbViewModelTsFolder.Text = fbdServiceOutput.SelectedPath;
+            }
+        }
+
         private void tbRestFolder_MouseDoubleClick( object sender, MouseEventArgs e )
         {
             fbdRestOutput.SelectedPath = tbRestFolder.Text;
@@ -1632,7 +2149,7 @@ GO
         /// <summary>
         /// The ignore folders
         /// </summary>
-        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
+        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj", "\\Vendor" };
 
         /// <summary>
         /// Mains the specified args.
@@ -1645,39 +2162,47 @@ GO
             int updatedFileCount = 0;
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\Obsidian\\", "*.ts" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.DownhillCss\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.MyWell\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.NMI\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Oidc\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Security.Authentication.Auth0\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SendGrid\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Specs\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.TransNational.Pi\\" );
+
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
-
-            Console.WriteLine( "\n\nDone!  Files Updated: {0}\n\nPress any key to continue.", updatedFileCount );
-            Console.ReadLine();
         }
 
         /// <summary>
         /// Fixups the copyright headers.
         /// </summary>
         /// <param name="searchDirectory">The search directory.</param>
-        private static int FixupCopyrightHeaders( string searchDirectory )
+        /// <param name="searchPattern">The search pattern.</param>
+        /// <returns></returns>
+        private static int FixupCopyrightHeaders( string searchDirectory, string searchPattern = "*.cs" )
         {
             int result = 0;
 
-            List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
+            if ( !Directory.Exists( searchDirectory ) )
+            {
+                return 0;
+            }
+
+            var sourceFilenames = Directory.GetFiles( searchDirectory, searchPattern, SearchOption.AllDirectories ).ToList();
 
             // exclude files that come from the localhistory VS extension
             sourceFilenames = sourceFilenames.Where( a => !a.Contains( ".localhistory" ) ).ToList();
@@ -1807,7 +2332,76 @@ GO
             return result;
         }
 
+        /// <summary>
+        /// Renames the Up() migration method into OldUp() and inserts a new empty Up() migration method.
+        /// </summary>
+        /// <param name="rootFolder">The root folder.</param>
+        private static void DisableHotFixMigrations( string rootFolder )
+        {
+            string upMigrationText = "public override void Up()";
+            string newUpMigrationText = @"public override void Up()
+        {
+            //----------------------------------------------------------------------------------
+            // <auto-generated>
+            //     This Up() migration method was generated by the Rock.CodeGeneration project.
+            //     The purpose is to prevent hotfix migrations from running when they are not
+            //     needed. The migrations in this file are run by an EF migration instead.
+            // </auto-generated>
+            //----------------------------------------------------------------------------------
+        }
 
+        private void OldUp()";
+
+            // Get a list of cs files in the Plugin\HotFixes folder
+            string hotfixFolder = Path.Combine( rootFolder, "Rock", "Plugin", "HotFixes" );
+            List<string> hotfixMigrationFiles = Directory.GetFiles( hotfixFolder, "*.cs", SearchOption.TopDirectoryOnly ).Where( l => !l.Contains( "HotFixMigrationResource.Designer.cs" ) ).ToList();
+
+            foreach ( var hotfixMigrationFile in hotfixMigrationFiles )
+            {
+                var migrationFileText = File.ReadAllText( hotfixMigrationFile );
+
+                // If there is already an "OldUp() method then this file has already been commented out and can be skipped.
+                if ( migrationFileText.Contains( "OldUp()" ) )
+                {
+                    continue;
+                }
+
+                File.WriteAllText( hotfixMigrationFile, migrationFileText.Replace( upMigrationText, newUpMigrationText ) );
+
+                // Keeping this in case renaming the old up and creating a new empty Up is not accepted as a solution.
+                //var fileLines = File.ReadLines( hotfixMigrationFile );
+                //StringBuilder newText = new StringBuilder();
+                //bool startCommenting = false;
+
+                //foreach ( var fileLine in fileLines )
+                //{
+
+                //    if ( fileLine.Trim().Equals( "public override void Up()" ) )
+                //    {
+                //        startCommenting = true;
+                //    }
+
+                //    string newLineText = fileLine;
+
+                //    if ( startCommenting )
+                //    {
+                //        if ( fileLine.TrimStart().Equals( "{" ) )
+                //        {
+                //            newLineText = fileLine + "/*";
+                //        }
+                //        else if ( fileLine.TrimStart().Equals( "}" ) )
+                //        {
+                //            newLineText = "*/" + fileLine;
+                //            startCommenting = false;
+                //        }
+                //    }
+
+                //    newText.AppendLine( newLineText );
+                //}
+
+                //File.WriteAllText( hotfixMigrationFile, newText.ToString() );
+            }
+        }
     }
 
     public static class HelperExtensions
@@ -1838,5 +2432,67 @@ GO
 
             return result.ToArray();
         }
+    }
+
+    /// <summary>
+    /// View Model Property
+    /// </summary>
+    public sealed class ViewModelProperty
+    {
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is obsolete.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is obsolete; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsObsolete { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is enum.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is enum; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEnum { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is nullable.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is nullable; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsNullable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the type.
+        /// </summary>
+        /// <value>
+        /// The name of the type.
+        /// </value>
+        public string TypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the type script.
+        /// </summary>
+        /// <value>
+        /// The type of the type script.
+        /// </value>
+        public string TypeScriptType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type script import.
+        /// </summary>
+        /// <value>
+        /// The type script import.
+        /// </value>
+        public HashSet<string> TypeScriptImports { get; set; }
     }
 }

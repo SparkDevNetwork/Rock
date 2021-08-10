@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="DataViewDetail.ascx.cs" Inherits="RockWeb.Blocks.Reporting.DataViewDetail" %>
-<asp:UpdatePanel ID="upDataView" runat="server">
+<asp:UpdatePanel ID="upDataViewDetail" runat="server">
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
@@ -18,6 +18,7 @@
                 <div class="panel-body">
 
                     <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                    <asp:CustomValidator ID="cvSecurityError" runat="server" Display="None"></asp:CustomValidator>
 
                     <fieldset>
                         <div class="row">
@@ -110,8 +111,8 @@
                                 <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
-                                    <asp:LinkButton ID="btnCopy" runat="server" Tooltip="Copy Data View" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="btnCopy_Click" />
-                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                                    <asp:LinkButton ID="btnCopy" runat="server" Text="<i class='fa fa-clone'></i>" Tooltip="Copy Data View" CssClass="btn btn-default btn-square btn-sm" OnClick="btnCopy_Click" />
+                                    <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                                 </div>
                                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             </div>
@@ -119,23 +120,6 @@
                         </fieldset>
                     </div>
 
-                </div>
-
-                <div class="panel panel-block">
-                    <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-table"></i> Results</h1>
-                        <div class="panel-labels">
-                            <asp:LinkButton ID="btnToggleResults" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnToggleResults_Click" />
-                        </div>
-                    </div>
-                    <asp:Panel ID="pnlResultsGrid" runat="server">
-                        <div class="panel-body">
-                            <Rock:NotificationBox ID="nbGridError" runat="server" NotificationBoxType="Warning" />
-                            <div class="grid grid-panel">
-                                <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
-                            </div>
-                        </div>
-                    </asp:Panel>
                 </div>
             </div>
 

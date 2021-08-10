@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -39,7 +40,7 @@ namespace Rock.Model
         /* Custom Indexes:
          *
          * InteractionComponentId, InteractionDateTime
-         *      Includes InteractionTimeToServe, Operation, InteractionSessionId
+         *      Includes InteractionTimeToServe, Operation, InteractionSessionId, PersonalDeviceId
          *      This was added for <see cref="Rock.Jobs.RockCleanup.UpdateMedianPageLoadTimes"/>
          *          and CleanupOldInteractions
          *
@@ -63,7 +64,7 @@ namespace Rock.Model
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the operation.
+        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
         /// </summary>
         /// <value>
         /// The operation.
@@ -73,7 +74,7 @@ namespace Rock.Model
         public string Operation { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that that is associated with this Interaction.
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that is associated with this Interaction.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionComponent"/> component that this Interaction is associated with.
@@ -83,12 +84,21 @@ namespace Rock.Model
         public int InteractionComponentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
-        /// For example:
-        ///  if this is a Page View:
-        ///     Interaction.EntityId is the Page.Id of the page that was viewed
-        ///  if this is a Communication Recipient activity:
-        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
+        /// Gets or sets the Id of the entity that this interaction component is tracking activity for.
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>Page Views</term>
+        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity</term>
+        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Workflow Form Entry</term>
+        ///     <description><see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
+        /// </list>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
@@ -336,7 +346,7 @@ namespace Rock.Model
         /// <value>
         /// The personal device.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonalDevice PersonalDevice { get; set; }
 
         /// <summary>
@@ -347,12 +357,20 @@ namespace Rock.Model
         {
             if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
             {
-                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
-                this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
-                this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
-                this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
-                this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
-                this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+                try
+                {
+                    var uri = new Uri( url );
+                    var urlParams = System.Web.HttpUtility.ParseQueryString( uri.Query );
+                    this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                    this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                    this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                    this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                    this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error parsing '{url}' to the uri.", ex ), null );
+                }
             }
         }
 
@@ -372,7 +390,7 @@ namespace Rock.Model
         /// The interaction source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate InteractionSourceDate { get; set; }
+        public virtual AnalyticsSourceDate InteractionSourceDate { get; set; }
 
         #endregion Virtual Properties
 
@@ -400,7 +418,7 @@ namespace Rock.Model
             if ( !_isDeleted )
             {
                 // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleInteractionRecord( this ) );
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this.Id ) );
             }
 
             base.PostSaveChanges( dbContext );

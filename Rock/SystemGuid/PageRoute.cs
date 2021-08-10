@@ -22,6 +22,11 @@ namespace Rock.SystemGuid
     public static class PageRoute
     {
         /// <summary>
+        /// The CheckinManager route guid
+        /// </summary>
+        public const string CHECK_IN_MANAGER = "A2B6EA1C-9E46-42C8-ABE4-0FD32D562B48";
+
+        /// <summary>
         /// Gets the Campus Detail > Group Member Detail page route guid
         /// </summary>
         public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "9660B9FB-C90F-4AFE-9D58-C0EC271C1377";
@@ -55,5 +60,10 @@ namespace Rock.SystemGuid
         /// The oidc logout route.
         /// </summary>
         public const string OIDC_LOGOUT = "5137F15D-61EA-4935-A9E1-16534959AEFA";
+
+        /// <summary>
+        /// The edit person route '/Person/{PersonId}/Edit'
+        /// </summary>
+        public const string EDIT_PERSON_ROUTE = "FCC0CCFF-8E18-48D8-A5EB-3D0F81D68280";
     }
 }

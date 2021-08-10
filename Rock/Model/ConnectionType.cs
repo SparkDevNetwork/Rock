@@ -18,24 +18,25 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection type
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionType" )]
     [DataContract]
-    public partial class ConnectionType : Model<ConnectionType>
+    public partial class ConnectionType : Model<ConnectionType>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace Rock.Model
         public bool RequiresPlacementGroupToConnect { get; set; }
 
         /// <summary>
-        /// Gets or sets the owner person alias identifier.
+        /// Gets or sets the owner <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The owner person alias identifier.
@@ -141,7 +142,7 @@ namespace Rock.Model
         public bool EnableRequestSecurity { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page identifier.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.Page"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request detail page identifier.
@@ -150,38 +151,75 @@ namespace Rock.Model
         public int? ConnectionRequestDetailPageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page route identifier.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.PageRoute"/> identifier.
         /// </summary>
         /// <value>
         /// The connection request detail page route identifier.
         /// </value>
         [DataMember]
+
         public int? ConnectionRequestDetailPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default view mode (list or board).
+        /// </summary>
+        /// <value>
+        /// The default view.
+        /// </value>
+        [DataMember]
+        public ConnectionTypeViewMode DefaultView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request header lava.
+        /// </summary>
+        /// <value>
+        /// The request header lava.
+        /// </value>
+        [DataMember]
+        public string RequestHeaderLava { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request badge lava.
+        /// </summary>
+        /// <value>
+        /// The request badge lava.
+        /// </value>
+        [DataMember]
+        public string RequestBadgeLava { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the owner person alias.
+        /// Gets or sets the owner <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The owner person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <value>
         /// The connection request detail page.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Page ConnectionRequestDetailPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection request detail page route.
+        /// Gets or sets the connection request detail <see cref="Rock.Model.PageRoute"/>.
         /// </summary>
         /// <value>
         /// The connection request detail page route.
@@ -195,7 +233,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionStatus">ConnectionStatuses</see> who are associated with the ConnectionType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionStatus> ConnectionStatuses
         {
             get { return _connectionStatuses ?? ( _connectionStatuses = new Collection<ConnectionStatus>() ); }
@@ -210,7 +248,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionWorkflow">ConnectionWorkflows</see> who are associated with the ConnectionType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionWorkflow> ConnectionWorkflows
         {
             get { return _connectionWorkflows ?? ( _connectionWorkflows = new Collection<ConnectionWorkflow>() ); }
@@ -225,7 +263,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionActivityType">ConnectionActivityTypes</see> who are associated with the ConnectionType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionActivityType> ConnectionActivityTypes
         {
             get { return _connectionActivityTypes ?? ( _connectionActivityTypes = new Collection<ConnectionActivityType>() ); }
@@ -240,7 +278,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunity">ConnectionOpportunities</see> who are associated with the ConnectionType.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionOpportunity> ConnectionOpportunities
         {
             get { return _connectionOpportunities ?? ( _connectionOpportunities = new Collection<ConnectionOpportunity>() ); }
@@ -250,6 +288,29 @@ namespace Rock.Model
         private ICollection<ConnectionOpportunity> _connectionOpportunities;
 
         #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return ConnectionTypeCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            ConnectionTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
 
         #region overrides
 
@@ -273,7 +334,7 @@ namespace Rock.Model
                 if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
                 {
                     int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) &&  this.Id == groupTypeIdValue )
+                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && this.Id == groupTypeIdValue )
                     {
                         foreach ( int attributeId in entityAttributes.AttributeIds )
                         {
@@ -316,6 +377,26 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionRequestDetailPage ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ConnectionRequestDetailPageRoute ).WithMany().HasForeignKey( p => p.ConnectionRequestDetailPageRouteId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion Entity Configuration
+
+    #region Enumerations
+
+    /// <summary>
+    /// Represents the view mode of a <see cref="ConnectionType"/>.
+    /// </summary>
+    public enum ConnectionTypeViewMode
+    {
+        /// <summary>
+        /// The <see cref="ConnectionType"/> is viewed as list.
+        /// </summary>
+        List = 0,
+
+        /// <summary>
+        /// The <see cref="ConnectionType"/> is viewed as a board.
+        /// </summary>
+        Board = 1
     }
 
     #endregion

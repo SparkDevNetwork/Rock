@@ -32,6 +32,7 @@ using Rock.Web.Cache;
 using System.Text;
 using HtmlAgilityPack;
 using System.Web;
+using Rock.Lava;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -626,7 +627,8 @@ namespace RockWeb.Blocks.Cms
             foreach ( var contextEntityType in RockPage.GetContextEntityTypes() )
             {
                 var contextEntity = RockPage.GetCurrentContext( contextEntityType );
-                if ( contextEntity != null && contextEntity is Rock.Lava.ILiquidizable )
+
+                if ( LavaHelper.IsLavaDataObject( contextEntity ) )
                 {
                     var type = Type.GetType( contextEntityType.AssemblyName ?? contextEntityType.Name );
                     if ( type != null )
@@ -800,7 +802,7 @@ namespace RockWeb.Blocks.Cms
 
                     if ( contentHtml != null )
                     {
-                        if ( contentHtml.HasMergeFields() )
+                        if ( LavaHelper.IsLavaTemplate( contentHtml ) )
                         {
                             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                             mergeFields.Add( "CurrentPage", this.PageCache );
@@ -867,7 +869,7 @@ namespace RockWeb.Blocks.Cms
                     query string. Updated it to also consider the context variable if one exists and
                     the query string did not contain the configured context paramater. This was added
                     to allow having different content for each context object. The specific use case
-                    is when used in conjection with the campus context switcher. This change will allow
+                    is when used in conjunction with the campus context switcher. This change will allow
                     having separate content per campus (without any Lava case statements).  
                 */
                 var entityId = PageParameter( contextParameter );
@@ -895,15 +897,29 @@ namespace RockWeb.Blocks.Cms
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            if ( this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false )
+            var isSecondary = this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false;
+            if ( !isSecondary )
             {
-                if ( lHtmlContent.Visible != visible )
-                {
-                    lHtmlContent.Visible = visible;
+                return;
+            }
 
-                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed
-                    upnlHtmlContentView.Update();
+            // If this is a Secondary Block, and SetVisible was called, render a hidden field to
+            // keep track of the visible state. We need to do this because
+            // this block doesn't use view state for the HtmlContent content.
+            // So the hidden field helps us keep track.
+            hfSecondaryBlockState.Visible = true;
+            var lastState = hfSecondaryBlockState.Value.AsBooleanOrNull() ?? true;
+            if ( lastState != visible )
+            {
+                hfSecondaryBlockState.Value = visible.ToString();
+                lHtmlContent.Visible = visible;
+                if ( visible )
+                {
+                    // if toggling back to visible, we'll have to do the ShowView
+                    ShowView();
                 }
+
+                upnlHtmlContentView.Update();
             }
         }
 

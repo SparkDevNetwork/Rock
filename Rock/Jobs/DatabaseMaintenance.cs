@@ -293,7 +293,8 @@ SELECT
 				INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
 				AND indexstats.index_id = dbindexes.index_id
 			WHERE 
-				indexstats.database_id = DB_ID() 
+				indexstats.database_id = DB_ID()
+                AND dbindexes.[name] IS NOT NULL
 				AND indexstats.page_count > @PageCountLimit
 				AND indexstats.avg_fragmentation_in_percent > @MinFragmentation
 ";
@@ -309,10 +310,10 @@ SELECT
                 IndexName = row["Index"].ToString(),
                 IndexType = row["IndexType"].ToString(),
                 FragmentationPercent = row["FragmentationPercent"].ToString().AsIntegerOrNull()
-            } ).ToList();
+            } );
 
             // let C# do the sorting.
-            var sortedIndexInfoList = indexInfoList.OrderBy( a => a.TableName ).ThenBy( a => a.IndexName ).ToList();
+            var sortedIndexInfoList = indexInfoList.OrderBy( a => a.TableName ).ThenBy( a => a.IndexName );
 
             foreach ( var indexInfo in sortedIndexInfoList )
             {
@@ -345,14 +346,18 @@ SELECT
                 try
                 {
                     DbService.ExecuteCommand( rebuildSQL, System.Data.CommandType.Text, null, commandTimeoutSeconds );
-
-                    stopwatch.Stop();
-                    databaseMaintenanceTaskResult.Elapsed = stopwatch.Elapsed;
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( new Exception( $"Error rebuilding index [{indexInfo.TableName}].[{indexInfo.IndexName}]", ex ) );
+                    stopwatch.Stop();
+
+                    ExceptionLogService.LogException( new Exception( $"Error rebuilding index [{indexInfo.TableName}].[{indexInfo.IndexName}] with Command: {rebuildSQL}. Elapsed time: {stopwatch.Elapsed}", ex ) );
                     databaseMaintenanceTaskResult.Exception = ex;
+                }
+                finally
+                {
+                    stopwatch.Stop();
+                    databaseMaintenanceTaskResult.Elapsed = stopwatch.Elapsed;
                 }
             }
         }

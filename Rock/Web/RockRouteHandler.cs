@@ -24,6 +24,7 @@ using System.Web.Compilation;
 using System.Web.Routing;
 
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -130,7 +131,7 @@ namespace Rock.Web
                     }
                 }
 
-                // If the the page ID and site has not yet been matched
+                // If the page ID and site has not yet been matched
                 if ( string.IsNullOrEmpty( pageId ) || !isSiteMatch )
                 {
                     // if not found use the default site
@@ -185,7 +186,7 @@ namespace Rock.Web
 
                                             string trimmedUrl = pageShortLink.Url.RemoveCrLf().Trim();
 
-                                            var transaction = new ShortLinkTransaction
+                                            var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
                                                 PageShortLinkId = pageShortLink.Id,
                                                 Token = pageShortLink.Token,
@@ -196,7 +197,8 @@ namespace Rock.Web
                                                 UserName = requestContext.HttpContext.User?.Identity.Name
                                             };
 
-                                            RockQueue.TransactionQueue.Enqueue( transaction );
+
+                                            addShortLinkInteractionMsg.Send();
 
                                             requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
@@ -627,16 +629,7 @@ namespace Rock.Web
         /// <param name="siteCookie">The siteCookie.</param>
         private void CreateOrUpdateSiteCookie( HttpCookie siteCookie, RequestContext routeRequestContext, PageCache page )
         {
-            if ( siteCookie == null )
-            {
-                siteCookie = new System.Web.HttpCookie( "last_site", page.Layout.SiteId.ToString() );
-            }
-            else
-            {
-                siteCookie.Value = page.Layout.SiteId.ToString();
-            }
-
-            routeRequestContext.HttpContext.Response.SetCookie( siteCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( "last_site", page.Layout.SiteId.ToString(), null );
         }
 
         /// <summary>

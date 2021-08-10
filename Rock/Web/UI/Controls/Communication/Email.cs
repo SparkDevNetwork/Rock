@@ -307,8 +307,6 @@ namespace Rock.Web.UI.Controls.Communication
                 lFromName.RenderControl( writer );
                 lFromAddress.RenderControl( writer );
             }
-
-            tbSubject.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
@@ -349,8 +347,24 @@ namespace Rock.Web.UI.Controls.Communication
             writer.RenderEndTag();  // ul
             writer.RenderEndTag();  // attachment div
 
+            writer.RenderEndTag();  // span6 div
+            writer.RenderEndTag();  // row div
 
-            if ( !UseSimpleMode && AllowCcBcc)
+            // New Row
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            tbSubject.RenderControl( writer );
+
+            writer.RenderEndTag();  // span6 div
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            if ( AllowCcBcc)
             {
                 ebCcAddress.RenderControl( writer );
                 ebBccAddress.RenderControl( writer );

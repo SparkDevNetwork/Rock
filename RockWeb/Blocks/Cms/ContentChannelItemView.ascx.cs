@@ -30,6 +30,7 @@ using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Field.Types;
+using Rock.Tasks;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -260,15 +261,11 @@ namespace RockWeb.Blocks.Cms
 <h1>{{ Item.Title }}</h1>
 {{ Item.Content }}";
 
-        private const string ContentChannelQueryParameterDescription = @"
-Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is.
-The type of the value will determine how the content channel item will be determined as follows:
+        private const string ContentChannelQueryParameterDescription = @"Specify the URL parameter to use to determine which Content Channel Item to show, or leave blank to use whatever the first parameter is. The type of the value will determine how the content channel item will be determined as follows:
 
 Integer - ContentChannelItem Id
 String - ContentChannelItem Slug
-Guid - ContentChannelItem Guid
-
-";
+Guid - ContentChannelItem Guid";
 
         private const string OutputCacheDurationDescription = @"Number of seconds to cache the resolved output. Only cache the output if you are not personalizing the output based on current user, current page, or any other merge field value.";
 
@@ -520,7 +517,7 @@ Guid - ContentChannelItem Guid
 
             SaveAttributeValues();
 
-            var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string>;
+            var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string>;
             if ( cacheKeys != null )
             {
                 foreach ( var cacheKey in cacheKeys )
@@ -605,8 +602,8 @@ Guid - ContentChannelItem Guid
 
             if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
             {
-                outputContents = GetCacheItem( outputCacheKey ) as string;
-                pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
+                outputContents = GetCacheItem( outputCacheKey, true ) as string;
+                pageTitle = GetCacheItem( pageTitleCacheKey, true ) as string;
             }
 
             bool isMergeContentEnabled = GetAttributeValue( AttributeKey.MergeContent ).AsBoolean();
@@ -719,7 +716,7 @@ Guid - ContentChannelItem Guid
                 if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
                 {
                     string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                    var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                    var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string> ?? new HashSet<string>();
                     cacheKeys.Add( outputCacheKey );
                     cacheKeys.Add( pageTitleCacheKey );
                     AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
@@ -773,7 +770,7 @@ Guid - ContentChannelItem Guid
 
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
-                contentChannelItem = GetCacheItem( itemCacheKey ) as ContentChannelItem;
+                contentChannelItem = GetCacheItem( itemCacheKey, true ) as ContentChannelItem;
                 if ( contentChannelItem != null )
                 {
                     return contentChannelItem;
@@ -810,7 +807,7 @@ Guid - ContentChannelItem Guid
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
                 string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY ) as HashSet<string> ?? new HashSet<string>();
+                var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string> ?? new HashSet<string>();
                 cacheKeys.Add( itemCacheKey );
                 AddCacheItem( CACHEKEYS_CACHE_KEY, cacheKeys, TimeSpan.MaxValue, cacheTags );
                 AddCacheItem( itemCacheKey, contentChannelItem, itemCacheDuration.Value, cacheTags );
@@ -879,7 +876,7 @@ Guid - ContentChannelItem Guid
                         .Where( i => i.ContentChannel.Guid.Equals( contentChannelGuid.Value ) && i.StartDateTime <= now && ( !i.ContentChannel.RequiresApproval || statuses.Contains( i.Status ) ) )
                         .OrderByDescending( c => c.StartDateTime )
                         .FirstOrDefault();
-                    
+
                     if ( contentChannelItem != null )
                     {
                         contentChannelItemKey = contentChannelItem.Id.ToString();
@@ -986,27 +983,24 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            var workflowAttributeValues = new Dictionary<string, string>();
-            workflowAttributeValues.Add( "ContentChannelItem", contentChannelItem.Guid.ToString() );
+            var message = new LaunchWorkflow.Message
+            {
+                WorkflowTypeId = workflowType.Id,
+                InitiatorPersonAliasId = CurrentPersonAliasId,
+                WorkflowAttributeValues = new Dictionary<string, string>
+                {
+                    { "ContentChannelItem", contentChannelItem.Guid.ToString() }
+                }
+            };
 
-            LaunchWorkflowTransaction launchWorkflowTransaction;
             if ( this.CurrentPersonId.HasValue )
             {
-                workflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
-                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction<Person>( workflowType.Id, null, this.CurrentPersonId.Value );
-            }
-            else
-            {
-                launchWorkflowTransaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowType.Id, null );
+                message.WorkflowAttributeValues.Add( "Person", this.CurrentPerson.Guid.ToString() );
+                message.WorkflowTypeId = workflowType.Id;
+                message.EntityId = CurrentPersonId.Value;
             }
 
-            if ( workflowAttributeValues != null )
-            {
-                launchWorkflowTransaction.WorkflowAttributeValues = workflowAttributeValues;
-            }
-
-            launchWorkflowTransaction.InitiatorPersonAliasId = this.CurrentPersonAliasId;
-            launchWorkflowTransaction.Enqueue();
+            message.Send();
         }
 
         /// <summary>
@@ -1079,7 +1073,7 @@ Guid - ContentChannelItem Guid
             }
 
             // use Lava to get the Attribute value formatted for the MetaValue, and specify the URL param in case the Attribute supports rendering the value as a URL (for example, Image)
-            string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}':'Url' }}}}", attributeKey );
+            string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}','Url' }}}}", attributeKey );
 
             string resolvedValue = metaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "mergeObject", mergeObject } } );
 

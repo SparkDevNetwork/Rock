@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,53 +54,143 @@ namespace Rock.Model
         public bool CanDelete( GroupType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<ConnectionOpportunityGroupConfig>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, ConnectionOpportunityGroupConfig.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Group>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupHistorical>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupHistorical.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupMemberScheduleTemplate>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupMemberScheduleTemplate.FriendlyTypeName );
                 return false;
-            }  
-            
-            // ignoring GroupRequirement,GroupTypeId 
- 
+            }
+
+            // ignoring GroupRequirement,GroupTypeId
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.InheritedGroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplatePlacement>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplatePlacement.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// GroupType View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( GroupType ) )]
+    public partial class GroupTypeViewModelHelper : ViewModelHelper<GroupType, Rock.ViewModel.GroupTypeViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.GroupTypeViewModel CreateViewModel( GroupType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.GroupTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AdministratorTerm = model.AdministratorTerm,
+                AllowAnyChildGroupType = model.AllowAnyChildGroupType,
+                AllowedScheduleTypes = ( int ) model.AllowedScheduleTypes,
+                AllowGroupSync = model.AllowGroupSync,
+                AllowMultipleLocations = model.AllowMultipleLocations,
+                AllowSpecificGroupMemberAttributes = model.AllowSpecificGroupMemberAttributes,
+                AllowSpecificGroupMemberWorkflows = model.AllowSpecificGroupMemberWorkflows,
+                AttendanceCountsAsWeekendService = model.AttendanceCountsAsWeekendService,
+                AttendancePrintTo = ( int ) model.AttendancePrintTo,
+                AttendanceRule = ( int ) model.AttendanceRule,
+                DefaultGroupRoleId = model.DefaultGroupRoleId,
+                Description = model.Description,
+                EnableGroupHistory = model.EnableGroupHistory,
+                EnableGroupTag = model.EnableGroupTag,
+                EnableInactiveReason = model.EnableInactiveReason,
+                EnableLocationSchedules = model.EnableLocationSchedules,
+                EnableRSVP = model.EnableRSVP,
+                EnableSpecificGroupRequirements = model.EnableSpecificGroupRequirements,
+                GroupAttendanceRequiresLocation = model.GroupAttendanceRequiresLocation,
+                GroupAttendanceRequiresSchedule = model.GroupAttendanceRequiresSchedule,
+                GroupCapacityRule = ( int ) model.GroupCapacityRule,
+                GroupMemberTerm = model.GroupMemberTerm,
+                GroupsRequireCampus = model.GroupsRequireCampus,
+                GroupStatusDefinedTypeId = model.GroupStatusDefinedTypeId,
+                GroupTerm = model.GroupTerm,
+                GroupTypeColor = model.GroupTypeColor,
+                GroupTypePurposeValueId = model.GroupTypePurposeValueId,
+                GroupViewLavaTemplate = model.GroupViewLavaTemplate,
+                IconCssClass = model.IconCssClass,
+                IgnorePersonInactivated = model.IgnorePersonInactivated,
+                InheritedGroupTypeId = model.InheritedGroupTypeId,
+                IsIndexEnabled = model.IsIndexEnabled,
+                IsSchedulingEnabled = model.IsSchedulingEnabled,
+                IsSystem = model.IsSystem,
+                LocationSelectionMode = ( int ) model.LocationSelectionMode,
+                Name = model.Name,
+                Order = model.Order,
+                RequiresInactiveReason = model.RequiresInactiveReason,
+                RequiresReasonIfDeclineSchedule = model.RequiresReasonIfDeclineSchedule,
+                RSVPReminderOffsetDays = model.RSVPReminderOffsetDays,
+                RSVPReminderSystemCommunicationId = model.RSVPReminderSystemCommunicationId,
+                ScheduleCancellationWorkflowTypeId = model.ScheduleCancellationWorkflowTypeId,
+                ScheduleConfirmationEmailOffsetDays = model.ScheduleConfirmationEmailOffsetDays,
+                ScheduleConfirmationSystemCommunicationId = model.ScheduleConfirmationSystemCommunicationId,
+                ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays,
+                ScheduleReminderSystemCommunicationId = model.ScheduleReminderSystemCommunicationId,
+                SendAttendanceReminder = model.SendAttendanceReminder,
+                ShowAdministrator = model.ShowAdministrator,
+                ShowConnectionStatus = model.ShowConnectionStatus,
+                ShowInGroupList = model.ShowInGroupList,
+                ShowInNavigation = model.ShowInNavigation,
+                ShowMaritalStatus = model.ShowMaritalStatus,
+                TakesAttendance = model.TakesAttendance,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -122,6 +215,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this GroupType object to a new GroupType object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static GroupType CloneWithoutIdentity( this GroupType source )
+        {
+            var target = new GroupType();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -157,7 +273,6 @@ namespace Rock.Model
             target.GroupCapacityRule = source.GroupCapacityRule;
             target.GroupMemberTerm = source.GroupMemberTerm;
             target.GroupsRequireCampus = source.GroupsRequireCampus;
-            target.GroupStatusDefinedType = source.GroupStatusDefinedType;
             target.GroupStatusDefinedTypeId = source.GroupStatusDefinedTypeId;
             target.GroupTerm = source.GroupTerm;
             target.GroupTypeColor = source.GroupTypeColor;
@@ -202,5 +317,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.GroupTypeViewModel ToViewModel( this GroupType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new GroupTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

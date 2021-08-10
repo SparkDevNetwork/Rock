@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,27 +54,73 @@ namespace Rock.Model
         public bool CanDelete( FinancialPaymentDetail item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<FinancialPersonSavedAccount>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialScheduledTransaction>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransaction>( Context ).Queryable().Any( a => a.FinancialPaymentDetailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPaymentDetail.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// FinancialPaymentDetail View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( FinancialPaymentDetail ) )]
+    public partial class FinancialPaymentDetailViewModelHelper : ViewModelHelper<FinancialPaymentDetail, Rock.ViewModel.FinancialPaymentDetailViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.FinancialPaymentDetailViewModel CreateViewModel( FinancialPaymentDetail model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.FinancialPaymentDetailViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AccountNumberMasked = model.AccountNumberMasked,
+                BillingLocationId = model.BillingLocationId,
+                CreditCardTypeValueId = model.CreditCardTypeValueId,
+                CurrencyTypeValueId = model.CurrencyTypeValueId,
+                ExpirationMonth = model.ExpirationMonth,
+                ExpirationYear = model.ExpirationYear,
+                FinancialPersonSavedAccountId = model.FinancialPersonSavedAccountId,
+                GatewayPersonIdentifier = model.GatewayPersonIdentifier,
+                NameOnCard = model.NameOnCard,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -99,6 +148,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this FinancialPaymentDetail object to a new FinancialPaymentDetail object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static FinancialPaymentDetail CloneWithoutIdentity( this FinancialPaymentDetail source )
+        {
+            var target = new FinancialPaymentDetail();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another FinancialPaymentDetail object to this FinancialPaymentDetail object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -111,15 +183,21 @@ namespace Rock.Model
             target.CreditCardTypeValueId = source.CreditCardTypeValueId;
             target.CurrencyTypeValueId = source.CurrencyTypeValueId;
             target.ExpirationMonth = source.ExpirationMonth;
+            #pragma warning disable 612, 618
             target.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
+            #pragma warning restore 612, 618
             target.ExpirationYear = source.ExpirationYear;
+            #pragma warning disable 612, 618
             target.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            #pragma warning restore 612, 618
             target.FinancialPersonSavedAccountId = source.FinancialPersonSavedAccountId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GatewayPersonIdentifier = source.GatewayPersonIdentifier;
             target.NameOnCard = source.NameOnCard;
+            #pragma warning disable 612, 618
             target.NameOnCardEncrypted = source.NameOnCardEncrypted;
+            #pragma warning restore 612, 618
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -128,5 +206,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.FinancialPaymentDetailViewModel ToViewModel( this FinancialPaymentDetail model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new FinancialPaymentDetailViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

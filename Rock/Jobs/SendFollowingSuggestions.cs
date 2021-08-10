@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Follow;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -143,6 +144,8 @@ namespace Rock.Jobs
                                 {
                                     components.Add( suggestionType.Id, suggestionComponent );
 
+                                    var suggestionTypeComponent = new SuggestionTypeComponent( suggestionType );
+
                                     // Get the entitytype for this suggestion type
                                     var suggestionEntityType = EntityTypeCache.Get( suggestionComponent.FollowedType );
                                     if ( suggestionEntityType != null )
@@ -150,99 +153,26 @@ namespace Rock.Jobs
                                         var entityIds = new List<int>();
 
                                         // Call the components method to return all of it's suggestions
-                                        var personEntitySuggestions = suggestionComponent.GetSuggestions( suggestionType, followerPersonIds );
+                                        suggestionTypeComponent.PersonEntitySuggestions = suggestionComponent.GetSuggestions( suggestionType, followerPersonIds );
 
                                         // If any suggestions were returned by the component
-                                        if ( personEntitySuggestions.Any() )
+                                        if ( suggestionTypeComponent.PersonEntitySuggestions.Any() )
                                         {
                                             int entityTypeId = suggestionEntityType.Id;
                                             string reasonNote = suggestionType.ReasonNote;
 
                                             // Get the existing followings for any of the followers 
-                                            var existingFollowings = new Dictionary<int, List<int>>();
-                                            foreach( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking()
-                                                .Where( f =>
-                                                    f.EntityTypeId == entityTypeId &&
-                                                    followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
+                                            suggestionTypeComponent.ExistingFollowings = new Dictionary<int, List<int>>();
+                                            foreach ( var following in followingService.Queryable( "PersonAlias" ).AsNoTracking().Where( f => f.EntityTypeId == entityTypeId && string.IsNullOrEmpty( f.PurposeKey ) && followerPersonIds.Contains( f.PersonAlias.PersonId ) ) )
                                             {
-                                                existingFollowings.AddOrIgnore( following.PersonAlias.PersonId, new List<int>() );
-                                                existingFollowings[ following.PersonAlias.PersonId].Add( following.EntityId );
+                                                suggestionTypeComponent.ExistingFollowings.AddOrIgnore( following.PersonAlias.PersonId, new List<int>() );
+                                                suggestionTypeComponent.ExistingFollowings[following.PersonAlias.PersonId].Add( following.EntityId );
                                             }
 
                                             // Loop through each follower
-                                            foreach ( var followerPersonId in personEntitySuggestions
-                                                .Select( s => s.PersonId )
-                                                .Distinct() )
+                                            foreach ( var followerPersonId in suggestionTypeComponent.PersonEntitySuggestions.Select( s => s.PersonId ).Distinct() )
                                             {
-
-                                                using ( var suggestionContext = new RockContext() )
-                                                {
-                                                    var followingSuggestedService = new FollowingSuggestedService( suggestionContext );
-
-                                                    // Read all the existing suggestions for this type and the returned followers
-                                                    var existingSuggestions = followingSuggestedService
-                                                        .Queryable( "PersonAlias" )
-                                                        .Where( s =>
-                                                            s.SuggestionTypeId == suggestionType.Id &&
-                                                            s.PersonAlias.PersonId == followerPersonId )
-                                                        .ToList();
-
-                                                    // Look  through the returned suggestions
-                                                    foreach ( var followedEntityId in personEntitySuggestions
-                                                        .Where( s => s.PersonId == followerPersonId )
-                                                        .Select( s => s.EntityId ) )
-                                                    {
-                                                        // Make sure person isn't already following this entity
-                                                        if ( !existingFollowings.ContainsKey( followerPersonId )
-                                                            || !existingFollowings[followerPersonId].Contains( followedEntityId ) )
-                                                        {
-                                                            // If this person had a primary alias id
-                                                            if ( primaryAliasIds.ContainsKey( followerPersonId ) )
-                                                            {
-                                                                entityIds.Add( followedEntityId );
-
-                                                                // Look for existing suggestion for this person and entity
-                                                                var suggestion = existingSuggestions
-                                                                    .Where( s => s.EntityId == followedEntityId )
-                                                                    .OrderByDescending( s => s.StatusChangedDateTime )
-                                                                    .FirstOrDefault();
-
-                                                                // If not found, add one
-                                                                if ( suggestion == null )
-                                                                {
-                                                                    suggestion = new FollowingSuggested();
-                                                                    suggestion.EntityTypeId = entityTypeId;
-                                                                    suggestion.EntityId = followedEntityId;
-                                                                    suggestion.PersonAliasId = primaryAliasIds[followerPersonId];
-                                                                    suggestion.SuggestionTypeId = suggestionType.Id;
-                                                                    suggestion.Status = FollowingSuggestedStatus.PendingNotification;
-                                                                    suggestion.StatusChangedDateTime = timestamp;
-                                                                    followingSuggestedService.Add( suggestion );
-                                                                }
-                                                                else
-                                                                {
-                                                                    // If found, and it has not been ignored, and it's time to promote again, update the promote date
-                                                                    if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
-                                                                        suggestionType.ReminderDays.HasValue &&
-                                                                        (
-                                                                            !suggestion.LastPromotedDateTime.HasValue ||
-                                                                            suggestion.LastPromotedDateTime.Value.AddDays( suggestionType.ReminderDays.Value ) <= timestamp
-                                                                        ) )
-                                                                    {
-                                                                        if ( suggestion.Status != FollowingSuggestedStatus.PendingNotification )
-                                                                        {
-                                                                            suggestion.StatusChangedDateTime = timestamp;
-                                                                            suggestion.Status = FollowingSuggestedStatus.PendingNotification;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Save the suggestions for this type
-                                                    suggestionContext.SaveChanges();
-                                                }
+                                                ProcessFollowerPersonId( followerPersonId, suggestionTypeComponent, primaryAliasIds, entityIds, entityTypeId, timestamp );
                                             }
                                         }
 
@@ -307,7 +237,6 @@ namespace Rock.Jobs
                                     var component = components.ContainsKey( suggestionType.Id ) ? components[suggestionType.Id] : null;
                                     if ( component != null && suggestedEntities.ContainsKey( suggestionType.Id ) )
                                     {
-
                                         var entities = new List<IEntity>();
                                         foreach ( var suggestion in allSuggestions
                                             .Where( s =>
@@ -361,8 +290,6 @@ namespace Rock.Jobs
                                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
                             }
                         }
-
-
                     }
                 }
             }
@@ -373,17 +300,237 @@ namespace Rock.Jobs
             {
                 throw new Exception( "One or more exceptions occurred calculating suggestions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
+        }
 
+        /// <summary>
+        /// Processes the follower PersonId for the SuggestionType
+        /// </summary>
+        /// <param name="followerPersonId">The follower person identifier.</param>
+        /// <param name="suggestionTypeComponent">The suggestion type component.</param>
+        /// <param name="primaryAliasIds">The primary alias ids.</param>
+        /// <param name="entityIds">The entity ids.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="timestamp">The timestamp.</param>
+        private void ProcessFollowerPersonId( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, Dictionary<int, int> primaryAliasIds, List<int> entityIds, int entityTypeId, DateTime timestamp )
+        {
+            using ( var suggestionContext = new RockContext() )
+            {
+                var followingSuggestedService = new FollowingSuggestedService( suggestionContext );
+
+                // Read all the existing suggestions for this type and the returned followers
+                var existingSuggestions = followingSuggestedService
+                    .Queryable( "PersonAlias" )
+                    .Where( s => s.SuggestionTypeId == suggestionTypeComponent.FollowingSuggestionType.Id
+                        && s.PersonAlias.PersonId == followerPersonId )
+                    .ToList();
+
+                // Look  through the returned suggestions
+                foreach ( var followedEntityId in suggestionTypeComponent.PersonEntitySuggestions.Where( s => s.PersonId == followerPersonId ).Select( s => s.EntityId ) )
+                {
+                    // Make sure person isn't already following this entity
+                    if ( !suggestionTypeComponent.ExistingFollowings.ContainsKey( followerPersonId )
+                        || !suggestionTypeComponent.ExistingFollowings[followerPersonId].Contains( followedEntityId ) )
+                    {
+                        // If this person had a primary alias id
+                        if ( primaryAliasIds.ContainsKey( followerPersonId ) )
+                        {
+                            entityIds.Add( followedEntityId );
+
+                            // Look for existing suggestion for this person and entity
+                            var suggestion = existingSuggestions
+                                .Where( s => s.EntityId == followedEntityId )
+                                .OrderByDescending( s => s.StatusChangedDateTime )
+                                .FirstOrDefault();
+
+                            // If not found add it if needed
+                            if ( suggestion == null )
+                            {
+                                bool addSuggestion;
+                                ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
+
+                                if ( addSuggestion )
+                                {
+                                    // This is a new entity ID so insert it
+                                    suggestion = new FollowingSuggested
+                                    {
+                                        EntityTypeId = entityTypeId,
+                                        EntityId = followedEntityId,
+                                        PersonAliasId = primaryAliasIds[followerPersonId],
+                                        SuggestionTypeId = suggestionTypeComponent.FollowingSuggestionType.Id,
+                                        Status = FollowingSuggestedStatus.PendingNotification,
+                                        StatusChangedDateTime = timestamp
+                                    };
+
+                                    followingSuggestedService.Add( suggestion );
+                                }
+                            }
+                            else
+                            {
+                                ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIds, entityTypeId, suggestionContext, followedEntityId );
+
+                                // If found, and it has not been ignored, and it's time to promote again, update the promote date
+                                if ( suggestion.Status != FollowingSuggestedStatus.Ignored &&
+                                    suggestionTypeComponent.FollowingSuggestionType.ReminderDays.HasValue &&
+                                    (
+                                        !suggestion.LastPromotedDateTime.HasValue ||
+                                        suggestion.LastPromotedDateTime.Value.AddDays( suggestionTypeComponent.FollowingSuggestionType.ReminderDays.Value ) <= timestamp
+                                    ) )
+                                {
+                                    if ( suggestion.Status != FollowingSuggestedStatus.PendingNotification )
+                                    {
+                                        suggestion.StatusChangedDateTime = timestamp;
+                                        suggestion.Status = FollowingSuggestedStatus.PendingNotification;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Save the suggestions for this type
+                suggestionContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias no action is taken.
+        /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.
+        /// If there is another PersonAlias being followed then the Following and FollowingSuggestion are updated with this EntityId (PersonAliasId)
+        /// which is the PrimaryPersonAliasId.
+        /// </summary>
+        /// <param name="followerPersonId">The follower person identifier.</param>
+        /// <param name="suggestionTypeComponent">The suggestion type component.</param>
+        /// <param name="entityIdToBeSavedAsSuggestions">The entity identifier to be saved as suggestions.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="suggestionContext">The suggestion context.</param>
+        /// <param name="followedEntityId">The followed entity identifier.</param>
+        private void ProcessFollowingSuggestionAndPersonAliasEntity( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, List<int> entityIdToBeSavedAsSuggestions, int entityTypeId, RockContext suggestionContext, int followedEntityId )
+        {
+            bool addSuggestion;
+            ProcessFollowingSuggestionAndPersonAliasEntity( followerPersonId, suggestionTypeComponent, entityIdToBeSavedAsSuggestions, entityTypeId, suggestionContext, followedEntityId, out addSuggestion );
+        }
+        
+        /// <summary>
+        /// Checks to see if the PersonAlias entity should be added to the FollowingSuggestion table. If the entity is not a PersonAlias then addSuggestion will be true.
+        /// If the Entity is a PersonAlias then this method will check if the associated Person has another PersonAlias that is being followed.
+        /// If there is another PersonAlias being followed then the Following and FollowingSuggestion are updated with this EntityId (PersonAliasId)
+        /// which is the PrimaryPersonAliasId.
+        /// </summary>
+        /// <param name="followerPersonId">The follower person identifier.</param>
+        /// <param name="suggestionTypeComponent">The suggestion type component.</param>
+        /// <param name="entityIdToBeSavedAsSuggestions">The entity ids.</param>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="suggestionContext">The suggestion context.</param>
+        /// <param name="followedEntityId">The followed entity identifier.</param>
+        /// <param name="addSuggestion">if set to <c>true</c> then the suggestion should be inserted.</param>
+        /// <returns>
+        /// True if the PersonAlias following suggestion should be inserted or if the EntityType is not a PersonAlias.
+        /// </returns>
+        private void ProcessFollowingSuggestionAndPersonAliasEntity( int followerPersonId, SuggestionTypeComponent suggestionTypeComponent, List<int> entityIdToBeSavedAsSuggestions, int entityTypeId, RockContext suggestionContext, int followedEntityId, out bool addSuggestion )
+        {
+            addSuggestion = true;
+
+            // If the Entity is not a PersonAlias no other checks are needed just return with addSuggestion = true
+            if ( !IsEntityTypePersonAlias( entityTypeId ) )
+            {
+                return;
+            }
+
+            // since this is a person alias see if a different alias is being used to follow
+            var followedPersonId = new PersonAliasService( suggestionContext ).Get( followedEntityId ).PersonId;
+            var followedPersonAliases = new PersonAliasService( suggestionContext )
+                .Queryable()
+                .Where( a => a.PersonId == followedPersonId && a.Id != followedEntityId )
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( !followedPersonAliases.Any() )
+            {
+                // There are no alternate person alias' there is nothing else to check so just return with addSuggestion = true
+                return;
+            }
+
+            int existingFollowingPersonAliasId = suggestionTypeComponent.ExistingFollowings
+                .GetValueOrDefault( followerPersonId, new List<int>() )
+                .Where( f => followedPersonAliases.Contains( f ) )
+                .FirstOrDefault();
+
+            // Update the existing following record to use the primary PersonAlias ID and remove it from the list.
+            if ( existingFollowingPersonAliasId != 0 )
+            {
+                var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ) ?? 0;
+                addSuggestion = false;
+                entityIdToBeSavedAsSuggestions.Remove( followedEntityId );
+
+                using ( var followingContext = new RockContext() )
+                {
+                    var following = new FollowingService( followingContext )
+                        .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )
+                        .FirstOrDefault();
+
+                    following.EntityId = followedEntityId;
+
+                    var suggested = new FollowingSuggestedService( followingContext )
+                        .GetByEntityAndPerson( personAliasEntityTypeId, existingFollowingPersonAliasId, followerPersonId )
+                        .FirstOrDefault();
+
+                    if ( suggested != null )
+                    {
+                        // Get the Followed Person's Primary PersonAliasId from FollowingSuggestions if it exists, PersonEntitySuggestions is already filtered for EntityType
+                        int existingFollowingSuggestedPrimaryPersonAliasId = suggestionTypeComponent.PersonEntitySuggestions
+                            .Where( s => s.PersonId == followerPersonId && s.EntityId == followedEntityId )
+                            .Select( s => s.EntityId )
+                            .FirstOrDefault();
+
+                        if ( existingFollowingSuggestedPrimaryPersonAliasId != 0 )
+                        {
+                            // Since the Primary PersonAlias is already in FollowingSuggestions then just delete this one as a duplicate
+                            new FollowingSuggestedService( followingContext ).Delete( suggested );
+                        }
+                        else
+                        {
+                            // Update the outdated PersonAliasId to the primary PersonAliasId which is the followedEntityId
+                            suggested.EntityId = followedEntityId;
+                        }
+                    }
+
+                    followingContext.SaveChanges();
+                }
+            }
+        }
+
+        private bool IsEntityTypePersonAlias( int entityTypeId )
+        {
+            var personAliasEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSON_ALIAS ) ?? 0;
+            return entityTypeId == personAliasEntityTypeId;
+        }
+
+        private class SuggestionTypeComponent
+        {
+            public SuggestionTypeComponent()
+            {
+            }
+
+            public SuggestionTypeComponent( FollowingSuggestionType followingSuggestionType )
+            {
+                FollowingSuggestionType = followingSuggestionType;
+            }
+
+            public List<PersonEntitySuggestion> PersonEntitySuggestions { get; set; }
+
+            public FollowingSuggestionType FollowingSuggestionType { get; set; }
+
+            public Dictionary<int, List<int>> ExistingFollowings { get; set; }
         }
     }
 
     /// <summary>
     /// Helper class for following suggestion notifications
     /// </summary>
+    [LavaType( "SuggestionType", "Notices" )]
     [DotLiquid.LiquidType( "SuggestionType", "Notices" )]
     public class FollowingSuggestionNotices
     {
-
         /// <summary>
         /// Gets or sets the type of the suggestion.
         /// </summary>
@@ -410,6 +557,5 @@ namespace Rock.Jobs
             SuggestionType = suggestionType;
             Notices = notices;
         }
-
     }
 }

@@ -23,14 +23,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
-using Rock.Web.Cache;
+using Rock.Communication;
+using Rock.Communication.Medium;
+using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using Rock.Communication.SmsActions;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -95,9 +94,7 @@ namespace RockWeb.Blocks.Communication
                 // This must come after BindComponents so that the SmsActionContainer will
                 // have been initialized already and any new attributes created.
                 //
-                var smsActionEntityTypeId = EntityTypeCache.Get( typeof( SmsAction ) ).Id;
-                var attributes = AttributeCache.All()
-                    .Where( a => a.EntityTypeId == smsActionEntityTypeId )
+                var attributes = AttributeCache.AllForEntityType<SmsAction>()
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
                 avcAttributes.ExcludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };
@@ -163,9 +160,16 @@ namespace RockWeb.Blocks.Communication
             lSmsPipelineDescription.Text = smsPipeline.Description;
             lSmsName.Text = smsPipeline.Name;
 
-            var globalAttributes = GlobalAttributesCache.Get();
-            string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
-            lWebhookUrl.Text = string.Format( "{0}{1}?{2}={3}", publicAppRoot, "Webhooks/TwilioSms.ashx", PageParameterKey.EntityId, GetSmsPipelineId() );
+            var smsMedium = new Sms();
+            var smsTransport = smsMedium.Transport as ISmsPipelineWebhook;
+            lWebhookUrl.Visible = false;
+            if ( smsTransport != null )
+            {
+                var globalAttributes = GlobalAttributesCache.Get();
+                string publicAppRoot = globalAttributes.GetValue( "PublicApplicationRoot" );
+                lWebhookUrl.Text = string.Format( "{0}{1}?{2}={3}", publicAppRoot, smsTransport.SmsPipelineWebhookPath, PageParameterKey.EntityId, GetSmsPipelineId() );
+                lWebhookUrl.Visible = true;
+            }
         }
 
         /// <summary>
@@ -272,59 +276,65 @@ namespace RockWeb.Blocks.Communication
         {
             string argument = Request["__EVENTARGUMENT"].ToStringSafe();
             var segments = argument.SplitDelimitedValues();
+            var smsPipelineId = GetSmsPipelineId();
 
-            //
-            // Check for the event to add a new action.
-            //
-            if ( segments.Length == 3 && segments[0] == "add-action" )
+            if ( smsPipelineId == null || segments.Length != 3 )
             {
-                var actionComponent = SmsActionContainer.GetComponent( segments[1] );
-                var order = segments[2].AsInteger();
-
-                var rockContext = new RockContext();
-                var smsActionService = new SmsActionService( rockContext );
-
-                var action = new SmsAction
-                {
-                    SmsPipelineId = GetSmsPipelineId().Value,
-                    Name = actionComponent.Title,
-                    IsActive = true,
-                    Order = order,
-                    SmsActionComponentEntityTypeId = actionComponent.TypeId
-                };
-
-                smsActionService.Queryable()
-                    .Where( a => a.Order >= order )
-                    .ToList()
-                    .ForEach( a => a.Order += 1 );
-
-                smsActionService.Add( action );
-
-                rockContext.SaveChanges();
-
-                BindActions();
-
-                SmsActionCache.Clear();
+                return;
             }
 
-            //
-            // Check for the event to drag-reorder actions.
-            //
-            else if ( segments.Length == 3 && segments[0] == "reorder-action" )
+            using ( var rockContext = new RockContext() )
             {
-                var rockContext = new RockContext();
                 var smsActionService = new SmsActionService( rockContext );
 
-                var actions = smsActionService.Queryable()
+                var actions = smsActionService
+                    .Queryable()
+                    .Where( a => a.SmsPipelineId == smsPipelineId )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id )
                     .ToList();
 
-                smsActionService.Reorder( actions, segments[1].AsInteger(), segments[2].AsInteger() );
+                // Reset order actions to eliminate gaps.
+                for ( var i = 0; i < actions.Count; i++ )
+                {
+                    actions[i].Order = i;
+                }
+
+                //
+                // Check for the event to add a new action.
+                //
+                if ( segments[0] == "add-action" )
+                {
+                    var actionComponent = SmsActionContainer.GetComponent( segments[1] );
+                    var order = segments[2].AsInteger();
+
+                    var action = new SmsAction
+                    {
+                        SmsPipelineId = smsPipelineId.Value,
+                        Name = actionComponent.Title,
+                        IsActive = true,
+                        Order = order,
+                        SmsActionComponentEntityTypeId = actionComponent.TypeId
+                    };
+
+                    actions
+                        .Where( a => a.Order >= order )
+                        .ToList()
+                        .ForEach( a => a.Order += 1 );
+
+                    smsActionService.Add( action );
+                }
+                //
+                // Check for the event to drag-reorder actions.
+                //
+                else if ( segments[0] == "reorder-action" )
+                {
+                    smsActionService.Reorder( actions, segments[1].AsInteger(), segments[2].AsInteger() );
+
+                }
+
                 rockContext.SaveChanges();
-
                 BindActions();
-
                 SmsActionCache.Clear();
             }
         }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -70,7 +71,6 @@ namespace Rock.Web.UI.Controls
             get
             {
                 return ViewState["CampusIds"] as List<int> ?? CampusCache.All().Select( c => c.Id ).ToList();
-
             }
 
             set
@@ -95,6 +95,46 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["IncludeInactive"] = value;
+                LoadItems( null );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of Campus Type IDs that the picker should contain. If null or empty then all types are included.
+        /// </summary>
+        /// <value>
+        /// The campus types filter.
+        /// </value>
+        public List<int> CampusTypesFilter
+        {
+            get
+            {
+                return ViewState["CampusTypesFilter"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["CampusTypesFilter"] = value;
+                LoadItems( null );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a list of Campus Status IDs that the picker should contain. If null or empty then all statuses are included.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<int> CampusStatusFilter
+        {
+            get
+            {
+                return ViewState["CampusStatusFilter"] as List<int> ?? new List<int>();
+            }
+
+            set
+            {
+                ViewState["CampusStatusFilter"] = value;
                 LoadItems( null );
             }
         }
@@ -173,8 +213,12 @@ namespace Rock.Web.UI.Controls
             // Get all the campi
             var campuses = CampusCache.All()
                 .Where( c =>
-                    ( CampusIds.Contains( c.Id ) && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive ) ) ||
-                    ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
+                    ( CampusIds.Contains( c.Id )
+                        && ( !c.IsActive.HasValue || c.IsActive.Value || IncludeInactive )
+                        && CampusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                        && CampusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    )
+                    || ( selectedValue.HasValue && c.Id == selectedValue.Value ) )
                 .OrderBy( c => c.Order )
                 .ToList();
 
@@ -186,11 +230,13 @@ namespace Rock.Web.UI.Controls
             // If there is one campus then only show if ForceVisible is true.
             if ( campuses.Count == 0 )
             {
-                this.Visible = false;
+                // If the picker has any filter conditions then it should show even if the result is 0.
+                this.Visible = false || CampusTypesFilter.Any() || CampusStatusFilter.Any();
             }
             else if ( campuses.Count == 1 )
             {
-                this.Visible = ForceVisible;
+                // If the picker has any filter conditions then it should show even if the result is 1.
+                this.Visible = ForceVisible || CampusTypesFilter.Any() || CampusStatusFilter.Any();
 
                 // if this is required then auto-select the only campus
                 if ( this.Required )
@@ -224,6 +270,5 @@ namespace Rock.Web.UI.Controls
                 Items.Add( li );
             }
         }
-
     }
 }

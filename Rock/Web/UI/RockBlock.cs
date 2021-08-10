@@ -104,7 +104,7 @@ namespace Rock.Web.UI
         /// </value>
         public string BlockName
         {
-            get { return BlockCache.Name; }
+            get { return BlockCache?.Name; }
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="key">A <see cref="System.String"/> representing the name of the key to differentiate items from same block instance</param>
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
-        /// <param name="seconds">A <see cref="System.Int32"/> representing the the amount of time in seconds that the object is cached. This is an absolute expiration</param>
+        /// <param name="seconds">A <see cref="System.Int32"/> representing the amount of time in seconds that the object is cached. This is an absolute expiration</param>
         protected virtual void AddCacheItem( string key, object value, int seconds )
         {
             var now = RockDateTime.Now;
@@ -423,7 +423,18 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            return RockCache.Get( ItemCacheKey( key ) );
+            return GetCacheItem( ItemCacheKey( key ), false );
+        }
+
+        /// <summary>
+        /// Gets the cache item.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="allowCacheByPass">if set to <c>true</c> [allow cache by pass].</param>
+        /// <returns></returns>
+        protected virtual object GetCacheItem( string key, bool allowCacheByPass )
+        {
+            return RockCache.Get( ItemCacheKey( key ), allowCacheByPass );
         }
 
         /// <summary>
@@ -555,24 +566,9 @@ namespace Rock.Web.UI
         {
             try
             {
-                if ( this.PageParameter( "ShowDebugTimings" ).AsBoolean() )
+                if ( PageParameter( "ShowDebugTimings" ).AsBoolean() )
                 {
-                    TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                    var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
-                    if ( lblShowDebugTimings != null )
-                    {
-                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
-                        if ( previousPointInTimeMS.HasValue )
-                        {
-                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
-                        }
-
-                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>({2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache.BlockType );
-
-                        lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
-                    }
+                    RockPage.ReportOnLoadDebugTiming( BlockName, BlockCache?.BlockType?.ToString() );
                 }
             }
             catch
@@ -1152,6 +1148,11 @@ namespace Rock.Web.UI
             {
                 foreach ( Control control in controls )
                 {
+                    if ( control is Rock.Web.UI.Controls.IDoNotBlockValidate)
+                    {
+                        continue;
+                    }
+
                     if ( control is Rock.Web.UI.Controls.IHasValidationGroup )
                     {
                         var rockControl = ( Rock.Web.UI.Controls.IHasValidationGroup ) control;
@@ -1396,6 +1397,7 @@ namespace Rock.Web.UI
                 {
                     // if this is an IsSystem block, don't render it as an anchor (they shouldn't be able to delete ti)
                     aDeleteBlock = new HtmlGenericControl( "div" );
+                    aDeleteBlock.Attributes.Add( "title", "System blocks cannot be deleted" );
                     aDeleteBlock.Attributes.Add( "class", "delete block-delete disabled js-disabled" );
                     configControls.Add( aDeleteBlock );
                 }

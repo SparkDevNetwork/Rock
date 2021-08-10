@@ -47,12 +47,13 @@
 // 2. Package Summary
 // -------------------------
 .packagesummary {
+  position: relative;
   max-width: 282px;
   margin-right: auto;
   margin-bottom: 24px;
   margin-left: auto;
   cursor: pointer;
-  background-color: #fff;
+  background-color: @white;
   border: 1px solid #ccc;
 
   .packagesummary-body {
@@ -78,7 +79,7 @@
 
 .packagesummary-footer {
   padding: @padding-base-vertical @padding-base-horizontal;
-  background-color: rgba(0,0,0,.03);
+  background-color: @gray-50;
   border-top: 1px solid rgba(0,0,0,.125);
 }
 
@@ -141,15 +142,9 @@
   font-weight: 700;
 }
 
-.store-categories li {
-  margin-right: 6px;
-}
-
 // 5. Purchased Package
 // -------------------------
 .purchasedpackage {
-  margin-bottom: 24px;
-
   h1 {
     margin-top: 0;
     overflow: hidden;
@@ -164,5 +159,24 @@
     a {
       width: 100%;
     }
+  }
+}
+
+.store-category-list {
+  > li {
+    margin: 0 @nav-pills-link-margin 6px 0;
+
+    @media (max-width: @screen-md-max) {
+      margin-right: 8px;
+
+      a {
+        padding: 5px 8px;
+        font-size: 14px;
+      }
+    }
+  }
+
+  > li + li {
+    margin-left: 0 !important;
   }
 }

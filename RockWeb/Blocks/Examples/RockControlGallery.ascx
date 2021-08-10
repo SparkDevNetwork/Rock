@@ -527,6 +527,11 @@
                         <Rock:ImageEditor ID="imageEditor" runat="server" Label="Rock:ImageEditor" MaxImageWidth="1600" MaxImageHeight="1200" />
                     </div>
 
+                    <a id="MediaElementPicker"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:MediaElementPicker ID="mediaElementPicker" runat="server" Label="Rock:MediaElementPicker" />
+                    </div>
+
                     <h2>Groups and Group Types</h2>
 
                     <a id="GroupPicker"></a>
@@ -537,6 +542,11 @@
                     <a id="GroupPicker2"></a>
                     <div runat="server" class="r-example">
                         <Rock:GroupPicker ID="grExampleMultip" runat="server" Label="Rock:GroupPicker (Multiselect)" AllowMultiSelect="true" />
+                    </div>
+
+                    <a id="GroupPicker FullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:GroupPicker ID="gpExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:GroupPicker (FullWidth)" AllowMultiSelect="true" />
                     </div>
 
                     <a id="GroupTypePicker"></a>
@@ -565,6 +575,10 @@
                     </div>
 
                     <h2 runat="server">Locations</h2>
+                    <a id="LocationList"></a>
+                    <div id="Div3" runat="server" class="r-example">
+                        <Rock:LocationList ID="LocationList1" runat="server" Label="Rock:LocationList" AllowAdd="true" ShowCityState="true" IsAddressRequired="true" />
+                    </div>
 
                     <a id="LocationPicker"></a>
                     <div id="Div2" runat="server" class="r-example">
@@ -598,6 +612,11 @@
                     <a id="PersonPicker"></a>
                     <div runat="server" class="r-example">
                         <Rock:PersonPicker ID="ppExample" runat="server" Label="Rock:PersonPicker" />
+                    </div>
+
+                    <a id="PersonPickerFullWidth"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:PersonPicker ID="ppExampleFullWidth" runat="server" EnableFullWidth="true" Label="Rock:PersonPicker ( FullWidth )" />
                     </div>
 
                     <a id="PersonAndBusinessPicker"></a>
@@ -736,6 +755,25 @@
                         <Rock:NotificationBox ID="nbExampleDanger" runat="server" Title="Danger" Text="Something really went wrong." NotificationBoxType="Danger" />
                         <Rock:NotificationBox ID="nbExampleDismissable" runat="server" Title="Hey" Text="You can close this when you are done reading it if you want." NotificationBoxType="Warning" Dismissable="true" />
                         <Rock:NotificationBox ID="nbExampleDetails" runat="server" Title="Some Info" Text="This is a message with extra stuff." Details="Here are the extra details" />
+                    </div>
+
+                    <a id="TagLiteral"></a>
+                    <h2 runat="server">Rock:TagLiteral</h2>
+                    <p>
+                        This creates a asp:literal with the contents wrapped by the specified tag.  We’ve added the ability to specify a css class.
+                        TagLiteral2, TagLiteral3, TagLiteral6 demonstrate the fact that if the text is not set nothing will be rendered.
+                    </p>
+
+                    <div runat="server" class="r-example">
+                        <Rock:TagLiteral ID="TagLiteral1" runat="server" Tag="div" Text="TagLiteral1: Text Set via the Text Property with CssClass = Description" CssClass="description"/>
+                        <Rock:TagLiteral ID="TagLiteral2" runat="server" Tag="div" Text="" CssClass="description"/>
+                        <Rock:TagLiteral ID="TagLiteral3" runat="server" Tag="div" Text="" CssClass=""/>
+                        <Rock:TagLiteral ID="TagLiteral4" runat="server" Tag="div" />
+                        <Rock:TagLiteral ID="TagLiteral5" runat="server" Tag="p">
+                            <span>TagLiteral5: Literal Content in tag</span>
+                        </Rock:TagLiteral>
+                        <Rock:TagLiteral ID="TagLiteral6" runat="server" Text="TagLiteral6: Text with no tag should yield a div." />
+                        <Rock:TagLiteral ID="TagLiteral7" runat="server" />
                     </div>
 
                     <a id="Badge"></a>

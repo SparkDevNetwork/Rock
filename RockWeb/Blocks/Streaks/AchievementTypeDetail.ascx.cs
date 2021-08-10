@@ -555,6 +555,7 @@ namespace RockWeb.Blocks.Streaks
             achievementType.Name = tbName.Text;
             achievementType.Description = tbDescription.Text;
             achievementType.IsActive = cbActive.Checked;
+            achievementType.IsPublic = cbIsPublic.Checked;
             achievementType.AchievementIconCssClass = tbIconCssClass.Text;
             achievementType.MaxAccomplishmentsAllowed = cbAllowOverachievement.Checked ? 1 : nbMaxAccomplishments.IntegerValue;
             achievementType.AllowOverAchievement = cbAllowOverachievement.Checked;
@@ -563,6 +564,32 @@ namespace RockWeb.Blocks.Streaks
             achievementType.AchievementFailureWorkflowTypeId = wtpFailureWorkflowType.SelectedValueAsInt();
             achievementType.BadgeLavaTemplate = ceBadgeLava.Text;
             achievementType.ResultsLavaTemplate = ceResultsLava.Text;
+
+            var binaryFileService = new BinaryFileService( rockContext );
+            if ( achievementType.ImageBinaryFileId != imgupImageBinaryFile.BinaryFileId )
+            {
+                var oldImageTemplatePreview = binaryFileService.Get( achievementType.ImageBinaryFileId ?? 0 );
+                if ( oldImageTemplatePreview != null )
+                {
+                    // the old image won't be needed anymore, so make it IsTemporary and have it get cleaned up later
+                    oldImageTemplatePreview.IsTemporary = true;
+                }
+            }
+
+            achievementType.ImageBinaryFileId = imgupImageBinaryFile.BinaryFileId;
+
+            // Ensure that the Image is not set as IsTemporary=True
+            if ( achievementType.ImageBinaryFileId.HasValue )
+            {
+                var imageTemplatePreview = binaryFileService.Get( achievementType.ImageBinaryFileId.Value );
+                if ( imageTemplatePreview != null && imageTemplatePreview.IsTemporary )
+                {
+                    imageTemplatePreview.IsTemporary = false;
+                }
+            }
+
+            achievementType.CustomSummaryLavaTemplate = ceCustomSummaryLavaTemplate.Text;
+
             achievementType.CategoryId = cpCategory.SelectedValueAsInt();
 
             // Both step type and status are required together or neither can be set
@@ -737,12 +764,15 @@ namespace RockWeb.Blocks.Streaks
             tbDescription.Text = achievementType.Description;
             spstStepType.StepTypeId = achievementType.AchievementStepTypeId;
             cbActive.Checked = achievementType.IsActive;
+            cbIsPublic.Checked = achievementType.IsPublic;
             cbAllowOverachievement.Checked = achievementType.AllowOverAchievement;
             nbMaxAccomplishments.IntegerValue = achievementType.MaxAccomplishmentsAllowed;
             cpAchievementComponent.SetValue( achievementType.AchievementEntityType.Guid.ToString().ToUpper() );
             tbIconCssClass.Text = achievementType.AchievementIconCssClass;
             ceResultsLava.Text = achievementType.ResultsLavaTemplate;
             ceBadgeLava.Text = achievementType.BadgeLavaTemplate;
+            ceCustomSummaryLavaTemplate.Text = achievementType.CustomSummaryLavaTemplate;
+            imgupImageBinaryFile.BinaryFileId = achievementType.ImageBinaryFileId;
             cpCategory.SetValue( achievementType.CategoryId );
 
             // Workflows
@@ -779,6 +809,7 @@ namespace RockWeb.Blocks.Streaks
 
             nbMaxAccomplishments.IntegerValue = 1;
             cbActive.Checked = true;
+            cbIsPublic.Checked = true;
 
             SyncStepControls();
             SyncOverAchievementAndMaxControls();

@@ -37,48 +37,91 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Block for easily adding/editing metric values for any metric that has partitions of campus and service time." )]
 
+    #region Block Attributes
+
     [CategoryField(
         "Schedule Category",
+        Key = AttributeKey.ScheduleCategory,
         Description = "The schedule category to use for list of service times.",
-        AllowMultiple = false,
+        AllowMultiple = true,
         EntityTypeName = "Rock.Model.Schedule",
         IsRequired = true,
-        Order = 0,
-        Key = AttributeKey.ScheduleCategory )]
+        Order = 0 )]
+
     [IntegerField(
         "Weeks Back",
+        Key = AttributeKey.WeeksBack,
         Description = "The number of weeks back to display in the 'Week of' selection.",
         IsRequired = false,
         DefaultIntegerValue = 8,
-        Order = 1,
-        Key = AttributeKey.WeeksBack )]
+        Order = 1 )]
+
     [IntegerField(
         "Weeks Ahead",
+        Key = AttributeKey.WeeksAhead,
         Description = "The number of weeks ahead to display in the 'Week of' selection.",
         IsRequired = false,
         DefaultIntegerValue = 0,
-        Order = 2,
-        Key = AttributeKey.WeeksAhead )]
+        Order = 2 )]
+
     [MetricCategoriesField(
         "Metric Categories",
+        Key = AttributeKey.MetricCategories,
         Description = "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).",
         IsRequired = true,
-        Order = 3,
-        Key = AttributeKey.MetricCategories )]
+        Order = 3 )]
+
     [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 4, AttributeKey.Campuses )]
+
     [BooleanField(
         "Insert 0 for Blank Items",
+        Key = AttributeKey.DefaultToZero,
         Description = "If enabled, a zero will be added to any metrics that are left empty when entering data.",
         DefaultValue = "false",
-        Order = 5,
-        Key = AttributeKey.DefaultToZero )]
+        Order = 5 )]
+
     [CustomDropdownListField(
         "Metric Date Determined By",
+        Key = AttributeKey.MetricDateDeterminedBy,
         Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
         DefaultValue = "0",
         ListSource = "0^Sunday Date,1^Day from Schedule",
-        Order = 6,
-        Key = AttributeKey.MetricDateDeterminedBy )]
+        Order = 6 )]
+
+    [BooleanField(
+        "Limit Campus Selection to Campus Team Membership",
+        Key = AttributeKey.LimitCampusByCampusTeam,
+        Description = "When enabled, this would limit the campuses shown to only those where the individual was on the Campus Team.",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "Note: setting this can override the selected Campuses block setting.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 8 )]
+
+    [DefinedValueField(
+        "Campus Status",
+        Key = AttributeKey.CampusStatus,
+        Description = "Note: setting this can override the selected Campuses block setting.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 9 )]
+
+    [BooleanField(
+        "Filter Schedules by Campus",
+        Key = AttributeKey.FilterByCampus,
+        Description = "When enabled, only schedules that are included in the Campus Schedules will be included.",
+        DefaultBooleanValue = false,
+        Order = 10 )]
+
+    #endregion Block Attributes
+
     public partial class ServiceMetricsEntry : Rock.Web.UI.RockBlock
     {
         #region Attribute Keys
@@ -92,6 +135,10 @@ namespace RockWeb.Blocks.Reporting
             public const string Campuses = "Campuses";
             public const string DefaultToZero = "DefaultToZero";
             public const string MetricDateDeterminedBy = "MetricDateDeterminedBy";
+            public const string LimitCampusByCampusTeam = "LimitCampusByCampusTeam";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatus = "CampusStatus";
+            public const string FilterByCampus = "FilterByCampus";
         }
 
         #endregion Attribute Keys
@@ -224,6 +271,9 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            pnlConfigurationError.Visible = false;
+            nbNoCampuses.Visible = false;
+
             if ( CheckSelection() )
             {
                 LoadDropDowns();
@@ -378,7 +428,7 @@ namespace RockWeb.Blocks.Reporting
         private static DateTime? GetFirstScheduledDate( DateTime? weekend, Schedule schedule )
         {
             var date = schedule.GetNextStartDateTime( weekend.Value );
-            if ( date.Value.Date > weekend.Value )
+            if ( date != null && date.Value.Date > weekend.Value )
             {
                 date = schedule.GetNextStartDateTime( weekend.Value.AddDays( -7 ) );
             }
@@ -393,6 +443,16 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bddl_SelectionChanged( object sender, EventArgs e )
         {
+            if ( sender == bddlWeekend )
+            {
+                _selectedWeekend = bddlWeekend.SelectedValue.AsDateTime();
+                LoadServicesDropDown();
+            }
+            else if ( sender == bddlCampus )
+            {
+                _selectedCampusId = bddlCampus.SelectedValueAsId();
+                LoadServicesDropDown();
+            }
             BindMetrics();
         }
 
@@ -413,7 +473,15 @@ namespace RockWeb.Blocks.Reporting
             if ( !_selectedCampusId.HasValue )
             {
                 var campuses = GetCampuses();
-                if ( campuses.Count == 1 )
+                if ( campuses.Count == 0 )
+                {
+                    pnlConfigurationError.Visible = true;
+                    nbNoCampuses.Visible = true;
+                    pnlSelection.Visible = false;
+                    pnlMetrics.Visible = false;
+                    return false;
+                }
+                else if ( campuses.Count == 1 )
                 {
                     _selectedCampusId = campuses.First().Id;
                 }
@@ -487,6 +555,15 @@ namespace RockWeb.Blocks.Reporting
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
             var campuses = GetCampuses();
 
+            if ( campuses.Count == 0 )
+            {
+                pnlConfigurationError.Visible = true;
+                nbNoCampuses.Visible = true;
+                pnlSelection.Visible = false;
+                pnlMetrics.Visible = false;
+                return;
+            }
+
             bool isCampusInvalid = false;
             if ( campusId.HasValue && !campuses.Any( a => a.Id == campusId.Value ) )
             {
@@ -510,7 +587,12 @@ namespace RockWeb.Blocks.Reporting
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
             bddlWeekend.SetValue( _selectedWeekend.HasValue ? _selectedWeekend.Value.ToString( "o" ) : null );
+            LoadServicesDropDown();
+        }
 
+        private void LoadServicesDropDown()
+        {
+            bddlService.Items.Clear();
             // Load service times
             foreach ( var service in GetServices() )
             {
@@ -519,12 +601,35 @@ namespace RockWeb.Blocks.Reporting
                 if ( _selectedWeekend != null && GetAttributeValue( AttributeKey.MetricDateDeterminedBy ).AsInteger() == 1 )
                 {
                     var date = GetFirstScheduledDate( _selectedWeekend, service );
-                    listItemText = string.Format( "{0} ({1})", service.Name, date.ToShortDateString() );
+                    if ( date == null )
+                    {
+                        listItemText = string.Empty;
+                    }
+                    else
+                    {
+                        listItemText = string.Format( "{0} ({1})", service.Name, date.ToShortDateString() );
+                    }
                 }
 
-                bddlService.Items.Add( new ListItem( listItemText, service.Id.ToString() ) );
+                if ( listItemText.IsNotNullOrWhiteSpace() )
+                {
+                    bddlService.Items.Add( new ListItem( listItemText, service.Id.ToString() ) );
+                }
             }
             bddlService.SetValue( _selectedServiceId );
+
+            var showServicesDropdown = bddlService.Items.Count != 0;
+
+            bddlService.Visible = showServicesDropdown;
+            pnlMetricEdit.Visible = showServicesDropdown;
+
+            pnlNoServices.Visible = !showServicesDropdown;
+            nbWarning.Visible = !showServicesDropdown;
+            if ( !showServicesDropdown )
+            {
+                nbWarning.Text = "No services exist for the selected campus and date. Change the date or campus to find the desired service.";
+            }
+
         }
 
         /// <summary>
@@ -534,12 +639,48 @@ namespace RockWeb.Blocks.Reporting
         private List<CampusCache> GetCampuses()
         {
             var campuses = new List<CampusCache>();
-            var allowedCampuses = GetAttributeValue( "Campuses" ).SplitDelimitedValues().AsGuidList();
+            var allowedCampuses = GetAttributeValue(  AttributeKey.Campuses ).SplitDelimitedValues().AsGuidList();
+            var limitCampusByCampusTeam = GetAttributeValue( AttributeKey.LimitCampusByCampusTeam ).AsBoolean();
+            var selectedCampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues().AsGuidList();
+            var selectedCampusStatuses = GetAttributeValue( AttributeKey.CampusStatus ).SplitDelimitedValues().AsGuidList();
 
-            foreach ( var campus in CampusCache.All()
-                .Where( c => c.IsActive.HasValue && c.IsActive.Value )
-                .Where( c => !allowedCampuses.Any() || allowedCampuses.Contains( c.Guid ) )
-                .OrderBy( c => c.Name ) )
+            var campusQuery = CampusCache.All().Where( c => c.IsActive.HasValue && c.IsActive.Value );
+
+            // If specific campuses are selected, filter by those campuses.
+            if ( allowedCampuses.Any() )
+            {
+                campusQuery = campusQuery.Where( c => allowedCampuses.Contains( c.Guid ) );
+            }
+
+            if ( limitCampusByCampusTeam )
+            {
+                var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
+                var teamGroupIds = new GroupService( new RockContext() ).Queryable().AsNoTracking()
+                    .Where( g => g.GroupTypeId == campusTeamGroupTypeId )
+                    .Where( g => g.Members.Where( gm => gm.PersonId == CurrentPersonId ).Any() )
+                    .Select( g => g.Id ).ToList();
+
+                campusQuery = campusQuery.Where( c => c.TeamGroupId.HasValue && teamGroupIds.Contains( c.TeamGroupId.Value ) );
+            }
+
+            // If campus types are selected, filter by those.
+            if ( selectedCampusTypes.Any() )
+            {
+                var campusTypes = DefinedValueCache.All().Where( d => selectedCampusTypes.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
+                campusQuery = campusQuery.Where( c => c.CampusTypeValueId.HasValue && campusTypes.Contains( c.CampusTypeValueId.Value ) );
+            }
+
+            // If campus statuses are selected, filter by those.
+            if ( selectedCampusStatuses.Any() )
+            {
+                var campusStatuses = DefinedValueCache.All().Where( d => selectedCampusStatuses.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
+                campusQuery = campusQuery.Where( c => c.CampusStatusValueId.HasValue && campusStatuses.Contains( c.CampusStatusValueId.Value ) );
+            }
+
+            // Sort by name.
+            campusQuery = campusQuery.OrderBy( c => c.Name );
+
+            foreach ( var campus in campusQuery )
             {
                 campuses.Add( campus );
             }
@@ -577,23 +718,33 @@ namespace RockWeb.Blocks.Reporting
         private List<Schedule> GetServices()
         {
             var services = new List<Schedule>();
-
-            var scheduleCategory = CategoryCache.Get( GetAttributeValue( AttributeKey.ScheduleCategory ).AsGuid() );
-            if ( scheduleCategory != null )
+            var scheduleCategoryGuids = GetAttributeValue( AttributeKey.ScheduleCategory ).SplitDelimitedValues().AsGuidList();
+            foreach ( var scheduleCategoryGuid in scheduleCategoryGuids )
             {
-                using ( var rockContext = new RockContext() )
+                var scheduleCategory = CategoryCache.Get( scheduleCategoryGuid );
+                if ( scheduleCategory != null )
                 {
-                    foreach ( var schedule in new ScheduleService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( s =>
-                            s.IsActive &&
-                            s.CategoryId.HasValue &&
-                            s.CategoryId.Value == scheduleCategory.Id )
-                        .OrderBy( s => s.Name ) )
+                    using ( var rockContext = new RockContext() )
                     {
-                        services.Add( schedule );
+                        foreach ( var schedule in new ScheduleService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( s =>
+                                s.IsActive &&
+                                s.CategoryId.HasValue &&
+                                s.CategoryId.Value == scheduleCategory.Id )
+                            .OrderBy( s => s.Name ) )
+                        {
+                            services.Add( schedule );
+                        }
                     }
                 }
+            }
+
+            var filterByCampus = GetAttributeValue( AttributeKey.FilterByCampus ).AsBoolean();
+            if ( filterByCampus )
+            {
+                var campus = CampusCache.Get( _selectedCampusId.Value );
+                services = services.Where( s => campus.CampusScheduleIds.Contains( s.Id ) ).ToList();
             }
 
             return services;

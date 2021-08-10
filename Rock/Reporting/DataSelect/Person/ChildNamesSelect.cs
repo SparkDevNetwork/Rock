@@ -115,6 +115,7 @@ namespace Rock.Reporting.DataSelect.Person
             public int? SuffixValueId { get; set; }
             public Gender Gender { get; set; }
             public DateTime? BirthDate { get; set; }
+            public int? GraduationYear { get; set; }
         }
 
         /// <summary>
@@ -129,6 +130,8 @@ namespace Rock.Reporting.DataSelect.Person
             var selectionParts = selection.Split( '|' );
             bool includeGender = selectionParts.Length > 0 && selectionParts[0].AsBoolean();
             bool includeAge = selectionParts.Length > 1 && selectionParts[1].AsBoolean();
+            bool includeGrade = selectionParts.Length > 2 && selectionParts[2].AsBoolean();
+
             callbackField.OnFormatDataValue += ( sender, e ) =>
             {
                 var personList = e.DataValue as IEnumerable<KidInfo>;
@@ -138,18 +141,18 @@ namespace Rock.Reporting.DataSelect.Person
                     foreach ( var person in personList )
                     {
                         var formattedPerson = Rock.Model.Person.FormatFullName( person.NickName, person.LastName, person.SuffixValueId );
-                        var formattedGenderAge = string.Empty;
+                        var formattedGenderAgeGrade = string.Empty;
 
                         if ( includeGender && person.Gender != Gender.Unknown )
                         {
                             // return F for Female, M for Male
                             if ( person.Gender == Gender.Female )
                             {
-                                formattedGenderAge += "F";
+                                formattedGenderAgeGrade += "F";
                             }
                             else if ( person.Gender == Gender.Male )
                             {
-                                formattedGenderAge += "M";
+                                formattedGenderAgeGrade += "M";
                             }
                         }
 
@@ -157,12 +160,19 @@ namespace Rock.Reporting.DataSelect.Person
 
                         if ( includeAge && age.HasValue )
                         {
-                            formattedGenderAge += " " + age.Value.ToString();
+                            formattedGenderAgeGrade += " " + age.Value.ToString();
                         }
 
-                        if ( !string.IsNullOrWhiteSpace( formattedGenderAge ) )
+                        string grade = Rock.Model.Person.GradeAbbreviationFromGraduationYear( person.GraduationYear );
+
+                        if ( includeGrade && person.GraduationYear.HasValue )
                         {
-                            formattedPerson += " (" + formattedGenderAge.Trim() + ")";
+                            formattedGenderAgeGrade += " " + grade.ToString();
+                        }
+
+                        if ( !string.IsNullOrWhiteSpace( formattedGenderAgeGrade ) )
+                        {
+                            formattedPerson += " (" + formattedGenderAgeGrade.Trim() + ")";
                         }
 
                         formattedList.Add( formattedPerson );
@@ -239,7 +249,8 @@ namespace Rock.Reporting.DataSelect.Person
                         LastName = m.Person.LastName,
                         SuffixValueId = m.Person.SuffixValueId,
                         Gender = m.Person.Gender,
-                        BirthDate = m.Person.BirthDate
+                        BirthDate = m.Person.BirthDate,
+                        GraduationYear = m.Person.GraduationYear
                     }).AsEnumerable() );
 
             var selectChildrenExpression = SelectExpressionExtractor.Extract( personChildrenQuery, entityIdProperty, "p" );
@@ -264,7 +275,12 @@ namespace Rock.Reporting.DataSelect.Person
             cbIncludeAge.Text = "Include Age";
             parentControl.Controls.Add( cbIncludeAge );
 
-            return new System.Web.UI.Control[] { cbIncludeGender, cbIncludeAge };
+            RockCheckBox cbIncludeGrade = new RockCheckBox();
+            cbIncludeGrade.ID = parentControl.ID + "_cbIncludeGrade";
+            cbIncludeGrade.Text = "Include Grade";
+            parentControl.Controls.Add( cbIncludeGrade );
+
+            return new System.Web.UI.Control[] { cbIncludeGender, cbIncludeAge, cbIncludeGrade };
         }
 
         /// <summary>
@@ -285,13 +301,14 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if ( controls.Count() == 2 )
+            if ( controls.Count() == 3 )
             {
                 RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
                 RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
-                if ( cbIncludeGender != null && cbIncludeAge != null )
+                RockCheckBox cbIncludeGrade = controls[2] as RockCheckBox;
+                if ( cbIncludeGender != null && cbIncludeAge != null && cbIncludeGrade != null )
                 {
-                    return string.Format( "{0}|{1}", cbIncludeGender.Checked.ToTrueFalse(), cbIncludeAge.Checked.ToTrueFalse() );
+                    return string.Format( "{0}|{1}|{2}", cbIncludeGender.Checked.ToTrueFalse(), cbIncludeAge.Checked.ToTrueFalse(), cbIncludeGrade.Checked.ToTrueFalse() );
                 }
             }
 
@@ -305,17 +322,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if ( controls.Count() == 2 )
+            if ( controls.Count() == 3 )
             {
                 string[] selectionValues = selection.Split( '|' );
-                if ( selectionValues.Length >= 2 )
+                if ( selectionValues.Length >= 3 )
                 {
                     RockCheckBox cbIncludeGender = controls[0] as RockCheckBox;
                     RockCheckBox cbIncludeAge = controls[1] as RockCheckBox;
-                    if ( cbIncludeGender != null && cbIncludeAge != null )
+                    RockCheckBox cbIncludeGrade = controls[2] as RockCheckBox;
+                    if ( cbIncludeGender != null && cbIncludeAge != null && cbIncludeGrade != null )
                     {
                         cbIncludeGender.Checked = selectionValues[0].AsBoolean();
                         cbIncludeAge.Checked = selectionValues[1].AsBoolean();
+                        cbIncludeGrade.Checked = selectionValues[2].AsBoolean();
                     }
                 }
             }

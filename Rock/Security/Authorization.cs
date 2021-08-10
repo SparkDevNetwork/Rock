@@ -26,7 +26,9 @@ using System.Web.Security;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Security
 {
@@ -772,18 +774,61 @@ namespace Rock.Security
         /// <param name="userName">Name of the user.</param>
         /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
         /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
-        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        private static HttpCookie GetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
         {
-            var ticket = new FormsAuthenticationTicket( 1, userName, RockDateTime.Now,
-                RockDateTime.Now.Add( FormsAuthentication.Timeout ), isPersisted,
-                IsImpersonated.ToString(), FormsAuthentication.FormsCookiePath );
+            var ticket = new FormsAuthenticationTicket(
+                1,
+                userName,
+                RockInstanceConfig.SystemDateTime,
+                RockInstanceConfig.SystemDateTime.Add( FormsAuthentication.Timeout ),
+                isPersisted,
+                IsImpersonated.ToString(),
+                FormsAuthentication.FormsCookiePath );
 
             var authCookie = GetAuthCookie( GetCookieDomain(), FormsAuthentication.Encrypt( ticket ) );
+
             if ( ticket.IsPersistent )
             {
                 authCookie.Expires = ticket.Expiration;
             }
-            HttpContext.Current.Response.Cookies.Add( authCookie );
+
+            return authCookie;
+        }
+
+        /// <summary>
+        /// Gets the simple authentication cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
+        /// <returns></returns>
+        public static SimpleCookie GetSimpleAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, IsImpersonated );
+
+            if ( authCookie == null )
+            {
+                return null;
+            }
+
+            return new SimpleCookie
+            {
+                Expires = authCookie.Expires,
+                Name = authCookie.Name,
+                Value = authCookie.Value
+            };
+        }
+
+        /// <summary>
+        /// Sets the auth cookie.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="isPersisted">if set to <c>true</c> [is persisted].</param>
+        /// <param name="IsImpersonated">if set to <c>true</c> [is impersonated].</param>
+        public static void SetAuthCookie( string userName, bool isPersisted, bool IsImpersonated )
+        {
+            var authCookie = GetAuthCookie( userName, isPersisted, IsImpersonated );
+            RockPage.AddOrUpdateCookie( authCookie );
 
             // If cookie is for a more generic domain, we need to store that domain so that we can expire it correctly 
             // when the user signs out.
@@ -801,8 +846,8 @@ namespace Rock.Security
                     Secure = FormsAuthentication.RequireSSL,
                     Expires = authCookie.Expires
                 };
-            HttpContext.Current.Response.Cookies.Add( domainCookie );
 
+            RockPage.AddOrUpdateCookie( domainCookie );
         }
 
         /// <summary>
@@ -811,24 +856,27 @@ namespace Rock.Security
         public static void SignOut()
         {
             ExpireUnsecuredPersonIdentifierCookie();
-            var domainCookie = HttpContext.Current.Request.Cookies[$"{FormsAuthentication.FormsCookieName}_DOMAIN"];
+
+            var domainCookieName = $"{FormsAuthentication.FormsCookieName}_DOMAIN";
+            var domainCookie = HttpContext.Current.Request.Cookies[domainCookieName];
+
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = DateTime.Now.AddDays( -1d );
-                HttpContext.Current.Response.Cookies.Remove( FormsAuthentication.FormsCookieName );
-                HttpContext.Current.Response.Cookies.Add( authCookie );
+                authCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d );
+                RockPage.AddOrUpdateCookie( authCookie );
 
-                domainCookie = new HttpCookie( $"{FormsAuthentication.FormsCookieName}_DOMAIN" )
+                domainCookie = new HttpCookie( domainCookieName )
                 {
                     HttpOnly = true,
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = DateTime.Now.AddDays( -1d )
+                    Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d )
                 };
-                HttpContext.Current.Response.Cookies.Remove( $"{FormsAuthentication.FormsCookieName}_DOMAIN" );
-                HttpContext.Current.Response.Cookies.Add( domainCookie );
+
+                RockPage.AddOrUpdateCookie( domainCookie );
+
             }
             else
             {
@@ -842,14 +890,9 @@ namespace Rock.Security
         /// <returns></returns>
         private static void ExpireUnsecuredPersonIdentifierCookie()
         {
-            var unsecuredPersonIdentifierCookie = HttpContext.Current.Request.Cookies[Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER];
-            if ( unsecuredPersonIdentifierCookie != null )
+            if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
             {
-                HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-                httpcookie.Value = null;
-                httpcookie.Expires = DateTime.Now.AddDays( -1d );
-                HttpContext.Current.Response.Cookies.Remove( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
-                HttpContext.Current.Response.Cookies.Add( httpcookie );
+                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockInstanceConfig.SystemDateTime.AddDays( -1d ) );
             }
         }
 
@@ -863,7 +906,9 @@ namespace Rock.Security
         {
             // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax", "Strict", and "None".
             SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+
+            // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
+            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
 
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
@@ -875,7 +920,6 @@ namespace Rock.Security
 
             return httpCookie;
         }
-
 
         /// <summary>
         /// Gets the domain for the forms authentication cookie. This is based on whether the current host name has an entry in the 'Domains Sharing Logins' defined type.
@@ -936,9 +980,10 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = DateTime.Now.AddYears( 1 );
-            HttpContext.Current.Response.Cookies.Add( httpcookie );
+            httpcookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
+            RockPage.AddOrUpdateCookie( httpcookie );
         }
+
         #endregion
 
         #region Private Methods

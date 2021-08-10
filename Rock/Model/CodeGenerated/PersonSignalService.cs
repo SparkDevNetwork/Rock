@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,6 +59,48 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// PersonSignal View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( PersonSignal ) )]
+    public partial class PersonSignalViewModelHelper : ViewModelHelper<PersonSignal, Rock.ViewModel.PersonSignalViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.PersonSignalViewModel CreateViewModel( PersonSignal model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.PersonSignalViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ExpirationDate = model.ExpirationDate,
+                Note = model.Note,
+                OwnerPersonAliasId = model.OwnerPersonAliasId,
+                PersonId = model.PersonId,
+                SignalTypeId = model.SignalTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
+
+    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class PersonSignalExtensionMethods
@@ -81,6 +126,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this PersonSignal object to a new PersonSignal object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static PersonSignal CloneWithoutIdentity( this PersonSignal source )
+        {
+            var target = new PersonSignal();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another PersonSignal object to this PersonSignal object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -103,5 +171,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.PersonSignalViewModel ToViewModel( this PersonSignal model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new PersonSignalViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

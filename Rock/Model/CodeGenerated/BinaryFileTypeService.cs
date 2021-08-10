@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,33 +54,84 @@ namespace Rock.Model
         public bool CanDelete( BinaryFileType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<BinaryFile>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, BinaryFile.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<DocumentType>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, DocumentType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<NoteType>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, NoteType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.BinaryFileTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFileType.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// BinaryFileType View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( BinaryFileType ) )]
+    public partial class BinaryFileTypeViewModelHelper : ViewModelHelper<BinaryFileType, Rock.ViewModel.BinaryFileTypeViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.BinaryFileTypeViewModel CreateViewModel( BinaryFileType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.BinaryFileTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CacheControlHeaderSettings = model.CacheControlHeaderSettings,
+                CacheToServerFileSystem = model.CacheToServerFileSystem,
+                Description = model.Description,
+                IconCssClass = model.IconCssClass,
+                IsSystem = model.IsSystem,
+                MaxHeight = model.MaxHeight,
+                MaxWidth = model.MaxWidth,
+                Name = model.Name,
+                PreferredColorDepth = ( int ) model.PreferredColorDepth,
+                PreferredFormat = ( int ) model.PreferredFormat,
+                PreferredRequired = model.PreferredRequired,
+                PreferredResolution = ( int ) model.PreferredResolution,
+                RequiresViewSecurity = model.RequiresViewSecurity,
+                StorageEntityTypeId = model.StorageEntityTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -102,6 +156,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this BinaryFileType object to a new BinaryFileType object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static BinaryFileType CloneWithoutIdentity( this BinaryFileType source )
+        {
+            var target = new BinaryFileType();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -139,5 +216,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.BinaryFileTypeViewModel ToViewModel( this BinaryFileType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new BinaryFileTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

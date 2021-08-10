@@ -128,6 +128,27 @@ namespace RockWeb.Blocks.Event
             NavigateToParentPage();
         }
 
+        protected void cvUrlSlug_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            var urlSlug = args.Value;
+            if ( urlSlug.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var eventMapingService = new EventItemOccurrenceGroupMapService( rockContext );
+                var linkageId = hfLinkageId.Value.AsIntegerOrNull();
+
+                var validationQuery = eventMapingService.Queryable().AsNoTracking().Where( m => m.UrlSlug == urlSlug );
+                if ( linkageId != null )
+                {
+                    validationQuery = validationQuery.Where( m => m.Id != linkageId.Value );
+                }
+                args.IsValid = !validationQuery.Any();
+            }
+        }
         #endregion
 
         #region Linkage Dialog Events
@@ -177,6 +198,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgAddCalendarItemPage1_SaveClick( object sender, EventArgs e )
         {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
             drpLinkageDateRange.LowerValue = RockDateTime.Today.AddYears( -1 ).AddDays( 1 );
             drpLinkageDateRange.UpperValue = RockDateTime.Today.AddYears( 1 ).AddDays( -1 );
 

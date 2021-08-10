@@ -139,7 +139,7 @@
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockCheckBox ID="cbAllowGroupSync" runat="server" Label="Allow Group Sync"
-                                            Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs the will be kept. Unchecking this box will NOT prevent them from running." />
+                                            Help="Determines if groups of this type are allowed have Group Syncs. This will show/hide the 'Group Sync Settings' section on the Group Details block. If a group of this type already has group syncs they will be kept. Unchecking this box will NOT prevent them from running." />
                                         <Rock:RockCheckBox ID="cbAllowSpecificGrpMemWorkFlows" runat="server" Label="Allow Specific Group Member Workflows"
                                             Help="Determines if groups of this type should be allowed to have Group Member Workflows. This would show/hide the 'Group Member Workflows' section on the Group Details block. If a group of this type already has specific group member workflows they will be kept." />
                                         <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag"
@@ -569,7 +569,7 @@
                         <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger" />
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Label="Active" ValidationGroup="Trigger" />
                     </div>
                 </div>
                 <div class="row">

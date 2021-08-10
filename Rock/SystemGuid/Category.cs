@@ -79,6 +79,11 @@ namespace Rock.SystemGuid
         public const string HISTORY_PERSON_GROUP_MEMBERSHIP = "325278A4-FACA-4F38-A405-9C090B3BAA34";
 
         /// <summary>
+        /// History of connection request
+        /// </summary>
+        public const string HISTORY_PERSON_CONNECTION_REQUEST = "4B472C6A-1ACF-481E-A2D4-9C44436BBCF5";
+
+        /// <summary>
         /// History of person communications
         /// </summary>
         public const string HISTORY_PERSON_COMMUNICATIONS = "F291034B-7581-48F3-B522-E31B8534D529";
@@ -117,6 +122,11 @@ namespace Rock.SystemGuid
         /// History of group changes
         /// </summary>
         public const string HISTORY_GROUP_CHANGES = "089EB47D-D0EF-493E-B867-DC51BCDEF319";
+
+        /// <summary>
+        /// History of connection request changes
+        /// </summary>
+        public const string HISTORY_CONNECTION_REQUEST = "A8542DD2-91B1-4CCA-873A-D052BCD6EE06";
 
         #endregion
 
@@ -160,6 +170,11 @@ namespace Rock.SystemGuid
         /// The category for person attributes for Personality Assessment Data
         /// </summary>
         public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
+
+        /// <summary>
+        /// The person attributes giving analytics
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = "61823196-8EA1-4C2B-A7DF-1654BD085667";
 
         #endregion
 

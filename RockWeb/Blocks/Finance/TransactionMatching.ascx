@@ -38,8 +38,11 @@
             </div>
 
             <div class="panel-body styled-scroll">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click “done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
-                <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click “Done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
+
+                <div class="actions">
+                    <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
+                </div>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-5 transaction-matching-image">
@@ -166,14 +169,11 @@
                         </div>
                     </div>
 
-                    <div class="row actions">
-                        <div class="col-md-12">
-                            <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <div class="pull-right">
-                                <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
-                                <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
-                            </div>
-                            <div class="clearfix"></div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn btn-default" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
+                        <div class="pull-right">
+                            <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 
@@ -313,8 +313,8 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-xs btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
-                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
+                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
+                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
                     </div>
                 </div>
 
@@ -386,7 +386,7 @@
 
                 $buttonNext.on('click', function (e) {
                     var successLocation = $buttonNext.prop('href');
-                    verifyUnallocated(e, successLocation);
+                    navigateNext(e, successLocation);
                 });
 
                 updateRemainingAccountAllocation();
@@ -400,7 +400,7 @@
                     }
                     var link = $(this);
 
-                    $('.address-extended').slideToggle(function() {
+                    $('.address-extended').slideToggle(function () {
                         if ($(this).is(':visible')) {
                             link.text('Show Less').prop('title', 'Hide additional addresses');
                         } else {
@@ -428,7 +428,7 @@
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13) {
                     var successLocation = $('#<%=btnNext.ClientID%>').prop('href');
-                    if (verifyUnallocated(null, successLocation)) {
+                    if (navigateNext(null, successLocation)) {
                         return true;
                     }
                     return false;
@@ -461,28 +461,45 @@
                 updateRemainingAccountAllocation();
             }
 
-            // handle btnNext so that it warns if the total amount was changed from the original (if there was an amount to start with)
-            function verifyUnallocated(e, successLocation) {
+            /**
+             *  returns true if the amount was changed from the original(if there was an amount to start with)
+             */
+            function hasUnallocated() {
                 $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
                 if ($unallocatedAmountEl.is(':visible')) {
                     if (Number($unallocatedAmountEl.find('input').val()) != 0) {
-                        if (e) {
-                            e.preventDefault();
-                        }
-
-                        var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
-                        var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
-                        var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
-                        var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
-                        Rock.dialogs.confirm(warningMsg, function (result) {
-                            if (result && successLocation) {
-                                window.location = successLocation;
-                            }
-                        });
+                        return true;
                     }
                 }
+
+                return false;
+            }
+
+            /**
+             * handle btnNext (or KeyPress on amount)
+             * if the amount was changed from the original(if there was an amount to start with) it will ask for confirmation before navigating.
+             * @param successLocation the Postback javascript if navigation is allowed
+            */
+            function navigateNext(e, successLocation) {
+                if (hasUnallocated()) {
+                    if (e) {
+                        e.preventDefault();
+                    }
+
+                    var originalTotalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-original-total-amount').val());
+                    var totalAmountCents = Number($('#<%=pnlView.ClientID%>').find('.js-total-amount :input').val()) * 100;
+                    var currencySymbol = $('#<%=pnlView.ClientID%>').find('.js-currencysymbol').val()
+                    var warningMsg = 'Note: The original transaction amount was ' + currencySymbol + (originalTotalAmountCents / 100).toFixed(2) + '. This has been changed to ' + currencySymbol + (totalAmountCents / 100).toFixed(2) + '. Are you sure you want to proceed with this change?';
+                    Rock.dialogs.confirm(warningMsg, function (result) {
+                        if (result && successLocation) {
+                            // do the Postback (which will save the changes)
+                            window.location = successLocation;
+                        }
+                    });
+                }
                 else {
-                    return true;
+                    // do the Postback (which will save the changes)
+                    window.location = successLocation;
                 }
             }
         </script>

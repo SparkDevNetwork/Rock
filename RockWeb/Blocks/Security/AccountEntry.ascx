@@ -1,60 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AccountEntry.ascx.cs" Inherits="RockWeb.Blocks.Security.AccountEntry" %>
-<script type="text/javascript">
-
-    Sys.Application.add_load(function () {
-
-        var availabilityMessageRow = $('#availabilityMessageRow');
-        var usernameUnavailable = $('#availabilityMessage');
-        var usernameTextbox = $('#<%= tbUserName.ClientID %>');
-        var usernameRegExp = new RegExp("<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameRegularExpression" ) %>");
-        var usernameValidCaption = "<%= Rock.Web.Cache.GlobalAttributesCache.Get().GetValue( "core.ValidUsernameCaption" ) %>";
-
-        availabilityMessageRow.hide();
-
-        usernameTextbox.blur(function () {
-            if ($(this).val() && $.trim($(this).val()) != '') {
-
-                if (!usernameRegExp.test($(this).val())) {
-                    usernameUnavailable.html('Username is not valid. ' + usernameValidCaption);
-                    usernameUnavailable.addClass('alert-warning');
-                    usernameUnavailable.removeClass('alert-success');
-                }
-                else {
-                    $.ajax({
-                        type: 'GET',
-                        contentType: 'application/json',
-                        dataType: 'json',
-                        url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
-                        success: function (getData, status, xhr) {
-
-                            if (getData) {
-                                usernameUnavailable.html('That username is available.');
-                                usernameUnavailable.addClass('alert-success');
-                                usernameUnavailable.removeClass('alert-warning');
-                            } else {
-                                availabilityMessageRow.show();
-                                usernameUnavailable.html('That username is already taken!');
-                                usernameUnavailable.addClass('alert-warning');
-                                usernameUnavailable.removeClass('alert-success');
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            alert(status + ' [' + error + ']: ' + xhr.responseText);
-                        }
-                    });
-                }
-
-            } else {
-                usernameUnavailable.html('Username is required!');
-                usernameUnavailable.addClass('alert-warning');
-                usernameUnavailable.removeClass('alert-success');
-            }
-            availabilityMessageRow.show();
-        });
-
-    });
-
-</script>
 
 <asp:UpdatePanel ID="upnlNewAccount" runat="server">
 <ContentTemplate>
@@ -87,6 +31,11 @@
 
                 <fieldset>
                     <legend>Your Information</legend>
+
+                    <%-- Special input with rock-fullname class --%>
+                    <Rock:RockTextBox ID="tbRockFullName" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName" Placeholder="Please enter name (Required)" />
+                    <Rock:NotificationBox ID="nbRockFullName" runat="server" NotificationBoxType="Validation" />
+
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" />
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />

@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Security.Oidc
             //    responseCookie.Secure = true;
 
             //Add the CSRF cookie to the response
-            Response.Cookies.Set( responseCookie );
+            RockPage.AddOrUpdateCookie( responseCookie );
 
             return _antiXsrfTokenValue;
         }
@@ -198,11 +198,11 @@ namespace RockWeb.Blocks.Security.Oidc
         /// </summary>
         private void DenyAuthorization()
         {
-            // Notify ASOS that the authorization grant has been denied by the resource owner.
-            // Note: OpenIdConnectServerHandler will automatically take care of redirecting
-            // the user agent to the client application using the appropriate response_mode.
+            // Notify the client that the authorization grant has been denied by the resource owner.
             var owinContext = Context.GetOwinContext();
-            owinContext.Authentication.Challenge( OpenIdConnectServerDefaults.AuthenticationType );
+            var redirectUri = owinContext.Request.Query["redirect_uri"];
+            Response.Redirect( redirectUri + "?error=access_denied&error_description=The+user+declined+claim+permissions", true );
+            ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

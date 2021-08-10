@@ -27,12 +27,12 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job sends out reminders to group leaders when group members do not meet all requirements.
     /// </summary>
     [DisplayName( "Send Group Requirements Notification" )]
     [Description( "This job sends out reminders to group leaders when group members do not meet all requirements." )]
@@ -45,7 +45,7 @@ namespace Rock.Jobs
     public class SendGroupRequirementsNotification : IJob
     {
         List<NotificationItem> _notificationList = new List<NotificationItem>();
-        List<GroupsMissingRequirements> _groupsMissingRequriements = new List<GroupsMissingRequirements>();
+        List<GroupsMissingRequirements> _groupsMissingRequirements = new List<GroupsMissingRequirements>();
 
         /// <summary> 
         /// Empty constructor for job initialization
@@ -84,7 +84,6 @@ namespace Rock.Jobs
 
                 var groupRequirementsQry = new GroupRequirementService( rockContext ).Queryable();
 
-
                 // get groups matching of the types provided
                 GroupService groupService = new GroupService( rockContext );
                 var groups = groupService.Queryable().AsNoTracking()
@@ -112,15 +111,13 @@ namespace Rock.Jobs
 
                         // get list of the group leaders
                         groupMissingRequirements.Leaders = group.Members
-                                                            .Where( m => m.GroupRole.ReceiveRequirementsNotifications )
-                                                            .Select( m => new GroupMemberResult
-                                                            {
-                                                                Id = m.Id,
-                                                                PersonId = m.PersonId,
-                                                                FullName = m.Person.FullName
-                                                            } )
-                                                              .ToList();
-
+                            .Where( m => m.GroupRole.ReceiveRequirementsNotifications && m.GroupMemberStatus == GroupMemberStatus.Active && m.IsArchived == false )
+                            .Select( m => new GroupMemberResult
+                            {
+                                Id = m.Id,
+                                PersonId = m.PersonId,
+                                FullName = m.Person.FullName
+                            } ).ToList();
 
                         List<GroupMembersMissingRequirements> groupMembers = new List<GroupMembersMissingRequirements>();
 
@@ -172,36 +169,43 @@ namespace Rock.Jobs
                         }
                         groupMissingRequirements.GroupMembersMissingRequirements = groupMembers;
 
-                        _groupsMissingRequriements.Add( groupMissingRequirements );
+                        _groupsMissingRequirements.Add( groupMissingRequirements );
+
+                        var membersToNotify = group.Members
+                            .Where( m => m.GroupRole.ReceiveRequirementsNotifications
+                                && m.GroupMemberStatus == GroupMemberStatus.Active
+                                && m.IsArchived == false );
 
                         // add leaders as people to notify
-                        foreach ( var leader in group.Members.Where( m => m.GroupRole.ReceiveRequirementsNotifications ) )
+                        foreach ( var leader in membersToNotify )
                         {
                             NotificationItem notification = new NotificationItem();
                             notification.GroupId = group.Id;
                             notification.Person = leader.Person;
                             _notificationList.Add( notification );
                         }
-                            
+
                         // notify parents
                         if ( notificationOption != NotificationOption.None )
                         {
-                            var parentLeaders = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
-                                                    .Where( m => m.GroupRole.ReceiveRequirementsNotifications );
+                            var parentLeadersQuery = new GroupMemberService( rockContext ).Queryable( "Person" ).AsNoTracking()
+                                .Where( m => m.GroupRole.ReceiveRequirementsNotifications
+                                    && m.GroupMemberStatus == GroupMemberStatus.Active
+                                    && m.IsArchived == false );
 
                             if ( notificationOption == NotificationOption.DirectParent )
                             {
                                 // just the parent group
-                                parentLeaders = parentLeaders.Where( m => m.GroupId == group.ParentGroupId );
+                                parentLeadersQuery = parentLeadersQuery.Where( m => m.GroupId == group.ParentGroupId );
                             }
                             else
                             {
                                 // all parents in the hierarchy
                                 var parentIds = groupService.GetAllAncestorIds( group.Id );
-                                parentLeaders = parentLeaders.Where( m => parentIds.Contains( m.GroupId ) );
+                                parentLeadersQuery = parentLeadersQuery.Where( m => parentIds.Contains( m.GroupId ) );
                             }
 
-                            foreach ( var parentLeader in parentLeaders.ToList() )
+                            foreach ( var parentLeader in parentLeadersQuery.ToList() )
                             {
                                 NotificationItem parentNotification = new NotificationItem();
                                 parentNotification.Person = parentLeader.Person;
@@ -230,7 +234,7 @@ namespace Rock.Jobs
                                                     .Where( n => n.Person.Id == recipient.Id )
                                                     .Select( n => n.GroupId )
                                                     .ToList();
-                    var missingRequirements = _groupsMissingRequriements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
+                    var missingRequirements = _groupsMissingRequirements.Where( g => notificationGroupIds.Contains( g.Id ) ).ToList();
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
@@ -254,12 +258,12 @@ namespace Rock.Jobs
                     {
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
-                        mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
+                        mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequirements );
                         emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                         recipients++;
                     }
                     var emailErrors = new List<string>();
-                    emailMessage.Send(out emailErrors);
+                    emailMessage.Send( out emailErrors );
                     errors.AddRange( emailErrors );
                 }
 
@@ -334,6 +338,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Group Missing Requirements
     /// </summary>
+    [LavaType( "Id", "Name", "GroupMembersMissingRequirements", "AncestorPathName", "GroupTypeId", "GroupTypeName", "Leaders" )]
     [DotLiquid.LiquidType( "Id", "Name", "GroupMembersMissingRequirements", "AncestorPathName", "GroupTypeId", "GroupTypeName", "Leaders" )]
     public class GroupsMissingRequirements
     {
@@ -397,6 +402,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Group Member Missing Requirements
     /// </summary>
+    [LavaType( "Id", "PersonId", "FullName", "GroupMemberRole", "MissingRequirements" )]
     [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole", "MissingRequirements" )]
     public class GroupMembersMissingRequirements : GroupMemberResult
     {
@@ -412,6 +418,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Missing Requirement
     /// </summary>
+    [LavaType( "Id", "Name", "Status", "Message", "OccurrenceDate" )]
     [DotLiquid.LiquidType( "Id", "Name", "Status", "Message", "OccurrenceDate" )]
     public class MissingRequirement
     {
@@ -459,6 +466,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Group Member Result
     /// </summary>
+    [LavaType( "Id", "PersonId", "FullName", "GroupMemberRole" )]
     [DotLiquid.LiquidType( "Id", "PersonId", "FullName", "GroupMemberRole" )]
     public class GroupMemberResult
     {

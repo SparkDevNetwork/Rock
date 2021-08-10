@@ -15,7 +15,7 @@
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                
+
                 <div class="">
                     <div class="row">
                         <div class="col-md-3">
@@ -33,7 +33,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <Rock:PanelWidget ID="wpRequestor" runat="server" Title="Requestor" Expanded="true" CssClass="margin-t-md">
                 <div class="row">
                     <div class="col-md-8">
@@ -80,21 +80,21 @@
 
                 <Rock:PanelWidget ID="pwRequest" runat="server" Title="Request Details" Expanded="true">
                     <Rock:DataTextBox ID="dtbRequestText" runat="server" Label="Description of Request" TextMode="MultiLine" Rows="4" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="RequestText" />
-                
+
                     <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
 
                     <Rock:RockControlWrapper ID="rcwDocuments" runat="server" Label="Related Documents">
                         <asp:DataList ID="dlDocuments" runat="server" CellPadding="4" RepeatDirection="Horizontal" RepeatColumns="4" >
                             <ItemTemplate>
                                 <div class="margin-r-sm margin-b-sm">
-                                    <Rock:FileUploader ID="fileUpDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fileUpDoc_FileUploaded" OnFileRemoved="fileUpDoc_FileRemoved" /> 
+                                    <Rock:FileUploader ID="fileUpDoc" BinaryFileId='<%# Container.DataItem %>' runat="server" OnFileUploaded="fileUpDoc_FileUploaded" OnFileRemoved="fileUpDoc_FileRemoved" />
                                 </div>
                             </ItemTemplate>
                         </asp:DataList>
                     </Rock:RockControlWrapper>
                 </Rock:PanelWidget>
 
-                
+
 
                 <Rock:PanelWidget ID="pwResults" runat="server" Title="Results" Expanded="true">
                     <div class="row">
@@ -106,19 +106,20 @@
                         </div>
                     </div>
                 
-                    <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="true" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
+                    <Rock:Grid ID="gResults" runat="server" DisplayType="Light" AllowSorting="false" ShowActionRow="true" RowItemText="Result" AllowPaging="false" OnRowSelected="gResults_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="ResultTypeName" HeaderText="Result Type" SortExpression="ResultType" />
                             <Rock:CurrencyField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
                             <Rock:RockBoundField DataField="ResultSummary" HeaderText="Details" SortExpression="Details" />
-                            <Rock:DeleteField OnClick="gResults_DeleteClick" />
                         </Columns>
                     </Rock:Grid>
                 </Rock:PanelWidget>
 
-                <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
-                <asp:LinkButton ID="lbPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default pull-right" OnClick="lbPrint_Click" />
+                <div class="actions">
+                    <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                    <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                    <asp:LinkButton ID="lbPrint" runat="server" Text="<i class='fa fa-print'></i>" CssClass="btn btn-sm btn-default btn-square pull-right" OnClick="lbPrint_Click" />
+                </div>
             </div>
 
         </asp:Panel>
@@ -137,6 +138,8 @@
                 </div>
 
                 <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
+
+                <Rock:DynamicPlaceholder id="phResultAttributes" runat="server" />
             </Content>
         </Rock:ModalDialog>
 

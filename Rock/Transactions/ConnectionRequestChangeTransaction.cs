@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Launches a connection request change workflow
     /// </summary>
+    [Obsolete( "Use ProcessConnectionRequestChange Task instead." )]
+    [RockObsolete( "1.13" )]
     public class ConnectionRequestChangeTransaction : ITransaction
     {
         private EntityState State;
@@ -265,7 +267,7 @@ namespace Rock.Transactions
 
             if ( matches && qualifierParts.Length > 1 && !string.IsNullOrWhiteSpace( qualifierParts[1] ) )
             {
-                matches = qualifierParts[0].AsInteger() == prevState.ConvertToInt();
+                matches = qualifierParts[1].AsInteger() == prevState.ConvertToInt();
             }
 
             if ( matches && qualifierParts.Length > 2 && !string.IsNullOrWhiteSpace( qualifierParts[2] ) )

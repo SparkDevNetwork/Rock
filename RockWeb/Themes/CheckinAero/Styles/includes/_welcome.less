@@ -17,7 +17,7 @@
     width: auto !important;
   }
 
-  .js-active {
+  .checkin-active {
     position: absolute;
     top: 0;
     right: 0;
@@ -31,12 +31,12 @@
     margin-top: 0;
   }
 
-  .js-start-button-container {
+  .start-button-container {
     position: absolute;
+    right: 0;
     bottom: 200px;
     bottom: clamp(80px,42vw,200px);
     left: 0;
-    right: 0;
     display: flex;
     -ms-flex-direction: column !important;
     flex-direction: column !important;
@@ -49,8 +49,8 @@
     @media (min-width: @screen-xs-min) {
       position: absolute;
       top: 0;
-      left: auto;
       bottom: 0;
+      left: auto;
       width: 40.3%;
     }
 
@@ -170,7 +170,7 @@
 
 /* stylelint-disable */
 .welcome-cover-mixin(@welcome-background-cover-mode) when not (@welcome-background-cover-mode = false) {
-  .welcome .js-active::before {
+  .welcome .checkin-active::before {
     background-position: center;
     background-size: cover;
   }

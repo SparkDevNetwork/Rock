@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web.UI;
-
+using Rock.Communication;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -136,11 +136,11 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                Match match = Regex.Match( value, @"\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*" );
+                var result = EmailAddressFieldValidator.Validate( value, allowMultipleAddresses: false, allowLava: false );
 
-                if ( match.Success )
-                {
-                    message = "The email address provided is not valid.";
+                if ( result == EmailFieldValidationResultSpecifier.Valid )
+                { 
+                    message = "The email address provided is valid.";
                     return true;
                 }
             }

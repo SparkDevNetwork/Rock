@@ -50,14 +50,12 @@ namespace Rock.Model
         {
             // Slug must be unique within a content channel but may be duplicated across content channels
 
-            int? contentChannelId = null;
             // Get ContentChannel.Id
+            int? contentChannelId = null;
             if ( contentChannelItemId != null )
             {
-                contentChannelId = this.Queryable()
-                .Where( x => x.ContentChannelItemId == contentChannelItemId )
-                .Select( x => x.ContentChannelItem.ContentChannelId )
-                .FirstOrDefault();
+                var contentChannelItem = new ContentChannelItemService( ( RockContext ) this.Context ).Get( contentChannelItemId.Value );
+                contentChannelId = contentChannelItem.ContentChannelId;
             }
 
             bool isValid = false;

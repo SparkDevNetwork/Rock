@@ -100,12 +100,11 @@ namespace Rock.Field
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public virtual string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( condensed )
             {
@@ -113,6 +112,19 @@ namespace Rock.Field
             }
 
             return value;
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return FormatValue( value, configurationValues, condensed );
         }
 
         /// <summary>
@@ -166,6 +178,18 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
         public virtual object ValueAsFieldType( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // by default, get the field type's value
+            return value;
+        }
+
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public virtual object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             // by default, get the field type's value
             return value;
@@ -259,7 +283,7 @@ namespace Rock.Field
         /// </returns>
         public virtual bool HasChangeHandler( Control editControl )
         {
-            return editControl is TextBox || editControl is ListControl;
+            return editControl is TextBox || editControl is ListControl || editControl is CheckBox || editControl is IRockChangeHandlerControl;
         }
 
         /// <summary>
@@ -290,6 +314,15 @@ namespace Rock.Field
             else if ( editControl is ItemPicker itemPicker )
             {
                 itemPicker.SelectItem += ( object sender, EventArgs e ) =>
+                {
+                    action.Invoke();
+                };
+            }
+            else if ( editControl is CheckBox checkBox )
+            {
+                checkBox.AutoPostBack = true;
+                checkBox.AddCssClass( "js-prevent-double-postback" );
+                checkBox.CheckedChanged += ( object sender, EventArgs e ) =>
                 {
                     action.Invoke();
                 };

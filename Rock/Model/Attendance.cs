@@ -24,8 +24,10 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -42,7 +44,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Id of the AttendanceOccurrence that the attendance is for.
+        /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceOccurrence"/> that the attendance is for.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32" /> representing the Id of the AttendanceOccurrence that the attendance is for.
@@ -183,6 +185,15 @@ namespace Rock.Model
         public bool? Processed { get; set; }
 
         /// <summary>
+        /// Gets or sets if this first time that this person has ever checked into anything
+        /// </summary>
+        /// <value>
+        /// If this attendance is the first time the person has attended anything
+        /// </value>
+        [DataMember]
+        public bool? IsFirstTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the note.
         /// </summary>
         /// <value>
@@ -256,7 +267,7 @@ namespace Rock.Model
         public int? ScheduledByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the attendance check in session identifier.
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCheckInSession"/> identifier.
         /// </summary>
         /// <value>
         /// The attendance check in session identifier.
@@ -275,7 +286,7 @@ namespace Rock.Model
         public DateTime? PresentDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the person that presented the <see cref="PersonAlias"/> person attended.
+        /// Gets or sets the person that presented the <see cref="Rock.Model.PersonAlias"/> person attended.
         /// </summary>
         /// <value>
         /// The person that presented the <see cref="PersonAlias"/> person attended.
@@ -284,7 +295,7 @@ namespace Rock.Model
         public int? PresentByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person that checked-out the <see cref="PersonAlias"/> person attended.
+        /// Gets or sets the person that checked-out the <see cref="Rock.Model.PersonAlias"/> person attended.
         /// </summary>
         /// <value>
         /// The person that checked-out the <see cref="PersonAlias"/> person attended.
@@ -297,7 +308,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the attendance check in session.
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCheckInSession"/>.
         /// </summary>
         /// <value>
         /// The attendance check in session.
@@ -310,7 +321,7 @@ namespace Rock.Model
         /// <value>
         /// The label data.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual AttendanceData AttendanceData { get; set; }
 
         /// <summary>
@@ -319,16 +330,16 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.AttendanceOccurrence"/> for the attendance
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual AttendanceOccurrence Occurrence { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
@@ -337,7 +348,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -364,7 +375,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> (family) that was selected during check-in.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group SearchResultGroup { get; set; }
 
         /// <summary>
@@ -395,7 +406,7 @@ namespace Rock.Model
         public virtual DefinedValue DeclineReasonValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the scheduled by person alias.
+        /// Gets or sets the scheduled by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The scheduled by person alias.
@@ -404,7 +415,7 @@ namespace Rock.Model
         public virtual PersonAlias ScheduledByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the presented by person alias.
+        /// Gets or sets the presented by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The presented by person alias.
@@ -413,7 +424,7 @@ namespace Rock.Model
         public virtual PersonAlias PresentByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the checked-out by person alias.
+        /// Gets or sets the checked-out by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The checked-out by person alias.
@@ -432,48 +443,59 @@ namespace Rock.Model
         {
             get
             {
-                // If the attendance does not have an occurrence schedule, then there's nothing to check.
-                if ( Occurrence == null || Occurrence.Schedule == null )
-                {
-                    return false;
-                }
+                // If the Campus is assigned, trust that over the CampusId value.
+                int? campusId = Campus?.Id ?? CampusId;
 
-                // If person has checked-out, they are obviously not still checked in
-                if ( EndDateTime.HasValue )
-                {
-                    return false;
-                }
-
-                // We'll check start time against timezone next, but don't even bother with that, if start date was more than 2 days ago
-                if ( StartDateTime < RockDateTime.Now.AddDays( -2 ) )
-                {
-                    return false;
-                }
-
-                // Get the current time (and adjust for a campus timezone)
-                var currentDateTime = RockDateTime.Now;
-                if ( Campus != null )
-                {
-                    currentDateTime = Campus.CurrentDateTime;
-                }
-                else if ( CampusId.HasValue )
-                {
-                    var campus = CampusCache.Get( CampusId.Value );
-                    if ( campus != null )
-                    {
-                        currentDateTime = campus.CurrentDateTime;
-                    }
-                }
-
-                // Now that we now the correct time, make sure that the attendance is for today and previous to current time
-                if ( StartDateTime < currentDateTime.Date || StartDateTime > currentDateTime )
-                {
-                    return false;
-                }
-
-                // Person is currently checked in, if the schedule for this attendance is still active
-                return Occurrence.Schedule.WasScheduleOrCheckInActive( currentDateTime );
+                return CalculateIsCurrentlyCheckedIn( StartDateTime, EndDateTime, campusId, this.Occurrence?.Schedule );
             }
+        }
+
+        /// <summary>
+        /// Calculates if an attendance would be considered checked-in based on specified parameters
+        /// </summary>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        public static bool CalculateIsCurrentlyCheckedIn( DateTime? startDateTime, DateTime? endDateTime, int? campusId, Schedule schedule )
+        {
+            if ( schedule == null )
+            {
+                return false;
+            }
+
+            // If person has checked-out, they are obviously not still checked in.
+            if ( endDateTime.HasValue )
+            {
+                return false;
+            }
+
+            // We'll check start time against timezone next, but don't even bother if start date was more than 2 days ago.
+            if ( startDateTime < RockDateTime.Now.AddDays( -2 ) )
+            {
+                return false;
+            }
+
+            // Get the current time (and adjust for a campus timezone).
+            var currentDateTime = RockDateTime.Now;
+            if ( campusId.HasValue )
+            {
+                var campus = CampusCache.Get( campusId.Value );
+                if ( campus != null )
+                {
+                    currentDateTime = campus.CurrentDateTime;
+                }
+            }
+
+            // Now that we know the correct time, make sure that the attendance is for today and previous to current time.
+            if ( startDateTime < currentDateTime.Date || startDateTime > currentDateTime )
+            {
+                return false;
+            }
+
+            // Person is currently checked in, if the schedule for this attendance is still active.
+            return schedule.WasScheduleOrCheckInActive( currentDateTime );
         }
 
         #endregion
@@ -486,7 +508,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.GroupId instead", true )]
@@ -499,7 +521,6 @@ namespace Rock.Model
 
             set
             {
-
             }
         }
 
@@ -509,7 +530,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.LocationId instead", true )]
@@ -531,7 +552,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.ScheduleId instead", true )]
@@ -553,7 +574,7 @@ namespace Rock.Model
         /// <value>
         /// The did not occur.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
@@ -570,12 +591,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets or sets the Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.SundayDate instead", true )]
@@ -601,7 +622,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Group instead", true )]
@@ -628,7 +649,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Location instead", true )]
@@ -655,7 +676,7 @@ namespace Rock.Model
         /// <value>
         /// The schedule.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.8" )]
         [Obsolete( "Use Occurrence.Schedule instead", true )]
@@ -710,7 +731,8 @@ namespace Rock.Model
 
             if ( previousDidAttendValue == false && this.DidAttend == true )
             {
-                new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
+                var launchMemberAttendedGroupWorkflowMsg = GetLaunchMemberAttendedGroupWorkflowMessage( entry );
+                launchMemberAttendedGroupWorkflowMsg.Send();
             }
 
             base.PreSaveChanges( dbContext, entry );
@@ -727,13 +749,18 @@ namespace Rock.Model
         {
             if ( _declinedScheduledAttendance )
             {
-                new GroupScheduleCancellationTransaction( this ).Enqueue();
+                new LaunchGroupScheduleCancellationWorkflow.Message()
+                {
+                    AttendanceId = this.Id
+                }.Send();
             }
 
             if ( !_isDeleted )
             {
-                // The data context save operation doesn't need to wait for this to complete
-                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this ) );
+                // Process any streaks that may occur as a result of adding/modifying an attendance record.
+                // If there are any, they need to be processed in this thread in case there are any achievement changes
+                // that need to be detected as a result of this attendance.
+                StreakTypeService.HandleAttendanceRecord( this.Id );
             }
 
             base.PostSaveChanges( dbContext );
@@ -789,7 +816,7 @@ namespace Rock.Model
             {
                 sb.AppendFormat( " on {0} at {1}", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
 
-                var end = EndDateTime ?? Occurrence?.OccurrenceDate;
+                var end = EndDateTime;
                 if ( end.HasValue )
                 {
                     sb.AppendFormat( " until {0} at {1}", end.Value.ToShortDateString(), end.Value.ToShortTimeString() );
@@ -862,6 +889,61 @@ namespace Rock.Model
         }
 
         #endregion
+        #region Private Methods
+
+        private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage( DbEntityEntry entry )
+        {
+            var launchMemberAttendedGroupWorkflowMsg = new LaunchMemberAttendedGroupWorkflow.Message();
+            if ( entry.State != EntityState.Deleted )
+            {
+                // Get the attendance record
+                var attendance = entry.Entity as Attendance;
+
+                // If attendance record is valid and the DidAttend is true (not null or false)
+                if ( attendance != null && ( attendance.DidAttend == true ) )
+                {
+                    // Save for all adds
+                    bool valid = entry.State == EntityState.Added;
+
+                    // If not an add, check previous DidAttend value
+                    if ( !valid )
+                    {
+                        var dbProperty = entry.Property( "DidAttend" );
+                        if ( dbProperty != null )
+                        {
+                            // Only use changes where DidAttend was previously not true
+                            valid = !( dbProperty.OriginalValue as bool? ?? false );
+                        }
+                    }
+
+                    if ( valid )
+                    {
+                        var occ = attendance.Occurrence;
+                        if ( occ == null )
+                        {
+                            occ = new AttendanceOccurrenceService( new RockContext() ).Get( attendance.OccurrenceId );
+                        }
+
+                        if ( occ != null )
+                        {
+                            // Save the values
+                            launchMemberAttendedGroupWorkflowMsg.GroupId = occ.GroupId;
+                            launchMemberAttendedGroupWorkflowMsg.AttendanceDateTime = occ.OccurrenceDate;
+                            launchMemberAttendedGroupWorkflowMsg.PersonAliasId = attendance.PersonAliasId;
+
+                            if ( occ.Group != null )
+                            {
+                                launchMemberAttendedGroupWorkflowMsg.GroupTypeId = occ.Group.GroupTypeId;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return launchMemberAttendedGroupWorkflowMsg;
+        }
+
+        #endregion Private Methods
     }
 
     #region Entity Configuration
@@ -894,7 +976,6 @@ namespace Rock.Model
 
     #endregion
 
-
     #region Enumerations
 
     /// <summary>
@@ -919,7 +1000,7 @@ namespace Rock.Model
         Maybe = 2,
 
         /// <summary>
-        /// RVSP not answered yet (or doesn't apply)
+        /// RSVP not answered yet (or doesn't apply)
         /// </summary>
         Unknown = 3
     }

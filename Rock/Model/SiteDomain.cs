@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -61,7 +62,7 @@ namespace Rock.Model
         public int SiteId { get; set; }
         
         /// <summary>
-        /// Gets or sets the the Url/Domain Name of this SiteDomain. This property is required.
+        /// Gets or sets the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
         /// <remarks>
         /// Examples include: localhost, mysite.com (or www.mysite.com), subdomain.mysite.com.
@@ -94,7 +95,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Site Site { get; set; }
 
         #endregion

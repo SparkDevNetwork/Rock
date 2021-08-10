@@ -88,10 +88,47 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            var domElementKey = Guid.NewGuid().ToString( "N" );
+            var domElementKey = GenerateBadgeKey( badge );
             var html = GetHtmlTemplate( domElementKey );
-            var script = GetScript( achievementType.Id, achiever.Id, domElementKey );
-            writer.Write( $"{html}{script}" );
+            writer.Write( $"{html}" );
+        }
+
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            var achievementTypeGuid = GetAchievementTypeGuid( badge );
+
+            if ( !achievementTypeGuid.HasValue )
+            {
+                return null;
+            }
+
+            var achievementType = AchievementTypeCache.Get( achievementTypeGuid.Value );
+
+            if ( achievementType == null )
+            {
+                return null;
+            }
+
+            var achiever = Entity;
+
+            if ( achievementType.AchieverEntityTypeId == EntityTypeCache.Get<PersonAlias>().Id && Person != null )
+            {
+                // Translate this person badge to the person alias achievement
+                achiever = Person.PrimaryAlias;
+            }
+            else if ( achievementType.AchieverEntityTypeId != Entity.TypeId )
+            {
+                // This badge is not compatabile with this achievement
+                return null;
+            }
+
+            var domElementKey = GenerateBadgeKey( badge );
+            return GetScript( achievementType.Id, achiever.Id, domElementKey );
         }
 
         /// <summary>
@@ -125,28 +162,24 @@ namespace Rock.Badge.Component
         private string GetScript( int achievementTypeId, int personAliasId, string domElementKey )
         {
             return
-$@"<script>
-    Sys.Application.add_load(function () {{
-        $.ajax({{
-            type: 'GET',
-            url: Rock.settings.get('baseUrl') + 'api/AchievementTypes/{achievementTypeId}/BadgeData?achieverEntityId={personAliasId}',
-            statusCode: {{
-                200: function (data) {{
-                    var html = [];
+$@"$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/AchievementTypes/{achievementTypeId}/BadgeData?achieverEntityId={personAliasId}',
+    statusCode: {{
+        200: function (data) {{
+            var html = [];
 
-                    if (data && data.BadgeMarkup) {{
-                        html.push('<div class=""badge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
-                        html.push(data.BadgeMarkup);
-                        html.push('</div>\n');
-                    }}
+            if (data && data.BadgeMarkup) {{
+                html.push('<div class=""badge badge-achievement"" data-tooltip-key=""{domElementKey}"" data-toggle=""tooltip"" data-original-title=""' + data.AchievementTypeName + '"">');
+                html.push(data.BadgeMarkup);
+                html.push('</div>\n');
+            }}
 
-                    $('[data-placeholder-key=""{domElementKey}""]').replaceWith(html.join(''));
-                    $('[data-tooltip-key=""{domElementKey}""]').tooltip();
-                }}
-            }},
-        }});
-    }});
-</script>";
+            $('[data-placeholder-key=""{domElementKey}""]').replaceWith(html.join(''));
+            $('[data-tooltip-key=""{domElementKey}""]').tooltip();
+        }}
+    }},
+}});";
         }
     }
 }

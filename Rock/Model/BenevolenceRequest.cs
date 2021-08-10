@@ -106,7 +106,7 @@ namespace Rock.Model
         /// Gets or sets the Home Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Home Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Home Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -116,7 +116,7 @@ namespace Rock.Model
         /// Gets or sets the Cell Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Cell Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Cell Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -126,7 +126,7 @@ namespace Rock.Model
         /// Gets or sets the Work Phone Number of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the Work Phone Number of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the Work Phone Number of the person who requested benevolence.
         /// </value>
         [MaxLength( 20 )]
         [DataMember]
@@ -145,7 +145,7 @@ namespace Rock.Model
         /// Gets or sets the GovernmentId of the person who requested benevolence.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the the GovernmentId of the person who requested benevolence.
+        /// A <see cref="System.Int32"/> representing the GovernmentId of the person who requested benevolence.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
@@ -243,7 +243,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the requested by person alias.
+        /// Gets or sets the requested by <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The requested by person alias.
@@ -252,10 +252,10 @@ namespace Rock.Model
         public virtual PersonAlias RequestedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the approved by person alias.
+        /// Gets or sets the case worker <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
-        /// The approved by person alias.
+        /// The case worker person alias.
         /// </value>
         [DataMember]
         public virtual PersonAlias CaseWorkerPersonAlias { get; set; }
@@ -288,10 +288,10 @@ namespace Rock.Model
         public virtual Location Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this Group is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this Benevolence Request is associated with.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Campus"/> that this Group is associated with.
+        /// The <see cref="Rock.Model.Campus"/> that this Benevolence Request is associated with.
         /// </value>
         [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
@@ -363,7 +363,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets the documents.
+        /// Gets or sets the <see cref="Rock.Model.BenevolenceRequestDocument">documents</see>.
         /// </summary>
         /// <value>
         /// The documents.
@@ -383,7 +383,7 @@ namespace Rock.Model
         /// The request source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate RequestSourceDate { get; set; }
+        public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
         #endregion
 
         #region Public Methods

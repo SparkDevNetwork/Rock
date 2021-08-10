@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Steps
             // Date is required
             var startDate = dpStartDate.SelectedDate;
 
-            if ( !startDate.HasValue )
+            if ( !startDate.HasValue && stepType.IsDateRequired )
             {
                 ShowBulkLevelError( "The date is required to save a step record." );
                 return false;
@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Steps
             // Update the step properties
             step.StepTypeId = stepType.Id;
             step.PersonAliasId = person.PrimaryAliasId.Value;
-            step.StartDateTime = startDate.Value;
+            step.StartDateTime = startDate;
             step.EndDateTime = stepType.HasEndDate ? dpEndDate.SelectedDate : null;
             step.StepStatusId = status.Id;
             step.CampusId = cpCampus.SelectedCampusId;
@@ -353,6 +353,9 @@ namespace RockWeb.Blocks.Steps
                 dpStartDate.Label = "Start Date";
                 dpEndDate.Visible = true;
             }
+
+            dpStartDate.Required = stepType.IsDateRequired;
+            dpStartDate.ValidationGroup = stepType.IsDateRequired ? "BulkEntry" : string.Empty;
 
             BuildBulkDynamicControls();
             BuildNonBulkDynamicControls();
@@ -458,8 +461,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BuildBulkDynamicControls()
         {
-            var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
-            var stepAttributes = AttributeCache.All().Where( a => a.EntityTypeId == stepEntityTypeId );
+            var stepAttributes = AttributeCache.AllForEntityType<Step>();
 
             avcBulkAttributes.ExcludedAttributes = stepAttributes
                 .Where( a =>
@@ -487,8 +489,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BuildNonBulkDynamicControls()
         {
-            var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
-            var stepAttributes = AttributeCache.All().Where( a => a.EntityTypeId == stepEntityTypeId );
+            var stepAttributes = AttributeCache.AllForEntityType<Step>();
 
             avcNonBulkAttributes.ExcludedAttributes = stepAttributes
                 .Where( a =>

@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -68,12 +69,21 @@ namespace Rock.Model
         public string ComponentSummary { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to (determined by Channel.ComponentEntityType)
-        /// For example:
-        ///  if this is a Page View:
-        ///     InteractionComponent.EntityId is the SiteId of the page that was viewed
-        ///  if this is a Communication Recipient activity:
-        ///     InteractionComponent.EntityId is the Communication.Id
+        /// Gets or sets the Id of the entity that this interaction component is related to (determined by <see cref="Rock.Model.InteractionChannel.ComponentEntityTypeId"/> )
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>Page Views</term>
+        ///     <description><see cref="Rock.Model.Site" /> Id</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="Rock.Model.Communication" /> Id</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity</term>
+        ///     <description><see cref="Rock.Model.ContentChannel" /> Id</description></item>
+        /// <item>
+        ///     <term>System Events, like Workflow Form Entry</term>
+        ///     <description>Depends on <see cref="ContentChannelType"></see></description></item>
+        /// </list>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.
@@ -82,7 +92,7 @@ namespace Rock.Model
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that that is associated with this Component.
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that is associated with this Component.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
@@ -210,7 +220,7 @@ namespace Rock.Model
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionChannel"/> channel that this Component is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.11" )]
         [Obsolete( "Use InteractionChannelId instead", false )]
@@ -226,7 +236,7 @@ namespace Rock.Model
         /// <value>
         /// The channel.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         [RockObsolete( "1.11" )]
         [Obsolete( "Use InteractionChannel instead", false )]

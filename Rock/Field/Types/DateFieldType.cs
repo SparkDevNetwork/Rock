@@ -137,7 +137,7 @@ namespace Rock.Field.Types
         {
             base.SetConfigurationValues( controls, configurationValues );
 
-            if ( controls != null && controls.Count > 5 )
+            if ( controls != null && controls.Count >= 5 )
             {
                 var tbDateFormat = controls[0] as RockTextBox;
                 var cbDisplayDiff = controls[1] as RockCheckBox;
@@ -219,12 +219,11 @@ namespace Rock.Field.Types
         /// <summary>
         /// Formats date display
         /// </summary>
-        /// <param name="parentControl">The parent control.</param>
         /// <param name="value">Information about the value</param>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
         /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        public override string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             if ( string.IsNullOrWhiteSpace( value ) )
             {
@@ -292,6 +291,19 @@ namespace Rock.Field.Types
                 return formattedValue;
             }
 
+        }
+
+        /// <summary>
+        /// Formats date display
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return FormatValue( value, configurationValues, condensed );
         }
 
         /// <summary>

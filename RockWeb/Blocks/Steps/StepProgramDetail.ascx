@@ -40,36 +40,37 @@
                 <asp:ValidationSummary ID="valStepProgramDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <div id="pnlViewDetails" runat="server">
+                    <h3 class="mt-1">
+                        <asp:Literal ID="lStepProgramName" runat="server" />
+                        Step Program
+                    </h3>
                     <div class="row">
-                        <div class="col-md-12">
-                            <asp:Literal ID="lStepProgramDescription" runat="server"></asp:Literal>
+                        <div class="col-sm-12 col-md-6 col-lg-7">
+                            <asp:Literal ID="lStepProgramDescription" runat="server" />
+                        </div>
+                        <div class="col-sm-12 col-md-6 col-lg-5">
+                            <div class="flex-grow-1 d-flex justify-content-end">
+                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
+                                    runat="server"
+                                    EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
+                                    EnabledSlidingDateRangeUnits="Week, Month, Year"
+                                    SlidingDateRangeMode="Current"
+                                    TimeUnit="Year"
+                                    Label=""
+                                    FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
+
+                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
+                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                            </div>
                         </div>
                     </div>
+                    <asp:Literal ID="lKpi" runat="server" />
 
                     <%-- Steps Activity Summary --%>
                     <div id="pnlActivitySummary" runat="server">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <h5 class="margin-t-none">Steps Activity Summary</h5>
-                            </div>
-                            <div class="col-sm-6">
-
-                                <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default pull-right" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
-
-                                <Rock:SlidingDateRangePicker ID="drpSlidingDateRange"
-                                            runat="server"
-                                            EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"
-                                            EnabledSlidingDateRangeUnits="Week, Month, Year"
-                                            SlidingDateRangeMode="Current"
-                                            TimeUnit="Year"
-                                            CssClass="pull-right" Label="" />
-
-                            </div>
-                        </div>
                         <%-- Steps Activity Chart --%>
                         <Rock:NotificationBox ID="nbActivityChartMessage" runat="server" NotificationBoxType="Info" />
-                        <div id="pnlActivityChart" runat="server" class="chart-banner" >
+                        <div id="pnlActivityChart" runat="server" class="chart-banner">
                             <canvas id="chartCanvas" runat="server" />
                         </div>
                     </div>
@@ -85,7 +86,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security btn-square" />
                         </span>
                     </div>
                 </div>
@@ -96,7 +97,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.StepProgram, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.StepProgram, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.StepProgram, Rock" PropertyName="IsActive" Label="Active" Checked="true" />
                         </div>
                     </div>
 
@@ -111,6 +112,27 @@
                             <Rock:RockRadioButtonList ID="rblDefaultListView" runat="server" Label="Default List View" RepeatDirection="Horizontal" />
                         </div>
                     </div>
+
+                    <Rock:PanelWidget ID="wpAttributes" runat="server" Title="Step Type Attributes">
+                        <div class="grid">
+                            <Rock:Grid ID="gAttributes" runat="server" RowItemText="Step Type Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                    <Rock:EditField OnClick="gAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Step Participant Attributes" OnSaveClick="dlgAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
+                        <Content>
+                            <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
+                        </Content>
+                    </Rock:ModalDialog>
 
                     <Rock:PanelWidget ID="wpStatuses" runat="server" Title="Statuses">
                         <div class="grid">

@@ -441,7 +441,15 @@ namespace RockWeb.Blocks.Cms
                 site.EnableMobileRedirect = cbEnableMobileRedirect.Checked;
                 site.MobilePageId = ppMobilePage.PageId;
                 site.ExternalUrl = tbExternalURL.Text;
-                site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
+
+                // re-format allowed frame domains to ensure the header ouput is correctly formatted.
+                site.AllowedFrameDomains = tbAllowedFrameDomains.Text
+                    .Replace( ", ", " " )
+                    .Replace( ",", " " )
+                    .Replace( Environment.NewLine, " " )
+                    .Replace( "\n", " " )
+                    .Replace( "  ", " " );
+
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
                 site.IsActive = cbIsActive.Checked;
@@ -895,7 +903,7 @@ namespace RockWeb.Blocks.Cms
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );
             tbExternalURL.Text = site.ExternalUrl;
-            tbAllowedFrameDomains.Text = site.AllowedFrameDomains;
+            tbAllowedFrameDomains.Text = site.AllowedFrameDomains?.Replace( " ", Environment.NewLine );
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
 
@@ -917,7 +925,6 @@ namespace RockWeb.Blocks.Cms
             if ( siteEntityType != null && !siteEntityType.IsIndexingEnabled )
             {
                 cbEnableIndexing.Visible = false;
-                tbIndexStartingLocation.Visible = false;
             }
 
             var attributeService = new AttributeService( new RockContext() );
@@ -980,8 +987,6 @@ namespace RockWeb.Blocks.Cms
             cbRedirectTablets.Visible = mobileRedirectVisible;
 
             nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
-
-            tbIndexStartingLocation.Visible = cbEnableIndexing.Checked;
         }
 
         #endregion

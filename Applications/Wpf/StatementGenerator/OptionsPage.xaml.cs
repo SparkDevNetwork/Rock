@@ -15,11 +15,13 @@
 // </copyright>
 //
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using Rock.Net;
+
+using RestSharp;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -46,6 +48,7 @@ namespace Rock.Apps.StatementGenerator
             var rockConfig = RockConfig.Load();
 
             txtRockUrl.Text = rockConfig.RockBaseUrl;
+            txtTemporaryDirectory.Text = rockConfig.TemporaryDirectory;
         }
 
         /// <summary>
@@ -57,40 +60,20 @@ namespace Rock.Apps.StatementGenerator
         {
             RockConfig rockConfig = RockConfig.Load();
 
+            txtRockUrl.Text = txtRockUrl.Text.Trim();
+            Uri rockUrl = new Uri( txtRockUrl.Text );
+            var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
+            if ( !validSchemes.Contains( rockUrl.Scheme ) )
+            {
+                txtRockUrl.Text = "https://" + rockUrl.AbsoluteUri;
+            }
+
             try
             {
-                txtRockUrl.Text = txtRockUrl.Text.Trim();
-                Uri rockUrl = new Uri( txtRockUrl.Text );
-                var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
-                if ( !validSchemes.Contains( rockUrl.Scheme ) )
-                {
-                    txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
-                }
-
-                RockRestClient client = new RockRestClient( txtRockUrl.Text );
-                client.Login( rockConfig.Username, rockConfig.Password );
+                RestClient restClient = new RestClient( txtRockUrl.Text );
+                restClient.LoginToRock( rockConfig.Username, rockConfig.Password );
             }
-            catch ( WebException wex )
-            {
-                HttpWebResponse response = wex.Response as HttpWebResponse;
-                if ( response != null )
-                {
-                    if ( response.StatusCode == HttpStatusCode.Unauthorized )
-                    {
-                        // valid URL but invalid login, so navigate back to the LoginPage
-                        rockConfig.RockBaseUrl = txtRockUrl.Text;
-                        rockConfig.Save();
-                        LoginPage loginPage = new LoginPage( true );
-                        this.NavigationService.Navigate( loginPage );
-                        return;
-                    }
-                }
-
-                lblAlert.Content = wex.Message;
-                lblAlert.Visibility = Visibility.Visible;
-                return;
-            }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 lblAlert.Content = ex.Message;
                 lblAlert.Visibility = Visibility.Visible;
@@ -98,6 +81,23 @@ namespace Rock.Apps.StatementGenerator
             }
 
             rockConfig.RockBaseUrl = txtRockUrl.Text;
+
+            if ( txtTemporaryDirectory.Text.IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    Directory.CreateDirectory( txtTemporaryDirectory.Text );
+                }
+                catch ( Exception ex )
+                {
+                    lblAlert.Content = $"Error creating temporary directory: { ex.Message}";
+                    lblAlert.Visibility = Visibility.Visible;
+                    return;
+                }
+            }
+
+            rockConfig.TemporaryDirectory = txtTemporaryDirectory.Text;
+
             rockConfig.Save();
 
             this.NavigationService.GoBack();

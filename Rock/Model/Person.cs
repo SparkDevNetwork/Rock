@@ -32,9 +32,12 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
+using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
+using Rock.Lava;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -134,6 +137,8 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Person is deceased; otherwise <c>false</c>.
         /// </value>
         [DataMember]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 1 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 1 )]
         public bool IsDeceased
         {
             get
@@ -146,6 +151,7 @@ namespace Rock.Model
                 _isDeceased = value;
             }
         }
+
         private bool _isDeceased = false;
 
         /// <summary>
@@ -166,6 +172,8 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 2 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 3 )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -201,6 +209,8 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [Index( "IX_IsDeceased_FirstName_LastName", IsUnique = false, Order = 3 )]
+        [Index( "IX_IsDeceased_LastName_FirstName", IsUnique = false, Order = 2 )]
         public string LastName { get; set; }
 
         /// <summary>
@@ -267,10 +277,10 @@ namespace Rock.Model
         public Gender Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.
+        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.  This value is nullable.
+        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.  This value is nullable.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
@@ -296,7 +306,7 @@ namespace Rock.Model
         public int? GraduationYear { get; set; }
 
         /// <summary>
-        /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
+        /// Gets or sets the <see cref="Rock.Model.Group">giving group</see> id.  If an individual would like their giving to be grouped with the rest of their family,
         /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
         /// </summary>
         /// <value>
@@ -304,7 +314,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
-        public int? GivingGroupId { get; set; }
+        public int? GivingGroupId
+        {
+            get
+            {
+                return _givingGroupId;
+            }
+
+            set
+            {
+                _givingGroupId = value;
+                GivingId = _givingGroupId.HasValue ? $"G{_givingGroupId.Value}" : $"P{Id}";
+            }
+        }
+
+        private int? _givingGroupId;
 
         /// <summary>
         /// Gets the computed giver identifier in the format G{GivingGroupId} if they are part of a GivingGroup, or P{Personid} if they give individually
@@ -314,24 +338,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GivingId" )]
-        public string GivingId
-        {
-            get
-            {
-                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database
-                return GivingGroupId.HasValue ?
-                    string.Format( "G{0}", GivingGroupId.Value ) :
-                    string.Format( "P{0}", Id );
-            }
-
-            private set
-            {
-                // don't do anything here since EF uses this for loading
-            }
-        }
+        public string GivingId { get; private set; }
 
         /// <summary>
-        /// Gets or sets the giving leader identifier.
+        /// Gets or sets the giving leader's Person Id.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -367,6 +377,7 @@ namespace Rock.Model
             get { return _isEmailActive; }
             set { _isEmailActive = value; }
         }
+
         private bool _isEmailActive = true;
 
         /// <summary>
@@ -480,7 +491,7 @@ namespace Rock.Model
         public AgeClassification AgeClassification { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id for the primary family.
+        /// Gets or sets the group id for the <see cref="Person.PrimaryFamily" />.
         /// Note: This is computed on save, so any manual changes to this will be ignored.
         /// </summary>
         /// <value>
@@ -518,6 +529,7 @@ namespace Rock.Model
                 _isLockedAsChild = value;
             }
         }
+
         private bool _isLockedAsChild = false;
 
         /// <summary>
@@ -537,6 +549,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Preferred Language for this person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the Preferred Language <see cref="Rock.Model.DefinedValue"/> for this person.
+        /// </value>
+        [DataMember]
+        public int? PreferredLanguageValueId { get; set; }
 
         #endregion
 
@@ -560,13 +581,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the primary alias.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see>.
         /// </summary>
         /// <value>
         /// The primary alias.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PrimaryAlias
         {
             get
@@ -576,7 +597,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the primary alias identifier.
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
         /// </summary>
         /// <value>
         /// The primary alias identifier.
@@ -893,7 +914,7 @@ namespace Rock.Model
         /// <value>
         /// URL of the photo
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         [NotMapped]
         public virtual string PhotoUrl
         {
@@ -945,7 +966,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated with
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<GroupMember> Members
         {
             get { return _members; }
@@ -955,12 +976,12 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the aliases for this person
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">aliases</see> for this person.
         /// </summary>
         /// <value>
         /// The aliases.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<PersonAlias> Aliases
         {
             get { return _aliases; }
@@ -1056,7 +1077,7 @@ namespace Rock.Model
         /// <value>
         /// The giving group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group GivingGroup { get; set; }
 
         /// <summary>
@@ -1065,35 +1086,44 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.PersonSignal">PersonSignal</see> entities representing the signals that are associated with this person.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual ICollection<PersonSignal> Signals { get; set; }
 
         /// <summary>
-        /// Gets or sets the primary family.
+        /// Gets or sets the <see cref="Rock.Model.Group">primary family</see>.
         /// </summary>
         /// <value>
         /// The primary family.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group PrimaryFamily { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's primary campus.
+        /// Gets or sets the person's <see cref="Rock.Model.Campus">primary campus</see>.
         /// </summary>
         /// <value>
         /// The primary campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus PrimaryCampus { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's default financial account gift designation.
+        /// Gets or sets the person's default <see cref="Rock.Model.FinancialAccount" /> gift designation.
         /// </summary>
         /// <value>
         /// The financial account.
         /// </value>
-        [LavaIgnore]
+        [LavaHidden]
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's preferred language.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> object representing the Person's preferred language.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PreferredLanguageValue { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use <see cref="SetBirthDate(DateTime?)"/> set the Birthdate
@@ -1380,7 +1410,7 @@ namespace Rock.Model
         /// A <see cref="System.Double"/> representing the Person's age (including fraction of year)
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual double? AgePrecise
         {
             get
@@ -1576,7 +1606,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> representing the impersonation parameter.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string ImpersonationParameter
         {
             get
@@ -1612,7 +1642,7 @@ namespace Rock.Model
         /// A <see cref="T:System.String" /> that represents a URL friendly version of the entity's unique key.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public override string UrlEncodedKey
         {
             get
@@ -2005,13 +2035,25 @@ namespace Rock.Model
                 NickName = FirstName;
             }
 
+            // Make sure the GivingId is correct.
+            if ( GivingId != ( GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}" ) )
+            {
+                GivingId = GivingGroupId.HasValue ? $"G{GivingGroupId.Value}" : $"P{Id}";
+            }
+
             if ( PhotoId.HasValue )
             {
-                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
-                var binaryFile = binaryFileService.Get( PhotoId.Value );
-                if ( binaryFile != null && binaryFile.IsTemporary )
+                var originalPhotoId = entry.OriginalValues["PhotoId"].ToStringSafe().AsIntegerOrNull();
+                var isPhotoIdModified = entry.State == EntityState.Modified &&
+                                        ( ( originalPhotoId.HasValue && originalPhotoId.Value != PhotoId.Value ) || !originalPhotoId.HasValue );
+                if ( entry.State == EntityState.Added || isPhotoIdModified )
                 {
-                    binaryFile.IsTemporary = false;
+                    BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                    var binaryFile = binaryFileService.Get( PhotoId.Value );
+                    if ( binaryFile != null && binaryFile.IsTemporary )
+                    {
+                        binaryFile.IsTemporary = false;
+                    }
                 }
             }
 
@@ -2022,6 +2064,13 @@ namespace Rock.Model
                 {
                     this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
                 }
+            }
+
+            if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
+            {
+                this.FirstName = this.FirstName.StandardizeQuotes();
+                this.LastName = this.LastName.StandardizeQuotes();
+                this.NickName = this.NickName.StandardizeQuotes();
             }
 
             if ( this.AnniversaryDate.HasValue )
@@ -2051,8 +2100,7 @@ namespace Rock.Model
 
             if ( this.IsValid )
             {
-                var transaction = new Rock.Transactions.SaveMetaphoneTransaction( this );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                new SaveMetaphoneTransaction( this ).Enqueue();
             }
 
             HistoryChanges = new History.HistoryChangeList();
@@ -2182,6 +2230,12 @@ namespace Rock.Model
                         if ( entry.OriginalValues["RecordStatusValueId"].ToStringSafe().AsIntegerOrNull() != RecordStatusValueId )
                         {
                             RecordStatusLastModifiedDateTime = RockDateTime.Now;
+
+                            var activeStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                            if ( this.RecordStatusValueId == activeStatus.Id )
+                            {
+                                this.ReviewReasonValueId = null;
+                            }
                         }
 
                         break;
@@ -2207,15 +2261,32 @@ namespace Rock.Model
         {
             if ( HistoryChanges?.Any() == true )
             {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), this.Id, HistoryChanges, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges(
+                    ( RockContext ) dbContext,
+                    typeof( Person ),
+                    SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(),
+                    this.Id,
+                    HistoryChanges,
+                    this.FullName,
+                    null,
+                    null,
+                    true,
+                    this.ModifiedByPersonAliasId );
             }
 
             base.PostSaveChanges( dbContext );
+
+            // If the person was just added then update the GivingId to prevent "P0" values
+            if ( this.GivingId == "P0" )
+            {
+                PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
+            }
 
             // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
             PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
             PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
             PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -2343,16 +2414,118 @@ namespace Rock.Model
         /// <param name="person">The person.</param>
         /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
         /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <param name="useFormalNames">if set to <c>true</c> [use formal name].</param>
+        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
+        [RockObsolete( "1.12.4" )]
+        [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
         {
+            var args = new CalculateFamilySalutationArgs( includeChildren )
+            {
+                IncludeInactive = includeInactive,
+                UseFormalNames = useFormalNames,
+                FinalSeparator = finalSeparator,
+                Separator = separator,
+                LimitToPersonIds = null
+            };
+
+            return CalculateFamilySalutation( person, args );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public sealed class CalculateFamilySalutationArgs
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CalculateFamilySalutationArgs"/> class.
+            /// </summary>
+            /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
+            public CalculateFamilySalutationArgs( bool includeChildren )
+            {
+                IncludeChildren = includeChildren;
+            }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include children].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include children]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeChildren { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [include inactive].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeInactive { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [use formal names].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [use formal names]; otherwise, <c>false</c>.
+            /// </value>
+            public bool UseFormalNames { get; set; } = false;
+
+            /// <summary>
+            /// Gets or sets the final separator.
+            /// </summary>
+            /// <value>
+            /// The final separator.
+            /// </value>
+            public string FinalSeparator { get; set; } = "&";
+
+            /// <summary>
+            /// Gets or sets the separator.
+            /// </summary>
+            /// <value>
+            /// The separator.
+            /// </value>
+            public string Separator { get; set; } = ",";
+
+            /// <summary>
+            /// Gets or sets the limit to person ids.
+            /// </summary>
+            /// <value>
+            /// The limit to person ids.
+            /// </value>
+            public int[] LimitToPersonIds { get; set; } = null;
+
+            /// <summary>
+            /// Gets or sets the rock context.
+            /// </summary>
+            /// <value>
+            /// The rock context.
+            /// </value>
+            public RockContext RockContext { get; set; } = null;
+        }
+
+        /// <summary>
+        /// Calculates the family salutation.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="calculateFamilySalutationArgs">The calculate family salutation arguments.</param>
+        /// <returns></returns>
+        public static string CalculateFamilySalutation( Person person, CalculateFamilySalutationArgs calculateFamilySalutationArgs )
+        {
+            calculateFamilySalutationArgs = calculateFamilySalutationArgs ?? new CalculateFamilySalutationArgs( false );
             var _familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var _adultRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
             var _childRole = _familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
+
             var _deceased = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ).Id;
+
+            var finalSeparator = calculateFamilySalutationArgs.FinalSeparator;
+            var separator = calculateFamilySalutationArgs.Separator;
+            var includeInactive = calculateFamilySalutationArgs.IncludeInactive;
+            var includeChildren = calculateFamilySalutationArgs.IncludeChildren;
+            var useFormalNames = calculateFamilySalutationArgs.UseFormalNames;
+            var limitToPersonIds = calculateFamilySalutationArgs.LimitToPersonIds;
 
             // clean up the separators
             finalSeparator = $" {finalSeparator} "; // add spaces before and after
@@ -2368,43 +2541,113 @@ namespace Rock.Model
             List<string> familyMemberNames = new List<string>();
             string primaryLastName = string.Empty;
 
-            var familyMembers = person.GetFamilyMembers( true ).Where( f => f.Person.RecordStatusReasonValueId != _deceased ).ToList();
+            var familyMembersQry = person.GetFamilyMembers( true, calculateFamilySalutationArgs.RockContext ).Where( f => f.Person.RecordStatusReasonValueId != _deceased );
 
-            // filter for inactive
+            // Filter for inactive.
             if ( !includeInactive )
             {
                 var activeRecordStatusId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
-                familyMembers = familyMembers.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId ).ToList();
+                familyMembersQry = familyMembersQry.Where( f => f.Person.RecordStatusValueId == activeRecordStatusId );
             }
 
-            // check that a family even existed if not return their name
-            if ( familyMembers.Count > 0 )
+            if ( limitToPersonIds != null && limitToPersonIds.Length > 0 )
             {
-                // filter out kids if not needed
-                if ( !includeChildren )
+                familyMembersQry = familyMembersQry.Where( m => limitToPersonIds.Contains( m.PersonId ) );
+            }
+
+            // just in case there are no Adults, have this query ready
+            var familyMembersIncludingChildrenQry = familyMembersQry;
+
+            // Filter out kids if not needed.
+            if ( !includeChildren )
+            {
+                familyMembersQry = familyMembersQry.Where( f => f.GroupRoleId == _adultRole.Id );
+            }
+
+            var familyMembersList = familyMembersQry.Select( s => new
+            {
+                LastName = s.Person.LastName,
+                NickName = s.Person.NickName,
+                FirstName = s.Person.FirstName,
+                Gender = s.Person.Gender,
+                s.Person.BirthDate,
+                GroupRoleId = s.GroupRoleId
+            } ).ToList();
+
+            //  There are a couple of cases where there would be no familyMembers
+            // 1) There are no adults in the family, and includeChildren=false .
+            // 2) All the members of the family are deceased/inactive.
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            if ( !familyMembersList.Any() )
+            {
+                familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
                 {
-                    familyMembers = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).ToList();
+                    LastName = s.Person.LastName,
+                    NickName = s.Person.NickName,
+                    FirstName = s.Person.FirstName,
+                    Gender = s.Person.Gender,
+                    s.Person.BirthDate,
+                    GroupRoleId = s.GroupRoleId
+                } ).ToList();
+
+                if ( !familyMembersList.Any() )
+                {
+                    // This shouldn't happen, but if somehow there are no family members, just return the specified person's name
+                    return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
                 }
+            }
 
-                // determine if more than one last name is at play
-                var multipleLastNamesExist = familyMembers.Select( f => f.Person.LastName ).Distinct().Count() > 1;
+            // Determine if more than one last name is at play.
+            var multipleLastNamesExist = familyMembersList.Select( f => f.LastName ).Distinct().Count() > 1;
 
-                // add adults and children separately as adults need to be sorted by gender and children by age
+            // Add adults and children separately as adults need to be sorted by gender and children by age.
 
-                // adults
-                var adults = familyMembers.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Person.Gender );
+            // Adults:
+            var adults = familyMembersList.Where( f => f.GroupRoleId == _adultRole.Id ).OrderBy( f => f.Gender );
 
-                if ( adults.Count() > 0 )
+            if ( adults.Count() > 0 )
+            {
+                primaryLastName = adults.First().LastName;
+
+                foreach ( var adult in adults )
                 {
-                    primaryLastName = adults.First().Person.LastName;
+                    var firstName = adult.NickName;
 
-                    foreach ( var adult in adults.Select( f => f.Person ) )
+                    if ( useFormalNames )
                     {
-                        var firstName = adult.NickName;
+                        firstName = adult.FirstName;
+                    }
+
+                    if ( !multipleLastNamesExist )
+                    {
+                        familyMemberNames.Add( firstName );
+                    }
+                    else
+                    {
+                        familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                    }
+                }
+            }
+
+            // Children:
+            if ( includeChildren || !adults.Any() )
+            {
+                var children = familyMembersList.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => Person.GetAge( f.BirthDate ) );
+
+                if ( children.Count() > 0 )
+                {
+                    if ( primaryLastName.IsNullOrWhiteSpace() )
+                    {
+                        primaryLastName = children.First().LastName;
+                    }
+
+                    foreach ( var child in children )
+                    {
+                        var firstName = child.NickName;
 
                         if ( useFormalNames )
                         {
-                            firstName = adult.FirstName;
+                            firstName = child.FirstName;
                         }
 
                         if ( !multipleLastNamesExist )
@@ -2413,55 +2656,20 @@ namespace Rock.Model
                         }
                         else
                         {
-                            familyMemberNames.Add( $"{firstName} {adult.LastName}" );
+                            familyMemberNames.Add( $"{firstName} {child.LastName}" );
                         }
                     }
                 }
-
-                // children
-                if ( includeChildren )
-                {
-                    var children = familyMembers.Where( f => f.GroupRoleId == _childRole.Id ).OrderByDescending( f => f.Person.Age );
-
-                    if ( primaryLastName.IsNullOrWhiteSpace() )
-                    {
-                        primaryLastName = children.First().Person.LastName;
-                    }
-
-                    if ( children.Count() > 0 )
-                    {
-                        foreach ( var child in children.Select( f => f.Person ) )
-                        {
-                            var firstName = child.NickName;
-
-                            if ( useFormalNames )
-                            {
-                                firstName = child.FirstName;
-                            }
-
-                            if ( !multipleLastNamesExist )
-                            {
-                                familyMemberNames.Add( firstName );
-                            }
-                            else
-                            {
-                                familyMemberNames.Add( $"{firstName} {child.LastName}" );
-                            }
-                        }
-                    }
-                }
-
-                var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
-
-                if ( !multipleLastNamesExist )
-                {
-                    familySalutation = familySalutation + " " + primaryLastName;
-                }
-
-                return familySalutation;
             }
 
-            return $"{( useFormalNames ? person.FirstName : person.NickName )} {person.LastName}";
+            var familySalutation = string.Join( separator, familyMemberNames ).ReplaceLastOccurrence( separator, finalSeparator );
+
+            if ( !multipleLastNamesExist )
+            {
+                familySalutation = familySalutation + " " + primaryLastName;
+            }
+
+            return familySalutation;
         }
 
         /// <summary>
@@ -2616,10 +2824,12 @@ namespace Rock.Model
                         {
                             return "Assets/Images/person-no-photo-female.svg?";
                         }
+
                     case Gender.Male:
                         {
                             return "Assets/Images/person-no-photo-male.svg?";
                         }
+
                     default:
                         {
                             return "Assets/Images/person-no-photo-unknown.svg?";
@@ -2633,10 +2843,12 @@ namespace Rock.Model
                     {
                         return "Assets/Images/person-no-photo-child-female.svg?";
                     }
+
                 case Gender.Male:
                     {
                         return "Assets/Images/person-no-photo-child-male.svg?";
                     }
+
                 default:
                     {
                         return "Assets/Images/person-no-photo-child-unknown.svg?";
@@ -2655,14 +2867,26 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( Person person, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            if ( person != null )
+            Guid? recordTypeValueGuid = null;
+            if ( person?.RecordStatusValueId != null )
             {
-                return GetPersonPhotoImageTag( person.Id, person.PhotoId, person.Age, person.Gender, person.RecordTypeValue != null ? ( Guid? ) person.RecordTypeValue.Guid : null, maxWidth, maxHeight, altText, className );
+                recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
             }
-            else
+
+            var personPhotoImageTagArgs = new GetPersonPhotoImageTagArgs
             {
-                return GetPersonPhotoImageTag( null, null, null, Gender.Unknown, null, maxWidth, maxHeight, altText, className );
-            }
+                PhotoId = person?.PhotoId,
+                Age = person?.Age,
+                Gender = person?.Gender ?? Gender.Unknown,
+                RecordTypeValueGuid = recordTypeValueGuid,
+                AgeClassification = person.AgeClassification,
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight,
+                AltText = altText,
+                ClassName = className
+            };
+
+            return GetPersonPhotoImageTag( person?.Id, personPhotoImageTagArgs );
         }
 
         /// <summary>
@@ -2682,6 +2906,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the person image tag.
+        /// NOTE: You might want to use <seealso cref="GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs) "/> instead 
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>
@@ -2695,9 +2920,40 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoImageTag( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
+            var personPhotoImageTagArgs = new GetPersonPhotoImageTagArgs
+            {
+                PhotoId = photoId,
+                Age = age,
+                Gender = gender,
+                RecordTypeValueGuid = recordTypeValueGuid,
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight,
+                AltText = altText,
+                ClassName = className
+            };
+
+            return GetPersonPhotoImageTag( personId, personPhotoImageTagArgs );
+        }
+
+        /// <summary>
+        /// Gets the person photo image tag.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="personPhotoImageTagArgs">The person photo image tag arguments.</param>
+        /// <returns></returns>
+        public static string GetPersonPhotoImageTag( int? personId, GetPersonPhotoImageTagArgs personPhotoImageTagArgs )
+        {
             var photoUrl = new StringBuilder();
 
             photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
+            string altText = personPhotoImageTagArgs.AltText;
+            string className = personPhotoImageTagArgs.ClassName;
+            int? photoId = personPhotoImageTagArgs.PhotoId;
+            int? maxWidth = personPhotoImageTagArgs.MaxWidth;
+            int? maxHeight = personPhotoImageTagArgs.MaxHeight;
+            Guid? recordTypeValueGuid = personPhotoImageTagArgs.RecordTypeValueGuid;
+            int? age = personPhotoImageTagArgs.Age;
+            Gender gender = personPhotoImageTagArgs.Gender;
 
             string styleString = string.Empty;
 
@@ -2733,9 +2989,8 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // check age classification
-                    AgeClassification? ageClassification = null;
-                    if ( personId.HasValue )
+                    var ageClassification = personPhotoImageTagArgs.AgeClassification;
+                    if ( personId.HasValue && !ageClassification.HasValue )
                     {
                         using ( var rockContext = new RockContext() )
                         {
@@ -2776,7 +3031,8 @@ namespace Rock.Model
         {
             if ( !string.IsNullOrWhiteSpace( signalColor ) )
             {
-                return string.Format( "<i class='{1}' style='color: {0};'></i>",
+                return string.Format(
+                    "<i class='{1}' style='color: {0};'></i>",
                     signalColor,
                     !string.IsNullOrWhiteSpace( signalIconCssClass ) ? signalIconCssClass : "fa fa-flag" );
             }
@@ -2915,6 +3171,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade abbreviation attribute based on graduation year.
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGraduationYear( int? graduationYear )
+        {
+            return GradeAbbreviationFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
         /// Formats the grade based on grade offset
         /// </summary>
         /// <param name="gradeOffset">The grade offset.</param>
@@ -2939,6 +3207,38 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade abbreviation attribute based on grade offset.
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGradeOffset( int? gradeOffset )
+        {
+            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            {
+                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+                if ( schoolGrades != null )
+                {
+                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+                    if ( schoolGradeValue != null )
+                    {
+                        bool AttributeExists = schoolGradeValue.Attributes.ContainsKey( "Abbreviation" );
+                        string abbreviationValue = "";
+                        if ( AttributeExists )
+                        {
+                            abbreviationValue = schoolGradeValue.GetAttributeValue( "Abbreviation" );
+                        }
+                        return abbreviationValue;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Gets the home locations for all the person id's passed in. If a person is in
         /// more than one family or that family has more than one home address a single
         /// location is provided.
@@ -2952,7 +3252,6 @@ namespace Rock.Model
 
             if ( personIds != null )
             {
-
                 rockContext = rockContext ?? new RockContext();
 
                 Guid? homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
@@ -3119,7 +3418,7 @@ namespace Rock.Model
         /// <returns></returns>
         public ModelFieldFilterConfig GetIndexFilterConfig()
         {
-            return new ModelFieldFilterConfig() { FilterLabel = "", FilterField = "" };
+            return new ModelFieldFilterConfig() { FilterLabel = string.Empty, FilterField = string.Empty };
         }
 
         /// <summary>
@@ -3158,7 +3457,112 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Helper Classes
+
+    /// <summary>
+    /// Method arguments for <see cref="Person.GetPersonPhotoImageTag(int?, GetPersonPhotoImageTagArgs)"/>
+    /// </summary>
+    public sealed class GetPersonPhotoImageTagArgs
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetPersonPhotoImageTagArgs"/> class.
+        /// </summary>
+        public GetPersonPhotoImageTagArgs()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GetPersonPhotoImageTagArgs"/> class.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        public GetPersonPhotoImageTagArgs( Person person )
+        {
+            PhotoId = person?.PhotoId;
+            Age = person?.Age;
+            Gender = person?.Gender ?? Gender.Unknown;
+            if ( person?.RecordStatusValueId != null )
+            {
+                RecordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value )?.Guid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the photo identifier.
+        /// </summary>
+        /// <value>
+        /// The photo identifier.
+        /// </value>
+        public int? PhotoId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        /// <value>
+        /// The gender.
+        /// </value>
+        public Gender Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record type value unique identifier.
+        /// </summary>
+        /// <value>
+        /// The record type value unique identifier.
+        /// </value>
+        public Guid? RecordTypeValueGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age classification.
+        /// </summary>
+        /// <value>
+        /// The age classification.
+        /// </value>
+        public AgeClassification? AgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum width.
+        /// </summary>
+        /// <value>
+        /// The maximum width.
+        /// </value>
+        public int? MaxWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum height.
+        /// </summary>
+        /// <value>
+        /// The maximum height.
+        /// </value>
+        public int? MaxHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the alt text.
+        /// </summary>
+        /// <value>
+        /// The alt text.
+        /// </value>
+        public string AltText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the class.
+        /// </summary>
+        /// <value>
+        /// The name of the class.
+        /// </value>
+        public string ClassName { get; set; }
     }
 
     #endregion
@@ -3362,7 +3766,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates, adds or removes a PhoneNumber of the given type.
+        /// Updates, adds or removes a PhoneNumber of the given type. (It doesn't save changes to the database ).
         /// </summary>
         public static void UpdatePhoneNumber( this Person person, int numberTypeValueId, string phoneCountryCode, string phoneNumber, bool? isMessagingEnabled, bool? isUnlisted, RockContext rockContext )
         {
@@ -3405,11 +3809,11 @@ namespace Rock.Model
                     phoneObject.IsUnlisted = isUnlisted ?? phoneObject.IsUnlisted;
                 }
             }
-
-            // they don't have a number of this type. If one is being added, we'll add it.
-            // (otherwise we'll just do nothing, leaving it as it)
             else if ( !string.IsNullOrWhiteSpace( phoneNumber ) )
             {
+                // they don't have a number of this type. If one is being added, we'll add it.
+                // (otherwise we'll just do nothing, leaving it as it)
+
                 // create a new phone number and add it to their list.
                 phoneObject = new PhoneNumber();
                 person.PhoneNumbers.Add( phoneObject );
@@ -3418,7 +3822,7 @@ namespace Rock.Model
                 phoneNumberService.Add( phoneObject );
 
                 // get the typeId for this phone number so we set it correctly
-                //var numberType = DefinedValueCache.Get( phoneTypeGuid );
+                // var numberType = DefinedValueCache.Get( phoneTypeGuid );
                 phoneObject.NumberTypeValueId = numberTypeValueId;
 
                 phoneObject.CountryCode = PhoneNumber.CleanNumber( phoneCountryCode );
@@ -3562,9 +3966,9 @@ namespace Rock.Model
                       p => new
                       {
                           Person = p,
-                          Age = ( p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
+                          Age = p.BirthDate > SqlFunctions.DateAdd( "year", -SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ), currentDate )
                             ? SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) - 1
-                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate ) )
+                            : SqlFunctions.DateDiff( "year", p.BirthDate, currentDate )
                       } );
 
             if ( includePeopleWithNoAge )
@@ -3640,6 +4044,79 @@ namespace Rock.Model
             }
 
             return qryWithGradeOffset.Select( a => a.Person );
+        }
+
+        /// <summary>
+        /// Calculates whether the person is in an active merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        ///   <c>true</c> if the person is part of merge request; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsPartOfMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.Any() ?? false;
+        }
+
+        /// <summary>
+        /// Gets the merge request.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static EntitySet GetMergeRequest( this Person person, RockContext rockContext = null )
+        {
+            return GetMergeRequestQuery( person, rockContext )?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the merge request query.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static IQueryable<EntitySet> GetMergeRequestQuery( this Person person, RockContext rockContext = null )
+        {
+            var mergeRequestQry = PersonService
+                .GetMergeRequestQuery( rockContext )
+                .Where( es => es.Items.Any( esi => esi.EntityId == person.Id ) );
+
+            return mergeRequestQry;
+        }
+
+        /// <summary>
+        /// Creates the merge request.
+        /// </summary>
+        /// <param name="namelessPerson">The nameless person.</param>
+        /// <param name="masterPerson">The master person.</param>
+        /// <returns></returns>
+        public static EntitySet CreateMergeRequest( this Person namelessPerson, Person masterPerson )
+        {
+            var entitySetPurposeGuid = SystemGuid.DefinedValue.ENTITY_SET_PURPOSE_PERSON_MERGE_REQUEST.AsGuid();
+            var definedValueId = DefinedValueCache.GetId( entitySetPurposeGuid );
+            if ( definedValueId == null )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySet
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                EntitySetPurposeValueId = definedValueId
+            };
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = namelessPerson.Id
+            } );
+
+            entitySet.Items.Add( new EntitySetItem
+            {
+                EntityId = masterPerson.Id
+            } );
+
+            return entitySet;
         }
     }
 

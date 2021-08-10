@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.CheckIn
         "Identify you Prompt Template <span class='tip tip-lava'></span>",
         Key = AttributeKey.IdentifyYouPromptTemplate,
         Category = "Text",
-        DefaultValue = "Before we proceed we'll need you to identify you for check-in.",
+        DefaultValue = "Before we proceed we'll need to identify you for check-in.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -197,7 +197,10 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
-        private static class AttributeKey
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
         {
             public const string DeviceIdList = "DeviceIdList";
 
@@ -377,6 +380,8 @@ namespace RockWeb.Blocks.CheckIn
                 .Where( a => a != null );
 
             var configuredTheme = this.GetAttributeValue( AttributeKey.CheckinTheme );
+            var hasPhoneIdentificationPage = GetAttributeValue( AttributeKey.PhoneIdentificationPage ).IsNotNullOrWhiteSpace();
+            var hasLoginPage = GetAttributeValue( AttributeKey.LoginPage ).IsNotNullOrWhiteSpace();
 
             SetSelectedTheme( configuredTheme );
 
@@ -388,6 +393,12 @@ namespace RockWeb.Blocks.CheckIn
                 return;
             }
 
+            if ( !hasLoginPage && !hasPhoneIdentificationPage )
+            {
+                lMessage.Text = "A Login Page or Phone Identification Page must be specified.";
+                return;
+            }
+
             // Identification (Login or COOKIE_UNSECURED_PERSON_IDENTIFIER)
             Person mobilePerson = GetMobilePerson();
 
@@ -395,8 +406,10 @@ namespace RockWeb.Blocks.CheckIn
             {
                 // unable to determine person from login or person cookie
                 lMessage.Text = GetMessageText( AttributeKey.IdentifyYouPromptTemplate );
-                bbtnPhoneLookup.Visible = true;
-                bbtnLogin.Visible = true;
+                
+                bbtnPhoneLookup.Visible = hasPhoneIdentificationPage;
+                bbtnLogin.Visible = hasLoginPage;
+
                 return;
             }
 
@@ -450,7 +463,7 @@ namespace RockWeb.Blocks.CheckIn
             // we want the SuccessBlock to generate a QR Code that contains the AttendanceSession(s)
             LocalDeviceConfig.GenerateQRCodeForAttendanceSessions = true;
 
-            LocalDeviceConfig.SaveToCookie( this.Page );
+            LocalDeviceConfig.SaveToCookie();
 
             // create new checkin state since we are starting a new checkin sessions
             this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
@@ -471,7 +484,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = theme;
-                LocalDeviceConfig.SaveToCookie( this.Page );
+                LocalDeviceConfig.SaveToCookie();
             }
 
             if ( !RockPage.Site.Theme.Equals( LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
@@ -549,7 +562,7 @@ namespace RockWeb.Blocks.CheckIn
                 bbtnGetGeoLocation.Visible = false;
                 HttpCookie rockHasLocationApprovalCookie = new HttpCookie( CheckInCookieKey.RockHasLocationApproval, "true" );
                 rockHasLocationApprovalCookie.Expires = RockDateTime.Now.AddYears( 1 );
-                Response.Cookies.Set( rockHasLocationApprovalCookie );
+                Rock.Web.UI.RockPage.AddOrUpdateCookie( rockHasLocationApprovalCookie );
 
                 device = GetFirstMatchingKioskByGeoFencing( latitude.Value, longitude.Value );
             }
@@ -569,7 +582,7 @@ namespace RockWeb.Blocks.CheckIn
             LocalDeviceConfig.CurrentKioskId = device.Id;
             LocalDeviceConfig.AllowCheckout = false;
 
-            LocalDeviceConfig.SaveToCookie( this.Page );
+            LocalDeviceConfig.SaveToCookie();
 
             // create new checkin state since we are starting a new checkin sessions
             this.CurrentCheckInState = new CheckInState( this.LocalDeviceConfig );
@@ -636,7 +649,8 @@ namespace RockWeb.Blocks.CheckIn
                 default:
                     {
                         lMessage.Text = GetMessageText( AttributeKey.WelcomeBackTemplate );
-                        var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl( Request.Cookies[CheckInCookieKey.AttendanceSessionGuids] );
+                        var attendanceSessionGuidCookie = RockPage.GetCookie( CheckInCookieKey.AttendanceSessionGuids );
+                        var qrCodeImageUrl = GetAttendanceSessionsQrCodeImageUrl( attendanceSessionGuidCookie );
                         if ( qrCodeImageUrl.IsNotNullOrWhiteSpace() )
                         {
                             lCheckinQRCodeHtml.Text = string.Format( "<h6 class='text-center mt-4 mb-1'>Scan Code For Labels</h6><div class='qr-code-container'><img class='img-responsive qr-code' src='{0}' alt='Check-in QR Code' width='500' height='500'></div>", qrCodeImageUrl );
@@ -852,7 +866,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             DeviceService deviceService = new DeviceService( rockContext );
-            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+            var devices = deviceService.Queryable().AsNoTracking().Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId && d.IsActive == true )
                 .OrderBy( a => a.Name )
                 .Select( a => new
                 {

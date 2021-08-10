@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -33,7 +33,6 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Public Profile Edit" )]
     [Category( "CMS" )]
@@ -57,44 +56,88 @@ namespace RockWeb.Blocks.Cms
         Order = 1 )]
 
     [BooleanField(
+        "Show Title",
+        Key = AttributeKey.ShowTitle,
+        Description = "Whether to show the person's title (e.g. Mr., Mrs. etc...)",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+
+    [BooleanField(
+        "Show Suffix",
+        Key = AttributeKey.ShowSuffix,
+        Description = "Whether to show the person's suffix (e.g. Roman Numerals, Jr., Ph.D., etc...)",
+        DefaultBooleanValue = true,
+        Order = 3 )]
+
+    [BooleanField(
+        "Show Nick Name",
+        Key = AttributeKey.ShowNickName,
+        Description = "Whether to show the person's Nickname in addition to the First Name.",
+        DefaultBooleanValue = true,
+        Order = 4 )]
+
+    [BooleanField(
         "View Only",
         Key = AttributeKey.ViewOnly,
         Description = "Should people be prevented from editing their profile or family records?",
         DefaultBooleanValue = false,
-        Order = 2 )]
+        Order = 5 )]
 
     [BooleanField(
         "Show Family Members",
         Key = AttributeKey.ShowFamilyMembers,
         Description = "Whether family members are shown or not.",
         DefaultBooleanValue = true,
-        Order = 3 )]
+        Order = 6 )]
 
     [GroupLocationTypeField(
         "Address Type",
-        Key = AttributeKey.AddressType,
+        Key = AttributeKey.AddressTypeValueGuid,
         Description = "The type of address to be displayed / edited.",
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        Order = 4 )]
+        Order = 7 )]
 
     [BooleanField(
         "Show Phone Numbers",
+        Key = AttributeKey.ShowPhoneNumbers,
         Description = "Allows hiding the phone numbers.",
         DefaultBooleanValue = false,
-        Order = 5,
-        Key = AttributeKey.ShowPhoneNumbers )]
+        Order = 8 )]
 
     [DefinedValueField(
         "Phone Types",
-        Key = AttributeKey.PhoneTypes,
+        Key = AttributeKey.PhoneTypeValueGuids,
         Description = "The types of phone numbers to display / edit.",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME,
-        Order = 6 )]
+        Order = 9 )]
+
+    [BooleanField(
+        "Highlight Mobile Phone",
+        Key = AttributeKey.HighlightMobilePhone,
+        Description = "Determines if the emphasis box should be placed around the mobile number.",
+        DefaultBooleanValue = true,
+        Order = 10 )]
+
+    [TextField(
+        "Mobile Highlight Title",
+        Key = AttributeKey.MobileHighlightTitle,
+        Description = "The text to use for the mobile highlight title (only displayed if Highlight Mobile Phone is selected).",
+        IsRequired = false,
+        DefaultValue = "Help Us Keep You Informed",
+        Order = 11 )]
+
+    [TextField(
+        "Mobile Highlight Text",
+        Description = "The text to use for the mobile highlight text (only displayed if Highlight Mobile Phone is selected).",
+        IsRequired = false,
+        DefaultValue = "Help us keep you in the loop by providing your mobile phone number and opting in for text messages. We'll only send you the most important information at this number.",
+        Order = 12,
+        Key = AttributeKey.MobileHighlightText )]
 
     [DefinedValueField(
         "Required Adult Phone Types",
@@ -103,36 +146,36 @@ namespace RockWeb.Blocks.Cms
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 7 )]
+        Order = 13 )]
 
     [BooleanField(
         "Require Adult Email Address",
         Key = AttributeKey.RequireAdultEmailAddress,
         Description = "Require an email address on adult records",
         DefaultBooleanValue = true,
-        Order = 8 )]
+        Order = 14 )]
 
     [BooleanField(
         "Show Communication Preference",
         Key = AttributeKey.ShowCommunicationPreference,
         Description = "Show the communication preference and allow it to be edited",
         DefaultBooleanValue = true,
-        Order = 9 )]
+        Order = 15 )]
 
     [LinkedPage(
         "Workflow Launch Page",
-        Key = AttributeKey.WorkflowLaunchPage,
+        Key = AttributeKey.RequestChangesPage,
         Description = "Page used to launch the workflow to make a profile change request",
         IsRequired = false,
-        Order = 10 )]
+        Order = 16 )]
 
     [TextField(
         "Request Changes Text",
+        Key = AttributeKey.RequestChangesText,
         Description = "The text to use for the request changes button (only displayed if there is a 'Workflow Launch Page' configured).",
         IsRequired = false,
         DefaultValue = "Request Additional Changes",
-        Order = 11,
-        Key = AttributeKey.RequestChangesText )]
+        Order = 17 )]
 
     [AttributeField(
         "Family Attributes",
@@ -143,7 +186,7 @@ namespace RockWeb.Blocks.Cms
         Description = "The family attributes that should be displayed / edited.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 12 )]
+        Order = 18 )]
 
     [AttributeField(
         "Person Attributes (adults)",
@@ -152,7 +195,7 @@ namespace RockWeb.Blocks.Cms
         Description = "The person attributes that should be displayed / edited for adults.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 13 )]
+        Order = 19 )]
 
     [AttributeField(
         "Person Attributes (children)",
@@ -161,14 +204,14 @@ namespace RockWeb.Blocks.Cms
         Description = "The person attributes that should be displayed / edited for children.",
         IsRequired = false,
         AllowMultiple = true,
-        Order = 14 )]
+        Order = 20 )]
 
     [BooleanField(
         "Show Campus Selector",
         Key = AttributeKey.ShowCampusSelector,
         Description = "Allows selection of primary campus.",
         DefaultBooleanValue = false,
-        Order = 15 )]
+        Order = 21 )]
 
     [TextField(
         "Campus Selector Label",
@@ -176,7 +219,26 @@ namespace RockWeb.Blocks.Cms
         Description = "The label for the campus selector (only effective when \"Show Campus Selector\" is enabled).",
         IsRequired = false,
         DefaultValue = "Campus",
-        Order = 16 )]
+        Order = 22 )]
+
+    [BooleanField(
+        "Require Gender",
+        Key = AttributeKey.RequireGender,
+        Description = "Controls whether or not the gender field is required.",
+        IsRequired = true,
+        DefaultBooleanValue = true,
+        Order = 23 )]
+
+    [CodeEditorField( "View Template",
+        Key = AttributeKey.ViewTemplate,
+        Description = "The lava template to use to format the view details.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = "{% include '~/Assets/Lava/PublicProfile.lava' %}",
+        Order = 24 )]
+
     #endregion
 
     public partial class PublicProfileEdit : RockBlock
@@ -185,42 +247,129 @@ namespace RockWeb.Blocks.Cms
         {
             public const string DefaultConnectionStatus = "DefaultConnectionStatus";
             public const string DisableNameEdit = "DisableNameEdit";
+            public const string ShowTitle = "ShowTitle";
+            public const string ShowSuffix = "ShowSuffix";
+            public const string ShowNickName = "ShowNickName";
             public const string ViewOnly = "ViewOnly";
             public const string ShowFamilyMembers = "ShowFamilyMembers";
-            public const string AddressType = "AddressType";
+            public const string AddressTypeValueGuid = "AddressType";
             public const string ShowPhoneNumbers = "ShowPhoneNumbers";
-            public const string PhoneTypes = "PhoneNumbers";
+            public const string PhoneTypeValueGuids = "PhoneNumbers";
+            public const string HighlightMobilePhone = "HighlightMobilePhone";
+            public const string MobileHighlightTitle = "MobileHighlightTitle";
+            public const string MobileHighlightText = "MobileHighlightText";
             public const string RequiredAdultPhoneTypes = "RequiredAdultPhoneTypes";
             public const string RequireAdultEmailAddress = "RequireAdultEmailAddress";
             public const string ShowCommunicationPreference = "ShowCommunicationPreference";
-            public const string WorkflowLaunchPage = "WorkflowLaunchPage";
+            public const string RequestChangesPage = "WorkflowLaunchPage";
             public const string RequestChangesText = "RequestChangesText";
             public const string FamilyAttributes = "FamilyAttributes";
             public const string PersonAttributesAdults = "PersonAttributes(adults)";
             public const string PersonAttributesChildren = "PersonAttributes(children)";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string RequireGender = "RequireGender";
+            public const string ViewTemplate = "ViewTemplate";
+        }
+
+        private static class MergeFieldKey
+        {
+            /// <summary>
+            /// If only View mode should be enabled.
+            /// If this is true, the Edit button should not be visible
+            /// </summary>
+            public const string ViewOnly = "ViewOnly";
+
+            /// <summary>
+            /// The family that is currently selected (the person could be in multiple families).
+            /// <see cref="Rock.Model.Group" />
+            /// </summary>
+            public const string Family = "Family";
+
+            /// <summary>
+            /// True if Family Members should be listed
+            /// </summary>
+            public const string ShowFamilyMembers = "ShowFamilyMembers";
+
+            /// <summary>
+            /// The members of the selected family.
+            /// List of <see cref="Rock.Model.GroupMember"/>
+            /// </summary>
+            public const string FamilyMembers = "FamilyMembers";
+
+            /// <summary>
+            /// The families that this person is in.
+            /// List <see cref="Rock.Model.Group" />
+            /// </summary>
+            public const string Families = "Families";
+
+            /// <summary>
+            /// The address type defined value id that is displayed.
+            /// <see cref="DefinedValueCache">DefinedValue Id</see>
+            /// </summary>
+            public const string AddressTypeValueId = "AddressTypeValueId";
+
+            /// <summary>
+            /// The address to be displayed.
+            /// <see cref="Rock.Model.GroupLocation"/>
+            /// </summary>
+            public const string Address = "Address";
+
+            /// <summary>
+            /// True if phone numbers should be shown
+            /// </summary>
+            public const string ShowPhoneNumbers = "ShowPhoneNumbers";
+
+            /// <summary>
+            /// The Phone Types defined value ids  that should be shown.
+            /// List of <see cref="DefinedValueCache">DefinedValue Id</see>
+            /// </summary>
+            public const string DisplayedPhoneTypeValueIds = "DisplayedPhoneTypeValueIds";
+
+            /// <summary>
+            /// The URL to use when they press the Request Changes button
+            /// </summary>
+            public const string RequestChangesPageUrl = "RequestChangesPageUrl";
+
+            /// <summary>
+            /// The text to shown on the Request Changes button
+            /// Only show the button if <see cref="RequestChangesPageUrl"/> has a value
+            /// </summary>
+            public const string RequestChangesText = "RequestChangesText";
+
+            /// <summary>
+            /// The family attributes that should be displayed.
+            /// List of <see cref="AttributeCache" />
+            /// </summary>
+            public const string FamilyAttributes = "FamilyAttributes";
+
+            /// <summary>
+            /// The person attributes that should be displayed for Adults
+            /// List of <see cref="AttributeCache" />
+            /// </summary>
+            public const string PersonAttributesAdults = "PersonAttributesAdults";
+
+            /// The person attributes that should be displayed for Children
+            /// List of <see cref="AttributeCache" />
+            /// </summary>
+            public const string PersonAttributesChildren = "PersonAttributesChildren";
+        }
+
+        private static class EventArgumentKey
+        {
+            public const string SelectFamily = "SelectFamily";
+            public const string EditPerson = "EditPerson";
+            public const string AddGroupMember = "AddGroupMember";
         }
 
         #region Fields
 
-        private List<Guid> _RequiredPhoneNumberGuids = new List<Guid>();
-        private bool _IsEditRecordAdult = false;
+        private List<Guid> _requiredPhoneNumberGuids = new List<Guid>();
+        private bool _isEditRecordAdult = false;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the Role Type. Used to help in loading Attribute panel
-        /// </summary>
-        protected int? RoleType
-        {
-            get { return ViewState["RoleType"] as int? ?? null; }
-            set { ViewState["RoleType"] = value; }
-        }
-
-        bool _canEdit = false;
 
         #endregion
 
@@ -231,26 +380,32 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
-        {        
+        {
             base.OnInit( e );
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
+            dvpTitle.Visible = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            dvpSuffix.Visible = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+
+            tbNickName.Visible = GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean();
+
             RockPage.AddCSSLink( "~/Styles/fluidbox.css" );
             RockPage.AddScriptLink( "~/Scripts/imagesloaded.min.js" );
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
-            _canEdit = !GetAttributeValue( AttributeKey.ViewOnly ).AsBoolean();
-            lbEditPerson.Visible = _canEdit;
-            lbAddGroupMember.Visible = _canEdit;
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += PublicProfileEdit_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upContent );
 
-            lbRequestChanges.Text = GetAttributeValue( AttributeKey.RequestChangesText );
             cpCampus.Label = GetAttributeValue( AttributeKey.CampusSelectorLabel );
 
-            if (!string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ))
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ) ) )
             {
-                _RequiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
+                _requiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
+
             rContactInfo.ItemDataBound += rContactInfo_ItemDataBound;
 
             string smsScript = @"
@@ -270,64 +425,195 @@ namespace RockWeb.Blocks.Cms
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-            if ( CurrentPerson != null )
-            {
-                if ( !Page.IsPostBack )
-                {
-                    BindFamilies();
-                }
-                else
-                {
-                    var rockContext = new RockContext();
-                    var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-
-                    var person = new PersonService( rockContext ).Get( hfPersonGuid.Value.AsGuid() );
-                    if ( person != null && group != null && IsValidPersonForGroup( person, group ) )
-                    {
-                        // Person Attributes
-                        var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-                        if ( !displayedAttributeGuids.Any() || person.Id == 0 )
-                        {
-                            pnlPersonAttributes.Visible = false;
-                        }
-                        else
-                        {
-                            pnlPersonAttributes.Visible = true;
-                            DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, false );
-                        }
-
-                        // Family Attributes
-                        if ( person.Id == CurrentPerson.Id )
-                        {
-                            List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                            if ( familyAttributeGuidList.Any() )
-                            {
-                                pnlFamilyAttributes.Visible = true;
-                                DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, false );
-                            }
-                            else
-                            {
-                                pnlFamilyAttributes.Visible = false;
-                            }
-                        }
-                    }
-
-                    if ( person == null && RoleType != null )
-                    {
-                        DisplayPersonAttributeOnRoleType( RoleType );
-                    }
-                }
-            }
-            else
+            if ( CurrentPerson == null )
             {
                 pnlView.Visible = false;
                 pnlEdit.Visible = false;
+                pnlEdit.Visible = false;
                 nbNotAuthorized.Visible = true;
+                return;
+            }
+
+            if ( !Page.IsPostBack )
+            {
+                ShowViewDetail();
+            }
+            else
+            {
+                var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
             }
         }
 
         /// <summary>
-        /// Verifies whether the current person is in the given group.
+        /// Handles the BlockUpdated event of the PublicProfileEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void PublicProfileEdit_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowViewDetail();
+        }
+
+        /// <summary>
+        /// Handles any custom postbacks from the Lava.
+        /// Returns true if one of the custom Lava postbacks was handled
+        /// </summary>
+        /// <param name="eventTarget">The event target.</param>
+        /// <param name="eventArgument">The event argument.</param>
+        /// <returns></returns>
+        private bool HandleLavaPostback( string eventTarget, string eventArgument )
+        {
+            if ( !eventTarget.Equals( upContent.UniqueID, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // post back from some other block
+                return false;
+            }
+
+            var eventArgumentParts = eventArgument.Split( '^' );
+            if ( !eventArgumentParts.Any() )
+            {
+                return false;
+            }
+
+            var eventArgumentKey = eventArgumentParts[0];
+            var eventArgumentValue = eventArgumentParts.Length > 1 ? eventArgumentParts[1] : string.Empty;
+
+            if ( eventArgumentKey == EventArgumentKey.SelectFamily )
+            {
+                hfGroupId.Value = this.Request.Form["selectFamily"];
+                ShowViewDetail();
+                return true;
+            }
+            else if ( eventArgumentKey == EventArgumentKey.EditPerson )
+            {
+                ShowEditPersonDetails( eventArgumentValue.AsGuid() );
+                return true;
+            }
+            else if ( eventArgumentKey == EventArgumentKey.AddGroupMember )
+            {
+                AddGroupMember( eventArgumentValue.AsInteger() );
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        private void ShowViewDetail()
+        {
+            var rockContext = new RockContext();
+            var groupMemberService = new GroupMemberService( rockContext );
+            var attributeValueService = new AttributeValueService( rockContext );
+
+            // invalid situation; return and report nothing.
+            if ( CurrentPerson == null )
+            {
+                return;
+            }
+
+            var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage );
+            var personFamilies = CurrentPerson.GetFamilies();
+            Group selectedFamily;
+            var selectedGroupId = hfGroupId.Value.AsIntegerOrNull();
+            if ( selectedGroupId.HasValue )
+            {
+                selectedFamily = personFamilies.FirstOrDefault( a => a.Id == selectedGroupId );
+            }
+            else
+            {
+                selectedFamily = CurrentPerson.GetFamily();
+            }
+
+            if ( selectedFamily == null )
+            {
+                selectedFamily = CurrentPerson.GetFamily();
+            }
+
+            hfGroupId.Value = selectedFamily.Id.ToString();
+
+            mergeFields.Add( MergeFieldKey.Family, selectedFamily );
+
+            var familyMembers = groupMemberService.Queryable()
+                            .Where( gm => gm.GroupId == selectedFamily.Id
+                                 && gm.PersonId != CurrentPerson.Id
+                                 && gm.Person.IsDeceased == false )
+                            .OrderBy( m => m.GroupRole.Order )
+                            .ToList();
+
+            var orderedMembers = new List<GroupMember>();
+
+            // Add adult males
+            orderedMembers.AddRange( familyMembers
+                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                    m.Person.Gender == Gender.Male )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            // Add adult females
+            orderedMembers.AddRange( familyMembers
+                .Where( m => m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) &&
+                    m.Person.Gender != Gender.Male )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            // Add non-adults
+            orderedMembers.AddRange( familyMembers
+                .Where( m => !m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
+                .OrderByDescending( m => m.Person.Age ) );
+
+            mergeFields.Add( MergeFieldKey.FamilyMembers, orderedMembers );
+
+            mergeFields.Add( MergeFieldKey.ShowFamilyMembers, GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() );
+            mergeFields.Add( MergeFieldKey.Families, personFamilies );
+            mergeFields.Add( MergeFieldKey.ViewOnly, GetAttributeValue( AttributeKey.ViewOnly ).AsBoolean() );
+            mergeFields.Add( MergeFieldKey.AddressTypeValueId, DefinedValueCache.GetId( GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuid() ) );
+
+            var groupLocationTypeValueGuid = this.GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuidOrNull() ?? Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid();
+            var groupLocationTypeValueId = DefinedValueCache.GetId( groupLocationTypeValueGuid );
+
+            if ( groupLocationTypeValueId.HasValue )
+            {
+                var familyGroupLocation = selectedFamily.GroupLocations.Where( a => a.GroupLocationTypeValueId == groupLocationTypeValueId.Value ).FirstOrDefault();
+                mergeFields.Add( MergeFieldKey.Address, familyGroupLocation );
+            }
+
+            mergeFields.Add( MergeFieldKey.ShowPhoneNumbers, GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() );
+
+            var phoneTypeValueIds = GetAttributeValues( AttributeKey.PhoneTypeValueGuids ).AsGuidList().Select( a => DefinedValueCache.GetId( a ) ).ToList();
+            mergeFields.Add( MergeFieldKey.DisplayedPhoneTypeValueIds, phoneTypeValueIds );
+
+            var requestChangesPageUrl = LinkedPageUrl( AttributeKey.RequestChangesPage, new Dictionary<string, string>() );
+            mergeFields.Add( MergeFieldKey.RequestChangesPageUrl, requestChangesPageUrl );
+            mergeFields.Add( MergeFieldKey.RequestChangesText, GetAttributeValue( AttributeKey.RequestChangesText ) );
+
+            var familyAttributes = GetAttributeValues( AttributeKey.FamilyAttributes ).AsGuidList().Select( a => AttributeCache.Get( a ) );
+            mergeFields.Add( MergeFieldKey.FamilyAttributes, familyAttributes );
+
+            mergeFields.Add( MergeFieldKey.PersonAttributesChildren, GetAttributeValues( AttributeKey.PersonAttributesChildren ).AsGuidList().Select( a => AttributeCache.Get( a ) ) );
+            mergeFields.Add( MergeFieldKey.PersonAttributesAdults, GetAttributeValues( AttributeKey.PersonAttributesAdults ).AsGuidList().Select( a => AttributeCache.Get( a ) ) );
+
+            var viewPersonLavaTemplate = GetAttributeValue( AttributeKey.ViewTemplate );
+
+            var viewPersonHtml = viewPersonLavaTemplate.ResolveMergeFields( mergeFields ).ResolveClientIds( upContent.UniqueID );
+            lViewPersonContent.Visible = true;
+            lViewPersonContent.Text = viewPersonHtml;
+
+            hfEditPersonGuid.Value = Guid.Empty.ToString();
+            pnlEdit.Visible = false;
+            pnlView.Visible = true;
+
+            rblRole.Items.Clear();
+            var familyRoles = selectedFamily.GroupType.Roles.OrderBy( r => r.Order ).ToList();
+            foreach ( var role in familyRoles )
+            {
+                rblRole.Items.Add( new ListItem( role.Name, role.Id.ToString() ) );
+            }
+
+            rblRole.SetValue( CurrentPerson.GetFamilyRole() );
+        }
+
+        /// <summary>
+        /// Verifies whether the current person is in the given group (Family).
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns>
@@ -348,12 +634,11 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="group">The group.</param>
-        /// <exception cref="NotImplementedException"></exception>
         private bool IsValidPersonForGroup( Guid personGuid, Person person, Group group )
         {
             if ( personGuid == Guid.Empty )
             {
-                // When the personGuid is empty, then we check based on the given person's Id is in the group. 
+                // When the personGuid is empty, then we check based on the given person's Id is in the group.
                 return IsValidPersonForGroup( person, group );
             }
             else
@@ -368,21 +653,10 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="group">The group.</param>
-        /// <exception cref="NotImplementedException"></exception>
         private bool IsValidPersonForGroup( Person person, Group group )
         {
             // Is the given person' (their Id) in the group?
             return group.Members.Where( gm => gm.PersonId == person.Id ).Any();
-        }
-
-        /// <summary>
-        /// Binds the families.
-        /// </summary>
-        private void BindFamilies()
-        {
-            ddlGroup.DataSource = CurrentPerson.GetFamilies().ToList();
-            ddlGroup.DataBind();
-            ShowDetail();
         }
 
         #endregion
@@ -433,141 +707,13 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the Click event of the lbRequestChanges control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbRequestChanges_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( AttributeKey.WorkflowLaunchPage );
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rptGroupMembers control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptGroupMembers_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            // the grid's value should be bound to the person's GUID.
-            var personGuid = e.CommandArgument.ToString().AsGuid();
-            ShowEditPersonDetails( personGuid );
-        }
-
-        /// <summary>
         /// Handles the Click event of the lbAddGroupMember control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddGroupMember_Click( object sender, EventArgs e )
+        protected void AddGroupMember( int groupId )
         {
-            if ( ddlGroup.SelectedValueAsId().HasValue )
-            {
-                ShowEditPersonDetails( Guid.Empty );
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rptGroupMembers control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptGroupMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-            var attributeValueService = new AttributeValueService( rockContext );
-
-            var groupMember = e.Item.DataItem as GroupMember;
-            var person = groupMember.Person;
-            var lGroupMemberImage = e.Item.FindControl( "lGroupMemberImage" ) as Literal;
-            var lGroupMemberName = e.Item.FindControl( "lGroupMemberName" ) as Literal;
-            var lGroupMemberEmail = e.Item.FindControl( "lGroupMemberEmail" ) as Literal;
-            var lAge = e.Item.FindControl( "lAge" ) as Literal;
-            var lGender = e.Item.FindControl( "lGender" ) as Literal;
-            var lMaritalStatus = e.Item.FindControl( "lMaritalStatus" ) as Literal;
-            var lGrade = e.Item.FindControl( "lGrade" ) as Literal;
-            var rptGroupMemberPhones = e.Item.FindControl( "rptGroupMemberPhones" ) as Repeater;
-            var rptGroupMemberAttributes = e.Item.FindControl( "rptGroupMemberAttributes" ) as Repeater;
-            var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
-            
-            if ( lbEditGroupMember != null )
-            {
-                lbEditGroupMember.Visible = _canEdit;
-            }
-
-            // Setup Image
-            string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
-            if ( person.PhotoId.HasValue )
-            {
-                lGroupMemberImage.Text = string.Format( "<a href='{0}'>{1}</a>", person.PhotoUrl, imgTag );
-            }
-            else
-            {
-                lGroupMemberImage.Text = imgTag;
-            }
-
-            // Person Info
-            lGroupMemberName.Text = person.FullName;
-            lGroupMemberEmail.Text = person.Email;
-            if ( person.BirthDate.HasValue )
-            {
-                var formattedAge = person.FormatAge();
-                if ( formattedAge.IsNotNullOrWhiteSpace() )
-                {
-                    formattedAge += " old";
-                }
-
-                lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( person.BirthYear.HasValue && person.BirthYear != DateTime.MinValue.Year ) ? person.BirthDate.Value.ToShortDateString() : person.BirthDate.Value.ToMonthDayString() );
-            }
-
-            lGender.Text = person.Gender != Gender.Unknown ? person.Gender.ToString() : string.Empty;
-            lGrade.Text = person.GradeFormatted;
-            lMaritalStatus.Text = person.MaritalStatusValueId.DefinedValue();
-            if ( person.AnniversaryDate.HasValue )
-            {
-                lMaritalStatus.Text += string.Format( " {0} yrs <small>({1})</small>", person.AnniversaryDate.Value.Age(), person.AnniversaryDate.Value.ToMonthDayString() );
-            }
-
-            // Contact Info
-            bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
-            if ( showPhoneNumbers )
-            {
-                if ( person.PhoneNumbers != null )
-                {
-                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
-                    rptGroupMemberPhones.DataSource = person.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                    rptGroupMemberPhones.DataBind();
-                    phPhoneDisplay.Visible = true;
-                }
-            }
-
-            // Person Attributes
-            List<Guid> attributeGuidList = new List<Guid>();
-            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-
-            if ( groupMember.GroupRole.Guid == adultGuid )
-            {
-                attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
-            }
-            else
-            {
-                attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
-            }
-
-            person.LoadAttributes();
-            rptGroupMemberAttributes.DataSource = person.Attributes.Where( a =>
-             attributeGuidList.Contains( a.Value.Guid ) )
-            .Select( a => new
-            {
-                Name = a.Value.Name,
-                Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, person.Id, person.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-            } )
-            .OrderBy( av => av.Name )
-            .ToList()
-            .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
-            rptGroupMemberAttributes.DataBind();
+            ShowEditPersonDetails( Guid.Empty );
         }
 
         #endregion
@@ -580,30 +726,46 @@ namespace RockWeb.Blocks.Cms
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var personGuid = hfPersonGuid.Value.AsGuid();
+            var personGuid = hfEditPersonGuid.Value.AsGuid();
 
-            // invalid situation/tampering; return and report nothing.
-            if ( !ddlGroup.SelectedValueAsId().HasValue )
+            if ( !hfGroupId.Value.AsIntegerOrNull().HasValue )
             {
                 return;
             }
 
-            var groupId = ddlGroup.SelectedValueAsId().Value;
-            var group = new GroupService( rockContext ).Get( groupId );
+            var groupId = hfGroupId.Value.AsIntegerOrNull();
+            if ( !groupId.HasValue )
+            {
+                // GroupId wasn't specified due to invalid situation
+                // Return and report nothing.
+                return;
+            }
+
+            var group = new GroupService( rockContext ).Get( groupId.Value );
+            if ( group == null )
+            {
+                // A valid group wasn't specified.
+                // Return and report nothing.
+                return;
+            }
 
             // invalid situation; return and report nothing.
-            if ( group == null || ! IsCurrentPersonInGroup( group ) )
+            if ( !IsCurrentPersonInGroup( group ) )
             {
                 return;
             }
 
             // Validate before continuing; either the personGuid or the CurrentPerson must be in the group.
-            if ( ! IsValidPersonForGroup( personGuid, CurrentPerson, group ) )
+            if ( !IsValidPersonForGroup( personGuid, CurrentPerson, group ) )
             {
                 return;
             }
 
-            rockContext.WrapTransaction( () =>
+            bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
+            bool showCommunicationPreference = GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
+            var communicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+            var wrapTransactionResult = rockContext.WrapTransactionIf( () =>
             {
                 var personService = new PersonService( rockContext );
 
@@ -728,15 +890,16 @@ namespace RockWeb.Blocks.Cms
                         {
                             graduationYear = ypGraduation.SelectedYear.Value;
                         }
+
                         person.GraduationYear = graduationYear;
                     }
 
                     person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
 
                     // update campus
-                   // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                   // Even if the block is set to show the picker it will not be visible if there is only one campus so use the Visible prop instead of the attribute value here.
-                    if ( cpCampus.Visible ) 
+                    // bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                    // Even if the block is set to show the picker it will not be visible if there is only one campus so use the Visible prop instead of the attribute value here.
+                    if ( cpCampus.Visible )
                     {
                         var primaryFamily = person.GetFamily( rockContext );
                         if ( primaryFamily.CampusId != cpCampus.SelectedCampusId )
@@ -745,7 +908,6 @@ namespace RockWeb.Blocks.Cms
                         }
                     }
 
-                    bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
                     if ( showPhoneNumbers )
                     {
                         var phoneNumberTypeIds = new List<int>();
@@ -756,13 +918,11 @@ namespace RockWeb.Blocks.Cms
                         {
                             HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
                             PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-                            CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
                             CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
 
-                            if ( hfPhoneType != null &&
-                                pnbPhone != null &&
-                                cbSms != null &&
-                                cbUnlisted != null )
+                            if ( hfPhoneType != null
+                                && pnbPhone != null
+                                && cbSms != null )
                             {
                                 if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( pnbPhone.Number ) ) )
                                 {
@@ -795,14 +955,13 @@ namespace RockWeb.Blocks.Cms
                                             smsSelected = cbSms.Checked;
                                         }
 
-                                        phoneNumber.IsUnlisted = cbUnlisted.Checked;
                                         phoneNumberTypeIds.Add( phoneNumberTypeId );
                                     }
                                 }
                             }
                         }
 
-                        var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
+                        var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
 
                         // Remove any blank numbers
                         var phoneNumberService = new PhoneNumberService( rockContext );
@@ -817,10 +976,47 @@ namespace RockWeb.Blocks.Cms
 
                     person.Email = tbEmail.Text.Trim();
                     person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
-                    person.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
+
+                    /* 2020-10-06 MDP
+                     To help prevent a person from setting their communication preference to SMS, even if they don't have an SMS number,
+                      we'll require an SMS number in these situations. The goal is to only enforce if they are able to do something about it.
+                      1) The block is configured to show both 'Communication Preference' and 'Phone Numbers'.
+                      2) Communication Preference is set to SMS
+
+                     Edge cases
+                       - Both #1 and #2 are true, but no Phone Types are selected in block settings. In this case, still enforce.
+                         Think of this as a block configuration issue (they shouldn't have configured it that way)
+
+                       - Person has an SMS phone number, but the block settings don't show it. We'll see if any of the Person's phone numbers
+                         have SMS, including ones that are not shown. So, they can set communication preference to SMS without getting a warning.
+
+                    NOTE: We might have already done a save changes at this point, but we are in a DB Transaction, so it'll get rolled back if
+                        we return false, with a warning message.
+                     */
+
+                    if ( showCommunicationPreference && showPhoneNumbers && communicationPreference == CommunicationType.SMS )
+                    {
+                        if ( !person.PhoneNumbers.Any( a => a.IsMessagingEnabled ) )
+                        {
+                            nbCommunicationPreferenceWarning.Text = "A phone number with SMS enabled is required when Communication Preference is set to SMS.";
+                            nbCommunicationPreferenceWarning.NotificationBoxType = NotificationBoxType.Warning;
+                            nbCommunicationPreferenceWarning.Visible = true;
+                            return false;
+                        }
+                    }
+
+                    person.CommunicationPreference = communicationPreference;
 
                     person.LoadAttributes();
-                    Rock.Attribute.Helper.GetEditValues( phPersonAttributes, person );
+
+                    if ( avcPersonAttributesAdult.Visible )
+                    {
+                        avcPersonAttributesAdult.GetEditValues( person );
+                    }
+                    else
+                    {
+                        avcPersonAttributesChild.GetEditValues( person );
+                    }
 
                     if ( person.IsValid )
                     {
@@ -857,6 +1053,7 @@ namespace RockWeb.Blocks.Cms
                                 }
                             }
                         }
+
                         person.SaveAttributeValues( rockContext );
 
                         // save family information
@@ -867,13 +1064,13 @@ namespace RockWeb.Blocks.Cms
                             {
                                 var familyGroup = new GroupService( rockContext )
                                     .Queryable()
-                                    .Where( f => 
-                                        f.GroupType.Guid == familyGroupTypeGuid.Value && 
+                                    .Where( f =>
+                                        f.Id == groupId.Value &&
                                         f.Members.Any( m => m.PersonId == person.Id ) )
                                     .FirstOrDefault();
                                 if ( familyGroup != null )
                                 {
-                                    Guid? addressTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
+                                    Guid? addressTypeGuid = GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuidOrNull();
                                     if ( addressTypeGuid.HasValue )
                                     {
                                         var groupLocationService = new GroupLocationService( rockContext );
@@ -931,7 +1128,7 @@ namespace RockWeb.Blocks.Cms
 
                                                 familyAddress.Location = new LocationService( rockContext ).Get(
                                                     loc.Street1, loc.Street2, loc.City, loc.State, loc.PostalCode, loc.Country, familyGroup, true );
-                                                        
+
                                                 // since there can only be one mapped location, set the other locations to not mapped
                                                 if ( familyAddress.IsMappedLocation )
                                                 {
@@ -950,16 +1147,21 @@ namespace RockWeb.Blocks.Cms
                                     }
 
                                     familyGroup.LoadAttributes();
-                                    Rock.Attribute.Helper.GetEditValues( phFamilyAttributes, familyGroup );
+                                    avcFamilyAttributes.GetEditValues( familyGroup );
                                     familyGroup.SaveAttributeValues();
                                 }
                             }
                         }
                     }
                 }
+
+                return true;
             } );
 
-            NavigateToCurrentPage();
+            if ( wrapTransactionResult )
+            {
+                NavigateToCurrentPage();
+            }
         }
 
         /// <summary>
@@ -969,17 +1171,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            ShowDetail();
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlGroup control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlGroup_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            ShowDetail();
+            ShowViewDetail();
         }
 
         /// <summary>
@@ -990,8 +1182,11 @@ namespace RockWeb.Blocks.Cms
         protected void rblRole_SelectedIndexChanged( object sender, EventArgs e )
         {
             var selectedId = rblRole.SelectedValueAsId();
-            DisplayPersonAttributeOnRoleType( selectedId );
-            RoleType = selectedId;
+
+            if ( selectedId.HasValue )
+            {
+                SetControlsForRoleType( selectedId.Value );
+            }
         }
 
         /// <summary>
@@ -999,21 +1194,38 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        void rContactInfo_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void rContactInfo_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var pnbPhone = e.Item.FindControl( "pnbPhone" ) as PhoneNumberBox;
-            if (pnbPhone != null)
+            if ( pnbPhone != null )
             {
                 pnbPhone.ValidationGroup = BlockValidationGroup;
                 var phoneNumber = e.Item.DataItem as PhoneNumber;
-                if ( _IsEditRecordAdult && ( phoneNumber != null ) )
+                HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) e.Item.FindControl( "divPhoneNumberContainer" );
+
+                if ( _isEditRecordAdult && ( phoneNumber != null ) )
                 {
-                    pnbPhone.Required = _RequiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
+                    pnbPhone.Required = _requiredPhoneNumberGuids.Contains( phoneNumber.NumberTypeValue.Guid );
                     if ( pnbPhone.Required )
                     {
                         pnbPhone.RequiredErrorMessage = string.Format( "{0} phone is required", phoneNumber.NumberTypeValue.Value );
-                        HtmlGenericControl phoneNumberContainer = (HtmlGenericControl)e.Item.FindControl( "divPhoneNumberContainer" );
                         phoneNumberContainer.AddCssClass( "required" );
+                    }
+                }
+
+                if ( phoneNumber.NumberTypeValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )
+                {
+                    if ( GetAttributeValue( AttributeKey.HighlightMobilePhone ).AsBoolean() )
+                    {
+                        var hightlightTitle = ( Literal ) e.Item.FindControl( "litHighlightTitle" );
+                        hightlightTitle.Text = $"<h4>{GetAttributeValue( AttributeKey.MobileHighlightTitle )}</h4>";
+                        hightlightTitle.Visible = true;
+
+                        var hightlightText = ( Literal ) e.Item.FindControl( "litHighlightText" );
+                        hightlightText.Text = $"<p>{GetAttributeValue( AttributeKey.MobileHighlightText )}</p>";
+                        hightlightText.Visible = true;
+
+                        phoneNumberContainer.AddCssClass( "well" );
                     }
                 }
             }
@@ -1023,420 +1235,309 @@ namespace RockWeb.Blocks.Cms
         #region Methods
 
         /// <summary>
-        /// Shows the detail.
-        /// </summary>
-        private void ShowDetail()
-        {
-            var rockContext = new RockContext();
-            var groupMemberService = new GroupMemberService( rockContext );
-            var attributeValueService = new AttributeValueService( rockContext );
-
-            // invalid situation; return and report nothing.
-            if ( CurrentPerson == null )
-            {
-                return;
-            }
-
-            var personId = CurrentPerson.Id;
-
-            // Setup Image
-            string imgTag = Rock.Model.Person.GetPersonPhotoImageTag( CurrentPerson, 200, 200 );
-            if ( CurrentPerson.PhotoId.HasValue )
-            {
-                lImage.Text = string.Format( "<a href='{0}'>{1}</a>", CurrentPerson.PhotoUrl, imgTag );
-            }
-            else
-            {
-                lImage.Text = imgTag;
-            }
-
-            // Person Info
-            lName.Text = CurrentPerson.FullName;
-            if ( CurrentPerson.BirthDate.HasValue )
-            {
-                var formattedAge = CurrentPerson.FormatAge();
-                if ( formattedAge.IsNotNullOrWhiteSpace() )
-                {
-                    formattedAge += " old";
-                }
-
-                lAge.Text = string.Format( "{0} <small>({1})</small><br/>", formattedAge, ( CurrentPerson.BirthYear != DateTime.MinValue.Year && CurrentPerson.BirthYear != null ) ? CurrentPerson.BirthDate.Value.ToShortDateString() : CurrentPerson.BirthDate.Value.ToMonthDayString() );
-            }
-
-            lGender.Text = CurrentPerson.Gender != Gender.Unknown ? CurrentPerson.Gender.ToString() : string.Empty;
-            lGrade.Text = CurrentPerson.GradeFormatted;
-            lMaritalStatus.Text = CurrentPerson.MaritalStatusValueId.DefinedValue();
-            if ( CurrentPerson.AnniversaryDate.HasValue )
-            {
-                lMaritalStatus.Text += string.Format( " {0} yrs <small>({1})</small>", CurrentPerson.AnniversaryDate.Value.Age(), CurrentPerson.AnniversaryDate.Value.ToMonthDayString() );
-            }
-
-            if ( CurrentPerson.GetFamily( rockContext ) != null && ddlGroup.Items.Count > 1 )
-            {
-                ddlGroup.Visible = true;
-            }
-
-            // Contact Info
-            bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
-            phPhoneDisplay.Visible = showPhoneNumbers;
-            if ( showPhoneNumbers )
-            {
-                if ( CurrentPerson.PhoneNumbers != null )
-                {
-                    var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
-                    rptPhones.DataSource = CurrentPerson.PhoneNumbers.Where( pn => selectedPhoneTypeGuids.Contains( pn.NumberTypeValue.Guid ) ).ToList();
-                    rptPhones.DataBind();
-                }
-            }
-
-            lEmail.Text = CurrentPerson.Email;
-
-            // Person Attributes
-            List<Guid> attributeGuidList = GetPersonAttributeGuids( personId );
-            CurrentPerson.LoadAttributes();
-            rptPersonAttributes.DataSource = CurrentPerson.Attributes.Where( a =>
-                 attributeGuidList.Contains( a.Value.Guid ) )
-                .Select( a => new
-                {
-                    Name = a.Value.Name,
-                    Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, CurrentPerson.Id, CurrentPerson.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-                } )
-                .OrderBy( av => av.Name )
-                .ToList()
-                .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
-            rptPersonAttributes.DataBind();
-
-            // Families
-            if ( GetAttributeValue( AttributeKey.ShowFamilyMembers ).AsBoolean() )
-            {
-                if ( ddlGroup.SelectedValueAsId().HasValue )
-                {
-                    var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-                    if ( group != null )
-                    {
-
-                        // Family Name
-                        lGroupName.Text = group.Name;
-
-                        // Family Address
-                        Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
-                        if ( locationTypeGuid.HasValue )
-                        {
-                            var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
-
-                            var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
-
-                            if ( familyGroupTypeGuid.HasValue )
-                            {
-                                var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
-
-                                var address = new GroupLocationService( rockContext ).Queryable()
-                                                    .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                         && l.GroupLocationTypeValueId == addressTypeDv.Id
-                                                         && l.Group.Members.Any( m => m.PersonId == CurrentPerson.Id )
-                                                         && l.Group.Id == group.Id )
-                                                    .Select( l => l.Location )
-                                                    .FirstOrDefault();
-                                if ( address != null )
-                                {
-                                    lAddress.Text = string.Format( "<div class='margin-b-md'><b>{0} Address</b><br />{1}</div>", addressTypeDv.Value, address.FormattedHtmlAddress );
-                                }
-                            }
-                        }
-
-                        // Family Attributes
-                        group.LoadAttributes();
-                        List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                        var familyAttributes = group.Attributes.Where( a =>
-                             familyAttributeGuidList.Contains( a.Value.Guid ) )
-                            .Select( a => new
-                            {
-                                Name = a.Value.Name,
-                                Value = a.Value.FieldType.Field.FormatValue( null, a.Value.EntityTypeId, group.Id, group.GetAttributeValue( a.Key ), a.Value.QualifierValues, a.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName )
-                            } )
-                            .OrderBy( av => av.Name )
-                            .ToList()
-                            .Where( av => !String.IsNullOrWhiteSpace( av.Value ) );
-                        if ( familyAttributes.Count() > 0 )
-                        {
-                            lFamilyHeader.Visible = true;
-                            rptGroupAttributes.DataSource = familyAttributes;
-                            rptGroupAttributes.DataBind();
-                        }
-
-                        rptGroupMembers.DataSource = group.Members.Where( gm =>
-                            gm.PersonId != CurrentPerson.Id &&
-                            gm.Person.IsDeceased == false )
-                            .OrderBy( m => m.GroupRole.Order )
-                            .ToList();
-                        rptGroupMembers.DataBind();
-                    }
-                }
-            }
-
-            if ( String.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.WorkflowLaunchPage ) ) )
-            {
-                lbRequestChanges.Visible = false;
-            }
-
-            hfPersonGuid.Value = Guid.Empty.ToString();
-            pnlEdit.Visible = false;
-            pnlView.Visible = true;
-        }
-
-        /// <summary>
         /// Shows the edit person details.
         /// </summary>
         /// <param name="personGuid">The person's global unique identifier.</param>
         private void ShowEditPersonDetails( Guid personGuid )
         {
+            lViewPersonContent.Visible = false;
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
 
             RockContext rockContext = new RockContext();
 
-            // invalid situation; return and report nothing.
-            if ( ! ddlGroup.SelectedValueAsId().HasValue )
+            var groupId = hfGroupId.Value.AsIntegerOrNull();
+
+            if ( !groupId.HasValue )
+            {
+                // invalid situation; return and report nothing.
+                return;
+            }
+
+            var group = new GroupService( rockContext ).Get( groupId.Value );
+            if ( group == null )
+            {
+                // invalid situation; return and report nothing.
+                return;
+            }
+
+            hfEditPersonGuid.Value = personGuid.ToString();
+            var person = new Person();
+
+            if ( personGuid == Guid.Empty )
+            {
+                rblRole.Visible = true;
+                rblRole.Required = true;
+
+                tbFirstName.Enabled = true;
+                tbLastName.Enabled = true;
+            }
+            else
+            {
+                person = new PersonService( rockContext ).Get( personGuid );
+
+                if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
+                {
+                    tbFirstName.Enabled = false;
+                    tbLastName.Enabled = false;
+                }
+            }
+
+            if ( person == null )
             {
                 return;
             }
 
-
-            var group = new GroupService( rockContext ).Get( ddlGroup.SelectedValueAsId().Value );
-            if ( group != null )
+            if ( personGuid == Guid.Empty )
             {
-                RoleType = null;
-                hfPersonGuid.Value = personGuid.ToString();
-                var person = new Person();
-                if ( personGuid == Guid.Empty )
-                {
-                    rblRole.DataSource = group.GroupType.Roles.OrderBy( r => r.Order ).ToList();
-                    rblRole.DataBind();
-                    rblRole.Visible = true;
-                    rblRole.Required = true;
+                // make them pick the family role on a new person
+                rblRole.SelectedValue = null;
+            }
+            else
+            {
+                rblRole.SetValue( person.GetFamilyRole() );
+            }
 
-                    tbFirstName.Enabled = true;
-                    tbLastName.Enabled = true;
+            imgPhoto.BinaryFileId = person.PhotoId;
+            imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
+            dvpTitle.SetValue( person.TitleValueId );
+            tbFirstName.Text = person.FirstName;
+            tbNickName.Text = person.NickName;
+            tbLastName.Text = person.LastName;
+            dvpSuffix.SetValue( person.SuffixValueId );
+            bpBirthDay.SelectedDate = person.BirthDate;
+
+            // Setup the gender radio button list according to the required field
+            var genderRequired = GetAttributeValue( AttributeKey.RequireGender ).AsBooleanOrNull() ?? true;
+            if ( !genderRequired )
+            {
+                rblGender.Items.Add( new ListItem( "Unknown", "Unknown" ) );
+            }
+
+            // Add this check to handle if the gender requirement became required after an "Unknown" value was already set
+            if ( rblGender.Items.FindByValue( person.Gender.ConvertToString() ) != null )
+            {
+                rblGender.SelectedValue = person.Gender.ConvertToString();
+            }
+
+            if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
+            {
+                _isEditRecordAdult = false;
+                tbEmail.Required = false;
+
+                // don't display campus selector to children. Rated PG.
+                cpCampus.Visible = false;
+
+                if ( person.GraduationYear.HasValue )
+                {
+                    ypGraduation.SelectedYear = person.GraduationYear.Value;
                 }
                 else
                 {
-                    person = new PersonService( rockContext ).Get( personGuid );
-
-                    if ( GetAttributeValue( AttributeKey.DisableNameEdit ).AsBoolean() )
-                    {
-                        tbFirstName.Enabled = false;
-                        tbLastName.Enabled = false;
-                    }
+                    ypGraduation.SelectedYear = null;
                 }
 
-                if ( ddlGroup.SelectedValueAsId().HasValue )
+                ddlGradePicker.Visible = true;
+                if ( !person.HasGraduated ?? false )
                 {
-                    if ( person != null )
+                    int gradeOffset = person.GradeOffset.Value;
+                    var maxGradeOffset = ddlGradePicker.MaxGradeOffset;
+
+                    // keep trying until we find a Grade that has a gradeOffset that includes the Person's gradeOffset (for example, there might be combined grades)
+                    while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
                     {
-                        imgPhoto.BinaryFileId = person.PhotoId;
-                        imgPhoto.NoPictureUrl = Person.GetPersonNoPictureUrl( person, 200, 200 );
-                        dvpTitle.SetValue( person.TitleValueId );
-                        tbFirstName.Text = person.FirstName;
-                        tbNickName.Text = person.NickName;
-                        tbLastName.Text = person.LastName;
-                        dvpSuffix.SetValue( person.SuffixValueId );
-                        bpBirthDay.SelectedDate = person.BirthDate;
-                        rblGender.SelectedValue = person.Gender.ConvertToString();
-                        if ( group.Members.Where( gm => gm.PersonId == person.Id && gm.GroupRole.Guid == childGuid ).Any() )
-                        {
-                            _IsEditRecordAdult = false;
-                            tbEmail.Required = false;
-                            // don't display campus selector to children. Rated PG.
-                            cpCampus.Visible = false;
+                        gradeOffset++;
+                    }
 
-                            if ( person.GraduationYear.HasValue )
-                            {
-                                ypGraduation.SelectedYear = person.GraduationYear.Value;
-                            }
-                            else
-                            {
-                                ypGraduation.SelectedYear = null;
-                            }
+                    ddlGradePicker.SetValue( gradeOffset );
+                }
+                else
+                {
+                    ddlGradePicker.SelectedIndex = 0;
+                }
+            }
+            else
+            {
+                _isEditRecordAdult = true;
+                bool requireEmail = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
+                tbEmail.Required = requireEmail;
+                ddlGradePicker.Visible = false;
 
-                            ddlGradePicker.Visible = true;
-                            if ( !person.HasGraduated ?? false )
-                            {
-                                int gradeOffset = person.GradeOffset.Value;
-                                var maxGradeOffset = ddlGradePicker.MaxGradeOffset;
+                // show/hide campus selector
+                bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
+                cpCampus.Visible = showCampus;
+                if ( showCampus )
+                {
+                    cpCampus.Campuses = CampusCache.All( false );
 
-                                // keep trying until we find a Grade that has a gradeOffset that includes the Person's gradeOffset (for example, there might be combined grades)
-                                while ( !ddlGradePicker.Items.OfType<ListItem>().Any( a => a.Value.AsInteger() == gradeOffset ) && gradeOffset <= maxGradeOffset )
-                                {
-                                    gradeOffset++;
-                                }
-
-                                ddlGradePicker.SetValue( gradeOffset );
-                            }
-                            else
-                            {
-                                ddlGradePicker.SelectedIndex = 0;
-                            }
-                        }
-                        else
-                        {
-                            _IsEditRecordAdult = true;
-                            bool requireEmail = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
-                            tbEmail.Required = requireEmail;
-                            ddlGradePicker.Visible = false;
-                            // show/hide campus selector
-                            bool showCampus = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean();
-                            cpCampus.Visible = showCampus;
-                            if ( showCampus )
-                            {
-                                cpCampus.Campuses = CampusCache.All( false );
-
-                                // Use the current person's campus if this a new person
-                                if ( personGuid == Guid.Empty )
-                                {
-                                    cpCampus.SetValue( CurrentPerson.PrimaryCampus );
-                                }
-                                else
-                                {
-                                    cpCampus.SetValue( person.GetCampus() );
-                                }
-                            }
-                        }
-                        tbEmail.Text = person.Email;
-                        rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
-
-                        rblCommunicationPreference.Visible = this.GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
-                        rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
-
-                        // Person Attributes
-                        var displayedAttributeGuids = GetPersonAttributeGuids( person.Id );
-                        if ( !displayedAttributeGuids.Any() || personGuid == Guid.Empty )
-                        {
-                            pnlPersonAttributes.Visible = false;
-                        }
-                        else
-                        {
-                            pnlPersonAttributes.Visible = true;
-                            DisplayEditAttributes( person, displayedAttributeGuids, phPersonAttributes, pnlPersonAttributes, true );
-                        }
-
-                        // Family Attributes
-                        if ( person.Id == CurrentPerson.Id )
-                        {
-                            List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
-                            if ( familyAttributeGuidList.Any() )
-                            {
-                                pnlFamilyAttributes.Visible = true;
-                                DisplayEditAttributes( group, familyAttributeGuidList, phFamilyAttributes, pnlFamilyAttributes, true );
-                            }
-                            else
-                            {
-                                pnlFamilyAttributes.Visible = false;
-                            }
-
-                            lPreviousAddress.Text = string.Empty;
-                            acAddress.Required = false;
-
-                            Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuidOrNull();
-                            if ( locationTypeGuid.HasValue )
-                            {
-                                pnlAddress.Visible = true;
-                                var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
-
-                                // if address type is home enable the move and is mailing/physical
-                                if ( addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
-                                {
-                                    lbMoved.Visible = true;
-                                    cbIsMailingAddress.Visible = true;
-                                    cbIsPhysicalAddress.Visible = true;
-                                }
-                                else
-                                {
-                                    lbMoved.Visible = false;
-                                    cbIsMailingAddress.Visible = false;
-                                    cbIsPhysicalAddress.Visible = false;
-                                }
-
-                                lAddressTitle.Text = addressTypeDv.Value + " Address";
-
-                                var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
-
-                                if ( familyGroupTypeGuid.HasValue )
-                                {
-                                    var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
-
-                                    var familyAddress = new GroupLocationService( rockContext ).Queryable()
-                                                        .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                                && l.GroupLocationTypeValueId == addressTypeDv.Id
-                                                                && l.Group.Members.Any( m => m.PersonId == person.Id ) )
-                                                        .FirstOrDefault();
-                                    if ( familyAddress != null )
-                                    {
-                                        acAddress.SetValues( familyAddress.Location );
-
-                                        cbIsMailingAddress.Checked = familyAddress.IsMailingLocation;
-                                        cbIsPhysicalAddress.Checked = familyAddress.IsMappedLocation;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            pnlFamilyAttributes.Visible = false;
-                            pnlAddress.Visible = false;
-                        }
-
-                        BindPhoneNumbers( person );
-                        
+                    // Use the current person's campus if this a new person
+                    if ( personGuid == Guid.Empty )
+                    {
+                        cpCampus.SetValue( CurrentPerson.PrimaryCampus );
+                    }
+                    else
+                    {
+                        cpCampus.SetValue( person.GetCampus() );
                     }
                 }
             }
+
+            tbEmail.Text = person.Email;
+            rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
+
+            rblCommunicationPreference.Visible = this.GetAttributeValue( AttributeKey.ShowCommunicationPreference ).AsBoolean();
+            rblCommunicationPreference.SetValue( person.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
+
+            // Person Attributes
+            var personAttributeAdultGuidList = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
+            var personAttributeChildGuidList = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
+
+            avcPersonAttributesAdult.IncludedAttributes = personAttributeAdultGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+            avcPersonAttributesChild.IncludedAttributes = personAttributeChildGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+
+            avcPersonAttributesAdult.AddEditControls( person, true );
+            avcPersonAttributesChild.AddEditControls( person, true );
+
+            avcPersonAttributesAdult.Visible = false;
+            avcPersonAttributesChild.Visible = false;
+            pnlPersonAttributes.Visible = false;
+
+            if ( personGuid != Guid.Empty )
+            {
+                if ( person.AgeClassification != AgeClassification.Child && personAttributeAdultGuidList.Any() )
+                {
+                    avcPersonAttributesAdult.Visible = true;
+                    pnlPersonAttributes.Visible = true;
+                }
+                else if ( person.AgeClassification == AgeClassification.Child && personAttributeChildGuidList.Any() )
+                {
+                    avcPersonAttributesChild.Visible = true;
+                    pnlPersonAttributes.Visible = true;
+                }
+            }
+
+            // Family Attributes
+            if ( person.Id == CurrentPerson.Id )
+            {
+                List<Guid> familyAttributeGuidList = GetAttributeValue( AttributeKey.FamilyAttributes ).SplitDelimitedValues().AsGuidList();
+                if ( familyAttributeGuidList.Any() )
+                {
+                    pnlFamilyAttributes.Visible = true;
+                    avcFamilyAttributes.IncludedAttributes = familyAttributeGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+                    avcFamilyAttributes.AddEditControls( group, true );
+                }
+                else
+                {
+                    pnlFamilyAttributes.Visible = false;
+                }
+
+                lPreviousAddress.Text = string.Empty;
+                acAddress.Required = false;
+
+                Guid? locationTypeGuid = GetAttributeValue( AttributeKey.AddressTypeValueGuid ).AsGuidOrNull();
+                if ( locationTypeGuid.HasValue )
+                {
+                    pnlAddress.Visible = true;
+                    var addressTypeDv = DefinedValueCache.Get( locationTypeGuid.Value );
+
+                    // if address type is home enable the move and is mailing/physical
+                    if ( addressTypeDv.Guid == Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() )
+                    {
+                        lbMoved.Visible = true;
+                        cbIsMailingAddress.Visible = true;
+                        cbIsPhysicalAddress.Visible = true;
+                    }
+                    else
+                    {
+                        lbMoved.Visible = false;
+                        cbIsMailingAddress.Visible = false;
+                        cbIsPhysicalAddress.Visible = false;
+                    }
+
+                    lAddressTitle.Text = addressTypeDv.Value + " Address";
+
+                    var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuidOrNull();
+
+                    if ( familyGroupTypeGuid.HasValue )
+                    {
+                        var familyGroupType = GroupTypeCache.Get( familyGroupTypeGuid.Value );
+
+                        var familyAddress = new GroupLocationService( rockContext ).Queryable()
+                                            .Where( l => l.GroupId == groupId.Value
+                                                    && l.GroupLocationTypeValueId == addressTypeDv.Id
+                                                    && l.Group.Members.Any( m => m.PersonId == person.Id ) )
+                                            .FirstOrDefault();
+                        if ( familyAddress != null )
+                        {
+                            acAddress.SetValues( familyAddress.Location );
+
+                            cbIsMailingAddress.Checked = familyAddress.IsMailingLocation;
+                            cbIsPhysicalAddress.Checked = familyAddress.IsMappedLocation;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                pnlFamilyAttributes.Visible = false;
+                pnlAddress.Visible = false;
+            }
+
+            BindPhoneNumbers( person );
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
         }
 
-        private void BindPhoneNumbers( Person person = null )
+        /// <summary>
+        /// Binds the phone numbers.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        private void BindPhoneNumbers( Person person )
         {
-            if ( person == null ) person = new Person();
+            if ( person == null )
+            {
+                person = new Person();
+            }
 
             bool showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
             pnlPhoneNumbers.Visible = showPhoneNumbers;
-            if ( showPhoneNumbers )
+            if ( !showPhoneNumbers )
             {
-
-                var phoneNumbers = new List<PhoneNumber>();
-                var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-                var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
-                var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypes ).Split( ',' ).AsGuidList();
-
-                if (phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any())
-                {
-                    foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid) ) )
-                    {
-                        var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                        if ( phoneNumber == null )
-                        {
-                            var numberType = new DefinedValue();
-                            numberType.Id = phoneNumberType.Id;
-                            numberType.Value = phoneNumberType.Value;
-                            numberType.Guid = phoneNumberType.Guid;
-
-                            phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
-                            phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
-                        }
-                        else
-                        {
-                            // Update number format, just in case it wasn't saved correctly
-                            phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
-                        }
-
-                        phoneNumbers.Add( phoneNumber );
-                    }
-
-                    rContactInfo.DataSource = phoneNumbers;
-                    rContactInfo.DataBind();
-                }
+                return;
             }
 
+            var phoneNumbers = new List<PhoneNumber>();
+            var phoneNumberTypes = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            var selectedPhoneTypeGuids = GetAttributeValue( AttributeKey.PhoneTypeValueGuids ).Split( ',' ).AsGuidList();
+
+            if ( phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ).Any() )
+            {
+                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues.Where( pnt => selectedPhoneTypeGuids.Contains( pnt.Guid ) ) )
+                {
+                    var phoneNumber = person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
+                    if ( phoneNumber == null )
+                    {
+                        var numberType = new DefinedValue();
+                        numberType.Id = phoneNumberType.Id;
+                        numberType.Value = phoneNumberType.Value;
+                        numberType.Guid = phoneNumberType.Guid;
+
+                        phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
+                    }
+                    else
+                    {
+                        // Update number format, just in case it wasn't saved correctly
+                        phoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( phoneNumber.CountryCode, phoneNumber.Number );
+                    }
+
+                    phoneNumbers.Add( phoneNumber );
+                }
+
+                rContactInfo.DataSource = phoneNumbers;
+                rContactInfo.DataBind();
+            }
         }
 
         /// <summary>
@@ -1468,86 +1569,42 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Display Person Attribute on the Basis of Role
+        /// Sets the visibility of the controls for role.
         /// </summary>
-        /// <param name="selectedId">The id of the selected group identifier.</param>
-        private void DisplayPersonAttributeOnRoleType( int? selectedId )
+        /// <param name="roleTypeId">The role type identifier.</param>
+        public void SetControlsForRoleType( int roleTypeId )
         {
-            GroupTypeRoleService groupTypeRoleService = new GroupTypeRoleService( new RockContext() );
-            List<Guid> attributeGuidList = new List<Guid>();
             var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            var groupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+            var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
 
-            if ( selectedId.HasValue )
+            if ( groupTypeFamily.Roles.Where( gr =>
+                           gr.Guid == adultGuid &&
+                           gr.Id == roleTypeId ).Any() )
             {
-                if ( groupTypeRoleService.Queryable().Where( gr =>
-                               gr.GroupType.Guid == groupTypeGuid &&
-                               gr.Guid == adultGuid &&
-                               gr.Id == selectedId ).Any() )
-                {
-                    attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
-                    ddlGradePicker.Visible = false;
-                    tbEmail.Required = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
-                    _IsEditRecordAdult = true;
-                    BindPhoneNumbers();
-                }
-                else
-                {
-                    attributeGuidList = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
-                    ddlGradePicker.Visible = true;
-                    tbEmail.Required = false;
-                    _IsEditRecordAdult = false;
-                    BindPhoneNumbers();
-                }
-
-                if ( attributeGuidList.Any() )
-                {
-                    pnlPersonAttributes.Visible = true;
-                    DisplayEditAttributes( new Person(), attributeGuidList, phPersonAttributes, pnlPersonAttributes, true );
-                }
-                else
-                {
-                    pnlPersonAttributes.Visible = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Displays the edit attributes.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="displayedAttributeGuids">The displayed attribute guids.</param>
-        /// <param name="phAttributes">The place holder attributes.</param>
-        /// <param name="pnlAttributes">The PNL attributes.</param>
-        /// <param name="setValue">a boolean that determines if the value should be preset.</param>
-        private void DisplayEditAttributes( Rock.Attribute.IHasAttributes item, List<Guid> displayedAttributeGuids, PlaceHolder phAttributes, Panel pnlAttributes, bool setValue )
-        {
-            phAttributes.Controls.Clear();
-            item.LoadAttributes();
-            var excludedAttributeList = item.Attributes.Where( a => !displayedAttributeGuids.Contains( a.Value.Guid ) ).Select( a => a.Value.Key ).ToList();
-
-            if ( item.Attributes != null && item.Attributes.Any() && displayedAttributeGuids.Any() )
-            {
-                pnlAttributes.Visible = true;
-                Helper.AddEditControls( item, phAttributes, setValue, BlockValidationGroup, excludedAttributeList, false, 2 );
+                ddlGradePicker.Visible = false;
+                tbEmail.Required = GetAttributeValue( AttributeKey.RequireAdultEmailAddress ).AsBoolean();
+                _isEditRecordAdult = true;
             }
             else
             {
-                pnlAttributes.Visible = false;
+                ddlGradePicker.Visible = true;
+                tbEmail.Required = false;
+                _isEditRecordAdult = false;
             }
-        }
 
-        /// <summary>
-        /// Formats the phone number.
-        /// </summary>
-        /// <param name="countryCode">The country code.</param>
-        /// <param name="number">The number.</param>
-        /// <returns></returns>
-        protected string FormatPhoneNumber( object countryCode, object number )
-        {
-            string cc = countryCode as string ?? string.Empty;
-            string n = number as string ?? string.Empty;
-            return PhoneNumber.FormattedNumber( cc, n );
+            avcPersonAttributesAdult.Visible = _isEditRecordAdult;
+            avcPersonAttributesChild.Visible = !_isEditRecordAdult;
+
+            if ( _isEditRecordAdult )
+            {
+                var attributeGuidListAdult = GetAttributeValue( AttributeKey.PersonAttributesAdults ).SplitDelimitedValues().AsGuidList();
+                pnlPersonAttributes.Visible = attributeGuidListAdult.Any();
+            }
+            else
+            {
+                var attributeGuidListChild = GetAttributeValue( AttributeKey.PersonAttributesChildren ).SplitDelimitedValues().AsGuidList();
+                pnlPersonAttributes.Visible = attributeGuidListChild.Any();
+            }
         }
 
         #endregion

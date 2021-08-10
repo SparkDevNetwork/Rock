@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using CacheManager.Core;
 using CacheManager.Core.Internal;
+using Rock.Bus.Message;
+using Rock.Bus;
 
 namespace Rock.Web.Cache
 {
@@ -47,13 +49,12 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Prevents a default instance of the <see cref="RockCacheManager{T}"/> class from being created.
         /// </summary>
-        RockCacheManager()
+        private RockCacheManager()
         {
         }
 
-
         /// <summary>
-        /// Gets the singletone instance of this class
+        /// Gets the singleton instance of this class
         /// </summary>
         public static RockCacheManager<T> Instance
         {
@@ -77,7 +78,17 @@ namespace Rock.Web.Cache
         /// <value>
         /// The cache.
         /// </value>
-        public BaseCacheManager<T> Cache
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Do not access the cache manager directly. Instead use the method available on this class." )]
+        public BaseCacheManager<T> Cache => CacheManager;
+
+        /// <summary>
+        /// Gets the cache.
+        /// </summary>
+        /// <value>
+        /// The cache.
+        /// </value>
+        private BaseCacheManager<T> CacheManager
         {
             get
             {
@@ -99,9 +110,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static ICacheManagerConfiguration GetCacheConfig()
         {
-            bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean()?? false;
+            bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean() ?? false;
 
-            bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean()?? false;
+            bool redisEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() ?? false;
             if ( redisEnabled == false )
             {
                 var config = new ConfigurationBuilder( "InProcess" )
@@ -126,28 +137,30 @@ namespace Rock.Web.Cache
                 .WithJsonSerializer()
                 .WithDictionaryHandle()
                 .And
-                .WithRedisConfiguration( "redis", redisConfig =>
-                {
-                    redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
-
-                    if( redisPassword.IsNotNullOrWhiteSpace() )
+                .WithRedisConfiguration(
+                    "redis",
+                    redisConfig =>
                     {
-                        redisConfig.WithPassword( redisPassword );
-                    }
+                        redisConfig.WithAllowAdmin().WithDatabase( redisDbIndex );
 
-                    foreach ( var redisEndPoint in redisEndPointList )
-                    {
-                        string[] info = redisEndPoint.Split( ':' );
-                        if ( info.Length == 2 )
+                        if ( redisPassword.IsNotNullOrWhiteSpace() )
                         {
-                            redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
+                            redisConfig.WithPassword( redisPassword );
                         }
-                        else
+
+                        foreach ( var redisEndPoint in redisEndPointList )
                         {
-                            redisConfig.WithEndpoint( info[0], 6379 );
+                            string[] info = redisEndPoint.Split( ':' );
+                            if ( info.Length == 2 )
+                            {
+                                redisConfig.WithEndpoint( info[0], info[1].AsIntegerOrNull() ?? 6379 );
+                            }
+                            else
+                            {
+                                redisConfig.WithEndpoint( info[0], 6379 );
+                            }
                         }
-                    }
-                } )
+                    } )
                 .WithMaxRetries( 100 )
                 .WithRetryTimeout( 10 )
                 .WithRedisBackplane( "redis" )
@@ -209,30 +222,51 @@ namespace Rock.Web.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? CacheManager.GetCacheItem( key, region ) : CacheManager.GetCacheItem( key );
                 if ( cacheItem != null )
                 {
-                    Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
+                    CacheManager.Put( cacheItem.WithAbsoluteExpiration( expiration ) );
                 }
                 else
                 {
                     cacheItem = region.IsNotNullOrWhiteSpace() ?
                         new CacheItem<T>( key, region, updateValue, ExpirationMode.Absolute, expiration ) :
                         new CacheItem<T>( key, updateValue, ExpirationMode.Absolute, expiration );
-                    Cache.Add( cacheItem );
+                    CacheManager.Add( cacheItem );
                 }
             }
 
             if ( region.IsNotNullOrWhiteSpace() )
             {
-                Cache.AddOrUpdate( key, region, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, region, updateValue, v => updateValue );
                 UpdateCacheReferences( key, region, updateValue );
             }
             else
             {
-                Cache.AddOrUpdate( key, updateValue, v => updateValue );
+                CacheManager.AddOrUpdate( key, updateValue, v => updateValue );
                 UpdateCacheReferences( key, region, updateValue );
-            }            
+            }
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public T Get( string key )
+        {
+            return CacheManager.Get( key );
+        }
+
+        /// <summary>
+        /// Gets a value for the specified key and region and will cast it to the specified type.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public T Get( string key, string region )
+        {
+            return CacheManager.Get( key, region );
         }
 
         /// <summary>
@@ -240,7 +274,99 @@ namespace Rock.Web.Cache
         /// </summary>
         public void Clear()
         {
-            Cache.Clear();
+            /* 07-29-2021 MDP
+             We want to clear the local cache immediately for this Instance of Rock.
+             Then send a CacheWasUpdatedMessage so that other Instances of Rock know that the cache was Updated.
+             This instance of Rock will also receive this CacheWasUpdatedMessage, but we already took care of that in this instance.
+             So, if we detect CacheWasUpdatedMessage is from this Instance, we can ignore it since we already took care of it.
+             */
+
+            CacheManager.Clear();
+            CacheWasUpdatedMessage.Publish<T>();
+        }
+
+        /// <summary>
+        /// Receives the clear message from the message bus.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        internal void ReceiveClearMessage( CacheWasUpdatedMessage message )
+        {
+            if ( RockMessageBus.IsFromSelf( message ) )
+            {
+                // We already took care of Clearing the cache for our instance, so
+                // we can ignore this message.
+                return;
+            }
+
+            CacheManager.Clear();
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        public bool Remove( string key )
+        {
+            /* 07-29-2021 MDP
+             We want to remove this item from local cache immediately for this Instance of Rock.
+             Then send a CacheWasUpdatedMessage so that other Instances of Rock know that the cache was Updated.
+             This instance of Rock will also receive this CacheWasUpdatedMessage, but we already took care of that in this instance.
+             So, if we detect CacheWasUpdatedMessage is from this Instance, we can ignore it since we already took care of it.
+             */
+
+            CacheManager.Remove( key );
+            CacheWasUpdatedMessage.Publish<T>( key );
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a value from the cache for the specified key and region.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="region">The region.</param>
+        /// <returns></returns>
+        public bool Remove( string key, string region )
+        {
+            /* 07-29-2021 MDP
+             We want to remove this item from local cache immediately for this Instance of Rock.
+             Then send a CacheWasUpdatedMessage so that other Instances of Rock know that the cache was Updated.
+             This instance of Rock will also receive this CacheWasUpdatedMessage, but we already took care of that in this instance.
+             So, if we detect CacheWasUpdatedMessage is from this Instance, we can ignore it since we already took care of it.
+             */
+
+            CacheManager.Remove( key, region );
+            CacheWasUpdatedMessage.Publish<T>( key, region );
+            return true;
+        }
+
+        /// <summary>
+        /// Receives the remove message from the bus.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        internal void ReceiveRemoveMessage( CacheWasUpdatedMessage message )
+        {
+            if ( RockMessageBus.IsFromSelf( message ) )
+            {
+                // We already took care of Clearing the cache for our instance, so
+                // we can ignore this message.
+                return;
+            }
+
+            if ( message.Key.IsNullOrWhiteSpace() )
+            {
+                // A Key needs to be specified
+                return;
+            }
+
+            if ( message.Region.IsNotNullOrWhiteSpace() )
+            {
+                CacheManager.Remove( message.Key, message.Region );
+            }
+            else
+            {
+                CacheManager.Remove( message.Key );
+            }
         }
 
         /// <summary>
@@ -249,20 +375,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public CacheItemStatistics GetStatistics()
         {
-            //type.IsGenericType && type.GenericTypeArguments[0] == typeof( Rock.Model.Person );
             var type = typeof( T );
 
             string name = type.Name;
-            if( type.IsGenericType && type.GenericTypeArguments[0] != null )
+            if ( type.IsGenericType && type.GenericTypeArguments[0] != null )
             {
                 name = type.GenericTypeArguments[0].ToString();
             }
 
             var cacheStatistics = new CacheItemStatistics( name );
 
-            //var cacheStatistics = new CacheItemStatistics( typeof( T ).Name );
-
-            foreach ( var handle in Cache.CacheHandles )
+            foreach ( var handle in CacheManager.CacheHandles )
             {
                 var handleStatistics = new CacheHandleStatistics( handle.Configuration.HandleType.Name );
                 cacheStatistics.HandleStats.Add( handleStatistics );
@@ -360,6 +483,7 @@ namespace Rock.Web.Cache
             Name = name;
         }
     }
+
     /// <summary>
     /// Cache Statistic Count
     /// </summary>

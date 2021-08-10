@@ -69,7 +69,7 @@ namespace Rock.Workflow.Action
 
             Guid? groupGuid = null;
             Person person = null;
-            DateTime attendanceDateTime = DateTime.Now;
+            var attendanceDateTime = RockDateTime.Now;
             bool addToGroup = true;
            
             // get the group attribute

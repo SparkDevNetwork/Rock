@@ -43,7 +43,7 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepProgram"/> to which this status belongs. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.StepProgram"/> to which this status belongs. This property is required.
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
@@ -87,13 +87,13 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the StepProgram.
+        /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
         /// </summary>
         [DataMember]
         public virtual StepProgram StepProgram { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection containing the <see cref="Step">Steps</see> that are of this step status.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Step">Steps</see> that are of this step status.
         /// </summary>
         [DataMember]
         public virtual ICollection<Step> Steps
@@ -102,6 +102,30 @@ namespace Rock.Model
             set => _steps = value;
         }
         private ICollection<Step> _steps;
+
+        /// <summary>
+        /// Gets the status color or default color depending on IsCompleteStatus.
+        /// </summary>
+        /// <value>
+        /// The status color or default.
+        /// </value>
+        public virtual string StatusColorOrDefault
+        {
+            get
+            {
+                if ( !StatusColor.IsNullOrWhiteSpace() )
+                {
+                    return StatusColor;
+                }
+
+                if ( IsCompleteStatus )
+                {
+                    return "#16c98d";
+                }
+
+                return "#f3f3f3";
+            }
+        }
 
         #endregion Virtual Properties
 

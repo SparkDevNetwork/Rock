@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,63 +54,130 @@ namespace Rock.Model
         public bool CanDelete( Page item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.ConnectionRequestDetailPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, ConnectionType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Page>( Context ).Queryable().Any( a => a.ParentPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} contains one or more child {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName.Pluralize().ToLower() );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.ChangePasswordPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.CommunicationPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.DefaultPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.LoginPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.MobilePageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.PageNotFoundPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<Site>( Context ).Queryable().Any( a => a.RegistrationPageId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// Page View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( Page ) )]
+    public partial class PageViewModelHelper : ViewModelHelper<Page, Rock.ViewModel.PageViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.PageViewModel CreateViewModel( Page model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.PageViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AdditionalSettings = model.AdditionalSettings,
+                AllowIndexing = model.AllowIndexing,
+                BodyCssClass = model.BodyCssClass,
+                BreadCrumbDisplayIcon = model.BreadCrumbDisplayIcon,
+                BreadCrumbDisplayName = model.BreadCrumbDisplayName,
+                BrowserTitle = model.BrowserTitle,
+                CacheControlHeaderSettings = model.CacheControlHeaderSettings,
+                Description = model.Description,
+                DisplayInNavWhen = ( int ) model.DisplayInNavWhen,
+                EnableViewState = model.EnableViewState,
+                HeaderContent = model.HeaderContent,
+                IconBinaryFileId = model.IconBinaryFileId,
+                IconCssClass = model.IconCssClass,
+                IncludeAdminFooter = model.IncludeAdminFooter,
+                InternalName = model.InternalName,
+                IsSystem = model.IsSystem,
+                KeyWords = model.KeyWords,
+                LayoutId = model.LayoutId,
+                MedianPageLoadTimeDurationSeconds = model.MedianPageLoadTimeDurationSeconds,
+                MenuDisplayChildPages = model.MenuDisplayChildPages,
+                MenuDisplayDescription = model.MenuDisplayDescription,
+                MenuDisplayIcon = model.MenuDisplayIcon,
+                Order = model.Order,
+                PageDisplayBreadCrumb = model.PageDisplayBreadCrumb,
+                PageDisplayDescription = model.PageDisplayDescription,
+                PageDisplayIcon = model.PageDisplayIcon,
+                PageDisplayTitle = model.PageDisplayTitle,
+                PageTitle = model.PageTitle,
+                ParentPageId = model.ParentPageId,
+                RequiresEncryption = model.RequiresEncryption,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -135,6 +205,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this Page object to a new Page object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static Page CloneWithoutIdentity( this Page source )
+        {
+            var target = new Page();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another Page object to this Page object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -148,6 +241,7 @@ namespace Rock.Model
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
             target.BreadCrumbDisplayName = source.BreadCrumbDisplayName;
             target.BrowserTitle = source.BrowserTitle;
+            target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.Description = source.Description;
             target.DisplayInNavWhen = source.DisplayInNavWhen;
             target.EnableViewState = source.EnableViewState;
@@ -166,7 +260,6 @@ namespace Rock.Model
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;
             target.Order = source.Order;
-            target.OutputCacheDuration = source.OutputCacheDuration;
             target.PageDisplayBreadCrumb = source.PageDisplayBreadCrumb;
             target.PageDisplayDescription = source.PageDisplayDescription;
             target.PageDisplayIcon = source.PageDisplayIcon;
@@ -182,5 +275,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.PageViewModel ToViewModel( this Page model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new PageViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

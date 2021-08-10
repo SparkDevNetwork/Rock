@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -55,7 +56,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
-        [Index( "IDX_LastName", IsUnique = false )]
+        [Index( "IX_LastName", IsUnique = false )]
         public string LastName { get; set; }
 
         #endregion
@@ -68,7 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>

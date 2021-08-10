@@ -24,6 +24,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -236,16 +237,16 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the parent FinancialAccount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual FinancialAccount ParentAccount { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus that this FinancialAccount is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </summary>
         /// <value>
         /// the <see cref="Rock.Model.Campus"/> that this FinancialAccount is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
 
         /// <summary>
@@ -270,7 +271,7 @@ namespace Rock.Model
         /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
         /// </summary>
         /// <value>
-        /// A collection containing all FinancialAccoutns that are sub accounts/child accounts of this account.
+        /// A collection containing all FinancialAccounts that are sub accounts/child accounts of this account.
         /// </value>
         [DataMember]
         public virtual ICollection<FinancialAccount> ChildAccounts
@@ -286,7 +287,7 @@ namespace Rock.Model
         /// <value>
         /// The parent account ids.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public List<int> ParentAccountIds
         {
             get

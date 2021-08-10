@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -118,6 +119,16 @@ namespace RockWeb.Blocks.CheckIn.Config
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetFieldVisibility();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlSuccessTemplateOverrideDisplayMode control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlSuccessTemplateOverrideDisplayMode_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetFieldVisibility();
         }
@@ -225,8 +236,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_PreventInactivePeople", cbPreventInactivePeople.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_CheckInType", ddlType.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_DisplayLocationCount", cbDisplayLocCount.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, rblAbilityLevelDetermination.SelectedValue );
                 groupType.SetAttributeValue( "core_checkin_EnableManagerOption", cbEnableManager.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_EnableOverride", cbEnableOverride.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, listboxAchievementTypes.SelectedValues.AsDelimited(",") );
+
                 groupType.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", nbMaxPhoneLength.Text );
                 groupType.SetAttributeValue( "core_checkin_MaxSearchResults", nbMaxResults.Text );
                 groupType.SetAttributeValue( "core_checkin_MinimumPhoneSearchLength", nbMinPhoneLength.Text );
@@ -250,8 +264,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", nbCodeAlphaLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", nbCodeNumericLength.Text );
                 groupType.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", cbCodeRandom.Checked.ToString() );
-                groupType.SetAttributeValue( "core_checkin_AllowCheckout", cbAllowCheckout.Checked.ToString() );
-                groupType.SetAttributeValue( "core_checkin_EnablePresence", cbEnablePresence.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT, cbAllowCheckout.Checked.ToString() );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE, cbEnablePresence.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectDaysBack", nbAutoSelectDaysBack.Text );
                 groupType.SetAttributeValue( "core_checkin_AutoSelectOptions", ddlAutoSelectOptions.SelectedValueAsInt() );
 
@@ -317,8 +331,21 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES, lbSameFamilyKnownRelationshipTypes.SelectedValues.AsDelimited( "," ) );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, lbCanCheckInKnownRelationshipTypes.SelectedValues.AsDelimited( "," ) );
 
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE, ceActionSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE, ceCheckoutPersonSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE, cePersonSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE, ceMultiPersonSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE, ceGroupTypeSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE, ceTimeSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE, ceAbilityLevelSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE, ceLocationSelectHeaderTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE, ceGroupSelectHeaderTemplate.Text );
+
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE, ceStartTemplate.Text );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE, ceFamilySelectTemplate.Text );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE, cePersonSelectTemplate.Text );
+
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE, ddlSuccessTemplateOverrideDisplayMode.SelectedValue );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, ceSuccessTemplate.Text );
 
                 // Save group type and attributes
@@ -480,8 +507,10 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cbPreventInactivePeople.Checked = groupType.GetAttributeValue( "core_checkin_PreventInactivePeople" ).AsBoolean( true );
                 ddlType.SetValue( groupType.GetAttributeValue( "core_checkin_CheckInType" ) );
                 cbDisplayLocCount.Checked = groupType.GetAttributeValue( "core_checkin_DisplayLocationCount" ).AsBoolean( true );
+                rblAbilityLevelDetermination.SelectedValue = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
                 cbEnableManager.Checked = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
                 cbEnableOverride.Checked = groupType.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
+                listboxAchievementTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues() );
                 nbMaxPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" );
                 nbMaxResults.Text = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" );
                 nbMinPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" );
@@ -501,8 +530,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 nbCodeAlphaLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" );
                 nbCodeNumericLength.Text = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" );
                 cbCodeRandom.Checked = groupType.GetAttributeValue( "core_checkin_SecurityCodeNumericRandom" ).AsBoolean( true );
-                cbAllowCheckout.Checked = groupType.GetAttributeValue( "core_checkin_AllowCheckout" ).AsBoolean( true );
-                cbEnablePresence.Checked = groupType.GetAttributeValue( "core_checkin_EnablePresence" ).AsBoolean();
+                cbAllowCheckout.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( true );
+                cbEnablePresence.Checked = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
                 nbAutoSelectDaysBack.Text = groupType.GetAttributeValue( "core_checkin_AutoSelectDaysBack" );
                 ddlAutoSelectOptions.SetValue( groupType.GetAttributeValue( "core_checkin_AutoSelectOptions" ) );
 
@@ -546,8 +575,21 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbSameFamilyKnownRelationshipTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES ).SplitDelimitedValues() );
                 lbCanCheckInKnownRelationshipTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES ).SplitDelimitedValues() );
 
+                ceActionSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
+                ceCheckoutPersonSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+                cePersonSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+                ceMultiPersonSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+                ceGroupTypeSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE );
+                ceTimeSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE );
+                ceAbilityLevelSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE );
+                ceLocationSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE );
+                ceGroupSelectHeaderTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE );
+
                 ceStartTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
                 ceFamilySelectTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+                cePersonSelectTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
+
+                ddlSuccessTemplateOverrideDisplayMode.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ) );
                 ceSuccessTemplate.Text = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
 
                 // Other GroupType Attributes
@@ -566,9 +608,11 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_PreventDuplicateCheckin" );
             excludeList.Add( "core_checkin_PreventInactivePeople" );
             excludeList.Add( "core_checkin_CheckInType" );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION );
             excludeList.Add( "core_checkin_DisplayLocationCount" );
             excludeList.Add( "core_checkin_EnableManagerOption" );
             excludeList.Add( "core_checkin_EnableOverride" );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES );
             excludeList.Add( "core_checkin_MaximumPhoneSearchLength" );
             excludeList.Add( "core_checkin_MaxSearchResults" );
             excludeList.Add( "core_checkin_MinimumPhoneSearchLength" );
@@ -582,9 +626,10 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( "core_checkin_SecurityCodeAlphaLength" );
             excludeList.Add( "core_checkin_SecurityCodeNumericLength" );
             excludeList.Add( "core_checkin_SecurityCodeNumericRandom" );
-            excludeList.Add( "core_checkin_AllowCheckout" );
             excludeList.Add( "core_checkin_AutoSelectDaysBack" );
             excludeList.Add( "core_checkin_AutoSelectOptions" );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE );
 
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS );
@@ -604,9 +649,21 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS );
 
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE );
+
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
 
             if ( groupType.Attributes.Any( t => !excludeList.Contains( t.Value.Key ) ) )
             {
@@ -619,6 +676,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             }
         }
 
+        /// <summary>
+        /// Sets the field visibility.
+        /// </summary>
         private void SetFieldVisibility()
         {
             bool familyType = ddlType.SelectedValue == "1";
@@ -640,6 +700,9 @@ namespace RockWeb.Blocks.CheckIn.Config
             nbMinPhoneLength.Visible = showPhoneFields;
             nbMaxPhoneLength.Visible = showPhoneFields;
             ddlPhoneSearchType.Visible = showPhoneFields;
+
+            var successLavaTemplateDisplayMode = ddlSuccessTemplateOverrideDisplayMode.SelectedValueAsEnum<SuccessLavaTemplateDisplayMode>( SuccessLavaTemplateDisplayMode.Never );
+            ceSuccessTemplate.Visible = successLavaTemplateDisplayMode != SuccessLavaTemplateDisplayMode.Never;
         }
 
         /// <summary>
@@ -742,6 +805,18 @@ namespace RockWeb.Blocks.CheckIn.Config
                 }
             }
 
+            var achievementTypes = AchievementTypeCache.All()
+                .Where( stat => stat.IsActive )
+                .OrderBy( stat => stat.Name )
+                .ToList();
+
+            listboxAchievementTypes.Items.Clear();
+
+            foreach ( var achievementType in achievementTypes )
+            {
+                listboxAchievementTypes.Items.Add( new ListItem( achievementType.Name, achievementType.Guid.ToString() ) );
+            }
+
             lbKnownRelationshipTypes.Items.Clear();
             lbKnownRelationshipTypes.Items.Add( new ListItem( "Child", "0" ) );
             lbSameFamilyKnownRelationshipTypes.Items.Clear();
@@ -781,9 +856,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                 lbRegistrationRequiredAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
                 lbRegistrationOptionalAttributesForFamilies.Items.Add( new ListItem( groupTypeFamilyAttribute.Name, groupTypeFamilyAttribute.Value ) );
             }
+
+            ddlSuccessTemplateOverrideDisplayMode.Items.Clear();
+            ddlSuccessTemplateOverrideDisplayMode.BindToEnum<SuccessLavaTemplateDisplayMode>();
         }
 
         #endregion
-
     }
 }

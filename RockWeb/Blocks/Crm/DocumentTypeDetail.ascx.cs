@@ -319,6 +319,8 @@ namespace RockWeb.Blocks.Crm
             documentType.BinaryFileTypeId = bftpBinaryFileType.SelectedValueAsInt().Value;
             documentType.UserSelectable = rcbManuallySelectable.Checked;
             documentType.DefaultDocumentNameTemplate = ceTemplate.Text;
+            documentType.IsImage = cbIsImage.Checked;
+            documentType.MaxDocumentsPerEntity = nbMaxDocumentsPerEntity.IntegerValue;
 
             if ( !documentType.IsValid )
             {
@@ -452,6 +454,8 @@ namespace RockWeb.Blocks.Crm
             ceTemplate.Text = documentType.DefaultDocumentNameTemplate;
             bftpBinaryFileType.SelectedValue = documentType.BinaryFileTypeId.ToString();
             rcbManuallySelectable.Checked = documentType.UserSelectable;
+            nbMaxDocumentsPerEntity.IntegerValue = documentType.MaxDocumentsPerEntity;
+            cbIsImage.Checked = documentType.IsImage;
 
             tbName.Text = documentType.Name;
 

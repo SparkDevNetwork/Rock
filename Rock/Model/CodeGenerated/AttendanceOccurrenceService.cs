@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,11 +54,63 @@ namespace Rock.Model
         public bool CanDelete( AttendanceOccurrence item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Attendance,OccurrenceId 
+
+            // ignoring Attendance,OccurrenceId
             return true;
         }
     }
+
+    /// <summary>
+    /// AttendanceOccurrence View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( AttendanceOccurrence ) )]
+    public partial class AttendanceOccurrenceViewModelHelper : ViewModelHelper<AttendanceOccurrence, Rock.ViewModel.AttendanceOccurrenceViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.AttendanceOccurrenceViewModel CreateViewModel( AttendanceOccurrence model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.AttendanceOccurrenceViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AcceptConfirmationMessage = model.AcceptConfirmationMessage,
+                AnonymousAttendanceCount = model.AnonymousAttendanceCount,
+                AttendanceTypeValueId = model.AttendanceTypeValueId,
+                DeclineConfirmationMessage = model.DeclineConfirmationMessage,
+                DeclineReasonValueIds = model.DeclineReasonValueIds,
+                DidNotOccur = model.DidNotOccur,
+                GroupId = model.GroupId,
+                LocationId = model.LocationId,
+                Name = model.Name,
+                Notes = model.Notes,
+                OccurrenceDate = model.OccurrenceDate,
+                ScheduleId = model.ScheduleId,
+                ShowDeclineReasons = model.ShowDeclineReasons,
+                StepTypeId = model.StepTypeId,
+                SundayDate = model.SundayDate,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -83,6 +138,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this AttendanceOccurrence object to a new AttendanceOccurrence object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static AttendanceOccurrence CloneWithoutIdentity( this AttendanceOccurrence source )
+        {
+            var target = new AttendanceOccurrence();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another AttendanceOccurrence object to this AttendanceOccurrence object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -92,6 +170,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
             target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
+            target.AttendanceTypeValueId = source.AttendanceTypeValueId;
             target.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
             target.DeclineReasonValueIds = source.DeclineReasonValueIds;
             target.DidNotOccur = source.DidNotOccur;
@@ -102,7 +181,6 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
-            target.OccurrenceSourceDate = source.OccurrenceSourceDate;
             target.ScheduleId = source.ScheduleId;
             target.ShowDeclineReasons = source.ShowDeclineReasons;
             target.StepTypeId = source.StepTypeId;
@@ -115,5 +193,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.AttendanceOccurrenceViewModel ToViewModel( this AttendanceOccurrence model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new AttendanceOccurrenceViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

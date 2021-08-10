@@ -20,17 +20,26 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection status
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionStatus" )]
     [DataContract]
-    public partial class ConnectionStatus : Model<ConnectionStatus>, IHasActiveFlag
+    public partial class ConnectionStatus : Model<ConnectionStatus>, IHasActiveFlag, IOrdered
     {
+        #region Constants
+
+        /// <summary>
+        /// The default highlight color
+        /// </summary>
+        public static readonly string DefaultHighlightColor = "#ddd";
+
+        #endregion Constants
 
         #region Entity Properties
 
@@ -55,7 +64,7 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection type identifier.
@@ -97,24 +106,38 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets the color of the highlight.
+        /// </summary>
+        /// <value>
+        /// The color of the highlight.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string HighlightColor { get; set; }
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the connection.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
         /// </summary>
         /// <value>
         /// The type of the connection.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
 
         #endregion

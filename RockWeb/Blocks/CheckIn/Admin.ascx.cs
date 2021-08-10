@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -74,7 +73,10 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
-        private static class AttributeKey
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also had inherited class AttributeKey.
+         */
+        private new static class AttributeKey
         {
             public const string AllowManualSetup = "AllowManualSetup";
             public const string EnableLocationSharing = "EnableLocationSharing";
@@ -104,6 +106,8 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         #endregion PageParameterKeys
+
+        protected override bool LoadUnencryptedLocalDeviceConfig { get { return true; } }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -210,7 +214,8 @@ namespace RockWeb.Blocks.CheckIn
             {
                 ddlKiosk.DataSource = new DeviceService( rockContext )
                     .Queryable().AsNoTracking()
-                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId
+                    && d.IsActive )
                     .OrderBy( d => d.Name )
                     .Select( d => new
                     {
@@ -237,6 +242,25 @@ namespace RockWeb.Blocks.CheckIn
             var urlKioskId = PageParameter( PageParameterKey.KioskId ).AsIntegerOrNull();
             var urlCheckinTypeId = PageParameter( PageParameterKey.CheckinConfigId ).AsIntegerOrNull();
             var urlGroupTypeIds = ( PageParameter( PageParameterKey.GroupTypeIds ) ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+
+            // If Kiosk and GroupTypes were passed, but not a checkin type, try to calculate it from the group types.
+            /* 
+                2021-04-30 MSB
+                There is a route that supports not passing in the check-in type id. If that route is used
+                we need to try to get the check-in type id from the selected group types.
+             */
+            if ( urlKioskId.HasValue && urlGroupTypeIds.Any() && !urlCheckinTypeId.HasValue )
+            {
+                foreach ( int groupTypeId in urlGroupTypeIds )
+                {
+                    var checkinType = GetCheckinType( groupTypeId );
+                    if ( checkinType != null )
+                    {
+                        urlCheckinTypeId = checkinType.Id;
+                        break;
+                    }
+                }
+            }
 
             /* 2020-09-10 MDP
              If both PageParameterKey.CheckinConfigId and PageParameterKey.GroupTypeIds are specified, set the local device configuration from those.
@@ -271,6 +295,10 @@ namespace RockWeb.Blocks.CheckIn
                 // If the local device is fully configured return true
                 if ( this.LocalDeviceConfig.IsConfigured() )
                 {
+                    // These need to be cleared so they can be correctly reloaded with the new data.
+                    CurrentCheckInState = null;
+                    CurrentWorkflow = null;
+
                     // Since we changed the config, save state
                     SaveState();
                     return true;
@@ -281,7 +309,9 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Gets the name of the kiosk from ip or.
+        /// Attempts to find the Device record for this kiosk by looking
+        /// for a matching Device that has kiosk's IP Address, and optional host name
+        /// if it can't be found from IP Address.
         /// </summary>
         /// <returns></returns>
         public Device GetKioskFromIpOrName()
@@ -461,18 +491,10 @@ tryGeoLocation();
         {
             // set an expiration cookie for these coordinates.
             double timeCacheMinutes = GetAttributeValue( AttributeKey.TimetoCacheKioskGeoLocation ).AsDouble();
+            DateTime cookieExpirationDate = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : RockDateTime.Now.AddMinutes( timeCacheMinutes );
 
-            HttpCookie deviceCookie = Request.Cookies[CheckInCookieKey.DeviceId];
-            if ( deviceCookie == null )
-            {
-                deviceCookie = new HttpCookie( CheckInCookieKey.DeviceId, kiosk.Id.ToString() );
-            }
-
-            deviceCookie.Expires = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : RockDateTime.Now.AddMinutes( timeCacheMinutes );
-            Response.Cookies.Set( deviceCookie );
-
-            HttpCookie isMobileCookie = new HttpCookie( CheckInCookieKey.IsMobile, "true" );
-            Response.Cookies.Set( isMobileCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.DeviceId, kiosk.Id.ToString(), cookieExpirationDate );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.IsMobile, "true", cookieExpirationDate );
         }
 
         /// <summary>
@@ -480,9 +502,7 @@ tryGeoLocation();
         /// </summary>
         private void ClearMobileCookie()
         {
-            HttpCookie isMobileCookie = new HttpCookie( CheckInCookieKey.IsMobile );
-            isMobileCookie.Expires = RockDateTime.Now.AddDays( -1d );
-            Response.Cookies.Set( isMobileCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( CheckInCookieKey.IsMobile, "true", RockDateTime.Now.AddDays( -1d ) );
         }
 
         /// <summary>
@@ -542,7 +562,7 @@ tryGeoLocation();
             if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
-                LocalDeviceConfig.SaveToCookie( this.Page );
+                LocalDeviceConfig.SaveToCookie();
             }
 
             if ( !RockPage.Site.Theme.Equals( LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
@@ -611,8 +631,6 @@ tryGeoLocation();
             LocalDeviceConfig.CurrentKioskId = ddlKiosk.SelectedValueAsInt();
             LocalDeviceConfig.CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
             LocalDeviceConfig.CurrentGroupTypeIds = groupTypeIds;
-
-            LocalDeviceConfig.SaveToCookie( this.Page );
 
             CurrentCheckInState = null;
             CurrentWorkflow = null;

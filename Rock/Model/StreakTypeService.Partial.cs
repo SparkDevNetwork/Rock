@@ -21,7 +21,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Threading.Tasks;
+
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -63,6 +65,47 @@ namespace Rock.Model
         #endregion Constants
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="checkIfUsedByAchievementType">if set to <c>true</c> [check if used by achievement type].</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( StreakType item, out string errorMessage, bool checkIfUsedByAchievementType )
+        {
+            if ( !this.CanDelete( item, out errorMessage ) )
+            {
+                return false;
+            }
+
+            if ( checkIfUsedByAchievementType )
+            {
+                // check if any MatrixAttributes are using this AttributeMatrixTemplate
+                var streakTypeFieldTypeId = FieldTypeCache.Get<StreakTypeFieldType>().Id;
+                var entityTypeIdAchievementType = EntityTypeCache.GetId<Rock.Model.AchievementType>();
+
+                var streakTypeGuid = item.Guid.ToString();
+                var usedAsAchievementType = new AttributeValueService( new RockContext() ).Queryable()
+                    .Any( av =>
+                        av.Attribute.FieldTypeId == streakTypeFieldTypeId
+                        && av.Value == streakTypeGuid
+                        && av.Attribute.EntityTypeId == entityTypeIdAchievementType
+                        );
+
+                if ( usedAsAchievementType )
+                {
+                    errorMessage = string.Format( "This {0} is assigned to an {1}.", StreakType.FriendlyTypeName, Rock.Model.AchievementType.FriendlyTypeName );
+                    return false;
+                }
+            }
+
+            errorMessage = string.Empty;
+            return true;
+        }
 
         /// <summary>
         /// Get the most recent engagement bits where there were occurrences for the person
@@ -168,7 +211,7 @@ namespace Rock.Model
 
             // Get the person alias id
             var personAliasService = new PersonAliasService( rockContext );
-            var personAliasId = personAliasService.Queryable().AsNoTracking().FirstOrDefault( pa => pa.PersonId == personId )?.Id;
+            var personAliasId = personAliasService.GetPrimaryAliasId( personId );
 
             if ( !personAliasId.HasValue )
             {
@@ -298,7 +341,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress"></param>
+        /// <param name="progress">Optional (using null is fine)</param>
         /// <param name="streakTypeId"></param>
         /// <param name="errorMessage"></param>
         public static void RebuildStreakType( IProgress<int?> progress, int streakTypeId, out string errorMessage )
@@ -325,7 +368,7 @@ namespace Rock.Model
                 return;
             }
 
-            if (streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue)
+            if ( streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue )
             {
                 errorMessage = "A streak type linked activity entity id is required";
                 return;
@@ -396,7 +439,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress">The progress.</param>
+        /// <param name="progress">The progress. Optional (using null is fine)</param>
         /// <param name="streakTypeCache">The streak type.</param>
         /// <param name="errorMessage">The error message.</param>
         private static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
@@ -511,7 +554,7 @@ namespace Rock.Model
         /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
-        /// <param name="progress">The progress.</param>
+        /// <param name="progress">The progress. Optional (using null is fine)</param>
         /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="errorMessage">The error message.</param>
         private static void RebuildStreakTypeFromInteraction( IProgress<int?> progress, StreakTypeCache streakTypeCache, out string errorMessage )
@@ -891,7 +934,20 @@ namespace Rock.Model
 
             if ( startDate > endDate )
             {
-                startDate = endDate;
+                /*
+                 * 2021-06-25 BJW
+                 * We were previously setting the startDate = endDate in this conditional. However, this caused a bug because
+                 * a start equal to an end is actually going to result in an iteration over that single day/week. The expected
+                 * result would be to not iterate at all since there is no timespan (even inclusively) between the start and
+                 * end dates.
+                 * 
+                 * The combination of setting the end date to today if in the future (couple lines up), and then setting the
+                 * start equal to the end, caused a single iteration over the current day or week. If the person had engagement 
+                 * today/this week, they got an attempt record even though the start date was in the future.
+                 */
+
+                // There is nothing to be iterated over
+                return;
             }
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
@@ -1513,6 +1569,8 @@ namespace Rock.Model
         /// Handles the interaction record.
         /// </summary>
         /// <param name="interaction">The interaction.</param>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use the override with the Interaction Id instead of the Interaction object." )]
         public static void HandleInteractionRecord( Interaction interaction )
         {
             var rockContext = new RockContext();
@@ -1538,7 +1596,7 @@ namespace Rock.Model
         {
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
-            streakTypeService.HandleAttendanceRecord( attendance, out var errorMessage );
+            streakTypeService.HandleAttendanceRecordForStreak( attendance?.Id, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1551,11 +1609,212 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Handles the attendance record.
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        public static void HandleAttendanceRecord( int attendanceId )
+        {
+            var rockContext = new RockContext();
+            var streakTypeService = new StreakTypeService( rockContext );
+
+            streakTypeService.HandleAttendanceRecordForStreak( attendanceId, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
+            }
+            else
+            {
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Handles the attendance record for streak. This is used when the Attendance object is known to have an active DbContext and can safely use navigation properties.
+        /// </summary>
+        /// <param name="attendanceId">The attendance identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private void HandleAttendanceRecordForStreak( int? attendanceId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( attendanceId == null )
+            {
+                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
+                // of an attendance model. We don't even know if this attendance was supposed to be related to a streak type.
+                return;
+            }
+
+            var attendanceInfo = new AttendanceService( new RockContext() ).Queryable()
+                .Where( a => a.Id == attendanceId.Value && a.PersonAliasId.HasValue && a.Occurrence.GroupId.HasValue )
+                .Select( s => new
+                {
+                    Id = s.Id,
+                    DidAttend = s.DidAttend,
+                    PersonId = s.PersonAlias.PersonId,
+                    OccurrenceId = s.OccurrenceId,
+                    OccurrenceGroupId = s.Occurrence.GroupId.Value,
+                    OccurrenceGroupTypeId = s.Occurrence.Group.GroupTypeId,
+                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate
+                } ).FirstOrDefault();
+
+            if ( attendanceInfo == null )
+            {
+                return;
+            }
+
+            if ( attendanceInfo.DidAttend != true )
+            {
+                // If DidAttend is false, then don't do anything for the streak type. We should not unset the bit for the day/week because
+                // we don't know if they had some other engagement besides this and cannot assume it should be unset.
+                return;
+            }
+
+            // Get the person's streaks
+            var personId = attendanceInfo.PersonId;
+            var streakService = new StreakService( new RockContext() );
+            var enrolledInStreakTypeIdQuery = streakService.Queryable()
+                .AsNoTracking()
+                .Where( se => se.PersonAlias.PersonId == personId )
+                .Select( se => se.StreakTypeId );
+            var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
+
+            // Calculate the attendance group details
+            var groupId = attendanceInfo.OccurrenceGroupId;
+            var groupTypeId = attendanceInfo.OccurrenceGroupTypeId;
+            var groupType = GroupTypeCache.Get( groupTypeId );
+
+            var purposeId = groupType.GroupTypePurposeValueId;
+
+            var checkInConfigIdList = groupType.ParentGroupTypes.Select( pgt => pgt.Id );
+            var checkInConfigIds = checkInConfigIdList == null ? new HashSet<int>() : new HashSet<int>( checkInConfigIdList );
+
+            // Loop through each active streak types that has attendance enabled and mark engagement for it if the person
+            // is enrolled or the streak type does not require enrollment
+            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
+                s.IsActive &&
+                s.StructureType.HasValue &&
+                s.EnableAttendance &&
+                (
+                    !s.RequiresEnrollment ||
+                    enrolledInStreakTypeIds.Contains( s.Id )
+                ) &&
+                (
+                    s.StructureType == StreakStructureType.AnyAttendance ||
+                    (
+                        s.StructureEntityId.HasValue &&
+                        (
+                            ( s.StructureType == StreakStructureType.Group && s.StructureEntityId.Value == groupId ) ||
+                            ( s.StructureType == StreakStructureType.GroupType && s.StructureEntityId.Value == groupTypeId ) ||
+                            ( s.StructureType == StreakStructureType.GroupTypePurpose && s.StructureEntityId.Value == purposeId ) ||
+                            ( s.StructureType == StreakStructureType.CheckInConfig && checkInConfigIds.Contains( s.StructureEntityId.Value ) )
+                        )
+                    )
+                ) );
+
+            foreach ( var streakType in matchedStreakTypes )
+            {
+                MarkEngagement( streakType, personId, out errorMessage, attendanceInfo.OccurrenceOccurrenceDate, null );
+            }
+        }
+
+        /// <summary>
+        /// Handles the interaction record for streaks. Use this method with the ID instead of the whole object if there is
+        /// a chance the context for the interaction could be disposed. e.g. if this method is being run in a new Task.
+        /// </summary>
+        /// <param name="interactionId">The interaction identifier.</param>
+        public static void HandleInteractionRecord( int interactionId )
+        {
+            var rockContext = new RockContext();
+            var streakTypeService = new StreakTypeService( rockContext );
+            var safeInteraction = new InteractionService( rockContext ).Get( interactionId );
+
+            streakTypeService.HandleInteractionRecordForStreak( safeInteraction, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                ExceptionLogService.LogException( $"Error while handling interaction record for streaks: {errorMessage}" );
+            }
+            else
+            {
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Handles the interaction record for streak. This is used when the Interaction object is known to have an active DbContext and can safely use navigation properties.
+        /// </summary>
+        /// <param name="interaction">The interaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private void HandleInteractionRecordForStreak( Interaction interaction, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( interaction == null )
+            {
+                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
+                // of an interaction model. We don't even know if this interaction was supposed to be related to a streak type.
+                return;
+            }
+
+            if ( !interaction.PersonAliasId.HasValue )
+            {
+                // If we don't know what person this interaction is tied to then it is impossible to mark engagement in a streak. This is not
+                // an error because a null PersonAliasId is a valid state for the interaction model.
+                return;
+            }
+
+            if ( interaction.PersonAlias.Person == null )
+            {
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The person alias {interaction.PersonAliasId.Value} did not produce a valid person record.";
+                return;
+            }
+
+            // Get the person's streaks
+            var personId = interaction.PersonAlias.Person.Id;
+            var streakService = new StreakService( new RockContext() );
+            var enrolledInStreakTypeIdQuery = streakService.Queryable()
+                .AsNoTracking()
+                .Where( se => se.PersonAlias.PersonId == personId )
+                .Select( se => se.StreakTypeId );
+            var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
+
+            // Calculate the interaction hierarchy details
+            var componentId = interaction.InteractionComponentId;
+            var channelId = interaction.InteractionComponent?.InteractionChannelId;
+            var mediumId = interaction.InteractionComponent?.InteractionChannel?.ChannelTypeMediumValueId;
+
+            // Query each active streak type and mark engagement for it if the person
+            // is enrolled or the streak type does not require enrollment
+            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
+                s.IsActive &&
+                s.StructureType.HasValue &&
+                s.StructureEntityId.HasValue &&
+                (
+                    !s.RequiresEnrollment ||
+                    enrolledInStreakTypeIds.Contains( s.Id )
+                ) &&
+                (
+                    ( s.StructureType == StreakStructureType.InteractionChannel && s.StructureEntityId.Value == channelId ) ||
+                    ( s.StructureType == StreakStructureType.InteractionComponent && s.StructureEntityId.Value == componentId ) ||
+                    ( s.StructureType == StreakStructureType.InteractionMedium && s.StructureEntityId.Value == mediumId )
+                ) );
+
+            foreach ( var streakType in matchedStreakTypes )
+            {
+                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, null );
+            }
+        }
+
+        /// <summary>
         /// When an interaction record is created or modified (example: page view), the method should be called to synchronize that
         /// interaction to any matching streak types and streaks using this method.
         /// </summary>
         /// <param name="interaction"></param>
         /// <param name="errorMessage"></param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
         public void HandleInteractionRecord( Interaction interaction, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1597,8 +1856,11 @@ namespace Rock.Model
 
             // Calculate the interaction hierarchy details
             var componentId = interaction.InteractionComponentId;
-            var channelId = interaction.InteractionComponent?.InteractionChannelId;
-            var mediumId = interaction.InteractionComponent?.InteractionChannel?.ChannelTypeMediumValueId;
+
+            // Get the InteractionComponent since it's possible the incoming model does not have the virtual InteractionComponent loaded
+            var interactionComponent = new InteractionComponentService( rockContext ).Get( componentId );
+            var channelId = interactionComponent.InteractionChannelId;
+            var mediumId = interactionComponent.InteractionChannel?.ChannelTypeMediumValueId;
 
             // Query each active streak type and mark engagement for it if the person
             // is enrolled or the streak type does not require enrollment
@@ -1628,6 +1890,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="attendance"></param>
         /// <param name="errorMessage"></param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
         public void HandleAttendanceRecord( Attendance attendance, out string errorMessage )
         {
             errorMessage = string.Empty;

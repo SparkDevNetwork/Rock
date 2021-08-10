@@ -49,6 +49,34 @@ namespace Rock.Data
     /// </summary>
     public class RockContext : Rock.Data.DbContext
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether timing metrics should be captured.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [metrics enabled]; otherwise, <c>false</c>.
+        /// </value>
+        public QueryMetricDetailLevel QueryMetricDetailLevel { get; set; } = QueryMetricDetailLevel.Off;
+
+        /// <summary>
+        /// Gets or sets the metric query count.
+        /// </summary>
+        /// <value>
+        /// The query count.
+        /// </value>
+        public int QueryCount { get; set; } = 0;
+
+        /// <summary>
+        /// Gets or sets the metric details.
+        /// </summary>
+        /// <value>
+        /// The metric details.
+        /// </value>
+        public List<QueryMetricDetail> QueryMetricDetails { get; private set; } = new List<QueryMetricDetail>();
+
+        #endregion
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// Use this if you need to specify a connection string other than the default
@@ -228,6 +256,14 @@ namespace Rock.Data
         /// The analytics source person historicals.
         /// </value>
         public DbSet<AnalyticsSourcePersonHistorical> AnalyticsSourcePersonHistoricals { get; set; }
+
+        /// <summary>
+        /// Gets or sets the analytics source giving units.
+        /// </summary>
+        /// <value>
+        /// The analytics source giving units.
+        /// </value>
+        public DbSet<AnalyticsSourceGivingUnit> AnalyticsSourceGivingUnits { get; set; }
 
         /// <summary>
         /// Gets or sets the asset storage providers.
@@ -478,6 +514,14 @@ namespace Rock.Data
         public DbSet<Campus> Campuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus schedules.
+        /// </summary>
+        /// <value>
+        /// The campus schedules.
+        /// </value>
+        public DbSet<CampusSchedule> CampusSchedules { get; set; }
+
+        /// <summary>
         /// Gets or sets the categories.
         /// </summary>
         /// <value>
@@ -508,6 +552,14 @@ namespace Rock.Data
         /// The communication recipients.
         /// </value>
         public DbSet<CommunicationRecipient> CommunicationRecipients { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication response attachments.
+        /// </summary>
+        /// <value>
+        /// The communication response attachments.
+        /// </value>
+        public DbSet<CommunicationResponseAttachment> CommunicationResponseAttachments { get; set; }
 
         /// <summary>
         /// Gets or sets the communication responses.
@@ -918,12 +970,36 @@ namespace Rock.Data
         public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial statement templates.
+        /// </summary>
+        /// <value>
+        /// The financial statement templates.
+        /// </value>
+        public DbSet<FinancialStatementTemplate> FinancialStatementTemplates { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
         /// The transactions.
         /// </value>
         public DbSet<FinancialTransaction> FinancialTransactions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlert> FinancialTransactionAlerts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the financial transaction alert.
+        /// </summary>
+        /// <value>
+        /// The type of the financial transaction alert.
+        /// </value>
+        public DbSet<FinancialTransactionAlertType> FinancialTransactionAlertTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -1262,6 +1338,30 @@ namespace Rock.Data
         public DbSet<Location> Locations { get; set; }
 
         /// <summary>
+        /// Gets or sets the media accounts.
+        /// </summary>
+        /// <value>
+        /// The media accounts.
+        /// </value>
+        public DbSet<MediaAccount> MediaAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media elements.
+        /// </summary>
+        /// <value>
+        /// The media elements.
+        /// </value>
+        public DbSet<MediaElement> MediaElements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the media folders.
+        /// </summary>
+        /// <value>
+        /// The media folders.
+        /// </value>
+        public DbSet<MediaFolder> MediaFolders { get; set; }
+
+        /// <summary>
         /// Gets or sets the merge templates.
         /// </summary>
         /// <value>
@@ -1542,6 +1642,30 @@ namespace Rock.Data
         public DbSet<IdentityVerificationCode> IdentityVerificationCodes { get; set; }
 
         /// <summary>
+        /// Gets or sets the personal links.
+        /// </summary>
+        /// <value>
+        /// The personal links.
+        /// </value>
+        public DbSet<PersonalLink> PersonalLinks { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal link sections.
+        /// </summary>
+        /// <value>
+        /// The personal link sections.
+        /// </value>
+        public DbSet<PersonalLinkSection> PersonalLinkSections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal link section orders.
+        /// </summary>
+        /// <value>
+        /// The personal link section orders.
+        /// </value>
+        public DbSet<PersonalLinkSectionOrder> PersonalLinkSectionOrders { get; set; }
+
+        /// <summary>
         /// Gets or sets the plugin migrations.
         /// </summary>
         /// <value>
@@ -1588,6 +1712,14 @@ namespace Rock.Data
         /// The registration registrant fees.
         /// </value>
         public DbSet<RegistrationRegistrantFee> RegistrationRegistrantFees { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration sessions.
+        /// </summary>
+        /// <value>
+        /// The registration sessions.
+        /// </value>
+        public DbSet<RegistrationSession> RegistrationSessions { get; set; }
 
         /// <summary>
         /// Gets or sets the registration templates.
@@ -1782,6 +1914,14 @@ namespace Rock.Data
         public DbSet<StepProgram> StepPrograms { get; set; }
 
         /// <summary>
+        /// Gets or sets the step program completions.
+        /// </summary>
+        /// <value>
+        /// The step program completions.
+        /// </value>
+        public DbSet<StepProgramCompletion> StepProgramCompletions { get; set; }
+
+        /// <summary>
         /// Gets or sets the step statuses.
         /// </summary>
         /// <value>
@@ -1894,6 +2034,30 @@ namespace Rock.Data
         /// the Users.
         /// </value>
         public DbSet<UserLogin> UserLogins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm nodes.
+        /// </summary>
+        /// <value>
+        /// The web farm nodes.
+        /// </value>
+        public DbSet<WebFarmNode> WebFarmNodes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node metrics.
+        /// </summary>
+        /// <value>
+        /// The web farm node metrics.
+        /// </value>
+        public DbSet<WebFarmNodeMetric> WebFarmNodeMetrics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the web farm node logs.
+        /// </summary>
+        /// <value>
+        /// The web farm node logs.
+        /// </value>
+        public DbSet<WebFarmNodeLog> WebFarmNodeLogs { get; set; }
 
         /// <summary>
         /// Gets or sets the workflows.
@@ -2058,6 +2222,63 @@ namespace Rock.Data
                 ExceptionLogService.LogException( new Exception( "Exception occurred when adding Plugin Entities to RockContext", ex ), null );
             }
         }
+    }
+
+    /// <summary>
+    /// Enum for determining the level of query metrics to capture.
+    /// </summary>
+    public enum QueryMetricDetailLevel
+    {
+        /// <summary>
+        /// No metrics will be captured (default)
+        /// </summary>
+        Off = 0,
+        /// <summary>
+        /// Just the number of queries will be captured.
+        /// </summary>
+        Count = 1,
+        /// <summary>
+        /// All metrics will the captured (count and a copy of the SQL)
+        /// </summary>
+        Full = 2
+    }
+
+    /// <summary>
+    /// POCO for storing metrics about the context
+    /// </summary>
+    public class QueryMetricDetail
+    {
+        /// <summary>
+        /// Gets or sets the SQL.
+        /// </summary>
+        /// <value>
+        /// The SQL.
+        /// </value>
+        public string Sql { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration in ticks (not fleas).
+        /// </summary>
+        /// <value>
+        /// The duration.
+        /// </value>
+        public long Duration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the server.
+        /// </summary>
+        /// <value>
+        /// The server.
+        /// </value>
+        public string Server { get; set; }
+
+        /// <summary>
+        /// Gets or sets the database.
+        /// </summary>
+        /// <value>
+        /// The database.
+        /// </value>
+        public string Database { get; set; }
     }
 
     /// <summary>

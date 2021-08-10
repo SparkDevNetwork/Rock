@@ -19,6 +19,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -33,7 +34,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the content channel item identifier.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/> identifier.
         /// </summary>
         /// <value>
         /// The content channel item identifier.
@@ -43,7 +44,7 @@ namespace Rock.Model
         public int ContentChannelItemId { get; set; }
 
         /// <summary>
-        /// Gets or sets the child content channel item identifier.
+        /// Gets or sets the child <see cref="Rock.Model.ContentChannelItem"/> identifier.
         /// </summary>
         /// <value>
         /// The child content channel item identifier.
@@ -66,16 +67,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the content channel item.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/>.
         /// </summary>
         /// <value>
         /// The content channel item.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ContentChannelItem ContentChannelItem { get; set; }
 
         /// <summary>
-        /// Gets or sets the child content channel item.
+        /// Gets or sets the child <see cref="Rock.Model.ContentChannelItem"/>.
         /// </summary>
         /// <value>
         /// The child content channel item.

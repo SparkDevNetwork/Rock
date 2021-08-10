@@ -57,12 +57,12 @@ namespace Rock.Workflow.Action
                 System.Web.UI.Page page = httpContext.Handler as System.Web.UI.Page;
                 if ( page != null )
                 {
-                    var workflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlock>().Where( x => x.BlockName == "Workflow Entry" ).FirstOrDefault();
+                    var workflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlock>().Where( x => x.BlockCache?.BlockType?.Guid == Rock.SystemGuid.BlockType.WORKFLOW_ENTRY.AsGuid() ).FirstOrDefault();
                     if ( workflowEntryBlock != null )
                     {
                         workflowEntryBlock.PreRender += ( sender, args ) =>
                         {
-                            var notificationBox = workflowEntryBlock.ControlsOfTypeRecursive<Rock.Web.UI.Controls.NotificationBox>().FirstOrDefault();
+                            var notificationBox = workflowEntryBlock.ControlsOfTypeRecursive<Rock.Web.UI.Controls.NotificationBox>().Where( a => a.CssClass?.Contains( "js-workflow-entry-message-notification-box" ) == true ).FirstOrDefault();
                             if ( notificationBox != null )
                             {
                                 notificationBox.Visible = notificationBox.Visible && !GetAttributeValue( action, "HideStatusMessage" ).AsBoolean();

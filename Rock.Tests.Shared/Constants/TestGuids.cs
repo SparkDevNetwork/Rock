@@ -178,5 +178,22 @@ namespace Rock.Tests.Shared
         {
             public const string PrayerCommentsNotification = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
         }
+
+        public static class Shortcodes
+        {
+            public const string ShortcodeTest1 = "B60A5547-FA5C-49C3-AC14-D631E54208AE";
+        }
+
+        /// <summary>
+        /// Well-known Guids to identify specific Lava Engine framework implementations.
+        /// </summary>
+        public static class LavaEngines
+        {
+            public const string RockLiquid = "7CE5A54A-54DC-464A-83EE-659658134239";
+            public const string DotLiquid = "165E5E74-4923-4E25-B330-A27DB3A59CE7";
+            public const string Fluid = "605445FE-6ECC-4E67-9A95-98F7173F7389";
+
+        }
+
     }
 }

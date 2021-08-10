@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,42 +54,42 @@ namespace Rock.Model
         public bool CanDelete( SystemEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -117,6 +120,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this SystemEmail object to a new SystemEmail object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static SystemEmail CloneWithoutIdentity( this SystemEmail source )
+        {
+            var target = new SystemEmail();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another SystemEmail object to this SystemEmail object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -144,5 +170,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

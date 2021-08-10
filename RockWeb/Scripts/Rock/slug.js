@@ -61,7 +61,7 @@
                 '<label class="js-input-slug-warning text-danger hidden">Invalid Characters Entered</label>' +
                 '<input id="slugId" class="js-slug-id" type="hidden" value="" />' +
                 '<div class="input-group js-input-slug-group input-group-edit">' +
-                '<input class="form-control js-slug-input" />' +
+                '<input class="form-control js-slug-input" name="slugInput" />' +
                 '<span class="input-group-addon">' +
                 '<a class="js-slug-save" href="#"><i class="fa fa-check"></i></a>' +
                 '</span>' +

@@ -31,6 +31,7 @@ namespace Rock.Transactions
 {
     /// <summary>
     /// Transaction that will insert <seealso cref="Rock.Model.Interaction">Interactions</seealso>. For example, Page Views.
+    /// Ít will remain using the ITransaction interface and not be converted to a bus event yet
     /// </summary>
     public class InteractionTransaction : ITransaction
     {
@@ -103,32 +104,74 @@ namespace Rock.Transactions
         /// </param>
         public InteractionTransaction( DefinedValueCache channelTypeMediumValue, IEntity channelEntity, IEntity componentEntity, InteractionTransactionInfo info )
         {
-            if ( channelTypeMediumValue == null || channelEntity == null || componentEntity == null )
+            if ( channelTypeMediumValue == null || componentEntity == null )
             {
                 return;
             }
 
-            Initialize( channelTypeMediumValue.Id, channelEntity.Id, channelEntity.ToString(), channelEntity.TypeId, componentEntity.Id, componentEntity.ToString(), info );
+            if ( info?.InteractionChannelId == default && channelEntity == null )
+            {
+                // we need either an InteractionChannelId or a channelEntity
+                return;
+            }
+
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.TypeId;
+
+            Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntity.Id, componentEntity.ToString(), info );
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionTransaction"/> class.
+        /// Initializes a new instance of the <see cref="InteractionTransaction" /> class.
         /// </summary>
         /// <param name="channelTypeMediumValue">The channel medium type value.</param>
         /// <param name="channelEntity">The channel entity.</param>
-        /// <param name="componentEntity">The component entity.</param>
-        /// <param name="info">
-        /// The information about the <see cref="Interaction"/> object graph to be logged.
-        /// In the case of conflicting values (i.e. channelEntity.Id vs info.ChannelEntityId), any values explicitly set on the <paramref name="info"/> parameter will take precedence.
-        /// </param>
-        public InteractionTransaction( DefinedValueCache channelTypeMediumValue, IEntityCache channelEntity, IEntityCache componentEntity, InteractionTransactionInfo info )
+        /// <param name="componentEntityCache">The component entity cache.</param>
+        /// <param name="info">The information about the <see cref="Interaction" /> object graph to be logged.
+        /// In the case of conflicting values (i.e. channelEntity.Id vs info.ChannelEntityId), any values explicitly set on the <paramref name="info" /> parameter will take precedence.</param>
+        public InteractionTransaction( DefinedValueCache channelTypeMediumValue, IEntityCache channelEntity, IEntityCache componentEntityCache, InteractionTransactionInfo info )
         {
-            if ( channelTypeMediumValue == null || channelEntity == null || componentEntity == null )
+            if ( channelTypeMediumValue == null || componentEntityCache == null )
             {
                 return;
             }
 
-            Initialize( channelTypeMediumValue.Id, channelEntity.Id, channelEntity.ToString(), channelEntity.CachedEntityTypeId, componentEntity.Id, componentEntity.ToString(), info );
+            if ( info?.InteractionChannelId == default && channelEntity == null )
+            {
+                // we need either an InteractionChannelId or a channelEntity
+                return;
+            }
+
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.CachedEntityTypeId;
+
+            Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntityCache.Id, componentEntityCache.ToString(), info );
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionTransaction" /> class.
+        /// </summary>
+        /// <param name="channelTypeMediumValue">The channel type medium value.</param>
+        /// <param name="channelEntity">The channel entity.</param>
+        /// <param name="componentEntityCache">The component entity cache.</param>
+        /// <param name="info">The information.</param>
+        public InteractionTransaction( DefinedValueCache channelTypeMediumValue, IEntity channelEntity, IEntityCache componentEntityCache, InteractionTransactionInfo info )
+        {
+            if ( channelTypeMediumValue == null || componentEntityCache == null )
+            {
+                return;
+            }
+
+            if ( info?.InteractionChannelId == default && channelEntity == null )
+            {
+                // we need either an InteractionChannelId or a channelEntity
+                return;
+            }
+
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.TypeId;
+
+            Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntityCache.Id, componentEntityCache.ToString(), info );
         }
 
         /// <summary>
@@ -150,7 +193,7 @@ namespace Rock.Transactions
         /// <param name="componentEntityId">The component entity identifier.</param>
         /// <param name="componentName">Name of the component.</param>
         /// <param name="info">The information about the <see cref="Interaction"/> object graph to be logged.</param>
-        private void Initialize( int channelTypeMediumValueId, int channelEntityId, string channelName, int componentEntityTypeId, int componentEntityId, string componentName, InteractionTransactionInfo info )
+        private void Initialize( int channelTypeMediumValueId, int? channelEntityId, string channelName, int? componentEntityTypeId, int componentEntityId, string componentName, InteractionTransactionInfo info )
         {
             info = info ?? new InteractionTransactionInfo();
 
@@ -196,7 +239,7 @@ namespace Rock.Transactions
             }
 
             // Get the distinct list of user agent strings within the interactions to be logged.
-            var userAgentsLookup = interactionTransactionInfos.Where(a => a.UserAgent.IsNotNullOrWhiteSpace()).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
+            var userAgentsLookup = interactionTransactionInfos.Where( a => a.UserAgent.IsNotNullOrWhiteSpace() ).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
 
             // Include/exclude crawlers based on caller input.
             interactionTransactionInfos = interactionTransactionInfos.Where( a => a.LogCrawlers || a.UserAgent.IsNullOrWhiteSpace() || userAgentsLookup.GetValueOrNull( a.UserAgent ) != "Crawler" ).ToList();
@@ -254,11 +297,13 @@ namespace Rock.Transactions
                 interaction.ChannelCustom1 = info.InteractionChannelCustom1?.Trim();
                 interaction.ChannelCustom2 = info.InteractionChannelCustom2?.Trim();
                 interaction.ChannelCustomIndexed1 = info.InteractionChannelCustomIndexed1?.Trim();
-                interaction.Source = info.InteractionSource?.Trim();
-                interaction.Medium = info.InteractionMedium?.Trim();
-                interaction.Campaign = info.InteractionCampaign?.Trim();
-                interaction.Content = info.InteractionContent?.Trim();
-                interaction.Term = info.InteractionTerm?.Trim();
+                interaction.Source = interaction.Source ?? info.InteractionSource?.Trim();
+                interaction.Medium = interaction.Medium ?? info.InteractionMedium?.Trim();
+                interaction.Campaign = interaction.Campaign ?? info.InteractionCampaign?.Trim();
+                interaction.Content = interaction.Content ?? info.InteractionContent?.Trim();
+                interaction.Term = interaction.Term ?? info.InteractionTerm?.Trim();
+                interaction.InteractionLength = info.InteractionLength;
+                interaction.InteractionEndDateTime = info.InteractionEndDateTime;
 
                 interaction.SetInteractionData( info.InteractionData?.Trim() );
                 interactionsToInsert.Add( interaction );
@@ -269,7 +314,32 @@ namespace Rock.Transactions
             // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
             // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
             // transaction can continue processing and exit, so update the streak using a task.
-            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i ) ) );
+
+            // Only launch this task if there are StreakTypes configured that have interactions. Otherwise several
+            // database calls are made only to find out there are no streak types defined.
+            if ( StreakTypeCache.All().Any( s => s.IsInteractionRelated ) )
+            {
+                // Ids do not exit for the interactions in the collection since they were bulk imported.
+                // Read their ids from their guids and append the id.
+                var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
+
+                var interactionIds = new InteractionService( new RockContext() ).Queryable()
+                                        .Where( i => insertedGuids.Contains( i.Guid ) )
+                                        .Select( i => new { i.Id, i.Guid } )
+                                        .ToList();
+
+                foreach ( var interactionId in interactionIds )
+                {
+                    var interaction = interactionsToInsert.Where( i => i.Guid == interactionId.Guid ).FirstOrDefault();
+                    if ( interaction != null )
+                    {
+                        interaction.Id = interactionId.Id;
+                    }
+                }
+
+                // Launch task
+                interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i.Id ) ) );
+            }
         }
     }
 
@@ -280,88 +350,51 @@ namespace Rock.Transactions
     {
         #region InteractionChannel Properties
 
-        /// <summary>
-        /// Gets or sets the name of the channel.
-        /// </summary>
-        /// <value>
-        /// The name of the channel.
-        /// </value>
+        /// <inheritdoc cref="InteractionChannel.Name"/>
         public string ChannelName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the component entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The component entity type identifier.
-        /// </value>
+        /// <inheritdoc cref="InteractionChannel.ComponentEntityTypeId"/>
         public int? ComponentEntityTypeId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The interaction entity type identifier.
-        /// </value>
+        /// <inheritdoc cref="InteractionChannel.InteractionEntityTypeId"/>
         public int? InteractionEntityTypeId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the channel entity identifier.
-        /// </summary>
-        /// <value>
-        /// The channel entity identifier.
-        /// </value>
+        /// <inheritdoc cref="InteractionChannel.ChannelEntityId"/>
         public int? ChannelEntityId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the channel type medium value identifier.
-        /// </summary>
-        /// <value>
-        /// The channel type medium value identifier.
-        /// </value>
+        /// <inheritdoc cref="InteractionChannel.ChannelTypeMediumValueId"/>
         public int? ChannelTypeMediumValueId { get; set; }
 
         #endregion InteractionChannel Properties
 
         #region InteractionComponent Properties
 
-        /// <summary>
-        /// Gets or sets the name of the component.
-        /// </summary>
-        /// <value>
-        /// The name of the component.
-        /// </value>
+        /// <inheritdoc cref="InteractionComponent.Name"/>
         public string ComponentName { get; set; }
 
         /// <summary>
-        /// Gets or sets the interaction channel identifier.
+        /// <inheritdoc cref="InteractionComponent.InteractionChannelId"/>
         /// </summary>
+        /// <remarks>
+        /// If this is not set, it will be determined from <seealso cref="InteractionChannelCache.GetChannelIdByTypeIdAndEntityId"/>
+        /// </remarks>
         /// <value>
         /// The interaction channel identifier.
         /// </value>
-        public int InteractionChannelId { get; private set; }
+        public int InteractionChannelId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the component entity identifier.
-        /// </summary>
-        /// <value>
-        /// The component entity identifier.
-        /// </value>
+        /// <inheritdoc cref="InteractionComponent.EntityId"/>
         public int? ComponentEntityId { get; set; }
 
         #endregion InteractionComponent Properties
 
         #region InteractionSession Properties
 
-        /// <summary>
-        /// Gets or sets the ip address.
-        /// </summary>
-        /// <value>
-        /// The ip address.
-        /// </value>
+        /// <inheritdoc cref="InteractionSession.IpAddress"/>
         public string IPAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the browser session identifier.
+        /// The <c>RockSessionId</c> (Guid) (set in Global.Session_Start)
         /// </summary>
         /// <value>
         /// The browser session identifier.
@@ -384,150 +417,67 @@ namespace Rock.Transactions
 
         #region Interaction Properties
 
-        /// <summary>
-        /// Gets or sets the interaction date time.
-        /// </summary>
-        /// <value>
-        /// The interaction date time.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionDateTime"/>
         public DateTime InteractionDateTime { get; set; } = RockDateTime.Now;
 
-        /// <summary>
-        /// Gets or sets the interaction operation.
-        /// </summary>
-        /// <value>
-        /// The interaction operation.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionLength"/>
+        public double? InteractionLength { get; set; }
+
+        /// <inheritdoc cref="Interaction.InteractionEndDateTime"/>
+        public DateTime? InteractionEndDateTime { get; set; }
+
+        /// <inheritdoc cref="Interaction.Operation"/>
         public string InteractionOperation { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction component identifier.
-        /// </summary>
-        /// <value>
-        /// The interaction component identifier.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionComponentId"/>
+        /// <remarks>
+        /// This will be determined automatically from <seealso cref="InteractionComponentCache.GetComponentIdByChannelIdAndEntityId"/> 
+        /// </remarks>
         public int? InteractionComponentId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the interaction entity identifier.
-        /// </summary>
-        /// <value>
-        /// The interaction entity identifier.
-        /// </value>
+        /// <inheritdoc cref="Interaction.EntityId"/>
         public int? InteractionEntityId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the person alias identifier.
-        /// </summary>
-        /// <value>
-        /// The person alias identifier.
-        /// </value>
+        /// <inheritdoc cref="Interaction.PersonAliasId"/>
         public int? PersonAliasId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction summary.
-        /// </summary>
-        /// <value>
-        /// The interaction summary.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionSummary"/>
         public string InteractionSummary { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction data.
-        /// </summary>
-        /// <value>
-        /// The interaction data.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionData"/>
         public string InteractionData { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction related entity type identifier.
-        /// </summary>
-        /// <value>
-        /// The interaction related entity type identifier.
-        /// </value>
+        /// <inheritdoc cref="Interaction.RelatedEntityTypeId"/>
         public int? InteractionRelatedEntityTypeId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction related entity identifier.
-        /// </summary>
-        /// <value>
-        /// The interaction related entity identifier.
-        /// </value>
+        /// <inheritdoc cref="Interaction.RelatedEntityId"/>
         public int? InteractionRelatedEntityId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction channel custom 1.
-        /// </summary>
-        /// <value>
-        /// The interaction channel custom 1.
-        /// </value>
+        /// <inheritdoc cref="Interaction.ChannelCustom1"/>
         public string InteractionChannelCustom1 { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction channel custom 2.
-        /// </summary>
-        /// <value>
-        /// The interaction channel custom 2.
-        /// </value>
+        /// <inheritdoc cref="Interaction.ChannelCustom2"/>
         public string InteractionChannelCustom2 { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction channel custom indexed1.
-        /// </summary>
-        /// <value>
-        /// The interaction channel custom indexed1.
-        /// </value>
+        /// <inheritdoc cref="Interaction.ChannelCustomIndexed1"/>
         public string InteractionChannelCustomIndexed1 { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction time to serve. 
-        /// The units on this depend on the InteractionChannel, which might have this be a Percent, Days, Seconds, Minutes, etc.
-        /// For example, if this is a page view, this would be how long (in seconds) it took for Rock to generate a response.
-        /// </summary>
-        /// <value>
-        /// The interaction time to serve.
-        /// </value>
+        /// <inheritdoc cref="Interaction.InteractionTimeToServe"/>
         public double? InteractionTimeToServe { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction source.
-        /// </summary>
-        /// <value>
-        /// The interaction source.
-        /// </value>
+        /// <inheritdoc cref="Interaction.Source"/>
         public string InteractionSource { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction medium.
-        /// </summary>
-        /// <value>
-        /// The interaction medium.
-        /// </value>
+        /// <inheritdoc cref="Interaction.Medium"/>
         public string InteractionMedium { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction campaign.
-        /// </summary>
-        /// <value>
-        /// The interaction campaign.
-        /// </value>
+        /// <inheritdoc cref="Interaction.Campaign"/>
         public string InteractionCampaign { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction content.
-        /// </summary>
-        /// <value>
-        /// The interaction content.
-        /// </value>
+        /// <inheritdoc cref="Interaction.Content"/>
         public string InteractionContent { get; set; }
 
-        /// <summary>
-        /// Gets or sets the interaction term.
-        /// </summary>
-        /// <value>
-        /// The interaction term.
-        /// </value>
+        /// <inheritdoc cref="Interaction.Term"/>
         public string InteractionTerm { get; set; }
 
         #endregion
@@ -648,7 +598,11 @@ namespace Rock.Transactions
             this.InteractionTerm = EnforceLengthLimitation( this.InteractionTerm, 50 );
 
             // Get existing (or create new) interaction channel and interaction component for this interaction.
-            this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+            if ( this.InteractionChannelId == default )
+            {
+                this.InteractionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( this.ChannelTypeMediumValueId, this.ChannelEntityId, this.ChannelName, this.ComponentEntityTypeId, this.InteractionEntityTypeId );
+            }
+
             this.InteractionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( this.InteractionChannelId, this.ComponentEntityId, this.ComponentName );
 
             queue.Enqueue( this );

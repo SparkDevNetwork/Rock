@@ -68,6 +68,21 @@ namespace Rock.CheckIn
         public bool EnableOverride => GetSetting( "core_checkin_EnableOverride" ).AsBoolean( true );
 
         /// <summary>
+        /// Gets the <see cref="AchievementTypeCache" >Achievement Types</see> that are enabled for Checkin Celebrations.
+        /// </summary>
+        /// <value>
+        /// The achievement types.
+        /// </value>
+        public AchievementTypeCache[] AchievementTypes
+        {
+            get
+            {
+                var achievementTypeGuids = GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+                return achievementTypeGuids.Select( a => AchievementTypeCache.Get( a ) ).Where( a => a != null ).ToArray();
+            }
+        }
+
+        /// <summary>
         /// Gets the length of the security code alpha numeric.
         /// </summary>
         /// <value>
@@ -124,7 +139,15 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if [allow checkout default]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCheckoutDefault => GetSetting( "core_checkin_AllowCheckout" ).AsBoolean( false );
+        public bool AllowCheckoutDefault => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT ).AsBoolean( false );
+
+        /// <summary>
+        /// Gets a value indicating whether [enable presence].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable presence]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnablePresence => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean( false );
 
         /// <summary>
         /// Gets a value indicating whether [use same options].
@@ -231,6 +254,15 @@ namespace Rock.CheckIn
         public bool PreventInactivePeople => GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false );
 
         /// <summary>
+        /// Gets a value indicating the ability level determination if the AbilityLevelSelect checking block should be skipped or not.
+        /// 0 = (Ask) show the ability level, 1 = (Don't Ask) Do not show the ability level
+        /// </summary>
+        /// <value>
+        /// The ability level determination.
+        /// </value>
+        public AbilityLevelDeterminationOptions AbilityLevelDetermination => ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+
+        /// <summary>
         /// Gets a value indicating whether [display location count].
         /// </summary>
         /// <value>
@@ -271,12 +303,102 @@ namespace Rock.CheckIn
         public string FamilySelectLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE );
 
         /// <summary>
-        /// Gets the success lava template.
+        /// Gets the person select additional information template.
+        /// </summary>
+        /// <value>
+        /// The person select additional information template.
+        /// </value>
+        public string PersonSelectAdditionalInfoLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the <see cref="SuccessLavaTemplate" /> display mode.
+        /// </summary>
+        /// <value>
+        /// The success lava template display mode.
+        /// </value>
+        public SuccessLavaTemplateDisplayMode SuccessLavaTemplateDisplayMode => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE ).ConvertToEnumOrNull<SuccessLavaTemplateDisplayMode>() ?? SuccessLavaTemplateDisplayMode.Never;
+
+        /// <summary>
+        /// Gets the success lava template. By default, this is no longer used,
+        /// and will be rendered based on CheckinCelebration and CheckinSuccess display logic. But this behavior
+        /// can be overridden using the <see cref="SuccessLavaTemplateDisplayMode"/> setting.
         /// </summary>
         /// <value>
         /// The success lava template.
         /// </value>
         public string SuccessLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the action select header lava template.
+        /// </summary>
+        /// <value>
+        /// The action select header lava template.
+        /// </value>
+        public string ActionSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the checkout person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The checkout person select header lava template.
+        /// </value>
+        public string CheckoutPersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The person select header lava template.
+        /// </value>
+        public string PersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the multi person select header lava template.
+        /// </summary>
+        /// <value>
+        /// The multi person select header lava template.
+        /// </value>
+        public string MultiPersonSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the group type select header lava template.
+        /// </summary>
+        /// <value>
+        /// The group type select header lava template.
+        /// </value>
+        public string GroupTypeSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the time select header lava template.
+        /// </summary>
+        /// <value>
+        /// The time select header lava template.
+        /// </value>
+        public string TimeSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the ability level select header lava template.
+        /// </summary>
+        /// <value>
+        /// The ability level select header lava template.
+        /// </value>
+        public string AbilityLevelSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the location select header lava template.
+        /// </summary>
+        /// <value>
+        /// The location select header lava template.
+        /// </value>
+        public string LocationSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE );
+
+        /// <summary>
+        /// Gets the group select header lava template.
+        /// </summary>
+        /// <value>
+        /// The group select header lava template.
+        /// </value>
+        public string GroupSelectHeaderLavaTemplate => GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE );
 
         #region registration
 
@@ -654,5 +776,44 @@ namespace Rock.CheckIn
         /// The contains
         /// </summary>
         Contains = 1
+    }
+
+    /// <summary>
+    /// Available options to determine how check-in should gather the individuals current ability level.
+    /// </summary>
+    public enum AbilityLevelDeterminationOptions
+    {
+        /// <summary>
+        /// The individual will be asked as a part of each check-in
+        /// </summary>
+        Ask = 0,
+
+        /// <summary>
+        /// Trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
+        /// </summary>
+        DoNotAsk = 1
+    }
+
+    /// <summary>
+    /// Determines how the custom Success Lava Template is used. By default,
+    /// it <see href="Never">won't be used</see> and the Success Block will display the default results
+    /// which may include Achievements and other logic.
+    /// </summary>
+    public enum SuccessLavaTemplateDisplayMode
+    {
+        /// <summary>
+        /// Hide the custom success template (default).
+        /// </summary>
+        Never = 0,
+
+        /// <summary>
+        /// Replace the current success content with the template.
+        /// </summary>
+        Replace = 1,
+
+        /// <summary>
+        /// Place the success template content under the existing content
+        /// </summary>
+        Append = 2
     }
 }

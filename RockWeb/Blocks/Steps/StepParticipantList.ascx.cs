@@ -27,6 +27,7 @@ using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -267,18 +268,14 @@ namespace RockWeb.Blocks.Steps
                 lFullName.Text = stepPerson.FullNameReversed;
             }
 
+            // Set the status HTML with the correct status color
             var lStepStatusHtml = e.Row.FindControl( _stepStatusField.ID ) as Literal;
+            var statusesHtml = GetStepStatusesHtml();
 
-            if ( lStepStatusHtml != null )
+            if ( lStepStatusHtml != null && statusesHtml != null && step.StepStatusId.HasValue && statusesHtml.ContainsKey( step.StepStatusId.Value ) )
             {
-                if ( step.IsCompleted )
-                {
-                    lStepStatusHtml.Text = string.Format( "<div class='label label-success'>{0}</div>", step.StepStatusName );
-                }
-                else
-                {
-                    lStepStatusHtml.Text = string.Format( "<div class='label label-info'>{0}</div>", step.StepStatusName );
-                }
+                var statusHtml = statusesHtml[step.StepStatusId.Value];
+                lStepStatusHtml.Text = statusHtml;
             }
 
             var lNameWithHtml = e.Row.FindControl( _nameWithHtmlField.ID ) as Literal;
@@ -841,9 +838,12 @@ namespace RockWeb.Blocks.Steps
             // Add Link to Profile Page Column
             if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
             {
-                var column = CreatePersonProfileLinkColumn( "PersonId" );
+                var personProfileLinkField = new PersonProfileLinkField
+                {
+                    LinkedPageAttributeKey = "PersonProfilePage"
+                };
 
-                gSteps.Columns.Add( column );
+                gSteps.Columns.Add( personProfileLinkField );
             }
 
             // Add delete column
@@ -855,21 +855,39 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Creates a grid column with a link to the person profile page.
+        /// Gets the step statuses.
         /// </summary>
-        private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
+        /// <returns></returns>
+        private Dictionary<int, string> GetStepStatusesHtml()
         {
-            HyperLinkField hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
-            hlPersonProfileLink.DataTextField = fieldName;
+            if ( _stepStatusesHtml != null )
+            {
+                return _stepStatusesHtml;
+            }
 
-            return hlPersonProfileLink;
+            if ( _stepType == null )
+            {
+                return new Dictionary<int, string>();
+            }
+
+            var rockContext = new RockContext();
+            var stepStatusService = new StepStatusService( rockContext );
+
+            _stepStatusesHtml = stepStatusService.Queryable()
+                .AsNoTracking()
+                .Where( ss => ss.StepProgram.StepTypes.Any( st => st.Id == _stepType.Id ) )
+                .ToDictionary(
+                    ss => ss.Id,
+                    ss =>
+                        "<span class='label label-default' style='background-color: " +
+                        ss.StatusColorOrDefault +
+                        ";'>" +
+                        ss.Name +
+                        "</span>" );
+
+            return _stepStatusesHtml;
         }
+        private Dictionary<int, string> _stepStatusesHtml = null;
 
         /// <summary>
         /// Binds the group members grid.
@@ -1045,7 +1063,7 @@ namespace RockWeb.Blocks.Steps
                 NickName = x.PersonAlias.Person.NickName,
                 StartedDateTime = x.StartDateTime,
                 CompletedDateTime = x.CompletedDateTime,
-                StepStatusName = ( x.StepStatus == null ? "" : x.StepStatus.Name ),
+                StepStatusId = x.StepStatusId,
                 IsCompleted = ( x.StepStatus == null ? false : x.StepStatus.IsCompleteStatus ),
                 Note = x.Note,
                 CampusName = x.Campus == null ? string.Empty : x.Campus.Name,
@@ -1115,7 +1133,6 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// A view-model that represents a single row on the Steps Participant grid.
         /// </summary>
-        /// <seealso cref="DotLiquid.Drop" />
         public class StepParticipantListViewModel : RockDynamic
         {
             public int Id { get; set; }
@@ -1125,7 +1142,7 @@ namespace RockWeb.Blocks.Steps
             public string FullName { get; set; }
             public DateTime? StartedDateTime { get; set; }
             public DateTime? CompletedDateTime { get; set; }
-            public string StepStatusName { get; set; }
+            public int? StepStatusId { get; set; }
             public bool IsCompleted { get; set; }
             public string Note { get; set; }
 

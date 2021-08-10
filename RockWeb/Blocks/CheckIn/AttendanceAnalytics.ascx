@@ -45,7 +45,7 @@
                     <div class="row row-eq-height">
                         <div class="col-md-3 filter-options">
 
-                            <Rock:GroupTypePicker ID="ddlAttendanceType" runat="server" Label="Attendance Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
+                            <Rock:GroupTypePicker ID="ddlAttendanceArea" runat="server" Label="Attendance Area" AutoPostBack="true" OnSelectedIndexChanged="ddlCheckinType_SelectedIndexChanged" />
                             <Rock:NotificationBox ID="nbGroupTypeWarning" runat="server" NotificationBoxType="Warning" Text="Please select a group type template in the block settings." Dismissable="false" />
 
                             <div class="actions margin-b-md">
@@ -131,7 +131,7 @@
                                     </div>
                                 </div>
                                 <div class="col-sm-4">
-                                    <div class="actions text-right">
+                                    <div class="panel-actions text-right">
                                         <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                     </div>
                                 </div>

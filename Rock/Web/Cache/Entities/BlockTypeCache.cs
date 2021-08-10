@@ -134,9 +134,14 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private ConcurrentDictionary<string, string> GetSecurityActionAttributes()
         {
-            var securityActions = new ConcurrentDictionary<string, string>();
             var blockType = this.GetCompiledType();
 
+            if ( blockType == null )
+            {
+                return new ConcurrentDictionary<string, string>();
+            }
+
+            var securityActions = new ConcurrentDictionary<string, string>();
             object[] customAttributes = blockType.GetCustomAttributes( typeof( SecurityActionAttribute ), true );
             foreach ( var customAttribute in customAttributes )
             {
@@ -305,11 +310,29 @@ namespace Rock.Web.Cache
         {
             if ( !string.IsNullOrWhiteSpace( this.Path ) )
             {
-                return System.Web.Compilation.BuildManager.GetCompiledType( Path );
+                try
+                {
+                    return System.Web.Compilation.BuildManager.GetCompiledType( Path );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return null;
+                }
+                
             }
             else if ( EntityTypeId.HasValue )
             {
-                return EntityType.GetEntityType();
+                try
+                {
+                    return EntityType.GetEntityType();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return null;;
+                }
+                
             }
 
             return null;

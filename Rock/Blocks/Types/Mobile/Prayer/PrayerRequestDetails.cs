@@ -125,7 +125,6 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [IntegerField( "Character Limit",
         Description = "If set to something other than 0, this will limit the number of characters allowed when entering a new prayer request.",
         IsRequired = false,
-        DefaultIntegerValue = 250,
         Category = AttributeCategories.Features,
         Key = AttributeKeys.CharacterLimit,
         Order = 6 )]
@@ -176,7 +175,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         Order = 0 )]
 
     [CodeEditorField( "Completion Xaml",
-        Description = "The XAML markup that will be used if the. <span class='tip tip-lava'></span>",
+        Description = "The XAML markup that will be used if the Completion Action is Xaml. <span class='tip tip-lava'></span>",
         IsRequired = false,
         DefaultValue = AttributeDefaults.CompletionXaml,
         Category = AttributeCategories.OnSaveBehavior,
@@ -532,16 +531,18 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 if ( requestGuid.HasValue )
                 {
-                    if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        return "<Rock:NotificationBox HeaderText=\"Error\" Text=\"You are not authorized to edit prayer requests.\" NotificationType=\"Error\" />";
-                    }
-
                     request = new PrayerRequestService( rockContext ).Get( requestGuid.Value );
 
                     if ( request == null )
                     {
                         return "<Rock:NotificationBox HeaderText=\"Error\" Text=\"We couldn't find that prayer request.\" NotificationType=\"Error\" />";
+                    }
+
+                    var canEdit = request.RequestedByPersonAlias != null && request.RequestedByPersonAlias.PersonId == RequestContext.CurrentPerson?.Id;
+
+                    if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !canEdit )
+                    {
+                        return "<Rock:NotificationBox HeaderText=\"Error\" Text=\"You are not authorized to edit prayer requests.\" NotificationType=\"Error\" />";
                     }
                 }
 
@@ -605,27 +606,34 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             var sb = new StringBuilder();
             string field;
 
-            string firstName = request != null ? request.FirstName : RequestContext.CurrentPerson?.FirstName;
-            string lastName = request != null ? request.LastName : RequestContext.CurrentPerson?.LastName;
-            string email = request != null ? request.Email : RequestContext.CurrentPerson?.Email;
+            // Allow editing primary fields if this is a new request or
+            // if they have Edit access to the block.
+            var allowFullEditing = request == null || request.Id == 0 || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            field = MobileHelper.GetTextEditFieldXaml( "firstName", "First Name", firstName, true );
-            sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
-            parameters.Add( "firstName", "Text" );
-
-            field = MobileHelper.GetTextEditFieldXaml( "lastName", "Last Name", lastName, RequireLastName );
-            sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
-            parameters.Add( "lastName", "Text" );
-
-            field = MobileHelper.GetEmailEditFieldXaml( "email", "Email", email, false );
-            sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
-            parameters.Add( "email", "Text" );
-
-            if ( ShowCampus && CampusCache.All().Where( a => a.IsActive ?? false ).Count() > 1 )
+            if ( allowFullEditing )
             {
-                field = $"<Rock:CampusPicker x:Name=\"campus\" Label=\"Campus\" IsRequired=\"{RequireCampus}\" SelectedValue=\"{request?.Campus?.Guid.ToStringSafe()}\" />";
+                string firstName = request != null ? request.FirstName : RequestContext.CurrentPerson?.FirstName;
+                string lastName = request != null ? request.LastName : RequestContext.CurrentPerson?.LastName;
+                string email = request != null ? request.Email : RequestContext.CurrentPerson?.Email;
+
+                field = MobileHelper.GetTextEditFieldXaml( "firstName", "First Name", firstName, true );
                 sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
-                parameters.Add( "campus", "SelectedValue" );
+                parameters.Add( "firstName", "Text" );
+
+                field = MobileHelper.GetTextEditFieldXaml( "lastName", "Last Name", lastName, RequireLastName );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
+                parameters.Add( "lastName", "Text" );
+
+                field = MobileHelper.GetEmailEditFieldXaml( "email", "Email", email, false );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
+                parameters.Add( "email", "Text" );
+
+                if ( ShowCampus && CampusCache.All().Where( a => a.IsActive ?? false ).Count() > 1 )
+                {
+                    field = $"<Rock:CampusPicker x:Name=\"campus\" Label=\"Campus\" IsRequired=\"{RequireCampus}\" SelectedValue=\"{request?.Campus?.Guid.ToStringSafe()}\" />";
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
+                    parameters.Add( "campus", "SelectedValue" );
+                }
             }
 
             if ( ShowCategory && ParentCategory.HasValue )
@@ -683,11 +691,21 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 {
                     prayerRequest = prayerRequestService.Get( requestGuid.Value );
 
-                    if ( prayerRequest == null || !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    if ( prayerRequest == null )
                     {
                         return new CallbackResponse
                         {
-                            Error = "You are not authorized to edit prayer requests."
+                            Error = "We couldn't find that prayer request."
+                        };
+                    }
+
+                    var canEdit = prayerRequest.RequestedByPersonAlias != null && prayerRequest.RequestedByPersonAlias.PersonId == RequestContext.CurrentPerson?.Id;
+
+                    if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && !canEdit )
+                    {
+                        return new CallbackResponse
+                        {
+                            Error = "You are not authorized to edit this prayer request."
                         };
                     }
                 }

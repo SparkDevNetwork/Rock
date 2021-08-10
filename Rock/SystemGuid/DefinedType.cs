@@ -85,6 +85,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
+        /// Guid for Content Channel Audience Type
+        /// </summary>
+        public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
+
+        /// <summary>
         /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
@@ -153,6 +158,11 @@ namespace Rock.SystemGuid
         /// Guid for Financial Transaction Type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
+
+        /// <summary>
+        /// The financial currency code
+        /// </summary>
+        public const string FINANCIAL_CURRENCY_CODE = "B9F3D359-4365-4594-BCEE-D23FA824FB81";
 
         /// <summary>
         /// Guid for Fundraising Opportunity Type (Trip, Project, Internship, etc)
@@ -405,5 +415,32 @@ namespace Rock.SystemGuid
         /// Logging Domain.
         /// </summary>
         public const string LOGGING_DOMAINS = "60487370-DE7E-4962-B58F-1865303F0414";
+
+        /// <summary>
+        /// The check in attendance types
+        /// </summary>
+        public const string CHECK_IN_ATTENDANCE_TYPES = "C0508751-3BDD-40A7-BE37-8AA4FC56E00E";
+
+        /// <summary>
+        /// The schedule type
+        /// </summary>
+        public const string SCHEDULE_TYPE = "831648D4-2E2C-4940-8358-9B426AEDB460";
+
+        /// <summary>
+        /// The map markers
+        /// </summary>
+        public const string MAP_MARKERS = "80DC21DE-A2C2-42DF-880B-FA9CABD504A0";
+
+        /// <summary>
+        /// Languages
+        /// </summary>
+        public const string LANGUAGES = "6060ba8b-4085-4a29-bf19-a4862b95556a";
+
+        /// <summary>
+        /// The statement generator lava template (Legacy)
+        /// </summary>
+        [Obsolete( "Use FinancialStatementTemplate instead" )]
+        [RockObsolete( "1.12.4" )]
+        public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
     }
 }

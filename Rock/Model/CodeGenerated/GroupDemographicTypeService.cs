@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,6 +59,51 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// GroupDemographicType View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( GroupDemographicType ) )]
+    public partial class GroupDemographicTypeViewModelHelper : ViewModelHelper<GroupDemographicType, Rock.ViewModel.GroupDemographicTypeViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.GroupDemographicTypeViewModel CreateViewModel( GroupDemographicType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.GroupDemographicTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ComponentEntityTypeId = model.ComponentEntityTypeId,
+                Description = model.Description,
+                GroupTypeId = model.GroupTypeId,
+                IsAutomated = model.IsAutomated,
+                LastRunDurationSeconds = model.LastRunDurationSeconds,
+                Name = model.Name,
+                RoleFilter = model.RoleFilter,
+                RunOnPersonUpdate = model.RunOnPersonUpdate,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
+
+    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class GroupDemographicTypeExtensionMethods
@@ -78,6 +126,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this GroupDemographicType object to a new GroupDemographicType object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static GroupDemographicType CloneWithoutIdentity( this GroupDemographicType source )
+        {
+            var target = new GroupDemographicType();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -106,5 +177,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.GroupDemographicTypeViewModel ToViewModel( this GroupDemographicType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new GroupDemographicTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

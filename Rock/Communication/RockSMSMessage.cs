@@ -49,7 +49,25 @@ namespace Rock.Communication
         /// <value>
         /// From number.
         /// </value>
-        public DefinedValueCache FromNumber { get; set; }
+        public DefinedValueCache FromNumber
+        {
+            get
+            {
+                if ( fromNumberValueId.HasValue  )
+                {
+                    return DefinedValueCache.Get( fromNumberValueId.Value );
+                }
+
+                return null;
+            }
+
+            set
+            {
+                fromNumberValueId = value?.Id;
+            }
+        }
+
+        private int? fromNumberValueId = null;
 
         /// <summary>
         /// Gets or sets the message.
@@ -66,7 +84,22 @@ namespace Rock.Communication
         /// <value>
         /// The name of the communication.
         /// </value>
-        public string communicationName { get; set; }
+        [Obsolete( "Use CommunicationName instead" )]
+        [RockObsolete("1.12")]
+        public string communicationName
+        {
+            get => CommunicationName;
+            set => CommunicationName = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the communication.
+        /// When CreateCommunicationRecord = true this value will insert Communication.Name
+        /// </summary>
+        /// <value>
+        /// The name of the communication.
+        /// </value>
+        public string CommunicationName { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockSMSMessage"/> class.
@@ -98,6 +131,7 @@ namespace Rock.Communication
 
             this.FromNumber = DefinedValueCache.Get( systemCommunication.SMSFromDefinedValue );
             this.Message = systemCommunication.SMSMessage;
+            this.SystemCommunicationId = systemCommunication.Id;
         }
 
         /// <summary>

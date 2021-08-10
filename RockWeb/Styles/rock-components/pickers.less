@@ -16,7 +16,7 @@
   .toggle-additional-search-fields {
     display: block;
     float: right;
-    font-size: 14px;
+    font-size: @font-size-small;
 
     &.active {
       background-color: darken(@btn-default-bg, 10%);
@@ -37,11 +37,11 @@
     max-width: ~"calc(100% - 25px)";
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
+    line-height: @line-height-computed;
     color: @input-color;
     background-color: @input-bg;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
-    line-height: @line-height-computed;
     &:hover {
       text-decoration: none;
     }
@@ -65,6 +65,20 @@
     .fa.fa-caret-down {
       margin-top: 3px;
     }
+
+    .has-error & {
+      border-color: @state-danger-text;
+
+      &.active {
+        border-color: @brand-danger;
+        box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
+      }
+    }
+  }
+
+  &.picker-fullwidth,
+  &.picker-fullwidth .picker-label {
+    width: 100%;
   }
 
   .input-group-sm {
@@ -87,14 +101,18 @@
 
     .viewport {
       width: ~"calc(100% - 15px)";
-      height: 380px;
-      //max-height: ~"calc(100vh - 200px)";
     }
 
     .scrollbar {
       width: 5px;
+    }
+
+    .viewport,
+    .scrollbar {
       height: 380px;
-      //max-height: ~"calc(100vh - 210px)";
+      @media (max-device-height: 480px) {
+        max-height: 200px;
+      }
     }
   }
 
@@ -111,7 +129,7 @@
 
   h4 {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: @font-size-small;
     font-weight: @font-weight-semibold;
   }
 
@@ -137,11 +155,18 @@
   }
 
   .picker-actions {
+    display: flex;
+    align-items: center;
     padding: @picker-menu-padding;
     margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
     background-color: @picker-action-bg;
     border-top: 1px solid @picker-action-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
+    gap: 0 4px;
+
+    .pull-right {
+      margin-left: auto;
+    }
   }
 
   .picker-select-item {
@@ -151,10 +176,7 @@
       margin-right: 0;
     }
 
-    label {
-      display: block;
-    }
-
+    label,
     .label-text {
       display: block;
     }
@@ -250,22 +272,9 @@
 
     .picker-label {
       width: 325px;
-
-      span {
-        width: 240px;
-      }
     }
   }
 }
-
-// #dialog .scroll-container-picker {
-//   width: 360px;
-
-//   .viewport {
-//     width: 340px;
-//     height: 190px;
-//   }
-// }
 
 // date time picker
 .date-time-picker {
@@ -278,16 +287,9 @@
 
 // Campus Account Amount Picker
 .campus-account-amount-picker {
-  margin-bottom: @form-group-margin-bottom;
-
-  .amount-input {
-    margin-bottom: @form-group-margin-bottom;
-  }
-
-  .campus-dropdown {
-    margin-bottom: @form-group-margin-bottom;
-  }
-
+  &,
+  .amount-input,
+  .campus-dropdown,
   .account-dropdown {
     margin-bottom: @form-group-margin-bottom;
   }

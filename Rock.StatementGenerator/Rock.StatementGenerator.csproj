@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.StatementGenerator</RootNamespace>
     <AssemblyName>Rock.StatementGenerator</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -71,13 +71,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MigrationResource.resx</DependentUpon>
     </Compile>
-    <Compile Include="PledgeSummary.cs" />
+    <Compile Include="Obsolete\SystemGuid\DefinedType.cs" />
+    <Compile Include="Obsolete\SystemGuid\Attribute.cs" />
+    <Compile Include="Rest\FinancialGivingStatementController.cs" />
+    <Compile Include="Rest\Obsolete\PledgeSummary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rest\StatementGeneratorFinancialTransactionsController.cs" />
-    <Compile Include="StatementGeneratorRecipient.cs" />
-    <Compile Include="StatementGeneratorOptions.cs" />
-    <Compile Include="SystemGuid\Attribute.cs" />
-    <Compile Include="SystemGuid\DefinedValue.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorFinancialTransactionsController.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorRecipient.cs" />
+    <Compile Include="Rest\Obsolete\StatementGeneratorOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -106,6 +107,14 @@
       <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
+      <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
+      <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}</Project>
       <Name>Rock.Rest</Name>
@@ -127,5 +136,6 @@
       <DependentUpon>001_StatementGenerator.cs</DependentUpon>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -21,23 +21,24 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+
 using Newtonsoft.Json;
+
 using RestSharp;
+
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Security;
 using Rock.MyWell.Controls;
+using Rock.Security;
 using Rock.Web.Cache;
-
-// Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer
+// Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer.
 using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 
 namespace Rock.MyWell
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
     [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
@@ -57,19 +58,35 @@ namespace Rock.MyWell
         "Public API Key",
         Key = AttributeKey.PublicApiKey,
         Description = "The public API Key used for web client operations",
-        Order = 2
-        )]
+        Order = 2 )]
 
-    [CustomRadioListField( "Mode",
+    [CustomRadioListField(
+        "Mode",
         Key = AttributeKey.Mode,
         Description = "Set to Sandbox mode to use the sandbox test gateway instead of the production app gateway",
         ListSource = "Live,Sandbox",
         IsRequired = true,
+        DefaultValue = "Live",
+        Order = 3 )]
 
-        DefaultValue = "Live" )]
+    [DecimalField(
+        "Credit Card Fee Coverage Percentage",
+        Key = AttributeKey.CreditCardFeeCoveragePercentage,
+        Description = @"The credit card fee percentage that will be used to determine what to add to the person's donation, if they want to cover the fee.",
+        IsRequired = false,
+        DefaultValue = null,
+        Order = 4 )]
+
+    [CurrencyField(
+        "ACH Transaction Fee Coverage Amount",
+        Key = AttributeKey.ACHTransactionFeeCoverageAmount,
+        Description = "The  dollar amount to add to an ACH transaction, if they want to cover the fee.",
+        IsRequired = false,
+        DefaultValue = null,
+        Order = 5 )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianFinancialGateway
     {
         #region Attribute Keys
 
@@ -92,9 +109,50 @@ namespace Rock.MyWell
             /// The mode
             /// </summary>
             public const string Mode = "Mode";
+
+            /// <summary>
+            /// The credit card fee coverage percentage
+            /// </summary>
+            public const string CreditCardFeeCoveragePercentage = "CreditCardFeeCoveragePercentage";
+
+            /// <summary>
+            /// The ach transaction fee coverage amount
+            /// </summary>
+            public const string ACHTransactionFeeCoverageAmount = "ACHTransactionFeeCoverageAmount";
         }
 
         #endregion Attribute Keys
+
+        #region Obsidian
+
+        /// <summary>
+        /// Gets the Obsidian control file URL.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The control file URL.
+        /// </value>
+        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        {
+            return "/Obsidian/Controls/MyWellGatewayControl.js";
+        }
+
+        /// <summary>
+        /// Gets the obsidian control settings.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        {
+            return new
+            {
+                PublicApiKey = GetPublicApiKey( financialGateway ),
+                GatewayUrl = GetGatewayUrl( financialGateway )
+            };
+        }
+
+        #endregion Obsidian
 
         /// <summary>
         /// Gets the gateway URL.
@@ -182,11 +240,11 @@ namespace Rock.MyWell
                 {
                     AccountNumberMasked = paymentDetail.AccountNumberMasked,
                     Amount = paymentInfo.Amount,
-                    ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted,
-                    ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted,
+                    ExpirationMonth = paymentDetail.ExpirationMonth,
+                    ExpirationYear = paymentDetail.ExpirationYear,
                     IsSettled = transaction.IsSettled,
                     SettledDate = transaction.SettledDate,
-                    NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted,
+                    NameOnCard = paymentDetail.NameOnCard,
                     Status = transaction.Status,
                     StatusMessage = transaction.StatusMessage,
                     TransactionCode = transaction.TransactionCode,
@@ -215,6 +273,22 @@ namespace Rock.MyWell
         }
 
         #endregion IAutomatedGatewayComponent
+
+        #region IFeeCoverageGatewayComponent
+
+        /// <inheritdoc/>
+        public decimal? GetCreditCardFeeCoveragePercentage( FinancialGateway financialGateway )
+        {
+            return this.GetAttributeValue( financialGateway, AttributeKey.CreditCardFeeCoveragePercentage )?.AsDecimalOrNull();
+        }
+
+        /// <inheritdoc/>
+        public decimal? GetACHFeeCoverageAmount( FinancialGateway financialGateway )
+        {
+            return this.GetAttributeValue( financialGateway, AttributeKey.ACHTransactionFeeCoverageAmount )?.AsDecimalOrNull();
+        }
+
+        #endregion IFeeCoverageGatewayComponent
 
         #region IHostedGatewayComponent
 
@@ -262,7 +336,7 @@ namespace Rock.MyWell
             var tokenResponse = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
-                if ( tokenResponse.HasValidationError() )
+                if ( tokenResponse?.HasValidationError() == true )
                 {
                     errorMessage = tokenResponse.ValidationMessage;
                 }
@@ -358,16 +432,16 @@ namespace Rock.MyWell
               date need to be at least 1 date after the current date (UTC), the earliest that we can start the schedule is 2020-01-15!
             */
 
-            // get the current local datetime, and ensure that it is using the local timezone
+            // Get the current local datetime, and ensure that it is using the local timezone.
             var currentLocalDateTime = DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local );
 
-            // add a day since MyWell requires that the start date is at least 1 day in the future
+            // Add a day since MyWell requires that the start date is at least 1 day in the future.
             var tomorrowLocalDateTime = currentLocalDateTime.AddDays( 1 );
 
-            // convert local "tomorrow date" to UTC date just in case it is a day after our local tomorrow date; (which would be true if after 5pm in AZ time)
+            // Convert local "tomorrow date" to UTC date just in case it is a day after our local tomorrow date; (which would be true if after 5pm in AZ time).
             var tomorrowUTCDateTime = tomorrowLocalDateTime.ToUniversalTime();
 
-            // we just want the Date portion (not time) since the Gateway determines the time of day that the actual transaction will occur,
+            // We just want the Date portion (not time) since the Gateway determines the time of day that the actual transaction will occur.
             var tomorrowUTCDate = tomorrowUTCDateTime.Date;
 
             return tomorrowUTCDate;
@@ -402,7 +476,7 @@ namespace Rock.MyWell
                 Phone = paymentInfo.Phone,
             };
 
-            // if the Gateway requires FirstName, just put '-' if no FirstName was provided
+            // If the Gateway requires FirstName, just put '-' if no FirstName was provided.
             if ( result.FirstName.IsNullOrWhiteSpace() )
             {
                 result.FirstName = "-";
@@ -461,7 +535,7 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Updates the customer address.
-        /// https://sandbox.gotnpgateway.com/docs/api/#update-a-specific-customer-address
+        /// https://sandbox.gotnpgateway.com/docs/api/#update-address-token-deprecated
         /// </summary>
         /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
@@ -514,6 +588,8 @@ namespace Rock.MyWell
                 Type = type,
                 Amount = amount
             };
+
+            transaction.IPAddress = referencedPaymentInfo.IPAddress;
 
             if ( customerId.IsNotNullOrWhiteSpace() )
             {
@@ -578,11 +654,11 @@ namespace Rock.MyWell
                 }
                 else if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
                 {
-                    throw new Exception( response.ErrorMessage );
+                    throw new MyWellGatewayException( response.ErrorMessage );
                 }
                 else
                 {
-                    throw new Exception( $"Unable to parse response: {response.Content} " );
+                    throw new MyWellGatewayException( $"Unable to parse response: {response.Content} " );
                 }
             }
 
@@ -693,12 +769,12 @@ namespace Rock.MyWell
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
             {
-                // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled
+                // See https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled.
                 var twiceMonthlyDays = new int[2] { 1, 15 };
                 billingFrequency = BillingFrequency.twice_monthly;
 
                 /* 2020-07-30 MDP
-                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it, 
+                  - When setting up a 1st/15th schedule, MyWell will report the NextBillDate as whatever we tell it,
                     but it really end up posting on whatever the next 1st or 15th lands on (which is what we want to happen).
                     For example, if we set up a 1st/15th schedule to start on July 23rd, it'll report that the NextBillDate is July 23rd,
                     but it won't really bill until Aug 1st. From then on, the NextBillDate will get reported as whatever the next 1st and 15th is.
@@ -726,21 +802,21 @@ namespace Rock.MyWell
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY.AsGuid() )
             {
-                // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-every-7-days-until-canceled
+                // See https://sandbox.gotnpgateway.com/docs/api/#bill-once-every-7-days-until-canceled.
                 billingCycleInterval = 1;
                 billingFrequency = BillingFrequency.daily;
                 billingDays = "7";
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY.AsGuid() )
             {
-                // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-other-week-until-canceled
+                // See https://sandbox.gotnpgateway.com/docs/api/#bill-once-other-week-until-canceled.
                 billingCycleInterval = 2;
                 billingFrequency = BillingFrequency.daily;
                 billingDays = "7";
             }
             else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
             {
-                // if ONE-TIME create a monthly subscription, but with a duration of 1 so that it only does it once
+                // If ONE-TIME create a monthly subscription, but with a duration of 1 so that it only does it once.
                 billingCycleInterval = 1;
                 billingFrequency = BillingFrequency.monthly;
                 billingDays = $"{startDayOfMonth}";
@@ -863,6 +939,26 @@ namespace Rock.MyWell
         }
 
         /// <summary>
+        /// Sets the subscription status.
+        /// Undocumented - Email from MyWell on 6/10/2021 told us about it
+        /// </summary>
+        /// <param name="gatewayUrl">The gateway URL.</param>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="subscriptionId">The subscription identifier.</param>
+        /// <param name="subscriptionStatus">The subscription status.</param>
+        /// <returns></returns>
+        private SubscriptionResponse SetSubscriptionStatus( string gatewayUrl, string apiKey, string subscriptionId, MyWellSubscriptionStatus subscriptionStatus )
+        {
+            var restClient = new RestClient( gatewayUrl );
+            RestRequest restRequest = new RestRequest( $"/api/recurring/subscription/{subscriptionId}/status/{subscriptionStatus.ConvertToString( false )}", Method.GET );
+            restRequest.AddHeader( "Authorization", apiKey );
+
+            var response = restClient.Execute( restRequest );
+
+            return ParseResponse<SubscriptionResponse>( response );
+        }
+
+        /// <summary>
         /// Updates the subscription.
         /// https://sandbox.gotnpgateway.com/docs/api/#update-a-subscription
         /// </summary>
@@ -953,7 +1049,7 @@ namespace Rock.MyWell
         #region Exceptions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="System.Exception" />
         public class ReferencePaymentInfoRequired : Exception
@@ -967,7 +1063,7 @@ namespace Rock.MyWell
             }
         }
 
-        #endregion 
+        #endregion
 
         #region GatewayComponent implementation
 
@@ -1012,6 +1108,14 @@ namespace Rock.MyWell
             if ( !response.IsSuccessStatus() )
             {
                 errorMessage = response.Message;
+
+                // Write decline/error as an exception.
+                var exception = new MyWellGatewayException( $"Error processing MyWell transaction. Message:  {response.Message}, " +
+                    $"processorResponseCode: {response.ProcessorResponseCode}, " +
+                    $"processorResponseText: {response.ProcessorResponseText} " );
+
+                ExceptionLogService.LogException( exception );
+
                 return null;
             }
 
@@ -1034,10 +1138,10 @@ namespace Rock.MyWell
             FinancialPaymentDetail financialPaymentDetail = new FinancialPaymentDetail();
             if ( billingAddressResponse != null )
             {
-                // since we are using a token for payment, it is possible that the Gateway has a different address associated with the payment method
-                financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{billingAddressResponse.FirstName} {billingAddressResponse.LastName}" );
+                // Since we are using a token for payment, it is possible that the Gateway has a different address associated with the payment method.
+                financialPaymentDetail.NameOnCard = $"{billingAddressResponse.FirstName} {billingAddressResponse.LastName}";
 
-                // if address wasn't collected when entering the transaction, set the address to the billing info returned from the gateway (if any)
+                // If address wasn't collected when entering the transaction, set the address to the billing info returned from the gateway (if any).
                 if ( paymentInfo.Street1.IsNullOrWhiteSpace() )
                 {
                     if ( billingAddressResponse.AddressLine1.IsNotNullOrWhiteSpace() )
@@ -1064,8 +1168,8 @@ namespace Rock.MyWell
 
                 if ( creditCardResponse.ExpirationDate?.Length == 5 )
                 {
-                    financialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( creditCardResponse.ExpirationDate.Substring( 0, 2 ) );
-                    financialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( creditCardResponse.ExpirationDate.Substring( 3, 2 ) );
+                    financialPaymentDetail.ExpirationMonth = creditCardResponse.ExpirationDate.Substring( 0, 2 ).AsIntegerOrNull();
+                    financialPaymentDetail.ExpirationYear = creditCardResponse.ExpirationDate.Substring( 3, 2 ).AsIntegerOrNull();
                 }
 
                 //// The gateway tells us what the CreditCardType is since it was selected using their hosted payment entry frame.
@@ -1112,8 +1216,8 @@ namespace Rock.MyWell
             var transactionStatus = this.GetTransactionStatus( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId );
             var transactionStatusTransaction = transactionStatus.Data.FirstOrDefault( a => a.Id == transactionId );
 
-            // https://sandbox.gotnpgateway.com/docs/api/#refund
-            // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK
+            // See https://sandbox.gotnpgateway.com/docs/api/#refund.
+            // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK.
             TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, amount );
 
             if ( response.IsSuccessStatus() )
@@ -1139,7 +1243,7 @@ namespace Rock.MyWell
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            // create a guid to include in the MyWell Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
+            // Create a guid to include in the MyWell Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs.
             var descriptionGuid = Guid.NewGuid();
 
             var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
@@ -1173,19 +1277,19 @@ namespace Rock.MyWell
 
                     if ( subscriptionId.IsNullOrWhiteSpace() )
                     {
-                        // error from CreateSubscription
+                        // Error from CreateSubscription.
                         errorMessage = subscriptionResult.Message;
                         return null;
                     }
                 }
                 else
                 {
-                    // error from SetSubscriptionBillingPlanParameters
+                    // Error from SetSubscriptionBillingPlanParameters.
                     return null;
                 }
 
-                // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
-                // this might be handy in case we have an exception and need to know what the subscriptionId is
+                // Set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
+                // This might be handy in case we have an exception and need to know what the subscriptionId is.
                 referencedPaymentInfo.TransactionCode = subscriptionId;
 
                 var scheduledTransaction = new FinancialScheduledTransaction();
@@ -1205,7 +1309,7 @@ namespace Rock.MyWell
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment.", ex );
+                    throw new MyWellGatewayException( $"Exception getting Customer Information for Scheduled Payment.", ex );
                 }
 
                 scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
@@ -1215,14 +1319,14 @@ namespace Rock.MyWell
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                    throw new MyWellGatewayException( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
                 }
 
                 return scheduledTransaction;
             }
             catch ( Exception )
             {
-                // if there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen
+                // If there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen.
                 var subscriptionSearchResult = this.SearchCustomerSubscriptions( financialGateway, customerId );
                 var orphanedSubscription = subscriptionSearchResult?.Data?.FirstOrDefault( a => a.Description == subscriptionDescription );
 
@@ -1233,6 +1337,32 @@ namespace Rock.MyWell
                 }
 
                 throw;
+            }
+        }
+
+        internal static Rock.Model.FinancialScheduledTransactionStatus? GetFinancialScheduledTransactionStatus( MyWellSubscriptionStatus? subscriptionStatus )
+        {
+            if ( subscriptionStatus == null )
+            {
+                return null;
+            }
+
+            switch ( subscriptionStatus )
+            {
+                case MyWellSubscriptionStatus.active:
+                    return FinancialScheduledTransactionStatus.Active;
+                case MyWellSubscriptionStatus.canceled:
+                    return FinancialScheduledTransactionStatus.Canceled;
+                case MyWellSubscriptionStatus.completed:
+                    return FinancialScheduledTransactionStatus.Completed;
+                case MyWellSubscriptionStatus.failed:
+                    return FinancialScheduledTransactionStatus.Failed;
+                case MyWellSubscriptionStatus.past_due:
+                    return FinancialScheduledTransactionStatus.PastDue;
+                case MyWellSubscriptionStatus.paused:
+                    return FinancialScheduledTransactionStatus.Paused;
+                default:
+                    return subscriptionStatus.ConvertToString( false ).ConvertToEnumOrNull<FinancialScheduledTransactionStatus>();
             }
         }
 
@@ -1281,22 +1411,59 @@ namespace Rock.MyWell
 
                 if ( subscriptionParameters.Customer?.Id == null || referencedPaymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
                 {
-                    // if GatewayPersonIdentifier wasn't known to Rock, get the CustomerId from MyWellGateway
+                    // If the GatewayPersonIdentifier wasn't known to Rock, get the CustomerId from MyWellGateway.
                     var subscription = GetSubscription( gatewayUrl, apiKey, subscriptionId );
                     referencedPaymentInfo.GatewayPersonIdentifier = subscription?.Data.Customer?.Id;
                     subscriptionParameters.Customer = new SubscriptionCustomer { Id = referencedPaymentInfo.GatewayPersonIdentifier };
                 }
 
-                var subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
+                SubscriptionResponse subscriptionResult;
+                var subscriptionStatusResult = this.GetSubscription( gatewayUrl, apiKey, subscriptionId );
+                if ( subscriptionStatusResult?.Data?.SubscriptionStatus != MyWellSubscriptionStatus.active )
+                {
+                    // If subscription isn't active (it might be cancelled due to expired card),
+                    // change the status back to active
+                    var setSubscriptionStatusResult = this.SetSubscriptionStatus( gatewayUrl, apiKey, subscriptionId, MyWellSubscriptionStatus.active );
+
+                    if ( !setSubscriptionStatusResult.IsSuccessStatus() )
+                    {
+                        // Write decline/error as an exception.
+                        // Note: MyWell doesn't include processor errors when creating subscriptions, probably because the processor doesn't do anything until the transactions are charged.
+                        var exception = new MyWellGatewayException( $"Error re-activating MyWell subscription. Message:  {setSubscriptionStatusResult.Message} " );
+
+                        ExceptionLogService.LogException( exception );
+
+                        errorMessage = setSubscriptionStatusResult.Message;
+
+                        return false;
+                    }
+                }
+
+                subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
+
                 if ( !subscriptionResult.IsSuccessStatus() )
                 {
+                    // Write decline/error as an exception.
+                    // Note: MyWell doesn't include processor errors when creating subscriptions, probably because the processor doesn't do anything until the transactions are charged.
+                    var exception = new MyWellGatewayException( $"Error processing MyWell subscription. Message:  {subscriptionResult.Message} " );
+
+                    ExceptionLogService.LogException( exception );
                     errorMessage = subscriptionResult.Message;
+
                     return false;
+                }
+
+                subscriptionId = subscriptionResult?.Data?.Id;
+
+                if ( subscriptionId != scheduledTransaction.GatewayScheduleId )
+                {
+                    referencedPaymentInfo.TransactionCode = subscriptionId;
+                    scheduledTransaction.GatewayScheduleId = subscriptionId;
                 }
             }
             else
             {
-                // error from SetSubscriptionBillingPlanParameters
+                // Error from SetSubscriptionBillingPlanParameters
                 return false;
             }
 
@@ -1319,18 +1486,19 @@ namespace Rock.MyWell
             }
             catch ( Exception ex )
             {
-                throw new Exception( $"Exception getting Customer Information for Scheduled Payment", ex );
+                throw new MyWellGatewayException( $"Exception getting Customer Information for Scheduled Payment", ex );
             }
 
             scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
             scheduledTransaction.TransactionCode = customerId;
+
             try
             {
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
             }
             catch ( Exception ex )
             {
-                throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                throw new MyWellGatewayException( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
             }
 
             errorMessage = null;
@@ -1359,7 +1527,7 @@ namespace Rock.MyWell
             {
                 if ( subscriptionResult.StatusCode == System.Net.HttpStatusCode.NotFound || subscriptionResult.StatusCode == System.Net.HttpStatusCode.Forbidden )
                 {
-                    // assume as status code of Forbidden or NonFound indicates that the schedule doesn't exist, or was deleted
+                    // Assume that status code of Forbidden or NonFound indicates that the schedule doesn't exist, or was deleted.
                     errorMessage = string.Empty;
                     return true;
                 }
@@ -1410,6 +1578,8 @@ namespace Rock.MyWell
                 {
                     scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC?.Date;
                     scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = subscriptionInfo.Customer?.Id;
+                    scheduledTransaction.StatusMessage = subscriptionInfo.SubscriptionStatusRaw;
+                    scheduledTransaction.Status = GetFinancialScheduledTransactionStatus( subscriptionInfo.SubscriptionStatus );
                 }
 
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
@@ -1421,7 +1591,7 @@ namespace Rock.MyWell
             {
                 if ( subscriptionResult.StatusCode == System.Net.HttpStatusCode.NotFound || subscriptionResult.StatusCode == System.Net.HttpStatusCode.Forbidden )
                 {
-                    // assume as status code of Forbidden or NonFound indicates that the schedule doesn't exist, or was deleted
+                    // Assume that a status code of Forbidden or NonFound indicates that the schedule doesn't exist, or was deleted.
                     scheduledTransaction.IsActive = false;
                     errorMessage = string.Empty;
                     return true;
@@ -1461,8 +1631,8 @@ namespace Rock.MyWell
 
             if ( searchResult.Data == null )
             {
-                // if no payments were fount for the date range, searchResult.Data will be null
-                // so just return an empty paymentList
+                // If no payments were found for the date range, searchResult.Data will be null,
+                // so just return an empty paymentList.
                 return paymentList;
             }
 
@@ -1474,7 +1644,7 @@ namespace Rock.MyWell
                     TransactionCode = transaction.Id,
                     Amount = transaction.Amount,
 
-                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local.
                     TransactionDateTime = transaction.CreatedDateTimeUTC.Value.ToLocalTime(),
                     GatewayScheduleId = gatewayScheduleId,
                     GatewayPersonIdentifier = transaction.CustomerId,
@@ -1484,7 +1654,7 @@ namespace Rock.MyWell
                     IsSettled = transaction.IsSettled(),
                     SettledGroupId = transaction.SettlementBatchId,
 
-                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local.
                     SettledDate = transaction.SettledDateTimeUTC?.ToLocalTime(),
                     StatusMessage = transaction.Response,
 
@@ -1493,7 +1663,7 @@ namespace Rock.MyWell
                     //// ScheduleActive doesn't apply because MyWell subscriptions are either active or deleted (don't exist).
                     ////   - GetScheduledPaymentStatus will take care of setting ScheduledTransaction.IsActive to false
                     //// SettledGroupId isn't included in the response from MyWell (this is an open issue)
-                    //// NameOnCardEncrypted, ExpirationMonthEncrypted, ExpirationYearEncrypted are set when the FinancialScheduledTransaction record is created
+                    //// NameOnCard, ExpirationMonth, ExpirationYear are set when the FinancialScheduledTransaction record is created
                 };
 
                 if ( transaction.PaymentType == "ach" )
@@ -1555,7 +1725,7 @@ namespace Rock.MyWell
             var apiKey = this.GetPrivateApiKey( financialGateway );
             if ( subscriptionList == null )
             {
-                throw new Exception( "Unexpected response from SearchCustomerSubscriptions " );
+                throw new MyWellGatewayException( "Unexpected response from SearchCustomerSubscriptions " );
             }
 
             var customerIds = subscriptionList.Select( a => a.Customer?.Id ).Where( a => a != null ).ToList();

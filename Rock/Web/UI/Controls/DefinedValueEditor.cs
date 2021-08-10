@@ -307,12 +307,16 @@ namespace Rock.Web.UI.Controls
             _btnSave.Click += btnSave_Click;
             Controls.Add( _btnSave );
 
+            var cancelButtonJs = $@"javascript:$('.{this.ClientID}-js-defined-value-editor').fadeToggle(400, 'swing', function() {{
+                $('.{DefinedValueSelectorClientId}-js-defined-value-selector').fadeToggle();
+                }}); return false;";
+
             _btnCancel = new LinkButton();
             _btnCancel.ID = this.ID + "_btnCancel";
             _btnCancel.Text = "Cancel";
             _btnCancel.CssClass = "btn btn-link btn-xs";
             _btnCancel.CausesValidation = false;
-            _btnCancel.OnClientClick = $"javascript:$('.{this.ClientID}-js-defined-value-editor').fadeToggle(400, 'swing', function() {{ $('.{DefinedValueSelectorClientId}-js-defined-value-selector').fadeToggle(); }}); return false;";
+            _btnCancel.OnClientClick = cancelButtonJs;
             Controls.Add( _btnCancel );
 
             LoadDefinedValueAttributes();
@@ -358,21 +362,8 @@ namespace Rock.Web.UI.Controls
             // Start FieldSet
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-            // Name Description Row
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbValueName.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbValueDescription.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
 
             // Attributes
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "attributes" );
@@ -386,14 +377,10 @@ namespace Rock.Web.UI.Controls
             // Buttons
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _btnSave.RenderControl( writer );
             _btnCancel.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
             writer.RenderEndTag(); // row
@@ -493,6 +480,20 @@ namespace Rock.Web.UI.Controls
             if ( this.Parent is DefinedValuePickerWithAdd )
             {
                 var picker = this.Parent as DefinedValuePickerWithAdd;
+
+                if ( picker.AttributeId != null )
+                {
+                    // Save the updated list to the AttributeQualifier
+                    var attributeQualifierService = new AttributeQualifierService( rockContext );
+                    var selectableValuesAttributeQualifier = attributeQualifierService.Queryable().Where( q => q.AttributeId == picker.AttributeId && q.Key == "SelectableDefinedValuesId" ).FirstOrDefault();
+                    if ( selectableValuesAttributeQualifier != null && selectableValuesAttributeQualifier.Value.IsNotNullOrWhiteSpace() )
+                    {
+                        selectableValuesAttributeQualifier.Value += $",{definedValue.Id}";
+                        rockContext.SaveChanges();
+
+                        picker.SelectableDefinedValuesId = selectableValuesAttributeQualifier.Value.Split( ',' ).AsIntegerList().ToArray();
+                    }
+                }
 
                 if ( this.IsMultiSelection )
                 {

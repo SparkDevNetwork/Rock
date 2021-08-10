@@ -37,6 +37,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Gets or sets the reference number. Usually a reference to previously collected CreditCard/ACH data.
+        /// However, some plug-in gateways might use this as a customer reference.
         /// To use a saved customer record from the payment gateway, set <seealso cref="GatewayPersonIdentifier"/> instead.
         /// </summary>
         public string ReferenceNumber { get; set; }
@@ -57,7 +58,20 @@ namespace Rock.Financial
         /// <value>
         /// The initial currency type value.
         /// </value>
-        public DefinedValueCache InitialCurrencyTypeValue { get; set; }
+        public DefinedValueCache InitialCurrencyTypeValue
+        {
+            get
+            {
+                return initialCurrencyTypeValueId.HasValue ? DefinedValueCache.Get( initialCurrencyTypeValueId.Value ) : null;
+            }
+
+            set
+            {
+                initialCurrencyTypeValueId = value?.Id;
+            }
+        }
+
+        private int? initialCurrencyTypeValueId = null;
 
         /// <summary>
         /// Gets or sets the initial credit card type value id.
@@ -65,7 +79,20 @@ namespace Rock.Financial
         /// <value>
         /// The initial credit card type value id.
         /// </value>
-        public DefinedValueCache InitialCreditCardTypeValue { get; set; }
+        public DefinedValueCache InitialCreditCardTypeValue
+        {
+            get
+            {
+                return initialCreditCardTypeValueId.HasValue ? DefinedValueCache.Get( initialCreditCardTypeValueId.Value ) : null;
+            }
+
+            set
+            {
+                initialCreditCardTypeValueId = value?.Id;
+            }
+        }
+
+        private int? initialCreditCardTypeValueId = null;
 
         /// <summary>
         /// Gets or sets the Gateway Person Identifier.

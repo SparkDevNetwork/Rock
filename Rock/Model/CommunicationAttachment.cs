@@ -19,6 +19,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -43,7 +44,7 @@ namespace Rock.Model
         public int BinaryFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
+        /// Gets or sets the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/>.
@@ -70,7 +71,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Person"/> who is receiving the <see cref="Rock.Model.Communication"/>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Communication Communication { get; set; }
 
         #endregion

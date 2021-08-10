@@ -40,31 +40,188 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Prompts user for login credentials." )]
 
-    [LinkedPage( "New Account Page", "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)", false, "", "", 0 )]
-    [LinkedPage( "Help Page", "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)", false, "", "", 1 )]
-    [CodeEditorField( "Confirm Caption", "The text (HTML) to display when a user's account needs to be confirmed.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
-", "", 2 )]
-    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
-    [SystemCommunicationField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
-    [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
-{%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked.  Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.
-", "", 5 )]
-    [BooleanField( "Hide New Account Option", "Should 'New Account' option be hidden?  For sites that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.", false, "", 6, "HideNewAccount" )]
-    [TextField( "New Account Text", "The text to show on the New Account button.", false, "Register", "", 7, "NewAccountButtonText" )]
-    [CodeEditorField( "No Account Text", "The text to show when no account exists. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?", "", 8, "NoAccountText" )]
+    #region "Block Attributes"
+    [TextField(
+        "Username Field Label",
+        Key = AttributeKey.UsernameFieldLabel,
+        Description = "The label to use for the username field.  For example, this allows an organization to customize it to 'Username / Email' in cases where both are supported.",
+        IsRequired = false,
+        DefaultValue = "Username",
+        Order = 0 )]
 
-    [CodeEditorField( "Remote Authorization Prompt Message", "Optional text (HTML) to display above remote authorization options.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, defaultValue: "Login with social account", order: 9 )]
-    [RemoteAuthsField( "Remote Authorization Types", "Which of the active remote authorization types should be displayed as an option for user to use for authentication.", false, "", "", 10 )]
-    [BooleanField( "Show Internal Login", "Show the default (non-remote) login", defaultValue: true, order: 11 )]
-    [BooleanField( "Redirect to Single External Auth Provider", "Redirect straight to the external authentication provider if only one is configured and the internal login is disabled.", defaultValue: false, order: 12 )]
+    [LinkedPage(
+        "New Account Page",
+        Key = AttributeKey.NewAccountPage,
+        Description = "Page to navigate to when user selects 'Create New Account' (if blank will use 'NewAccountPage' page route)",
+        IsRequired = false,
+        Order = 1 )]
 
-    [CodeEditorField( "Prompt Message", "Optional text (HTML) to display above username and password fields.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"", "", 13 )]
-    [LinkedPage( "Redirect Page", "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.", false, "", "", 14 )]
+    [LinkedPage(
+        "Help Page",
+        Key = AttributeKey.HelpPage,
+        Description = "Page to navigate to when user selects 'Help' option (if blank will use 'ForgotUserName' page route)",
+        IsRequired = false,
+        Order = 2 )]
 
-    [CodeEditorField( "Invalid PersonToken Text", "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>", "", 15 )]
+    [CodeEditorField(
+        "Confirm Caption",
+        Key = AttributeKey.ConfirmCaption,
+        Description = "The text (HTML) to display when a user's account needs to be confirmed.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired =  false,
+        DefaultValue = ConfirmCaptionDefaultValue,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Confirmation Page",
+        Key = AttributeKey.ConfirmationPage,
+        Description = "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)",
+        IsRequired = false,
+        Order = 4 )]
+
+    [SystemCommunicationField(
+        "Confirm Account Template",
+        Key = AttributeKey.ConfirmAccountTemplate,
+        Description = "Confirm Account Email Template",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Order = 5 )]
+
+    [CodeEditorField(
+        "Locked Out Caption",
+        Key = AttributeKey.LockedOutCaption,
+        Description = "The text (HTML) to display when a user's account has been locked.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = LockedOutCaptionDefaultValue,
+        Order = 6 )]
+
+    [BooleanField(
+        "Hide New Account Option",
+        Key = AttributeKey.HideNewAccount,
+        Description = "Should 'New Account' option be hidden? For sites that require user to be in a role (Internal Rock Site for example), users shouldn't be able to create their own account.",
+        DefaultBooleanValue = false,
+        Order = 7 )]
+
+    [TextField(
+        "New Account Text",
+        Key = AttributeKey.NewAccountButtonText,
+        Description = "The text to show on the New Account button.",
+        IsRequired = false,
+        DefaultValue = "Register",
+        Order = 8 )]
+
+    [CodeEditorField(
+        "No Account Text",
+        Key = AttributeKey.NoAccountText,
+        Description = "The text to show when no account exists. <span class='tip tip-lava'></span>.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"We couldn’t find an account with that username and password combination. Can we help you recover your <a href='{{HelpPage}}'>account information</a>?",
+        Order = 9 )]
+
+    [CodeEditorField(
+        "Remote Authorization Prompt Message",
+        Key = AttributeKey.RemoteAuthorizationPromptMessage,
+        Description = "Optional text (HTML) to display above remote authorization options.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = "Login with social account",
+        Order = 10 )]
+
+    [RemoteAuthsField(
+        "Remote Authorization Types",
+        Key = AttributeKey.RemoteAuthorizationTypes,
+        Description = "Which of the active remote authorization types should be displayed as an option for user to use for authentication.",
+        IsRequired = false,
+        Order = 11 )]
+
+    [BooleanField(
+        "Show Internal Login",
+        Key = AttributeKey.ShowInternalLogin,
+        Description = "Show the default (non-remote) login",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField(
+        "Redirect to Single External Auth Provider",
+        Key = AttributeKey.RedirecttoSingleExternalAuthProvider,
+        Description ="Redirect straight to the external authentication provider if only one is configured and the internal login is disabled.",
+        DefaultBooleanValue = false,
+        Order = 13 )]
+
+    [CodeEditorField(
+        "Prompt Message",
+        Key = AttributeKey.PromptMessage,
+        Description = "Optional text (HTML) to display above username and password fields.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        Order = 14 )]
+
+    [LinkedPage(
+        "Redirect Page",
+        Key = AttributeKey.RedirectPage,
+        Description = "Page to redirect user to upon successful login. The 'returnurl' query string will always override this setting for database authenticated logins. Redirect Page Setting will override third-party authentication 'returnurl'.",
+        IsRequired = false,
+        Order = 15 )]
+
+    [CodeEditorField(
+        "Invalid PersonToken Text",
+        Key = AttributeKey.InvalidPersonTokenText,
+        Description = "The text to show when a person is logged out due to an invalid persontoken. <span class='tip tip-lava'></span>.",
+        EditorMode = CodeEditorMode.Html,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 100,
+        IsRequired = false,
+        DefaultValue = @"<div class='alert alert-warning'>The login token you provided is no longer valid. Please login below.</div>",
+        Order = 16 )]
+
+    #endregion "Block Attributes"
+
     public partial class Login : Rock.Web.UI.RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string UsernameFieldLabel = "UsernameFieldLabel";
+            public const string NewAccountPage = "NewAccountPage";
+            public const string HelpPage = "HelpPage";
+            public const string ConfirmCaption = "ConfirmCaption";
+            public const string ConfirmationPage = "ConfirmationPage";
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+            public const string LockedOutCaption = "LockedOutCaption";
+            public const string HideNewAccount = "HideNewAccount";
+            public const string NewAccountButtonText = "NewAccountButtonText";
+            public const string NoAccountText = "NoAccountText";
+            public const string RemoteAuthorizationPromptMessage = "RemoteAuthorizationPromptMessage";
+            public const string RemoteAuthorizationTypes = "RemoteAuthorizationTypes";
+            public const string ShowInternalLogin = "ShowInternalLogin";
+            public const string RedirecttoSingleExternalAuthProvider = "RedirecttoSingleExternalAuthProvider";
+            public const string PromptMessage = "PromptMessage";
+            public const string RedirectPage = "RedirectPage";
+            public const string InvalidPersonTokenText = "InvalidPersonTokenText";
+        }
+
+        #region Constants
+        private const string ConfirmCaptionDefaultValue = @"
+Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
+";
+
+        private const string LockedOutCaptionDefaultValue = @"
+{%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked.  Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.
+";
+
+        #endregion Constants
+
         #region Base Control Methods
 
         /// <summary>
@@ -86,19 +243,20 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// </summary>
         private void ApplyBlockSettings()
         {
-            btnNewAccount.Visible = !GetAttributeValue( "HideNewAccount" ).AsBoolean();
-            btnNewAccount.Text = this.GetAttributeValue( "NewAccountButtonText" ) ?? "Register";
+            tbUserName.Label = GetAttributeValue( AttributeKey.UsernameFieldLabel );
+            btnNewAccount.Visible = !GetAttributeValue( AttributeKey.HideNewAccount ).AsBoolean();
+            btnNewAccount.Text = this.GetAttributeValue( AttributeKey.NewAccountButtonText ) ?? "Register";
 
             phExternalLogins.Controls.Clear();
 
             List<AuthenticationComponent> activeAuthProviders = new List<AuthenticationComponent>();
 
             var selectedGuids = new List<Guid>();
-            GetAttributeValue( "RemoteAuthorizationTypes" ).SplitDelimitedValues()
+            GetAttributeValue( AttributeKey.RemoteAuthorizationTypes ).SplitDelimitedValues()
                 .ToList()
                 .ForEach( v => selectedGuids.Add( v.AsGuid() ) );
 
-            lRemoteAuthLoginsHeadingText.Text = this.GetAttributeValue( "RemoteAuthorizationPromptMessage" );
+            lRemoteAuthLoginsHeadingText.Text = this.GetAttributeValue( AttributeKey.RemoteAuthorizationPromptMessage );
 
             // Look for active external authentication providers
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -116,7 +274,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     {
                         string userName = string.Empty;
                         string returnUrl = string.Empty;
-                        string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
+                        string redirectUrlSetting = LinkedPageUrl( AttributeKey.RedirectPage );
                         if ( component.Authenticate( Request, out userName, out returnUrl ) )
                         {
                             if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
@@ -155,13 +313,13 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             // adjust the page layout based on the RemoteAuth and InternalLogin options
             pnlRemoteAuthLogins.Visible = activeAuthProviders.Any();
-            bool showInternalLogin = this.GetAttributeValue( "ShowInternalLogin" ).AsBooleanOrNull() ?? true;
+            bool showInternalLogin = this.GetAttributeValue( AttributeKey.ShowInternalLogin ).AsBooleanOrNull() ?? true;
             pnlInternalAuthLogin.Visible = showInternalLogin;
 
             if ( activeAuthProviders.Count() == 1 && !showInternalLogin )
             {
                 var singleAuthProvider = activeAuthProviders[0];
-                bool redirecttoSingleExternalAuthProvider = this.GetAttributeValue( "RedirecttoSingleExternalAuthProvider" ).AsBoolean();
+                bool redirecttoSingleExternalAuthProvider = this.GetAttributeValue( AttributeKey.RedirecttoSingleExternalAuthProvider ).AsBoolean();
 
                 if ( redirecttoSingleExternalAuthProvider )
                 {
@@ -217,12 +375,12 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !Page.IsPostBack )
             {
-                lPromptMessage.Text = GetAttributeValue( "PromptMessage" );
+                lPromptMessage.Text = GetAttributeValue( AttributeKey.PromptMessage );
 
                 if ( (bool?)Session["InvalidPersonToken"] == true )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    lInvalidPersonTokenText.Text = GetAttributeValue( "InvalidPersonTokenText" ).ResolveMergeFields( mergeFields );
+                    lInvalidPersonTokenText.Text = GetAttributeValue( AttributeKey.InvalidPersonTokenText ).ResolveMergeFields( mergeFields );
                     Session.Remove( "InvalidPersonToken" );
                 }
             }
@@ -275,9 +433,9 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             string helpUrl = string.Empty;
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.HelpPage ) ) )
             {
-                helpUrl = LinkedPageUrl( "HelpPage" );
+                helpUrl = LinkedPageUrl( AttributeKey.HelpPage );
             }
             else
             {
@@ -285,8 +443,8 @@ Thank you for logging in, however, we need to confirm the email associated with 
             }
 
             var mergeFieldsNoAccount = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            mergeFieldsNoAccount.Add( "HelpPage", helpUrl );
-            DisplayError( GetAttributeValue( "NoAccountText" ).ResolveMergeFields( mergeFieldsNoAccount ) );
+            mergeFieldsNoAccount.Add( AttributeKey.HelpPage, helpUrl );
+            DisplayError( GetAttributeValue( AttributeKey.NoAccountText ).ResolveMergeFields( mergeFieldsNoAccount ) );
         }
 
         /// <summary>
@@ -339,7 +497,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 SendConfirmation( userLogin );
 
-                lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+                lConfirmCaption.Text = GetAttributeValue( AttributeKey.ConfirmCaption ).ResolveMergeFields( mergeFields );
                 pnlLogin.Visible = false;
                 pnlConfirmation.Visible = true;
             }
@@ -362,7 +520,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( isLockedOut )
             {
-                lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
+                lLockedOutCaption.Text = GetAttributeValue( AttributeKey.LockedOutCaption ).ResolveMergeFields( mergeFields );
                 pnlLogin.Visible = false;
                 pnlLockedOut.Visible = true;
             }
@@ -417,7 +575,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         {
             string returnUrl = Request.QueryString["returnurl"];
 
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "NewAccountPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.NewAccountPage ) ) )
             {
                 var parms = new Dictionary<string, string>();
 
@@ -426,7 +584,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
                     parms.Add( "returnurl", returnUrl );
                 }
 
-                NavigateToLinkedPage( "NewAccountPage", parms );
+                NavigateToLinkedPage( AttributeKey.NewAccountPage, parms );
             }
             else
             {
@@ -449,9 +607,9 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         protected void btnHelp_Click( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "HelpPage" ) ) )
+            if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.HelpPage ) ) )
             {
-                NavigateToLinkedPage( "HelpPage" );
+                NavigateToLinkedPage( AttributeKey.HelpPage );
             }
             else
             {
@@ -483,7 +641,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         private void LoginUser( string userName, string returnUrl, bool rememberMe )
         {
-            string redirectUrlSetting = LinkedPageUrl( "RedirectPage" );
+            string redirectUrlSetting = LinkedPageUrl( AttributeKey.RedirectPage );
 
             UserLoginService.UpdateLastLogin( userName );
 
@@ -491,7 +649,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
 
             if ( !string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
+                string redirectUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 redirectUrl =  Server.UrlDecode( redirectUrl );
                 Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
@@ -513,7 +671,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
         /// <param name="userLogin">The user login.</param>
         private void SendConfirmation( UserLogin userLogin )
         {
-            string url = LinkedPageUrl( "ConfirmationPage" );
+            string url = LinkedPageUrl( AttributeKey.ConfirmationPage );
             if ( string.IsNullOrWhiteSpace( url ) )
             {
                 url = ResolveRockUrl( "~/ConfirmAccount" );
@@ -527,7 +685,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             var recipients = new List<RockEmailMessageRecipient>();
             recipients.Add( new RockEmailMessageRecipient( userLogin.Person, mergeFields ) );
 
-            var message = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+            var message = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountTemplate ).AsGuid() );
             message.SetRecipients( recipients );
             message.AppRoot = ResolveRockUrl( "~/" );
             message.ThemeRoot = ResolveRockUrl( "~~/" );

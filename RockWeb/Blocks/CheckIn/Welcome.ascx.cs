@@ -162,7 +162,10 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Attribute Keys
 
-        private static class AttributeKey
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also has inherited class AttributeKey.
+         */
+        private new static class AttributeKey
         {
             public const string FamilySelectPage = "FamilySelectPage";
             public const string ScheduledLocationsPage = "ScheduledLocationsPage";
@@ -760,7 +763,7 @@ namespace RockWeb.Blocks.CheckIn
             var personId = hfSelectedPersonId.ValueAsInt();
             var selectedAttendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
 
-            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request );
+            List<string> messages = ZebraPrint.ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, pnlReprintResults, this.Request, ( ReprintLabelOptions ) null );
 
             pnlReprintResults.Visible = true;
             pnlReprintSelectedPersonLabels.Visible = false;

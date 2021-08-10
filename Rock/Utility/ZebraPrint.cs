@@ -168,24 +168,64 @@ namespace Rock.Utility
         /// <returns>
         /// A list of any messages that occur during printing.
         /// </returns>
+        [Obsolete( "Use the ReprintZebraLabels with the ReprintLabelOptions option" )]
+        [RockObsolete( "1.12" )]
         public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, System.Web.HttpRequest request, string printerAddress = null )
+        {
+            ReprintLabelOptions reprintLabelOptions;
+            if ( printerAddress.IsNotNullOrWhiteSpace() )
+            {
+                reprintLabelOptions = new ReprintLabelOptions
+                {
+                    ServerPrinterIPAddress = printerAddress,
+                    PrintFrom = PrintFrom.Server
+                };
+            }
+            else
+            {
+                reprintLabelOptions = new ReprintLabelOptions
+                {
+                    ServerPrinterIPAddress = null,
+                    PrintFrom = null
+                };
+            }
+
+            return ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, control, request, reprintLabelOptions );
+        }
+
+        /// <summary>
+        /// Handles printing labels for the given parameters using the
+        /// label data stored on the AttendanceData model.
+        /// </summary>
+        /// <param name="fileGuids">The file guids.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="selectedAttendanceIds">The selected attendance ids.</param>
+        /// <param name="control">The control.</param>
+        /// <param name="request">The request.</param>
+        /// <param name="reprintLabelOptions">The reprint label options.</param>
+        /// <returns></returns>
+        public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, System.Web.HttpRequest request, ReprintLabelOptions reprintLabelOptions )
         {
             // Fetch the actual labels and print them
             var rockContext = new RockContext();
             var attendanceService = new Rock.Model.AttendanceService( rockContext );
 
-            // Get the selected attendance records
-            var attendanceRecords = attendanceService.GetByIds( selectedAttendanceIds );
+            reprintLabelOptions = reprintLabelOptions ?? new ReprintLabelOptions();
+
+            // Get the selected attendance records (but only the ones that have label data)
+            var labelDataList = attendanceService
+                .GetByIds( selectedAttendanceIds )
+                .Where( a => a.AttendanceData.LabelData != null )
+                .Select( a => a.AttendanceData.LabelData );
 
             var printFromClient = new List<CheckInLabel>();
             var printFromServer = new List<CheckInLabel>();
 
             // Now grab only the selected label types (matching fileGuids) from those record's AttendanceData
             // for the selected  person
-            foreach ( var attendance in attendanceRecords )
+            foreach ( var labelData in labelDataList )
             {
-                var attendanceData = attendance.AttendanceData;
-                var json = attendanceData.LabelData.Trim();
+                var json = labelData.Trim();
 
                 // skip if the return type is not an array
                 if ( json.Substring( 0, 1 ) != "[" )
@@ -205,14 +245,22 @@ namespace Rock.Utility
                 // Take only the labels that match the selected person (or if they are Family type labels) and file guids).
                 checkinLabels = checkinLabels.Where( l => ( l.PersonId == personId || l.LabelType == KioskLabelType.Family ) && fileGuids.Contains( l.FileGuid ) ).ToList();
 
-                // Override the printer by printing to the given printerAddress?
-                if ( !string.IsNullOrEmpty( printerAddress ) )
+                if ( reprintLabelOptions.PrintFrom == PrintFrom.Server && reprintLabelOptions.ServerPrinterIPAddress.IsNotNullOrWhiteSpace() )
                 {
-                    checkinLabels.ToList().ForEach( l => l.PrinterAddress = printerAddress );
+                    // Override the printer by printing to the given printerAddress?
+                    checkinLabels.ToList().ForEach( l => l.PrinterAddress = reprintLabelOptions.ServerPrinterIPAddress );
                     printFromServer.AddRange( checkinLabels );
+                }
+                else if ( reprintLabelOptions.PrintFrom == PrintFrom.Client )
+                {
+                    // Override the printer by printing to the client
+                    // send the checkin labels to ZebraPrint.js, which the ClientApp will use to print it
+                    // IP Address of the printer will stay the same IP Address as where the original label was,
+                    printFromClient.AddRange( checkinLabels );
                 }
                 else
                 {
+                    // Print to label's printer
                     printFromClient.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client ) );
                     printFromServer.AddRange( checkinLabels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server ) );
                 }
@@ -222,6 +270,18 @@ namespace Rock.Utility
             if ( printFromClient.Any() )
             {
                 var urlRoot = string.Format( "{0}://{1}", request.Url.Scheme, request.Url.Authority );
+
+                /*
+                                // This is extremely useful when debugging with ngrok and an iPad on the local network.
+                                // X-Original-Host will contain the name of your ngrok hostname, therefore the labels will
+                                // get a LabelFile url that will actually work with that iPad.
+                                if ( request.Headers["X-Original-Host"] != null )
+                                {
+                                    var scheme = request.Headers["X-Forwarded-Proto"] ?? "http";
+                                    urlRoot = string.Format( "{0}://{1}", scheme, request.Headers.GetValues( "X-Original-Host" ).First() );
+                                }
+                */
+
                 printFromClient
                     .OrderBy( l => l.PersonId )
                     .ThenBy( l => l.Order )
@@ -271,6 +331,8 @@ namespace Rock.Utility
                 printLabels();
             }} 
             catch (err) {{
+                // if there is a js-reprintlabel-notification, show the error there 
+                $('.js-reprintlabel-notification').text(err).removeClass('alert-info').addClass('alert-danger');
                 console.log('An error occurred printing labels: ' + err);
             }}
 		}}
@@ -341,6 +403,7 @@ namespace Rock.Utility
                 {
                     // Remove the box preceding merge field
                     label = Regex.Replace( label, string.Format( @"\^FO.*\^FS\s*(?=\^FT.*\^FD{0}\^FS)", mergeField.Key ), string.Empty );
+
                     // Remove the merge field
                     label = Regex.Replace( label, string.Format( @"\^FD{0}\^FS", mergeField.Key ), "^FD^FS" );
                 }
@@ -378,7 +441,7 @@ namespace Rock.Utility
             if ( deviceId != null )
             {
                 KioskDevice kioskDevice = KioskDevice.Get( deviceId.GetValueOrDefault(), new List<int>() );
-                hasCutter = kioskDevice.Device.GetAttributeValue( Rock.SystemKey.DeviceAttributeKey.DEVICE_HAS_CUTTER  ).AsBoolean();
+                hasCutter = kioskDevice.Device.GetAttributeValue( Rock.SystemKey.DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean();
             }
 
             return hasCutter;
@@ -470,6 +533,28 @@ namespace Rock.Utility
     #region Reprint Label Helper Classes
 
     /// <summary>
+    /// 
+    /// </summary>
+    public sealed class ReprintLabelOptions
+    {
+        /// <summary>
+        /// Instead of printing to the label's printer, print to this IP instead
+        /// </summary>
+        /// <value>
+        /// The printer IP address.
+        /// </value>
+        public string ServerPrinterIPAddress { get; set; }
+
+        /// <summary>
+        /// Where to print the labels. Leave null to print to label's original printer
+        /// </summary>
+        /// <value>
+        /// The print from.
+        /// </value>
+        public PrintFrom? PrintFrom { get; set; }
+    }
+
+    /// <summary>
     /// The class structure used with label reprinting as a view model for on screen button choices.
     /// </summary>
     public class ReprintLabelPersonResult
@@ -478,18 +563,22 @@ namespace Rock.Utility
         /// The Person's Id 
         /// </summary>
         public int Id { get; set; }
+
         /// <summary>
         /// A list of Attendance Ids.
         /// </summary>
         public List<int> AttendanceIds { get; set; }
+
         /// <summary>
         /// The Guid of the Person.
         /// </summary>
         public Guid PersonGuid { get; set; }
+
         /// <summary>
         /// The Person's name.
         /// </summary>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the location and schedule names shown on the button.
         /// </summary>
@@ -553,6 +642,7 @@ namespace Rock.Utility
         /// The identifier.
         /// </value>
         public int Id { get; set; }
+
         /// <summary>
         /// Gets or sets the label binary file identifier.
         /// </summary>
@@ -560,6 +650,7 @@ namespace Rock.Utility
         /// The label file identifier.
         /// </value>
         public int LabelFileId { get; set; }
+
         /// <summary>
         /// Gets or sets the label binary file unique identifier.
         /// </summary>
@@ -567,6 +658,7 @@ namespace Rock.Utility
         /// The file unique identifier.
         /// </value>
         public Guid FileGuid { get; set; }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
@@ -574,6 +666,7 @@ namespace Rock.Utility
         /// The name.
         /// </value>
         public string Name { get; set; }
+
         /// <summary>
         /// Gets or sets the person's Id.
         /// </summary>
@@ -581,6 +674,7 @@ namespace Rock.Utility
         /// The person identifier.
         /// </value>
         public int PersonId { get; set; }
+
         /// <summary>
         /// Gets or sets a list of attendance ids.
         /// </summary>

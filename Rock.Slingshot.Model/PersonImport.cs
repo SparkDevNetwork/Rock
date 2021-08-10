@@ -228,10 +228,10 @@ namespace Rock.Slingshot.Model
         public int Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets Id of the Marital Status representing the Person's martial status.
+        /// Gets or sets Id of the Marital Status representing the Person's marital status.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Marital Status representing the Person's martial status.  This value is nullable.
+        /// A <see cref="System.Int32"/> representing the Id of the Marital Status representing the Person's marital status.  This value is nullable.
         /// </value>
         public int? MaritalStatusValueId { get; set; }
 

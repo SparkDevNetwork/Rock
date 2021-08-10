@@ -39,7 +39,7 @@ namespace Rock.Follow.Suggestion
     [GroupTypeField("Group Type","The group type", true, order: 0 )]
     [GroupField("Group (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:1, key:"Group" )]
     [SecurityRoleField("Security Role (optional)", "A specific group to evaluate (Make sure to select group with same group type as above).", false, order:2, key:"SecurityRole")]
-    [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
+    [GroupRoleField( null, "Follower Group Type (optional)", "If specified, only people with this role will be notified (Make sure to select same group type as above).", false, order:3, key:"FollowerGroupType" )]
     [GroupRoleField( null, "Followed Group Type (optional)", "If specified, only people with this role will be suggested to the follower (Make sure to select same group type as above).", false, order:4, key:"FollowedGroupType" )]
     [BooleanField("Auto-Follow", "Determines if new people added to the group should be auto-followed.", false, IsRequired = true, Key = "AutoFollow")]
     public class InGroupTogether : SuggestionComponent
@@ -188,6 +188,7 @@ namespace Rock.Follow.Suggestion
                                     bool isFollowing = followingService.Queryable().Where( f =>
                                                             f.EntityTypeId == personAliasEntityType.Id
                                                             && f.EntityId == followeePersonAliasId
+                                                            && string.IsNullOrEmpty( f.PurposeKey )
                                                             && f.PersonAliasId == followerPersonAliasId ).Any();
                                     if ( !isFollowing )
                                     {

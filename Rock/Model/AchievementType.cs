@@ -59,7 +59,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the source entity type. The source supplies the data framework from which achievements are computed.
-        /// The original achievement sources were <see cref="Streak"/>s.
+        /// The original achievement sources were <see cref="Streak">Streaks</see>.
         /// </summary>
         [DataMember]
         public int? SourceEntityTypeId { get; set; }
@@ -148,13 +148,41 @@ namespace Rock.Model
         public bool AllowOverAchievement { get; set; }
 
         /// <summary>
-        /// Gets or sets the category identifier.
+        /// Gets or sets the <see cref="Model.Category"/> identifier.
         /// </summary>
         /// <value>
         /// The category identifier.
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image binary file identifier. This would be the image
+        /// that would be shown in the achievement summary (for example, a trophy).
+        /// </summary>
+        /// <value>
+        /// The image binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lava template used to render the status summary of the achievement.
+        /// </summary>
+        /// <value>
+        /// The custom summary lava template.
+        /// </value>
+        [DataMember]
+        public string CustomSummaryLavaTemplate { get; set; }
 
         #endregion Entity Properties
 
@@ -197,7 +225,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="EntityType"/> of the component.
+        /// Gets or sets the <see cref="EntityType"/> of the achievement.
         /// </summary>
         [DataMember]
         public virtual EntityType AchievementEntityType { get; set; }
@@ -237,6 +265,15 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual Category Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image binary file.
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageBinaryFile { get; set; }
 
         /// <summary>
         /// Gets or sets the attempts.
@@ -303,6 +340,7 @@ namespace Rock.Model
                 HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.AchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.ImageBinaryFile ).WithMany().HasForeignKey( stat => stat.ImageBinaryFileId ).WillCascadeOnDelete( false );
             }
         }
 

@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -63,13 +64,10 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
+                    var schedules = guids.Select( a => NamedScheduleCache.Get( a ) ).ToList();
+                    if ( schedules.Any() )
                     {
-                        var schedules = new ScheduleService( rockContext ).Queryable().AsNoTracking().Where( a => guids.Contains( a.Guid ) );
-                        if ( schedules.Any() )
-                        {
-                            formattedValue = string.Join( ", ", ( from schedule in schedules select schedule.Name ).ToArray() );
-                        }
+                        formattedValue = string.Join( ", ", ( from schedule in schedules select schedule?.Name ).ToArray() );
                     }
                 }
             }
@@ -108,14 +106,12 @@ namespace Rock.Field.Types
             if ( picker != null )
             {
                 var ids = picker.SelectedValuesAsInt().ToList();
-                using ( var rockContext = new RockContext() )
-                {
-                    var schedules = new ScheduleService( rockContext ).GetByIds( ids ).ToList();
 
-                    if ( schedules.Any() )
-                    {
-                        result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
-                    }
+                var schedules = ids.Select( a => NamedScheduleCache.Get( a ) ).Where( a => a != null ).ToList();
+
+                if ( schedules.Any() )
+                {
+                    result = schedules.Select( s => s.Guid.ToString() ).ToList().AsDelimited( "," );
                 }
 
                 return result;
@@ -140,16 +136,15 @@ namespace Rock.Field.Types
 
                 if ( guids.Any() )
                 {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var schedules = new ScheduleService( rockContext ).GetByGuids( guids ).ToList();
-                        picker.SetValues( schedules );
-                    }
+
+                    var scheduleIds = guids.Select( g => NamedScheduleCache.GetId( g ) ).Where( a => a.HasValue ).Select( a => a.Value ).ToList();
+                    picker.SetValues( scheduleIds );
+
                 }
                 else
                 {
                     // make sure that no schedules are selected
-                    picker.SetValues( new List<Schedule>() );
+                    picker.SetValues( new List<int>() );
                 }
             }
         }

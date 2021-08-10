@@ -61,10 +61,22 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? PhotoId { get; set; }
 
         /// <summary />
         public string PublicName { get; set; }
+
+        /// <summary />
+        public bool ShowCampusOnTransfer { get; set; }
+
+        /// <summary />
+        public bool ShowConnectButton { get; set; } = true;
+
+        /// <summary />
+        public bool ShowStatusOnTransfer { get; set; } = true;
 
         /// <summary />
         public string Summary { get; set; }
@@ -110,8 +122,12 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.PhotoId = source.PhotoId;
             this.PublicName = source.PublicName;
+            this.ShowCampusOnTransfer = source.ShowCampusOnTransfer;
+            this.ShowConnectButton = source.ShowConnectButton;
+            this.ShowStatusOnTransfer = source.ShowStatusOnTransfer;
             this.Summary = source.Summary;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

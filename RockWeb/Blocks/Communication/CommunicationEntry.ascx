@@ -32,19 +32,17 @@
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                     <asp:CustomValidator ID="cvDelayDateTime" runat="server" />
 
-                    <div class="well well-pillwrap">
-                        <div id="divMediums" runat="server">
-                            <ul class="nav nav-pills">
-                                <asp:Repeater ID="rptMediums" runat="server">
-                                    <ItemTemplate>
-                                        <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
-                                            <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
-                                            </asp:LinkButton>
-                                        </li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-                        </div>
+                    <div id="divMediums" class="well well-pillwrap" runat="server">
+                        <ul class="nav nav-pills">
+                            <asp:Repeater ID="rptMediums" runat="server">
+                                <ItemTemplate>
+                                    <li class='<%# (int)Eval("Key") == MediumEntityTypeId ? "active" : "" %>'>
+                                        <asp:LinkButton ID="lbMedium" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbMedium_Click" CausesValidation="false">
+                                        </asp:LinkButton>
+                                    </li>
+                                </ItemTemplate>
+                            </asp:Repeater>
+                        </ul>
                     </div>
 
                     <Rock:NotificationBox ID="nbInvalidTransport" runat="server" NotificationBoxType="Warning" Dismissable="true" Title="Warning" Visible="false" />

@@ -24,13 +24,17 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Humanizer;
 
 using Rock.Data;
+using Rock.Security;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -68,7 +72,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that is represented by the GroupMember. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is reprensented by the GroupMember.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is represented by the GroupMember.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -175,7 +179,7 @@ namespace Rock.Model
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAliasId that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias identifier.
@@ -185,7 +189,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="GroupMember.ScheduleTemplate"/>
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>
         /// </summary>
         /// <value>
         /// The schedule template identifier.
@@ -194,7 +198,7 @@ namespace Rock.Model
         public int? ScheduleTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="ScheduleTemplate"/>.
+        /// Gets or sets the schedule start date to base the schedule off of. See <see cref="Rock.Model.GroupMemberScheduleTemplate"/>.
         /// </summary>
         /// <value>
         /// The schedule start date.
@@ -230,7 +234,7 @@ namespace Rock.Model
         public GroupMember()
             : base()
         {
-            CommunicationPreference = CommunicationType.Email;
+            CommunicationPreference = CommunicationType.RecipientPreference;
         }
 
         #endregion
@@ -252,11 +256,11 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="Rock.Model.Group"/> representing the Group that the GroupMember is a part of.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the the GroupMember's role (<see cref="Rock.Model.GroupTypeRole"/>) in the <see cref="Rock.Model.Group"/>.
+        /// Gets or sets the GroupMember's role (<see cref="Rock.Model.GroupTypeRole"/>) in the <see cref="Rock.Model.Group"/>.
         /// </summary>
         /// <value>
         /// A <see cref="Rock.Model.GroupTypeRole"/> representing the GroupMember's <see cref="Rock.Model.GroupTypeRole"/> in the <see cref="Rock.Model.Group"/>.
@@ -265,7 +269,7 @@ namespace Rock.Model
         public virtual GroupTypeRole GroupRole { get; set; }
 
         /// <summary>
-        /// Gets or sets the PersonAlias that archived (soft deleted) this group member
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> that archived (soft deleted) this group member
         /// </summary>
         /// <value>
         /// The archived by person alias.
@@ -274,7 +278,7 @@ namespace Rock.Model
         public virtual PersonAlias ArchivedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member requirements.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberRequirement">group member requirements</see>.
         /// </summary>
         /// <value>
         /// The group member requirements.
@@ -283,7 +287,7 @@ namespace Rock.Model
         public virtual ICollection<GroupMemberRequirement> GroupMemberRequirements { get; set; } = new Collection<GroupMemberRequirement>();
 
         /// <summary>
-        /// Gets or sets the GroupMemberScheduleTemplate. 
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberScheduleTemplate"/>. 
         /// </summary>
         /// <value>
         /// The schedule template.
@@ -301,7 +305,7 @@ namespace Rock.Model
         private List<HistoryItem> HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member assignments.
+        /// Gets or sets the <see cref="Rock.Model.GroupMemberAssignment">group member assignments</see>.
         /// </summary>
         /// <value>
         /// The group member assignments.
@@ -312,6 +316,90 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Group != null )
+                {
+                    return this.Group;
+                }
+                else
+                {
+                    return base.ParentAuthority;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        /// <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /* 2020-09-28  MDP
+             GroupMember's Group record has a special MANAGE_MEMBERS action that grants access to managing members.
+             This is effectively the same as EDIT. So, if checking security on EDIT, also check Group's
+             MANAGE_MEMBERS (in case they have MANAGE_MEMBERS but not EDIT)
+
+             Possible 'action' parameters on GroupMember are
+             1) VIEW
+             2) EDIT
+             3) ADMINISTRATE
+
+             NOTE: MANAGE_MEMBERS is NOT a possible action on GroupMember. However, this can be confusing
+             because MANAGE_MEMBERS is a possible action on Group (which would grant EDIT on its group members)
+
+             This is how this has implemented
+             - If they can EDIT a Group, then can Manage Group Members (regardless if the ManageMembers settings(
+             - If they can't EDIT a Group, but can Manage Members, then can EDIT (which includes Add and Delete) group members.
+                - Note that this is fairly complex, see Group.IsAuthorized for how this should work
+
+             For areas of Rock that check for the ability to EDIT (which includes Add and Delete) group members,
+             this has been implemented as allowing EDIT on GroupMember, regardless of the ManageMembers setting.
+               - See https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberDetail.ascx.cs#L303
+                  and https://github.com/SparkDevNetwork/Rock/blob/85197802dc0fe88afa32ef548fc44fa1d4e31813/RockWeb/Blocks/Groups/GroupMemberList.ascx.cs#L213
+            
+             */
+
+            if ( action.Equals( Rock.Security.Authorization.EDIT, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // first, see if they auth'd using normal AUTH rules
+                var isAuthorized = base.IsAuthorized( action, person );
+                if ( isAuthorized )
+                {
+                    return isAuthorized;
+                }
+
+                // now check if they are auth'd to EDIT or MANAGE_MEMBERS on this GroupMember's Group
+                var group = this.Group ?? new GroupService( new RockContext() ).Get( this.GroupId );
+
+                if ( group != null )
+                {
+                    // if they have EDIT on the group, they can edit GroupMember records
+                    var canEditMembers = group.IsAuthorized( Rock.Security.Authorization.EDIT, person );
+                    if ( !canEditMembers )
+                    {
+                        // if they don't have EDIT on the group, but do have MANAGE_MEMBERS, then they can 'edit' group members
+                        canEditMembers = group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, person );
+                    }
+
+                    return canEditMembers;
+                }
+            }
+
+            return base.IsAuthorized( action, person );
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -344,8 +432,50 @@ namespace Rock.Model
                 }
             }
 
-            var changeTransaction = new Rock.Transactions.GroupMemberChangeTransaction( entry );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( changeTransaction );
+            var updateGroupMemberMsg = new UpdateGroupMember.Message
+            {
+                State = entry.State,
+                GroupId = this.GroupId,
+                PersonId = this.PersonId,
+                GroupMemberStatus = this.GroupMemberStatus,
+                GroupMemberRoleId = this.GroupRoleId,
+                IsArchived = this.IsArchived
+            };
+
+            if ( this.Group != null )
+            {
+                updateGroupMemberMsg.GroupTypeId = this.Group.GroupTypeId;
+            }
+
+            // If this isn't a new group member, get the previous status and role values
+            if ( entry.State != EntityState.Added )
+            {
+                var dbStatusProperty = entry.Property( "GroupMemberStatus" );
+                if ( dbStatusProperty != null )
+                {
+                    updateGroupMemberMsg.PreviousGroupMemberStatus = ( GroupMemberStatus ) dbStatusProperty.OriginalValue;
+                }
+
+                var dbRoleProperty = entry.Property( "GroupRoleId" );
+                if ( dbRoleProperty != null )
+                {
+                    updateGroupMemberMsg.PreviousGroupMemberRoleId = ( int ) dbRoleProperty.OriginalValue;
+                }
+
+                var dbIsArchived = entry.Property( "IsArchived" );
+                if ( dbIsArchived != null )
+                {
+                    updateGroupMemberMsg.PreviousIsArchived = ( bool ) dbIsArchived.OriginalValue;
+                }
+            }
+
+            // If this isn't a deleted group member, get the group member guid
+            if ( entry.State != EntityState.Deleted )
+            {
+                updateGroupMemberMsg.GroupMemberGuid = this.Guid;
+            }
+
+            updateGroupMemberMsg.Send();
 
             int? oldPersonId = null;
             int? newPersonId = null;
@@ -536,11 +666,13 @@ namespace Rock.Model
                 var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 if ( groupType != null && groupType.IsIndexEnabled )
                 {
-                    IndexEntityTransaction transaction = new IndexEntityTransaction();
-                    transaction.EntityTypeId = groupType.Id;
-                    transaction.EntityId = group.Id;
+                    var processEntityTypeIndexMsg = new ProcessEntityTypeIndex.Message
+                    {
+                        EntityTypeId = groupType.Id,
+                        EntityId = group.Id
+                    };
 
-                    RockQueue.TransactionQueue.Enqueue( transaction );
+                    processEntityTypeIndexMsg.Send();
                 }
             }
 
@@ -576,7 +708,25 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( changes ).Enqueue();
+                    if ( changes.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( changes );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
 
                     var groupMemberChanges = HistoryService.GetChanges(
                         typeof( GroupMember ),
@@ -589,14 +739,32 @@ namespace Rock.Model
                         this.ModifiedByPersonAliasId,
                         dbContext.SourceOfChange );
 
-                    new SaveHistoryTransaction( groupMemberChanges ).Enqueue();
+                    if ( groupMemberChanges.Any() )
+                    {
+                        Task.Run( async () =>
+                        {
+                            // Wait 1 second to allow all post save actions to complete
+                            await Task.Delay( 1000 );
+                            try
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    rockContext.BulkInsert( groupMemberChanges );
+                                }
+                            }
+                            catch ( SystemException ex )
+                            {
+                                ExceptionLogService.LogException( ex, null );
+                            }
+                        } );
+                    }
                 }
-
             }
 
             base.PostSaveChanges( dbContext );
 
-            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily is updated
+            // if this is a GroupMember record on a Family, ensure that AgeClassification, PrimaryFamily,
+            // GivingLeadId, and GroupSalution is updated
             // NOTE: This is also done on Person.PostSaveChanges in case Birthdate changes
             var groupTypeFamilyRoleIds = GroupTypeCache.GetFamilyGroupType()?.Roles?.Select( a => a.Id ).ToList();
             if ( groupTypeFamilyRoleIds?.Any() == true )
@@ -606,6 +774,9 @@ namespace Rock.Model
                     PersonService.UpdatePersonAgeClassification( this.PersonId, dbContext as RockContext );
                     PersonService.UpdatePrimaryFamily( this.PersonId, dbContext as RockContext );
                     PersonService.UpdateGivingLeaderId( this.PersonId, dbContext as RockContext );
+
+                    // NOTE, make sure to do this after UpdatePrimaryFamily
+                    PersonService.UpdateGroupSalutations( this.PersonId, dbContext as RockContext );
                 }
             }
         }
@@ -671,6 +842,7 @@ namespace Rock.Model
             }
 
             bool isNewOrChangedGroupMember = this.IsNewOrChangedGroupMember( rockContext );
+
             // if this isn't a new group member, then we can't really do anything about a duplicate record since it already existed before editing this record, so treat it as valid
             if ( !isNewOrChangedGroupMember )
             {
@@ -896,10 +1068,10 @@ namespace Rock.Model
                 {
                     // no change detected by comparing to the database record, so check if the ChangeTracker detects that these fields were modified
                     var entry = rockContext.Entry( this );
-                    if ( entry != null )
+                    if ( entry != null && entry.State != EntityState.Detached )
                     {
-                        var originalStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
-                        var newStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
+                        var originalStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"];
+                        var newStatus = ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"];
 
                         hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
                         || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true

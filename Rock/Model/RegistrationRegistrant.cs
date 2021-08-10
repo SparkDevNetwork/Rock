@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -39,7 +40,7 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the registration identifier.
+        /// Gets or sets the <see cref="Rock.Model.Registration"/> identifier.
         /// </summary>
         /// <value>
         /// The registration identifier.
@@ -48,7 +49,7 @@ namespace Rock.Model
         public int RegistrationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias identifier.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -57,7 +58,7 @@ namespace Rock.Model
         public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/> identifier.
         /// </summary>
         /// <value>
         /// The group member identifier.
@@ -103,16 +104,16 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the registration instance.
+        /// Gets or sets the <see cref="Rock.Model.Registration"/>.
         /// </summary>
         /// <value>
         /// The registration instance.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Registration Registration { get; set; }
 
         /// <summary>
-        /// Gets or sets the person alias.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The person alias.
@@ -121,16 +122,16 @@ namespace Rock.Model
         public virtual PersonAlias PersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the group member.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/>.
         /// </summary>
         /// <value>
         /// The group member.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets the person identifier.
+        /// Gets the <see cref="Rock.Model.Person"/> identifier.
         /// </summary>
         /// <value>
         /// The person identifier.
@@ -162,7 +163,7 @@ namespace Rock.Model
         /// The name of the nick.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string NickName 
         {
             get 
@@ -182,7 +183,7 @@ namespace Rock.Model
         /// The first name.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string FirstName 
         {
             get 
@@ -202,7 +203,7 @@ namespace Rock.Model
         /// The last name.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string LastName
         {
             get 
@@ -222,7 +223,7 @@ namespace Rock.Model
         /// The email.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string Email
         {
             get
@@ -242,7 +243,7 @@ namespace Rock.Model
         /// The cost with fees.
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual decimal TotalCost
         {
             get
@@ -263,12 +264,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the person.
+        /// Gets the <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <value>
         /// The person.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Person Person
         {
             get

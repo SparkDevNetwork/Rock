@@ -131,8 +131,27 @@ namespace RockWeb.Blocks.Security
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         Description = "The phone number SMS messages should be sent from",
         Order = 10 )]
+
+    [IntegerField(
+        "Validation Code Attempts",
+        Description = "The number of times a validation code verification can be re-tried before failing permanently.",
+        DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
+        Order = 11,
+        Key = AttributeKey.ValidationCodeAttempts )]
     public partial class PhoneNumberIdentification : Rock.Web.UI.RockBlock
     {
+        private int IdentityVerificationId
+        {
+            get
+            {
+                return Encryption.DecryptString( ViewState["IdentityVerificationId"].ToString() ).AsInteger();
+            }
+            set
+            {
+                ViewState["IdentityVerificationId"] = Encryption.EncryptString( value.ToString() );
+            }
+        }
+
         private class AttributeKey
         {
             public const string AuthenticationLevel = "AuthenticationLevel";
@@ -145,6 +164,7 @@ namespace RockWeb.Blocks.Security
             public const string VerificationTimeLimit = "VerificationTimeLimit";
             public const string IpThrottleLimit = "IPThrottleLimit";
             public const string SmsNumber = "SMSNumber";
+            public const string ValidationCodeAttempts = "ValidationCodeAttempts";
         }
 
         #region Base Control Methods
@@ -209,7 +229,7 @@ namespace RockWeb.Blocks.Security
                         FromNumber = DefinedValueCache.Get( fromNumber ),
                         Message = messageTemplate,
                     };
-                    var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
+                    var mergeObjects = LavaHelper.GetCommonMergeFields( this.RockPage );
                     mergeObjects.Add( "ConfirmationCode", identityVerification.IdentityVerificationCode.Code );
 
                     smsMessage.SetRecipients( new List<RockSMSMessageRecipient> {
@@ -219,6 +239,7 @@ namespace RockWeb.Blocks.Security
                     var errorList = new List<string>();
                     if ( smsMessage.Send( out errorList ) )
                     {
+                        IdentityVerificationId = identityVerification.Id;
                         ShowVerificationPage();
                     }
                     else
@@ -237,10 +258,9 @@ namespace RockWeb.Blocks.Security
 
         protected void btnPersonChooser_Command( object sender, CommandEventArgs e )
         {
-            var phoneNumber = pbPhoneNumberLookup.Number;
             using ( var rockContext = new RockContext() )
             {
-                if ( IsVerificationCodeValid( rockContext, phoneNumber ) )
+                if ( IsVerificationCodeValid( rockContext ) )
                 {
                     var personId = e.CommandArgument.ToString().AsInteger();
                     if ( personId > 0 )
@@ -250,22 +270,21 @@ namespace RockWeb.Blocks.Security
                 }
 
             }
-
         }
 
         protected void btnVerify_Click( object sender, EventArgs e )
         {
-            var phoneNumber = pbPhoneNumberLookup.Number;
-
             using ( var rockContext = new RockContext() )
             {
-                if ( !IsVerificationCodeValid( rockContext, phoneNumber ) )
+                if ( !IsVerificationCodeValid( rockContext ) )
                 {
                     ShowWarningMessage( "The verification code information entered is either incorrect or expired." );
+                    ShowVerificationPage();
                     return;
                 }
 
                 var phoneNumberService = new PhoneNumberService( rockContext );
+                var phoneNumber = pbPhoneNumberLookup.Number;
                 var personIds = phoneNumberService.GetPersonIdsByNumber( phoneNumber ).ToList();
 
                 if ( personIds.Count == 0 )
@@ -303,9 +322,11 @@ namespace RockWeb.Blocks.Security
 
         #region Private Helper Methods
 
-        private bool IsVerificationCodeValid( RockContext rockContext, string phoneNumber )
+        private bool IsVerificationCodeValid( RockContext rockContext )
         {
             var timeLimit = GetAttributeValue( AttributeKey.VerificationTimeLimit ).AsInteger();
+            var validationAttempts = GetAttributeValue( AttributeKey.ValidationCodeAttempts ).AsInteger();
+
             var verificationCode = string.Format( "{0}{1}{2}{3}{4}{5}",
                 nbVerificationCodeBox1.Text,
                 nbVerificationCodeBox2.Text,
@@ -315,7 +336,7 @@ namespace RockWeb.Blocks.Security
                 nbVerificationCodeBox6.Text );
 
             var identityVerificationService = new IdentityVerificationService( rockContext );
-            return identityVerificationService.VerifyIdentityVerificationCode( phoneNumber, timeLimit, verificationCode );
+            return identityVerificationService.VerifyIdentityVerificationCode( IdentityVerificationId, timeLimit, verificationCode, validationAttempts );
         }
 
         private void RegisterVerificationCodeScript()
@@ -332,7 +353,7 @@ namespace RockWeb.Blocks.Security
 
                         self.val('');
 
-                        self.one('input.fromPaste', function () {
+                        self.one('input', function () {
                             var intRegex = /^\d+$/;
                             $currentInputBox = $(this);
 
@@ -352,33 +373,32 @@ namespace RockWeb.Blocks.Security
                         var value = self.val();
                         var key = event.keyCode || event.charCode;
 
-                        if (key === 8 && value.length >= 1) {
+                        if ((key === 8 || key === 46) && value.length >= 1) {
                             return;
                         }
 
                         if (key === 8) {
                             var boxNumber = parseInt(self.attr('data-box-number'));
                             if (boxNumber && boxNumber > 1 && boxNumber <= 6) {
-                                var nextBox = $('.js-code-' + (boxNumber - 1));
-                                nextBox.val('');
-                                nextBox.focus();
+                                var prevBox = $('.js-code-' + (boxNumber - 1));
+                                prevBox.val('');
+                                prevBox.focus();
                             }
                             event.preventDefault();
                             return;
                         }
 
-                        if (value.length == 1 && !event.ctrlKey) {
+                        if (value.length >= 1 && !event.ctrlKey) {
                             event.preventDefault();
                             return;
                         }
 
                         if (!event.ctrlKey) {
-                            self.one('keyup', function () {
+                            self.one('input', function () {
                                 var self = $(this);
                                 var boxNumber = parseInt(self.attr('data-box-number'));
                                 if (boxNumber && boxNumber < 6) {
-                                    var nextBox = $('.js-code-' + (boxNumber + 1));
-                                    nextBox.focus();
+                                    $('.js-code-' + (boxNumber + 1)).focus();
                                 }
                                 if (boxNumber === 6) {
                                     $('.js-verify-button').focus();
@@ -473,7 +493,7 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
-                returnUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects( returnUrl );
+                returnUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 returnUrl = Server.UrlDecode( returnUrl );
             }
 

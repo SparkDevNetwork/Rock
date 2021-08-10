@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Defined Value selector with Add button
-            writer.AddAttribute( "class", $"{this.ClientID}-js-defined-value-selector controls controls-row form-control-group" );
+            writer.AddAttribute( "class", $"{this.ClientID}-js-defined-value-selector controls controls-row form-control-group d-flex" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlDefinedValues.RenderControl( writer );
@@ -103,22 +103,22 @@ namespace Rock.Web.UI.Controls
 
             if ( DefinedTypeId.HasValue )
             {
-                if ( IncludeEmptyOption )
-                {
-                    // add Empty option first
-                    _ddlDefinedValues.Items.Add( new ListItem() );
-                }
+                // add Empty option first
+                _ddlDefinedValues.Items.Add( new ListItem() );
 
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
-                var definedValuesList = definedTypeCache?.DefinedValues
-                    .Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
+                var definedValuesList = definedTypeCache?.DefinedValues.Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( SelectableDefinedValuesId != null && SelectableDefinedValuesId.Any() )
                 {
-                    foreach ( var definedValue in definedValuesList )
+                    definedValuesList = definedValuesList.Where( a => SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+
+                if ( filteredList != null && filteredList.Any() )
+                {
+                    foreach ( var definedValue in filteredList )
                     {
                         _ddlDefinedValues.Items.Add(
                             new ListItem
@@ -187,18 +187,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            if ( this.Visible )
-            {
-                RockControlHelper.RenderControl( this, writer );
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -208,15 +196,19 @@ namespace Rock.Web.UI.Controls
             _ddlDefinedValues = new RockDropDownList();
             _ddlDefinedValues.ID = this.ID + "_ddlDefinedValues";
             _ddlDefinedValues.EnhanceForLongLists = this.EnhanceForLongLists;
-            _ddlDefinedValues.Style.Add( "width", "85%" );
             _ddlDefinedValues.SelectedIndexChanged += ddlDefinedValues_SelectedIndexChanged;
             _ddlDefinedValues.AutoPostBack = true;
             Controls.Add( _ddlDefinedValues );
 
+            var linkButtonClickJs = $@"javascript:$('.{this.ClientID}-js-defined-value-selector').fadeOut(400, function() {{
+                $('.{this.ClientID}-js-defined-value-selector').attr('style', 'display: none !important');
+                $('#{DefinedValueEditorControl.ClientID}').fadeIn();
+                }}); return false;";
+
             LinkButtonAddDefinedValue = new LinkButton();
             LinkButtonAddDefinedValue.ID = this.ID + "_lbAddDefinedValue";
             LinkButtonAddDefinedValue.CssClass = "btn btn-default btn-square js-button-add-defined-value";
-            LinkButtonAddDefinedValue.OnClientClick = $"javascript:$('.{this.ClientID}-js-defined-value-selector').fadeToggle(400, 'swing', function() {{ $('#{DefinedValueEditorControl.ClientID}').fadeToggle(); }});  return false;";
+            LinkButtonAddDefinedValue.OnClientClick = linkButtonClickJs;
             LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
             Controls.Add( LinkButtonAddDefinedValue );
 

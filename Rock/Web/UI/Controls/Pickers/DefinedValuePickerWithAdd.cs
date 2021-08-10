@@ -33,8 +33,16 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="Rock.Web.UI.Controls.IRockControl" />
-    public class DefinedValuePickerWithAdd : CompositeControl, IRockControl
+    public class DefinedValuePickerWithAdd : CompositeControl, IRockControl, IHasAttributeId
     {
+        /// <summary>
+        /// Gets or sets the attribute identifier. Will be used to update the attribute/fieldtype configuration if it is not null and implemented by the control.
+        /// </summary>
+        /// <value>
+        /// The attribute identifier.
+        /// </value>
+        public virtual int? AttributeId { get; set; }
+
         #region IRockControl Implementation
 
         /// <summary>
@@ -314,7 +322,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public virtual void LoadDefinedValues()
         {
-            throw new NotImplementedException();
+            // Not Implemented
         }
 
         /// <summary>
@@ -380,6 +388,14 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [enhance for long lists]; otherwise, <c>false</c>.
         /// </value>
         public bool EnhanceForLongLists { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selectable defined values identifier.
+        /// </summary>
+        /// <value>
+        /// The selectable defined values identifier.
+        /// </value>
+        public int[] SelectableDefinedValuesId { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.

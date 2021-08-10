@@ -52,8 +52,6 @@ namespace RockWeb.Blocks.Event
         )]
 
     [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Confirmation: {{ RegistrationInstance.Name }}</h1>
 
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
@@ -71,7 +69,7 @@ namespace RockWeb.Blocks.Event
 			<strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
 
 			{% if registrant.Cost > 0 %}
-				- {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+				- {{ registrant.Cost | FormatAsCurrency }}
 			{% endif %}
 
 			{% assign feeCount = registrant.Fees | Size %}
@@ -81,7 +79,7 @@ namespace RockWeb.Blocks.Event
 				{% for fee in registrant.Fees %}
 					<li>
 						{{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+						{% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
 					</li>
 				{% endfor %}
 				</ul>
@@ -111,22 +109,22 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.TotalCost > 0 %}
 <p>
-    Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
+    Total Cost: {{ Registration.TotalCost | FormatAsCurrency }}<br/>
     {% if Registration.DiscountedCost != Registration.TotalCost %}
-        Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
+        Discounted Cost: {{ Registration.DiscountedCost | FormatAsCurrency }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
+        Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
 
     {% assign paymentCount = Registration.Payments | Size %}
 
     {% if paymentCount > 1 %}
-        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
+        Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
 
-    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
+    Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
 </p>
 {% endif %}
 
@@ -140,7 +138,6 @@ namespace RockWeb.Blocks.Event
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
     [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 {% assign registrantCount = Registration.Registrants | Size %}
 
@@ -185,7 +182,7 @@ namespace RockWeb.Blocks.Event
 {% if Registration.BalanceDue > 0 %}
 <p>
     This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance
-    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
+    of {{ Registration.BalanceDue | FormatAsCurrency }}.
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
     using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
     online registration page</a>.
@@ -197,8 +194,7 @@ namespace RockWeb.Blocks.Event
 </p>
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 2 )]
-    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
-
+    [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
 {% assign registrantCount = registrants | Size %}
 {% if registrantCount > 0 %}
@@ -215,7 +211,7 @@ namespace RockWeb.Blocks.Event
             <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
 
             {% if registrant.Cost > 0 %}
-                - {{ currencySymbol }}{{ registrant.Cost | Format:'#,##0.00' }}
+                - {{ registrant.Cost | FormatAsCurrency }}
             {% endif %}
 
             {% assign feeCount = registrant.Fees | Size %}
@@ -225,7 +221,7 @@ namespace RockWeb.Blocks.Event
                 {% for fee in registrant.Fees %}
                     <li>
                         {{ fee.RegistrationTemplateFee.Name }} {{ fee.Option }}
-                        {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ currencySymbol }}{{ fee.Cost | Format:'#,##0.00' }}){% endif %}: {{ currencySymbol }}{{ fee.TotalCost | Format:'#,##0.00' }}
+                        {% if fee.Quantity > 1 %} ({{ fee.Quantity }} @ {{ fee.Cost | FormatAsCurrency }}){% endif %}: {{ fee.TotalCost | FormatAsCurrency }}
                     </li>
                 {% endfor %}
                 </ul>
@@ -256,19 +252,19 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.TotalCost > 0 %}
 <p>
-    Total Cost: {{ currencySymbol }}{{ Registration.TotalCost | Format:'#,##0.00' }}<br/>
+    Total Cost: {{ Registration.TotalCost | FormatAsCurrency }}<br/>
     {% if Registration.DiscountedCost != Registration.TotalCost %}
-        Discounted Cost: {{ currencySymbol }}{{ Registration.DiscountedCost | Format:'#,##0.00' }}<br/>
+        Discounted Cost: {{ Registration.DiscountedCost | FormatAsCurrency }}<br/>
     {% endif %}
     {% for payment in Registration.Payments %}
-        Paid {{ currencySymbol }}{{ payment.Amount | Format:'#,##0.00' }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
+        Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
         <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
     {% endfor %}
     {% assign paymentCount = Registration.Payments | Size %}
     {% if paymentCount > 1 %}
-        Total Paid: {{ currencySymbol }}{{ Registration.TotalPaid | Format:'#,##0.00' }}<br/>
+        Total Paid: {{ Registration.TotalPaid | FormatAsCurrency }}<br/>
     {% endif %}
-    Balance Due: {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}
+    Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
 </p>
 {% endif %}
 
@@ -277,14 +273,13 @@ namespace RockWeb.Blocks.Event
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>", "", 3 )]
     [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
 <p>
     This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance
-    of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The
+    of {{ Registration.BalanceDue | FormatAsCurrency }}. The
     {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this
     {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
 </p>
@@ -328,7 +323,6 @@ namespace RockWeb.Blocks.Event
 
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 4 )]
     [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
-{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
 
 <h1>{{ RegistrationInstance.Name }} Wait List Update</h1>
@@ -354,7 +348,7 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.BalanceDue > 0 %}
     <p>
-        A balance of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }} remains on this registration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
+        A balance of {{ Registration.BalanceDue | FormatAsCurrency }} remains on this registration. You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
         using our <a href='{{ externalSite }}Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
         online registration page</a>.
     </p>
@@ -821,15 +815,7 @@ The logged-in person's information will be used to complete the registrar inform
                 LoadStateDetails( registrationTemplate, rockContext );
 
                 // clone the registration template
-                var newRegistrationTemplate = registrationTemplate.Clone( false );
-                newRegistrationTemplate.CreatedByPersonAlias = null;
-                newRegistrationTemplate.CreatedByPersonAliasId = null;
-                newRegistrationTemplate.CreatedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.ModifiedByPersonAlias = null;
-                newRegistrationTemplate.ModifiedByPersonAliasId = null;
-                newRegistrationTemplate.ModifiedDateTime = RockDateTime.Now;
-                newRegistrationTemplate.Id = 0;
-                newRegistrationTemplate.Guid = Guid.NewGuid();
+                var newRegistrationTemplate = registrationTemplate.CloneWithoutIdentity();
                 newRegistrationTemplate.Name = registrationTemplate.Name + " - Copy";
 
                 // Create temporary state objects for the new registration template
@@ -850,6 +836,7 @@ The logged-in person's information will be used to complete the registrar inform
                     if ( FormFieldsState.ContainsKey( form.Guid ) )
                     {
                         newFormFieldsState.Add( newForm.Guid, new List<RegistrationTemplateFormField>() );
+                        var mapKeys = new Dictionary<Guid, Guid>();
                         foreach ( var formField in FormFieldsState[form.Guid] )
                         {
                             var newFormField = formField.Clone( false );
@@ -857,6 +844,7 @@ The logged-in person's information will be used to complete the registrar inform
                             newFormField.Id = 0;
                             newFormField.Guid = Guid.NewGuid();
                             newFormFieldsState[newForm.Guid].Add( newFormField );
+                            mapKeys.Add( formField.Guid, newFormField.Guid );
 
                             if ( formField.FieldSource != RegistrationFieldSource.PersonField )
                             {
@@ -881,6 +869,17 @@ The logged-in person's information will be used to complete the registrar inform
                                     newQualifier.IsSystem = false;
                                     newAttribute.AttributeQualifiers.Add( qualifier );
                                 }
+                            }
+                        }
+
+                        var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
+                                                        .Where( a => a.FieldVisibilityRules.RuleList
+                                                                        .Any( b => b.ComparedToFormFieldGuid.HasValue ) );
+                        foreach ( var newFormField in newFormFieldsWithRules )
+                        {
+                            foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToFormFieldGuid.HasValue ) )
+                            {
+                                rule.ComparedToFormFieldGuid = mapKeys.GetValueOrNull( rule.ComparedToFormFieldGuid.Value );
                             }
                         }
                     }
@@ -941,25 +940,6 @@ The logged-in person's information will be used to complete the registrar inform
             ParseControls( true );
 
             var rockContext = new RockContext();
-
-            int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
-
-            // validate gateway
-            if ( gatewayId.HasValue )
-            {
-                var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
-                if ( financialGateway != null )
-                {
-                    var hostedGatewayComponent = financialGateway.GetGatewayComponent() as Rock.Financial.IHostedGatewayComponent;
-                    if ( hostedGatewayComponent != null && !hostedGatewayComponent.GetSupportedHostedGatewayModes( financialGateway ).Contains( Rock.Financial.HostedGatewayMode.Unhosted ) )
-                    {
-                        nbValidationError.Text = "Unsupported Gateway. Registration currently only supports Gateways that have an un-hosted payment interface.";
-                        nbValidationError.Visible = true;
-                        return;
-                    }
-                }
-            }
-
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
@@ -1008,11 +988,21 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
             registrationTemplate.ShowCurrentFamilyMembers = cbShowCurrentFamilyMembers.Checked;
             registrationTemplate.SetCostOnInstance = !tglSetCostOnTemplate.Checked;
-            registrationTemplate.Cost = cbCost.Text.AsDecimal();
-            registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
-            registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
+            registrationTemplate.Cost = cbCost.Value ?? 0.0M;
+            registrationTemplate.MinimumInitialPayment = cbMinimumInitialPayment.Value;
+            registrationTemplate.DefaultPayment = cbDefaultPaymentAmount.Value;
             registrationTemplate.FinancialGatewayId = fgpFinancialGateway.SelectedValueAsInt();
-            registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
+
+            if ( IsRedirectionGateway() )
+            {
+                registrationTemplate.BatchNamePrefix = null;
+            }
+            else
+            {
+                registrationTemplate.BatchNamePrefix = txtBatchNamePrefix.Text;
+            }
+
+            ShowHideBatchPrefixTextbox();
 
             registrationTemplate.ConfirmationFromName = tbConfirmationFromName.Text;
             registrationTemplate.ConfirmationFromEmail = tbConfirmationFromEmail.Text;
@@ -1640,6 +1630,22 @@ The logged-in person's information will be used to complete the registrar inform
 
             if ( FormFieldsState.ContainsKey( e.FormGuid ) )
             {
+                /*
+                  SK - 11 Oct 2020
+                  On Field Delete, we need to also remove all the exisiting reference of current field in filter rule list
+                */
+                var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
+                    .Where( a => a.FieldVisibilityRules.RuleList.Any()
+                     && a.FieldVisibilityRules.RuleList.Any( b =>
+                         b.ComparedToFormFieldGuid.HasValue
+                         && b.ComparedToFormFieldGuid == e.FormFieldGuid ) );
+
+                foreach ( var newFormField in newFormFieldsWithRules )
+                {
+                    newFormField.FieldVisibilityRules.RuleList
+                        .RemoveAll( a => a.ComparedToFormFieldGuid.HasValue
+                        && a.ComparedToFormFieldGuid.Value == e.FormFieldGuid );
+                }
                 FormFieldsState[e.FormGuid].RemoveEntity( e.FormFieldGuid );
             }
 
@@ -1942,7 +1948,7 @@ The logged-in person's information will be used to complete the registrar inform
             if ( rblDiscountType.SelectedValue == "Amount" )
             {
                 discount.DiscountPercentage = 0.0m;
-                discount.DiscountAmount = cbDiscountAmount.Text.AsDecimal();
+                discount.DiscountAmount = cbDiscountAmount.Value ?? 0.0m;
             }
             else
             {
@@ -2529,12 +2535,22 @@ The logged-in person's information will be used to complete the registrar inform
             rblRegistrantsInSameFamily.SetValue( registrationTemplate.RegistrantsSameFamily.ConvertToInt() );
             cbShowCurrentFamilyMembers.Checked = registrationTemplate.ShowCurrentFamilyMembers;
             tglSetCostOnTemplate.Checked = !registrationTemplate.SetCostOnInstance.HasValue || !registrationTemplate.SetCostOnInstance.Value;
-            cbCost.Text = registrationTemplate.Cost.ToString();
-            cbMinimumInitialPayment.Text = registrationTemplate.MinimumInitialPayment.HasValue ? registrationTemplate.MinimumInitialPayment.Value.ToString( "N2" ) : string.Empty;
-            cbDefaultPaymentAmount.Text = registrationTemplate.DefaultPayment.HasValue ? registrationTemplate.DefaultPayment.Value.ToString( "N2" ) : string.Empty;
+            cbCost.Value = registrationTemplate.Cost;
+            cbMinimumInitialPayment.Value = registrationTemplate.MinimumInitialPayment;
+            cbDefaultPaymentAmount.Value = registrationTemplate.DefaultPayment;
             fgpFinancialGateway.SetValue( registrationTemplate.FinancialGatewayId );
-            txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
+
+            if ( IsRedirectionGateway() )
+            {
+                txtBatchNamePrefix.Text = string.Empty;
+            }
+            else
+            {
+                txtBatchNamePrefix.Text = registrationTemplate.BatchNamePrefix;
+            }
+
             SetCostVisibility();
+            ShowHideBatchPrefixTextbox();
 
             tbConfirmationFromName.Text = registrationTemplate.ConfirmationFromName;
             tbConfirmationFromEmail.Text = registrationTemplate.ConfirmationFromEmail;
@@ -2904,7 +2920,13 @@ The logged-in person's information will be used to complete the registrar inform
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => rtff );
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => new FieldVisibilityRuleField
+                {
+                    Guid = rtff.Guid,
+                    Attribute = rtff.Attribute,
+                    PersonFieldType = rtff.PersonFieldType,
+                    FieldSource = rtff.FieldSource
+                } );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 
@@ -3383,7 +3405,7 @@ The logged-in person's information will be used to complete the registrar inform
             hfDiscountGuid.Value = discount.Guid.ToString();
             tbDiscountCode.Text = discount.Code;
             nbDiscountPercentage.Text = ( discount.DiscountPercentage * 100.0m ).ToString( "N0" );
-            cbDiscountAmount.Text = discount.DiscountAmount.ToString();
+            cbDiscountAmount.Value = discount.DiscountAmount;
 
             if ( discount.DiscountAmount > 0 )
             {
@@ -3528,7 +3550,7 @@ The logged-in person's information will be used to complete the registrar inform
                 }
 
                 hfFeeItemSingleGuid.Value = singleFeeItem.Guid.ToString();
-                cbFeeItemSingleCost.Text = singleFeeItem.Cost.ToString();
+                cbFeeItemSingleCost.Value = singleFeeItem.Cost;
                 nbFeeItemSingleMaximumUsageCount.Text = singleFeeItem.MaximumUsageCount.ToString();
             }
             else
@@ -3559,15 +3581,7 @@ The logged-in person's information will be used to complete the registrar inform
                 tbFeeItemName.Text = registrationTemplateFeeItem.Name;
 
                 // if the Cost is 0 (vs 0.00M), set the text to blank since they haven't entered a value
-                if ( registrationTemplateFeeItem.Cost.ToString() == "0" )
-                {
-                    cbFeeItemCost.Text = string.Empty;
-                }
-                else
-                {
-                    cbFeeItemCost.Text = registrationTemplateFeeItem.Cost.ToString();
-                }
-
+                cbFeeItemCost.Value = registrationTemplateFeeItem.Cost;
                 nbMaximumUsageCount.Text = registrationTemplateFeeItem.MaximumUsageCount.ToString();
             }
         }
@@ -3970,6 +3984,30 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
+        protected void fgpFinancialGateway_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ShowHideBatchPrefixTextbox();
+        }
 
+        private void ShowHideBatchPrefixTextbox()
+        {
+            txtBatchNamePrefix.Visible = !IsRedirectionGateway();
+        }
+
+        private bool IsRedirectionGateway()
+        {
+            var gatewayId = fgpFinancialGateway.SelectedValueAsInt();
+
+            // validate gateway
+            if ( gatewayId.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    return new FinancialGatewayService( rockContext ).IsRedirectionGateway( gatewayId );
+                }
+            }
+
+            return false;
+        }
     }
 }

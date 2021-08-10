@@ -27,6 +27,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Web.UI.Controls;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -48,10 +49,10 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is being sent the <see cref="Rock.Model.Communication"/>.
         /// </value>
         [DataMember]
-        public int PersonAliasId { get; set; }
+        public int? PersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the the CommunicationId of the <see cref="Rock.Model.Communication"/>.
+        /// Gets or sets the CommunicationId of the <see cref="Rock.Model.Communication"/>.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the CommunicationId of the <see cref="Rock.Model.Communication"/>.
@@ -192,6 +193,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string SentMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personal device identifier.
+        /// </summary>
+        /// <value>
+        /// The personal device identifier.
+        /// </value>
+        public int? PersonalDeviceId { get; set; }
         #endregion
 
         #region Virtual Properties
@@ -211,7 +220,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Communication"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Communication Communication { get; set; }
 
         /// <summary>
@@ -302,6 +311,14 @@ namespace Rock.Model
                 }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the personal device.
+        /// </summary>
+        /// <value>
+        /// The personal device.
+        /// </value>
+        public virtual PersonalDevice PersonalDevice { get; set; }
 
         #endregion
 
@@ -451,9 +468,10 @@ namespace Rock.Model
         /// </summary>
         public CommunicationRecipientConfiguration()
         {
-            this.HasRequired( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonAlias ).WithMany().HasForeignKey( r => r.PersonAliasId ).WillCascadeOnDelete( false );
             this.HasRequired( r => r.Communication ).WithMany( c => c.Recipients ).HasForeignKey( r => r.CommunicationId ).WillCascadeOnDelete( true );
-            this.HasOptional( c => c.MediumEntityType ).WithMany().HasForeignKey( c => c.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.MediumEntityType ).WithMany().HasForeignKey( r => r.MediumEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
         }
     }
 

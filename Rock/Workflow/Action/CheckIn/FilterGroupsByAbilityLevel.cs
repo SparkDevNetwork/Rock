@@ -33,7 +33,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description( "Removes (or excludes) the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
-    [BooleanField( "Remove", "Select 'Yes' if groups should be be removed.  Select 'No' if they should just be marked as excluded.", true )]
+    [BooleanField( "Remove", "Select 'Yes' if groups should be removed.  Select 'No' if they should just be marked as excluded.", true )]
     public class FilterGroupsByAbilityLevel : CheckInActionComponent
     {
         /// <summary>
@@ -85,23 +85,20 @@ namespace Rock.Workflow.Action.CheckIn
             }
 
             string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
-            if ( !string.IsNullOrWhiteSpace( personAbilityLevel ) )
+            foreach ( var groupType in person.GroupTypes.ToList() )
             {
-                foreach ( var groupType in person.GroupTypes.ToList() )
+                foreach ( var group in groupType.Groups.ToList() )
                 {
-                    foreach ( var group in groupType.Groups.ToList() )
+                    var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                    if ( groupAttributes.Any() && (!groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) || personAbilityLevel.IsNullOrWhiteSpace() ) )
                     {
-                        var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
-                        if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel, StringComparer.OrdinalIgnoreCase ) )
+                        if ( remove )
                         {
-                            if ( remove )
-                            {
-                                groupType.Groups.Remove( group );
-                            }
-                            else
-                            {
-                                group.ExcludedByFilter = true;
-                            }
+                            groupType.Groups.Remove( group );
+                        }
+                        else
+                        {
+                            group.ExcludedByFilter = true;
                         }
                     }
                 }

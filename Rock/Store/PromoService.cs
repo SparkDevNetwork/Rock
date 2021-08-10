@@ -30,7 +30,7 @@ namespace Rock.Store
         /// Initializes a new instance of the <see cref="PromoService"/> class.
         /// </summary>
         public PromoService() : base()
-        {}
+        { }
 
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Store
         public List<Promo> GetPromos( int? categoryId, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false )
         {
             string error = null;
-            return GetPromos(categoryId, out error, isTopFree, isFeatured, isTopPaid);
+            return GetPromos( categoryId, out error, isTopFree, isFeatured, isTopPaid );
         }
 
         /// <summary>
@@ -56,63 +56,69 @@ namespace Rock.Store
         /// <param name="isFeatured">if set to <c>true</c> [is featured].</param>
         /// <param name="isTopPaid">if set to <c>true</c> [is top paid].</param>
         /// <returns></returns>
-        public List<Promo> GetPromos(int? categoryId, out string errorResponse, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false)
+        public List<Promo> GetPromos( int? categoryId, out string errorResponse, bool isTopFree = false, bool isFeatured = false, bool isTopPaid = false )
         {
             errorResponse = string.Empty;
+            var organizationKey = GetEncodedOrganizationKey();
 
-            // setup REST call
-            var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
-            var request = new RestRequest();
-            request.Method = Method.GET;
-            
-            if (categoryId.HasValue) {
-                request.Resource = string.Format( "Api/Promos/GetByCategory/{0}", categoryId.Value.ToString().ToString() );
-            }
-            else
+            var requestPath = "Api/Promos/GetNonCategorized";
+            if ( categoryId.HasValue )
             {
-                request.Resource = "Api/Promos/GetNonCategorized";
+                requestPath = $"Api/Promos/GetByCategory/{categoryId.Value}";
             }
 
+            if ( organizationKey.IsNotNullOrWhiteSpace() )
+            {
+                requestPath = $"{requestPath}/{organizationKey}";
+            }
+
+            var filters = new List<string>();
             if ( isTopFree )
             {
-                Parameter parm = new Parameter();
-                parm.Name = "$filter";
-                parm.Value = "IsTopFree eq true";
-                parm.Type = ParameterType.QueryString;
-                request.AddParameter( parm );
+                filters.Add( "IsTopFree eq true" );
             }
 
             if ( isTopPaid )
             {
-                Parameter parm = new Parameter();
-                parm.Name = "$filter";
-                parm.Value = "IsTopPaid eq true";
-                parm.Type = ParameterType.QueryString;
-                request.AddParameter( parm );
+                filters.Add( "IsTopPaid eq true" );
             }
 
             if ( isFeatured )
             {
-                Parameter parm = new Parameter();
-                parm.Name = "$filter";
-                parm.Value = "IsFeatured eq true";
-                parm.Type = ParameterType.QueryString;
-                request.AddParameter( parm );
+                filters.Add( "IsFeatured eq true" );
             }
 
-            // deserialize to list of packages
-            var response = client.Execute<List<Promo>>( request );
-
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            var queryParameters = new Dictionary<string, List<string>>
             {
-                return response.Data;
+                { "$filter", filters }
+            };
+
+            // deserialize to list of packages
+            var response = ExecuteRestGetRequest<List<Promo>>( requestPath, queryParameters );
+            var returnValue = new List<Promo>();
+
+            if ( response.ResponseStatus == ResponseStatus.Completed && response.Data != null )
+            {
+                returnValue = response.Data;
+
+                // If no organization key then remove pricing data so it can't be installed.
+                if ( organizationKey.IsNullOrWhiteSpace() )
+                {
+                    foreach ( var promo in returnValue )
+                    {
+                        if ( promo.PackagePrice != 0 )
+                        {
+                            promo.PackagePrice = null;
+                        }
+                    }
+                }
             }
             else
             {
                 errorResponse = response.ErrorMessage;
-                return new List<Promo>();
             }
+
+            return returnValue;
         }
     }
 }

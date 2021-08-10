@@ -24,6 +24,39 @@ using Rock.Utility;
 namespace Rock.Chart
 {
     /// <summary>
+    /// Provides helper classes in a non-generic context for the generic factory
+    /// </summary>
+    public static class ChartJsTimeSeriesDataFactory
+    {
+        /// <summary>
+        /// Args for the GetJson method
+        /// </summary>
+        public sealed class GetJsonArgs
+        {
+            /// <summary>
+            /// Size to fit container width?
+            /// </summary>
+            public bool SizeToFitContainerWidth { get; set; } = true;
+
+            /// <summary>
+            /// Maintain aspect ratio?
+            /// </summary>
+            public bool MaintainAspectRatio { get; set; } = false;
+
+            /// <summary>
+            /// Display legend?
+            /// </summary>
+            public bool DisplayLegend { get; set; } = true;
+
+            /// <summary>
+            /// Bezier curve tension of the line. Set to 0 to draw straightlines.
+            /// This option is ignored if monotone cubic interpolation is used.
+            /// </summary>
+            public decimal LineTension { get; set; } = 0m;
+        }
+    }
+
+    /// <summary>
     /// Creates data structures suitable for plotting a value-over-time data series on a Cartesian grid using ChartJs.
     /// </summary>
     /// <remarks>
@@ -155,18 +188,34 @@ namespace Rock.Chart
         /// <returns></returns>
         public string GetJson( bool sizeToFitContainerWidth, bool maintainAspectRatio, bool displayLegend )
         {
+            return GetJson( new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                DisplayLegend = displayLegend,
+                LineTension = 0m,
+                MaintainAspectRatio = maintainAspectRatio,
+                SizeToFitContainerWidth = sizeToFitContainerWidth
+            } );
+        }
+
+        /// <summary>
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        public string GetJson( ChartJsTimeSeriesDataFactory.GetJsonArgs args )
+        {
             // Create the data structure for Chart.js parameter "data.datasets".
             dynamic chartData;
 
             if ( this.TimeScale == ChartJsTimeSeriesTimeScaleSpecifier.Auto )
             {
                 // Get the datapoints as a time/value series.
-                chartData = this.GetChartJsonObjectForAutoTimeScale();
+                chartData = this.GetChartJsonObjectForAutoTimeScale( args );
             }
             else
             {
                 // Get the datapoints grouped by category according to the TimeScale setting.
-                chartData = this.GetChartJsonObjectForSpecificTimeScale();
+                chartData = this.GetChartJsonObjectForSpecificTimeScale( args );
             }
 
             // Get options for the X-axis, showing the time either by discrete category or using a best-fit scale determined by Chart.js.
@@ -201,20 +250,30 @@ namespace Rock.Chart
 
             var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize }, stacked = isStacked } };
 
-            var optionsLegend = new { position = "bottom", display = displayLegend };
+            var optionsLegend = new { position = "bottom", display = args.DisplayLegend };
 
             // Create the data structure for Chart.js parameter "options".
 
             // If "maintainAspectRatio" is enabled, responsive mode must also be enabled to avoid a Chart.js resizing bug detailed here:
             // https://github.com/chartjs/Chart.js/issues/1006
             // Until this issue is resolved, avoid this invalid combination of settings.
-            if ( maintainAspectRatio &&
-                 !sizeToFitContainerWidth )
+            if ( args.MaintainAspectRatio &&
+                 !args.SizeToFitContainerWidth )
             {
-                sizeToFitContainerWidth = true;
+                args.SizeToFitContainerWidth = true;
             }
 
-            dynamic optionsData = new { maintainAspectRatio, responsive = sizeToFitContainerWidth, legend = optionsLegend, scales = new { xAxes = optionsXaxes, yAxes = optionsYaxes } };
+            var optionsData = new
+            {
+                maintainAspectRatio = args.MaintainAspectRatio,
+                responsive = args.SizeToFitContainerWidth,
+                legend = optionsLegend,
+                scales = new
+                {
+                    xAxes = optionsXaxes,
+                    yAxes = optionsYaxes
+                }
+            };
 
             // Create the data structure for Chartjs parameter "chart".
             string chartStyle = GetChartJsStyleParameterValue( this.ChartStyle );
@@ -236,8 +295,9 @@ namespace Rock.Chart
         /// <summary>
         /// Get a JSON data structure that represents Chart.js options to show auto-scaled time intervals on the X-axis.
         /// </summary>
+        /// <param name="args">The arguments.</param>
         /// <returns></returns>
-        private dynamic GetChartJsonObjectForAutoTimeScale()
+        private dynamic GetChartJsonObjectForAutoTimeScale( ChartJsTimeSeriesDataFactory.GetJsonArgs args )
         {
             var jsDatasets = new List<object>();
 
@@ -265,7 +325,7 @@ namespace Rock.Chart
                     backColor = borderColor;
                 }
 
-                var jsDataset = new { label = dataset.Name, borderColor, backgroundColor = backColor, fill = hasFill, data = dataPoints };
+                var jsDataset = new { lineTension = args.LineTension, label = dataset.Name, borderColor, backgroundColor = backColor, fill = hasFill, data = dataPoints };
 
                 jsDatasets.Add( jsDataset );
             }
@@ -278,12 +338,13 @@ namespace Rock.Chart
         /// <summary>
         /// Get a JSON data structure that represents Chart.js options to show discrete time categories on the X-axis.
         /// </summary>
+        /// <param name="args">The arguments.</param>
         /// <returns></returns>
         /// <remarks>
         /// Using discrete categories for the time scale allows the data series to be padded with zero-values where no data is found.
         /// This often shows a more accurate representation of the data rather than allowing Chart.js to interpolate the empty intervals.
         /// </remarks>
-        private dynamic GetChartJsonObjectForSpecificTimeScale()
+        private dynamic GetChartJsonObjectForSpecificTimeScale( ChartJsTimeSeriesDataFactory.GetJsonArgs args )
         {
             // Group the datapoints according to the TimeScale setting.
             var datasets = GetCategoryDatasets( this.TimeScale );
@@ -360,7 +421,7 @@ namespace Rock.Chart
                     backColor = new RockColor( backColor.R, backColor.G, backColor.B, alpha );
                 }
 
-                var jsDataset = new { label = dataset.Name, borderColor, backgroundColor = backColor.ToRGBA(), fill = fillOption, lineTension = 0, data = dataValues };
+                var jsDataset = new { label = dataset.Name, borderColor, backgroundColor = backColor.ToRGBA(), fill = fillOption, lineTension = args.LineTension, data = dataValues };
 
                 jsDatasets.Add( jsDataset );
             }
@@ -391,7 +452,7 @@ namespace Rock.Chart
             }
 
             // Allow Chart.js to scale the X-axis to best fit.
-            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { displayFormats = new { month = DateFormatStringMonthYear }, tooltipFormat = DateFormatStringMonthYear, minUnit = "month", min = minDate, max = maxDate } } };
+            dynamic optionsXaxes = new List<object>() { new { type = "time", time = new { tooltipFormat = "MM/DD/YYYY" }, min = minDate, max = maxDate } };
 
             return optionsXaxes;
         }

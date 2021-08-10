@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -35,6 +37,11 @@ namespace Rock.SystemGuid
         /// The achievement type prerequisite
         /// </summary>
         public const string ACHIEVEMENT_TYPE_PREREQUISITE = "5362DB19-B8E1-4378-A66A-FB097CE3AB90";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Attendance entity.
+        /// </summary>
+        public const string ATTENDANCE = "4CCB856F-51E0-4E48-B94A-1705EFBA6C9E";
 
         /// <summary>
         /// The guid for the Rock.Model.Attribute entity.
@@ -163,6 +170,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_TYPE = "6028D502-79F4-4A74-9323-525E90F900C7";
 
         /// <summary>
+        /// The guid for Rock.Model.DefinedValue entity
+        /// </summary>
+        public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
+
+        /// <summary>
         /// The guid for the Rock.Model.FinancialAccount entity.
         /// </summary>
         public const string FINANCIAL_ACCOUNT = "798BCE48-6AA7-4983-9214-F9BCEFB4521D";
@@ -218,6 +230,11 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer"/>.
+        /// </summary>
+        public const string MOBILE_ANSWER_TO_PRAYER_BLOCK_TYPE = "759AFCA0-9E0B-4A22-A402-CD4499F2A457";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Content
         /// </summary>
         public const string MOBILE_CONTENT_BLOCK_TYPE = "B9ADB0A5-62B0-4D74-BDFF-1AA959788602";
@@ -233,6 +250,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE = "44A8B647-E0A7-42E7-9A75-276310F7E7BB";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry"/>
+        /// </summary>
+        public const string MOBILE_CMS_DAILY_CHALLENGE_ENTRY = "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.LavaItemList
         /// </summary>
         public const string MOBILE_LAVA_ITEM_LIST_BLOCK_TYPE = "60AD6D70-8A2A-4CC1-97D5-199300AF77EE";
@@ -241,6 +263,16 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Login
         /// </summary>
         public const string MOBILE_LOGIN_BLOCK_TYPE = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Core.Notes
+        /// </summary>
+        public const string MOBILE_CORE_NOTES_BLOCK_TYPE = "2FED71D1-4A60-4EB5-B971-530B5D1FC041";
+
+		/// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.MyPrayerRequests"/>.
+        /// </summary>
+        public const string MOBILE_MY_PRAYER_REQUESTS_BLOCK_TYPE = "E644DE6A-44CA-48AC-BF33-5429DA8052C6";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails
@@ -263,6 +295,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CMS_HERO_BLOCK_TYPE = "49BE78CD-2D19-44C4-A6BF-4F3B5D3F97C8";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Cms.StructuredContentView
+        /// </summary>
+        public const string MOBILE_CMS_STRUCTUREDCONTENTVIEW_BLOCK_TYPE = "219660C4-8F32-46DA-B8E3-A7A6FA0D6B76";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventList
         /// </summary>
         public const string MOBILE_EVENTS_CALENDAREVENTLIST_BLOCK_TYPE = "6FB9F1F4-5F24-4A22-A6EB-A7FA499179A9";
@@ -273,9 +310,24 @@ namespace Rock.SystemGuid
         public const string MOBILE_EVENTS_CALENDARVIEW_BLOCK_TYPE = "5A26F32F-892E-4E76-B64A-0F54A77C863D";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Communication.CommunicationView
+        /// </summary>
+        public const string MOBILE_COMMUNICATION_COMMUNICATIONVIEW_BLOCK_TYPE = "4AF5FCEF-CBF6-486B-A04D-920E31356B7F";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CalendarEventItemOccurrenceView
+        /// </summary>
+        public const string MOBILE_EVENTS_CALENDAREVENTITEMOCCURRENCEVIEW_BLOCK_TYPE = "04C43693-C524-4679-9F65-047F94A74CAB";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.CommunicationListSubscribe
         /// </summary>
         public const string MOBILE_EVENTS_COMMUNICATION_LIST_SUBSCRIBE_BLOCK_TYPE = "C4B81A58-6380-4C38-85E8-0536E584310E";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.EventItemOccurrenceListByAudienceLava
+        /// </summary>
+        public const string MOBILE_EVENTS_EVENTITEMOCCURRENCELISTBYAUDIENCELAVA_BLOCK_TYPE = "95BAF1B3-5B4B-430C-BDCC-268142C708BD";
 
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSession
@@ -287,6 +339,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MOBILE_EVENTS_PRAYER_SESSION_SETUP_BLOCK_TYPE = "51431866-FF92-433C-8B0F-0F6BBAD9BCE7";
 
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.AddToGroup
+        /// </summary>
+        public const string MOBILE_GROUPS_GROUP_ADD_TO_GROUP = "E0664BDC-9583-44F2-AC8D-23AE48603EAB";
         /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry
         /// </summary>
@@ -321,6 +377,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails
         /// </summary>
         public const string MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE = "F8E56BC0-E9D1-44A4-9900-46589A1FB784";
+
+        /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Security.OnboardPerson"/>.
+        /// </summary>
+        public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
         /// The guid for the Rock.Model.Note entity
@@ -433,12 +494,17 @@ namespace Rock.SystemGuid
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
-        /// The guid for the Rock.Model.WorkflowType entity
+        /// The EntityType Guid for <see cref="Rock.Model.Workflow"/>
+        /// </summary>
+        public const string WORKFLOW = "3540E9A7-FE30-43A9-8B0A-A372B63DFC93";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowType"/>
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
 
         /// <summary>
-        /// The guid for the Rock.Model.WorkflowType entity
+        /// The EntityType Guid for <see cref="Rock.Model.WorkflowActionType"/>
         /// </summary>
         public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
 
@@ -462,10 +528,34 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
 
-
         /// <summary>
         /// The SMS Conversation Action
         /// </summary>
         public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
+
+        /// <summary>
+        /// Rock.Model.Site EntityType guid
+        /// </summary>
+        public const string SITE = "7244C10B-5D87-467B-A7F5-12DC29910CA8";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.AccumulativeAchievement"/> 
+        /// </summary>
+        public const string ACCUMULATIVE_ACHIEVEMENT_COMPONENT = "05D8CD17-E07D-4927-B9C4-5018F7C4B715";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.StreakAchievement"/> 
+        /// </summary>
+        public const string STREAK_ACHIEVEMENT_COMPONENT = "174F0AFF-3A5E-4A20-AE8B-D8D83D43BACD";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.StepProgramAchievement"/> 
+        /// </summary>
+        public const string STEP_PROGRAM_ACHIEVEMENT_COMPONENT = "7140BAE3-89E9-423E-A691-6E13544203CA";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement"/> 
+        /// </summary>
+        public const string INTERACTION_SOURCED_ACHIEVEMENT_COMPONENT = "1F2B13BE-EFAA-4D4E-B2D2-D221B51AEA67";
     }
 }

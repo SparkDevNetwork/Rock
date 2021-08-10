@@ -26,6 +26,7 @@ using Rock.CheckIn;
 using Rock.CheckIn.Registration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -516,8 +517,14 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     foreach ( var addFamilyWorkflowType in addFamilyWorkflowTypes )
                     {
-                        LaunchWorkflowTransaction launchWorkflowTransaction = new LaunchWorkflowTransaction<Group>( addFamilyWorkflowType.Id, newPrimaryFamily.Id );
-                        launchWorkflowTransaction.Enqueue();
+                        var launchWorkflowMsg= new LaunchWorkflow.Message
+                        {
+                            WorkflowTypeId = addFamilyWorkflowType.Id,
+                            EntityId = newPrimaryFamily.Id,
+                            EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Group ) ).Id
+                        };
+
+                        launchWorkflowMsg.Send();
                     }
                 }
             }
@@ -529,8 +536,14 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     foreach ( var addPersonWorkflowType in addPersonWorkflowTypes )
                     {
-                        LaunchWorkflowTransaction launchWorkflowTransaction = new LaunchWorkflowTransaction<Person>( addPersonWorkflowType.Id, newPerson.Id );
-                        launchWorkflowTransaction.Enqueue();
+                        var launchWorkflowMsg = new LaunchWorkflow.Message
+                        {
+                            WorkflowTypeId = addPersonWorkflowType.Id,
+                            EntityId = newPerson.Id,
+                            EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id
+                        };
+
+                        launchWorkflowMsg.Send();
                     }
                 }
             }

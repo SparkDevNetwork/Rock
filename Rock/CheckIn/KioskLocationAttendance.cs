@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -77,7 +78,7 @@ namespace Rock.CheckIn
             {
                 if ( Groups != null )
                 {
-                    return Groups.SelectMany( g => g.Schedules.Where( s => s.IsActive).SelectMany( s => s.PersonIds ) ).Distinct().ToList();
+                    return Groups.SelectMany( g => g.Schedules.Where( s => s.IsActive ).SelectMany( s => s.PersonIds ) ).Distinct().ToList();
                 }
                 else
                 {
@@ -126,33 +127,114 @@ namespace Rock.CheckIn
         }
 
         private static KioskLocationAttendance Create( int id )
-        { 
+        {
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-                var location = new LocationService( rockContext ).Get( id );
-                if ( location != null )
+                var location = NamedLocationCache.Get( id );
+                if ( location == null )
                 {
-                    var locationAttendance = new KioskLocationAttendance();
-                    locationAttendance.LocationId = location.Id;
-                    locationAttendance.LocationName = location.Name;
-                    locationAttendance.Groups = new List<KioskGroupAttendance>();
-
-                    var attendanceService = new AttendanceService( rockContext );
-                    foreach ( var attendance in attendanceService
-                        .GetByDateAndLocation( RockDateTime.Today, location.Id )
-                        .Where( a => 
-                            a.DidAttend.HasValue &&
-                            a.DidAttend.Value &&
-                            !a.EndDateTime.HasValue ) )
-                    {
-                        AddAttendanceRecord( locationAttendance, attendance );
-                    }
-
-                    return locationAttendance;
+                    return null;
                 }
+
+                var locationAttendance = new KioskLocationAttendance();
+                locationAttendance.LocationId = location.Id;
+                locationAttendance.LocationName = location.Name;
+                locationAttendance.Groups = new List<KioskGroupAttendance>();
+
+                var attendanceService = new AttendanceService( rockContext );
+
+                var todayDate = RockDateTime.Today.Date;
+
+                var attendanceList = attendanceService.Queryable()
+                    .Where( a =>
+                    a.Occurrence.OccurrenceDate == todayDate &&
+                    a.Occurrence.LocationId == location.Id &&
+                    a.Occurrence.GroupId.HasValue &&
+                    a.Occurrence.LocationId.HasValue &&
+                    a.Occurrence.ScheduleId.HasValue &&
+                    a.PersonAliasId.HasValue &&
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value &&
+                    !a.EndDateTime.HasValue )
+                    .Select( a => new AttendanceInfo
+                    {
+                        EndDateTime = a.EndDateTime,
+                        StartDateTime = a.StartDateTime,
+                        CampusId = a.CampusId,
+                        GroupId = a.Occurrence.GroupId,
+                        GroupName = a.Occurrence.Group.Name,
+                        Schedule = a.Occurrence.Schedule,
+                        PersonId = a.PersonAlias.PersonId
+                    } )
+                    .AsNoTracking()
+                    .ToList();
+
+                foreach ( var attendance in attendanceList )
+                {
+                    AddAttendanceRecord( locationAttendance, attendance );
+                }
+
+                return locationAttendance;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private class AttendanceInfo
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="AttendanceInfo"/> class.
+            /// Use this if getting AttendanceInfo from a query
+            /// </summary>
+            public AttendanceInfo()
+            {
             }
 
-            return null;
+            /// <summary>
+            /// Initializes a new instance of the <see cref="AttendanceInfo" /> class
+            /// Use this if adding an Attendance record
+            /// </summary>
+            /// <param name="attendance">The attendance.</param>
+            /// <param name="locationId">The location identifier.</param>
+            public AttendanceInfo( Attendance attendance, int locationId )
+            {
+                KioskLocationAttendance kioskLocationAttendance = KioskLocationAttendance.Get( locationId );
+                var groupId = attendance.Occurrence?.GroupId;
+                if ( groupId == null )
+                {
+                    return;
+                }
+
+                // If we can get GroupName from kioskLocationAttendance.Groups, we can avoid lazy loading attendance.Occurrence.Group.
+                var groupName = kioskLocationAttendance.Groups.Where( g => g.GroupId == groupId.Value ).FirstOrDefault()?.GroupName;
+                if ( groupName == null )
+                {
+                    groupName = attendance.Occurrence?.Group?.Name;
+                }
+
+                EndDateTime = attendance.EndDateTime;
+                StartDateTime = attendance.StartDateTime;
+                CampusId = attendance.CampusId;
+                GroupId = groupId;
+                GroupName = groupName;
+                Schedule = attendance.Occurrence?.Schedule;
+                PersonId = attendance.PersonAlias?.PersonId;
+            }
+
+            public DateTime? EndDateTime { get; internal set; }
+
+            public DateTime StartDateTime { get; internal set; }
+
+            public int? CampusId { get; internal set; }
+
+            public int? GroupId { get; internal set; }
+
+            public string GroupName { get; internal set; }
+
+            public Schedule Schedule { get; internal set; }
+
+            public int? PersonId { get; internal set; }
         }
 
         /// <summary>
@@ -174,10 +256,10 @@ namespace Rock.CheckIn
         {
             if ( attendance.Occurrence?.LocationId != null )
             {
-                var location = Get(attendance.Occurrence.LocationId.Value);
-                if (location != null)
+                var location = Get( attendance.Occurrence.LocationId.Value );
+                if ( location != null )
                 {
-                    AddAttendanceRecord( location, attendance );
+                    AddAttendanceRecord( location, new AttendanceInfo( attendance, location.LocationId ) );
                 }
             }
         }
@@ -187,37 +269,44 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="kioskLocationAttendance">The kiosk location attendance.</param>
         /// <param name="attendance">The attendance.</param>
-        private static void AddAttendanceRecord( KioskLocationAttendance kioskLocationAttendance, Attendance attendance )
+        private static void AddAttendanceRecord( KioskLocationAttendance kioskLocationAttendance, AttendanceInfo attendance )
         {
-            if ( attendance.Occurrence?.GroupId != null && 
-                attendance.Occurrence?.ScheduleId != null  &&
-                attendance.PersonAlias != null )
+            if ( attendance.GroupId == null && attendance.Schedule == null )
             {
-                var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.Occurrence.GroupId ).FirstOrDefault();
-                if ( groupAttendance == null )
-                {
-                    groupAttendance = new KioskGroupAttendance();
-                    groupAttendance.GroupId = attendance.Occurrence.GroupId.Value;
-                    groupAttendance.GroupName = attendance.Occurrence.Group.Name;
-                    groupAttendance.Schedules = new List<KioskScheduleAttendance>();
-                    kioskLocationAttendance.Groups.Add( groupAttendance );
-                }
+                // Shouldn't happen, but just in case...
+                return;
+            }
 
-                var scheduleAttendance = groupAttendance.Schedules.Where( s => s.ScheduleId == attendance.Occurrence.ScheduleId ).FirstOrDefault();
-                if ( scheduleAttendance == null )
-                {
-                    scheduleAttendance = new KioskScheduleAttendance();
-                    scheduleAttendance.ScheduleId = attendance.Occurrence.ScheduleId.Value;
-                    scheduleAttendance.ScheduleName = attendance.Occurrence.Schedule.Name;
-                    scheduleAttendance.IsActive = attendance.IsCurrentlyCheckedIn;
-                    scheduleAttendance.PersonIds = new List<int>();
-                    groupAttendance.Schedules.Add( scheduleAttendance );
-                }
+            if ( attendance.PersonId == null )
+            {
+                // Shouldn't happen, but just in case...
+                return;
+            }
 
-                if ( !scheduleAttendance.PersonIds.Contains( attendance.PersonAlias.PersonId ) )
-                {
-                    scheduleAttendance.PersonIds.Add( attendance.PersonAlias.PersonId );
-                }
+            var groupAttendance = kioskLocationAttendance.Groups.Where( g => g.GroupId == attendance.GroupId ).FirstOrDefault();
+            if ( groupAttendance == null )
+            {
+                groupAttendance = new KioskGroupAttendance();
+                groupAttendance.GroupId = attendance.GroupId.Value;
+                groupAttendance.GroupName = attendance.GroupName;
+                groupAttendance.Schedules = new List<KioskScheduleAttendance>();
+                kioskLocationAttendance.Groups.Add( groupAttendance );
+            }
+
+            var scheduleAttendance = groupAttendance.Schedules.Where( s => s.ScheduleId == attendance.Schedule.Id ).FirstOrDefault();
+            if ( scheduleAttendance == null )
+            {
+                scheduleAttendance = new KioskScheduleAttendance();
+                scheduleAttendance.ScheduleId = attendance.Schedule.Id;
+                scheduleAttendance.ScheduleName = attendance.Schedule.Name;
+                scheduleAttendance.IsActive = Attendance.CalculateIsCurrentlyCheckedIn( attendance.StartDateTime, attendance.EndDateTime, attendance.CampusId, attendance.Schedule );
+                scheduleAttendance.PersonIds = new List<int>();
+                groupAttendance.Schedules.Add( scheduleAttendance );
+            }
+
+            if ( !scheduleAttendance.PersonIds.Contains( attendance.PersonId.Value ) )
+            {
+                scheduleAttendance.PersonIds.Add( attendance.PersonId.Value );
             }
         }
 

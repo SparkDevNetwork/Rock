@@ -31,10 +31,10 @@ namespace Rock.Badge.Component
     [Description( "Shows badge if the individual is in a group where it's group type has a specified purpose (e.g. Serving)." )]
     [Export( typeof( BadgeComponent ) )]
     [ExportMetadata( "ComponentName", "In Group With Purpose" )]
-    
-    [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on.")]
-    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key:"BadgeIconCss")]
-    [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd")]
+
+    [DefinedValueField( SystemGuid.DefinedType.GROUPTYPE_PURPOSE, "Group Type Purpose", "The purpose to filter on." )]
+    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa fa-users", key: "BadgeIconCss" )]
+    [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd" )]
     public class InGroupWithPurpose : BadgeComponent
     {
         /// <summary>
@@ -59,54 +59,53 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            if (!String.IsNullOrEmpty(GetAttributeValue(badge, "GroupTypePurpose")))
-            {
-                string badgeColor = "#0ab4dd";
+            writer.Write( String.Format( "<div class='badge badge-ingroupwithpurpose badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
 
-                if (!String.IsNullOrEmpty(GetAttributeValue(badge, "BadgeColor")))
-                {
-                    badgeColor = GetAttributeValue(badge, "BadgeColor");
-                }
-
-                Guid groupTypePurposeGuid = GetAttributeValue( badge, "GroupTypePurpose" ).AsGuid();
-                if ( groupTypePurposeGuid != Guid.Empty )
-                {
-                    writer.Write( String.Format( "<div class='badge badge-ingroupwithpurpose badge-id-{0}' data-toggle='tooltip' data-original-title=''>", badge.Id ) );
-
-                    writer.Write( "</div>" );
-
-                    writer.Write( String.Format( @"
-<script>
-    Sys.Application.add_load(function () {{
-                                                
-        $.ajax({{
-                type: 'GET',
-                url: Rock.settings.get('baseUrl') + 'api/Badges/InGroupWithPurpose/{0}/{1}' ,
-                statusCode: {{
-                    200: function (data, status, xhr) {{
-                        var badgeHtml = '';
-                        var groupIcon = '{4}';
-
-                        if (data.PersonInGroup) {{
-                            badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
-                            var labelText = data.NickName + ' is in group with the ' + data.Purpose + ' purpose.';
-                        }} else {{
-                            badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
-                            var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
-                        }}
-                        $('.badge-ingroupwithpurpose.badge-id-{3}').html(badgeHtml);
-                        $('.badge-ingroupwithpurpose.badge-id-{3}').attr('data-original-title', labelText);
-                    }}
-                }},
-        }});
-    }});
-</script>          
-", Person.Id.ToString(), groupTypePurposeGuid.ToString(), badgeColor, badge.Id, GetAttributeValue(badge, "BadgeIconCss" ) ) );
-                }
-            }
-
+            writer.Write( "</div>" );
         }
 
+        /// <summary>
+        /// Gets the java script.
+        /// </summary>
+        /// <param name="badge"></param>
+        /// <returns></returns>
+        protected override string GetJavaScript( BadgeCache badge )
+        {
+            var groupTypePurposeGuid = GetAttributeValue( badge, "GroupTypePurpose" ).AsGuidOrNull();
 
+            if ( Person == null || !groupTypePurposeGuid.HasValue )
+            {
+                return null;
+            }
+
+            var badgeColor = GetAttributeValue( badge, "BadgeColor" );
+
+            if ( badgeColor.IsNullOrWhiteSpace() )
+            {
+                badgeColor = "#0ab4dd";
+            }
+
+            return string.Format( @"
+$.ajax({{
+    type: 'GET',
+    url: Rock.settings.get('baseUrl') + 'api/Badges/InGroupWithPurpose/{0}/{1}' ,
+    statusCode: {{
+        200: function (data, status, xhr) {{
+            var badgeHtml = '';
+            var groupIcon = '{4}';
+
+            if (data.PersonInGroup) {{
+                badgeHtml = '<i class=\'badge-icon ' + groupIcon + '\' style=\'color: {2}\'></i>';
+                var labelText = data.NickName + ' is in group with the ' + data.Purpose + ' purpose.';
+            }} else {{
+                badgeHtml = '<i class=\'badge-icon badge-disabled ' + groupIcon + '\'></i>';
+                var labelText = data.NickName + ' is not in a group with the ' + data.Purpose + ' purpose.';
+            }}
+            $('.badge-ingroupwithpurpose.badge-id-{3}').html(badgeHtml);
+            $('.badge-ingroupwithpurpose.badge-id-{3}').attr('data-original-title', labelText);
+        }}
+    }},
+}});", Person.Id.ToString(), groupTypePurposeGuid.ToString(), badgeColor, badge.Id, GetAttributeValue( badge, "BadgeIconCss" ) );
+        }
     }
 }

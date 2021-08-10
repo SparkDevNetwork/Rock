@@ -25,16 +25,18 @@ using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
+using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a connection opportunity
     /// </summary>
-    [RockDomain( "Connection" )]
+    [RockDomain( "Engagement" )]
     [Table( "ConnectionOpportunity" )]
     [DataContract]
-    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag
+    public partial class ConnectionOpportunity : Model<ConnectionOpportunity>, IHasActiveFlag, IOrdered
     {
 
         #region Entity Properties
@@ -89,7 +91,7 @@ namespace Rock.Model
         public int? PhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the connection type identifier.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType"/> identifier.
         /// </summary>
         /// <value>
         /// The connection type identifier.
@@ -115,24 +117,55 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [DataMember]
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show status on transfer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show status on transfer]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowStatusOnTransfer { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show connect button].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show connect button]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowConnectButton { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show campus on transfer].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show campus on transfer]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowCampusOnTransfer { get; set; } = false;
 
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the type of the connection.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
         /// </summary>
         /// <value>
         /// The type of the connection.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
 
         /// <summary>
@@ -142,7 +175,7 @@ namespace Rock.Model
         /// URL of the photo
         /// </value>
         [NotMapped]
-        [LavaInclude]
+        [LavaVisible]
         public virtual string PhotoUrl
         {
             get
@@ -158,7 +191,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -176,7 +209,7 @@ namespace Rock.Model
         private ICollection<ConnectionOpportunityGroup> _connectionOpportunityGroups;
 
         /// <summary>
-        /// Gets or sets the connection opportunity placement groups.
+        /// Gets or sets the <see cref="Rock.Model.ConnectionOpportunityConnectorGroupConfiguration">connection opportunity group configs</see>.
         /// </summary>
         /// <value>
         /// The connection opportunity placement groups.
@@ -237,7 +270,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.ConnectionOpportunityCampus">ConnectionOpportunityCampuses</see> who are associated with the ConnectionOpportunity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<ConnectionOpportunityCampus> ConnectionOpportunityCampuses
         {
             get { return _connectionOpportunityCampuses ?? ( _connectionOpportunityCampuses = new Collection<ConnectionOpportunityCampus>() ); }
@@ -297,12 +330,23 @@ namespace Rock.Model
         /// <returns></returns>
         private PersonAlias GetDefaultConnectorPersonAlias( int? campusId )
         {
-            if ( campusId.HasValue &&
-                ConnectionOpportunityCampuses != null )
+            if ( ConnectionOpportunityCampuses == null )
             {
-                var connectionOpportunityCampus = this.ConnectionOpportunityCampuses
+                return null;
+            }
+
+            if ( !campusId.HasValue && CampusCache.All().Count == 1 )
+            {
+                // Rock hides campus pickers if there is only one campus
+                campusId = CampusCache.All().First().Id;
+            }
+
+            if ( campusId.HasValue )
+            {
+                var connectionOpportunityCampus = ConnectionOpportunityCampuses
                     .Where( c => c.CampusId == campusId.Value )
                     .FirstOrDefault();
+
                 if ( connectionOpportunityCampus != null )
                 {
                     return connectionOpportunityCampus.DefaultConnectorPersonAlias;

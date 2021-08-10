@@ -42,8 +42,10 @@
                         <div class="col-md-6">
                             <asp:Panel ID="pnlSingleAccount" runat="server" Visible="false" CssClass="row">
                                 <div class="col-sm-6">
-                                    <Rock:CurrencyBox ID="tbSingleAccountAmount" label="Amount" runat="server" CssClass="input-width-lg"></Rock:CurrencyBox>
-                                    <Rock:CurrencyBox ID="tbSingleAccountFeeAmount" label="Processing Fees" runat="server" CssClass="input-width-lg" Help="The fee amount associated with the processing of the transaction."></Rock:CurrencyBox>
+                                    <Rock:CurrencyBox ID="tbSingleAccountAmountMinusFeeCoverageAmount" Label="Amount" runat="server" CssClass="input-width-lg" />
+                                    <Rock:CurrencyBox ID="tbSingleAccountForeignCurrencyAmount" Label="Foreign Currency Amount" runat="server" CssClass="input-width-lg" />
+                                    <Rock:CurrencyBox ID="tbSingleAccountFeeAmount" Label="Processing Fees" runat="server" CssClass="input-width-lg" Help="The fee amount associated with the processing of the transaction." />
+                                    <Rock:CurrencyBox ID="tbSingleAccountFeeCoverageAmount" runat="server" Label="Covered Fee" Required="false" ValidationGroup="Account" Help="The fee amount that the person elected to cover." />
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
@@ -56,14 +58,14 @@
                             </asp:Panel>
                             <asp:Panel ID="pnlAccounts" runat="server">
                                 <Rock:Grid ID="gAccountsEdit" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light"
-                                    ShowConfirmDeleteDialog="false">
+                                    ShowConfirmDeleteDialog="false" OnRowDataBound="gAccountsEdit_RowDataBound">
                                     <Columns>
-                                        <Rock:RockTemplateField HeaderText="Accounts">
-                                            <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                        </Rock:RockTemplateField>
+                                        <Rock:RockLiteralField ID="lAccountsEditAccountName" HeaderText="Accounts" />
                                         <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                        <Rock:CurrencyField DataField="ForeignCurrencyAmount" HeaderText="Foreign Currency" SortExpression="Foreign Currency" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                        <Rock:CurrencyField HeaderText="Covered Fees" DataField="FeeCoverageAmount" SortExpression="FeeCoverageAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                         <Rock:CurrencyField HeaderText="Processing Fees" DataField="FeeAmount" SortExpression="FeeAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                        <Rock:CurrencyField HeaderText="Amount" DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                        <Rock:RockLiteralField ID="lAccountsEditAmountMinusFeeCoverageAmount" HeaderText="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -77,6 +79,7 @@
                             <Rock:DefinedValuePicker ID="dvpCurrencyType" runat="server" Label="Currency Type" AutoPostBack="true" OnSelectedIndexChanged="ddlCurrencyType_SelectedIndexChanged" Required="true" />
                             <Rock:DefinedValuePicker ID="dvpNonCashAssetType" runat="server" Label="Non-Cash Asset Type" />
                             <Rock:DefinedValuePicker ID="dvpCreditCardType" runat="server" Label="Credit Card Type" />
+                            <Rock:DefinedValuePicker ID="dvpForeignCurrencyCode" runat="server" Label="Foreign Currency" AutoPostBack="true" OnSelectedIndexChanged="dvpForeignCurrencyCode_SelectedIndexChanged" />
                             <Rock:DynamicPlaceholder ID="phPaymentAttributeEdits" runat="server" />
                             <Rock:FinancialGatewayPicker ID="gpPaymentGateway" runat="server" Label="Payment Gateway" ShowAll="true" />
                             <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code"
@@ -111,70 +114,73 @@
 
                 <fieldset id="fieldsetViewSummary" runat="server">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    
-                    <div class="well">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h4 class="margin-t-none">Authorized Person Information</h4>
-                            </div>
-                            <div class="col-md-6">
-                                <h4 class="margin-t-none">Addresses</h4>
-                            </div>
 
-                            <div class="col-md-3">
-                                <asp:Literal ID="lAuthorizedPerson" runat="server" />
-                            </div>
-                            
-                            <div class="col-md-3">
-                                <asp:Literal ID="lCampus" runat="server" />
-                            </div>
-                            <div class="col-md-6">
-                                <div class="row">
-                                    <asp:Repeater ID="rptAddresses" runat="server">
-                                        <ItemTemplate>
-                                            <div class="col-md-4">
-                                                <p>
-                                                    <strong>
-                                                        <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
-                                                    </strong>
-                                                    <br>
-                                                    <%# Eval("Location.FormattedHtmlAddress") %>
-                                                </p>
-                                            </div>
-                                        </ItemTemplate>
-                                    </asp:Repeater>
+                    <div class="panel panel-section">
+                        <div class="panel-heading">
+                            <h5 class="panel-title">Authorized By</h5>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <asp:Literal ID="lAuthorizedPerson" runat="server" />
                                 </div>
+
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <asp:Repeater ID="rptAddresses" runat="server">
+                                            <ItemTemplate>
+                                                <div class="col-md-4">
+                                                    <p>
+                                                        <strong>
+                                                            <%# FormatAddressType(Eval("GroupLocationTypeValue.Value")) %>
+                                                        </strong>
+                                                        <br>
+                                                        <%# Eval("Location.FormattedHtmlAddress") %>
+                                                    </p>
+                                                </div>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <asp:Literal ID="lCampus" runat="server" />
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <asp:Literal ID="lDetailsLeft" runat="server" />
                             <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
                         </div>
-                        <div class="col-md-6">
-                            <label>Accounts</label>
-                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="true">
+                        <div class="col-md-8">
+                            <label>Transaction Details</label>
+                            <Rock:Grid ID="gAccountsView" runat="server" EmptyDataText="No Account Details" RowItemText="Account" DisplayType="Light" ShowHeader="true" OnRowDataBound="gAccountsView_RowDataBound">
                                 <Columns>
-                                    <Rock:RockTemplateField HeaderText="Account">
-                                        <ItemTemplate><%# AccountName( (int)Eval("AccountId") ) %></ItemTemplate>
-                                    </Rock:RockTemplateField>
+                                    <Rock:RockLiteralField ID="lAccountsViewAccountName" HeaderText="Accounts" />
                                     <Rock:RockBoundField DataField="Summary" SortExpression="Summary" />
+                                    <Rock:CurrencyField DataField="ForeignCurrencyAmount" HeaderText="Foreign Currency" SortExpression="Foreign Currency" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    <Rock:CurrencyField HeaderText="Covered Fees" DataField="FeeCoverageAmount" SortExpression="FeeCoverageAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     <Rock:CurrencyField HeaderText="Processing Fees" DataField="FeeAmount" SortExpression="FeeAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
-                                    <Rock:CurrencyField HeaderText="Amount" DataField="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
+                                    <Rock:RockLiteralField ID="lAccountsViewAmountMinusFeeCoverageAmount" HeaderText="Amount" SortExpression="Amount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                 </Columns>
                             </Rock:Grid>
 
                             <asp:Panel ID="pnlImages" runat="server" CssClass="margin-t-md">
                                 <label>Images</label>
-                                <div>
-                                    <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
-                                </div>
-                                <div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <asp:Image ID="imgPrimary" runat="server" CssClass="transaction-image" />
+                                    </div>
+
                                     <asp:Repeater ID="rptrImages" runat="server">
                                         <ItemTemplate>
-                                            <asp:Image ID="imgOther" ImageUrl='<%# ImageUrl( (int)Eval("BinaryFileId") ) %>' runat="server" CssClass="transaction-image-thumbnail" ToolTip="Click to toggle" />
+                                            <div class="col-md-6">
+                                                <asp:Image ID="imgOther" ImageUrl='<%# ImageUrl( (int)Eval("BinaryFileId") ) %>' runat="server" CssClass="transaction-image" ToolTip="Click to toggle" />
+                                            </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
                                 </div>
@@ -199,7 +205,7 @@
                                     <Columns>
                                         <asp:HyperLinkField DataTextField="TransactionDateTime" DataNavigateUrlFields="Id" />
                                         <Rock:RockBoundField DataField="TransactionCode" />
-                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right"/>
+                                        <Rock:CurrencyField DataField="TotalAmount" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                                     </Columns>
                                 </Rock:Grid>
                             </asp:Panel>
@@ -234,8 +240,10 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" ValidationGroup="Account" />
-                        <Rock:CurrencyBox ID="tbAccountAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Account" />
+                        <Rock:CurrencyBox ID="tbAccountAmountMinusFeeCoverageAmount" runat="server" Label="Amount" Required="true" ValidationGroup="Account" />
+                        <Rock:CurrencyBox ID="tbAccountForeignCurrencyAmount" runat="server" Label="Foreign Currency Amount" ValidationGroup="Account" />
                         <Rock:CurrencyBox ID="tbAccountFeeAmount" runat="server" Label="Processing Fees" Required="false" ValidationGroup="Account" Help="The fee amount associated with the processing of the transaction." />
+                        <Rock:CurrencyBox ID="tbAccountFeeCoverageAmount" runat="server" Label="Covered Fee" Required="false" ValidationGroup="Account" Help="The fee amount that the person elected to cover." />
                     </div>
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbAccountSummary" runat="server" Label="Summary" TextMode="MultiLine" Rows="3" ValidationGroup="Account" />
@@ -270,3 +278,16 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
+<style>
+    .person-photo {
+        width: 43px;
+        height: 43px;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border-radius: 50%;
+    }
+
+    .label-campus {
+        border-radius: 10px;
+    }
+</style>

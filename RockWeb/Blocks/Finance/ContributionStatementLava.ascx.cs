@@ -30,15 +30,16 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Data.Entity;
 using Rock.Security;
+using Rock.Utility;
 
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// This is the legacy version. Use ContributionStatementGenerator instead.
     /// </summary>
-    [DisplayName( "Contribution Statement Lava" )]
+    [DisplayName( "Contribution Statement Lava ( Legacy )" )]
     [Category( "Finance" )]
-    [Description( "Block for displaying a Lava based contribution statement." )]
+    [Description( "Obsolete. Use ContributionStatementGenerator instead." )]
     [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.", false, order: 0 )]
     [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
     [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
@@ -174,6 +175,8 @@ namespace RockWeb.Blocks.Finance
 </p>", order: 2 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE, "Excluded Currency Types", "Select the currency types you would like to excluded.", false, true, order: 4 )]
     [BooleanField( "Allow Person Querystring", "Determines if any person other than the currently logged in person is allowed to be passed through the querystring. For security reasons this is not allowed by default.", false, order: 5 )]
+
+    [RockObsolete( "12.4" )]
     public partial class ContributionStatementLava : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
@@ -289,7 +292,7 @@ namespace RockWeb.Blocks.Finance
                 qry = qry.Where( t => !excludedCurrencyTypes.Contains( t.Transaction.FinancialPaymentDetail.CurrencyTypeValue.Guid ) );
             }
 
-            qry = qry.OrderByDescending( t => t.Transaction.TransactionDateTime );
+            qry = qry.OrderBy( t => t.Transaction.TransactionDateTime );
 
             var mergeFields = new Dictionary<string, object>();
             mergeFields.Add( "Person", targetPerson);
@@ -339,6 +342,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
             mergeFields.Add( "Salutation", salutation );
+            mergeFields.Add( "TargetPerson", targetPerson );
 
             var mailingAddress = targetPerson.GetMailingLocation();
             if ( mailingAddress != null )
@@ -458,7 +462,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Pledge Summary Class
         /// </summary>
-        public class PledgeSummary : DotLiquid.Drop
+        public class PledgeSummary : RockDynamic
         {
             /// <summary>
             /// Gets or sets the pledge account identifier.
@@ -536,7 +540,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Account Summary Class
         /// </summary>
-        public class AccountSummary : DotLiquid.Drop
+        public class AccountSummary : RockDynamic
         {
             /// <summary>
             /// Gets or sets the name of the account.

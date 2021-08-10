@@ -20,6 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -30,6 +31,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceAttendance" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceAttendance : AnalyticsBaseAttendance<AnalyticsSourceAttendance>
     {
         // intentionally blank

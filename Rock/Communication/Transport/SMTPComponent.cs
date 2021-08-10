@@ -14,25 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
-using System.Text.RegularExpressions;
-
-using Rock.Data;
+using System.Threading.Tasks;
+using Rock.Logging;
 using Rock.Model;
-using Rock.Transactions;
-using Rock.Web.Cache;
 
 namespace Rock.Communication.Transport
 {
     /// <summary>
     /// Sends a communication through SMTP protocol
     /// </summary>
-    public abstract class SMTPComponent : EmailTransportComponent
+    public abstract class SMTPComponent : EmailTransportComponent, IAsyncTransport
     {
         #region Properties
 
@@ -112,7 +107,21 @@ namespace Rock.Communication.Transport
         /// <value>
         /// The status note.
         /// </value>
-        public virtual string StatusNote { get { return string.Empty; } }
+        public virtual string StatusNote { get => string.Empty; }
+
+        /// <summary>
+        /// Gets the maximum parallelization.
+        /// </summary>
+        /// <value>
+        /// The maximum parallelization.
+        /// </value>
+        public virtual int MaxParallelization
+        {
+            get
+            {
+                return GetAttributeValue( "MaxParallelization" ).AsIntegerOrNull() ?? 10;
+            }
+        }
 
         #endregion
 
@@ -135,6 +144,26 @@ namespace Rock.Communication.Transport
             };
         }
 
+        /// <summary>
+        /// Sends the email asynchronous.
+        /// </summary>
+        /// <param name="rockEmailMessage">The rock email message.</param>
+        /// <returns></returns>
+        protected override async Task<EmailSendResponse> SendEmailAsync( RockEmailMessage rockEmailMessage )
+        {
+            var mailMessage = GetMailMessageFromRockEmailMessage( rockEmailMessage );
+            var smtpClient = GetSmtpClient();
+
+            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2}.", nameof( SendEmailAsync ), rockEmailMessage.Subject, rockEmailMessage.GetRecipients().FirstOrDefault()?.To );
+            await smtpClient.SendMailAsync( mailMessage ).ConfigureAwait( false );
+
+            return new EmailSendResponse
+            {
+                Status = CommunicationRecipientStatus.Delivered,
+                StatusNote = StatusNote
+            };
+        }
+
         private MailMessage GetMailMessageFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
             var mailMessage = new MailMessage
@@ -145,7 +174,7 @@ namespace Rock.Communication.Transport
 
             // From
             mailMessage.From = new MailAddress( rockEmailMessage.FromEmail, rockEmailMessage.FromName );
-            
+
             // Reply to
             try
             {
@@ -154,7 +183,10 @@ namespace Rock.Communication.Transport
                     mailMessage.ReplyToList.Add( new MailAddress( rockEmailMessage.ReplyToEmail ) );
                 }
             }
-            catch { }
+            catch
+            {
+                // intentionally left blank
+            }
 
             // To
             var recipients = rockEmailMessage.GetRecipients().ToList();
@@ -214,7 +246,7 @@ namespace Rock.Communication.Transport
 
             return mailMessage;
         }
-        
+
         /// <summary>
         /// Adds any additional headers.
         /// </summary>
@@ -253,6 +285,7 @@ namespace Rock.Communication.Transport
                     smtpClient.Credentials = new System.Net.NetworkCredential( Username, Password );
                 }
             }
+
             return smtpClient;
         }
     }

@@ -80,6 +80,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.ShowFilter,
         Order = 4 )]
 
+    [BooleanField( "Show All Events in Detail",
+        Description = "Determines if all events for the month should be listed in the detail section or only the selected days events.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
+        Key = AttributeKeys.ShowAllEventsInDetail,
+        Order = 5 )]
+
     #endregion
 
     public class CalendarView : RockMobileBlockType
@@ -115,6 +123,11 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// Whether the filter should be shown or not.
             /// </summary>
             public const string ShowFilter = "ShowFilter";
+
+            /// <summary>
+            /// Determines if all events for the month should be listed in the detail section or only the selected days events.
+            /// </summary>
+            public const string ShowAllEventsInDetail = "ShowAllEventsInDetail";
         }
 
         /// <summary>
@@ -182,6 +195,14 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </value>
         protected bool ShowFilter => GetAttributeValue( AttributeKeys.ShowFilter ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value to determine which events should be shown in the detail view.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if all events should be shown in the detail view; otherwise, <c>false</c>.
+        /// </value>
+        protected bool ShowAllEventsInDetail => GetAttributeValue( AttributeKeys.ShowAllEventsInDetail ).AsBoolean();
+
         #endregion
 
         #region IRockMobileBlockType Implementation
@@ -224,6 +245,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 SummaryContent = EventSummary,
                 DetailPage,
                 ShowFilter,
+                ShowAllEventsInDetail,
                 IncludeCampusFilter = true /* Tell shell we support campus filtering */
             };
         }
@@ -315,7 +337,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                             .Where( b => b >= beginDate && b < endDate )
                             .Select( b => new
                             {
-                                Date = b,
+                                Date = b.ToRockDateTimeOffset(),
                                 Duration = duration,
                                 AudienceGuids = a.EventItem.EventItemAudiences.Select( c => DefinedValueCache.Get( c.DefinedValueId )?.Guid ).Where( c => c.HasValue ).Select( c => c.Value ).ToList(),
                                 EventItemOccurrence = a
@@ -328,9 +350,9 @@ namespace Rock.Blocks.Types.Mobile.Events
                         a.EventItemOccurrence.Id,
                         a.EventItemOccurrence.EventItem.Name,
                         DateTime = a.Date,
-                        EndDateTime = a.Duration > 0 ? ( DateTime? ) a.Date.AddMinutes( a.Duration ) : null,
-                        Date = a.Date.ToShortDateString(),
-                        Time = a.Date.ToShortTimeString(),
+                        EndDateTime = a.Duration > 0 ? ( DateTimeOffset? ) a.Date.AddMinutes( a.Duration ) : null,
+                        Date = a.Date.ToString( "d" ), // Short date
+                        Time = a.Date.ToString( "t" ), // Short time
                         CampusGuid = a.EventItemOccurrence.Campus?.Guid,
                         Campus = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",
                         Location = a.EventItemOccurrence.Campus != null ? a.EventItemOccurrence.Campus.Name : "All Campuses",

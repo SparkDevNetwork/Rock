@@ -168,6 +168,14 @@ ORDER BY [Text]",
         DisplayDescription = true,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.SCHOOL_GRADES
         )]
+    [DefinedValueField( "Configured Attendance Type",
+        Description = "The Attendance type that an occurrence will have.",
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CHECK_IN_ATTENDANCE_TYPES,
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.CHECK_IN_ATTENDANCE_TYPE_VIRTUAL,
+        Order = 28,
+        Key = AttributeKey.AttendanceType )]
     #region Messages Block Attribute Settings
 
     [TextField(
@@ -305,6 +313,7 @@ ORDER BY [Text]",
             public const string KnownIndividualPanel2IntroText = "KnownIndividualPanel2IntroText";
             public const string HideIndividualsYoungerThan = "HideIndividualsYoungerThan";
             public const string HideIndividualsInGradeLessThan = "HideIndividualsInGradeLessThan";
+            public const string AttendanceType = "AttendanceType";
         }
 
         /// <summary>
@@ -958,8 +967,20 @@ ORDER BY [Text]",
                 {
                     if ( person.PrimaryAliasId.HasValue )
                     {
-                        var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id, locationId, scheduleId, attendanceGroup.CampusId );
+                        int? attendanceTypeValueId = null;
+                        var attendanceTypeValueGuid = GetAttributeValue( AttributeKey.AttendanceType ).AsGuid();
+                        if ( !attendanceTypeValueGuid.IsEmpty() )
+                        {
+                            var attendanceTypeValue = DefinedValueCache.Get( attendanceTypeValueGuid );
+                            if(attendanceTypeValue != null )
+                            {
+                                attendanceTypeValueId = attendanceTypeValue.Id;
+                            }
+                        }
 
+                        var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, campusCurrentDateTime, attendanceGroup.Id,
+                            locationId, scheduleId, attendanceGroup.CampusId, null, null, null, null, null, null, attendanceTypeValueId );
+                        
                     }
                 }
 
@@ -1318,7 +1339,7 @@ ORDER BY [Text]",
             var recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             var recordStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
             var connectionStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
-            var marriedMartialStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var marriedMaritalStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
 
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 
@@ -1381,10 +1402,10 @@ ORDER BY [Text]",
                     if ( watcher.RelationshipTypeGuid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )
                     {
 
-                        person.MaritalStatusValueId = marriedMartialStatusValueId;
-                        if ( primaryPerson.MaritalStatusValueId != marriedMartialStatusValueId )
+                        person.MaritalStatusValueId = marriedMaritalStatusValueId;
+                        if ( primaryPerson.MaritalStatusValueId != marriedMaritalStatusValueId )
                         {
-                            primaryPerson.MaritalStatusValueId = marriedMartialStatusValueId;
+                            primaryPerson.MaritalStatusValueId = marriedMaritalStatusValueId;
                         }
                     }
 

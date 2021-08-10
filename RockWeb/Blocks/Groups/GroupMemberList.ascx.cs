@@ -24,6 +24,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -31,6 +32,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -43,7 +45,7 @@ namespace RockWeb.Blocks.Groups
 
     [TextField( "Block Title", "The text used in the title/header bar for this block.", true, "Group Members", "", 0 )]
     [LinkedPage( "Detail Page", order: 1 )]
-    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false, order: 2 )]
+    [GroupField( "Group", "Either pick a specific group or choose &lt;none&gt; to have group be determined by the groupId page parameter", false, order: 2 )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
     [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 5 )]
@@ -70,6 +72,7 @@ namespace RockWeb.Blocks.Groups
         private class GroupMemberRegistrationItem
         {
             public int RegistrationId { get; set; }
+
             public string RegistrationName { get; set; }
         }
 
@@ -294,6 +297,7 @@ namespace RockWeb.Blocks.Groups
         private bool _showAttendance = false;
         private bool _hasGroupRequirements = false;
         private HashSet<int> _groupMemberIdsThatLackGroupRequirements = new HashSet<int>();
+        private List<int> _groupMemberIdsWithWarnings = new List<int>();
         private bool _showDateAdded = false;
         private bool _showNoteColumn = false;
 
@@ -436,6 +440,10 @@ namespace RockWeb.Blocks.Groups
                 if ( _hasGroupRequirements )
                 {
                     if ( _groupMemberIdsThatLackGroupRequirements.Contains( groupMember.Id ) )
+                    {
+                        sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-danger'></i>" );
+                    }
+                    else if ( _groupMemberIdsWithWarnings.Contains( groupMember.Id ) )
                     {
                         sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-warning'></i>" );
                     }
@@ -1015,48 +1023,14 @@ namespace RockWeb.Blocks.Groups
             }
 
             // Add Link to Profile Page Column
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
-            {
-                AddPersonProfileLinkColumn();
-            }
+            var personProfileLinkField = new PersonProfileLinkField();
+            personProfileLinkField.LinkedPageAttributeKey = "PersonProfilePage";
+            gGroupMembers.Columns.Add( personProfileLinkField );
 
-            // Add delete column
+            // Hold a reference to the delete column
             _deleteField = new DeleteField();
             _deleteField.Click += DeleteOrArchiveGroupMember_Click;
             gGroupMembers.Columns.Add( _deleteField );
-        }
-
-        /// <summary>
-        /// Adds the column with a link to profile page.
-        /// </summary>
-        private void AddPersonProfileLinkColumn()
-        {
-            HyperLinkField hlPersonProfileLink = new HyperLinkField();
-            hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
-            hlPersonProfileLink.ControlStyle.CssClass = "btn btn-default btn-sm";
-            hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
-
-            /*
-             * 2020-02-27 - JPH
-             *
-             * The LinkedPageUrl() method now has logic to prevent JavaScript Injection attacks. See the following:
-             * https://app.asana.com/0/1121505495628584/1162600333693130/f
-             * https://github.com/SparkDevNetwork/Rock/commit/4d0a4917282121d8ea55064d4f660a9b1c476946#diff-4a0cf24007088762bcf634d2ca28f30a
-             *
-             * Because of this, the "###" we pass into this method below will be returned encoded.
-             * We now need to search for the encoded version within our usage of the Replace() method.
-             *
-             * Reason: XSS Prevention
-             */
-
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-
-            hlPersonProfileLink.DataTextFormatString = "<i class='fa fa-user'></i>";
-
-            hlPersonProfileLink.DataTextField = "PersonId";
-            gGroupMembers.Columns.Add( hlPersonProfileLink );
         }
 
         /// <summary>
@@ -1198,8 +1172,9 @@ namespace RockWeb.Blocks.Groups
                     var trigger = _group.GetGroupMemberWorkflowTriggers().FirstOrDefault( a => a.Id == hfPlaceElsewhereTriggerId.Value.AsInteger() );
                     if ( trigger != null )
                     {
-                        // create a transaction for the selected trigger
-                        var transaction = new Rock.Transactions.GroupMemberPlacedElsewhereTransaction( groupMember, tbPlaceElsewhereNote.Text, trigger );
+                        // create a transaction for the selected trigger (before deleting the groupMember)
+                        groupMember.LoadAttributes();
+                        var groupMemberPlacedElsewhereTransaction = new Rock.Transactions.GroupMemberPlacedElsewhereTransaction( groupMember, tbPlaceElsewhereNote.Text, trigger );
 
                         // Un-link any registrant records that point to this group member.
                         foreach ( var registrant in new RegistrationRegistrantService( rockContext ).Queryable()
@@ -1213,8 +1188,8 @@ namespace RockWeb.Blocks.Groups
 
                         rockContext.SaveChanges();
 
-                        // queue up the transaction
-                        Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+                        // queue a transaction for the selected trigger
+                        groupMemberPlacedElsewhereTransaction.Enqueue();
                     }
                 }
 
@@ -1438,8 +1413,9 @@ namespace RockWeb.Blocks.Groups
             _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
 
             // If there are group requirements that that member doesn't meet, show an icon in the grid
-            bool includeWarnings = false;
-            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group, includeWarnings ).Select( a => a.Key.Id ).ToList().Distinct() );
+            var groupService = new GroupService( rockContext );
+            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
+            _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
 
             gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 

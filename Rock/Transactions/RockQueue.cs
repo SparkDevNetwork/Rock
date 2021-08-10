@@ -21,7 +21,7 @@ using System.Linq;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// 
+    /// Queue for <see cref="ITransaction" /> Transactions (not the Bus queue)
     /// </summary>
     static public class RockQueue
     {
@@ -59,7 +59,6 @@ namespace Rock.Transactions
             while ( TransactionQueue.TryDequeue( out var transaction ) )
             {
                 CurrentlyExecutingTransaction = transaction;
-                CurrentlyExecutingTransactionProgress = null;
 
                 if ( CurrentlyExecutingTransaction == null )
                 {
@@ -68,28 +67,11 @@ namespace Rock.Transactions
 
                 try
                 {
-                    if ( CurrentlyExecutingTransaction is ITransactionWithProgress )
-                    {
-                        var transactionWithProgress = CurrentlyExecutingTransaction as ITransactionWithProgress;
-
-                        if ( transactionWithProgress.Progress != null )
-                        {
-                            transactionWithProgress.Progress.ProgressChanged += ( reporter, progress ) =>
-                            {
-                                CurrentlyExecutingTransactionProgress = progress;
-                            };
-                        }
-                    }
-
                     CurrentlyExecutingTransaction.Execute();
                 }
                 catch ( Exception ex )
                 {
                     errorHandler( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ) );
-                }
-                finally
-                {
-                    CurrentlyExecutingTransactionProgress = 100;
                 }
             }
         }

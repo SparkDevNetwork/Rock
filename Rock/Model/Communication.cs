@@ -24,7 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 using Rock.Communication;
@@ -42,7 +42,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Communication : Model<Communication>, ICommunicationDetails
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Rock.Model
         public string UrlReferrer { get; set; }
 
         /// <summary>
-        /// Gets or sets the list that email is being sent to.
+        /// Gets or sets the <see cref="Rock.Model.Group">list</see> that email is being sent to.
         /// </summary>
         /// <value>
         /// The list group identifier.
@@ -103,7 +102,7 @@ namespace Rock.Model
         public SegmentCriteria SegmentCriteria { get; set; }
 
         /// <summary>
-        /// Gets or sets the Communication Template that was used to compose this communication
+        /// Gets or sets the <see cref="Rock.Model.CommunicationTemplate"/> that was used to compose this communication
         /// </summary>
         /// <value>
         /// The communication template identifier.
@@ -115,7 +114,7 @@ namespace Rock.Model
         public int? CommunicationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the sender person alias identifier.
+        /// Gets or sets the sender <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>
         /// The sender person alias identifier.
@@ -188,7 +187,7 @@ namespace Rock.Model
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json formatted string containing the Medium specific data.
+        /// Gets or sets a JSON formatted string containing the Medium specific data.
         /// </summary>
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
@@ -199,7 +198,7 @@ namespace Rock.Model
         public string MediumDataJson { get; set; }
 
         /// <summary>
-        /// Gets or sets a Json string containing any additional merge fields for the Communication.
+        /// Gets or sets a JSON string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>
         /// A Json formatted <see cref="System.String"/> that contains any additional merge fields for the Communication.
@@ -240,7 +239,10 @@ namespace Rock.Model
             get => ( SendDateTime == null || SendDateTime.Value == default ) ?
                         ( int? ) null :
                         SendDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
+
+            private set
+            {
+            }
         }
 
         #region Email Fields
@@ -348,10 +350,10 @@ namespace Rock.Model
         #region Push Notification Properties
 
         /// <summary>
-        /// Gets or sets from number.
+        /// Gets or sets the push notification title.
         /// </summary>
         /// <value>
-        /// From number.
+        /// Push notification title.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
@@ -367,17 +369,17 @@ namespace Rock.Model
         public string PushMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets from number.
+        /// Gets or sets push sound.
         /// </summary>
         /// <value>
-        /// From number.
+        /// Push sound.
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
         public string PushSound { get; set; }
 
         /// <summary>
-        /// Gets or sets the push image file identifier.
+        /// Gets or sets the push <see cref="Rock.Model.BinaryFile">image file</see> identifier.
         /// </summary>
         /// <value>
         /// The push image file identifier.
@@ -423,12 +425,22 @@ namespace Rock.Model
         [DataMember]
         public bool ExcludeDuplicateRecipientAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="SystemCommunication"/> that this communication is associated with.
+        /// </summary>
+        /// <value>
+        /// The system communication.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        public int? SystemCommunicationId { get; set; }
+
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the list group.
+        /// Gets or sets the list <see cref="Rock.Model.Group" />.
         /// </summary>
         /// <value>
         /// The list group.
@@ -437,7 +449,7 @@ namespace Rock.Model
         public virtual Group ListGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the sender person alias.
+        /// Gets or sets the sender <see cref="Rock.Model.PersonAlias" />.
         /// </summary>
         /// <value>
         /// The sender person alias.
@@ -446,7 +458,7 @@ namespace Rock.Model
         public virtual PersonAlias SenderPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets or sets the reviewer person alias.
+        /// Gets or sets the reviewer <see cref="Rock.Model.PersonAlias" />.
         /// </summary>
         /// <value>
         /// The reviewer person alias.
@@ -463,13 +475,21 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<CommunicationRecipient> Recipients
         {
-            get { return _recipients ?? ( _recipients = new Collection<CommunicationRecipient>() ); }
-            set { _recipients = value; }
+            get
+            {
+                return _recipients ?? ( _recipients = new Collection<CommunicationRecipient>() );
+            }
+
+            set
+            {
+                _recipients = value;
+            }
         }
+
         private ICollection<CommunicationRecipient> _recipients;
 
         /// <summary>
-        /// Gets or sets the attachments.
+        /// Gets or sets the <see cref="Rock.Model.CommunicationAttachment">attachments</see>.
         /// NOTE: In most cases, you should use GetAttachments( CommunicationType ) instead.
         /// </summary>
         /// <value>
@@ -478,9 +498,17 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<CommunicationAttachment> Attachments
         {
-            get { return _attachments ?? ( _attachments = new Collection<CommunicationAttachment>() ); }
-            set { _attachments = value; }
+            get
+            {
+                return _attachments ?? ( _attachments = new Collection<CommunicationAttachment>() );
+            }
+
+            set
+            {
+                _attachments = value;
+            }
         }
+
         private ICollection<CommunicationAttachment> _attachments;
 
         /// <summary>
@@ -494,9 +522,17 @@ namespace Rock.Model
         [DataMember]
         public virtual List<string> AdditionalMergeFields
         {
-            get { return _additionalMergeFields; }
-            set { _additionalMergeFields = value; }
+            get
+            {
+                return _additionalMergeFields;
+            }
+
+            set
+            {
+                _additionalMergeFields = value;
+            }
         }
+
         private List<string> _additionalMergeFields = new List<string>();
 
         /// <summary>
@@ -539,7 +575,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// /// Gets or sets the Communication Template that was used to compose this communication
+        /// Gets or sets the <see cref="Rock.Model.CommunicationTemplate"/> that was used to compose this communication
         /// </summary>
         /// <value>
         /// The communication template.
@@ -548,13 +584,18 @@ namespace Rock.Model
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
         /// <summary>
-        /// Gets or sets the send source date.
+        /// Gets or sets the <see cref="Rock.Model.AnalyticsSourceDate">send source date</see>.
         /// </summary>
         /// <value>
         /// The send source date.
         /// </value>
         [DataMember]
-        public AnalyticsSourceDate SendSourceDate { get; set; }
+        public virtual AnalyticsSourceDate SendSourceDate { get; set; }
+
+        /// <inheritdoc cref="SystemCommunicationId"/>
+        [DataMember]
+        public virtual SystemCommunication SystemCommunication { get; set;  }
+
         #endregion
 
         #region ISecured
@@ -568,7 +609,17 @@ namespace Rock.Model
         {
             get
             {
-                return this.CommunicationTemplate ?? base.ParentAuthority;
+                if ( this.CommunicationTemplate != null )
+                {
+                    return this.CommunicationTemplate;
+                }
+
+                if ( this.SystemCommunication != null )
+                {
+                    return this.SystemCommunication;
+                }
+
+                return base.ParentAuthority;
             }
         }
 
@@ -624,7 +675,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the attachment binary file ids.
+        /// Gets the attachment <see cref="Rock.Model.BinaryFile" /> ids.
         /// Specify CommunicationType.Email to get the attachments for Email and CommunicationType.SMS to get the Attachment(s) for SMS
         /// </summary>
         /// <param name="communicationType">Type of the communication.</param>
@@ -678,7 +729,6 @@ namespace Rock.Model
                 var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
                 foreach ( var segmentDataView in segmentDataViewList )
                 {
-
                     var exp = segmentDataView.GetExpression( personService, paramExpression );
                     if ( exp != null )
                     {
@@ -789,6 +839,7 @@ namespace Rock.Model
 
             // Get all the List member which is not part of communication recipients yet
             var newMemberInList = qryCommunicationListMembers
+                .Include( c => c.Person )
                 .Where( a => !recipientsQry.Any( r => r.PersonAlias.PersonId == a.PersonId ) )
                 .AsNoTracking()
                 .ToList();
@@ -797,57 +848,54 @@ namespace Rock.Model
             var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
-            foreach ( var newMember in newMemberInList )
+            var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
             {
-                var communicationRecipient = new CommunicationRecipient
-                {
-                    PersonAliasId = newMember.Person.PrimaryAliasId.Value,
-                    Status = CommunicationRecipientStatus.Pending,
-                    CommunicationId = Id
-                };
+                PersonAliasId = m.Person.PrimaryAliasId.Value,
+                Status = CommunicationRecipientStatus.Pending,
+                CommunicationId = Id,
+                MediumEntityTypeId = DetermineMediumEntityTypeId(
+                    emailMediumEntityType.Id,
+                    smsMediumEntityType.Id,
+                    pushMediumEntityType.Id,
+                    CommunicationType,
+                    m.CommunicationPreference,
+                    m.Person.CommunicationPreference )
+            } );
+            rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
 
-                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id,
-                                                                smsMediumEntityType.Id,
-                                                                pushMediumEntityType.Id,
-                                                                CommunicationType,
-                                                                newMember.CommunicationPreference,
-                                                                newMember.Person.CommunicationPreference );
-
-                communicationRecipientService.Add( communicationRecipient );
-            }
-
-            // Get all pending communication recipents that are no longer part of the group list member, then delete them from the Recipients
+            // Get all pending communication recipients that are no longer part of the group list member, then delete them from the Recipients
             var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
-                .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) )
-                .ToList();
+                .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) );
 
-            foreach ( var missingMember in missingMemberInList )
-            {
-                communicationRecipientService.Delete( missingMember );
-            }
+            rockContext.BulkDelete<CommunicationRecipient>( missingMemberInList );
 
             rockContext.SaveChanges();
         }
 
         /// <summary>
         /// Determines the medium entity type identifier.
-        /// Given the email and sms medium entity type ids and the available communication preferences
+        /// Given the email, SMS medium, and Push entity type ids, along with the available communication preferences,
         /// this method will determine which medium entity type id should be used and return that id.
-        /// If a preference could not be determined the email medium entity type id will be returned.
         /// </summary>
+        /// <remarks>
+        ///  NOTE: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///  the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned. If none is available,
+        ///  it will return the email medium entity type id.  Typically is expected that the ordered params list eventually has either
+        ///  CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.
+        /// </remarks>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
         /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
-        /// <param name="recipientPreference">The recipient preference.</param>
+        /// <param name="communicationTypePreference">An array of ordered communication type preferences.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - recipientPreference</exception>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - communicationTypePreference</exception>
         /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
-        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, params CommunicationType[] communicationTypePreference )
         {
-            for ( var i = 0; i < recipientPreference.Length; i++ )
+            for ( var i = 0; i < communicationTypePreference.Length; i++ )
             {
-                var currentCommunicationPreference = recipientPreference[i];
-                var hasNextCommunicaitonPreference = ( i + 1 ) < recipientPreference.Length;
+                var currentCommunicationPreference = communicationTypePreference[i];
+                var hasNextCommunicationPreference = ( i + 1 ) < communicationTypePreference.Length;
 
                 switch ( currentCommunicationPreference )
                 {
@@ -858,13 +906,14 @@ namespace Rock.Model
                     case CommunicationType.PushNotification:
                         return pushMediumEntityTypeId;
                     case CommunicationType.RecipientPreference:
-                        if ( hasNextCommunicaitonPreference )
+                        if ( hasNextCommunicationPreference )
                         {
                             break;
                         }
+
                         return emailMediumEntityTypeId;
                     default:
-                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "recipientPreference" );
+                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "communicationTypePreference" );
                 }
             }
 
@@ -881,8 +930,8 @@ namespace Rock.Model
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
         /// <param name="recipientPreference">The recipient preference.</param>
         /// <returns></returns>
-        [Obsolete("Use the override that includes 'pushMediumEntityTypeId' instead.")]
-        [RockObsolete("1.11")]
+        [Obsolete( "Use the override that includes 'pushMediumEntityTypeId' instead." )]
+        [RockObsolete( "1.11" )]
         public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
         {
             return DetermineMediumEntityTypeId( emailMediumEntityTypeId, smsMediumEntityTypeId, 0, recipientPreference );
@@ -980,6 +1029,76 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Sends the specified communication.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
+        public async static Task SendAsync( Rock.Model.Communication communication )
+        {
+            if ( communication == null || communication.Status != CommunicationStatus.Approved )
+            {
+                return;
+            }
+
+            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
+            if ( communication.SendDateTime.HasValue == false )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( communication.ListGroupId.HasValue )
+                    {
+                        communication.RefreshCommunicationRecipientList( rockContext );
+                    }
+
+                    if ( communication.ExcludeDuplicateRecipientAddress )
+                    {
+                        communication.RemoveRecipientsWithDuplicateAddress( rockContext );
+                    }
+                }
+            }
+
+            var sendTasks = new List<Task>();
+            foreach ( var medium in communication.GetMediums() )
+            {
+                var asyncMedium = medium as IAsyncMediumComponent;
+
+                if ( asyncMedium == null )
+                {
+                    sendTasks.Add( Task.Run( () => medium.Send( communication ) ) );
+                }
+                else
+                {
+                    sendTasks.Add( asyncMedium.SendAsync( communication ) );
+                }
+            }
+
+            var aggregateExceptions = new List<Exception>();
+            while ( sendTasks.Count > 0 )
+            {
+                var completedTask = await Task.WhenAny( sendTasks ).ConfigureAwait( false );
+                if ( completedTask.Exception != null )
+                {
+                    aggregateExceptions.AddRange( completedTask.Exception.InnerExceptions );
+                }
+
+                sendTasks.Remove( completedTask );
+            }
+
+            if ( aggregateExceptions.Count > 0 )
+            {
+                throw new AggregateException( aggregateExceptions );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
+
+                // Set the SendDateTime of the Communication
+                dbCommunication.SendDateTime = RockDateTime.Now;
+                rockContext.SaveChanges();
+            }
+        }
+
+        /// <summary>
         /// Gets the next pending.
         /// </summary>
         /// <param name="communicationId">The communication identifier.</param>
@@ -1013,10 +1132,8 @@ namespace Rock.Model
 
             return recipient;
         }
-
         #endregion
     }
-
 
     #region Entity Configuration
 
@@ -1043,6 +1160,9 @@ namespace Rock.Model
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( r => r.SendSourceDate ).WithMany().HasForeignKey( r => r.SendDateKey ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a ON DELETE SET NULL for SystemCommunicationId
+            this.HasOptional( r => r.SystemCommunication ).WithMany().HasForeignKey( r => r.SystemCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -1080,7 +1200,6 @@ namespace Rock.Model
         /// Communication has been denied
         /// </summary>
         Denied = 4,
-
     }
 
     /// <summary>
@@ -1128,4 +1247,3 @@ namespace Rock.Model
 
     #endregion
 }
-

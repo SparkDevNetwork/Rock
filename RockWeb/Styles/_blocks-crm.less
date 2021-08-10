@@ -78,7 +78,13 @@
 
     .action-extended {
       width: auto;
-      padding-top: 6px;
+      .dropdown {
+        padding: 6px 0 4px;
+      }
+
+      .dropdown-menu {
+        right: -1px;
+      }
     }
   }
 
@@ -90,11 +96,12 @@
     .full-name,
     .previous-names {
       display: none;
-      font-size: 18px;
+      font-size: @font-size-lg;
     }
 
     .firstname {
-      font-size: .6em;
+      font-size: @persondetails-bio-firstname-font-size;
+      font-weight: @persondetails-bio-firstname-font-weight;
     }
   }
 
@@ -138,7 +145,7 @@
         top: -61px;
         left: 8px;
         font-size: 24px;
-        color: #fff;
+        color: @white;
         opacity: 0;
         transition: 1s;
       }
@@ -184,7 +191,7 @@
 
     .btn {
       display: inline-block;
-      font-size: 16px;
+      font-size: @font-size-base;
       color: #fff;
       background-color: @gray;
       border: 0;
@@ -282,10 +289,6 @@
   border-bottom: 1px solid darken(@persondetails-badge-bg, @const-border-darken-amt);
 
   --badge-size: @badge-icon-height;
-
-  .config-bar {
-    font-size: @font-size-base;
-  }
 
   .badge-group {
     margin: @spacing-sm-px 0;
@@ -437,7 +440,7 @@
   }
 }
 
-.attendance-chart {
+.trend-chart {
   //http://codepen.io/Victa/pen/xDqbf
   display: -ms-flexbox;
   display: flex;
@@ -473,9 +476,10 @@
     flex-basis: 0;
     flex-grow: 1;
     max-width: 100%;
+    margin-right: 2px;
+    overflow: hidden;
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
-    overflow: hidden;
 
     &:hover {
       opacity: .85;
@@ -489,8 +493,7 @@
       position: absolute;
       bottom: 0;
       display: block;
-      width: 8px;
-      width: ~"calc(100% - 2px)";
+      width: 100%;
       min-width: 2px;
       min-height: 1px;
       max-height: 100%;
@@ -501,6 +504,14 @@
         -moz-animation: bar-grow 1s ease-in-out;
         -o-animation: bar-grow 1s ease-in-out;
         animation: bar-grow 1s ease-in-out;
+      }
+    }
+  }
+
+  @media (min-width: @screen-lg-min) {
+    &-gap {
+      li {
+        margin-right: 5px;
       }
     }
   }
@@ -662,7 +673,7 @@
   .weeks-metric {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #686576;
 
     &::before {
@@ -704,7 +715,7 @@
   .badge-content {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #4f89bd;
 
     .badge-icon {
@@ -825,7 +836,7 @@
   .badge-content {
     position: relative;
     font-size: 40px;
-    font-size: ~"calc(var(--badge-size, 45px) *.888)";
+    font-size: ~"calc(var(--badge-size, 45px) * 0.888)";
     color: #4f89bd;
 
     .badge-icon {
@@ -871,7 +882,7 @@
     h1 {
       float: left;
       margin: 0;
-      font-size: 18px;
+      font-size: @font-size-h4;
       font-weight: 600;
       line-height: 25px;
     }
@@ -968,7 +979,7 @@
 
     h4 {
       margin: 0;
-      font-size: 14px;
+      font-size: @font-size-h6;
       font-weight: @font-weight-semibold;
     }
 
@@ -1017,25 +1028,20 @@
 }
 
 // history page
-span.field-name {
-  padding: 2px 4px;
-  font-family: @font-family-monospace;
-  font-size: 90%;
-  color: @pagetitle-text-color;
-  white-space: nowrap;
-  background-color: @pagetitle-bg;
-  border-radius: 4px;
-}
-
-/* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
+span.field-name,
 span.field-value {
   padding: 2px 4px;
   font-family: @font-family-monospace;
   font-size: 90%;
   color: @pagetitle-text-color;
-  white-space: inherit;
-  background-color: @pagetitle-bg;
+  white-space: nowrap;
+  background-color: @gray-100;
   border-radius: 4px;
+}
+
+/* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
+span.field-value {
+  white-space: inherit;
 }
 
 // 8. Add Family Page
@@ -1045,7 +1051,7 @@ span.field-value {
   margin-top: 0 !important;
 }
 
-@media (max-width: @screen-sm) {
+@media (max-width: @screen-md) {
   /* Force table to not be like tables anymore */
   table.table-groupmembers,
   .table-groupmembers thead,
@@ -1096,7 +1102,9 @@ span.field-value {
       left: 6px;
       width: 35%;
       padding-right: 10px;
+      overflow: hidden;
       font-weight: @grid-column-header-font-weight;
+      text-overflow: ellipsis;
     }
 
     > tbody > tr {
@@ -1156,9 +1164,12 @@ span.field-value {
     }
   }
 
-  .table-groupcontactinfo {
+  .table-groupcontactinfo,
+  .table-groupmemberattributes {
     margin-bottom: 12px;
+  }
 
+  .table-groupcontactinfo {
     /* Hide table headers (but not display: none;, for accessibility) */
     thead tr {
       position: absolute;
@@ -1333,7 +1344,7 @@ span.field-value {
 .person-bio {
   div.deceased h1.title.name::after {
     margin-left: 12px;
-    font-size: 14px;
+    font-size: @font-size-small;
     color: @brand-danger;
     content: "Deceased";
   }
@@ -1346,7 +1357,7 @@ span.field-value {
     }
 
     .person-info::after {
-      font-size: 10px;
+      font-size: @font-size-xs;
       color: @brand-danger;
       content: "Deceased";
     }
@@ -1553,11 +1564,14 @@ tr.inactive {
   .likert {
     .radio-inline {
       padding: 5px @padding-base-horizontal 7px (@custom-control-indicator-size + @padding-base-horizontal + 4px);
-      margin-right: @padding-base-horizontal;
-      margin-left: -@padding-base-horizontal;
       cursor: pointer;
       background-clip: padding-box;
       border-radius: 4px;
+
+      @media (min-width: @likert-screen-column-min) {
+        margin-right: @padding-base-horizontal;
+        margin-left: -@padding-base-horizontal;
+      }
 
       &:hover {
         background-color: @gray-lighter;
@@ -1626,20 +1640,21 @@ tr.inactive {
 @steps-breakpoint: @screen-lg-min;
 
 .add-step-buttons {
-  padding: 8px 0;
-  margin: -16px -16px 0;
-  background: @drawer-bg;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px @panel-body-padding;
+  margin: -@panel-body-padding -@panel-body-padding 0;
+  background: @panel-drawer-bg;
   border-bottom: 1px solid @panel-border;
 
-  + .row {
-    margin-top: 16px;
+  .add-step-label {
+    margin: 0 4px 0 0;
+    font-size: @font-size-small;
   }
 
-  .add-step-label {
-    float: left;
-    padding: (@padding-small-vertical + 1) 0;
-    margin: 0 6px 0 0;
-    font-size: @font-size-small;
+  .btn {
+    margin: 2px;
   }
 }
 
@@ -1651,6 +1666,7 @@ tr.inactive {
   min-height: 1px;
   padding-right: 15px;
   padding-left: 15px;
+  margin-bottom: 15px;
 
   @media (min-width: @steps-breakpoint) {
     width: 100%;
@@ -1660,8 +1676,8 @@ tr.inactive {
 
 .step-card {
   position: relative;
-  height: 260px;
-  margin-bottom: 15px;
+  height: 100%;
+  min-height: 260px;
   overflow: hidden;
   text-align: center;
   border: 1px solid @panel-border;
@@ -1675,46 +1691,51 @@ tr.inactive {
     display: flex;
     -ms-flex-direction: column;
     flex-direction: column;
+    -ms-flex-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    justify-content: center;
     height: 100%;
-    padding: 12px 0;
+    padding: 12px;
     text-align: center;
     transition-duration: .25s;
     will-change: transform;
   }
 
   .step-status {
-    margin: 12px 0 0;
+    margin: 0;
   }
 
   .step-name {
     display: -webkit-box;
-    margin: 0 0 12px;
     overflow: hidden;
+    line-height: 1.3;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-    line-height: 1.3;
   }
 
   @media (min-width: @steps-breakpoint) {
     .card-info {
-      -ms-flex-pack: center;
-      justify-content: center;
       padding: 0;
     }
 
     .card-top {
       display: -ms-flexbox;
+      display: -webkit-box;
       display: flex;
-      -ms-flex-align: end;
+      -ms-flex-align: center;
       -ms-flex-pack: center;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
+      -webkit-box-align: center;
+      -webkit-box-pack: center;
     }
 
     .card-top,
     .card-bottom {
       -ms-flex: 1 1 50%;
       flex: 1 1 50%;
+      margin: 16px 0;
     }
   }
 
@@ -1785,8 +1806,8 @@ tr.inactive {
     display: block;
   }
 
-  .card-add-step-button > span {
-    transform: none;
+  .card-add-step-button {
+    height: 50%;
   }
 }
 
@@ -1859,8 +1880,8 @@ tr.inactive {
   border: 1px solid @panel-border;
 
   &.active {
-    border-color: var(--brand-color);
     border-color: @brand-primary;
+    border-color: var(--brand-primary, @brand-primary);
   }
 
   a {

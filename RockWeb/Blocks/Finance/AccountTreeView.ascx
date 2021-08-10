@@ -9,46 +9,53 @@
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
         <asp:HiddenField ID="hfUsePublicName" runat="server" />
-
         <div class="treeview js-accounttreeview">
-            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
-
-                <div class="btn-group pull-left margin-r-sm">
-                    <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                        <i class="fa fa-plus-circle"></i>&nbsp;Add Account <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li>
-                            <asp:LinkButton ID="lbAddAccountRoot" OnClick="lbAddAccountRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                        <li>
-                            <asp:LinkButton ID="lbAddAccountChild" OnClick="lbAddAccountChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                    </ul>
-                </div>
-
-                <div class="rollover-item" id="pnlRolloverConfig" runat="server">
-                    <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-accounttreeview').find('.js-config-panel').slideToggle()"></i>
-                </div>
-            </div>
-
-            <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
-                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
-            </div>
-
-            <div class="treeview-scroll scroll-container scroll-container-horizontal">
-
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <asp:Panel ID="pnlTreeviewContent" runat="server" />
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title">Accounts</h1>
+                    <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li>
+                                    <asp:LinkButton ID="lbAddAccountRoot" OnClick="lbAddAccountRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li>
+                                    <asp:LinkButton ID="lbAddAccountChild" OnClick="lbAddAccountChild_Click" Enabled="false" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
                         </div>
-
+                        <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-accounttreeview').find('.js-config-panel').slideToggle()" runat="server">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
                     </div>
                 </div>
-                <div class="scrollbar">
-                    <div class="track">
-                        <div class="thumb">
-                            <div class="end"></div>
+                <div class="panel-body">
+                    <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <Rock:Toggle ID="tglHideInactiveAccounts" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveAccounts_CheckedChanged" Label="Show" />
+                            </div>
+                            <div class="col-xs-6">
+                                <label for="" class="control-label">&nbsp;</label>
+                                <asp:LinkButton ID="lbOrderTopLevelAccounts" runat="server" CssClass="btn btn-xs btn-default" Text="Order Top-Level Accounts" OnClick="lbOrderTopLevelAccounts_Click" />
+                            </div>
+                        </div>
+                        </div>
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="treeview-frame">
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

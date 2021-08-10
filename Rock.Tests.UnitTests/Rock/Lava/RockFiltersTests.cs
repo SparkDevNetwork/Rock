@@ -9,13 +9,13 @@ using Ical.Net.Serialization.iCalendar.Serializers;
 using Ical.Net.DataTypes;
 using Ical.Net.Interfaces.DataTypes;
 
-using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Http.TestLibrary;
 
 namespace Rock.Tests.Rock.Lava
 {
@@ -31,6 +31,8 @@ namespace Rock.Tests.Rock.Lava
         private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
         private static readonly DateTime today = RockDateTime.Today;
+        private static readonly DateTime nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
+        private static readonly DateTime firstSaturdayOfMonth = RockDateTime.Now.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
 
         private static readonly Calendar weeklySaturday430 = new Calendar()
         {
@@ -38,8 +40,8 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 16, 30, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day + DayOfWeek.Saturday - today.DayOfWeek, 17, 30, 0 ),
+                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
+                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
                         DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
                         Sequence = 0,
@@ -54,9 +56,9 @@ namespace Rock.Tests.Rock.Lava
             {
                 new Event
                     {
-                        DtStart = new CalDateTime( today.Year, today.Month, today.Day, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( today.Year, today.Month, today.Day, 10, 0, 0 ),
-                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
+                        DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0 ),
+                        DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day ),
                         RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
                         Sequence = 0,
                         Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
@@ -137,31 +139,6 @@ namespace Rock.Tests.Rock.Lava
         {
             var output = RockFilters.RegExMatchValues( "Group Decker has no members", @"\d+" );
             Assert.That.AreEqual( new List<string>(), output );
-        }
-
-        /// <summary>
-        /// Verfies that the StripHtml filter handles standard HTML tags.
-        /// </summary>
-        [TestMethod]
-        public void StripHtml_ShouldStripStandardTags()
-        {
-            var html = "<p>Lorem <a href=\"#\">ipsum</a> <b>dolor</b> sit amet, <strong>consectetur</strong> adipiscing <t>elit</t>.</p>";
-            var text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
-
-            Assert.That.AreEqual( text, DotLiquid.StandardFilters.StripHtml( html ) );
-        }
-
-        /// <summary>
-        /// Verifies that the StripHtml filter handles multi-line HTML comments.
-        /// </summary>
-        [TestMethod]
-        public void StripHtml_ShouldStripHtmlComments()
-        {
-            var html = @"<p>Lorem ipsum <!-- this is
-a comment --> sit amet</p>";
-            var text = @"Lorem ipsum  sit amet";
-
-            Assert.That.AreEqual( text, StandardFilters.StripHtml( html ) );
         }
 
         #endregion
@@ -786,12 +763,16 @@ a comment --> sit amet</p>";
         {
             InitWebContentFolder();
 
-            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            using ( var request = new HttpSimulator( "/", webContentFolder ) )
             {
-                dynamic output = RockFilters.Client( "Global", "browser" );
-                Assert.That.AreEqual( "Chrome", output.UserAgent.Family as string );
-                Assert.That.AreEqual( "68", output.UserAgent.Major as string );
-                Assert.That.AreEqual( "Windows", output.OS.Family as string );
+                request.SetHeader( "user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.104 Safari/537.36" );
+                using ( request.SimulateRequest() )
+                {
+                    dynamic output = RockFilters.Client( "Global", "browser" );
+                    Assert.That.AreEqual( "Chrome", output.UserAgent.Family as string );
+                    Assert.That.AreEqual( "88", output.UserAgent.Major as string );
+                    Assert.That.AreEqual( "Windows", output.OS.Family as string );
+                }
             }
         }
 
@@ -853,348 +834,6 @@ a comment --> sit amet</p>";
 
         #region Sort
 
-        /// <summary>
-        /// For use in Lava -- sort objects (from JSON) by an int property
-        /// </summary>
-        [TestMethod]
-        public void Sort_FromJson_Int()
-        {
-            var expected = new List<string>() { "A", "B", "C", "D" };
-
-            var json = @"[{
-		""Title"": ""D"",
-        ""Order"": 4
-    }, {
-		""Title"": ""A"",
-		""Order"": 1
-    }, {
-		""Title"": ""C"",
-		""Order"": 3
-    }, {
-		""Title"": ""B"",
-		""Order"": 2
-    }]";
-
-            var converter = new ExpandoObjectConverter();
-            var input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
-            var output = ( List<object> ) StandardFilters.Sort( input, "Order" );
-            var sortedTitles = output.Cast<dynamic>().Select( x => x.Title );
-            Assert.That.AreEqual( expected, sortedTitles );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort from JSON. NOTE: Dates really should be in ISO 8601 for guaranteed sort-ability.
-        /// </summary>
-        [TestMethod]
-        public void Sort_FromJson()
-        {
-            var json = @"[{
-		""Title"": ""Hallelujah!( 6 / 12 / 16 )"",
-        ""StartDateTime"": ""2016-06-12T12:00:00""
-    }, {
-		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
-		""StartDateTime"": ""2016-06-19T12:00:00""
-    }, {
-		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
-		""StartDateTime"": ""2016-06-05T12:00:00""
-    }, {
-		""Title"": ""Test new sermon (5/29/16)"",
-		""StartDateTime"": ""2016-05-29T12:00:00""
-    }, {
-		""Title"": ""Test new sermon (7/3/16)"",
-		""StartDateTime"": ""2016-07-03T12:00:00""
-    }]";
-            var converter = new ExpandoObjectConverter();
-            object input = null;
-            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
-            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime" );
-            Assert.That.AreEqual( "Test new sermon (5/29/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort from JSON. NOTE: Dates must be in ISO 8601 for guaranteed sort-ability.
-        /// </summary>
-        [TestMethod]
-        public void Sort_FromJsonDesc()
-        {
-            var json = @"[{
-		""Title"": ""Hallelujah!(6/12/16 )"",
-        ""StartDateTime"": ""2016-06-12T12:00:00""
-    }, {
-		""Title"": ""Are You Dealing With Insecurity? (6/19/16)"",
-		""StartDateTime"": ""2016-06-19T12:00:00""
-    }, {
-		""Title"": ""Woman's Infirmity Healed (6/5/16)"",
-		""StartDateTime"": ""2016-06-05T12:00:00""
-    }, {
-		""Title"": ""Test new sermon (5/29/16)"",
-		""StartDateTime"": ""2016-05-29T12:00:00""
-    }, {
-		""Title"": ""Test new sermon (7/3/16)"",
-		""StartDateTime"": ""2016-07-03T12:00:00""
-    }]";
-            var converter = new ExpandoObjectConverter();
-            object input = null;
-            input = JsonConvert.DeserializeObject<List<ExpandoObject>>( json, converter );
-            var output = ( List<object> ) StandardFilters.Sort( input, "StartDateTime", "desc" );
-            Assert.That.AreEqual( "Test new sermon (7/3/16)", ( ( IDictionary<string, object> ) output.First() )["Title"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort by DateTime
-        /// </summary>
-        [TestMethod]
-        public void Sort_DateTime()
-        {
-            var input = new List<DateTime>
-            {
-                new DateTime().AddDays(1),
-                new DateTime()
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, null );
-            Assert.That.AreEqual( new DateTime(), output[0] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort by DateTime desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_DateTimeDesc()
-        {
-            var input = new List<DateTime>
-            {
-                new DateTime(),
-                new DateTime().AddDays(1),
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
-            Assert.That.AreEqual( new DateTime().AddDays( 1 ), output[0] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort by int
-        /// </summary>
-        [TestMethod]
-        public void Sort_Int()
-        {
-            var input = new List<int> { 2, 1 };
-            var output = ( List<object> ) StandardFilters.Sort( input, null );
-            Assert.That.AreEqual( 1, output[0] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort by int
-        /// </summary>
-        [TestMethod]
-        public void Sort_IntDesc()
-        {
-            var input = new List<int> { 1, 2 };
-            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
-            Assert.That.AreEqual( 2, output[0] );
-        }
-
-
-        /// <summary>
-        /// For use in Lava -- sort by string
-        /// </summary>
-        [TestMethod]
-        public void Sort_StringDesc()
-        {
-            var input = new List<string> { "A", "B" };
-            var output = ( List<object> ) StandardFilters.Sort( input, null, "desc" );
-            Assert.That.AreEqual( "B", output[0] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort by string
-        /// </summary>
-        [TestMethod]
-        public void Sort_String()
-        {
-            var input = new List<string> { "B", "A" };
-            var output = ( List<object> ) StandardFilters.Sort( input, null );
-            Assert.That.AreEqual( "A", output[0] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by date
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryDateTime()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } },
-               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
-            Assert.That.AreEqual( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by date desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryDateTimeDesc()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", new DateTime() }, { "Value", "1" } },
-               new Dictionary<string, object> { { "Id", new DateTime().AddDays(1) }, { "Value", "2" } }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
-            Assert.That.AreEqual( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by int
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryInt()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } },
-               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
-            Assert.That.AreEqual( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by int desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryIntDesc()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", 1 }, { "Value", "1" } },
-               new Dictionary<string, object> { { "Id", 2 }, { "Value", "2" } }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
-            Assert.That.AreEqual( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by string
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryString()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
-               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
-            Assert.That.AreEqual( "1", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort arbitrary by string desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ArbitraryStringDesc()
-        {
-            var input = new List<Dictionary<string, object>>
-            {
-               new Dictionary<string, object> { { "Id", "A" }, { "Value", "1" } },
-               new Dictionary<string, object> { { "Id", "B"}, { "Value", "2" } },
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
-            Assert.That.AreEqual( "2", ( ( Dictionary<string, object> ) output[0] )["Value"] );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by date
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableDateTime()
-        {
-            var input = new List<object>
-            {
-               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" },
-                new Person(){ AnniversaryDate = new DateTime(), NickName="1" }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate" );
-            Assert.That.AreEqual( "1", ( ( Person ) output[0] ).NickName );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by date desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableDateTimeDesc()
-        {
-            var input = new List<object>
-            {
-                new Person(){ AnniversaryDate = new DateTime(), NickName="1" },
-               new Person(){ AnniversaryDate = new DateTime().AddDays(1), NickName="2" }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "AnniversaryDate", "desc" );
-            Assert.That.AreEqual( "2", ( ( Person ) output[0] ).NickName );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by int
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableInt()
-        {
-            var input = new List<object>
-            {
-               new Person(){ Id = 2, NickName="2" },
-                new Person(){ Id = 1, NickName="1" }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id" );
-            Assert.That.AreEqual( "1", ( ( Person ) output[0] ).NickName );
-        }
-
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by int desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableIntDesc()
-        {
-            var input = new List<object>
-            {
-                new Person(){ Id = 1, NickName="1" },
-               new Person(){ Id = 2, NickName="2" }
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "Id", "desc" );
-            Assert.That.AreEqual( "2", ( ( Person ) output[0] ).NickName );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by string
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableString()
-        {
-            var input = new List<object>
-            {
-               new Person(){ NickName="2" },
-                new Person(){ NickName="1" },
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "NickName" );
-            Assert.That.AreEqual( "1", ( ( Person ) output[0] ).NickName );
-        }
-
-        /// <summary>
-        /// For use in Lava -- sort ILiquidizable by string desc
-        /// </summary>
-        [TestMethod]
-        public void Sort_ILiquidizableStringDesc()
-        {
-            var input = new List<object>
-            {
-               new Person(){ NickName="1" },
-                new Person(){ NickName="2" },
-            };
-            var output = ( List<object> ) StandardFilters.Sort( input, "NickName", "desc" );
-            Assert.That.AreEqual( "2", ( ( Person ) output[0] ).NickName );
-        }
 
         #region Where
 
@@ -1209,7 +848,7 @@ a comment --> sit amet</p>";
                new Dictionary<string, object> { { "Id", (int)1 } },
                new Dictionary<string, object> { { "Id", (int)2 } }
             };
-            var output = RockFilters.Where( input, "Id", 1 );
+            var output = RockFilters.Where( input, "Id", 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count() == 1 );
         }
 
@@ -1224,7 +863,7 @@ a comment --> sit amet</p>";
                new Dictionary<string, object> { { "Id", (long)1 } },
                new Dictionary<string, object> { { "Id", (long)2 } }
             };
-            var output = RockFilters.Where( input, "Id", ( int ) 1 );
+            var output = RockFilters.Where( input, "Id", ( int ) 1, "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
@@ -1240,7 +879,7 @@ a comment --> sit amet</p>";
                new Dictionary<string, object> { { "Id", "2" } }
             };
 
-            var output = RockFilters.Where( input, "Id", "1" );
+            var output = RockFilters.Where( input, "Id", "1", "equal" );
             Assert.That.IsTrue( ( ( List<object> ) output ).Count == 1 );
         }
 
@@ -1714,84 +1353,6 @@ a comment --> sit amet</p>";
             DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
         }
 
-        #region DatesFromICal
-
-        /// <summary>
-        /// For use in Lava -- should return next occurrence for Rock's standard Saturday 4:30PM service datetime.
-        /// </summary>
-        [TestMethod]
-        public void DatesFromICal_OneNextSaturday()
-        {
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
-
-            List<DateTime> expected = new List<DateTime>() { nextSaturday.AddHours( 16.5 ) }; // 4:30:00 PM
-
-            var output = RockFilters.DatesFromICal( iCalStringSaturday430, 1 );
-
-            Assert.That.AreEqual( expected, output );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should return the current Saturday for next year's occurrence for Rock's standard Saturday 4:30PM service datetime.
-        /// </summary>
-        [TestMethod]
-        public void DatesFromICal_NextYearSaturday()
-        {
-            // Get the previous Saturday from today's date, one year on.
-            // The DatesFromICal function only returns occurrences for a maximum of 1 year, so this ensures that our test date will be in the sequence.
-            DateTime today = RockDateTime.Today;
-
-            int daysAfterSaturday = ( int ) today.DayOfWeek + 1;
-            DateTime previousSaturday = today.AddDays( -daysAfterSaturday );
-            DateTime nextYearSaturday = previousSaturday.AddDays( 7 * 52 );
-
-            DateTime expected = nextYearSaturday.AddHours( 16.5 ); // 4:30:00 PM
-
-            var output = RockFilters.DatesFromICal( iCalStringSaturday430, "all" );
-
-            // Test if the output exists in the list of dates, because it may be entry 52 or 53 in the sequence.
-            Assert.That.IsTrue( output.Contains( expected ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should return the end datetime for the next occurrence for Rock's standard Saturday 4:30PM service datetime (which ends at 5:30PM).
-        /// </summary>
-        [TestMethod]
-        public void DatesFromICal_NextEndOccurrenceSaturday()
-        {
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime nextSaturday = today.AddDays( daysUntilSaturday );
-
-            List<DateTime> expected = new List<DateTime>() { DateTime.Parse( nextSaturday.ToShortDateString() + " 5:30:00 PM" ) };
-
-            var output = RockFilters.DatesFromICal( iCalStringSaturday430, null, "enddatetime" );
-            CollectionAssert.AreEquivalent( expected, output );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should find the end datetime (10 AM) occurrence for the fictitious, first Saturday of the month event for Saturday a year from today.
-        /// </summary>
-        [TestMethod]
-        public void DatesFromICal_NextYearsEndOccurrenceSaturday()
-        {
-            // Next year's Saturday (from right now)
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime firstSaturdayThisMonth = today.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
-            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 52 );
-
-            DateTime expected = nextYearSaturday.AddHours( 10 );
-
-            // Get the end datetime of the 13th event in the "First Saturday of the Month" schedule.
-            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" ).LastOrDefault();
-            Assert.That.AreEqual( expected, output );
-        }
-
-        #endregion
-
         #endregion
 
         #region Url
@@ -1943,15 +1504,23 @@ a comment --> sit amet</p>";
         #endregion
 
         #region Lava Test helper methods
+
+        private static ILavaEngine _lavaEngine = null;
+
         private static void AssertTemplateResult( string expected, string template )
         {
-            AssertTemplateResult( expected, template, null );
+            // Tests in this class are only compatible with the DotLiquid engine.
+            // If/when these tests are reworked for the Fluid engine, they should be moved to the Rock.Tests.UnitTests.Lava namespace.
+            if ( _lavaEngine == null )
+            {
+                _lavaEngine = LavaService.NewEngineInstance( typeof( global::Rock.Lava.DotLiquid.DotLiquidEngine ), new LavaEngineConfigurationOptions() );
+            }
+
+            var result = _lavaEngine.RenderTemplate( template );
+
+            Assert.That.AreEqual( expected, result.Text );
         }
 
-        private static void AssertTemplateResult( string expected, string template, Hash localVariables )
-        {
-            Assert.That.AreEqual( expected, Template.Parse( template ).Render( localVariables ) );
-        }
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

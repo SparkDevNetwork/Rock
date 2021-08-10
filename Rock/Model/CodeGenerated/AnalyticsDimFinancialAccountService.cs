@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -81,6 +84,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this AnalyticsDimFinancialAccount object to a new AnalyticsDimFinancialAccount object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static AnalyticsDimFinancialAccount CloneWithoutIdentity( this AnalyticsDimFinancialAccount source )
+        {
+            var target = new AnalyticsDimFinancialAccount();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another AnalyticsDimFinancialAccount object to this AnalyticsDimFinancialAccount object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -114,5 +136,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

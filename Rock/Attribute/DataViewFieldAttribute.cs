@@ -47,7 +47,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the name of the entity type <seealso cref="EntityType"/>
+        /// The EntityType to limit the DataView selection to <seealso cref="EntityType"/>
         /// </summary>
         public string EntityTypeName
         {
@@ -63,7 +63,7 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the type of the entity for this Attribute Category
+        /// The EntityType to limit the DataView selection to
         /// </summary>
         /// <value>
         /// The type of the entity.

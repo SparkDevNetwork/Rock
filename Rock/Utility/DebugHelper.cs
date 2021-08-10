@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+
 using Rock.Data;
 
 namespace Rock
@@ -43,10 +44,38 @@ namespace Rock
         public static double CallMSTotal => Interlocked.Read( ref _callMicrosecondsTotal ) / 1000.0;
         private static long _callMicrosecondsTotal = 0;
 
+        private static StringBuilder _sqlOutput = new StringBuilder();
+
         /// <summary>
         /// Just output timings, don't include the SQL or Stack trace
         /// </summary>
         public static bool TimingsOnly = false;
+
+        /// <summary>
+        /// Returns true if there Logging is actively enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsEnabled { get; private set; } = false;
+
+        private static string SessionId = null;
+
+        /// <summary>
+        /// Limits Debug Output to the current asp.net SessionId
+        /// </summary>
+        /// <param name="enable">if set to <c>true</c> [enable].</param>
+        public static void LimitToSessionId( bool enable = true)
+        {
+            if ( enable )
+            {
+                SessionId = System.Web.HttpContext.Current?.Session?.SessionID;
+            }
+            else
+            {
+                SessionId = null;
+            }
+        }
 
         /// <summary>
         /// The summary only
@@ -161,11 +190,20 @@ namespace Rock
                     return;
                 }
 
+                if ( SessionId.IsNotNullOrWhiteSpace() )
+                {
+                    if ( System.Web.HttpContext.Current?.Session?.SessionID != SessionId )
+                    {
+                        return;
+                    }
+                }
+
                 var incrementedCallCount = Interlocked.Increment( ref DebugHelper._callCounts );
 
                 if ( !TimingsOnly && !SummaryOnly )
                 {
                     StringBuilder sbDebug = GetSQLBlock( command, incrementedCallCount );
+                    _sqlOutput.Append( sbDebug );
                     System.Diagnostics.Debug.Write( sbDebug.ToString() );
                 }
 
@@ -187,7 +225,7 @@ namespace Rock
                 sbDebug.AppendLine( "\n" );
 
                 StackTrace st = new StackTrace( 2, true );
-                var frames = st.GetFrames().Where( a => a.GetFileName() != null );
+                var frames = st.GetFrames().Where( a => a.GetFileName() != null && !a.GetFileName().Contains( "DebugHelper.cs" ) );
 
                 sbDebug.AppendLine( string.Format( "/* Call# {0}*/", incrementedCallCount ) );
 
@@ -275,7 +313,10 @@ namespace Rock
                         var stats = sqlConnection.RetrieveStatistics();
                         sqlConnection.StatisticsEnabled = false;
                         var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
-                        System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
+                        var statsMessage = $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n";
+                        _sqlOutput.Append( statsMessage );
+
+                        System.Diagnostics.Debug.Write( statsMessage );
                     }
 
                     var totalMicroSeconds = ( long ) Math.Round( debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds * 1000 );
@@ -315,6 +356,8 @@ namespace Rock
             _callCounts = 0;
             _callMicrosecondsTotal = 0;
             SQLLoggingStop();
+            IsEnabled = true;
+            _sqlOutput.Clear();
 
             if ( dbContext != null )
             {
@@ -329,10 +372,20 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the SQL output generated since SqlLoggingStart was called
+        /// </summary>
+        /// <returns></returns>
+        public static string GetSqlOutput()
+        {
+            return _sqlOutput.ToString();
+        }
+
+        /// <summary>
         /// Stops logging all EF SQL Calls to the Debug Output Window
         /// </summary>
         public static void SQLLoggingStop()
         {
+            IsEnabled = false;
             if ( _callCounts != 0 )
             {
                 Debug.WriteLine( $"/* ####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{CallMSTotal}, _callMSTotal/_callCounts:{CallMSTotal / _callCounts}#### */" );

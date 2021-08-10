@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,23 +54,74 @@ namespace Rock.Model
         public bool CanDelete( GroupMember item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<GroupMemberAssignment>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberAssignment.FriendlyTypeName );
-                return false;
-            }  
- 
+
+            // ignoring GroupMemberAssignment,GroupMemberId
+
             if ( new Service<GroupMemberHistorical>( Context ).Queryable().Any( a => a.GroupMemberId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupMember.FriendlyTypeName, GroupMemberHistorical.FriendlyTypeName );
                 return false;
-            }  
-            
-            // ignoring RegistrationRegistrant,GroupMemberId 
+            }
+
+            // ignoring RegistrationRegistrant,GroupMemberId
             return true;
         }
     }
+
+    /// <summary>
+    /// GroupMember View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( GroupMember ) )]
+    public partial class GroupMemberViewModelHelper : ViewModelHelper<GroupMember, Rock.ViewModel.GroupMemberViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.GroupMemberViewModel CreateViewModel( GroupMember model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.GroupMemberViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ArchivedByPersonAliasId = model.ArchivedByPersonAliasId,
+                ArchivedDateTime = model.ArchivedDateTime,
+                CommunicationPreference = ( int ) model.CommunicationPreference,
+                DateTimeAdded = model.DateTimeAdded,
+                GroupId = model.GroupId,
+                GroupMemberStatus = ( int ) model.GroupMemberStatus,
+                GroupOrder = model.GroupOrder,
+                GroupRoleId = model.GroupRoleId,
+                GuestCount = model.GuestCount,
+                InactiveDateTime = model.InactiveDateTime,
+                IsArchived = model.IsArchived,
+                IsNotified = model.IsNotified,
+                IsSystem = model.IsSystem,
+                Note = model.Note,
+                PersonId = model.PersonId,
+                ScheduleReminderEmailOffsetDays = model.ScheduleReminderEmailOffsetDays,
+                ScheduleStartDate = model.ScheduleStartDate,
+                ScheduleTemplateId = model.ScheduleTemplateId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -92,6 +146,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this GroupMember object to a new GroupMember object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static GroupMember CloneWithoutIdentity( this GroupMember source )
+        {
+            var target = new GroupMember();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -130,5 +207,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.GroupMemberViewModel ToViewModel( this GroupMember model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new GroupMemberViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

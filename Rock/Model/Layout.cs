@@ -26,11 +26,12 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
     /// <summary>
-    /// A logical representation of a physical html layout (page).  The physical layout controls the zones that 
+    /// A logical representation of a physical HTML layout (page).  The physical layout controls the zones that 
     /// are available for one or more <see cref="Page">Pages</see> to use.  The logical layout is used to configure
     /// which blocks are present in each zone
     /// </summary>
@@ -133,7 +134,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Site Site { get; set; }
 
         /// <summary>
@@ -142,7 +143,7 @@ namespace Rock.Model
         /// <value>
         /// Collection of <see cref="Rock.Model.Page">Pages</see> that use this Layout.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Page> Pages
         {
             get { return _pages ?? ( _pages = new Collection<Page>() ); }

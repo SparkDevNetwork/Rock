@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -67,6 +68,8 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the Id of the Device Type <see cref="Rock.Model.DefinedValue"/>
         /// </value>
         [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
+        
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
@@ -165,7 +168,7 @@ namespace Rock.Model
         /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
         /// where if the device is within the fence, a user would be able to check in from their mobile device.
         /// </remarks>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Location Location { get; set; }
 
         /// <summary>
@@ -174,7 +177,7 @@ namespace Rock.Model
         /// <value>
         /// A collection of <see cref="Rock.Model.Location">Locations</see> that use this device.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual ICollection<Location> Locations
         {
             get { return _locations ?? ( _locations = new Collection<Location>() ); }
@@ -188,7 +191,7 @@ namespace Rock.Model
         /// <value>
         /// The printer that is associated with the device.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Device PrinterDevice { get; set; }
 
         /// <summary>

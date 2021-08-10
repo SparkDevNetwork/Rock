@@ -164,7 +164,7 @@ function() {
                 result = string.Format(
                     "{4}Giving amount total {0} {1} {2}. Date Range: {3}",
                     comparisonType.ConvertToString().ToLower(),
-                    amount.ToString( "C" ),
+                    amount.FormatAsCurrency(),
                     !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
                     SlidingDateRangePicker.FormatDelimitedValues( fakeSlidingDateRangePicker.DelimitedValues ),
                     combineGiving ? "Combined " : string.Empty );
@@ -185,9 +185,7 @@ function() {
 
             var globalAttributes = GlobalAttributesCache.Get();
 
-            NumberBox numberBoxAmount = new NumberBox();
-            numberBoxAmount.PrependText = globalAttributes.GetValue( "CurrencySymbol" ) ?? "$";
-            numberBoxAmount.NumberType = ValidationDataType.Currency;
+            CurrencyBox numberBoxAmount = new CurrencyBox();
             numberBoxAmount.ID = filterControl.ID + "_numberBoxAmount";
             numberBoxAmount.Label = "Amount";
 
@@ -243,7 +241,7 @@ function() {
         public override string GetSelection( Type entityType, Control[] controls )
         {
             string comparisonType = ( ( DropDownList ) controls[0] ).SelectedValue;
-            decimal? amount = ( controls[1] as NumberBox ).Text.AsDecimal();
+            decimal? amount = ( controls[1] as CurrencyBox ).Text.AsDecimal();
 
             var accountIdList = ( controls[2] as AccountPicker ).SelectedValuesAsInt().ToList();
             string accountGuids = string.Empty;
@@ -275,7 +273,7 @@ function() {
             if ( selectionValues.Length >= 4 )
             {
                 var comparisonControl = controls[0] as DropDownList;
-                var numberBox = controls[1] as NumberBox;
+                var numberBox = controls[1] as CurrencyBox;
                 var accountPicker = controls[2] as AccountPicker;
                 var slidingDateRangePicker = controls[3] as SlidingDateRangePicker;
 
@@ -400,7 +398,7 @@ function() {
 
             // Create explicit joins to person alias and person tables so that rendered SQL has an INNER Joins vs OUTER joins on Person and PersonAlias
             var personAliasQry = new PersonAliasService( rockContext ).Queryable();
-            var personQryForJoin = new PersonService( rockContext ).Queryable();
+            var personQryForJoin = new PersonService( rockContext ).Queryable( true );
             var financialTransactionQry = financialTransactionBaseQry
                 .Join( personAliasQry, t => t.AuthorizedPersonAliasId, pa => pa.Id, ( t, pa ) => new
                 {

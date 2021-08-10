@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +24,7 @@ using Rock.Model;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Updates metaphone data when a person is added or updated.
+    /// Updates <see cref="Rock.Model.Metaphone"/> data when a person is added or updated.
     /// </summary>
     public class SaveMetaphoneTransaction : ITransaction
     {
@@ -33,21 +34,21 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="SaveMetaphoneTransaction"/> class.
         /// </summary>
         /// <param name="person">The person.</param>
-        public SaveMetaphoneTransaction(Person person)
+        public SaveMetaphoneTransaction( Person person )
         {
             AddName( person.FirstName );
             AddName( person.NickName );
             AddName( person.LastName );
         }
 
-        private void AddName( string name)
+        private void AddName( string name )
         {
-            if (!string.IsNullOrWhiteSpace(name))
+            if ( !string.IsNullOrWhiteSpace( name ) )
             {
                 string ucName = name.Trim();
-                if (!names.Contains(ucName))
+                if ( !names.Contains( ucName ) )
                 {
-                    names.Add(ucName);
+                    names.Add( ucName );
                 }
             }
         }

@@ -36,12 +36,18 @@
                         <asp:Literal ID="lEventCalendarDescription" runat="server"></asp:Literal>
                     </p>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lDetailsLeft" runat="server" />
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
                 </div>
@@ -64,6 +70,7 @@
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.EventCalendar, Rock" PropertyName="IconCssClass" Label="Calendar CSS Class" />
                         </div>
                         <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIndexCalendar" runat="server" Label="Indexing Enabled" Text="Yes" />
                         </div>
                     </div>
 

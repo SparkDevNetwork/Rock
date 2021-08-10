@@ -17,6 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using Rock.Tasks;
 
 namespace Rock.Model
 {
@@ -43,7 +44,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Report and reset the properties that connect it to the permanent store.
-            var newReport = (Report)( existingReport.Clone( true ) );
+            var newReport = (Report)existingReport.Clone( true );
 
             newReport.Id = 0;
             newReport.Guid = Guid.NewGuid();
@@ -75,15 +76,18 @@ namespace Rock.Model
         /// <param name="timeToRunDurationMilliseconds">The time to run duration milliseconds.</param>
         public static void AddRunReportTransaction( int reportId, int? timeToRunDurationMilliseconds )
         {
-            var transaction = new Rock.Transactions.RunReportTransaction();
-            transaction.ReportId = reportId;
+            var updateReportStatisticsMsg = new UpdateReportStatistics.Message()
+            {
+                ReportId = reportId,
+            };
+
             if ( timeToRunDurationMilliseconds.HasValue )
             {
-                transaction.LastRunDateTime = RockDateTime.Now;
-                transaction.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
+                updateReportStatisticsMsg.LastRunDateTime = RockDateTime.Now;
+                updateReportStatisticsMsg.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
             }
 
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+            updateReportStatisticsMsg.Send();
         }
 
         #endregion Static Methods

@@ -47,6 +47,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the name of the machine.
+        /// </summary>
+        /// <value>
+        /// The name of the machine.
+        /// </value>
+        public static string MachineName
+        {
+            get
+            {
+                return _serviceInstance.MachineName;
+            }
+        }
+
+        /// <summary>
         /// Returns the install path of the Rock application on the host.
         /// </summary>
         public static string PhysicalDirectory
@@ -80,6 +94,20 @@ namespace Rock.Utility.Settings
         }
 
         /// <summary>
+        /// Gets the ASP net version.
+        /// </summary>
+        /// <value>
+        /// The ASP net version.
+        /// </value>
+        public static string AspNetVersion
+        {
+            get
+            {
+                return _serviceInstance.AspNetVersion;
+            }
+        }
+
+        /// <summary>
         /// Gets information about the database configuration for the current Rock instance.
         /// </summary>
         public static RockInstanceDatabaseConfiguration Database
@@ -87,6 +115,31 @@ namespace Rock.Utility.Settings
             get
             {
                 return _serviceInstance.Database;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is clustered.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsClustered
+        {
+            get
+            {
+                return _serviceInstance.IsClustered;
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the rendering engine that is currently used to render Lava templates.
+        /// </summary>
+        public static string LavaEngineName
+        {
+            get
+            {
+                return _serviceInstance.LavaEngineName;
             }
         }
     }

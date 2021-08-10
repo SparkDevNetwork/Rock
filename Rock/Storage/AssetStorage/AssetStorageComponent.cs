@@ -379,10 +379,18 @@ namespace Rock.Storage.AssetStorage
             if ( !File.Exists( thumbnailFilePath ) )
             {
                 virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
-                //thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
             }
 
             return virtualThumbnailFilePath;
+        }
+
+        /// <summary>
+        /// Gets the no asset image.
+        /// </summary>
+        /// <returns></returns>
+        public virtual string GetCorruptImageAssetImage()
+        {
+            return "/Assets/Images/corrupt-image.jpg";
         }
 
         /// <summary>
@@ -563,24 +571,36 @@ namespace Rock.Storage.AssetStorage
         {
             asset = GetObject( assetStorageProvider, asset, false );
 
-            using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
+            try
             {
-                if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
+                using ( var resizedStream = new FileStream( physicalThumbPath, FileMode.Create ) )
                 {
-                    // just save the svg to the thumbnail dir
-                    asset.AssetStream.CopyTo( resizedStream );
-                }
-                else
-                {
-                    using ( var origImageStream = new MemoryStream() )
+                    if ( Path.GetExtension( asset.Name ).Equals( ".svg", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        asset.AssetStream.CopyTo( origImageStream );
-                        origImageStream.Position = 0;
-                        ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                        // just save the svg to the thumbnail dir
+                        asset.AssetStream.CopyTo( resizedStream );
                     }
-                }
+                    else
+                    {
+                        using ( var origImageStream = new MemoryStream() )
+                        {
+                            asset.AssetStream.CopyTo( origImageStream );
+                            origImageStream.Position = 0;
+                            ImageResizer.ImageBuilder.Current.Build( origImageStream, resizedStream, new ImageResizer.ResizeSettings { Width = width ?? 100, Height = height ?? 100 } );
+                        }
+                    }
 
-                resizedStream.Flush();
+                    resizedStream.Flush();
+                }
+            }
+            catch ( ImageResizer.ImageProcessingException )
+            {
+                // This error will happen if the image format is unsupported.
+                ExceptionLogService.LogException( $"Unable to create image thumbnail from stream for AssetStorage provider ({assetStorageProvider.Name}) and thumbnail ({physicalThumbPath})." );
+
+                // This prevents 0KB files and will allow the thumbnail to be created next time it is loaded. It also allows alternate images to be shown instead of the browser broken image link icon.
+                File.Delete( physicalThumbPath );
+                throw;
             }
         }
 

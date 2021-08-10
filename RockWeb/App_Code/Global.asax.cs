@@ -27,8 +27,6 @@ using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -36,6 +34,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
@@ -43,7 +42,7 @@ using Rock.WebStartup;
 namespace RockWeb
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
@@ -119,6 +118,7 @@ namespace RockWeb
         {
             RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
 
+            Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
 
             /* 2020-05-20 MDP
@@ -168,9 +168,6 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Routes" );
 
-                // Perform any Rock startups
-                RunStartups();
-
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
@@ -194,6 +191,10 @@ namespace RockWeb
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
+
+                // Perform any Rock startups
+                RunStartups();
+
             }
             catch ( Exception ex )
             {
@@ -213,6 +214,8 @@ namespace RockWeb
             StartWorkflowActionUpdateAttributesThread();
 
             StartCompileThemesThread();
+
+            Rock.Bus.RockMessageBus.IsRockStarted = true;
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
@@ -300,7 +303,7 @@ namespace RockWeb
         protected void Application_EndRequest( object sender, EventArgs e )
         {
             /*
-            4/28/2019 - JME 
+            4/28/2019 - JME
             The goal of the code below is to ensure that all cookies are set to be secured if
             the request is HTTPS. This is a bit tricky as we don't want to always make them
             secured as the server may not support SSL (development or small organizations).
@@ -309,8 +312,8 @@ namespace RockWeb
             Also, if the Request starts as HTTP and then the site redirects to HTTPS because it
             is required the Session cookie will have been created as unsecured. The code that does
             this redirection has been updated to clear the session cookie so it will be recreated
-            as secured.    
-    
+            as secured.
+
             Reason: Life.Church Request to increase security
             */
 
@@ -495,19 +498,24 @@ namespace RockWeb
         {
             try
             {
+                // Log the reason that the application end was fired
+                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
+
+                // Stop the bus and farm
+                Rock.Bus.RockMessageBus.IsRockStarted = false;
+                Rock.WebFarm.RockWebFarm.Shutdown( shutdownReason );
+
                 // Tell our CompileThemesThread and BlockTypeCompilationThread to cancel if they aren't done when Rock shuts down
                 if ( _threadCancellationTokenSource != null )
                 {
                     _threadCancellationTokenSource.Cancel();
                 }
 
-                // Log the reason that the application end was fired
-                var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
-
                 // Send debug info to debug window
                 System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
 
-                RockApplicationStartupHelper.LogShutdownMessage( "Application Ended: " + shutdownReason );
+                var shutdownMessage = string.Format( "Application Ended: {0} (Process ID: {1})", shutdownReason, Rock.WebFarm.RockWebFarm.ProcessId );
+                RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
 
                 // Close out jobs infrastructure if running under IIS
                 bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
@@ -526,8 +534,8 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
-                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload 
-                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock 
+                // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload
+                // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock
                 // in these cases.
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
@@ -764,7 +772,7 @@ namespace RockWeb
 
                         try
                         {
-                            mergeFields.Add( "Exception", Hash.FromAnonymousObject( ex ) );
+                            mergeFields.Add( "Exception", ex );
                         }
                         catch
                         {
@@ -829,7 +837,7 @@ namespace RockWeb
                     "IISCallBack",
                     60,
                     null,
-                    DateTime.Now.AddSeconds( 60 ),
+                    RockInstanceConfig.SystemDateTime.AddSeconds( 60 ),
                     Cache.NoSlidingExpiration,
                     CacheItemPriority.NotRemovable,
                     _onCacheRemove );
@@ -915,7 +923,7 @@ namespace RockWeb
 
                     var keepAliveUrl = GetKeepAliveUrl();
 
-                    // call a page on the site to keep IIS alive 
+                    // call a page on the site to keep IIS alive
                     if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
                     {
                         try

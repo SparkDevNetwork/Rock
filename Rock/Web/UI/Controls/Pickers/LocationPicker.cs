@@ -20,6 +20,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -153,6 +154,60 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the named picker root location identifier, which will be passed to the Rest endpoint. Leave the default value of 0 to get all locations.
+        /// Note: Setting this property will overwrite any value currently in the ItemPicker.ItemRestUrlExtraParams property.
+        /// </summary>
+        /// <value>
+        /// The named picker root location identifier.
+        /// </value>
+        public int NamedPickerRootLocationId
+        {
+            get
+            {
+                return ( ViewState["NamedPickerRootLocationId"] as string ).AsInteger();
+            }
+            set
+            {
+                ViewState["NamedPickerRootLocationId"] = value.ToString();
+                if ( _namedPicker != null )
+                {
+                    _namedPicker.RootLocationId = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the named location.
+        /// Does nothing if <seealso cref="CurrentPickerMode"/> is not <seealso cref="LocationPickerMode.Named"/>
+        /// </summary>
+        /// <param name="namedLocation">The named location.</param>
+        public void SetNamedLocation( NamedLocationCache namedLocation )
+        {
+            _namedPicker?.SetValueFromLocationId( namedLocation?.Id );
+        }
+
+        /// <summary>
+        /// Gets the named location.
+        /// Returns null if <seealso cref="CurrentPickerMode"/> is not <seealso cref="LocationPickerMode.Named"/>
+        /// </summary>
+        /// <value>
+        /// The named location.
+        /// </value>
+        public NamedLocationCache NamedLocation
+        {
+            get
+            {
+                var namedLocationId = _namedPicker?.SelectedValueAsId();
+                if ( namedLocationId.HasValue )
+                {
+                    return NamedLocationCache.Get( namedLocationId.Value );
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -226,7 +281,7 @@ namespace Rock.Web.UI.Controls
                         }
                     default:
                         {
-                            _namedPicker.SetValue( value );
+                            _namedPicker.SetValueFromLocationId( value?.Id );
                             break;
                         }
                 }
@@ -327,7 +382,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
 
             var currentPickerMode = ViewState["CurrentPickerMode"] as LocationPickerMode?;
-            if (currentPickerMode.HasValue)
+            if ( currentPickerMode.HasValue )
             {
                 this.CurrentPickerMode = currentPickerMode.Value;
             }
@@ -335,10 +390,17 @@ namespace Rock.Web.UI.Controls
             var locationId = ViewState["LocationId"] as int?;
             if ( locationId.HasValue )
             {
-                var location = new LocationService( new RockContext() ).Get( locationId.Value );
-                if ( location != null )
+                if ( currentPickerMode == LocationPickerMode.Named )
                 {
-                    this.Location = location;
+                    SetNamedLocation( NamedLocationCache.Get( locationId.Value ) );
+                }
+                else
+                {
+                    var location = new LocationService( new RockContext() ).Get( locationId.Value );
+                    if ( location != null )
+                    {
+                        this.Location = location;
+                    }
                 }
             }
         }
@@ -352,15 +414,14 @@ namespace Rock.Web.UI.Controls
         protected override object SaveViewState()
         {
             ViewState["CurrentPickerMode"] = this.CurrentPickerMode;
-            
-            var location = this.Location;
-            if ( location != null )
+
+            if ( CurrentPickerMode == LocationPickerMode.Named )
             {
-                ViewState["LocationId"] = location.Id;
+                ViewState["LocationId"] = NamedLocation?.Id;
             }
             else
             {
-                ViewState["LocationId"] = null;
+                ViewState["LocationId"] = Location?.Id;
             }
 
             return base.SaveViewState();
@@ -475,6 +536,7 @@ namespace Rock.Web.UI.Controls
             _namedPicker.ID = this.ID + "_namedPicker";
             _namedPicker.SelectItem += _namedPicker_SelectItem;
             _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;
+            _namedPicker.RootLocationId = this.NamedPickerRootLocationId;
 
             _addressPicker = new LocationAddressPicker();
             _addressPicker.ID = this.ID + "_addressPicker";
@@ -578,7 +640,7 @@ namespace Rock.Web.UI.Controls
             _radAddress.Checked = CurrentPickerMode == LocationPickerMode.Address;
             _radPoint.Checked = CurrentPickerMode == LocationPickerMode.Point;
             _radPolygon.Checked = CurrentPickerMode == LocationPickerMode.Polygon;
-            
+
             _namedPicker.Visible = CurrentPickerMode == LocationPickerMode.Named;
             _namedPicker.ShowDropDown = CurrentPickerMode == LocationPickerMode.Named;
             _namedPicker.IncludeInactive = this.IncludeInactiveNamedLocations;

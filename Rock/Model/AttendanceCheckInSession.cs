@@ -65,13 +65,13 @@ namespace Rock.Model
         public virtual Device Device { get; set; }
 
         /// <summary>
-        /// Gets or sets the attendances associated with this session
+        /// Gets or sets the <see cref="Rock.Model.Attendance">Attendances</see> associated with this session
         /// </summary>
         /// <value>
         /// The attendances.
         /// </value>
         [DataMember]
-        public ICollection<Attendance> Attendances { get; set; }
+        public virtual ICollection<Attendance> Attendances { get; set; }
     }
 
     /// <summary>

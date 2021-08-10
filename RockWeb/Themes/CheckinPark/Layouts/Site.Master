@@ -10,6 +10,7 @@
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.3/dist/confetti.browser.min.js"></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -28,38 +29,74 @@
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
 
     </form>
-
     <script>
-        function checkinSounds() {
-            var tapSound = new Howl({
-                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
-                volume: 0.4
-            });
+        // Init sounds
+        var tapSound = new Howl({
+            src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
+            volume: 0.4
+        });
 
-            var successSound = new Howl({
-                src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+        var successSound = new Howl({
+            src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+            volume: 0.8
+        });
+
+        var confettiSound = new Howl({
+            src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/confetti_gun.mp3") %>' ],
+                volume: 1
+            } );
+
+        var celebrateSound = new Howl( {
+                src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/fanfare_trumpets.mp3") %>' ],
                 volume: 0.8
             });
 
+        // Apply Rock Fade in With Document Ready for Modal Compatibility
+        $(document).ready(function() {
+            // add quick fade-in effect to the page
+            $('body').rockFadeIn();
+        });
+
+        // Use add_load to fire with page load and postbacks
+        Sys.Application.add_load(function() {
+            checkinSounds();
+        });
+
+        function checkinSounds() {
+            // Play success sound when visible.
             if ($('.block-instance.success').length){
                 successSound.play();
             }
 
-            $("a, button").on("click", function(){
-                tapSound.play();
+            // Listen for clicks to play tap sound.
+            // Since add_load can fire multiple times, make sure we aren't already listening.
+            $(document).off('mousedown.sound').on('mousedown.sound', 'a, button', function (event) {
+                // Only fire for left clicks
+                if (event.which === 1) {
+                    tapSound.play();
+                }
             });
+
+            if ($('.checkin-celebrations').length) {
+                setTimeout(
+                    function () {
+                        celebrateSound.play();
+                        confetti({
+                            origin: { y: -0.2 },
+                            angle: -90,
+                            spread: 150,
+                            startVelocity: 30,
+                            particleCount: 200,
+                            decay: 0.95,
+                            colors: [ '#f24730', '#6abfd3', '#ffc639', '#ff9239', '#fc83a3', '#5395e5' ]
+                        });
+                    }, 500);
+                setTimeout(
+                    function () {
+                        confettiSound.play();
+                    }, 800);
+            }
         }
-
-        // add quick fade-in effect to the page
-        $(document).ready(function () {
-            $("body").rockFadeIn();
-
-            checkinSounds();
-
-            $(document).on("shown.bs.modal", function (event) {
-                checkinSounds();
-            });
-        });
     </script>
 </body>
 </html>

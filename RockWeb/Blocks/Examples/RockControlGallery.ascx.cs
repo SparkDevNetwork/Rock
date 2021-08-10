@@ -218,6 +218,7 @@ namespace RockWeb.Blocks.Examples
                 sdrpExample.TimeUnit = SlidingDateRangePicker.TimeUnitType.Week;
                 sdrpExample.NumberOfTimeUnits = 16;
 
+                TagLiteral4.Text = "TagLiteral4: This text is set via code.";
                 BindGrid();
             }
         }

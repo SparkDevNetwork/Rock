@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -32,6 +33,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceFamilyHistorical" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourceFamilyHistorical : AnalyticsSourceFamilyBase<AnalyticsSourceFamilyHistorical>
     {
         // intentionally blank

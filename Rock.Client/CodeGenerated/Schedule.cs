@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AutoInactivateWhenComplete { get; set; }
+
+        /// <summary />
         public int? CategoryId { get; set; }
 
         /// <summary />
@@ -114,6 +117,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Schedule source )
         {
             this.Id = source.Id;
+            this.AutoInactivateWhenComplete = source.AutoInactivateWhenComplete;
             this.CategoryId = source.CategoryId;
             this.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
             this.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;

@@ -43,6 +43,7 @@ using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
+
 using Document = Lucene.Net.Documents.Document;
 
 namespace Rock.UniversalSearch.IndexComponents
@@ -267,7 +268,7 @@ namespace Rock.UniversalSearch.IndexComponents
 
                     if ( indexModelType != null )
                     {
-                        document = (IndexModelBase)jObject.ToObject( indexModelType ); // return the source document as the derived type
+                        document = ( IndexModelBase ) jObject.ToObject( indexModelType ); // return the source document as the derived type
                     }
                     else
                     {
@@ -281,7 +282,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
                 return document;
             }
-            catch { } // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+            catch
+            {
+                // ignore if the result if an exception resulted (most likely cause is getting a result from a non-rock index)
+            }
+
             return null;
         }
         #endregion
@@ -312,7 +317,6 @@ namespace Rock.UniversalSearch.IndexComponents
             get
             {
                 return _path;
-
             }
         }
         #endregion
@@ -500,7 +504,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 var entityTypeService = new EntityTypeService( rockContext );
                 if ( entities == null || entities.Count == 0 )
                 {
-                    //add all entities
+                    // add all entities
                     allEntities = true;
                     var selectedEntityTypes = EntityTypeCache.All().Where( e => e.IsIndexingSupported && e.IsIndexingEnabled && e.FriendlyName != "Site" );
 
@@ -525,144 +529,92 @@ namespace Rock.UniversalSearch.IndexComponents
                 }
 
                 indexModelTypes = indexModelTypes.Distinct().ToList();
-                CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
-
-                if ( entities != null && entities.Count != 0 && !allEntities )
-                {
-                    var indexModelTypesQuery = new BooleanQuery();
-                    indexModelTypes.ForEach( f => indexModelTypesQuery.Add( new TermQuery( new Term( "type", f.Name.ToLower() ) ), Occur.SHOULD ) );
-                    queryContainer.Add( indexModelTypesQuery, Occur.MUST );
-                }
             }
 
-            TopDocs topDocs = null;
-            // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-            PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: combinedFieldAnalyzers );
+            CombineIndexTypes( indexModelTypes, out combinedFields, out combinedFieldAnalyzers );
 
-            if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+            var entityFieldFilter = new BooleanQuery();
+            if ( entities != null && entities.Count != 0 && !allEntities )
             {
                 Occur occur = fieldCriteria.SearchType == CriteriaSearchType.And ? Occur.MUST : Occur.SHOULD;
-                foreach ( var match in fieldCriteria.FieldValues )
+                var indexModelTypesQuery = new BooleanQuery();
+
+                foreach ( var modelType in indexModelTypes )
                 {
-                    BooleanClause booleanClause = new BooleanClause( new TermQuery( new Term( match.Field, match.Value ) ), occur );
-                    booleanClause.Query.Boost = match.Boost;
-                    queryContainer.Add( booleanClause );
+                    var modelFilter = new BooleanQuery();
+                    modelFilter.Add( new TermQuery( new Term( "type", modelType.Name.ToLower() ) ), Occur.MUST );
+
+                    if ( fieldCriteria != null && fieldCriteria.FieldValues?.Count > 0 )
+                    {
+                        var fieldQuery = new BooleanQuery();
+                        foreach ( var field in fieldCriteria.FieldValues )
+                        {
+                            var fieldName = field.Field.Substring( 0, 1 ).ToUpper() + field.Field.Substring( 1 );
+
+                            if ( modelType.GetProperty( fieldName ) != null )
+                            {
+                                // Add field filter
+                                var phraseQuery = new PhraseQuery();
+
+                                foreach ( var word in field.Value.Split( ' ' ) )
+                                {
+                                    phraseQuery.Add( new Term( fieldName, word.ToLower() ) );
+                                }
+
+                                BooleanClause booleanClause = new BooleanClause( phraseQuery, occur );
+                                booleanClause.Query.Boost = field.Boost;
+                                fieldQuery.Add( booleanClause );
+                            }
+                        }
+
+                        if ( fieldQuery.Clauses.Count() > 0 )
+                        {
+                            modelFilter.Add( fieldQuery, Occur.MUST );
+                        }
+                    }
+
+                    indexModelTypesQuery.Add( modelFilter, Occur.SHOULD );
                 }
+
+                entityFieldFilter.Add( indexModelTypesQuery, Occur.MUST );
             }
+
+            queryContainer.Add( entityFieldFilter, Occur.MUST );
 
             switch ( searchType )
             {
                 case SearchType.ExactMatch:
-                {
-                    var wordQuery = new BooleanQuery();
-
-                    if ( !string.IsNullOrWhiteSpace( query ) )
                     {
-                        var words = query.Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries );
-                        foreach ( var word in words )
+                        var wordQuery = new BooleanQuery();
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
                         {
-                            var innerQuery = new BooleanQuery();
-                            combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, word.ToLower() ) ), Occur.SHOULD ) );
-                            wordQuery.Add( innerQuery, Occur.SHOULD );
+                            var words = query.Split( new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries );
+                            foreach ( var word in words )
+                            {
+                                var innerQuery = new BooleanQuery();
+                                combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, word.ToLower() ) ), Occur.SHOULD ) );
+                                wordQuery.Add( innerQuery, Occur.SHOULD );
+                            }
                         }
-                    }
 
-                    if ( wordQuery.Count() != 0 )
-                    {
-                        queryContainer.Add( wordQuery, Occur.MUST );
-                    }
-
-                    // special logic to support emails
-                    if ( query.Contains( "@" ) )
-                    {
-                        queryContainer.Add( new BooleanClause( new TermQuery( new Term( "Email", query ) ), Occur.SHOULD ) );
-                    }
-
-                    // special logic to support phone search
-                    if ( query.IsDigitsOnly() )
-                    {
-                        queryContainer.Add( new BooleanClause( new WildcardQuery( new Term( "PhoneNumbers", "*" + query + "*" ) ), Occur.SHOULD ) );
-                    }
-
-                    // add a search for all the words as one single search term
-                    foreach ( var field in combinedFields )
-                    {
-                        var phraseQuery = new PhraseQuery();
-                        phraseQuery.Add( new Term( field, query.ToLower() ) );
-                        queryContainer.Add( phraseQuery, Occur.SHOULD );
-                    }
-
-                    break;
-                }
-                case SearchType.Fuzzy:
-                {
-                    foreach ( var field in combinedFields )
-                    {
-                        queryContainer.Add( new FuzzyQuery( new Term( field, query.ToLower() ) ), Occur.SHOULD );
-                    }
-
-                    break;
-                }
-                case SearchType.Wildcard:
-                {
-                    bool enablePhraseSearch = true;
-
-                    if ( !string.IsNullOrWhiteSpace( query ) )
-                    {
-                        BooleanQuery wildcardQuery = new BooleanQuery();
-
-                        // break each search term into a separate query and add the * to the end of each
-                        var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+                        if ( wordQuery.Count() != 0 )
+                        {
+                            queryContainer.Add( wordQuery, Occur.MUST );
+                        }
 
                         // special logic to support emails
-                        if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                        if ( query.Contains( "@" ) )
                         {
-                            wildcardQuery.Add( new WildcardQuery( new Term( "Email", "*" + query.ToLower() + "*" ) ), Occur.SHOULD );
-                            enablePhraseSearch = false;
-                        }
-                        else
-                        {
-                            foreach ( var queryTerm in queryTerms )
-                            {
-                                if ( !string.IsNullOrWhiteSpace( queryTerm ) )
-                                {
-                                    var innerQuery = new BooleanQuery();
-                                    combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, queryTerm.ToLower() ) ), Occur.SHOULD ) );
-                                    wildcardQuery.Add( innerQuery, Occur.MUST );
-                                }
-                            }
-
-                            // add special logic to help boost last names
-                            if ( queryTerms.Count() > 1 && ( indexModelTypes.Contains( typeof( PersonIndex ) ) || indexModelTypes.Contains( typeof( BusinessIndex ) ) ) )
-                            {
-                                BooleanQuery nameQuery = new BooleanQuery
-                                    {
-                                        { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                        { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                    };
-                                wildcardQuery.Add( nameQuery, Occur.SHOULD );
-
-                                nameQuery = new BooleanQuery
-                                    {
-                                        { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
-                                        { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
-                                    };
-                                wildcardQuery.Add( nameQuery, Occur.SHOULD );
-                            }
-
-                            // special logic to support phone search
-                            if ( query.IsDigitsOnly() )
-                            {
-                                wildcardQuery.Add( new PrefixQuery( new Term( "PhoneNumbers", queryTerms.First().ToLower() ) ), Occur.SHOULD );
-                            }
+                            queryContainer.Add( new BooleanClause( new TermQuery( new Term( "Email", query ) ), Occur.SHOULD ) );
                         }
 
-                        queryContainer.Add( wildcardQuery, Occur.MUST );
-                    }
+                        // special logic to support phone search
+                        if ( query.IsDigitsOnly() )
+                        {
+                            queryContainer.Add( new BooleanClause( new WildcardQuery( new Term( "PhoneNumbers", "*" + query + "*" ) ), Occur.SHOULD ) );
+                        }
 
-                    // add a search for all the words as one single search term
-                    if ( enablePhraseSearch )
-                    {
                         // add a search for all the words as one single search term
                         foreach ( var field in combinedFields )
                         {
@@ -670,10 +622,91 @@ namespace Rock.UniversalSearch.IndexComponents
                             phraseQuery.Add( new Term( field, query.ToLower() ) );
                             queryContainer.Add( phraseQuery, Occur.SHOULD );
                         }
+
+                        break;
                     }
 
-                    break;
-                }
+                case SearchType.Fuzzy:
+                    {
+                        foreach ( var field in combinedFields )
+                        {
+                            queryContainer.Add( new FuzzyQuery( new Term( field, query.ToLower() ) ), Occur.SHOULD );
+                        }
+
+                        break;
+                    }
+
+                case SearchType.Wildcard:
+                    {
+                        bool enablePhraseSearch = true;
+
+                        if ( !string.IsNullOrWhiteSpace( query ) )
+                        {
+                            BooleanQuery wildcardQuery = new BooleanQuery();
+
+                            // break each search term into a separate query and add the * to the end of each
+                            var queryTerms = query.Split( ' ' ).Select( p => p.Trim() ).ToList();
+
+                            // special logic to support emails
+                            if ( queryTerms.Count == 1 && query.Contains( "@" ) )
+                            {
+                                wildcardQuery.Add( new WildcardQuery( new Term( "Email", "*" + query.ToLower() + "*" ) ), Occur.SHOULD );
+                                enablePhraseSearch = false;
+                            }
+                            else
+                            {
+                                foreach ( var queryTerm in queryTerms )
+                                {
+                                    if ( !string.IsNullOrWhiteSpace( queryTerm ) )
+                                    {
+                                        var innerQuery = new BooleanQuery();
+                                        combinedFields.ForEach( f => innerQuery.Add( new PrefixQuery( new Term( f, queryTerm.ToLower() ) ), Occur.SHOULD ) );
+                                        wildcardQuery.Add( innerQuery, Occur.MUST );
+                                    }
+                                }
+
+                                // add special logic to help boost last names
+                                if ( queryTerms.Count() > 1 && ( indexModelTypes.Contains( typeof( PersonIndex ) ) || indexModelTypes.Contains( typeof( BusinessIndex ) ) ) )
+                                {
+                                    BooleanQuery nameQuery = new BooleanQuery
+                                {
+                                    { new PrefixQuery( new Term( "FirstName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                    { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                };
+                                    wildcardQuery.Add( nameQuery, Occur.SHOULD );
+
+                                    nameQuery = new BooleanQuery
+                                {
+                                    { new PrefixQuery( new Term( "NickName", queryTerms.First().ToLower() ) ), Occur.MUST },
+                                    { new PrefixQuery( new Term( "LastName", queryTerms.Last().ToLower() ) ) { Boost = 30 }, Occur.MUST }
+                                };
+                                    wildcardQuery.Add( nameQuery, Occur.SHOULD );
+                                }
+
+                                // special logic to support phone search
+                                if ( query.IsDigitsOnly() )
+                                {
+                                    wildcardQuery.Add( new PrefixQuery( new Term( "PhoneNumbers", queryTerms.First().ToLower() ) ), Occur.SHOULD );
+                                }
+                            }
+
+                            queryContainer.Add( wildcardQuery, Occur.MUST );
+                        }
+
+                        // add a search for all the words as one single search term
+                        if ( enablePhraseSearch )
+                        {
+                            // add a search for all the words as one single search term
+                            foreach ( var field in combinedFields )
+                            {
+                                var phraseQuery = new PhraseQuery();
+                                phraseQuery.Add( new Term( field, query.ToLower() ) );
+                                queryContainer.Add( phraseQuery, Occur.SHOULD );
+                            }
+                        }
+
+                        break;
+                    }
             }
 
             int returnSize = 10;
@@ -682,8 +715,17 @@ namespace Rock.UniversalSearch.IndexComponents
                 returnSize = size.Value;
             }
 
-            OpenReader();
+            try
+            {
+                OpenReader();
+            }
+            catch ( IndexNotFoundException )
+            {
+                // Issue opening index. Most likely cause is the index is empty so return an empty results set.
+                return new List<IndexModelBase>();
+            }
 
+            TopDocs topDocs = null;
             if ( from.HasValue )
             {
                 TopScoreDocCollector collector = TopScoreDocCollector.Create( returnSize * 10, true ); // Search for 10 pages with returnSize entries in each page
@@ -776,6 +818,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                         typeMappingProperty.Analyzer = string.Empty;
                                         break;
                                     }
+
                                 default:
                                     {
                                         typeMappingProperty.IndexType = attribute.Index;
@@ -796,7 +839,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 {
                                     var tokenizer = new StandardTokenizer( _matchVersion, reader );
                                     var sbpff = new SnowballPorterFilterFactory( new Dictionary<string, string>() { { "language", "English" } } );
-                                    sbpff.Inform(new ClasspathResourceLoader( documentType ) );
+                                    sbpff.Inform( new ClasspathResourceLoader( documentType ) );
                                     TokenStream result = sbpff.Create( new StandardTokenizer( _matchVersion, reader ) );
                                     return new TokenStreamComponents( tokenizer, result ); // https://github.com/apache/lucenenet/blob/master/src/Lucene.Net.Analysis.Common/Analysis/Snowball/SnowballAnalyzer.cs
                                 } );
@@ -870,7 +913,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 doc.AddStoredField( "JSON", document.ToJson() ); // Stores all the properties as JSON to retreive object on lookup
 
                 // Use the analyzer in fieldAnalyzers if that field is in that dictionary, otherwise use StandardAnalyzer.
-                PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion ), fieldAnalyzers: index.FieldAnalyzers );
+                var analyzer = new PerFieldAnalyzerWrapper( defaultAnalyzer: new StandardAnalyzer( _matchVersion, new CharArraySet( _matchVersion, 0, true ) ), fieldAnalyzers: index.FieldAnalyzers );
 
                 OpenWriter();
                 lock ( _lockWriter )
@@ -887,14 +930,13 @@ namespace Rock.UniversalSearch.IndexComponents
                 ExceptionLogService.LogException( ex, context2 );
             }
         }
-#endregion
+        #endregion
 
-/// <summary>
-/// Dispose of the index from memory and close all files.
-/// </summary>
-
-#region Constructors and Destructors
-public static void Dispose()
+        #region Constructors and Destructors
+        /// <summary>
+        /// Dispose of the index from memory and close all files.
+        /// </summary>
+        public static void Dispose()
         {
             lock ( _lockWriter )
             {

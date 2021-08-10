@@ -140,7 +140,7 @@
 
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
-                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security pull-right" />
                     </div>
 
                 </fieldset>
@@ -155,7 +155,7 @@
 
         <Rock:ModalDialog ID="dlgChildContentChannel" runat="server" OnSaveClick="dlgChildContentChannel_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ChildContentChannels">
             <Content>
-                <Rock:RockDropDownList ID="ddlChildContentChannel" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Group Type" ValidationGroup="ChildContentChannels" />
+                <Rock:RockDropDownList ID="ddlChildContentChannel" runat="server" DataTextField="Name" DataValueField="Id" Label="Child Content Channel" ValidationGroup="ChildContentChannels" />
             </Content>
         </Rock:ModalDialog>
 

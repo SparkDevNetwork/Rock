@@ -11,8 +11,6 @@
             var iframeUrl = Rock.settings.get('baseUrl') + "htmleditorplugins/rockfilebrowser";
             iframeUrl += "?RootFolder=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFolderRoot);
             iframeUrl += "&BrowserMode=image";
-            iframeUrl += "&FileTypeBlackList=" + encodeURIComponent(context.options.rockFileBrowserOptions.fileTypeBlackList);
-            iframeUrl += "&ImageFileTypeWhiteList=" + encodeURIComponent(context.options.rockFileBrowserOptions.imageFileTypeWhiteList);
             iframeUrl += "&Theme=" + context.options.rockTheme;
             iframeUrl += "&ModalMode=1";
             iframeUrl += "&Title=Select%20Image";
@@ -32,7 +30,9 @@
                         // iframe returns the result in the format "imageSrcUrl|imageAltText"
                         var resultParts = fileResult.split('|');
                         var imageElement = document.createElement('img');
-                        var url = encodeURI(Rock.settings.get('baseUrl') + resultParts[0]);
+
+                        // Ensure the string is not double-encoded.
+                        var url = encodeURI(decodeURI(Rock.settings.get('baseUrl') + resultParts[0]));
                         var altText = resultParts[1];
                         
                         var imgTarget = context.invoke('editor.restoreTarget');

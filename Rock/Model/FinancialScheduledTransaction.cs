@@ -26,6 +26,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -108,7 +109,7 @@ namespace Rock.Model
         public DateTime? EndDate { get; set; }
 
         /// <summary>
-        /// Gets or sets the the maximum number of times that this payment should repeat in this schedule.  If there is not a set number of payments, this value will be null. 
+        /// Gets or sets the maximum number of times that this payment should repeat in this schedule.  If there is not a set number of payments, this value will be null. 
         /// This property is overridden by the schedule's <see cref="EndDate"/>.
         /// </summary>
         /// <value>
@@ -136,6 +137,28 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastStatusUpdateDateTime { get; set; }
+
+        /// <summary>
+        /// The status of the scheduled transactions provided by the payment gateway (i.e. Active, Cancelled, etc).
+        /// If the gateway doesn't have a status field, this will be null;
+        /// The payment gateway component maps this based on the <seealso cref="StatusMessage"/>.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        [DataMember]
+        public FinancialScheduledTransactionStatus? Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw scheduled transaction status message returned from the Gateway
+        /// If the gateway doesn't have a status field, this will be null;
+        /// </summary>
+        /// <value>
+        /// The status message.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string StatusMessage { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if this scheduled transaction is active.
@@ -218,17 +241,35 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? LastRemindedDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the foreign currency code value identifier.
+        /// </summary>
+        /// <value>
+        /// The foreign currency code value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CURRENCY_CODE )]
+        public int? ForeignCurrencyCodeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactivate date time.
+        /// </summary>
+        /// <value>
+        /// The inactivate date time.
+        /// </value>
+        [DataMember]
+        public DateTime? InactivateDateTime { get; set; }
         #endregion
 
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the authorized person alias.
+        /// Gets or sets the authorized <see cref="Rock.Model.PersonAlias"/>.
         /// </summary>
         /// <value>
         /// The authorized person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias AuthorizedPersonAlias { get; set; }
 
         /// <summary>
@@ -250,7 +291,7 @@ namespace Rock.Model
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway.
+        /// Gets or sets the <see cref="Rock.Model.FinancialGateway">gateway</see>.
         /// </summary>
         /// <value>
         /// The gateway.
@@ -259,7 +300,7 @@ namespace Rock.Model
         public virtual FinancialGateway FinancialGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial payment detail.
+        /// Gets or sets the <see cref="Rock.Model.FinancialPaymentDetail"/>.
         /// </summary>
         /// <value>
         /// The financial payment detail.
@@ -312,7 +353,7 @@ namespace Rock.Model
         /// <value>
         /// The total amount.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public decimal TotalAmount 
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
@@ -472,6 +513,46 @@ namespace Rock.Model
             this.HasOptional( t => t.FinancialPaymentDetail ).WithMany().HasForeignKey( t => t.FinancialPaymentDetailId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// The status of a Scheduled Transaction
+    /// </summary>
+    public enum FinancialScheduledTransactionStatus
+    {
+        /// <summary>
+        /// Scheduled Transaction is operating normally
+        /// </summary>
+        Active = 0,
+
+        /// <summary>
+        /// Scheduled Transaction completed
+        /// </summary>
+        Completed = 1,
+
+        /// <summary>
+        /// Scheduled Transaction is paused
+        /// </summary>
+        Paused = 2,
+
+        /// <summary>
+        /// Scheduled Transaction is cancelled
+        /// </summary>
+        Canceled = 3,
+
+        /// <summary>
+        /// Scheduled Transaction is failed
+        /// </summary>
+        Failed = 4,
+
+        /// <summary>
+        /// Scheduled Transaction is Past Due
+        /// </summary>
+        PastDue = 5
     }
 
     #endregion

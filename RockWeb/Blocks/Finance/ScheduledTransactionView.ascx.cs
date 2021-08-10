@@ -20,7 +20,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -34,10 +36,11 @@ namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// view an existing scheduled transaction.
+    /// This is the *Internal* block for editing scheduled transactions
     /// </summary>
     [DisplayName( "Scheduled Transaction View" )]
     [Category( "Finance" )]
-    [Description( "View an existing scheduled transaction." )]
+    [Description( "View/Edit an existing scheduled transaction." )]
 
     #region Block Attributes
 
@@ -86,13 +89,26 @@ namespace RockWeb.Blocks.Finance
         private static class ViewStateKey
         {
             public const string TransactionDetailsState = "TransactionDetailsState";
+            public const string ForeignCurrencyDefinedValueId = "ForeignCurrencyDefinedValueId";
         }
 
         #endregion ViewStateKeys
 
+        #region Constants
+
+        /// <summary>
+        /// This value is set as the accountId for "fake" financial transaction details
+        /// added to the end of grid sources representing a total/footer row
+        /// </summary>
+        private const int TotalRowAccountId = int.MinValue;
+
+        #endregion
+
         #region Properties
 
         private List<FinancialScheduledTransactionDetail> TransactionDetailsState { get; set; }
+
+        private int? ForeignCurrencyDefinedValueId { get; set; }
 
         private Dictionary<int, string> _financialAccountNameLookup = null;
 
@@ -135,6 +151,8 @@ namespace RockWeb.Blocks.Finance
             {
                 TransactionDetailsState = JsonConvert.DeserializeObject<List<FinancialScheduledTransactionDetail>>( json );
             }
+
+            ForeignCurrencyDefinedValueId = ( int? ) ViewState[ViewStateKey.ForeignCurrencyDefinedValueId];
         }
 
         /// <summary>
@@ -153,6 +171,7 @@ namespace RockWeb.Blocks.Finance
             };
 
             ViewState[ViewStateKey.TransactionDetailsState] = JsonConvert.SerializeObject( TransactionDetailsState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.ForeignCurrencyDefinedValueId] = ForeignCurrencyDefinedValueId;
 
             return base.SaveViewState();
         }
@@ -171,7 +190,6 @@ namespace RockWeb.Blocks.Finance
             gAccountsEdit.Actions.ShowAdd = true;
             gAccountsEdit.Actions.AddClick += gAccountsEdit_AddClick;
             gAccountsEdit.GridRebind += gAccountsEdit_GridRebind;
-            gAccountsEdit.RowDataBound += gAccountsEdit_RowDataBound;
 
             base.OnInit( e );
             string script = @"
@@ -211,8 +229,6 @@ namespace RockWeb.Blocks.Finance
                 ShowView( GetScheduledTransaction() );
             }
         }
-
-
 
         #endregion
 
@@ -384,45 +400,93 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gAccountsView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gAccountsView_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var financialTransactionDetail = ( FinancialScheduledTransactionDetail ) e.Row.DataItem;
+            if ( financialTransactionDetail == null )
+            {
+                return;
+            }
+
+            var lAccountsViewAccountName = e.Row.FindControl( "lAccountsViewAccountName" ) as Literal;
+            lAccountsViewAccountName.Text = FinancialAccountNameLookup.GetValueOrNull( financialTransactionDetail.AccountId );
+
+            var lAccountsViewAmountMinusFeeCoverageAmount = e.Row.FindControl( "lAccountsViewAmountMinusFeeCoverageAmount" ) as Literal;
+            decimal amountMinusFeeCoverageAmount;
+            if ( financialTransactionDetail.FeeCoverageAmount.HasValue )
+            {
+                amountMinusFeeCoverageAmount = financialTransactionDetail.Amount - financialTransactionDetail.FeeCoverageAmount.Value;
+            }
+            else
+            {
+                amountMinusFeeCoverageAmount = financialTransactionDetail.Amount;
+            }
+
+            lAccountsViewAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency( ForeignCurrencyDefinedValueId );
+        }
+
+        /// <summary>
         /// Handles the RowDataBound event of the gAccountsEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gAccountsEdit_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
+            if ( e.Row.RowType != DataControlRowType.DataRow )
             {
-                var account = ( FinancialScheduledTransactionDetail ) e.Row.DataItem;
+                return;
+            }
 
-                // If this is the total row
-                if ( account.AccountId == int.MinValue )
+            var financialTransactionDetail = ( FinancialScheduledTransactionDetail ) e.Row.DataItem;
+
+            // If this is the total row
+            if ( financialTransactionDetail.AccountId == TotalRowAccountId )
+            {
+                // disable the row select on each column
+                foreach ( TableCell cell in e.Row.Cells )
                 {
-                    // disable the row select on each column
-                    foreach ( TableCell cell in e.Row.Cells )
+                    cell.RemoveCssClass( "grid-select-cell" );
+                }
+            }
+
+            var lAccountsEditAccountName = e.Row.FindControl( "lAccountsEditAccountName" ) as Literal;
+            lAccountsEditAccountName.Text = FinancialAccountNameLookup.GetValueOrNull( financialTransactionDetail.AccountId );
+
+            var lAccountsEditAmountMinusFeeCoverageAmount = e.Row.FindControl( "lAccountsEditAmountMinusFeeCoverageAmount" ) as Literal;
+            decimal amountMinusFeeCoverageAmount;
+            if ( financialTransactionDetail.FeeCoverageAmount.HasValue )
+            {
+                amountMinusFeeCoverageAmount = financialTransactionDetail.Amount - financialTransactionDetail.FeeCoverageAmount.Value;
+            }
+            else
+            {
+                amountMinusFeeCoverageAmount = financialTransactionDetail.Amount;
+            }
+
+            lAccountsEditAmountMinusFeeCoverageAmount.Text = amountMinusFeeCoverageAmount.FormatAsCurrency( ForeignCurrencyDefinedValueId );
+
+            // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
+            if ( financialTransactionDetail.EntityTypeId.HasValue || financialTransactionDetail.AccountId == TotalRowAccountId )
+            {
+                // Hide the edit button if this is the total row
+                if ( financialTransactionDetail.AccountId == TotalRowAccountId )
+                {
+                    var editBtn = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    if ( editBtn != null )
                     {
-                        cell.RemoveCssClass( "grid-select-cell" );
+                        editBtn.Visible = false;
                     }
                 }
 
-                // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
-                if ( account.EntityTypeId.HasValue || account.AccountId == int.MinValue )
+                // Hide the delete button
+                var deleteBtn = e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                if ( deleteBtn != null )
                 {
-                    // Hide the edit button if this is the total row
-                    if ( account.AccountId == int.MinValue )
-                    {
-                        var editBtn = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-                        if ( editBtn != null )
-                        {
-                            editBtn.Visible = false;
-                        }
-                    }
-
-                    // Hide the delete button
-                    var deleteBtn = e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-                    if ( deleteBtn != null )
-                    {
-                        deleteBtn.Visible = false;
-                    }
+                    deleteBtn.Visible = false;
                 }
             }
         }
@@ -499,7 +563,9 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 financialTransactionDetail.AccountId = apAccount.SelectedValue.AsInteger();
-                financialTransactionDetail.Amount = tbAccountAmount.Text.AsDecimal();
+                var feeCoverageAmount = tbAccountFeeCoverageAmount.Value;
+                financialTransactionDetail.Amount = ( tbAccountAmountMinusFeeCoverageAmount.Value ?? 0.0M ) + ( feeCoverageAmount ?? 0.00M );
+                financialTransactionDetail.FeeCoverageAmount = feeCoverageAmount;
                 financialTransactionDetail.Summary = tbAccountSummary.Text;
 
                 financialTransactionDetail.LoadAttributes();
@@ -546,7 +612,7 @@ namespace RockWeb.Blocks.Finance
                 if ( financialScheduledTransaction.TotalAmount != totalAmount )
                 {
                     nbError.Title = "Incorrect Amount";
-                    nbError.Text = string.Format( "<p>When updating account allocations, the total amount needs to remain the same as the original amount ({0}).</p>", financialScheduledTransaction.TotalAmount.FormatAsCurrency() );
+                    nbError.Text = string.Format( "<p>When updating account allocations, the total amount needs to remain the same as the original amount ({0}).</p>", financialScheduledTransaction.TotalAmount.FormatAsCurrency( financialScheduledTransaction.ForeignCurrencyCodeValueId ) );
                     nbError.Visible = true;
                     return;
                 }
@@ -585,6 +651,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         if ( financialTransactionDetail.AccountId != editorTxnDetail.AccountId ||
                             financialTransactionDetail.Amount != editorTxnDetail.Amount ||
+                            financialTransactionDetail.FeeCoverageAmount != editorTxnDetail.FeeCoverageAmount ||
                             financialTransactionDetail.Summary != editorTxnDetail.Summary )
                         {
                             accountChanges = true;
@@ -593,6 +660,7 @@ namespace RockWeb.Blocks.Finance
 
                     financialTransactionDetail.AccountId = editorTxnDetail.AccountId;
                     financialTransactionDetail.Amount = editorTxnDetail.Amount;
+                    financialTransactionDetail.FeeCoverageAmount = editorTxnDetail.FeeCoverageAmount;
                     financialTransactionDetail.Summary = editorTxnDetail.Summary;
                 }
 
@@ -659,8 +727,26 @@ namespace RockWeb.Blocks.Finance
                 return;
             }
 
-            hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
-            hlStatus.LabelType = financialScheduledTransaction.IsActive ? LabelType.Success : LabelType.Danger;
+            ForeignCurrencyDefinedValueId = financialScheduledTransaction.ForeignCurrencyCodeValueId;
+
+            if ( financialScheduledTransaction.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now )
+            {
+                // Show that card is expired
+                hlStatus.Text = "Card Expired";
+                hlStatus.LabelType = LabelType.Warning;
+            }
+            else if ( financialScheduledTransaction.Status.HasValue && financialScheduledTransaction.Status != FinancialScheduledTransactionStatus.Active )
+            {
+                // show that that the gateway reported another problem 
+                hlStatus.Text = financialScheduledTransaction.Status.ConvertToString();
+                hlStatus.LabelType = LabelType.Warning;
+            }
+            else 
+            {
+
+                hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
+                hlStatus.LabelType = financialScheduledTransaction.IsActive ? LabelType.Success : LabelType.Danger;
+            }
 
             string rockUrlRoot = ResolveRockUrl( "/" );
             Person person = null;
@@ -672,7 +758,7 @@ namespace RockWeb.Blocks.Finance
             var detailsLeft = new DescriptionList().Add( "Person", person );
 
             var detailsRight = new DescriptionList()
-                .Add( "Amount", ( financialScheduledTransaction.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M ).FormatAsCurrency() )
+                .Add( "Amount", ( financialScheduledTransaction.ScheduledTransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M ).FormatAsCurrency( ForeignCurrencyDefinedValueId ) )
                 .Add( "Frequency", financialScheduledTransaction.TransactionFrequencyValue != null ? financialScheduledTransaction.TransactionFrequencyValue.Value : string.Empty )
                 .Add( "Start Date", financialScheduledTransaction.StartDate.ToShortDateString() )
                 .Add( "End Date", financialScheduledTransaction.EndDate.HasValue ? financialScheduledTransaction.EndDate.Value.ToShortDateString() : string.Empty )
@@ -690,7 +776,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     // Credit Card
                     paymentMethodDetails.Add( "Type", currencyType.Value + ( financialScheduledTransaction.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + financialScheduledTransaction.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty ) );
-                    paymentMethodDetails.Add( "Name on Card", financialScheduledTransaction.FinancialPaymentDetail.NameOnCard.Trim() );
+                    paymentMethodDetails.Add( "Name on Card", financialScheduledTransaction.FinancialPaymentDetail.NameOnCard?.Trim() );
                     paymentMethodDetails.Add( "Account Number", financialScheduledTransaction.FinancialPaymentDetail.AccountNumberMasked );
                     paymentMethodDetails.Add( "Expires", financialScheduledTransaction.FinancialPaymentDetail.ExpirationDate );
                 }
@@ -792,7 +878,8 @@ namespace RockWeb.Blocks.Finance
             if ( txnDetail != null )
             {
                 apAccount.SetValue( txnDetail.AccountId );
-                tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
+                SetAccountAmountMinusFeeCoverageTextboxText( tbAccountAmountMinusFeeCoverageAmount, txnDetail );
+                SetAccountFeeCoverageAmountTextboxText( tbAccountFeeCoverageAmount, txnDetail );
                 tbAccountSummary.Text = txnDetail.Summary;
 
                 if ( txnDetail.Attributes == null )
@@ -803,7 +890,8 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 apAccount.SetValue( null );
-                tbAccountAmount.Text = string.Empty;
+                tbAccountAmountMinusFeeCoverageAmount.Value = null;
+                tbAccountFeeCoverageAmount.Value = null;
                 tbAccountSummary.Text = string.Empty;
 
                 txnDetail = new FinancialScheduledTransactionDetail();
@@ -892,15 +980,49 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         /// <summary>
-        /// Handles the DataBound event of the lAccountName control.
+        /// Sets the account amount minus fee coverage textbox text.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void lAccountName_DataBound( object sender, RowEventArgs e )
+        /// <param name="tbAccountAmount">The tb account amount.</param>
+        /// <param name="transactionDetail">The transaction detail.</param>
+        private void SetAccountAmountMinusFeeCoverageTextboxText( CurrencyBox tbAccountAmountMinusFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
         {
-            FinancialScheduledTransactionDetail financialScheduledTransactionDetail = e.Row.DataItem as FinancialScheduledTransactionDetail;
-            Literal lAccountName = sender as Literal;
-            lAccountName.Text = FinancialAccountNameLookup.GetValueOrNull( financialScheduledTransactionDetail.AccountId );
+            /* 2021-01-28 MDP
+
+              FinancialScheduledTransactionDetail.Amount includes the FeeCoverageAmount.
+              For example, if a person scheduld to gave $100.00 but elected to pay $1.80 to cover the fee.
+              FinancialScheduledTransactionDetail.Amount would be stored as $101.80 and
+              FinancialScheduledTransactionDetail.FeeCoverageAmount would be stored as $1.80.
+
+              However, when the FinancialScheduledTransactionDetail.Amount is used in this EditBox,
+              don't include the FinanciaFinancialScheduledTransactionDetaillTransactionDetail.FeeCoverageAmount.
+              So in the above example, the Textbox would say $100.00
+             
+             */
+
+            var feeCoverageAmount = transactionDetail.FeeCoverageAmount;
+            var accountAmount = transactionDetail.Amount;
+            tbAccountAmountMinusFeeCoverageAmount.CurrencyCodeDefinedValueId = ForeignCurrencyDefinedValueId ?? 0;
+
+            if ( feeCoverageAmount.HasValue )
+            {
+                tbAccountAmountMinusFeeCoverageAmount.Value = ( accountAmount - feeCoverageAmount.Value );
+            }
+            else
+            {
+                tbAccountAmountMinusFeeCoverageAmount.Value = accountAmount;
+            }
+        }
+
+        /// <summary>
+        /// Sets the account fee coverage amount textbox text.
+        /// </summary>
+        /// <param name="tbAccountFeeCoverageAmount">The tb account fee coverage amount.</param>
+        /// <param name="transactionDetail">The transaction detail.</param>
+        private void SetAccountFeeCoverageAmountTextboxText( CurrencyBox tbAccountFeeCoverageAmount, FinancialScheduledTransactionDetail transactionDetail )
+        {
+            tbAccountFeeCoverageAmount.CurrencyCodeDefinedValueId = ForeignCurrencyDefinedValueId ?? 0;
+            tbAccountFeeCoverageAmount.Value = transactionDetail.FeeCoverageAmount;
+            tbAccountFeeCoverageAmount.Visible = transactionDetail.FeeCoverageAmount.HasValue;
         }
     }
 }

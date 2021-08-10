@@ -13,18 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -86,7 +87,7 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Grid Events (main grid)
 
@@ -163,7 +164,6 @@ namespace RockWeb.Blocks.Core
                     }
 
                     break;
-
             }
         }
 
@@ -195,21 +195,21 @@ namespace RockWeb.Blocks.Core
         protected void gDevice_Delete( object sender, RowEventArgs e )
         {
             var rockContext = new RockContext();
-            DeviceService DeviceService = new DeviceService( rockContext );
-            Device Device = DeviceService.Get( e.RowKeyId );
+            DeviceService deviceService = new DeviceService( rockContext );
+            Device device = deviceService.Get( e.RowKeyId );
 
-            if ( Device != null )
+            if ( device != null )
             {
-                int deviceId = Device.Id;
+                int deviceId = device.Id;
 
                 string errorMessage;
-                if ( !DeviceService.CanDelete( Device, out errorMessage ) )
+                if ( !deviceService.CanDelete( device, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
-                DeviceService.Delete( Device );
+                deviceService.Delete( device );
                 rockContext.SaveChanges();
 
                 Rock.CheckIn.KioskDevice.Remove( deviceId );
@@ -228,7 +228,35 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
-        #endregion
+        /// <summary>
+        /// Handles the RowDataBound event of the gDevice control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gDevice_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            DeviceInfo device = e.Row.DataItem as DeviceInfo;
+            if ( device == null )
+            {
+                return;
+            }
+
+            var deviceTypeValueIdKiosk = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
+            if ( device.DeviceTypeValueId != deviceTypeValueIdKiosk )
+            {
+                // Print settings only apply to Checkin Kiosks, so if this isn't a Check-in Kiosk, don't populate the Printer settings columns
+                return;
+            }
+
+            var lPrintToOverride = e.Row.FindControl( "lPrintToOverride" ) as Literal;
+            var lPrintFrom = e.Row.FindControl( "lPrintFrom" ) as Literal;
+            var lPrinterDeviceName = e.Row.FindControl( "lPrinterDeviceName" ) as Literal;
+            lPrintToOverride.Text = device.PrintToOverride.ConvertToString();
+            lPrintFrom.Text = device.PrintFrom.ConvertToString();
+            lPrinterDeviceName.Text = device.PrinterDeviceName;
+        }
+
+        #endregion Grid Events (main grid)
 
         #region Internal Methods
 
@@ -249,8 +277,7 @@ namespace RockWeb.Blocks.Core
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
                     a.IsGridColumn &&
-                    a.EntityTypeQualifierColumn == string.Empty
-                    )
+                    a.EntityTypeQualifierColumn == string.Empty )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
@@ -328,7 +355,6 @@ namespace RockWeb.Blocks.Core
             string name = fDevice.GetUserPreference( "Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )
             {
-
                 queryable = queryable.Where( d => d.Name.Contains( name ) );
             }
 
@@ -347,7 +373,6 @@ namespace RockWeb.Blocks.Core
             if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print To" ) ) )
             {
                 PrintTo printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), fDevice.GetUserPreference( "Print To" ) );
-                ;
                 queryable = queryable.Where( d => d.PrintToOverride == printTo );
             }
 
@@ -360,7 +385,6 @@ namespace RockWeb.Blocks.Core
             if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print From" ) ) )
             {
                 PrintFrom printFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), fDevice.GetUserPreference( "Print From" ) );
-                ;
                 queryable = queryable.Where( d => d.PrintFrom == printFrom );
             }
 
@@ -382,18 +406,18 @@ namespace RockWeb.Blocks.Core
             queryable.ToList().ForEach( d => gDevice.ObjectList.Add( d.Id.ToString(), d ) );
 
             var gridList = queryable.Select( a =>
-                new
+                new DeviceInfo
                 {
-                    a.Id,
-                    a.Name,
+                    Id = a.Id,
+                    Name = a.Name,
                     DeviceTypeName = a.DeviceType.Value,
-                    a.IPAddress,
-                    a.PrintToOverride,
-                    a.PrintFrom,
+                    IPAddress = a.IPAddress,
+                    PrintToOverride = a.PrintToOverride,
+                    PrintFrom = a.PrintFrom,
                     PrinterDeviceName = a.PrinterDevice.Name,
-                    a.PrinterDeviceId,
-                    a.DeviceTypeValueId,
-                    a.IsActive
+                    PrinterDeviceTypeId = a.PrinterDeviceId,
+                    DeviceTypeValueId = a.DeviceTypeValueId,
+                    IsActive = a.IsActive
                 } );
 
             if ( sortProperty != null )
@@ -409,6 +433,33 @@ namespace RockWeb.Blocks.Core
             gDevice.DataBind();
         }
 
-        #endregion
+        #endregion Internal Methods
+
+        #region Classes
+
+        private class DeviceInfo : RockDynamic
+        {
+            public int Id { get; internal set; }
+
+            public string Name { get; internal set; }
+
+            public string DeviceTypeName { get; internal set; }
+
+            public string IPAddress { get; internal set; }
+
+            public PrintTo PrintToOverride { get; internal set; }
+
+            public string PrinterDeviceName { get; internal set; }
+
+            public int? PrinterDeviceTypeId { get; internal set; }
+
+            public PrintFrom PrintFrom { get; internal set; }
+
+            public int DeviceTypeValueId { get; internal set; }
+
+            public bool IsActive { get; internal set; }
+        }
+
+        #endregion Classes
     }
 }

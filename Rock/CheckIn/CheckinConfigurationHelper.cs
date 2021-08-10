@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -43,6 +44,8 @@ namespace Rock.CheckIn
                 return false;
             }
         }
+
+        private static string _rockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionFullName();
 
         /// <summary>
         /// Gets the local device configuration status.
@@ -70,18 +73,15 @@ namespace Rock.CheckIn
 
             CheckinConfigurationHelper.CheckinStatus checkinStatus = CheckinConfigurationHelper.GetCheckinStatus( checkInState );
 
-            var rockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionFullName();
-
             CheckIn.CheckinType checkinType = new Rock.CheckIn.CheckinType( localDeviceConfiguration.CurrentCheckinTypeId.Value );
 
             var configurationData = new
             {
                 CheckinType = checkinType,
                 IsMobileAndExpired = isMobileAndExpired,
-                Kiosk = kiosk,
                 CheckinStatus = checkinStatus,
                 NextActiveDateTime = nextActiveDateTime,
-                RockVersion = rockVersion
+                RockVersion = _rockVersion
             };
 
             var configurationString = configurationData.ToJson();
@@ -94,7 +94,7 @@ namespace Rock.CheckIn
 
             LocalDeviceConfigurationStatus localDeviceConfigurationStatus = new LocalDeviceConfigurationStatus();
 
-            localDeviceConfigurationStatus.ConfigurationHash = Rock.Security.Encryption.GetSHA1Hash( configurationString );
+            localDeviceConfigurationStatus.ConfigurationHash = configurationString.XxHash();
             localDeviceConfigurationStatus.ServerCurrentDateTime = RockDateTime.Now;
             localDeviceConfigurationStatus.CampusCurrentDateTime = campusCurrentDateTime;
             localDeviceConfigurationStatus.NextActiveDateTime = nextActiveDateTime;

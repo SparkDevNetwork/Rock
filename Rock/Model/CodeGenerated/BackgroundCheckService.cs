@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,6 +59,55 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// BackgroundCheck View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( BackgroundCheck ) )]
+    public partial class BackgroundCheckViewModelHelper : ViewModelHelper<BackgroundCheck, Rock.ViewModel.BackgroundCheckViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.BackgroundCheckViewModel CreateViewModel( BackgroundCheck model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.BackgroundCheckViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                PackageName = model.PackageName,
+                PersonAliasId = model.PersonAliasId,
+                ProcessorEntityTypeId = model.ProcessorEntityTypeId,
+                RecordFound = model.RecordFound,
+                RequestDate = model.RequestDate,
+                RequestId = model.RequestId,
+                ResponseData = model.ResponseData,
+                ResponseDate = model.ResponseDate,
+                ResponseDocumentId = model.ResponseDocumentId,
+                ResponseId = model.ResponseId,
+                Status = model.Status,
+                WorkflowId = model.WorkflowId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
+
+    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class BackgroundCheckExtensionMethods
@@ -78,6 +130,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this BackgroundCheck object to a new BackgroundCheck object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static BackgroundCheck CloneWithoutIdentity( this BackgroundCheck source )
+        {
+            var target = new BackgroundCheck();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -110,5 +185,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.BackgroundCheckViewModel ToViewModel( this BackgroundCheck model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new BackgroundCheckViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

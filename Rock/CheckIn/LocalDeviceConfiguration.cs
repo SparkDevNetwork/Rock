@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Web.Cache;
-using static Rock.Security.Authorization;
+using Rock.Security;
+using Rock.Web.UI;
 
 namespace Rock.CheckIn
 {
@@ -46,7 +46,8 @@ namespace Rock.CheckIn
         public int? CurrentKioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the current checkin type identifier (which is a <see cref="Rock.Model.GroupType" />)
+        /// Gets or sets the current 'Check-in Configuration' Id (which is a <see cref="Rock.Model.GroupType" /> Id).
+        /// For example "Weekly Service Check-in".
         /// </summary>
         /// <value>
         /// The current checkin type identifier.
@@ -131,21 +132,26 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Saves the LocalDeviceConfig to the <seealso cref="CheckInCookieKey.LocalDeviceConfig"/> cookie
+        /// Saves the LocalDeviceConfig to the cookie.
         /// </summary>
         /// <param name="page">The page.</param>
+        [Obsolete( "Use SaveToCookie( ) instead." )]
+        [RockObsolete( "1.12" )]
         public void SaveToCookie( System.Web.UI.Page page )
         {
-            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting;
+            SaveToCookie();
+        }
 
-            var localDeviceConfigCookie = new System.Web.HttpCookie( CheckInCookieKey.LocalDeviceConfig );
-            localDeviceConfigCookie.Expires = RockDateTime.Now.AddYears( 1 );
-            localDeviceConfigCookie.Value = this.ToJson( Newtonsoft.Json.Formatting.None );
-            localDeviceConfigCookie.Path += sameSiteCookieValue;
+        /// <summary>
+        /// Saves to cookie.
+        /// We are now encrypting this cookie see Asana: REF# 20210224-MSB1 for details.
+        /// </summary>
+        public void SaveToCookie()
+        {
+            var localDeviceConfigValue = this.ToJson( indentOutput: false );
+            var encryptedValue = Encryption.EncryptString( localDeviceConfigValue );
 
-            page.Request.Cookies.Remove(CheckInCookieKey.LocalDeviceConfig);
-            page.Response.Cookies.Add( localDeviceConfigCookie );
+            RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, encryptedValue, RockDateTime.Now.AddYears( 1 ) );
         }
 
         /// <summary>
@@ -153,10 +159,37 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns></returns>
-        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page )
+        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page)
         {
-            var localDeviceConfigCookie = page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig];
-            return localDeviceConfigCookie?.Value?.FromJsonOrNull<LocalDeviceConfiguration>();
+            return GetFromCookie( page, false );
+        }
+
+        /// <summary>
+        /// Gets from cookie.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="loadUnencryptedCookie">if set to <c>true</c> [load unencrypted cookie].</param>
+        /// <returns></returns>
+        public LocalDeviceConfiguration GetFromCookie( System.Web.UI.Page page, bool loadUnencryptedCookie )
+        {
+            /*
+                02.24.2021 MSB
+                Asana: REF# 20210224-MSB1
+                As of v13 the cookie is now encrypted, but for Admin.ascx we want to be able to handle the old
+                unencrypted cookie. So we look for it and encrypt it if it exists.
+
+                Reason: Backwards Compatibility
+            */
+
+            var localDeviceConfigCookie = page.Request.Cookies[CheckInCookieKey.LocalDeviceConfig]?.Value ?? string.Empty;
+            if ( loadUnencryptedCookie && localDeviceConfigCookie.IsNotNullOrWhiteSpace() && localDeviceConfigCookie.Contains( "CurrentKioskId" ) )
+            {
+                return localDeviceConfigCookie.FromJsonOrNull<LocalDeviceConfiguration>();
+            }
+
+            var decryptedValue = Encryption.DecryptString( localDeviceConfigCookie );
+
+            return decryptedValue.FromJsonOrNull<LocalDeviceConfiguration>();
         }
     }
 

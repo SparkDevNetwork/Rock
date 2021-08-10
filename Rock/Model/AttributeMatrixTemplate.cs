@@ -142,7 +142,7 @@ namespace Rock.Model
         /// The attribute matrices.
         /// </value>
         [DataMember]
-        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+        public virtual ICollection<AttributeMatrix> AttributeMatrices { get; set; }
 
         #endregion 
     }

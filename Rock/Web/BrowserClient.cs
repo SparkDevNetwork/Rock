@@ -14,8 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using DotLiquid;
-
+using Rock.Utility;
 using UAParser;
 
 namespace Rock.Web
@@ -23,7 +22,7 @@ namespace Rock.Web
     /// <summary>
     /// Class to hold details about a
     /// </summary>
-    public class BrowserClient : DotLiquid.Drop
+    public class BrowserClient : RockDynamic
     {
         /// <summary>
         /// Gets or sets the type of the client.
@@ -53,8 +52,7 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser
     /// </summary>
-    /// <seealso cref="DotLiquid.Drop" />
-    public class BrowserInfo : Drop
+    public class BrowserInfo : RockDynamic
     {
         private ClientInfo _client = null;
 
@@ -164,7 +162,7 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser's OS
     /// </summary>
-    public class BrowserOS : Drop
+    public class BrowserOS : RockDynamic
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowserOS"/> class.
@@ -238,8 +236,7 @@ namespace Rock.Web
     /// <summary>
     /// Information about the browser device
     /// </summary>
-    /// <seealso cref="DotLiquid.Drop" />
-    public class BrowserDevice : Drop
+    public class BrowserDevice : RockDynamic
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowserDevice"/> class.
@@ -293,7 +290,7 @@ namespace Rock.Web
     /// <summary>
     /// The browser Agent
     /// </summary>
-    public class BrowserUserAgent : Drop
+    public class BrowserUserAgent : RockDynamic
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowserUserAgent"/> class.

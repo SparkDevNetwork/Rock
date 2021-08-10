@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.CheckIn
         private void SavePhoneCookie( string phoneNumber )
         {
             HttpCookie phoneCookie = new HttpCookie( CheckInCookieKey.PhoneNumber, phoneNumber );
-            Response.Cookies.Set( phoneCookie );
+            Rock.Web.UI.RockPage.AddOrUpdateCookie( phoneCookie );
         }
 
         /// <summary>

@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,6 +59,54 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// RegistrationTemplateDiscount View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( RegistrationTemplateDiscount ) )]
+    public partial class RegistrationTemplateDiscountViewModelHelper : ViewModelHelper<RegistrationTemplateDiscount, Rock.ViewModel.RegistrationTemplateDiscountViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.RegistrationTemplateDiscountViewModel CreateViewModel( RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.RegistrationTemplateDiscountViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                AutoApplyDiscount = model.AutoApplyDiscount,
+                Code = model.Code,
+                DiscountAmount = model.DiscountAmount,
+                DiscountPercentage = model.DiscountPercentage,
+                EndDate = model.EndDate,
+                MaxRegistrants = model.MaxRegistrants,
+                MaxUsage = model.MaxUsage,
+                MinRegistrants = model.MinRegistrants,
+                Order = model.Order,
+                RegistrationTemplateId = model.RegistrationTemplateId,
+                StartDate = model.StartDate,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
+
+    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class RegistrationTemplateDiscountExtensionMethods
@@ -78,6 +129,29 @@ namespace Rock.Model
                 target.CopyPropertiesFrom( source );
                 return target;
             }
+        }
+
+        /// <summary>
+        /// Clones this RegistrationTemplateDiscount object to a new RegistrationTemplateDiscount object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static RegistrationTemplateDiscount CloneWithoutIdentity( this RegistrationTemplateDiscount source )
+        {
+            var target = new RegistrationTemplateDiscount();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
         }
 
         /// <summary>
@@ -109,5 +183,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.RegistrationTemplateDiscountViewModel ToViewModel( this RegistrationTemplateDiscount model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new RegistrationTemplateDiscountViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

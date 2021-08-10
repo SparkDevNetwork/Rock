@@ -98,6 +98,9 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
+        public bool IsDateRequired { get; set; }
+
+        /// <summary />
         public string MergeTemplateDescriptor { get; set; }
 
         /// <summary />
@@ -165,6 +168,7 @@ namespace Rock.Client
             this.HighlightColor = source.HighlightColor;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
+            this.IsDateRequired = source.IsDateRequired;
             this.MergeTemplateDescriptor = source.MergeTemplateDescriptor;
             this.MergeTemplateId = source.MergeTemplateId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using DotLiquid;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -31,6 +30,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using System.Collections.Generic;
 using System.Web;
+using Rock.Lava;
+using DotLiquid;
 
 namespace RockWeb.Blocks.Core
 {
@@ -98,7 +99,7 @@ namespace RockWeb.Blocks.Core
                 Page.ModelState.AddModelError( "DuplicateTag", "Tag with the same name is already in use." );
                 return;
             }
-            
+
             if ( lavaShortCode == 0 )
             {
                 lavaShortcode = new LavaShortcode();
@@ -109,37 +110,52 @@ namespace RockWeb.Blocks.Core
                 lavaShortcode = lavaShortCodeService.Get( lavaShortCode );
             }
 
+            var oldTagName = hfOriginalTagName.Value;
+
             lavaShortcode.Name = tbLavaShortcodeName.Text;
             lavaShortcode.IsActive = cbIsActive.Checked;
             lavaShortcode.Description = tbDescription.Text;
             lavaShortcode.Documentation = htmlDocumentation.Text;
             lavaShortcode.TagType = rblTagType.SelectedValueAsEnum<TagType>();
-            lavaShortcode.TagName = tbTagName.Text;
+            lavaShortcode.TagName = tbTagName.Text.Trim();
             lavaShortcode.Markup = ceMarkup.Text;
             lavaShortcode.Parameters = kvlParameters.Value;
-            lavaShortcode.EnabledLavaCommands = String.Join(",", lcpLavaCommands.SelectedLavaCommands);
+            lavaShortcode.EnabledLavaCommands = String.Join( ",", lcpLavaCommands.SelectedLavaCommands );
 
             rockContext.SaveChanges();
 
-            // unregister shortcode
-            if ( hfOriginalTagName.Value.IsNotNullOrWhiteSpace() )
+            if ( LavaService.RockLiquidIsEnabled )
             {
-                Template.UnregisterShortcode( hfOriginalTagName.Value );
+                // unregister shortcode
+                if ( oldTagName.IsNotNullOrWhiteSpace() )
+                {
+                    Template.UnregisterShortcode( oldTagName );
+                }
+
+                // Register the new shortcode definition. Note that RockLiquid shortcode tags are case-sensitive.
+                if ( lavaShortcode.TagType == TagType.Block )
+                {
+                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( lavaShortcode.TagName );
+                }
+                else
+                {
+                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( lavaShortcode.TagName );
+                }
+
+                // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
+                // usage of this shortcode is cached with a key we can't predict.
+                LavaTemplateCache.Clear();
             }
 
-            // register shortcode
-            if ( lavaShortcode.TagType == TagType.Block )
+            if ( oldTagName.IsNotNullOrWhiteSpace() )
             {
-                Template.RegisterShortcode<DynamicShortcodeBlock>( lavaShortcode.TagName );
-            }
-            else
-            {
-                Template.RegisterShortcode<DynamicShortcodeInline>( lavaShortcode.TagName );
+                LavaService.DeregisterShortcode( oldTagName );
             }
 
-            // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
-            // usage of this shortcode is cached with a key we can't predict.
-            LavaTemplateCache.Clear();
+            // Register the new shortcode definition.
+            LavaService.RegisterShortcode( lavaShortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
+
+            LavaService.ClearTemplateCache();
 
             NavigateToParentPage();
         }

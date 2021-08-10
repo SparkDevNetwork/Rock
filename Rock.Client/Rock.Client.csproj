@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.Client</RootNamespace>
     <AssemblyName>Rock.Client</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -59,6 +60,7 @@
     <Compile Include="CodeGenerated\AnalyticsSourceDate.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFamilyHistorical.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\AnalyticsSourceGivingUnit.cs" />
     <Compile Include="CodeGenerated\AnalyticsSourcePersonHistorical.cs" />
     <Compile Include="CodeGenerated\Assessment.cs" />
     <Compile Include="CodeGenerated\AssessmentType.cs" />
@@ -81,6 +83,9 @@
     <Compile Include="CodeGenerated\Audit.cs" />
     <Compile Include="CodeGenerated\AuditDetail.cs" />
     <Compile Include="CodeGenerated\Auth.cs" />
+    <Compile Include="CodeGenerated\AuthClaim.cs" />
+    <Compile Include="CodeGenerated\AuthClient.cs" />
+    <Compile Include="CodeGenerated\AuthScope.cs" />
     <Compile Include="CodeGenerated\BackgroundCheck.cs" />
     <Compile Include="CodeGenerated\Badge.cs" />
     <Compile Include="CodeGenerated\BenevolenceRequest.cs" />
@@ -92,11 +97,13 @@
     <Compile Include="CodeGenerated\Block.cs" />
     <Compile Include="CodeGenerated\BlockType.cs" />
     <Compile Include="CodeGenerated\Campus.cs" />
+    <Compile Include="CodeGenerated\CampusSchedule.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationRecipient.cs" />
     <Compile Include="CodeGenerated\CommunicationResponse.cs" />
+    <Compile Include="CodeGenerated\CommunicationResponseAttachment.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplate.cs" />
     <Compile Include="CodeGenerated\CommunicationTemplateAttachment.cs" />
     <Compile Include="CodeGenerated\ConnectionActivityType.cs" />
@@ -149,7 +156,23 @@
     <Compile Include="CodeGenerated\FinancialPledge.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransaction.cs" />
     <Compile Include="CodeGenerated\FinancialScheduledTransactionDetail.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorOptions.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipient.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientRequest.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientResult.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorUploadGivingStatementData.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorUploadGivingStatementResult.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementIndividualSaveOptions.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementReportConfiguration.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplate.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateHeaderFooterSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplatePDFSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplatePledgeSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateReportSettings.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateTransactionSetting.cs" />
     <Compile Include="CodeGenerated\FinancialTransaction.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlert.cs" />
+    <Compile Include="CodeGenerated\FinancialTransactionAlertType.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetail.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionDetailExport.cs" />
     <Compile Include="CodeGenerated\FinancialTransactionExport.cs" />
@@ -201,6 +224,9 @@
     <Compile Include="CodeGenerated\Location.cs" />
     <Compile Include="CodeGenerated\LocationExport.cs" />
     <Compile Include="CodeGenerated\LoginParameters.cs" />
+    <Compile Include="CodeGenerated\MediaAccount.cs" />
+    <Compile Include="CodeGenerated\MediaElement.cs" />
+    <Compile Include="CodeGenerated\MediaFolder.cs" />
     <Compile Include="CodeGenerated\MergeTemplate.cs" />
     <Compile Include="CodeGenerated\MetaFirstNameGenderLookup.cs" />
     <Compile Include="CodeGenerated\MetaLastNameLookup.cs" />
@@ -227,11 +253,15 @@
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
+    <Compile Include="CodeGenerated\PersonalLink.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSection.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSectionOrder.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonExport.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
     <Compile Include="CodeGenerated\PersonScheduleExclusion.cs" />
     <Compile Include="CodeGenerated\PersonSearchKey.cs" />
+    <Compile Include="CodeGenerated\PersonSearchResult.cs" />
     <Compile Include="CodeGenerated\PersonSignal.cs" />
     <Compile Include="CodeGenerated\PersonToken.cs" />
     <Compile Include="CodeGenerated\PersonViewed.cs" />
@@ -242,6 +272,7 @@
     <Compile Include="CodeGenerated\RegistrationInstance.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrant.cs" />
     <Compile Include="CodeGenerated\RegistrationRegistrantFee.cs" />
+    <Compile Include="CodeGenerated\RegistrationSession.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplate.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateDiscount.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFee.cs" />
@@ -269,6 +300,7 @@
     <Compile Include="CodeGenerated\SmsPipeline.cs" />
     <Compile Include="CodeGenerated\Step.cs" />
     <Compile Include="CodeGenerated\StepProgram.cs" />
+    <Compile Include="CodeGenerated\StepProgramCompletion.cs" />
     <Compile Include="CodeGenerated\StepStatus.cs" />
     <Compile Include="CodeGenerated\StepType.cs" />
     <Compile Include="CodeGenerated\StepTypePrerequisite.cs" />
@@ -284,6 +316,9 @@
     <Compile Include="CodeGenerated\TaggedItem.cs" />
     <Compile Include="CodeGenerated\UserLogin.cs" />
     <Compile Include="CodeGenerated\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="CodeGenerated\WebFarmNode.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeLog.cs" />
+    <Compile Include="CodeGenerated\WebFarmNodeMetric.cs" />
     <Compile Include="CodeGenerated\Workflow.cs" />
     <Compile Include="CodeGenerated\WorkflowAction.cs" />
     <Compile Include="CodeGenerated\WorkflowActionForm.cs" />

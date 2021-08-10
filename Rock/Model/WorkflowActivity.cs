@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -121,7 +122,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Workflow"/> instance that is performing this WorkflowActivity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Workflow Workflow { get; set; }
 
         /// <summary>
@@ -130,7 +131,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.WorkflowActivityType"/> that is being performed by this WorkflowActivity instance.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActivityType ActivityType { get; set; }
 
         /// <summary>
@@ -139,7 +140,7 @@ namespace Rock.Model
         /// <value>
         /// The activity type cache.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActivityTypeCache ActivityTypeCache
         {
             get
@@ -162,7 +163,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned person alias.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual PersonAlias AssignedPersonAlias { get; set; }
 
         /// <summary>
@@ -171,7 +172,7 @@ namespace Rock.Model
         /// <value>
         /// The assigned group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group AssignedGroup { get; set; }
 
         /// <summary>
@@ -186,7 +187,7 @@ namespace Rock.Model
         {
             get
             {
-                return (this.ActivityType?.IsActive ?? true) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
+                return ( this.ActivityType?.IsActive ?? true ) && ActivatedDateTime.HasValue && !CompletedDateTime.HasValue;
             }
             private set { }
         }
@@ -197,7 +198,7 @@ namespace Rock.Model
         /// <value>
         /// The activated by activity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual WorkflowActivity ActivatedByActivity { get; set; }
 
         /// <summary>
@@ -220,7 +221,7 @@ namespace Rock.Model
         /// <value>
         /// An enumerable collection containing the active <see cref="Rock.Model.WorkflowAction">WorkflowActions</see> for this WorkflowActivity.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual IEnumerable<Rock.Model.WorkflowAction> ActiveActions
         {
             get
@@ -321,7 +322,7 @@ namespace Rock.Model
 
             AddLogEntry( "Processing Complete" );
 
-            if (!this.ActiveActions.Any())
+            if ( !this.ActiveActions.Any() )
             {
                 MarkComplete();
             }
@@ -340,7 +341,7 @@ namespace Rock.Model
             if ( this.Workflow != null )
             {
                 var workflowType = this.Workflow.WorkflowTypeCache;
-                if( force || (
+                if ( force || (
                     workflowType != null && (
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Activity ||
                     workflowType.LoggingLevel == WorkflowLoggingLevel.Action ) ) )
@@ -407,6 +408,11 @@ namespace Rock.Model
         /// </returns>
         public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
         {
+            if ( !workflow.IsActive )
+            {
+                return null;
+            }
+
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityTypeId = activityTypeCache.Id;
@@ -441,8 +447,8 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActivityConfiguration()
         {
-            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
-            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.Workflow ).WithMany( a => a.Activities ).HasForeignKey( a => a.WorkflowId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityType ).WithMany().HasForeignKey( a => a.ActivityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedPersonAlias ).WithMany().HasForeignKey( a => a.AssignedPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AssignedGroup ).WithMany().HasForeignKey( a => a.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.ActivatedByActivity ).WithMany().HasForeignKey( a => a.ActivatedByActivityId ).WillCascadeOnDelete( false );

@@ -41,6 +41,9 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool EnableSecurityOnValues { get; set; }
+
+        /// <summary />
         public int? FieldTypeId { get; set; }
 
         /// <summary />
@@ -104,6 +107,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CategoryId = source.CategoryId;
             this.Description = source.Description;
+            this.EnableSecurityOnValues = source.EnableSecurityOnValues;
             this.FieldTypeId = source.FieldTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;

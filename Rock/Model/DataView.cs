@@ -29,6 +29,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Logging;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -37,7 +38,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a filterable dataview in Rock.
+    /// Represents a filterable DataView in Rock.
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "DataView" )]
@@ -87,7 +88,7 @@ namespace Rock.Model
         public int? CategoryId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> (Rock.Data.IEntity) that this DataView reports on.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
@@ -107,7 +108,7 @@ namespace Rock.Model
         public int? DataViewFilterId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView.
+        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> (MEF Component) that is used for an optional transformation on this DataView.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that is used for an optional transformation on this DataView. If there
@@ -144,10 +145,10 @@ namespace Rock.Model
         public bool IncludeDeceased { get; set; }
 
         /// <summary>
-        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// Gets or sets the persisted last run duration in milliseconds.
         /// </summary>
         /// <value>
-        /// The persisted last run duration in mulliseconds.
+        /// The persisted last run duration in milliseconds.
         /// </value>
         [DataMember]
         public int? PersistedLastRunDurationMilliseconds { get; set; }
@@ -162,10 +163,10 @@ namespace Rock.Model
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// Gets or sets the run count.
         /// </summary>
         /// <value>
-        /// The persisted last run duration in mulliseconds.
+        /// The run count.
         /// </value>
         [DataMember]
         public int? RunCount { get; set; }
@@ -180,13 +181,14 @@ namespace Rock.Model
         public double? TimeToRunDurationMilliseconds { get; set; }
 
         /// <summary>
-        /// Gets or sets the datetime that the Run Count was last reset to 0.
+        /// Gets or sets the DateTime that the Run Count was last reset to 0.
         /// </summary>
         /// <value>
         /// The run count last refresh date time.
         /// </value>
         [DataMember]
         public DateTime? RunCountLastRefreshDateTime { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -201,7 +203,7 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> (Rock.Data.IEntity) that this DataView reports on.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.EntityType"/> that this DataView reports on.
@@ -218,9 +220,8 @@ namespace Rock.Model
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
-
         /// <summary>
-        /// Gets or sets the type of the entity used for an optional transformation
+        /// Gets or sets the entity type (MEF Component) used for an optional transformation
         /// </summary>
         /// <value>
         /// The transformation type of entity.
@@ -264,7 +265,7 @@ namespace Rock.Model
             bool isAuthorized = true;
             authorizationMessage = string.Empty;
 
-            // can't edit an existing dataview if not authorized for that dataview
+            // can't edit an existing DataView if not authorized for that DataView
             if ( this.Id != 0 && !this.IsAuthorized( dataViewAction, person ) )
             {
                 isAuthorized = false;
@@ -484,7 +485,7 @@ namespace Rock.Model
         /// Gets the expression.
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="paramExpression">The param expression.</param>
+        /// <param name="paramExpression">The parameter expression.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         [RockObsolete( "1.12" )]
@@ -561,15 +562,23 @@ namespace Rock.Model
             bool usePersistedValues = this.PersistedScheduleIntervalMinutes.HasValue && this.PersistedLastRefreshDateTime.HasValue;
             if ( dataViewFilterOverrides != null )
             {
-                // don't use persisted values if this dataview is in the list of dataviews that should not be persisted due to override
+                // don't use persisted values if this DataView in the list of DataViews that should not be persisted due to override
                 usePersistedValues = usePersistedValues && !dataViewFilterOverrides.IgnoreDataViewPersistedValues.Contains( this.Id );
             }
 
-            DataViewService.AddRunDataViewTransaction( Id );
+            // If dataViewFilterOverrides is null assume true in order to preserve current functionality.
+            RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewFilterOverrides: {@dataViewFilterOverrides} DataviewId: {DataviewId}", nameof( GetExpression ), dataViewFilterOverrides, DataViewFilter.DataViewId );
+            if ( dataViewFilterOverrides == null || dataViewFilterOverrides.ShouldUpdateStatics )
+            {
+                DataViewService.AddRunDataViewTransaction( Id );
+            }
+
+            // We need to call GetExpression regardless of whether or not usePresistedValues is true so the child queries get their stats updated.
+            var filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( dataViewEntityTypeType, serviceInstance, paramExpression, dataViewFilterOverrides ) : null;
 
             if ( usePersistedValues )
             {
-                // If this is a persisted dataview, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
+                // If this is a persisted DataView, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
                 var rockContext = serviceInstance.Context as RockContext;
                 if ( rockContext == null )
                 {
@@ -581,7 +590,7 @@ namespace Rock.Model
                 MemberExpression propertyExpression = Expression.Property( paramExpression, "Id" );
                 if ( !( serviceInstance.Context is RockContext ) )
                 {
-                    // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+                    // if this DataView doesn't use a RockContext get the EntityIds into memory as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
                     ids = ids.ToList().AsQueryable();
                 }
 
@@ -593,7 +602,6 @@ namespace Rock.Model
             }
             else
             {
-                Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( dataViewEntityTypeType, serviceInstance, paramExpression, dataViewFilterOverrides ) : null;
                 if ( dataViewEntityTypeCache.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id )
                 {
                     var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable( this.IncludeDeceased );
@@ -614,7 +622,7 @@ namespace Rock.Model
                     Expression transformedExpression = GetTransformExpression( this.TransformEntityTypeId.Value, serviceInstance, paramExpression, filterExpression );
                     if ( transformedExpression == null )
                     {
-                        // if TransformEntityTypeId is defined, but we got null back, we'll get unexcepted results, so throw an exception
+                        // if TransformEntityTypeId is defined, but we got null back, we'll get unexpected results, so throw an exception
                         throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine transform expression for TransformEntityTypeId: {TransformEntityTypeId}" );
                     }
 
@@ -633,9 +641,10 @@ namespace Rock.Model
         {
             using ( var dbContext = this.GetDbContext() )
             {
-                Stopwatch persistStopwatch = Stopwatch.StartNew();
-                Stopwatch stopwatch = Stopwatch.StartNew();
-                DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
+                var persistStopwatch = Stopwatch.StartNew();
+                var dataViewFilterOverrides = new DataViewFilterOverrides();
+
+                dataViewFilterOverrides.ShouldUpdateStatics = false;
 
                 // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
                 dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
@@ -661,16 +670,14 @@ namespace Rock.Model
 
                 if ( !( rockContext is RockContext ) )
                 {
-                    // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+                    // if this DataView doesn't use a RockContext get the EntityIds into memory as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
                     updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
                 }
 
                 var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                 var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
-                stopwatch.Stop();
-
-                int removeCount = persistedValuesToRemove.Count();
+                var removeCount = persistedValuesToRemove.Count();
                 if ( removeCount > 0 )
                 {
                     // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
@@ -694,11 +701,10 @@ namespace Rock.Model
 
                 persistStopwatch.Stop();
 
-                DataViewService.AddRunDataViewTransaction( this.Id,
-                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ),
-                            Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds ) );
+                // Update the Persisted Refresh information.
+                PersistedLastRefreshDateTime = RockDateTime.Now;
+                PersistedLastRunDurationMilliseconds = Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds );
             }
-
         }
 
         /// <summary>
@@ -715,7 +721,7 @@ namespace Rock.Model
 
             if ( entityType == null )
             {
-                // if we can't determine entitytype, throw an exception so we don't return incorrect results
+                // if we can't determine EntityType, throw an exception so we don't return incorrect results
                 throw new RockDataViewFilterExpressionException( this.DataViewFilter, $"Unable to determine TransformEntityType {entityType.Name}" );
             }
 

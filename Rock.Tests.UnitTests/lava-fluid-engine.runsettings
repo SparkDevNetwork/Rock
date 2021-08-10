@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+      <!-- 1. Test related settings -->
+      <!-- [x86] | x64: architecture of test host -->
+      <TargetPlatform>x86</TargetPlatform>
+  </RunConfiguration>
+  
+  <TestRunParameters>
+    <!-- [DotLiquid] | Fluid: lava engine to be tested -->
+    <Parameter name="LavaEngineType" value="Fluid" />
+  </TestRunParameters>
+</RunSettings>

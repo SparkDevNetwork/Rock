@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -27,6 +28,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Sends an email to group leaders whenever a new registration adds a registrant to their group
     /// </summary>
+    [Obsolete( "Use ProcesSendRegistrationNotification Task instead." )]
+    [RockObsolete( "1.13" )]
     public class SendRegistrationNotificationTransaction : ITransaction
     {
         /// <summary>

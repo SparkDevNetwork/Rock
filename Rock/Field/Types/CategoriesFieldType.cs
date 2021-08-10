@@ -64,6 +64,17 @@ namespace Rock.Field.Types
             return base.FormatValue( parentControl, formattedValue, null, condensed );
         }
 
+        /// <summary>
+        /// Returns the value using the most appropriate datatype
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public override object ValueAsFieldType( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.SplitDelimitedValues().AsGuidList();
+        }
+
         #endregion
 
         #region EditControl

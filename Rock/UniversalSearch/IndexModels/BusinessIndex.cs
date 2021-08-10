@@ -64,7 +64,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="business">The business.</param>
         /// <returns></returns>
-        public static BusinessIndex LoadByModel(Person business )
+        public static BusinessIndex LoadByModel( Person business )
         {
             var businessIndex = new BusinessIndex();
             businessIndex.SourceIndexModel = "Rock.Model.Person";
@@ -75,9 +75,6 @@ namespace Rock.UniversalSearch.IndexModels
             businessIndex.Id = business.Id;
             businessIndex.Name = business.LastName;
             businessIndex.DocumentName = business.LastName;
-            
-            // do not currently index business attributes since they are shared with people
-            //AddIndexableAttributes( businessIndex, person );
 
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
             var knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles.Where( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ).FirstOrDefault().Id;
@@ -88,7 +85,7 @@ namespace Rock.UniversalSearch.IndexModels
                                         .Where( m =>
                                              m.Group.GroupTypeId == knownRelationshipGroupType.Id
                                              && m.GroupRoleId == knownRelationshipOwnerRoleId
-                                             && m.PersonId == business.Id)
+                                             && m.PersonId == business.Id )
                                         .FirstOrDefault();
 
             if ( contactGroup != null )

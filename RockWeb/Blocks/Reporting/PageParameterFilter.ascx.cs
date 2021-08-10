@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,23 +16,21 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 using Rock.Attribute;
-using Rock.Web.UI;
-using System.Web;
-using Rock.Security;
+using Rock.Data;
 using Rock.Field.Types;
-using System.Collections.Specialized;
+using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -44,6 +42,32 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
 
+    /*
+    ========================================
+    SPECIAL NOTES
+    ========================================
+
+    1. Selection Action
+    -------------------
+    4/5/2020 - JME
+    This block has a setting 'Selection Action' that allows the block to either do:
+    A. Parital Postback (aka Update Block)
+    B. Full Postback (aka Update Page)
+
+    The 'Update Block' is odd in that it will take the values from the filter attributes
+    and re-build the attribute controls. This is helpful if one or more of the filter attributes
+    have dynamic values that are built off of the query string (like a single select that populates
+    off of a SQL query that looks at the querystring via Lava).
+
+    When this partial postback occurs the block will create a virtual querystring from all of the
+    filter attribute values for Lava to use. This is in the GenerateQueryString() method.
+
+    The concept and code came from a Bema PR.
+
+    ========================================
+    */
+
+
     #region Block Attributes
     [BooleanField(
         "Show Block Title",
@@ -51,7 +75,7 @@ namespace RockWeb.Blocks.Reporting
         Description = "Determines if the Block Title should be displayed",
         DefaultBooleanValue = true,
         Category = "CustomSetting",
-        Order=1 )]
+        Order = 1 )]
 
     [TextField(
         "Block Title Text",
@@ -116,17 +140,34 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Order = 8 )]
 
-    [BooleanField(
-        "Does Selection Cause Postback",
+    [CustomDropdownListField( "Selection Action",
+        Description = "Specifies what should happen when a value is changed. Nothing, update page, or update block.",
+        ListSource = "nothing^,block^Update Block,page^Update Page",
+        DefaultValue = "nothing",
+        Category = "CustomSetting",
         Key = AttributeKey.DoesSelectionCausePostback,
-        Description = "If set, selecting a filter will force a PostBack, recalculating the available selections. Useful for SQL values.",
+        Order = 9 )]
+
+    [BooleanField(
+        "Hide Filter Actions",
+        Key = AttributeKey.HideFilterActions,
+        Description = "Hides the filter buttons. This is useful when the Selection action is set to reload the page. Be sure to use this only when the page re-load will be quick.",
         DefaultBooleanValue = false,
         Category = "CustomSetting",
-        Order = 9  )]
+        Order = 10 )]
     #endregion
 
     public partial class PageParameterFilter : RockBlockCustomSettings, IDynamicAttributesBlock
     {
+        #region Enums
+        private enum SelectionAction
+        {
+            Nothing = 0,
+            UpdateBlock = 1,
+            UpdatePage = 2,
+        }
+        #endregion
+
         #region Attribute Keys
 
         private static class AttributeKey
@@ -140,6 +181,7 @@ namespace RockWeb.Blocks.Reporting
             public const string FilterButtonSize = "FilterButtonSize";
             public const string RedirectPage = "RedirectPage";
             public const string DoesSelectionCausePostback = "DoesSelectionCausePostback";
+            public const string HideFilterActions = "HideFilterActions";
         }
 
         #endregion Attribute Keys
@@ -153,7 +195,7 @@ namespace RockWeb.Blocks.Reporting
         int _blockTypeEntityId;
         Block _block;
         int _filtersPerRow;
-        bool _reloadOnSelection;
+        SelectionAction _reloadOnSelection;
 
         #endregion
 
@@ -222,7 +264,7 @@ namespace RockWeb.Blocks.Reporting
             edtFilter.AllowSearchVisible = false;
             edtFilter.IsShowInGridVisible = false;
 
-            // hide these attribute settings manually since there isn't a property to do so.
+            // Hide these attribute settings manually since there isn't a property to do so.
             Control cbEnableHistory = edtFilter.FindControl( "_cbEnableHistory" );
             if ( cbEnableHistory != null )
             {
@@ -247,11 +289,55 @@ namespace RockWeb.Blocks.Reporting
 
             mdFilter.SaveClick += mdFilter_SaveClick;
 
-            // this event gets fired after block settings are updated.
+            // This event gets fired after block settings are updated.
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
 
-            _reloadOnSelection = GetAttributeValue( AttributeKey.DoesSelectionCausePostback ).AsBoolean();
+            _reloadOnSelection = GetSelectAction();
+
+            // This is needed so that we can get the data from the controls after all control events
+            // have run so that their values are updated.
+            Page.LoadComplete += Page_LoadComplete;
+        }
+
+        /// <summary>
+        /// Handles the LoadComplete event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void Page_LoadComplete( object sender, EventArgs e )
+        {
+            // Add postback controls
+            if ( Page.IsPostBack )
+            {
+                if ( _reloadOnSelection == SelectionAction.UpdateBlock )
+                {
+                    // See if hidden field has 'true' already set
+                    if ( hfPostBack.Value.IsNullOrWhiteSpace() )
+                    {
+                        var control = Page.FindControl( Request.Form["__EVENTTARGET"] );
+                        if ( control != null && control.UniqueID.Contains( "attribute_field_" ) )
+                        {
+                            // We need to update the form action so that the partial postback call post to the new parameterized url.
+                            Page.Form.Action = GetParameterizedUrl();
+                            hfPostBack.Value = "True";
+                            ScriptManager.RegisterStartupScript( control, control.GetType(), "Refresh-Controls", @"console.log('Doing Postback');  __doPostBack('" + Request.Form["__EVENTTARGET"] + @"','');", true );
+                        }
+                    }
+                    else // Reset hidden field for next time
+                    {
+                        hfPostBack.Value = "";
+                    }
+                }
+                else if ( _reloadOnSelection == SelectionAction.UpdatePage )
+                {
+                    var control = Page.FindControl( Request.Form["__EVENTTARGET"] );
+                    if ( control != null && control.UniqueID.Contains( "attribute_field_" ) )
+                    {
+                        btnFilter_Click( null, null );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -267,7 +353,7 @@ namespace RockWeb.Blocks.Reporting
                 var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
                 var attribsWithDefaultValue = query.AsQueryable().Where( a => a.DefaultValue != null && a.DefaultValue != "" ).ToList();
 
-                // if we have any filters with default values, we want to load this block with the page parameters already set.
+                // If we have any filters with default values, we want to load this block with the page parameters already set.
                 if ( attribsWithDefaultValue.Any() && !this.RockPage.PageParameters().Any() )
                 {
                     ResetFilters();
@@ -284,24 +370,9 @@ namespace RockWeb.Blocks.Reporting
 
             base.OnLoad( e );
 
-            //add postback controls
-            if ( Page.IsPostBack && _reloadOnSelection )
-            {
-                //See if hidden field has 'true' already set
-                if ( hfPostBack.Value.IsNullOrWhiteSpace() )
-                {
-                    var control = Page.FindControl( Request.Form["__EVENTTARGET"] );
-                    if ( control != null && control.UniqueID.Contains( "attribute_field_" ) )
-                    {
-                        hfPostBack.Value = "True";
-                        ScriptManager.RegisterStartupScript( control, control.GetType(), "Refresh-Controls", @"console.log('Doing Postback');  __doPostBack('" + Request.Form["__EVENTTARGET"] + @"','');", true );
-                    }
-                }
-                else //reset hidden field for next time
-                {
-                    hfPostBack.Value = "";
-                }
-            }
+            var hideFilterButtons = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
+            btnFilter.Visible = !hideFilterButtons;
+            btnResetFilters.Visible = !hideFilterButtons;
         }
 
         protected override object SaveViewState()
@@ -325,11 +396,14 @@ namespace RockWeb.Blocks.Reporting
             rtbBlockTitleIconCssClass.Text = GetAttributeValue( AttributeKey.BlockTitleIconCssClass );
             nbFiltersPerRow.Text = GetAttributeValue( AttributeKey.FiltersPerRow );
             cbShowResetFiltersButton.Checked = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
+            cbHideFilterActions.Checked = GetAttributeValue( AttributeKey.HideFilterActions ).AsBoolean();
             rtbFilterButtonText.Text = GetAttributeValue( AttributeKey.FilterButtonText );
             ddlFilterButtonSize.SetValue( GetAttributeValue( AttributeKey.FilterButtonSize ).AsInteger() );
             var ppFieldType = new PageReferenceFieldType();
             ppFieldType.SetEditValue( ppRedirectPage, null, GetAttributeValue( AttributeKey.RedirectPage ) );
-            cbDoesSelectionCausePostback.Checked = GetAttributeValue( AttributeKey.DoesSelectionCausePostback ).AsBoolean();
+
+            ddlSelectionAction.SelectedValue = GetSelectAction().ConvertToInt().ToString();
+
             BindGrid();
 
             mdSettings.Show();
@@ -347,11 +421,12 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.BlockTitleIconCssClass, rtbBlockTitleIconCssClass.Text );
             SetAttributeValue( AttributeKey.FiltersPerRow, nbFiltersPerRow.Text );
             SetAttributeValue( AttributeKey.ShowResetFiltersButton, cbShowResetFiltersButton.Checked.ToString() );
+            SetAttributeValue( AttributeKey.HideFilterActions, cbHideFilterActions.Checked.ToString() );
             SetAttributeValue( AttributeKey.FilterButtonText, rtbFilterButtonText.Text );
             SetAttributeValue( AttributeKey.FilterButtonSize, ddlFilterButtonSize.SelectedValue );
             var ppFieldType = new PageReferenceFieldType();
             SetAttributeValue( AttributeKey.RedirectPage, ppFieldType.GetEditValue( ppRedirectPage, null ) );
-            SetAttributeValue( AttributeKey.DoesSelectionCausePostback, cbDoesSelectionCausePostback.Checked.ToString() );
+            SetAttributeValue( AttributeKey.DoesSelectionCausePostback, ddlSelectionAction.SelectedValue );
 
             SaveAttributeValues();
 
@@ -422,7 +497,7 @@ namespace RockWeb.Blocks.Reporting
                  .ToList();
 
             edtFilter.SetAttributeProperties( attribute );
-
+  
             mdFilter.Title = "Edit Filter";
             mdFilter.Show();
         }
@@ -520,7 +595,7 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion Settings
-        
+
         #region Events
 
         /// <summary>
@@ -540,26 +615,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
-            NameValueCollection queryString = GenerateQueryString();
-
-            string url = Request.Url.AbsolutePath;
-
-            Guid? pageGuid = GetAttributeValue( AttributeKey.RedirectPage ).AsGuidOrNull();
-            if ( pageGuid.HasValue )
-            {
-                var page = PageCache.Get( pageGuid.Value );
-
-                url = System.Web.VirtualPathUtility.ToAbsolute( string.Format( "~/page/{0}", page.Id ) );
-            }
-
-            if ( queryString.AllKeys.Any() )
-            {
-                Response.Redirect( string.Format( "{0}?{1}", url, queryString ), false );
-            }
-            else
-            {
-                Response.Redirect( url, false );
-            }
+            Response.Redirect( GetParameterizedUrl(), false );
         }
 
         /// <summary>
@@ -579,18 +635,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e"></param>
         private void ItemPicker_SelectItem( object sender, EventArgs e )
         {
-            //hopefully an xhr happens here
-        }
-
-        /// <summary>
-        /// Handles the ListControl Selected Index Changed event.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void Control_PreRender( object sender, EventArgs e )
-        {
-            // Update the internal URL querystring via postback call
-            PostBackUpdateQueryString();
+            // Hopefully an xhr happens here
         }
 
         #endregion
@@ -613,27 +658,25 @@ namespace RockWeb.Blocks.Reporting
                     Control control = phAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = Request.QueryString[attribute.Key];
-                        if ( value != null )
+                        var value = PageParameter( attribute.Key );
+                        if ( value.IsNotNullOrWhiteSpace() )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, value );
                         }
-                        else if ( attribute.Value.DefaultValue != null )
+                        else if ( attribute.Value.DefaultValue.IsNotNullOrWhiteSpace() )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, attribute.Value.DefaultValue );
                         }
 
-                        control.PreRender += Control_PreRender;
-
                         // Enable ListControls postback and Event
-                        if ( control is ListControl && _reloadOnSelection )
+                        if ( control is ListControl && _reloadOnSelection != SelectionAction.Nothing )
                         {
                             var listControl = control as ListControl;
                             listControl.AutoPostBack = true;
                         }
 
                         // Enable ItemPicker postback event
-                        if ( control is ItemPicker && _reloadOnSelection )
+                        if ( control is ItemPicker && _reloadOnSelection != SelectionAction.Nothing )
                         {
                             var itemPicker = control as ItemPicker;
                             itemPicker.SelectItem += ItemPicker_SelectItem;
@@ -666,7 +709,16 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            Helper.AddEditControls( "", attributeKeys, _block, phAttributes, "", false, exclusions, _filtersPerRow );
+            try
+            {
+                Helper.AddEditControls( "", attributeKeys, _block, phAttributes, "", false, exclusions, _filtersPerRow );
+            }
+            catch
+            {
+                pnlFilters.Visible = false;
+                nbBuildErrors.Visible = true;
+                nbBuildErrors.Text = "Not all filter controls could be built. The most likely cause of this issue is a mis-configured filter.";
+            }
         }
 
         /// <summary>
@@ -685,25 +737,6 @@ namespace RockWeb.Blocks.Reporting
             else
             {
                 Response.Redirect( Request.Url.AbsolutePath, false );
-            }
-        }
-
-        /// <summary>
-        /// Updates the internal Query String with control's selections
-        /// </summary>
-        private void PostBackUpdateQueryString()
-        {
-            var queryString = GenerateQueryString();
-
-            //Change query string without redirect ( a little bit of a hack )
-            System.Reflection.PropertyInfo isreadonly = typeof( NameValueCollection ).GetProperty( "IsReadOnly", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic );
-
-            if ( Request != null )
-            {
-                isreadonly.SetValue( Request.QueryString, false, null );
-                Request.QueryString.Clear();
-                Request.QueryString.Add( queryString );
-                isreadonly.SetValue( Request.QueryString, true, null );
             }
         }
 
@@ -748,6 +781,67 @@ namespace RockWeb.Blocks.Reporting
             return queryString;
         }
 
+        /// <summary>
+        /// Gets the parameterized URL.
+        /// </summary>
+        /// <returns></returns>
+        private string GetParameterizedUrl()
+        {
+            var queryString = GenerateQueryString();
+            var url = Request.Url.AbsolutePath;
+
+            var pageGuid = GetAttributeValue( AttributeKey.RedirectPage ).AsGuidOrNull();
+            if ( pageGuid.HasValue )
+            {
+                var page = PageCache.Get( pageGuid.Value );
+
+                url = VirtualPathUtility.ToAbsolute( string.Format( "~/page/{0}", page.Id ) );
+            }
+
+            if ( queryString.AllKeys.Any() )
+            {
+                // JE 2/19/2021
+                // Fixing to support routes. This should probably be in the GenerateQueryString() but it's difficult to understand
+                // the logic of that method. This is slightly slower, but a safer change. A re-write of the filter redirect may be in order.
+                var pageReference = CurrentPageReference;
+
+                foreach ( var key in queryString.AllKeys )
+                {
+                    pageReference.Parameters.AddOrReplace( key, queryString[key] );
+                }
+
+                return pageReference.BuildUrl();
+            }
+            else
+            {
+                return url;
+            }
+        }
+
+        /// <summary>
+        /// Gets the select action.
+        /// </summary>
+        /// <returns></returns>
+        private SelectionAction GetSelectAction()
+        {
+            var attributeValue = GetAttributeValue( AttributeKey.DoesSelectionCausePostback );
+            if ( attributeValue.IsNullOrWhiteSpace() )
+            {
+                return SelectionAction.Nothing;
+            }
+
+            if ( attributeValue.Equals( "false", StringComparison.InvariantCultureIgnoreCase ) )
+            {
+                return SelectionAction.Nothing;
+            }
+
+            if ( attributeValue.Equals( "true", StringComparison.InvariantCultureIgnoreCase ) )
+            {
+                return SelectionAction.UpdateBlock;
+            }
+
+            return attributeValue.ConvertToEnum<SelectionAction>();
+        }
         #endregion
 
     }

@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,15 +54,81 @@ namespace Rock.Model
         public bool CanDelete( WorkflowActionForm item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<WorkflowActionType>( Context ).Queryable().Any( a => a.WorkflowFormId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowActionForm.FriendlyTypeName, WorkflowActionType.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// WorkflowActionForm View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( WorkflowActionForm ) )]
+    public partial class WorkflowActionFormViewModelHelper : ViewModelHelper<WorkflowActionForm, Rock.ViewModel.WorkflowActionFormViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.WorkflowActionFormViewModel CreateViewModel( WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.WorkflowActionFormViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ActionAttributeGuid = model.ActionAttributeGuid,
+                Actions = model.Actions,
+                AllowNotes = model.AllowNotes,
+                AllowPersonEntry = model.AllowPersonEntry,
+                Footer = model.Footer,
+                Header = model.Header,
+                IncludeActionsInNotification = model.IncludeActionsInNotification,
+                NotificationSystemCommunicationId = model.NotificationSystemCommunicationId,
+                PersonEntryAddressEntryOption = ( int ) model.PersonEntryAddressEntryOption,
+                PersonEntryAutofillCurrentPerson = model.PersonEntryAutofillCurrentPerson,
+                PersonEntryBirthdateEntryOption = ( int ) model.PersonEntryBirthdateEntryOption,
+                PersonEntryCampusIsVisible = model.PersonEntryCampusIsVisible,
+                PersonEntryCampusStatusValueId = model.PersonEntryCampusStatusValueId,
+                PersonEntryCampusTypeValueId = model.PersonEntryCampusTypeValueId,
+                PersonEntryConnectionStatusValueId = model.PersonEntryConnectionStatusValueId,
+                PersonEntryEmailEntryOption = ( int ) model.PersonEntryEmailEntryOption,
+                PersonEntryFamilyAttributeGuid = model.PersonEntryFamilyAttributeGuid,
+                PersonEntryGenderEntryOption = ( int ) model.PersonEntryGenderEntryOption,
+                PersonEntryGroupLocationTypeValueId = model.PersonEntryGroupLocationTypeValueId,
+                PersonEntryHideIfCurrentPersonKnown = model.PersonEntryHideIfCurrentPersonKnown,
+                PersonEntryMaritalStatusEntryOption = ( int ) model.PersonEntryMaritalStatusEntryOption,
+                PersonEntryMobilePhoneEntryOption = ( int ) model.PersonEntryMobilePhoneEntryOption,
+                PersonEntryPersonAttributeGuid = model.PersonEntryPersonAttributeGuid,
+                PersonEntryPostHtml = model.PersonEntryPostHtml,
+                PersonEntryPreHtml = model.PersonEntryPreHtml,
+                PersonEntryRecordStatusValueId = model.PersonEntryRecordStatusValueId,
+                PersonEntrySpouseAttributeGuid = model.PersonEntrySpouseAttributeGuid,
+                PersonEntrySpouseEntryOption = ( int ) model.PersonEntrySpouseEntryOption,
+                PersonEntrySpouseLabel = model.PersonEntrySpouseLabel,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -87,6 +156,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this WorkflowActionForm object to a new WorkflowActionForm object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static WorkflowActionForm CloneWithoutIdentity( this WorkflowActionForm source )
+        {
+            var target = new WorkflowActionForm();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another WorkflowActionForm object to this WorkflowActionForm object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -97,6 +189,7 @@ namespace Rock.Model
             target.ActionAttributeGuid = source.ActionAttributeGuid;
             target.Actions = source.Actions;
             target.AllowNotes = source.AllowNotes;
+            target.AllowPersonEntry = source.AllowPersonEntry;
             target.Footer = source.Footer;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -106,6 +199,27 @@ namespace Rock.Model
             #pragma warning disable 612, 618
             target.NotificationSystemEmailId = source.NotificationSystemEmailId;
             #pragma warning restore 612, 618
+            target.PersonEntryAddressEntryOption = source.PersonEntryAddressEntryOption;
+            target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
+            target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
+            target.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
+            target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
+            target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
+            target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
+            target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
+            target.PersonEntryGenderEntryOption = source.PersonEntryGenderEntryOption;
+            target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
+            target.PersonEntryHideIfCurrentPersonKnown = source.PersonEntryHideIfCurrentPersonKnown;
+            target.PersonEntryMaritalStatusEntryOption = source.PersonEntryMaritalStatusEntryOption;
+            target.PersonEntryMobilePhoneEntryOption = source.PersonEntryMobilePhoneEntryOption;
+            target.PersonEntryPersonAttributeGuid = source.PersonEntryPersonAttributeGuid;
+            target.PersonEntryPostHtml = source.PersonEntryPostHtml;
+            target.PersonEntryPreHtml = source.PersonEntryPreHtml;
+            target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntrySpouseAttributeGuid = source.PersonEntrySpouseAttributeGuid;
+            target.PersonEntrySpouseEntryOption = source.PersonEntrySpouseEntryOption;
+            target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -114,5 +228,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.WorkflowActionFormViewModel ToViewModel( this WorkflowActionForm model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new WorkflowActionFormViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

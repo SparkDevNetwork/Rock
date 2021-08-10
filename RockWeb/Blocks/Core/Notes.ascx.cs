@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.DisplayNoteTypeHeading )]
 
     [BooleanField( "Expand Replies",
-        Description = "Should replies to automatically expanded?",
+        Description = "Should replies be automatically expanded?",
         DefaultValue = "false",
         Order = 14,
         Key = AttributeKey.ExpandReplies )]
@@ -242,7 +242,8 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void Notes_BlockUpdated( object sender, EventArgs e )
         {
-            ShowNotes();
+            // if block settings change, reload page
+            NavigateToCurrentPageReference();
         }
 
         #endregion

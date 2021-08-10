@@ -426,7 +426,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="pnlLayoutItem">The PNL layout item.</param>
         private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
         {
-            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right actions" };
+            Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right control-actions" };
 
             // Block Properties
             Literal btnBlockProperties = new Literal();

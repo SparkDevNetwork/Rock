@@ -44,6 +44,9 @@ namespace Rock.Client
         public int DaysUntilRequestIdle { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.ConnectionTypeViewMode DefaultView { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -76,7 +79,16 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public int Order { get; set; }
+
+        /// <summary />
         public int? OwnerPersonAliasId { get; set; }
+
+        /// <summary />
+        public string RequestBadgeLava { get; set; }
+
+        /// <summary />
+        public string RequestHeaderLava { get; set; }
 
         /// <summary />
         public bool RequiresPlacementGroupToConnect { get; set; }
@@ -117,6 +129,7 @@ namespace Rock.Client
             this.ConnectionRequestDetailPageId = source.ConnectionRequestDetailPageId;
             this.ConnectionRequestDetailPageRouteId = source.ConnectionRequestDetailPageRouteId;
             this.DaysUntilRequestIdle = source.DaysUntilRequestIdle;
+            this.DefaultView = source.DefaultView;
             this.Description = source.Description;
             this.EnableFullActivityList = source.EnableFullActivityList;
             this.EnableFutureFollowup = source.EnableFutureFollowup;
@@ -127,7 +140,10 @@ namespace Rock.Client
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.Order = source.Order;
             this.OwnerPersonAliasId = source.OwnerPersonAliasId;
+            this.RequestBadgeLava = source.RequestBadgeLava;
+            this.RequestHeaderLava = source.RequestHeaderLava;
             this.RequiresPlacementGroupToConnect = source.RequiresPlacementGroupToConnect;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

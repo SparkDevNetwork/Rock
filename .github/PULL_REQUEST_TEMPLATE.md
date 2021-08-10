@@ -31,7 +31,7 @@ _Put an `x` in the boxes that apply. You can also fill these out after creating 
 - [ ] I have read the [Contributing to Rock](https://github.com/SparkDevNetwork/Rock/blob/master/.github/CONTRIBUTING.md) doc
 - [ ] By contributing code, I agree to license my contribution under the [Rock Community License Agreement](https://www.rockrms.com/license)
 - [ ] Unit tests pass locally with my changes
-- [ ] I have added [required tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests/README.md) that prove my fix is effective or that my feature works
+- [ ] I have added any required [unit tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests.UnitTests/README.md) or [integration tests](https://github.com/SparkDevNetwork/Rock/blob/develop/Rock.Tests.Integration/README.md) that prove my fix is effective or that my feature works
 - [ ] I have included updated language for the [Rock Documentation](https://www.rockrms.com/Learn/Documentation) (if appropriate)
 
 ## Further comments

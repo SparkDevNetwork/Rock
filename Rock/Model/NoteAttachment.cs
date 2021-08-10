@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -63,7 +64,7 @@ namespace Rock.Model
         /// <value>
         /// The <see cref="Rock.Model.Note"/> that this attachment belongs to.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Note Note { get; set; }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The attachment's <see cref="Rock.Model.BinaryFile"/>
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
 
         #endregion

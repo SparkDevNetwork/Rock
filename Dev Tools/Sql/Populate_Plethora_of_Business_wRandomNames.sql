@@ -48,19 +48,19 @@ DECLARE @maxBusinesses INT = 99999
 	,@geoPoint Geography
 
 BEGIN
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#businessLastNames') IS NOT NULL
+        DROP TABLE #businessLastNames
 
     IF OBJECT_ID('tempdb..#businessTypeName') IS NOT NULL
         DROP TABLE #businessTypeName
 
-    CREATE TABLE #lastNames (
+    CREATE TABLE #businessLastNames (
         number INT NOT NULL IDENTITY(1, 1)
         ,surname NVARCHAR(23) NOT NULL
-        ,CONSTRAINT pk_fakenames PRIMARY KEY CLUSTERED (number)
+        ,CONSTRAINT pk_fakebusinessnames PRIMARY KEY CLUSTERED (number)
         );
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Edington')
         ,(N'Mcdonough')
         ,(N'Dorantes')
@@ -1062,7 +1062,7 @@ BEGIN
         ,(N'Ashmore')
         ,(N'Boettcher')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Skillern')
         ,(N'Weyandt')
         ,(N'Fallis')
@@ -2064,7 +2064,7 @@ BEGIN
         ,(N'Netherton')
         ,(N'Chatham')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Phillips')
         ,(N'Livesay')
         ,(N'Ayala')
@@ -3066,7 +3066,7 @@ BEGIN
         ,(N'Comeau')
         ,(N'Mcnerney')
 
-    INSERT INTO #lastNames
+    INSERT INTO #businessLastNames
     VALUES (N'Truesdale')
         ,(N'Courtney')
         ,(N'Vandenberg')
@@ -3752,12 +3752,12 @@ CREATE TABLE #businessTypeName (
     WHILE @personCounter < @maxBusinesses
     BEGIN
         -- get a random lastname
-        SELECT @lastName = (select top 1 surname from #lastNames order by NEWID());
+        SELECT @lastName = (select top 1 surname from #businessLastNames order by NEWID());
 
         select @businessTypeName = (select top 1 TypeName from #businessTypeName order by NEWID());
 
         -- add first member of family
-        SET @email = REPLACE(@lastName, ' ', '.') + '@nowhere.com';
+        SET @email = REPLACE(@lastName, ' ', '.') + '@nowhere.test';
         SET @phoneNumber = cast(convert(BIGINT, ROUND(rand() * 0095551212, 0) + 6230000000) AS NVARCHAR(20));
         SET @phoneNumberFormatted = '(' + substring(@phoneNumber, 1, 3) + ') ' + substring(@phoneNumber, 4, 3) + '-' + substring(@phoneNumber, 7, 4);
         SET @personGuid = NEWID();
@@ -3931,8 +3931,8 @@ CREATE TABLE #businessTypeName (
 
 	COMMIT TRANSACTION
 
-    IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
-        DROP TABLE #lastNames
+    IF OBJECT_ID('tempdb..#businessLastNames') IS NOT NULL
+        DROP TABLE #businessLastNames
 
     IF OBJECT_ID('tempdb..#businessTypeName') IS NOT NULL
         DROP TABLE #businessTypeName

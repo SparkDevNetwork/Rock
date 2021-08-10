@@ -19,11 +19,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,6 +59,53 @@ namespace Rock.Model
     }
 
     /// <summary>
+    /// Step View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( Step ) )]
+    public partial class StepViewModelHelper : ViewModelHelper<Step, Rock.ViewModel.StepViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.StepViewModel CreateViewModel( Step model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.StepViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CampusId = model.CampusId,
+                CompletedDateTime = model.CompletedDateTime,
+                EndDateTime = model.EndDateTime,
+                Note = model.Note,
+                Order = model.Order,
+                PersonAliasId = model.PersonAliasId,
+                StartDateTime = model.StartDateTime,
+                StepProgramCompletionId = model.StepProgramCompletionId,
+                StepStatusId = model.StepStatusId,
+                StepTypeId = model.StepTypeId,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
+
+    /// <summary>
     /// Generated Extension Methods
     /// </summary>
     public static partial class StepExtensionMethods
@@ -81,6 +131,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Clones this Step object to a new Step object with default values for the properties in the Entity and Model base classes.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns></returns>
+        public static Step CloneWithoutIdentity( this Step source )
+        {
+            var target = new Step();
+            target.CopyPropertiesFrom( source );
+
+            target.Id = 0;
+            target.Guid = Guid.NewGuid();
+            target.ForeignKey = null;
+            target.ForeignId = null;
+            target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
+
+            return target;
+        }
+
+        /// <summary>
         /// Copies the properties from another Step object to this Step object
         /// </summary>
         /// <param name="target">The target.</param>
@@ -90,16 +163,14 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CampusId = source.CampusId;
             target.CompletedDateTime = source.CompletedDateTime;
-            target.CompletedSourceDate = source.CompletedSourceDate;
             target.EndDateTime = source.EndDateTime;
-            target.EndSourceDate = source.EndSourceDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Note = source.Note;
             target.Order = source.Order;
             target.PersonAliasId = source.PersonAliasId;
             target.StartDateTime = source.StartDateTime;
-            target.StartSourceDate = source.StartSourceDate;
+            target.StepProgramCompletionId = source.StepProgramCompletionId;
             target.StepStatusId = source.StepStatusId;
             target.StepTypeId = source.StepTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
@@ -110,5 +181,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.StepViewModel ToViewModel( this Step model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new StepViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

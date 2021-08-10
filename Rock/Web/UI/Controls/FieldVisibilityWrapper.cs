@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Data;
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -38,10 +36,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The field identifier.
         /// </value>
-        public int RegistrationTemplateFormFieldId
+        public int FormFieldId
         {
-            get => ViewState["RegistrationTemplateFormFieldId"] as int? ?? 0;
-            set => ViewState["RegistrationTemplateFormFieldId"] = value;
+            get => ViewState["FormFieldId"] as int? ?? 0;
+            set => ViewState["FormFieldId"] = value;
         }
 
         /// <summary>
@@ -50,7 +48,16 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         public RegistrationTemplateFormFieldCache GetRegistrationTemplateFormField()
         {
-            return RegistrationTemplateFormFieldCache.Get( RegistrationTemplateFormFieldId );
+            return RegistrationTemplateFormFieldCache.Get( FormFieldId );
+        }
+
+        /// <summary>
+        /// Gets the form field.
+        /// </summary>
+        /// <returns></returns>
+        public AttributeCache GetFormField()
+        {
+            return AttributeCache.Get( FormFieldId );
         }
 
         /// <summary>
@@ -96,7 +103,7 @@ namespace Rock.Web.UI.Controls
         public Control EditControl { get; set; }
 
         /// <summary>
-        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="RegistrationTemplateFormFieldId"/>
+        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="FormFieldId"/>
         /// </summary>
         /// <value>
         /// The edit value.
@@ -106,13 +113,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache();
+                var attribute = GetAttributeCache() ?? GetFormField();
 
                 if ( attribute != null )
                 {
                     return attribute.FieldType.Field.GetEditValue( this.EditControl, attribute.QualifierValues );
                 }
-                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                else if ( field != null && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
                     var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
                     return fieldType.Field.GetEditValue( this.EditControl, null );
@@ -126,13 +133,13 @@ namespace Rock.Web.UI.Controls
             private set
             {
                 var field = GetRegistrationTemplateFormField();
-                var attribute = GetAttributeCache();
+                var attribute = GetAttributeCache() ?? GetFormField();
 
                 if ( attribute != null )
                 {
                     attribute.FieldType.Field.SetEditValue( this.EditControl, attribute.QualifierValues, value );
                 }
-                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                else if ( field != null && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
                     var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
                     fieldType.Field.SetEditValue( this.EditControl, null, value );
@@ -206,20 +213,22 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public static void ApplyFieldVisibilityRules( Control parentControl )
         {
-            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>().ToDictionary( k => k.RegistrationTemplateFormFieldId, v => v );
+            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>().ToDictionary( k => k.FormFieldId, v => v );
             var attributeValues = new Dictionary<int, AttributeValueCache>();
             var personFieldValues = new Dictionary<RegistrationPersonFieldType, string>();
 
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
                 var field = fieldVisibilityWrapper.GetRegistrationTemplateFormField();
+                var fieldAttribute = fieldVisibilityWrapper.GetFormField();
 
-                if ( field.AttributeId.HasValue )
+                var fieldAttributeId = field?.AttributeId ?? fieldAttribute?.Id;
+                if ( fieldAttributeId.HasValue )
                 {
-                    var attributeId = field.AttributeId.Value;
+                    var attributeId = fieldAttributeId.Value;
                     attributeValues.Add( attributeId, new AttributeValueCache { AttributeId = attributeId, Value = fieldVisibilityWrapper.EditValue } );
                 }
-                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                else if ( field != null && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
                 {
                     personFieldValues[field.PersonFieldType] = fieldVisibilityWrapper.EditValue;
                 }

@@ -157,10 +157,6 @@ namespace RockWeb.Blocks.Cms
                 }});
 
                 $(document).ready( function() {{
-
-                    // Change tracking enable/disabled added to prevent late arriving blur events from blocking the save
-                    var changeTrackingEnabled = true;
-
                     window.addEventListener('beforeunload', function(e) {{
                         if ( $('#{2}').val() == 'true' ) {{
                             var timeout = setTimeout( function() {{
@@ -186,6 +182,9 @@ namespace RockWeb.Blocks.Cms
                         contentChanged();
                     }});
                 }});
+
+                // Change tracking enable/disabled added to prevent late arriving blur events from blocking the save
+                var changeTrackingEnabled = true;
 
                 function contentChanged() {{
                     if ( changeTrackingEnabled ) {{
@@ -411,6 +410,13 @@ namespace RockWeb.Blocks.Cms
                     {
                         var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
                         contentChannelItemSlugService.SaveSlug( contentItem.Id, hfSlug.Value, null );
+                    }
+
+                    var slugInput = Request.Form["slugInput"];
+                    if ( !string.IsNullOrEmpty( slugInput ) )
+                    {
+                        var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                        contentChannelItemSlugService.SaveSlug( contentItem.Id, slugInput, null );
                     }
 
                     rockContext.SaveChanges();

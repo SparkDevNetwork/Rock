@@ -383,8 +383,7 @@ namespace RockWeb.Blocks.Finance
             btnApply_Click( sender, e );
         }
 
-
-        protected void dvpDataView_SelectedIndexChanged( object sender, EventArgs e )
+        protected void dvpDataView_ValueChanged( object sender, EventArgs e )
         {
             HideShowDataViewResultOption();
         }
@@ -733,6 +732,7 @@ function(item) {
             var accountIdList = GetSetting( keyPrefix, "AccountIds" ).Split( ',' ).ToList();
             foreach ( var cblAccounts in phAccounts.Controls.OfType<RockCheckBoxList>() )
             {
+                cblAccounts.FormGroupCssClass = "clickable-label js-select-all";
                 cblAccounts.SetValues( accountIdList );
             }
 
@@ -841,7 +841,7 @@ function(item) {
             var transactionInfoList = new List<TransactionInfo>();
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get the chart data", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get the chart data", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 transactionInfoList = new List<TransactionInfo>();
@@ -931,7 +931,7 @@ function(item) {
                     }
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -941,7 +941,7 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Summary", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Summary", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     idsWithValidTotals = new List<string>();
@@ -964,7 +964,7 @@ function(item) {
                         }
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
@@ -978,7 +978,7 @@ function(item) {
                 qryTasks.Add( Task.Run( () =>
                 {
                     var threadRockContext = new RockContext();
-                    var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get DataView People", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dataViewGivingIds = new List<string>();
@@ -997,7 +997,7 @@ function(item) {
                         dataViewGivingIds = dataViewPersonIdQry.ToList();
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1159,7 +1159,7 @@ function(item) {
             var personInfoList = new List<PersonInfo>();
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get all person summary data", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get all person summary data", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsPersonSummary(
@@ -1238,7 +1238,7 @@ function(item) {
                     personInfoList.Add( personInfo );
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -1246,7 +1246,7 @@ function(item) {
             var accountSummaries = new Dictionary<string, Dictionary<int, decimal>>();
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get the account summary values", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get the account summary values", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsAccountTotals(
@@ -1267,7 +1267,7 @@ function(item) {
                     }
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -1276,7 +1276,7 @@ function(item) {
             var lastEverVals = new Dictionary<string, DateTime>();
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get the first/last ever dates", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get the first/last ever dates", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 var dt = FinancialTransactionDetailService.GetGivingAnalyticsFirstLastEverDates()
@@ -1296,7 +1296,7 @@ function(item) {
                     }
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -1307,7 +1307,7 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Data View Filter", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Data View Filter", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dataViewPersonIds = new List<int>();
@@ -1329,7 +1329,7 @@ function(item) {
                         }
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1337,7 +1337,7 @@ function(item) {
             // Configure Grid
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Configure Grid", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Configure Grid", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 // Clear all the existing grid columns
@@ -1517,7 +1517,7 @@ function(item) {
                         ExcelExportBehavior = ExcelExportBehavior.AlwaysInclude
                     } );
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 
@@ -1638,6 +1638,9 @@ function(item) {
                     var missedEnd = drpPatternDateRange.UpperValue;
                     if ( missedStart.HasValue && missedEnd.HasValue )
                     {
+                        // the DateRange picker doesn't automatically add a full day to the end date
+                        missedEnd = missedEnd.Value.AddDays( 1 );
+
                         // Get the givingleaderids that gave any amount during the pattern's date range. These
                         // are needed so that we know who to exclude from the result set
                         previousGivingIds = new FinancialTransactionDetailService( rockContext )

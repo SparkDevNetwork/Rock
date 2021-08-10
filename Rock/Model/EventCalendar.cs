@@ -20,10 +20,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Tasks;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -80,10 +83,19 @@ namespace Rock.Model
         }
         private bool _isActive = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is index enabled.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is index enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsIndexEnabled { get; set; } = false;
+
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the event calendar items.
+        /// Gets or sets the <see cref="Rock.Model.EventCalendarItem">event calendar items</see>.
         /// </summary>
         /// <value>
         /// The event calendar items.
@@ -139,6 +151,110 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region Index Methods
+
+        /// <summary>
+        /// Deletes the indexed documents by calendar.
+        /// </summary>
+        /// <param name="calendarId">The calendar identifier.</param>
+        public void DeleteIndexedDocumentsByCalendarId( int calendarId )
+        {
+            // Ensure provided calendar is indexable
+            var calendar = EventCalendarCache.Get( calendarId );
+            
+            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
+            {
+                return;
+            }
+
+            // Get event items for this calendar that are ONLY on this calendar.
+            // We don't want to delete items that are also on another calendar.
+            var eventItems = new EventItemService( new RockContext() )
+                                    .GetActiveItemsByCalendarId( calendarId )
+                                    .Where( i => i.EventCalendarItems.Count() == 1 )
+                                    .Select( a => a.Id ).ToList();
+
+            int eventItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.EventItem>().Value;
+
+            foreach ( var eventItemId in eventItems )
+            {
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = eventItemEntityTypeId,
+                    EntityId = eventItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
+            }
+        }
+
+
+        /// <summary>
+        /// Bulks the index documents by calendar.
+        /// </summary>
+        /// <param name="calendarId">The calendar identifier.</param>
+        public void BulkIndexDocumentsByCalendar( int calendarId )
+        {
+            // Ensure provided calendar is indexable
+            var calendar = EventCalendarCache.Get( calendarId );
+
+            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
+            {
+                return;
+            }
+
+            var eventItems = new EventItemService( new RockContext() )
+                                    .GetActiveItemsByCalendarId( calendarId )
+                                    .Select( a => a.Id ).ToList();
+
+            int eventItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.EventItem>().Value;
+
+            foreach ( var eventItemId in eventItems )
+            {
+                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
+                {
+                    EntityTypeId = eventItemEntityTypeId,
+                    EntityId = eventItemId
+                };
+
+                deleteEntityTypeIndexMsg.Send();
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="state"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        {
+            // Keep the indexed Event Items correct
+            if ( state == EntityState.Deleted && IsIndexEnabled )
+            {
+                this.DeleteIndexedDocumentsByCalendarId( Id );
+            }
+            else if( state == EntityState.Modified )
+            {
+                var changeEntry = dbContext.ChangeTracker.Entries<EventCalendar>().Where( a => a.Entity == this ).FirstOrDefault();
+                if ( changeEntry != null )
+                {
+                    var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
+
+                    if ( originalIndexState == true && IsIndexEnabled == false )
+                    {
+                        // clear out index items
+                        this.DeleteIndexedDocumentsByCalendarId( Id );
+                    }
+                    else if ( IsIndexEnabled == true )
+                    {
+                        // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
+                        BulkIndexDocumentsByCalendar( Id );
+                    }
+                }
+            }
+        }
 
         #region ICacheable
 

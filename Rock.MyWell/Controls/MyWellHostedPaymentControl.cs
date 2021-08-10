@@ -18,6 +18,9 @@ using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Financial;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -28,8 +31,17 @@ namespace Rock.MyWell.Controls
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="System.Web.UI.INamingContainer" />
-    public class MyWellHostedPaymentControl : CompositeControl, INamingContainer, Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+    public class MyWellHostedPaymentControl : CompositeControl,
+        INamingContainer,
+        Rock.Financial.IHostedGatewayPaymentControlTokenEvent,
+        Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
     {
+        private static class PostbackKey
+        {
+            public const string TokenizerPostback = "TokenizerPostback";
+            public const string CurrencyTypeChange = "CurrencyTypeChange";
+        }
+
         #region Controls
 
         private HiddenFieldWithClass _hfPaymentInfoToken;
@@ -47,14 +59,56 @@ namespace Rock.MyWell.Controls
 
         private MyWellGateway _myWellGateway;
 
-        #region Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+        #region IHostedGatewayPaymentControlTokenEvent
 
         /// <summary>
         /// Occurs when a payment token is received from the hosted gateway
         /// </summary>
         public event EventHandler<Rock.Financial.HostedGatewayPaymentControlTokenEventArgs> TokenReceived;
 
-        #endregion Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+        #endregion IHostedGatewayPaymentControlTokenEvent
+
+        #region Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent
+
+        /// <summary>
+        /// Occurs when the CurrencyType option is changed (ACH or CreditCard)
+        /// </summary>
+        public event EventHandler<HostedGatewayPaymentControlCurrencyTypeEventArgs> CurrencyTypeChange;
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        /// <value>
+        /// The currency type value.
+        /// </value>
+        public DefinedValueCache CurrencyTypeValue
+        {
+            get
+            {
+                EnsureChildControls();
+                var currencyTypeValue = _hfSelectedPaymentType.Value.ConvertToEnumOrNull<MyWellPaymentType>();
+                if ( currencyTypeValue == null )
+                {
+                    if ( EnabledPaymentTypes.Contains( MyWellPaymentType.card ) )
+                    {
+                        currencyTypeValue = MyWellPaymentType.card;
+                    }
+                    else
+                    {
+                        currencyTypeValue = MyWellPaymentType.ach;
+                    }
+                }
+
+                if ( currencyTypeValue == MyWellPaymentType.ach )
+                {
+                    return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                }
+
+                return DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+            }
+        }
+
+        #endregion Rock.Financial.IHostedGatewayPaymentControlCurrencyTypeEvent        
 
         /// <summary>
         /// Gets or sets the gateway base URL.
@@ -89,6 +143,12 @@ namespace Rock.MyWell.Controls
             {
                 EnsureChildControls();
                 _hfEnabledPaymentTypesJSON.Value = value.Select( a => a.ConvertToString() ).ToJson();
+            }
+
+            private get
+            {
+                EnsureChildControls();
+                return _hfEnabledPaymentTypesJSON.Value?.FromJsonOrNull<MyWellPaymentType[]>();
             }
         }
 
@@ -162,10 +222,10 @@ namespace Rock.MyWell.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            // Script that lets us use the Tokenizer API (see https://sandbox.gotnpgateway.com/docs/tokenizer/)
+            // Script that lets us use the Tokenizer API (see https://sandbox.gotnpgateway.com/docs/tokenizer/).
             RockPage.AddScriptSrcToHead( this.Page, "gotnpgatewayTokenizer", $"{GatewayBaseUrl}/tokenizer/tokenizer.js" );
 
-            // Script that contains the initializeTokenizer scripts for us to use on the client
+            // Script that contains the initializeTokenizer scripts for us to use on the client.
             System.Web.UI.ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "myWellGatewayTokenizerBlock", Scripts.gatewayTokenizer, true );
 
             System.Web.UI.ScriptManager.RegisterStartupScript( this, this.GetType(), "myWellGatewayTokenizerStartup", $"initializeTokenizer('{this.ClientID}');", true );
@@ -179,20 +239,25 @@ namespace Rock.MyWell.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            var updatePanel = this.ParentUpdatePanel();
+            string postbackControlId;
+            if ( updatePanel != null )
+            {
+                postbackControlId = updatePanel.ClientID;
+            }
+            else
+            {
+                postbackControlId = this.ID;
+            }
+
             if ( TokenReceived != null )
             {
-                var updatePanel = this.ParentUpdatePanel();
-                string postbackControlId;
-                if ( updatePanel != null )
-                {
-                    postbackControlId = updatePanel.ClientID;
-                }
-                else
-                {
-                    postbackControlId = this.ID;
-                }
+                this.Attributes["data-tokenizer-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}={PostbackKey.TokenizerPostback}')";
+            }
 
-                this.Attributes["data-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}=TokenizerPostback')";
+            if ( CurrencyTypeChange != null )
+            {
+                this.Attributes["data-currencychange-postback-script"] = $"javascript:__doPostBack('{postbackControlId}', '{this.ID}={PostbackKey.CurrencyTypeChange}')";
             }
 
             base.Render( writer );
@@ -208,42 +273,80 @@ namespace Rock.MyWell.Controls
 
             if ( this.Page.IsPostBack )
             {
-                string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+                HandleCustomPostbackEvents();
+            }
+        }
 
-                if ( eventArgs.Length >= 2 )
+        /// <summary>
+        /// Handles the custom postback events.
+        /// </summary>
+        private void HandleCustomPostbackEvents()
+        {
+            string[] eventArgs = ( this.Page.Request.Form["__EVENTARGUMENT"] ?? string.Empty ).Split( new[] { "=" }, StringSplitOptions.RemoveEmptyEntries );
+
+            if ( eventArgs.Length < 2 )
+            {
+                // Nothing custom is in postback.
+                return;
+            }
+
+            if ( eventArgs[0] != this.ID )
+            {
+                // Not from this control.
+                return;
+            }
+
+            // The gatewayTokenizer script will pass back '{this.ID}=TokenizerPostback' in a postback. If so, we know this is a postback from that.
+            // For currency changes (ACH vs Card) The gatewayTokenizer script will pass back '{this.ID}=CurrencyTypeChange' in a postback. If so, we know this is a postback from that.
+            if ( eventArgs[1] == PostbackKey.TokenizerPostback )
+            {
+                HandleTokenizePostback();
+            }
+            else if ( eventArgs[1] == PostbackKey.CurrencyTypeChange )
+            {
+                HandleCurrencyTypeChangePostback();
+            }
+        }
+
+        /// <summary>
+        /// Handles the currency type change postback.
+        /// </summary>
+        private void HandleCurrencyTypeChangePostback()
+        {
+            CurrencyTypeChange?.Invoke( this, new HostedGatewayPaymentControlCurrencyTypeEventArgs { hostedGatewayPaymentControl = this } );
+        }
+
+        /// <summary>
+        /// Handles the tokenize postback.
+        /// </summary>
+        private void HandleTokenizePostback()
+        {
+            Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
+
+            var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+
+            if ( tokenResponse?.IsSuccessStatus() != true )
+            {
+                hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
+
+                if ( tokenResponse.HasValidationError() )
                 {
-                    // gatewayTokenizer will pass back '{this.ID}=TokenizerPostback' in a postback. If so, we know this is a postback from that
-                    if ( eventArgs[0] == this.ID && eventArgs[1] == "TokenizerPostback" )
-                    {
-                        Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
-
-                        var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
-
-                        if ( tokenResponse?.IsSuccessStatus() != true )
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
-
-                            if ( tokenResponse.HasValidationError() )
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse.ValidationMessage;
-                            }
-                            else
-                            {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
-                            }
-                        }
-                        else
-                        {
-                            hostedGatewayPaymentControlTokenEventArgs.IsValid = true;
-                            hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
-                        }
-
-                        hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
-
-                        TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
-                    }
+                    hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse.ValidationMessage;
+                }
+                else
+                {
+                    hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
                 }
             }
+            else
+            {
+                hostedGatewayPaymentControlTokenEventArgs.IsValid = true;
+                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = null;
+            }
+
+            hostedGatewayPaymentControlTokenEventArgs.Token = _hfPaymentInfoToken.Value;
+
+            TokenReceived?.Invoke( this, hostedGatewayPaymentControlTokenEventArgs );
         }
 
         /// <summary>
@@ -261,6 +364,7 @@ namespace Rock.MyWell.Controls
             _hfEnabledPaymentTypesJSON = new HiddenFieldWithClass() { ID = "_hfEnabledPaymentTypesJSON", CssClass = "js-enabled-payment-types" };
             Controls.Add( _hfEnabledPaymentTypesJSON );
 
+            // This will have 'ach' or 'card' as a value.
             _hfSelectedPaymentType = new HiddenFieldWithClass() { ID = "_hfSelectedPaymentType", CssClass = "js-selected-payment-type" };
             Controls.Add( _hfSelectedPaymentType );
 
@@ -282,7 +386,7 @@ namespace Rock.MyWell.Controls
 
             lPaymentSelectorHTML.Text = $@"
 <div class='gateway-type-selector btn-group btn-group-justified' role='group'>
-    <a class='btn btn-default active js-payment-creditcard payment-creditcard' runat='server'>
+    <a class='btn btn-primary active js-payment-creditcard payment-creditcard' runat='server'>
         Card
     </a>
     <a class='btn btn-default js-payment-ach payment-ach' runat='server'>

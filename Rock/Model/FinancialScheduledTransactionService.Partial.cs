@@ -22,6 +22,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
@@ -135,10 +136,10 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Reactivate( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null &&
-                scheduledTransaction.FinancialGateway != null &&
-                scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
             {
+                scheduledTransaction.InactivateDateTime = null;
+
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
                     scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
@@ -147,14 +148,7 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages );
                 }
             }
 
@@ -170,10 +164,10 @@ namespace Rock.Model
         /// <returns></returns>
         public bool Cancel( FinancialScheduledTransaction scheduledTransaction, out string errorMessages )
         {
-            if ( scheduledTransaction != null &&
-                scheduledTransaction.FinancialGateway != null &&
-                scheduledTransaction.FinancialGateway.IsActive )
+            if ( scheduledTransaction != null && scheduledTransaction.FinancialGateway != null && scheduledTransaction.FinancialGateway.IsActive )
             {
+                scheduledTransaction.InactivateDateTime = RockDateTime.Now;
+
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
                     scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
@@ -182,14 +176,7 @@ namespace Rock.Model
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
                 if ( gateway != null )
                 {
-                    if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    return gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages );
                 }
             }
 
@@ -382,9 +369,9 @@ namespace Rock.Model
                                 }
 
                                 transaction.FinancialPaymentDetail.AccountNumberMasked = financialPaymentDetail.AccountNumberMasked;
-                                transaction.FinancialPaymentDetail.NameOnCardEncrypted = financialPaymentDetail.NameOnCardEncrypted;
-                                transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = financialPaymentDetail.ExpirationMonthEncrypted;
-                                transaction.FinancialPaymentDetail.ExpirationYearEncrypted = financialPaymentDetail.ExpirationYearEncrypted;
+                                transaction.FinancialPaymentDetail.NameOnCard = financialPaymentDetail.NameOnCard;
+                                transaction.FinancialPaymentDetail.ExpirationMonth = financialPaymentDetail.ExpirationMonth;
+                                transaction.FinancialPaymentDetail.ExpirationYear = financialPaymentDetail.ExpirationYear;
                                 transaction.FinancialPaymentDetail.BillingLocationId = financialPaymentDetail.BillingLocationId;
                                 if ( financialPaymentDetail.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
                                 {
@@ -422,6 +409,7 @@ namespace Rock.Model
                                 transactionDetail.AccountId = detail.AccountId;
                                 transactionDetail.EntityTypeId = detail.EntityTypeId;
                                 transactionDetail.EntityId = detail.EntityId;
+                                transactionDetail.FeeCoverageAmount = detail.FeeCoverageAmount;
 
                                 if ( detail.Amount <= remainingAmount )
                                 {
@@ -573,15 +561,15 @@ namespace Rock.Model
             }
 
             // Queue a transaction to update the status of all affected scheduled transactions
-            var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
-            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
+            var updatePaymentStatusTxn = new UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
+            RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
 
             if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
                 // Queue a transaction to send receipts
                 var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
-                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
 
             // Queue transactions to launch failed payment workflow
@@ -591,16 +579,16 @@ namespace Rock.Model
                 {
                     // Queue a transaction to send payment failure
                     var newTransactionIds = failedPayments.Select( t => t.Id ).ToList();
-                    var sendPaymentFailureTxn = new Rock.Transactions.SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
+                    var sendPaymentFailureTxn = new SendPaymentReceipts( failedPaymentEmail.Value, newTransactionIds );
+                    RockQueue.TransactionQueue.Enqueue( sendPaymentFailureTxn );
                 }
 
                 if ( failedPaymentWorkflowType.HasValue )
                 {
                     // Queue a transaction to launch workflow
                     var workflowDetails = failedPayments.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
-                    var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
+                    var launchWorkflowsTxn = new LaunchWorkflowsTransaction( failedPaymentWorkflowType.Value, workflowDetails );
+                    RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }
 

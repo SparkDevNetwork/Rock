@@ -24,6 +24,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -135,6 +136,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsAchievementsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is message bus event publish enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is message bus event publish enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsMessageBusEventPublishEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
@@ -290,7 +300,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this instance is system; otherwise, <c>false</c>.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual bool IsSystem
         {
             get { return IsSecured || IsEntity; }

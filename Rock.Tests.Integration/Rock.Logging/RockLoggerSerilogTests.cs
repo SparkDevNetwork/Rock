@@ -79,6 +79,22 @@ namespace Rock.Tests.Integration.Logging
         }
 
         [TestMethod]
+        public void LoggerDeleteShouldRemoveFiles()
+        {
+            var logger = GetTestLogger();
+
+            CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
+
+            logger.Close();
+
+            Assert.That.AreEqual( logger.LogConfiguration.NumberOfLogFiles, logger.LogFiles.Count );
+
+            logger.Delete();
+
+            Assert.That.AreEqual( 0, logger.LogFiles.Count );
+        }
+
+        [TestMethod]
         public void LoggerShouldKeepOnlyMaxFileCount()
         {
             var logger = GetTestLogger();
@@ -108,7 +124,7 @@ namespace Rock.Tests.Integration.Logging
 
             logger.LogConfiguration.LogPath = $"{expectedLogFolder}\\{Guid.NewGuid()}.log";
             logger.LogConfiguration.NumberOfLogFiles = expectedLogCount;
-            logger.LogConfiguration.LastUpdated = DateTime.Now;
+            logger.LogConfiguration.LastUpdated = RockDateTime.Now;
 
             CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles + 2 );
 
@@ -153,7 +169,7 @@ namespace Rock.Tests.Integration.Logging
 
             logger.LogConfiguration.LogPath = $"{expectedLogFolder}\\{Guid.NewGuid()}.log";
             logger.LogConfiguration.MaxFileSize = expectedLogSize;
-            logger.LogConfiguration.LastUpdated = DateTime.Now;
+            logger.LogConfiguration.LastUpdated = RockDateTime.Now;
 
             sw = System.Diagnostics.Stopwatch.StartNew();
             CreateLogFiles( logger, logger.LogConfiguration.MaxFileSize, logger.LogConfiguration.NumberOfLogFiles );
@@ -915,7 +931,7 @@ namespace Rock.Tests.Integration.Logging
             var excludedLogMessage = GetSimpleExpectedString( logGuid, "CRM", "Warning" );
 
             logger.LogConfiguration.DomainsToLog.Add( "CRM" );
-            logger.LogConfiguration.LastUpdated = DateTime.Now;
+            logger.LogConfiguration.LastUpdated = RockDateTime.Now;
 
             logGuid = $"{Guid.NewGuid()}";
             logger.Warning( "CRM", logGuid );
@@ -961,7 +977,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = numberOfLogFiles,
                 DomainsToLog = domainsToLog,
                 LogPath = $"{logFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
             return ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
         }

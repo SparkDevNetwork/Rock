@@ -42,7 +42,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
@@ -65,7 +65,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
@@ -74,7 +74,7 @@ namespace Rock.Tests.Integration.Logging
             logger.Close();
 
             System.IO.File.Delete( config.LogPath );
-            
+
             var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
 
             var currentPageIndex = 0;
@@ -82,6 +82,28 @@ namespace Rock.Tests.Integration.Logging
 
             var results = rockReader.GetEvents( currentPageIndex, pageSize );
             Assert.That.AreEqual( 0, results.Count );
+        }
+
+        [TestMethod]
+        public void RockLogReaderShouldReturnCorrectRecordCount()
+        {
+            var config = new RockLogConfiguration
+            {
+                LogLevel = RockLogLevel.All,
+                MaxFileSize = 1,
+                NumberOfLogFiles = 3,
+                DomainsToLog = new List<string> { "OTHER" },
+                LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
+                LastUpdated = RockDateTime.Now
+            };
+
+            var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
+
+            var expectedLogs = CreateLogFiles( logger );
+
+            var rockReader = ReflectionHelper.InstantiateInternalObject<IRockLogReader>( "Rock.Logging.RockSerilogReader", logger );
+
+            Assert.That.AreEqual( expectedLogs.Count, rockReader.RecordCount );
         }
 
         [TestMethod]
@@ -94,7 +116,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
@@ -134,7 +156,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
@@ -161,7 +183,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );
@@ -188,7 +210,7 @@ namespace Rock.Tests.Integration.Logging
                 NumberOfLogFiles = 3,
                 DomainsToLog = new List<string> { "OTHER" },
                 LogPath = $"{LogFolder}\\{Guid.NewGuid()}.log",
-                LastUpdated = DateTime.Now
+                LastUpdated = RockDateTime.Now
             };
 
             var logger = ReflectionHelper.InstantiateInternalObject<IRockLogger>( "Rock.Logging.RockLoggerSerilog", config );

@@ -42,19 +42,38 @@ iframe.email-body {
 
 // 2. Communication Entry
 // -------------------------
-.emaileditor-wrapper {
-  position: relative;
-  height: 900px;
-  margin: -15px;
+#emaileditor,
+.panel-fill-body {
+  height: ~"calc(100vh - var(--email-editor-offset, 360px))";
+  min-height: 300px;
+  margin: -@panel-body-padding -@panel-body-padding 0 -@panel-body-padding;
+  //border-bottom: 1px solid @panel-border;
 }
 
-#emaileditor {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+// TODO: Find Better Way
+.communication-entry-wizard {
+  .actions {
+    margin-top: 0 !important;
+  }
 }
+
+.panel-actions-bordered {
+  padding: @panel-body-padding @panel-body-padding 0;
+  margin: @panel-body-padding -@panel-body-padding 0;
+  border-top: 1px solid @panel-border;
+}
+
+#emaileditor-properties {
+  width: 40%;
+  padding: (@grid-gutter-width / 2);
+  background-color: @panel-heading-bg;
+
+  .actions {
+    margin-right: -(@grid-gutter-width / 2);
+    margin-left: -(@grid-gutter-width / 2);
+  }
+}
+
 
 #section-email {
   position: absolute;
@@ -80,6 +99,7 @@ iframe.email-body {
   bottom: 0;
   left: 0;
   width: 60%;
+  border-right: 1px solid @panel-border;
 }
 
 .emaileditor-iframe {
@@ -90,19 +110,12 @@ iframe.email-body {
   width: 100%;
   height: 100%;
   border: 0;
-  border-right: 1px solid @panel-border;
 }
 
-#emaileditor-properties {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 40%;
-  padding: 12px;
-  background-color: @panel-heading-bg;
+.emaileditor-propertypanels .propertypanel-title {
+  margin-top: 0;
+  font-weight: @font-weight-semibold;
 }
-
 
 // 3. Communication Wizard
 // -------------------------
@@ -116,6 +129,7 @@ iframe.email-body {
   overflow: hidden;
   color: @text-color;
   border: 1px solid @panel-border;
+  outline-offset: -1px;
 
   &:focus {
     color: @text-color;
@@ -123,7 +137,7 @@ iframe.email-body {
 
   &:hover {
     color: @text-color;
-    border: 2px solid @alert-info-border;
+    outline: 2px solid @alert-info-border;
   }
 
   label {
@@ -132,10 +146,10 @@ iframe.email-body {
 }
 
 .template-selected {
-  border: 2px solid @alert-info-text;
+  outline: 2px solid @alert-info-text;
 
   &:hover {
-    border: 2px solid @alert-info-text;
+    outline: 2px solid @alert-info-text;
   }
 
   &::before {
@@ -173,8 +187,20 @@ iframe.email-body {
 // 5. SMS Conversations
 // -------------------------
 
-.sms-conversations-container {
+.sms-conversations-parent {
   position: relative;
+  height: 100%;
+  min-height: 500px;
+  min-height: ~"var(--block-min-height, calc(100vh - 200px))";
+  overflow: auto;
+}
+
+.sms-conversations-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: -ms-flexbox;
   display: flex;
   -ms-flex-wrap: wrap;
@@ -208,9 +234,10 @@ iframe.email-body {
     position: relative;
     flex-grow: 0;
     min-width: 100%;
-    height: ~"calc(100vh - 200px)";
+    height: 100%;
     min-height: 300px;
     border-right: 1px solid rgba(0,0,0, .2);
+
     @media (min-width: 599px) {
       min-width: 320px;
     }
@@ -220,14 +247,14 @@ iframe.email-body {
     }
 
     .header {
-      height: 49px;
       padding: 7px 16px;
+      font-weight: @font-weight-normal;
       background-color: @panel-heading-bg;
     }
 
     .overflow-scroll {
+      flex: 1 1 0;
       width: 100%;
-      height: ~"calc(100% - 50px)";
       overflow: hidden;
       overflow-y: scroll;
     }
@@ -282,24 +309,40 @@ iframe.email-body {
   .messages-outer-container {
     position: relative;
     flex-grow: 1;
-    padding: 15px;
-    overflow-y: auto;
+    height: 100%;
+    overflow: hidden;
     -webkit-box-flex: 1;
     -ms-flex-positive: 1;
   }
 
+  .messages-scroll-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    overflow-y: scroll;
+  }
+
+  .note-editor {
+    padding: 8px 12px;
+    border-top: 1px solid @panel-border;
+  }
+
   .footer {
+    position: relative;
     flex-shrink: 0;
     border-top: 1px solid @panel-border;
     -ms-flex-negative: 0;
 
     .form-control {
-      padding: 18px 86px 18px 12px;
+      padding: 18px 162px 18px 12px;
       resize: none;
       border: 0;
     }
 
-    a {
+    .actions {
       position: absolute;
       right: 12px;
       bottom: 10px;
@@ -319,7 +362,7 @@ iframe.email-body {
     flex-direction: column;
     flex-grow: 1;
     min-width: 0;
-    height: ~"calc(100vh - 200px)";
+    height: 100%;
     min-height: 300px;
     -webkit-box-orient: vertical;
     -webkit-box-direction: normal;
@@ -338,10 +381,33 @@ iframe.email-body {
       transform: translateX(103%);
       will-change: transform;
     }
+
+    .sms-image-uploader {
+      position: relative;
+      width: 106px;
+      margin: 0 auto;
+    }
+
+    .sms-image-uploader-container {
+      position: absolute;
+      right: -1px;
+      bottom: -1px;
+      width: 220px;
+      max-width: 100%;
+      padding: 8px;
+      margin: 0;
+      background: @well-bg;
+      border: 1px solid @panel-border;
+
+      .close {
+        font-size: 18px;
+      }
+    }
   }
 
   .conversation-back {
     display: none;
+
     @media (max-width: 599px) {
       display: block;
     }
@@ -376,7 +442,6 @@ iframe.email-body {
     -webkit-align-items: flex-start;
     align-items: flex-start;
     -webkit-box-orient: vertical;
-
     -webkit-box-align: start;
 
     &.outbound {
@@ -423,6 +488,12 @@ iframe.email-body {
 
     &.inbound .sender-name {
       display: none;
+    }
+
+    .sms-image {
+      min-height: 100px;
+      margin-top: 5px;
+      border-radius: 10px;
     }
   }
 }
@@ -502,6 +573,13 @@ iframe.email-body {
     margin-bottom: @line-height-computed;
     background-color: @panel-heading-bg; // Replace with @panel-widget-heading-bg
     border: 1px solid @panel-heading-border; // Replace with @panel-widget-heading-border
+  }
+}
+
+.mobile-block-types {
+  .form-control {
+    border-color: transparent;
+    border-radius: 0;
   }
 }
 
@@ -598,9 +676,10 @@ iframe.email-body {
 }
 
 .panel-palette {
-  margin: 20px;
-  border: 1px solid @panel-border;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
+  margin: 0;
+  border: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid @panel-border;
 
   .panel-heading {
     font-weight: 500;
@@ -640,12 +719,12 @@ iframe.email-body {
   }
 
   h4 {
-    padding: 12px 15px;
-    margin: 1px -15px 16px;
+    padding: 12px @panel-body-padding;
+    margin: 1px -@panel-body-padding 16px;
     font-size: 18px;
     font-weight: 500;
     background: @panel-heading-bg;
-    border-top: 1px solid fade(@panel-border, 100%);
+    border-top: 1px solid @panel-border;
   }
 
   .component.gu-transit {

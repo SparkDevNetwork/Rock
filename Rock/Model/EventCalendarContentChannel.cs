@@ -25,7 +25,7 @@ using Rock.Security;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an event calendar item.
+    /// Represents an event calendar content channel.
     /// </summary>
     [RockDomain( "Event" )]
     [Table( "EventCalendarContentChannel" )]
@@ -34,10 +34,10 @@ namespace Rock.Model
     {
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem belongs to. This property is required.
+        /// Gets or sets the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarContentChannel belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarContentChannel is a member of.
         /// </value>
         [Required]
         [HideFromReporting]
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.ContentChannel"/>. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that this EventCalendarItem is a member of.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EventItem"/> that this EventCalendarContentChannel is a member of.
         /// </value>
         [Required]
         [HideFromReporting]
@@ -58,19 +58,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
+        /// Gets or sets the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarContentChannel is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
+        /// The <see cref="Rock.Model.EventCalendar"/> that this EventCalendarContentChannel is a member of.
         /// </value>
         [DataMember]
         public virtual EventCalendar EventCalendar { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventCalendarItem is a member of.
+        /// Gets or sets the <see cref="Rock.Model.ContentChannel"/> that this EventCalendarContentChannel is a member of.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.EventItem"/> that this EventCalendarItem is a member of.
+        /// The <see cref="Rock.Model.EventItem"/> that this EventCalendarContentChannel is a member of.
         /// </value>
         [DataMember]
         public virtual ContentChannel ContentChannel { get; set; }

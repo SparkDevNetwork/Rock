@@ -33,17 +33,18 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the group member identifier.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/> identifier.
         /// </summary>
         /// <value>
         /// The group member identifier.
         /// </value>
         [DataMember]
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
+        [IgnoreCanDelete]
         public int GroupMemberId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location identifier.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> identifier.
         /// </summary>
         /// <value>
         /// The location identifier.
@@ -53,7 +54,7 @@ namespace Rock.Model
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule identifier.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/> identifier.
         /// </summary>
         /// <value>
         /// The schedule identifier.
@@ -67,7 +68,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the group member.
+        /// Gets or sets the <see cref="Rock.Model.GroupMember"/>.
         /// </summary>
         /// <value>
         /// The group member.
@@ -75,7 +76,7 @@ namespace Rock.Model
         public virtual GroupMember GroupMember { get; set; }
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the <see cref="Rock.Model.Location"/>.
         /// </summary>
         /// <value>
         /// The location.
@@ -84,7 +85,7 @@ namespace Rock.Model
         public virtual Location Location { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule.
+        /// Gets or sets the <see cref="Rock.Model.Schedule"/>.
         /// </summary>
         /// <value>
         /// The schedule.
@@ -104,7 +105,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString() ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
+            return $"{GroupMember} in {this.GroupMember.Group} is assigned to {Location.ToString( true ) ?? "any location"} at {Schedule.ToString() ?? "any schedule"}. ";
         }
 
         #endregion

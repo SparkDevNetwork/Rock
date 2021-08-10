@@ -302,7 +302,7 @@ DROP DATABASE [{name}];";
             {
                 FileInfo fi = new FileInfo( file );
 
-                if ( fi.CreationTime < DateTime.Now.AddDays( -90 ) )
+                if ( fi.CreationTime < RockDateTime.Now.AddDays( -90 ) )
                 {
                     fi.Delete();
                 }
@@ -378,8 +378,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 using ( var cmd = connection.CreateCommand() )
                 {
                     cmd.CommandText = $@"USE [{dbName}];
-DBCC SHRINKFILE ({dbName}, 1);
-DBCC SHRINKFILE ({dbName}_Log, 1);
+DBCC SHRINKFILE ([{dbName}], 1);
+DBCC SHRINKFILE ([{dbName}_Log], 1);
 USE [master];";
                     cmd.ExecuteNonQuery();
                 }

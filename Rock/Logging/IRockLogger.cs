@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Logging
 {
@@ -32,9 +33,34 @@ namespace Rock.Logging
         IRockLogConfiguration LogConfiguration { get; }
 
         /// <summary>
+        /// Determins if the logger is enabled for the specified RockLogLevel and Domain.
+        /// </summary>
+        /// <param name="logLevel">The log level.</param>
+        /// <param name="domain">The domain.</param>
+        /// <returns></returns>
+        bool ShouldLogEntry( RockLogLevel logLevel, string domain );
+
+        /// <summary>
+        /// Gets the log files.
+        /// </summary>
+        /// <value>
+        /// The log files.
+        /// </value>
+        List<string> LogFiles { get; }
+
+        /// <summary>
+        /// Ensures the logger exists and updated.
+        /// </summary>
+        void ReloadConfiguration();
+
+        /// <summary>
         /// Closes this instance and releases file locks.
         /// </summary>
         void Close();
+        /// <summary>
+        /// Deletes all of the log files.
+        /// </summary>
+        void Delete();
         /// <summary>
         /// Debugs the specified exception.
         /// </summary>

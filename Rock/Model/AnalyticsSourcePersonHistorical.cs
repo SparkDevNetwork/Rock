@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.ViewModel;
 
 namespace Rock.Model
 {
@@ -32,6 +33,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourcePersonHistorical" )]
     [DataContract]
     [HideFromReporting]
+    [ViewModelExclude]
     public class AnalyticsSourcePersonHistorical : AnalyticsSourcePersonBase<AnalyticsSourcePersonHistorical>
     {
         // intentionally blank
@@ -323,10 +325,10 @@ namespace Rock.Model
         public Gender Gender { get; set; }
 
         /// <summary>
-        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.
+        /// Gets or sets Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's martial status.  This value is nullable.
+        /// A <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> representing the Person's marital status.  This value is nullable.
         /// </value>
         [AnalyticHistoryField]
         [DataMember]

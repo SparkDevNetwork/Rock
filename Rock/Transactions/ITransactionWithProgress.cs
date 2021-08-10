@@ -21,6 +21,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Represents a Transaction that runs asynchronously
     /// </summary>
+    [Obsolete( "Use Rock.Tasks instead of transactions" )]
+    [RockObsolete( "1.13" )]
     public interface ITransactionWithProgress : ITransaction
     {
         /// <summary>
@@ -32,6 +34,4 @@ namespace Rock.Transactions
         /// </value>
         Progress<int?> Progress { get; }
     }
-
-    
 }

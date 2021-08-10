@@ -1,0 +1,243 @@
+.kpi-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+
+  > .kpi {
+    min-width: var(--kpi-min-width, 220px);
+    margin: 8px;
+  }
+
+  @media (min-width: @screen-sm) {
+    > .kpi {
+      max-width: ~"calc(50% - 16px)";
+      max-width: ~"calc(var(--kpi-col-sm, 50%) - 16px)";
+    }
+  }
+
+  @media (min-width: @screen-md) {
+    > .kpi {
+      max-width: ~"calc(33.3333% - 16px)";
+      max-width: ~"calc(var(--kpi-col-md, 33.33333%) - 16px)";
+    }
+    -ms-flex-pack: distribute;
+    justify-content: space-around;
+  }
+
+  @media (min-width: @screen-lg) {
+    > .kpi {
+      max-width: ~"calc(25% - 16px)";
+      max-width: ~"calc(var(--kpi-col-lg, 25%) - 16px)";
+    }
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+  }
+}
+
+.kpi-title {
+  margin-top: 0;
+  font-weight: @font-weight-semibold;
+}
+
+.kpi {
+  display: flex;
+  flex-basis: 100%;
+  flex-grow: 1;
+  align-items: center;
+  margin: 0 8px 16px;
+  overflow-y: hidden;
+  font-size: 26px;
+  color: @persondetails-badge-color;
+}
+
+.kpi-card {
+  background: @white;
+  border: 1px solid #000;
+  border-color: currentColor;
+  border-radius: 4px;
+}
+
+.kpi-stat {
+  flex: 1 1 0;
+  align-self: flex-start;
+  min-width: 0;
+  padding: 8px 16px;
+  overflow: hidden;
+
+  .kpi-icon + & {
+    align-self: center;
+  }
+}
+
+.kpi-value {
+  display: block;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.kpi-subvalue {
+  padding-left: .4em;
+  font-size: .6em;
+  font-weight: @font-weight-normal;
+  color: #9f9f9f;
+}
+
+.kpi-label,
+.kpi-secondary-label {
+  display: block;
+  font-size: .538em;
+  line-height: 1.1;
+  color: @text-muted;
+}
+
+.kpi-secondary-label {
+  font-size: 12px;
+  line-height: 12px;
+  opacity: .7;
+}
+
+.kpi-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // min-width: 50px;
+  max-width: 35%;
+  height: 100%;
+  font-size: 32px;
+  vertical-align: top;
+
+  .kpi-card & {
+    margin-left: 12px;
+  }
+
+  .has-icon-bg & {
+    display: block;
+    width: max-content;
+    margin-left: 0;
+
+    .kpi-content {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Force 48px BG for kpi-sm
+  .has-icon-bg.kpi-sm > & {
+    display: flex;
+    flex-grow: 1;
+    width: 48px;
+    min-width: 48px;
+    max-width: 48px;
+  }
+
+  .svg-placeholder {
+    display: none;
+    width: 2em;
+    height: auto;
+    background: currentColor;
+    border-radius: 4px;
+    opacity: 0;
+
+    .kpi-card > & {
+      //width: 100%;
+      height: 100%;
+      border-radius: 0;
+    }
+
+    .has-icon-bg & {
+      display: block;
+      opacity: .2;
+    }
+  }
+}
+
+
+// Firefox does not correctly render.
+@supports not (width: fit-content) {
+  .kpi-lg.has-icon-bg .kpi-icon {
+    min-width: 86px;
+  }
+
+  .has-icon-bg .kpi-icon {
+    min-width: 57px;
+    height: 100%;
+
+    &::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: block;
+      width: 100%;
+      content: " ";
+      background: currentColor;
+      opacity: .2;
+    }
+
+    .svg-placeholder {
+      opacity: 0 !important;
+    }
+  }
+}
+
+.kpi-sm {
+  .kpi-icon {
+    font-size: 24px;
+  }
+
+  .kpi-stat {
+    padding: 4px 8px;
+  }
+}
+
+.kpi-lg,
+.kpi-xl {
+  font-size: 30px;
+
+  .kpi-stat {
+    padding: 16px 10px;
+  }
+
+  .kpi-label {
+    padding: 3px 0;
+    font-size: 17px;
+    font-weight: @font-weight-base;
+  }
+
+  .kpi-icon {
+    overflow: visible;
+    font-size: 48px;
+    text-align: center;
+  }
+}
+
+.kpi-lg-label {
+  &:extend(.kpi-label);
+  &:extend(.kpi-lg .kpi-label);
+  font-size: 17px;
+}
+
+.kpi-xl {
+  font-size: 48px;
+
+  .kpi-icon {
+    font-size: 54px;
+  }
+}
+
+.stat-value-lg {
+  display: block;
+  font-size: 45px;
+  font-weight: 700;
+  line-height: 1;
+}

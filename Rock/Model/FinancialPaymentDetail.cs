@@ -27,6 +27,7 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -74,6 +75,7 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
         public int? CreditCardTypeValueId { get; set; }
 
+        private string _nameOnCardEncrypted = null;
         /// <summary>
         /// Gets or sets the name on card encrypted.
         /// </summary>
@@ -82,7 +84,58 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 256 )]
-        public string NameOnCardEncrypted { get; set; }
+        [Obsolete( "Use NameOnCard" )]
+        [RockObsolete( "1.12.4" )]
+        public string NameOnCardEncrypted
+        {
+            get
+            {
+                // We are only checking null here because empty string is valid.
+                if ( _nameOnCard.IsNull() )
+                {
+                    return _nameOnCardEncrypted;
+                }
+                return Encryption.EncryptString( _nameOnCard );
+            }
+            set
+            {
+                _nameOnCardEncrypted = value;
+            }
+        }
+
+        private string _nameOnCard = null;
+        /// <summary>
+        /// Gets the name on card.
+        /// </summary>
+        /// <value>
+        /// The name on card.
+        /// </value>
+        [DataMember]
+        public string NameOnCard
+        {
+            get
+            {
+                // We are only checking null here because empty string is valid.
+                if ( _nameOnCard.IsNull() && _nameOnCardEncrypted.IsNotNullOrWhiteSpace() )
+                {
+                    /* MDP 07-20-2021
+
+                    If Decryption Fails, just set NameOnCard to EmptyString (not null).
+                    This will prevent it from endlessly trying to decrypt it.
+
+                    */
+                    return Encryption.DecryptString( _nameOnCardEncrypted ) ?? string.Empty;
+                }
+                return _nameOnCard;
+            }
+            set
+            {
+                _nameOnCard = value;
+            }
+        }
+
+        private string _expirationMonthEncrypted = null;
+        private string _expirationYearEncrypted = null;
 
         /// <summary>
         /// Gets or sets the expiration month encrypted. Use <seealso cref="ExpirationMonth"/> to get the unencrypted version of Month.
@@ -92,7 +145,24 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 256 )]
-        public string ExpirationMonthEncrypted { get; set; }
+        [Obsolete( "Use ExpirationMonth" )]
+        [RockObsolete( "1.12.4" )]
+        public string ExpirationMonthEncrypted
+        {
+            get
+            {
+                if ( _expirationMonth != null )
+                {
+                    return Encryption.EncryptString( _expirationMonth.Value.ToString() );
+                }
+                return _expirationMonthEncrypted;
+            }
+
+            set
+            {
+                _expirationMonthEncrypted = value;
+            }
+        }
 
         /// <summary>
         /// Important Note: that this could be a 2 digit or 4 digit year, so use <seealso cref="ExpirationYear"/> to get the unencrypted version of this which will always return a 4 digit year.
@@ -102,7 +172,61 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 256 )]
-        public string ExpirationYearEncrypted { get; set; }
+        [Obsolete( "Use ExpirationYear" )]
+        [RockObsolete( "1.12.4" )]
+        public string ExpirationYearEncrypted
+        {
+            get
+            {
+                if ( _expirationYear != null )
+                {
+                    return Encryption.EncryptString( _expirationYear.Value.ToString() );
+                }
+                return _expirationYearEncrypted;
+            }
+            set
+            {
+                _expirationYearEncrypted = value;
+            }
+        }
+
+        private DateTime? _cardExpirationDate = null;
+
+        /// <summary>
+        /// Gets the card expiration date.
+        /// </summary>
+        /// <value>
+        /// The card expiration date.
+        /// </value>
+        [DataMember]
+        public DateTime? CardExpirationDate
+        {
+            get
+            {
+                var expMonth = ExpirationMonth;
+                var expYear = ExpirationYear;
+                if ( expMonth.HasValue && expYear.HasValue )
+                {
+                    return new DateTime( expYear.Value, expMonth.Value, DateTime.DaysInMonth( expYear.Value, expMonth.Value ) );
+                }
+
+                return null;
+            }
+            private set
+            {
+                _cardExpirationDate = value;
+                if ( _cardExpirationDate == null )
+                {
+                    _expirationMonth = null;
+                    _expirationYear = null;
+                }
+                else
+                {
+                    _expirationMonth = _cardExpirationDate.Value.Month;
+                    _expirationYear = _cardExpirationDate.Value.Year;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the billing location identifier.
@@ -125,7 +249,7 @@ namespace Rock.Model
         public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account id that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> id that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
@@ -138,29 +262,8 @@ namespace Rock.Model
 
         #region Virtual Properties
 
-        /// <summary>
-        /// Gets the name on card.
-        /// </summary>
-        /// <value>
-        /// The name on card.
-        /// </value>
-        [DataMember]
-        [HideFromReporting]
-        public string NameOnCard
-        {
-            /* MDP 2020-03-13
-               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
-            */
-
-            get
-            {
-                return Encryption.DecryptString( NameOnCardEncrypted );
-            }
-            set
-            {
-                NameOnCardEncrypted = Encryption.EncryptString( value );
-            }
-        }
+        private int? _expirationMonth = null;
+        private int? _expirationYear = null;
 
         /// <summary>
         /// Gets the expiration month by decrypting ExpirationMonthEncrypted
@@ -178,11 +281,23 @@ namespace Rock.Model
 
             get
             {
-                return Encryption.DecryptString( ExpirationMonthEncrypted ).AsIntegerOrNull();
+                if ( _expirationMonth == null && _expirationMonthEncrypted != null )
+                {
+                    /* MDP 07-20-2021
+
+                     If Decryption Fails, just set Month Year to 01/99
+                     This will help prevent endlessly trying to decrypt it 
+
+                    */
+
+                    return Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull() ?? 01;
+                }
+
+                return _expirationMonth;
             }
             set
             {
-                ExpirationMonthEncrypted = Encryption.EncryptString( value.ToStringSafe() );
+                _expirationMonth = value;
             }
         }
 
@@ -202,21 +317,36 @@ namespace Rock.Model
 
             get
             {
-                var year = Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
-
-                if ( year != null && year.Value < 100 == true )
+                if ( _expirationYear == null && _expirationYearEncrypted != null )
                 {
-                    // convert 2 digit year from 4 digit year
-                    // from https://stackoverflow.com/a/10414707/1755417
-                    year = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                    /* MDP 07-20-2021
+
+                     If Decryption Fails, just set Month Year to 01/99 (which would mean a 4 digit year of 1999, depending on Calendar.TwoDigitYearMax)
+                     This will help prevent endlessly trying to decrypt it 
+
+                    */
+
+                    return ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() ) ?? 99;
                 }
 
-                return year;
+                return _expirationYear;
             }
 
             set
             {
-                ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
+                _expirationYear = ToFourDigitYear( value );
+            }
+        }
+
+        private int? ToFourDigitYear( int? year )
+        {
+            if ( year == null || year >= 100 )
+            {
+                return year;
+            }
+            else
+            {
+                return System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
             }
         }
 
@@ -227,6 +357,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [NotMapped]
+        [LavaVisible]
         public string ExpirationDate
         {
             get
@@ -248,6 +379,7 @@ namespace Rock.Model
                 return null;
             }
         }
+
         /// <summary>
         /// Gets or sets the currency type <see cref="Rock.Model.DefinedValue"/> indicating the type of currency that was used for this
         /// transaction.
@@ -270,7 +402,7 @@ namespace Rock.Model
         public virtual DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the billing location.
+        /// Gets or sets the billing <see cref="Rock.Model.Location"/>.
         /// </summary>
         /// <value>
         /// The billing location.
@@ -279,7 +411,7 @@ namespace Rock.Model
         public virtual Location BillingLocation { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial person saved account that was used for this transaction (if there was one)
+        /// Gets or sets the <see cref="Rock.Model.FinancialPersonSavedAccount"/> that was used for this transaction (if there was one)
         /// </summary>
         /// <value>
         /// The financial person saved account.
@@ -347,7 +479,8 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumberMasked;
+            // Return the Account Number, or an empty string to avoid potential downstream issues caused by an unexpected null value.
+            return this.AccountNumberMasked.ToStringSafe();
         }
 
         /// <summary>
@@ -363,9 +496,9 @@ namespace Rock.Model
             CurrencyTypeValueId = null;
             CreditCardTypeValueId = null;
 
-            NameOnCardEncrypted = null;
-            ExpirationMonthEncrypted = null;
-            ExpirationYearEncrypted = null;
+            NameOnCard = null;
+            ExpirationMonth = null;
+            ExpirationYear = null;
         }
 
         /// <summary>
@@ -415,22 +548,24 @@ namespace Rock.Model
                 var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
-                var newLocation = new LocationService( rockContext ).Get(
-                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry );
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
+                var newLocation = new LocationService( rockContext ).Get(
+                    ccPaymentInfo.BillingStreet1, ccPaymentInfo.BillingStreet2, ccPaymentInfo.BillingCity, ccPaymentInfo.BillingState, ccPaymentInfo.BillingPostalCode, ccPaymentInfo.BillingCountry, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
+
+                if ( NameOnCard.IsNullOrWhiteSpace() && nameOnCard.IsNotNullOrWhiteSpace() )
                 {
-                    NameOnCardEncrypted = Encryption.EncryptString( nameOnCard );
+                    NameOnCard = nameOnCard;
                 }
 
                 if ( !ExpirationMonth.HasValue )
                 {
-                    ExpirationMonthEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Month.ToString() );
+                    ExpirationMonth = ccPaymentInfo.ExpirationDate.Month;
                 }
 
                 if ( !ExpirationYear.HasValue )
                 {
-                    ExpirationYearEncrypted = Encryption.EncryptString( ccPaymentInfo.ExpirationDate.Year.ToString() );
+                    ExpirationYear = ccPaymentInfo.ExpirationDate.Year;
                 }
 
                 if ( !BillingLocationId.HasValue && newLocation != null )
@@ -442,25 +577,26 @@ namespace Rock.Model
             {
                 var swipePaymentInfo = ( SwipePaymentInfo ) paymentInfo;
 
-                if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
+                if ( NameOnCard.IsNullOrWhiteSpace() && swipePaymentInfo.NameOnCard.IsNotNullOrWhiteSpace() )
                 {
-                    NameOnCardEncrypted = Encryption.EncryptString( swipePaymentInfo.NameOnCard );
+                    NameOnCard = swipePaymentInfo.NameOnCard;
                 }
 
                 if ( !ExpirationMonth.HasValue )
                 {
-                    ExpirationMonthEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Month.ToString() );
+                    ExpirationMonth = swipePaymentInfo.ExpirationDate.Month;
                 }
 
                 if ( !ExpirationYear.HasValue )
                 {
-                    ExpirationYearEncrypted = Encryption.EncryptString( swipePaymentInfo.ExpirationDate.Year.ToString() );
+                    ExpirationYear = swipePaymentInfo.ExpirationDate.Year;
                 }
             }
             else
             {
+                // since the Address info could coming from an external system (the Gateway), don't do Location validation when creating a new location
                 var newLocation = new LocationService( rockContext ).Get(
-                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country );
+                    paymentInfo.Street1, paymentInfo.Street2, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode, paymentInfo.Country, new GetLocationArgs { ValidateLocation = false, CreateNewLocation = true } );
 
                 if ( !BillingLocationId.HasValue && newLocation != null )
                 {
@@ -488,8 +624,8 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Currency Type", ( int? ) null, CurrencyTypeValue, CurrencyTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Credit Card Type", ( int? ) null, CreditCardTypeValue, CreditCardTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Name On Card", string.Empty, AccountNumberMasked, true );
-                        History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, ExpirationMonthEncrypted, true );
-                        History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, ExpirationYearEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, ExpirationMonth.ToStringSafe(), true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, ExpirationYear.ToStringSafe(), true );
                         History.EvaluateChange( HistoryChangeList, "Billing Location", string.Empty, History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
                         break;
                     }
@@ -500,8 +636,8 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Currency Type", entry.OriginalValues["CurrencyTypeValueId"].ToStringSafe().AsIntegerOrNull(), CurrencyTypeValue, CurrencyTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Credit Card Type", entry.OriginalValues["CreditCardTypeValueId"].ToStringSafe().AsIntegerOrNull(), CreditCardTypeValue, CreditCardTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Name On Card", entry.OriginalValues["AccountNumberMasked"].ToStringSafe(), AccountNumberMasked, true );
-                        History.EvaluateChange( HistoryChangeList, "Expiration Month", entry.OriginalValues["ExpirationMonthEncrypted"].ToStringSafe(), ExpirationMonthEncrypted, true );
-                        History.EvaluateChange( HistoryChangeList, "Expiration Year", entry.OriginalValues["ExpirationYearEncrypted"].ToStringSafe(), ExpirationYearEncrypted, true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Month", entry.OriginalValues["ExpirationMonth"].ToStringSafe(), ExpirationMonth.ToStringSafe(), true );
+                        History.EvaluateChange( HistoryChangeList, "Expiration Year", entry.OriginalValues["ExpirationYear"].ToStringSafe(), ExpirationYear.ToStringSafe(), true );
                         History.EvaluateChange( HistoryChangeList, "Billing Location", History.GetValue<Location>( null, entry.OriginalValues["BillingLocationId"].ToStringSafe().AsIntegerOrNull(), rockContext ), History.GetValue<Location>( BillingLocation, BillingLocationId, rockContext ) );
                         break;
                     }
@@ -572,14 +708,6 @@ namespace Rock.Model
              * https://github.com/SparkDevNetwork/Rock/commit/6953aa1986d46c9c84663ce818333425c0807c01#diff-e0c4fac8254b21998bb9235c3dee4ee9R36
              */
             this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
-
-            /* BW and MDP 2019-04-18
-              This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
-              even though they are ignored at the database level
-            */
-            Ignore( fpd => fpd.NameOnCard );
-            Ignore( fpd => fpd.ExpirationMonth );
-            Ignore( fpd => fpd.ExpirationYear );
         }
     }
 

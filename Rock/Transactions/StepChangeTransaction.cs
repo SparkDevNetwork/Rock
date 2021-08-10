@@ -29,6 +29,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Processes workflows that are triggered by changes to a Step entity.
     /// </summary>
+    [Obsolete( "Use LaunchStepChangeWorkflows Task instead." )]
+    [RockObsolete( "1.13" )]
     public class StepChangeTransaction : EntityChangeWorkflowTriggerTransactionBase<Step, StepWorkflowTrigger>
     {
         private int? StepTypeId;
@@ -56,9 +58,9 @@ namespace Rock.Transactions
             this.StepTypeId = entity.StepTypeId;
 
             // Store the Step status change parameters.
-            if ( entity.StepStatus != null )
+            if ( entity.StepStatusId != null )
             {
-                this.CurrentStepStatusId = entity.StepStatus.Id;
+                this.CurrentStepStatusId = entity.StepStatusId;
             }
 
             if ( entry.State == EntityState.Modified )
@@ -243,6 +245,8 @@ namespace Rock.Transactions
     /// <summary>
     /// Provides a pattern and base functionality for a Rock transaction that initiates one or more workflows triggered by changes to a target Entity.
     /// </summary>
+    [Obsolete( "Use LaunchEntityChangeWorkflows Task instead." )]
+    [RockObsolete( "1.13" )]
     public abstract class EntityChangeWorkflowTriggerTransactionBase<TEntity, TTrigger> : ITransaction
         where TEntity : class, IEntity
     {

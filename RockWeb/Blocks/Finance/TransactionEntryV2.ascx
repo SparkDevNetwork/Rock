@@ -46,6 +46,10 @@
 
                             <asp:Literal ID="lIntroMessage" runat="server" />
 
+                            <%-- Special input with rock-fullname class --%>
+                            <Rock:RockTextBox ID="tbRockFullName_AmountEntry" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_AmountEntry" Placeholder="Please enter name (Required)" />
+                            <Rock:NotificationBox ID="nbRockFullName_AmountEntry" runat="server" NotificationBoxType="Validation" />
+
                             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
                             <asp:Panel ID="pnlScheduledTransaction" runat="server">
@@ -54,7 +58,7 @@
                                 </div>
 
                                 <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
-                                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" />
+                                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" Label="Giving Method" AutoPostBack="true" OnSelectedIndexChanged="ddlPersonSavedAccount_SelectedIndexChanged" />
                                 </asp:Panel>
 
                                 <Rock:DatePicker ID="dtpStartDate" runat="server" AllowPastDateSelection="false" Label="Start Date" />
@@ -64,6 +68,14 @@
                             <Rock:RockTextBox ID="tbCommentEntry" runat="server" Required="true" Label="Comment" />
 
                             <Rock:NotificationBox ID="nbPromptForAmountsWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
+
+                            <Rock:HiddenFieldWithClass ID="hfCoverTheFeeCreditCardPercent" runat="server" CssClass="js-coverthefee-percent" Value="" />
+
+                            <%-- Cover the Fee checkbox (When a Saved Account is selected and we know the currency type already) --%>
+                            <asp:Panel ID="pnlGiveNowCoverTheFee" runat="server" CssClass="js-coverthefee-container" Visible="false">
+                                <Rock:RockCheckBox ID="cbGiveNowCoverTheFee" runat="server" Text="Hello $<span class='js-coverthefee-checkbox-fee-amount-text'></span> World" CssClass="js-givenow-coverthefee" />
+                            </asp:Panel>
+
                             <Rock:BootstrapButton ID="btnGiveNow" runat="server" CssClass="btn btn-primary btn-give-now" Text="Give Now" OnClick="btnGiveNow_Click" />
 
                             <a id="aHistoryBackButton" runat="server" class="btn btn-link">Previous</a>
@@ -75,7 +87,10 @@
                                 <asp:Literal ID="lAmountSummaryText" runat="server" />
                             </div>
                             <div class="amount-display">
-                                <asp:Literal runat="server" ID="lAmountSummaryAmount" />
+                                <Rock:HiddenFieldWithClass ID="hfAmountWithoutCoveredFee" runat="server" CssClass="js-amount-without-covered-fee" />
+
+                                <span class="js-account-summary-amount">
+                                    <asp:Literal runat="server" ID="lAmountSummaryAmount" /></span>
                             </div>
                         </asp:Panel>
 
@@ -87,14 +102,25 @@
 
                             <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
 
+                            <%-- Cover the Fee checkbox (When a Saved Account is not selected and we know the amount already) --%>
+                            <asp:Panel ID="pnlGetPaymentInfoCoverTheFeeCreditCard" runat="server">
+                                <Rock:RockCheckBox ID="cbGetPaymentInfoCoverTheFeeCreditCard" runat="server" Text="##" CssClass="js-getpaymentinfo-select-coverthefee-creditcard" />
+                                <Rock:HiddenFieldWithClass ID="hfAmountWithCoveredFeeCreditCard" runat="server" CssClass="js-amount-with-covered-fee-creditcard" />
+                            </asp:Panel>
+
+                            <asp:Panel ID="pnlGetPaymentInfoCoverTheFeeACH" runat="server">
+                                <Rock:RockCheckBox ID="cbGetPaymentInfoCoverTheFeeACH" runat="server" Text="##" CssClass="js-getpaymentinfo-select-coverthefee-ach" />
+                                <Rock:HiddenFieldWithClass ID="hfAmountWithCoveredFeeACH" runat="server" CssClass="js-amount-with-covered-fee-ach" />
+                            </asp:Panel>
+
                             <div class="navigation actions">
                                 <asp:LinkButton ID="btnGetPaymentInfoBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnGetPaymentInfoBack_Click" />
 
 
-								<%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
+                                <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
                                		Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
-                            	--%>
-                                <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right"  DataLoadingText="Processing..." />
+                                --%>
+                                <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right" DataLoadingText="Processing..." />
                             </div>
                         </asp:Panel>
 
@@ -102,6 +128,10 @@
                         <asp:Panel ID="pnlPersonalInformation" runat="server" Visible="false">
 
                             <Rock:Toggle ID="tglIndividualOrBusiness" runat="server" ButtonGroupCssClass="btn-group-justified" OnText="Business" OffText="Individual" OnCheckedChanged="tglIndividualOrBusiness_CheckedChanged" />
+
+                            <%-- Special input with rock-fullname class --%>
+                            <Rock:RockTextBox ID="tbRockFullName_PersonalInformation" runat="server" CssClass="rock-fullname" ValidationGroup="vgRockFullName_PersonalInformation" Placeholder="Please enter name (Required)" />
+                            <Rock:NotificationBox ID="nbRockFullName_PersonalInformation" runat="server" NotificationBoxType="Validation" />
 
                             <asp:Panel ID="pnlPersonInformationAsIndividual" runat="server">
                                 <asp:Panel ID="pnlLoggedInNameDisplay" runat="server">
@@ -239,10 +269,56 @@
                 }
             }
 
+            function toggleCoverTheFeeSummaryAmount() {
+                var showWithFee = $('.js-getpaymentinfo-select-coverthefee-creditcard, .js-getpaymentinfo-select-coverthefee-ach').is(':checked');
+                var $amountSummaryAmount = $('.js-account-summary-amount');
+                var $amountWithFee = $('.js-amount-with-covered-fee-creditcard, .js-amount-with-covered-fee-ach');
+                var $amountWithoutFee = $('.js-amount-without-covered-fee')
+                if (showWithFee) {
+                    $amountSummaryAmount.text($amountWithFee.val());
+                }
+                else {
+                    $amountSummaryAmount.text($amountWithoutFee.val())
+                }
+            }
+
+            function updateCoverTheFeePercent(feePercent) {
+                var $coverTheFeeContainer = $('.js-coverthefee-container');
+                var $coverTheFeeAmountText = $('.js-coverthefee-checkbox-fee-amount-text');
+
+                var totalAmt = Number(0);
+
+                var $amountInputs = $('input.js-amount-input, .js-amount-input input');
+
+                $amountInputs.each(function (index) {
+                    var itemValue = $(this).val();
+                    if (itemValue && !isNaN(itemValue)) {
+                        var num = Number(itemValue);
+                        totalAmt = totalAmt + num;
+                    }
+                });
+
+                var decimalPlaces = $coverTheFeeAmountText.attr('decimal-places');
+                if (!decimalPlaces && decimalPlaces != 0) {
+                    decimalPlaces = 2;
+                }
+                console.log(decimalPlaces);
+                var feeAmount = (totalAmt * (feePercent / 100)).toFixed(decimalPlaces);
+                var displayFeeAmount = (totalAmt * (feePercent / 100)).toLocaleString(undefined, { minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces });
+
+                $coverTheFeeAmountText.html(displayFeeAmount);
+                if (feeAmount > 0) {
+                    $coverTheFeeContainer.show();
+                }
+                else {
+                    $coverTheFeeContainer.hide();
+                }
+            }
+
             Sys.Application.add_load(function () {
 
                 $('.js-submit-hostedpaymentinfo').off().on('click', function (e) {
-                    // prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
+                    // Prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
                     e.stopImmediatePropagation();
 
                     <%=HostPaymentInfoSubmitScript%>
@@ -260,6 +336,28 @@
                     });
                 }
 
+                var $paymentInfoCoverTheFeeCheckbox = $('.js-getpaymentinfo-select-coverthefee-creditcard, .js-getpaymentinfo-select-coverthefee-ach');
+                if ($paymentInfoCoverTheFeeCheckbox.length) {
+                    toggleCoverTheFeeSummaryAmount();
+
+                    $paymentInfoCoverTheFeeCheckbox.off().on('click', function () {
+                        toggleCoverTheFeeSummaryAmount();
+                    });
+                }
+
+                var coverTheFeePercent = Number($('.js-coverthefee-percent').val()) || 0.00;
+                if (coverTheFeePercent > 0.00) {
+                    updateCoverTheFeePercent(coverTheFeePercent);
+
+                    // selector for input elements which could be either a single input or multiple account mode
+                    var $amountInputs = $('input.js-amount-input, .js-amount-input input');
+
+                    // As amounts are entered, update the 'cover the fees' checkbox text
+                    // Do it on 'keyup' instead of 'change'. Otherwise, they might not see if if they go straight to the GiveNow button
+                    $amountInputs.keyup(function () {
+                        updateCoverTheFeePercent(coverTheFeePercent);
+                    });
+                }
             });
         </script>
 

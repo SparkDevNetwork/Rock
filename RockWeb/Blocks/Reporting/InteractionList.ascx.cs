@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Reporting
                         </div>
                         
                         <div class='row margin-t-md'>
-                            {% if interaction.InteractionSummary && interaction.InteractionSummary != '' %}
+                            {% if interaction.InteractionSummary and interaction.InteractionSummary != '' %}
                             <div class='col-md-6'>
                                 <dl>
                                     <dt>Interaction Summary</dt>
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Reporting
                             </div>
                             {% endif %}
                             
-                            {% if interaction.InteractionData && interaction.InteractionData != '' %}
+                            {% if interaction.InteractionData and interaction.InteractionData != '' %}
                             <div class='col-md-6'>
                                 <dl>
                                     <dt>Interaction Data</dt>

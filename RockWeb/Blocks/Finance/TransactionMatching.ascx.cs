@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -744,7 +745,7 @@ namespace RockWeb.Blocks.Finance
 
                     // stored the value in cents to avoid javascript floating point math issues
                     hfOriginalTotalAmount.Value = ( transactionToMatch.TotalAmount * 100 ).ToString();
-                    hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
+                    hfCurrencySymbol.Value = RockCurrencyCodeInfo.GetCurrencySymbol();
 
                     // get the first 2 images (should be no more than 2, but just in case)
                     var transactionImages = transactionToMatch.Images.OrderBy( a => a.Order ).Take( 2 ).ToList();
@@ -831,11 +832,11 @@ namespace RockWeb.Blocks.Finance
 
                     if ( transactionToMatch.TransactionDetails.Any() )
                     {
-                        cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
+                        cbTotalAmount.Value = transactionToMatch.TotalAmount;
                     }
                     else
                     {
-                        cbTotalAmount.Text = string.Empty;
+                        cbTotalAmount.Value = null;
                     }
 
                     tbTransactionCode.Text = transactionToMatch.TransactionCode;
@@ -843,7 +844,7 @@ namespace RockWeb.Blocks.Finance
                     // update accountboxes
                     foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
                     {
-                        accountBox.Text = string.Empty;
+                        accountBox.Value = null;
                     }
 
                     bool existingAmounts = false;
@@ -853,7 +854,7 @@ namespace RockWeb.Blocks.Finance
                         if ( accountBox != null )
                         {
                             existingAmounts = true;
-                            accountBox.Text = detail.Amount.ToString();
+                            accountBox.Value = detail.Amount;
                         }
                     }
 
@@ -969,7 +970,7 @@ namespace RockWeb.Blocks.Finance
                 int accountBoxAccountId = accountBox.Attributes["data-account-id"].AsInteger();
                 accountBox.Visible = !onlyShowSelectedAccounts && ( _visibleDisplayedAccountIds.Contains( accountBoxAccountId ) || _visibleOptionalAccountIds.Contains( accountBoxAccountId ) );
 
-                if ( !accountBox.Visible && accountBox.Text.AsDecimal() != 0 )
+                if ( !accountBox.Visible && (accountBox.Value ?? 0.0M) != 0 )
                 {
                     // if there is a non-zero amount, show the edit box regardless of the account filter settings
                     accountBox.Visible = true;
@@ -1133,7 +1134,7 @@ namespace RockWeb.Blocks.Finance
                         var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
                         if ( accountBox != null )
                         {
-                            accountBox.Text = detail.Amount.ToString();
+                            accountBox.Value = detail.Amount;
                         }
                     }
                 }
@@ -1236,13 +1237,29 @@ namespace RockWeb.Blocks.Finance
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
 
+
+            /* 07/24/2014 (added engineer note on 2020-09-23) MDP 
+             * 
+             * Note: The logic for this isn't what you might expect!
+             * 
+             * A FinancialTransaction should only have amounts if it is matched to a person, so
+             
+             - If individual is not selected, don't save any amounts, even if they entered amounts on the UI. So we will ignore them since an individual wasn't selected.
+             - If they 'Unmatched' (the transaction had previously been matched to an individual, but now it isn't) clear out any amounts (even if amounts were specified in the UI)
+
+             - If an individual is selected, then amount is required
+               - If amount and individual are both specified, the transaction will updated (and will be considered a Matched transaction)
+               - If an individual is selected, but amount isn't, a warning will be shown tell them the amount is required
+             */
+
+
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
             if ( financialTransaction != null &&
                 financialTransaction.AuthorizedPersonAliasId.HasValue &&
                 !authorizedPersonId.HasValue )
             {
                 financialTransaction.AuthorizedPersonAliasId = null;
-                foreach ( var detail in financialTransaction.TransactionDetails )
+                foreach ( var detail in financialTransaction.TransactionDetails.ToList() )
                 {
                     History.EvaluateChange( changes, detail.Account != null ? detail.Account.Name : "Unknown", detail.Amount.FormatAsCurrency(), string.Empty );
                     financialTransactionDetailService.Delete( detail );
@@ -1270,7 +1287,7 @@ namespace RockWeb.Blocks.Finance
             // if the transaction is matched to somebody, attempt to save it.  Otherwise, if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction
             if ( financialTransaction != null && authorizedPersonId.HasValue )
             {
-                if ( cbTotalAmount.Text.AsDecimalOrNull() == null )
+                if ( cbTotalAmount.Value == null )
                 {
                     nbSaveError.Text = "Total amount must be allocated to accounts.";
                     nbSaveError.Visible = true;
@@ -1329,7 +1346,7 @@ namespace RockWeb.Blocks.Finance
 
                 foreach ( var accountBox in rptAccounts.ControlsOfTypeRecursive<CurrencyBox>() )
                 {
-                    var amount = accountBox.Text.AsDecimalOrNull();
+                    var amount = accountBox.Value;
 
                     if ( amount.HasValue && amount.Value >= 0 )
                     {
@@ -1629,8 +1646,8 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( accountBox.Attributes["data-account-id"].AsInteger() == accountId )
                 {
-                    accountBox.Text = cbOptionalAccountAmount.Text;
-                    cbOptionalAccountAmount.Text = string.Empty;
+                    accountBox.Value = cbOptionalAccountAmount.Value;
+                    cbOptionalAccountAmount.Value = null;
                     _focusControl = accountBox;
                     break;
                 }

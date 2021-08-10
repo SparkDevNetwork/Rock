@@ -163,7 +163,7 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the campus that this batch is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this batch is associated with.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.Campus"/> that the batch is associated with.

@@ -152,6 +152,7 @@
                         });
 
                         // disable/hide actions depending on if a folder is selected
+                        <%-- Note that this is also enforced on the server --%>
                         var isRestrictedFolder = $('#<%=hfIsRestrictedFolder.ClientID%>').val();
                         var selectedFolderPath = $('#<%=hfSelectedFolder.ClientID%>').val();
                         var isUploadRestrictedFolder = $('#<%=hfIsUploadRestrictedFolder.ClientID%>').val();
@@ -168,10 +169,10 @@
                         }
 
                         if (selectedFolderPath && selectedFolderPath != '' && isUploadRestrictedFolder === 'False') {
-                            $('#<%=lbArchive.ClientID%>').removeAttr('disabled');
+                            $('#<%=btnUploadZipFile.ClientID%>').removeAttr('disabled');
                         }
                         else {
-                            $('#<%=lbArchive.ClientID%>').attr('disabled', 'disabled');
+                            $('#<%=btnUploadZipFile.ClientID%>').attr('disabled', 'disabled');
                         }
                     });
 
@@ -230,7 +231,7 @@
 
                     <div class="pull-right"><Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" /></div>
                     <div class="pull-right">
-                    <asp:LinkButton ID="lbArchive" runat="server" CssClass="btn btn-default btn-sm margin-r-sm" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-file-archive"></i> Upload Zip</asp:LinkButton>
+                    <asp:LinkButton ID="btnUploadZipFile" runat="server" CssClass="btn btn-default btn-sm margin-r-sm" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-file-archive"></i> Upload Zip</asp:LinkButton>
                     </div>
                 </div>
 

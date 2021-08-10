@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date that this prayer request was entered.
         /// </value>
         [DataMember]
-        public DateTime EnteredDateTime { get; set; }
+        public DateTime EnteredDateTime { get; set; } = RockDateTime.Now;
 
         /// <summary>
         /// Gets or sets the date that the prayer request expires. 
@@ -228,6 +229,15 @@ namespace Rock.Model
         [DataMember]
         public DateTime? ApprovedOnDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Language for this prayer request.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the Language's <see cref="Rock.Model.DefinedValue"/> for this prayer request.
+        /// </value>
+        [DataMember]
+        public int? LanguageValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -257,7 +267,7 @@ namespace Rock.Model
         /// <value>
         /// The request's group.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Group Group { get; set; }
 
         /// <summary>
@@ -275,8 +285,17 @@ namespace Rock.Model
         /// <value>
         /// The campus.
         /// </value>
-        [LavaInclude]
+        [LavaVisible]
         public virtual Campus Campus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Language <see cref="Rock.Model.DefinedValue"/> for this prayer request.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.DefinedValue"/> that represents the Language for this prayer request.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue LanguageValue { get; set; }
 
         /// <summary>
         /// Gets  full name of the person for who the prayer request is about.
@@ -355,6 +374,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RequestedByPersonAlias ).WithMany().HasForeignKey( p => p.RequestedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ApprovedByPersonAlias ).WithMany().HasForeignKey( p => p.ApprovedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.LanguageValue ).WithMany().HasForeignKey( a => a.LanguageValueId ).WillCascadeOnDelete( false );
         }
     }
 

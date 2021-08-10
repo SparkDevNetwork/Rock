@@ -26,6 +26,7 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -138,7 +139,8 @@ namespace Rock.Jobs
                     // Get a distinct list of each entitytype/entity that is being followed by anyone that subscribes to events
                     var followings = followingService
                         .Queryable( "PersonAlias" ).AsNoTracking()
-                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId ) )
+                        .Where( f => personSubscriptions.Keys.Contains( f.PersonAlias.PersonId )
+                            && string.IsNullOrEmpty( f.PurposeKey ) )
                         .ToList();
 
                     // group the followings by their type
@@ -367,6 +369,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Helper class for following event notifications
     /// </summary>
+    [LavaType( "EventType", "Notices" )]
     [DotLiquid.LiquidType( "EventType", "Notices" )]
     public class FollowingEventTypeNotices
     {

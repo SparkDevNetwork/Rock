@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -29,9 +30,12 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Transactions;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -266,7 +270,7 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        DefaultValue = AttributeString.ConfirmationHeader ,
+        DefaultValue = AttributeString.ConfirmationHeader,
         Category = CategoryKey.TextOptions,
         Order = 7 )]
 
@@ -279,7 +283,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         DefaultValue = AttributeString.ConfirmationFooter,
         Category = CategoryKey.TextOptions,
-        Order = 8)]
+        Order = 8 )]
 
     [TextField( "Success Title",
         Key = AttributeKey.SuccessTitle,
@@ -298,7 +302,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = true,
         DefaultValue = AttributeString.SuccessHeader,
         Category = CategoryKey.TextOptions,
-        Order = 10)]
+        Order = 10 )]
 
     [CodeEditorField( "Success Footer",
         Key = AttributeKey.SuccessFooter,
@@ -309,7 +313,7 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         DefaultValue = @"",
         Category = CategoryKey.TextOptions,
-        Order = 11)]
+        Order = 11 )]
 
     [TextField( "Save Account Title",
         Key = AttributeKey.SaveAccountTitle,
@@ -346,7 +350,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.AllowAccountsInURL,
         Description = "Set to true to allow account options to be set via URL. To simply set allowed accounts, the allowed accounts can be specified as a comma-delimited list of AccountIds or AccountGlCodes. Example: ?AccountIds=1,2,3 or ?AccountGlCodes=40100,40110. The default amount for each account and whether it is editable can also be specified. Example:?AccountIds=1^50.00^false,2^25.50^false,3^35.00^true or ?AccountGlCodes=40100^50.00^false,40110^42.25^true",
         DefaultBooleanValue = false,
-        Category =CategoryKey.Advanced,
+        Category = CategoryKey.Advanced,
         Order = 1 )]
 
     [BooleanField( "Only Public Accounts In URL",
@@ -620,48 +624,39 @@ TransactionAccountDetails: [
         }
 
         /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns <see langword="null" />.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["SelectedAccountsJSON"] = SelectedAccounts.ToJson();
+            ViewState["AvailableAccountsJSON"] = AvailableAccounts.ToJson();
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+            AvailableAccounts = ( ViewState["AvailableAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            SelectedAccounts = ( ViewState["SelectedAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+        }
+
+        /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
         /// </summary>
-        protected List<AccountItem> AvailableAccounts
-        {
-            get
-            {
-                var accounts = ViewState["AvailableAccounts"] as List<AccountItem>;
-                if ( accounts == null )
-                {
-                    accounts = new List<AccountItem>();
-                }
+        protected List<AccountItem> AvailableAccounts { get; set; }
 
-                return accounts;
-            }
-
-            set
-            {
-                ViewState["AvailableAccounts"] = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the accounts that are currently displayed to the user
         /// </summary>
-        protected List<AccountItem> SelectedAccounts
-        {
-            get
-            {
-                var accounts = ViewState["SelectedAccounts"] as List<AccountItem>;
-                if ( accounts == null )
-                {
-                    accounts = new List<AccountItem>();
-                }
-
-                return accounts;
-            }
-
-            set
-            {
-                ViewState["SelectedAccounts"] = value;
-            }
-        }
+        protected List<AccountItem> SelectedAccounts { get; set; }
 
         /// <summary>
         /// Gets or sets the payment transaction code.
@@ -963,27 +958,19 @@ TransactionAccountDetails: [
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
-                    var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
+                    var accountAmount = item.FindControl( "txtAccountAmount" ) as CurrencyBox;
                     if ( accountAmount != null )
                     {
                         if ( SelectedAccounts.Count > item.ItemIndex )
                         {
-                            decimal amount = decimal.MinValue;
-                            if ( decimal.TryParse( accountAmount.Text, out amount ) )
-                            {
-                                SelectedAccounts[item.ItemIndex].Amount = amount;
-                            }
-                            else
-                            {
-                                SelectedAccounts[item.ItemIndex].Amount = default( decimal );
-                            }
+                            SelectedAccounts[item.ItemIndex].Amount = accountAmount.Value ?? 0.0M;
                         }
                     }
                 }
             }
 
             // Update the total amount
-            lblTotalAmount.Text = GlobalAttributesCache.Value( "CurrencySymbol" ) + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = SelectedAccounts.Sum( f => f.Amount ).FormatAsCurrency();
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -1115,6 +1102,18 @@ TransactionAccountDetails: [
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPaymentInfoNext_Click( object sender, EventArgs e )
         {
+            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
+            {
+                /* 03/22/2021 MDP
+
+                see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
+
+                */
+
+                ShowMessage( NotificationBoxType.Validation, "Validation", "Invalid Form Value" );
+                return;
+            }
+
             string errorMessage = string.Empty;
             if ( ProcessPaymentInfo( out errorMessage ) )
             {
@@ -1394,9 +1393,9 @@ TransactionAccountDetails: [
                                 savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentDetail.AccountNumberMasked;
                                 savedAccount.FinancialPaymentDetail.CurrencyTypeValueId = paymentDetail.CurrencyTypeValueId;
                                 savedAccount.FinancialPaymentDetail.CreditCardTypeValueId = paymentDetail.CreditCardTypeValueId;
-                                savedAccount.FinancialPaymentDetail.NameOnCardEncrypted = paymentDetail.NameOnCardEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationMonthEncrypted = paymentDetail.ExpirationMonthEncrypted;
-                                savedAccount.FinancialPaymentDetail.ExpirationYearEncrypted = paymentDetail.ExpirationYearEncrypted;
+                                savedAccount.FinancialPaymentDetail.NameOnCard= paymentDetail.NameOnCard;
+                                savedAccount.FinancialPaymentDetail.ExpirationMonth = paymentDetail.ExpirationMonth;
+                                savedAccount.FinancialPaymentDetail.ExpirationYear = paymentDetail.ExpirationYear;
                                 savedAccount.FinancialPaymentDetail.BillingLocationId = paymentDetail.BillingLocationId;
 
                                 var savedAccountService = new FinancialPersonSavedAccountService( rockContext );
@@ -1686,17 +1685,30 @@ TransactionAccountDetails: [
                 }
 
                 // Bind the accounts
-                rblSavedAccount.DataSource = savedAccounts
+                savedAccounts = savedAccounts
                     .Where( a =>
                         ccSavedAccountIds.Contains( a.Id ) ||
                         achSavedAccountIds.Contains( a.Id ) )
-                    .OrderBy( a => a.Name )
-                    .Select( a => new
+                    .ToList();
+
+
+                rblSavedAccount.Items.Clear();
+
+                foreach ( var personSavedAccount in savedAccounts)
+                {
+                    string displayName;
+                    if ( personSavedAccount.FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
                     {
-                        Id = a.Id,
-                        Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")"
-                    } ).ToList();
-                rblSavedAccount.DataBind();
+                        displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked} Expires: {personSavedAccount.FinancialPaymentDetail.ExpirationDate})";
+                    }
+                    else
+                    {
+                        displayName = $"{personSavedAccount.Name} ({personSavedAccount.FinancialPaymentDetail.AccountNumberMasked}";
+                    }
+
+                    rblSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
+                }
+
                 if ( rblSavedAccount.Items.Count > 0 )
                 {
                     rblSavedAccount.Items.Add( new ListItem( "Use a different payment method", "0" ) );
@@ -2689,7 +2701,7 @@ TransactionAccountDetails: [
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
 
-            tdTotalConfirm.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalConfirm.Description = paymentInfo.Amount.FormatAsCurrency();
 
             if ( !_using3StepGateway )
             {
@@ -3436,7 +3448,7 @@ TransactionAccountDetails: [
             rptAccountListReceipt.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListReceipt.DataBind();
 
-            tdTotalReceipt.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalReceipt.Description = paymentInfo.Amount.FormatAsCurrency();
 
             tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
 
@@ -3476,9 +3488,9 @@ TransactionAccountDetails: [
             if ( receiptEmail.HasValue )
             {
                 // Queue a transaction to send receipts
-                var newTransactionIds = new List<int> { transactionId };
-                var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
-                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
+                var transactionIds = new List<int> { transactionId };
+                var sendPaymentReceiptsTxn = new SendPaymentReceipts( receiptEmail.Value, transactionIds );
+                RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }
         }
 
@@ -3577,7 +3589,7 @@ TransactionAccountDetails: [
                     else {{
                         $(this).parents('div.input-group').removeClass('has-error');
                         var num = Number(itemValue);
-                        $(this).val(num.toFixed(2));
+                        $(this).val(num.toFixed({7}));
                         totalAmt = totalAmt + num;
                     }}
                 }}
@@ -3585,7 +3597,7 @@ TransactionAccountDetails: [
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html('{3}' + totalAmt.toFixed(2));
+            $('.total-amount').html('{3}' + totalAmt.toLocaleString(undefined, {{ minimumFractionDigits: {7}, maximumFractionDigits: {7} }}));
             return false;
         }});
 
@@ -3641,15 +3653,17 @@ TransactionAccountDetails: [
         }});
     }});
 ";
+            var currencyCodeInfo = new RockCurrencyCodeInfo();
             string script = string.Format(
                 scriptFormat,
                 divCCPaymentInfo.ClientID,      // {0}
                 hfPaymentTab.ClientID,          // {1}
                 oneTimeFrequencyId,             // {2}
-                GlobalAttributesCache.Value( "CurrencySymbol" ), // {3)
+                currencyCodeInfo.Symbol,      // {3)
                 rblSavedAccount.ClientID,       // {4}
                 rblSavedAccount.UniqueID,       // {5}
-                divNewPayment.ClientID          // {6}
+                divNewPayment.ClientID,         // {6}
+                currencyCodeInfo.DecimalPlaces // {7}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
@@ -3699,14 +3713,14 @@ TransactionAccountDetails: [
 
                 if ( accountItem.Amount != 0 )
                 {
-                    txtAccountAmount.Text = accountItem.Amount.ToString( "N2" );
+                    txtAccountAmount.Value = accountItem.Amount;
                 }
 
                 if ( !accountItem.Enabled )
                 {
                     txtAccountAmountLiteral.Visible = true;
                     txtAccountAmountLiteral.Label = txtAccountAmount.Label;
-                    txtAccountAmountLiteral.Text = string.Format( "${0}", txtAccountAmount.Text );
+                    txtAccountAmountLiteral.Text = txtAccountAmount.Value.FormatAsCurrency();
 
                     // Javascript  needs the textbox, so disable it and hide it with CSS.
                     txtAccountAmount.Label = string.Empty;
@@ -3723,8 +3737,6 @@ TransactionAccountDetails: [
         /// <summary>
         /// Lightweight object for each contribution item
         /// </summary>
-        [Serializable]
-        [DotLiquid.LiquidType( "Id", "Order", "Name", "CampusId", "Amount", "PublicName", "AmountFormatted" )]
         protected class AccountItem
         {
             public int Id { get; set; }
@@ -3747,6 +3759,10 @@ TransactionAccountDetails: [
                 {
                     return Amount > 0 ? Amount.FormatAsCurrency() : string.Empty;
                 }
+            }
+
+            public AccountItem()
+            {
             }
 
             public AccountItem( int id, int order, string name, int? campusId, string publicName )

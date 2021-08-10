@@ -38,6 +38,33 @@ namespace Rock.Rest.Controllers
     public class MobileController : ApiControllerBase
     {
         /// <summary>
+        /// Gets the communication interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The communication interaction channel identifier.
+        /// </value>
+        private static int CommunicationInteractionChannelId
+        {
+            get
+            {
+                if ( _communicationInteractionChannelId == 0 )
+                {
+                    _communicationInteractionChannelId = InteractionChannelCache.GetId( SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() ).Value;
+                }
+
+                return _communicationInteractionChannelId;
+            }
+        }
+        private static int _communicationInteractionChannelId;
+
+        /// <summary>
+        /// The communication interaction channel unique identifier
+        /// </summary>
+        private static readonly Guid _communicationInteractionChannelGuid = SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
+
+        #region API Methods
+
+        /// <summary>
         /// Gets the launch packet.
         /// </summary>
         /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
@@ -60,6 +87,7 @@ namespace Rock.Rest.Controllers
 
             var launchPacket = new LaunchPacket
             {
+                RockVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber(),
                 LatestVersionId = additionalSettings.LastDeploymentVersionId ?? ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
                 IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
             };
@@ -83,6 +111,8 @@ namespace Rock.Rest.Controllers
 
                 launchPacket.CurrentPerson = MobileHelper.GetMobilePerson( person, site );
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
+
+                UserLoginService.UpdateLastLogin( principal.Identity.Name );
             }
 
             //
@@ -93,7 +123,6 @@ namespace Rock.Rest.Controllers
                 var mobileDeviceTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE ).Id;
                 var personalDeviceService = new PersonalDeviceService( rockContext );
                 var personalDevice = personalDeviceService.Queryable()
-                    .AsNoTracking()
                     .Where( a => a.DeviceUniqueIdentifier == deviceIdentifier && a.PersonalDeviceTypeValueId == mobileDeviceTypeValueId && a.SiteId == site.Id )
                     .FirstOrDefault();
 
@@ -200,6 +229,109 @@ namespace Rock.Rest.Controllers
                     personalDeviceId = new PersonalDeviceService( rockContext ).GetId( personalDeviceGuid.Value );
                 }
 
+                //
+                // Create a quick way to cache data since we have to loop twice.
+                //
+                var interactionComponentLookup = new Dictionary<string, int>();
+
+                //
+                // Helper method to get a cache key for looking up the component Id.
+                //
+                string GetComponentCacheKey( MobileInteraction mi )
+                {
+                    return $"{mi.AppId}:{mi.PageGuid}:{mi.ChannelGuid}:{mi.ChannelId}:{mi.ComponentId}:{mi.ComponentName}";
+                }
+
+                //
+                // Interactions Components will now try to load from cache which
+                // causes problems if we are inside a transaction. So first loop through
+                // everything and make sure all our components and channels exist.
+                //
+                var prePassInteractions = sessions.SelectMany( a => a.Interactions )
+                    .DistinctBy( a => GetComponentCacheKey( a ) );
+
+                //
+                // It's safe to do this pre-pass outside the transaction since we are just creating
+                // the channels and components (if necessary), which is going to have to be done at
+                // at some point no matter what.
+                //
+                foreach ( var mobileInteraction in prePassInteractions )
+                {
+                    //
+                    // Lookup the interaction channel, and create it if it doesn't exist
+                    //
+                    if ( mobileInteraction.AppId.HasValue && mobileInteraction.PageGuid.HasValue )
+                    {
+                        var site = SiteCache.Get( mobileInteraction.AppId.Value );
+                        var page = PageCache.Get( mobileInteraction.PageGuid.Value );
+
+                        if ( site == null || page == null )
+                        {
+                            continue;
+                        }
+
+                        //
+                        // Try to find an existing interaction channel.
+                        //
+                        var interactionChannelId = InteractionChannelCache.GetChannelIdByTypeIdAndEntityId( channelMediumTypeValue.Id, site.Id, site.Name, pageEntityTypeId, null );
+
+                        //
+                        // Get an existing or create a new component.
+                        //
+                        var interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId, page.Id, page.InternalName );
+
+                        interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
+                    }
+                    else if ( mobileInteraction.ChannelId.HasValue || mobileInteraction.ChannelGuid.HasValue )
+                    {
+                        int? interactionChannelId = null;
+
+                        if ( mobileInteraction.ChannelId.HasValue )
+                        {
+                            interactionChannelId = mobileInteraction.ChannelId.Value;
+                        }
+                        else if ( mobileInteraction.ChannelGuid.HasValue )
+                        {
+                            interactionChannelId = InteractionChannelCache.Get( mobileInteraction.ChannelGuid.Value )?.Id;
+                        }
+
+                        if ( interactionChannelId.HasValue )
+                        {
+                            if ( mobileInteraction.ComponentId.HasValue )
+                            {
+                                // Use the provided component identifier.
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), mobileInteraction.ComponentId.Value );
+                            }
+                            else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
+                            {
+                                int interactionComponentId;
+
+                                // Get or create a new component with the details we have.
+                                if ( mobileInteraction.ComponentEntityId.HasValue )
+                                {
+                                    interactionComponentId = InteractionComponentCache.GetComponentIdByChannelIdAndEntityId( interactionChannelId.Value, mobileInteraction.ComponentEntityId, mobileInteraction.ComponentName );
+                                }
+                                else
+                                {
+                                    var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
+
+                                    rockContext.SaveChanges();
+
+                                    interactionComponentId = interactionComponent.Id;
+                                }
+
+                                interactionComponentLookup.AddOrReplace( GetComponentCacheKey( mobileInteraction ), interactionComponentId );
+                            }
+                        }
+                    }
+                }
+
+                //
+                // Now wrap the actual interaction creation inside a transaction. We should
+                // probably move this so it uses the InteractionTransaction class for better
+                // performance. This is so we can inform the client that either everything
+                // saved or that nothing saved. No partial saves here.
+                //
                 rockContext.WrapTransaction( () =>
                 {
                     foreach ( var mobileSession in sessions )
@@ -215,112 +347,49 @@ namespace Rock.Rest.Controllers
                         //
                         foreach ( var mobileInteraction in mobileSession.Interactions.Where( i => !existingInteractionGuids.Contains( i.Guid ) ) )
                         {
-                            int? interactionComponentId = null;
+                            string cacheKey = GetComponentCacheKey( mobileInteraction );
 
-                            //
-                            // Lookup the interaction channel, and create it if it doesn't exist
-                            //
-                            if ( mobileInteraction.AppId.HasValue && mobileInteraction.PageGuid.HasValue )
+                            if ( !interactionComponentLookup.ContainsKey( cacheKey ) )
                             {
-                                var site = SiteCache.Get( mobileInteraction.AppId.Value );
-                                var page = PageCache.Get( mobileInteraction.PageGuid.Value );
-
-                                if ( site == null || page == null )
-                                {
-                                    continue;
-                                }
-
-                                //
-                                // Try to find an existing interaction channel.
-                                //
-                                var interactionChannelId = interactionChannelService.Queryable()
-                                    .Where( a =>
-                                        a.ChannelTypeMediumValueId == channelMediumTypeValue.Id &&
-                                        a.ChannelEntityId == site.Id )
-                                    .Select( a => ( int? ) a.Id )
-                                    .FirstOrDefault();
-
-                                //
-                                // If not found, create one.
-                                //
-                                if ( !interactionChannelId.HasValue )
-                                {
-                                    var interactionChannel = new InteractionChannel
-                                    {
-                                        Name = site.Name,
-                                        ChannelTypeMediumValueId = channelMediumTypeValue.Id,
-                                        ChannelEntityId = site.Id,
-                                        ComponentEntityTypeId = pageEntityTypeId
-                                    };
-
-                                    interactionChannelService.Add( interactionChannel );
-                                    rockContext.SaveChanges();
-
-                                    interactionChannelId = interactionChannel.Id;
-                                }
-
-                                //
-                                // Get an existing or create a new component.
-                                //
-                                var interactionComponent = interactionComponentService.GetComponentByChannelIdAndEntityId( interactionChannelId.Value, page.Id, page.InternalName );
-                                rockContext.SaveChanges();
-
-                                interactionComponentId = interactionComponent.Id;
-                            }
-                            else if ( mobileInteraction.ChannelId.HasValue )
-                            {
-                                var interactionChannelId = mobileInteraction.ChannelId;
-
-                                if ( mobileInteraction.ComponentId.HasValue )
-                                {
-                                    interactionComponentId = mobileInteraction.ComponentId.Value;
-                                }
-                                else if ( mobileInteraction.ComponentName.IsNotNullOrWhiteSpace() )
-                                {
-                                    //
-                                    // Get an existing or create a new component.
-                                    //
-                                    var interactionComponent = interactionComponentService.GetComponentByComponentName( interactionChannelId.Value, mobileInteraction.ComponentName );
-                                    rockContext.SaveChanges();
-
-                                    interactionComponentId = interactionComponent.Id;
-                                }
-                                else
-                                {
-                                    continue;
-                                }
-                            }
-                            else
-                            {
+                                // Shouldn't happen, but just in case.
                                 continue;
                             }
+
+                            var interactionComponentId = interactionComponentLookup[cacheKey];
 
                             //
                             // Add the interaction
                             //
-                            if ( interactionComponentId.HasValue )
-                            {
-                                var interaction = interactionService.CreateInteraction( interactionComponentId.Value,
-                                    mobileInteraction.EntityId,
-                                    mobileInteraction.Operation,
-                                    mobileInteraction.Summary,
-                                    mobileInteraction.Data,
-                                    person?.PrimaryAliasId,
-                                    mobileInteraction.DateTime,
-                                    mobileSession.Application,
-                                    mobileSession.OperatingSystem,
-                                    mobileSession.ClientType,
-                                    null,
-                                    ipAddress,
-                                    mobileSession.Guid );
+                            var interaction = interactionService.CreateInteraction( interactionComponentId,
+                                mobileInteraction.EntityId,
+                                mobileInteraction.Operation,
+                                mobileInteraction.Summary,
+                                mobileInteraction.Data,
+                                person?.PrimaryAliasId,
+                                RockDateTime.ConvertLocalDateTimeToRockDateTime( mobileInteraction.DateTime.LocalDateTime ),
+                                mobileSession.Application,
+                                mobileSession.OperatingSystem,
+                                mobileSession.ClientType,
+                                null,
+                                ipAddress,
+                                mobileSession.Guid );
 
-                                interaction.Guid = mobileInteraction.Guid;
-                                interaction.PersonalDeviceId = personalDeviceId;
-                                interactionService.Add( interaction );
-                                rockContext.SaveChanges();
-                            }
+                            interaction.Guid = mobileInteraction.Guid;
+                            interaction.PersonalDeviceId = personalDeviceId;
+                            interaction.RelatedEntityTypeId = mobileInteraction.RelatedEntityTypeId;
+                            interaction.RelatedEntityId = mobileInteraction.RelatedEntityId;
+                            interaction.ChannelCustom1 = mobileInteraction.ChannelCustom1;
+                            interaction.ChannelCustom2 = mobileInteraction.ChannelCustom2;
+                            interaction.ChannelCustomIndexed1 = mobileInteraction.ChannelCustomIndexed1;
+
+                            interactionService.Add( interaction );
+
+                            // Attempt to process this as a communication interaction.
+                            ProcessCommunicationInteraction( mobileSession, mobileInteraction, rockContext );
                         }
                     }
+
+                    rockContext.SaveChanges();
                 } );
             }
 
@@ -366,9 +435,12 @@ namespace Rock.Rest.Controllers
                     if ( personalDevice != null && personalDevice.PersonAliasId != userLogin.Person.PrimaryAliasId )
                     {
                         personalDevice.PersonAliasId = userLogin.Person.PrimaryAliasId;
-                        rockContext.SaveChanges();
                     }
                 }
+
+                userLogin.LastLoginDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
 
                 var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
@@ -376,5 +448,60 @@ namespace Rock.Rest.Controllers
                 return Ok( mobilePerson );
             }
         }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Checks if the interaction is for a communication and if so do
+        /// additional steps to mark the communication as opened..
+        /// </summary>
+        /// <param name="session">The interaction session.</param>
+        /// <param name="interaction">The interaction data.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void ProcessCommunicationInteraction( MobileInteractionSession session, MobileInteraction interaction, Rock.Data.RockContext rockContext )
+        {
+            // The interaction must be for the communication channel.
+            if ( interaction.ChannelGuid != _communicationInteractionChannelGuid && interaction.ChannelId != CommunicationInteractionChannelId )
+            {
+                return;
+            }
+
+            // We need the communication recipient identifier and the communication identifier.
+            if ( !interaction.EntityId.HasValue || !interaction.ComponentEntityId.HasValue )
+            {
+                return;
+            }
+
+            // Only process "Opened" operations for now.
+            if ( !interaction.Operation.Equals( "OPENED", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return;
+            }
+
+            // Because this is a mostly open API, don't trust just the
+            // recipient identifier. Do a query that makes sure both the
+            // communication identifier and the recipient identifier match
+            // for a bit of extra security.
+            var communicationRecipient = new CommunicationRecipientService( rockContext ).Queryable()
+                .Where( a => a.Id == interaction.EntityId && a.CommunicationId == interaction.ComponentEntityId )
+                .FirstOrDefault();
+
+            if ( communicationRecipient == null )
+            {
+                return;
+            }
+
+            communicationRecipient.Status = CommunicationRecipientStatus.Opened;
+            communicationRecipient.OpenedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( interaction.DateTime.LocalDateTime );
+            communicationRecipient.OpenedClient = string.Format(
+                "{0} {1} ({2})",
+                session.OperatingSystem ?? "unknown",
+                session.Application ?? "unknown",
+                session.ClientType ?? "unknown" );
+        }
+
+        #endregion
     }
 }

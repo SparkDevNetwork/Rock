@@ -24,7 +24,8 @@ using Rock.Web.Cache;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Launches multiple workflows and optionally sets the entity, name and/or attribute values
+    /// Launches multiple workflows and optionally sets the entity, name and/or attribute values.
+    /// Or to use the Message Queue, use <seealso cref="Rock.Tasks.LaunchWorkflows" />
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class LaunchWorkflowsTransaction : ITransaction

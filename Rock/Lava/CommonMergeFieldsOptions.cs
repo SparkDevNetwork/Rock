@@ -17,7 +17,7 @@
 namespace Rock.Lava
 {
     /// <summary>
-    /// Optional options for Rock.Lava.LavaHelper.GetCommonMergeFields
+    /// Optional settings for Rock.Lava.LavaHelper.GetCommonMergeFields
     /// </summary>
     public class CommonMergeFieldsOptions
     {
@@ -117,6 +117,4 @@ namespace Rock.Lava
         /// </value>
         public bool GetLegacyGlobalMergeFields { get; set; }
     }
-
-     
 }
