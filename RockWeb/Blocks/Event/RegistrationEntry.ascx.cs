@@ -2612,7 +2612,9 @@ namespace RockWeb.Blocks.Event
                 var family = registrar.GetFamily( rockContext );
                 if ( family != null )
                 {
-                    multipleFamilyGroupIds.AddOrIgnore( RegistrationState.FamilyGuid, family.Id );
+                    // This is the registrar's entry into the dictionary.
+                    multipleFamilyGroupIds.AddOrIgnore( family.Guid, family.Id );
+
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
