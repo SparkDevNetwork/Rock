@@ -70,6 +70,14 @@ namespace Rock.CheckIn
         public List<int> CurrentGroupTypeIds { get; set; }
 
         /// <summary>
+        /// Gets or sets the current group ids.
+        /// </summary>
+        /// <value>
+        /// The current group ids.
+        /// </value>
+        public List<int> CurrentGroupIds { get; set; }
+
+        /// <summary>
         /// Gets home page Guid to use instead of the one configured in <seealso cref="CheckInBlock"/>'s HomePage block setting.
         /// This is handy for things such as a checkin that start with the MobileLauncher Page
         /// </summary>
