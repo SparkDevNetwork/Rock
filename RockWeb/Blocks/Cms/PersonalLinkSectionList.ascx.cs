@@ -15,20 +15,21 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Web.UI.WebControls;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -47,9 +48,9 @@ namespace RockWeb.Blocks.Cms
         Order = 0 )]
 
     [BooleanField(
-        "Shared Section",
+        "Limit to Shared Sections",
         Description = "When enabled, only shared sections will be displayed.",
-        Key = AttributeKey.SharedSection,
+        Key = AttributeKey.LimitToSharedSections,
         Order = 1 )]
 
     #endregion Block Attributes
@@ -60,7 +61,7 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string SharedSection = "SharedSection";
+            public const string LimitToSharedSections = "SharedSection";
         }
 
         #endregion Attribute Keys
@@ -99,6 +100,18 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
+            var limitToSharedSections = GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean();
+            var reorderField = gSectionList.ColumnsOfType<ReorderField>().FirstOrDefault();
+            bool allowReordering = !limitToSharedSections;
+            if ( reorderField != null )
+            {
+                // only show the reorder if showing both shared and non-shared (the sort is specific to each person)
+                reorderField.Visible = allowReordering;
+            }
+
+            // only show the filter if we aren't allowing re-ordering
+            gfFilter.Visible = !allowReordering;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
 
@@ -113,7 +126,6 @@ namespace RockWeb.Blocks.Cms
             gSectionList.Actions.AddClick += gSectionList_Add;
             gSectionList.GridReorder += gSectionList_GridReorder;
             gSectionList.GridRebind += gSectionList_GridRebind;
-            gSectionList.RowDataBound += gSectionList_RowDataBound;
         }
 
         /// <summary>
@@ -124,10 +136,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                if ( CurrentPersonAliasId.HasValue )
-                {
-                    BindGrid();
-                }
+                BindGrid();
             }
 
             base.OnLoad( e );
@@ -164,7 +173,17 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSectionList_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.SectionId, e.RowKeyId );
+            var section = new PersonalLinkSectionService( new RockContext() ).Get( e.RowKeyId );
+
+            if ( section == null )
+            {
+                return;
+            }
+
+            if ( section.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+            {
+                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.SectionId, e.RowKeyId );
+            }
         }
 
         /// <summary>
@@ -195,26 +214,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Handles the RowDataBound event of the gSectionList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
-        protected void gSectionList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            var personalLinkSection = ( PersonalLinkSectionViewModel ) e.Row.DataItem;
-            if ( personalLinkSection == null )
-            {
-                return;
-            }
-        
-            // disable delete button
-            var deleteField = gSectionList.ColumnsOfType<DeleteField>().FirstOrDefault();
-            var deleteFieldIndex = gSectionList.Columns.IndexOf( deleteField );
-            var deleteButtonCell = ( ( DataControlFieldCell ) e.Row.Cells[deleteFieldIndex] ).Controls[0];
-            deleteButtonCell.Visible = personalLinkSection.CanEdit;
-        }
-
-        /// <summary>
         /// Handles the GridRebind event of the gSectionList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -231,33 +230,19 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gSectionList_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var rockContext = new RockContext();
-            var personalLinkSections = GetPersonalLinkSections( rockContext );
-            var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            var personalLinkSectionViewModels = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders );
-
-            // first get all the section for which there is no corresponding order entry.
-            var sectionWithNoOrder = personalLinkSectionViewModels
-                .Where( a => !a.OrderId.HasValue );
-
-            if ( sectionWithNoOrder.Any() )
+            if ( GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean() )
             {
-                var newPersonalLinkSectionOrder = sectionWithNoOrder
-                    .Select( a => new PersonalLinkSectionOrder
-                    {
-                        SectionId = a.Id,
-                        Order = 0,
-                        PersonAliasId = CurrentPersonAliasId.Value
-                    } ).ToList();
-                new PersonalLinkSectionOrderService( rockContext ).AddRange( newPersonalLinkSectionOrder );
-                rockContext.SaveChanges();
-                personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
+                // The event shouldn't get called in this situation, but just in case...
+                // Re-ordering allow applies when showing all shared and non-shared sections
+                return;
             }
 
-            var orderedSectionIds = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders ).Select( a => a.OrderId ).ToList();
-            personalLinkSectionOrders = personalLinkSectionOrders.OrderBy( a => orderedSectionIds.IndexOf( a.Id ) ).ToList();
+            var rockContext = new RockContext();
+            var gridDataSourceList = GetGridDataSourceList( rockContext );
 
-            new PersonalLinkSectionOrderService( rockContext ).Reorder( personalLinkSectionOrders, e.OldIndex, e.NewIndex );
+            var sectionOrderList = gridDataSourceList.Select( a => a.PersonalLinkSectionOrder ).ToList();
+
+            new PersonalLinkSectionOrderService( rockContext ).Reorder( sectionOrderList, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
             BindGrid();
@@ -294,6 +279,30 @@ namespace RockWeb.Blocks.Cms
             BindFilter();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gSectionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gSectionList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var personalLinkSectionViewModel = e.Row.DataItem as PersonalLinkSectionViewModel;
+
+            if ( personalLinkSectionViewModel == null )
+            {
+                return;
+            }
+
+            if ( personalLinkSectionViewModel.CanEdit == false )
+            {
+                // if this section isn't editable, remove the 'grid-select-cell' from the cells in that row (so that the hand icon doesn't show)
+                foreach ( var selectableCell in e.Row.Cells.OfType<DataControlFieldCell>().Where( a => a.HasCssClass( "grid-select-cell" ) ) )
+                {
+                    selectableCell.RemoveCssClass( "grid-select-cell" );
+                }
+            }
+        }
+
         #endregion
 
         #region Internal Methods
@@ -311,90 +320,104 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            var rockContext = new RockContext();
-            var personalLinkSections = GetPersonalLinkSections( rockContext );
-            var personalLinkSectionOrders = GetPersonalLinkSectionOrders( rockContext );
-            gSectionList.EntityTypeId = EntityTypeCache.GetId<PersonalLinkSection>();
-            gSectionList.DataSource = GetOrderedPersonalLinkSection( personalLinkSections, personalLinkSectionOrders );
+            var gridDataSourceList = GetGridDataSourceList( new RockContext() );
+
+            gSectionList.DataSource = gridDataSourceList;
             gSectionList.DataBind();
         }
 
-        private IEnumerable<PersonalLinkSectionViewModel> GetOrderedPersonalLinkSection( List<PersonalLinkSection> personalLinkSections, List<PersonalLinkSectionOrder> personalLinkSectionOrders )
-        {
-            return personalLinkSections
-                 .Select( a => new PersonalLinkSectionViewModel
-                 {
-                     Id = a.Id,
-                     Name = a.Name,
-                     LinkCount = a.PersonalLinks.Count(),
-                     IsShared = a.IsShared,
-                     Order = personalLinkSectionOrders.Where( b => b.SectionId == a.Id ).Select( b => b.Order ).DefaultIfEmpty().FirstOrDefault(),
-                     OrderId = personalLinkSectionOrders.Where( b => b.SectionId == a.Id ).Select( b => (int?) b.Id ).FirstOrDefault(),
-                     CanEdit = !a.IsShared || ( a.IsShared && a.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                 } )
-                 .OrderBy( a => a.Order )
-                 .ThenBy( a => a.Name )
-                 .ToList();
-        }
-
         /// <summary>
-        /// Gets the personal link sections.
+        /// Gets the grid data source list (ordered)
         /// </summary>
-        /// <returns></returns>
-        private List<PersonalLinkSection> GetPersonalLinkSections( RockContext rockContext )
+        /// <returns>List&lt;PersonalLinkSectionViewModel&gt;.</returns>
+        private List<PersonalLinkSectionViewModel> GetGridDataSourceList( RockContext rockContext )
         {
-            rockContext = rockContext ?? new RockContext();
-            var personalLinkSections = new List<PersonalLinkSection>();
-            var isShared = GetAttributeValue( AttributeKey.SharedSection ).AsBoolean();
+            var limitToSharedSections = GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean();
+            List<PersonalLinkSection> personalLinkSectionList;
+            Dictionary<int, PersonalLinkSectionOrder> currentPersonSectionOrderLookupBySectionId = null;
 
-            var qry = new PersonalLinkSectionService( rockContext )
-                .Queryable()
-                .Include( a => a.PersonalLinks )
-                .AsNoTracking();
-
-            if ( isShared )
+            if ( limitToSharedSections )
             {
-                qry = qry.Where( a => a.IsShared );
+                // only show shared sections in this mode
+                var sharedPersonalLinkSectionsQuery = new PersonalLinkSectionService( rockContext ).Queryable().Where( a => a.IsShared );
+                personalLinkSectionList = sharedPersonalLinkSectionsQuery.Include( a => a.PersonalLinks ).OrderBy( a => a.Name ).AsNoTracking().ToList();
             }
             else
             {
-                qry = qry.Where( a => a.IsShared || a.PersonAliasId == CurrentPersonAliasId.Value );
-            }
-
-            // Filter by: Name
-            var name = gfFilter.GetUserPreference( UserPreferenceKey.Name ).ToStringSafe();
-
-            if ( !string.IsNullOrWhiteSpace( name ) )
-            {
-                qry = qry.Where( a => a.Name.Contains( name ) );
-            }
-
-            foreach ( var personalLinkSection in qry.ToList() )
-            {
-                var isViewable = !personalLinkSection.IsShared || ( personalLinkSection.IsShared && personalLinkSection.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
-                if ( isViewable )
+                // show both shared and non-shared, but don't let shared sections get deleted (even if authorized)
+                var personalLinkService = new PersonalLinkService( rockContext );
+                if ( personalLinkService.AddMissingPersonalLinkSectionOrders( this.CurrentPerson ) )
                 {
-                    personalLinkSections.Add( personalLinkSection );
+                    rockContext.SaveChanges();
                 }
+
+                var orderedPersonalLinkSectionsQuery = new PersonalLinkService( rockContext ).GetOrderedPersonalLinkSectionsQuery( this.CurrentPerson );
+
+                personalLinkSectionList = orderedPersonalLinkSectionsQuery
+                    .Include( a => a.PersonalLinks )
+                    .AsNoTracking()
+                    .ToList()
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                    .ToList();
+
+                // NOTE: We might be making changes when resorting this, so don't use AsNoTracking()
+                var sectionOrderQuery = personalLinkService.GetSectionOrderQuery( this.CurrentPerson );
+                currentPersonSectionOrderLookupBySectionId = sectionOrderQuery.ToDictionary( k => k.SectionId, v => v );
             }
 
-            return personalLinkSections;
+            gSectionList.EntityTypeId = EntityTypeCache.GetId<PersonalLinkSection>();
+
+            var viewModelList = personalLinkSectionList.Select( a =>
+            {
+                var personalLinkSectionViewModel = new PersonalLinkSectionViewModel
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                    LinkCount = a.PersonalLinks.Where( x => x.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Count(),
+                    IsShared = a.IsShared,
+                    PersonalLinkSectionOrder = currentPersonSectionOrderLookupBySectionId?.GetValueOrNull( a.Id )
+                };
+
+                if ( limitToSharedSections )
+                {
+                    // if we are only showing shared sections, let them edit it if authorized edit
+                    personalLinkSectionViewModel.CanEdit = a.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                }
+                else
+                {
+                    // Don't allow shared sections to be deleted/edited if we showing both shared and non-shared sections
+                    personalLinkSectionViewModel.CanEdit = !a.IsShared;
+                }
+
+                personalLinkSectionViewModel.CanDelete = personalLinkSectionViewModel.CanEdit;
+
+                return personalLinkSectionViewModel;
+            } ).ToList();
+
+            return viewModelList.OrderBy( a => a.PersonalLinkSectionOrder?.Order ?? 0 ).ThenBy( a => a.Name ).ToList();
         }
 
         /// <summary>
-        /// Gets the personal link section orders.
+        /// Handles the OnDataBound event of the DeleteButton control.
         /// </summary>
-        /// <returns></returns>
-        private List<PersonalLinkSectionOrder> GetPersonalLinkSectionOrders( RockContext rockContext )
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void DeleteButton_OnDataBound( object sender, RowEventArgs e )
         {
-            rockContext = rockContext ?? new RockContext();
+            var personalLink = e.Row.DataItem as PersonalLinkSectionViewModel;
 
-            var qry = new PersonalLinkSectionOrderService( rockContext )
-                .Queryable();
+            if ( personalLink == null )
+            {
+                return;
+            }
 
-            qry = qry.Where( a => a.PersonAliasId == CurrentPersonAliasId );
+            var deleteButton = sender as LinkButton;
+            if ( deleteButton == null )
+            {
+                return;
+            }
 
-            return qry.ToList();
+            deleteButton.Visible = personalLink.CanDelete;
         }
 
         #endregion
@@ -414,9 +437,9 @@ namespace RockWeb.Blocks.Cms
 
             public int LinkCount { get; set; }
 
-            public int Order { get; set; }
+            public PersonalLinkSectionOrder PersonalLinkSectionOrder { get; set; }
 
-            public int? OrderId { get; set; }
+            public bool CanDelete { get; set; }
 
             public bool CanEdit { get; set; }
         }
