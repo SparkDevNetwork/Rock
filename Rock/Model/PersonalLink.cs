@@ -13,12 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -28,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PersonalLink" )]
     [DataContract]
-    public partial class PersonalLink : Model<PersonalLink>, IOrdered
+    public partial class PersonalLink : Model<PersonalLink>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -104,6 +108,116 @@ namespace Rock.Model
         public virtual PersonalLinkSection Section { get; set; }
 
         #endregion
+
+        #region overrides
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        public override string ToString()
+        {
+            return $"{this.Name} ({this.Url})";
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized for <paramref name="action"/>.
+        /// In the case of non-shared link, security it limited to the person who owns that section.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns><c>true</c> if the specified action is authorized; otherwise, <c>false</c>.</returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // if it is non-shared personal link, than only the person that owns the link is authorized for that link. Everybody else has NO access (including admins).
+            if ( this.PersonAlias != null )
+            {
+                return this.PersonAlias.PersonId == person.Id;
+            }
+
+            return base.IsAuthorized( action, person );
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        /// <value>The parent authority.</value>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Section;
+            }
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( entry.State == EntityState.Deleted || entry.State == EntityState.Modified )
+            {
+                _preSaveChangesPersonAliasId = ( int? ) ( entry.OriginalValues?["PersonAliasId"] );
+            }
+            else
+            {
+                _preSaveChangesPersonAliasId = this.PersonAliasId;
+            }
+
+            var section = SharedPersonalLinkSectionCache.Get( this.SectionId );
+            _preSaveChangesIsShared = section?.IsShared ?? false;
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        private int? _preSaveChangesPersonAliasId = null;
+        private bool _preSaveChangesIsShared = false;
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            if ( entityState == EntityState.Deleted )
+            {
+                // If the link was deleted, the "ModifiedDateTime" of link orders need to be updated.
+                // Otherwise, we won't be able to detect that the links have changed due to deleting a record.
+                new PersonalLinkSectionOrderService( dbContext as RockContext ).UpdateLinkOrdersModifiedDateTime( _preSaveChangesPersonAliasId );
+            }
+
+            var section = SharedPersonalLinkSectionCache.Get( this.SectionId );
+
+            if ( _preSaveChangesIsShared || ( section?.IsShared == true ) )
+            {
+                // If this is a shared link, update the SharedPersonalLinkSectionCache
+                SharedPersonalLinkSectionCache.UpdateCachedEntity( this.Id, entityState );
+                SharedPersonalLinkSectionCache.FlushLastModifiedDateTime();
+            }
+
+            // Since this change probably impacts the current person's links, update the current person's link's ModifiedDateTime. 
+            PersonalLinkService.PersonalLinksHelper.FlushPersonalLinksSessionDataLastModifiedDateTime();
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns>IEntityCache.</returns>
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        #endregion ICacheable
     }
 
     #region Entity Configuration
