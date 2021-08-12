@@ -48,9 +48,9 @@ namespace RockWeb.Blocks.Cms
         Order = 0 )]
 
     [BooleanField(
-        "Limit to Shared Sections",
+        "Shared Sections",
         Description = "When enabled, only shared sections will be displayed.",
-        Key = AttributeKey.LimitToSharedSections,
+        Key = AttributeKey.SharedSections,
         Order = 1 )]
 
     #endregion Block Attributes
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string LimitToSharedSections = "SharedSection";
+            public const string SharedSections = "SharedSection";
         }
 
         #endregion Attribute Keys
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            var limitToSharedSections = GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean();
+            var limitToSharedSections = GetAttributeValue( AttributeKey.SharedSections ).AsBoolean();
             var reorderField = gSectionList.ColumnsOfType<ReorderField>().FirstOrDefault();
             bool allowReordering = !limitToSharedSections;
             if ( reorderField != null )
@@ -230,7 +230,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         protected void gSectionList_GridReorder( object sender, GridReorderEventArgs e )
         {
-            if ( GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.SharedSections ).AsBoolean() )
             {
                 // The event shouldn't get called in this situation, but just in case...
                 // Re-ordering allow applies when showing all shared and non-shared sections
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Cms
         /// <returns>List&lt;PersonalLinkSectionViewModel&gt;.</returns>
         private List<PersonalLinkSectionViewModel> GetGridDataSourceList( RockContext rockContext )
         {
-            var limitToSharedSections = GetAttributeValue( AttributeKey.LimitToSharedSections ).AsBoolean();
+            var limitToSharedSections = GetAttributeValue( AttributeKey.SharedSections ).AsBoolean();
             List<PersonalLinkSection> personalLinkSectionList;
             Dictionary<int, PersonalLinkSectionOrder> currentPersonSectionOrderLookupBySectionId = null;
 

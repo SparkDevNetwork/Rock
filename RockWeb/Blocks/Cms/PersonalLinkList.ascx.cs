@@ -100,7 +100,14 @@ namespace RockWeb.Blocks.Cms
                 gLinkList.GridReorder += gLinkList_GridReorder;
                 gLinkList.GridRebind += gLinkList_GridRebind;
 
-                lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                if ( _personalLinkSection.IsShared )
+                {
+                    lTitle.Text = ( "Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                }
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
