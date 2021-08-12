@@ -292,6 +292,10 @@ namespace RockWeb.Blocks.Cms
                     SectionId = _personalLinkSection.Id
                 };
 
+                // add the new link to the bottom of the list for that section
+                var lastLinkOrder = personalLinkService.Queryable().Where( a => a.SectionId == _personalLinkSection.Id ).Max( a => ( int? ) a.Order ) ?? 0;
+                personalLink.Order = lastLinkOrder + 1;
+
                 personalLinkService.Add( personalLink );
             }
 
