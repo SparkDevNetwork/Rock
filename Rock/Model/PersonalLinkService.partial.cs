@@ -179,7 +179,7 @@ namespace Rock.Model
             var orderedPersonalLinkSectionsWithLinks = new PersonalLinkService( rockContext )
                 .GetOrderedPersonalLinkSectionsQuery( currentPerson )
                 .Include( a => a.PersonAlias )
-                .Include( a => a.PersonalLinks )
+                .Include( a => a.PersonalLinks.Select( x => x.PersonAlias ) )
                 .AsNoTracking()
                 .ToList()
                 .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
