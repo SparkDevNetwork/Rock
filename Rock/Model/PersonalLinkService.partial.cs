@@ -78,6 +78,7 @@ namespace Rock.Model
             var missingSectionOrders = personalLinkSectionsQuery
                 .Where( a => !a.PersonalLinkSectionOrders.Any( xx => personAliasQuery.Any( pa => pa.Id == xx.PersonAliasId ) ) )
                 .ToList()
+                .OrderBy( a => a.Name )
                 .Select( a => new PersonalLinkSectionOrder
                 {
                     PersonAliasId = primaryAliasId.Value,
@@ -87,7 +88,15 @@ namespace Rock.Model
 
             if ( missingSectionOrders.Any() )
             {
+                // add the new order for sections to the bottom of the list for that section (in order by name)
                 var personalLinkSectionOrderService = new PersonalLinkSectionOrderService( rockContext );
+
+                var lastSectionOrder = personalLinkSectionOrderService.Queryable().Where( a => a.PersonAlias.PersonId == currentPerson.Id ).Max( a => ( int? ) a.Order ) ?? 0;
+                foreach ( var missingSectionOrder in missingSectionOrders )
+                {
+                    missingSectionOrder.Order = lastSectionOrder++;
+                }
+
                 personalLinkSectionOrderService.AddRange( missingSectionOrders );
                 return true;
             }
@@ -199,7 +208,8 @@ namespace Rock.Model
                             SectionId = l.SectionId,
                             Order = l.Order
                         } )
-                        .OrderBy( xx => xx.Order ).ToList()
+                        .OrderBy( xx => xx.Order )
+                        .ThenBy( xx => xx.Name )
                         .ToList();
 
                     return result;
