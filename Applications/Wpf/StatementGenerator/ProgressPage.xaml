@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
     Title="ProgressPage"
-    d:DesignHeight="500"
+    d:DesignHeight="700"
     d:DesignWidth="800"
     Loaded="Page_Loaded"
     Style="{StaticResource pageBackground}"

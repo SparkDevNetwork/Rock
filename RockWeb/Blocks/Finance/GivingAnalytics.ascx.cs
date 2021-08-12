@@ -383,8 +383,7 @@ namespace RockWeb.Blocks.Finance
             btnApply_Click( sender, e );
         }
 
-
-        protected void dvpDataView_SelectedIndexChanged( object sender, EventArgs e )
+        protected void dvpDataView_ValueChanged( object sender, EventArgs e )
         {
             HideShowDataViewResultOption();
         }

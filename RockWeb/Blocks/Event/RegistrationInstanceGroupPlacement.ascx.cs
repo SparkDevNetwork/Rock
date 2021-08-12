@@ -1107,7 +1107,7 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                var existingPlacementGroups = new GroupService( rockContext ).Queryable().Where( a => a.ParentGroupId == parentGroupId ).ToList();
+                var existingPlacementGroups = new GroupService( rockContext ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
                 placementGroups = existingPlacementGroups;
             }
             else
@@ -1152,6 +1152,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstanceId.HasValue )
                 {
                     var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+                    registrationInstanceService.GetRegistrationInstancePlacementGroupsByPlacement( registrationInstanceId.Value, registrationTemplatePlacementId.Value );
 
                     // in RegistrationInstanceMode
                     registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup, registrationTemplatePlacementId.Value );
@@ -1292,10 +1293,10 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         private bool HasValidChildGroups( int parentGroupId, int groupTypeId, out string errorMessage )
         {
-            var childPlacementGroups = new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId ).ToList();
+            var childPlacementGroups = new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId && a.IsActive == true ).ToList();
             if ( childPlacementGroups.Count() == 0 )
             {
-                errorMessage = "The selected parent group does not have any child groups.";
+                errorMessage = "The selected parent group does not have any active child groups.";
                 return false;
             }
 

@@ -250,7 +250,7 @@ namespace Rock.Lava.Shortcodes
                     nextStartDateTime = null;
                     if ( occurrences.Count() > 1 )
                     {
-                        nextStartDateTime = occurrences.Last().Period.EndTime.Value;
+                        nextStartDateTime = occurrences.Last().Period.StartTime.Value;
                     }
                 }
 

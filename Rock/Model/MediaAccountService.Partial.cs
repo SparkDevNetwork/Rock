@@ -52,7 +52,6 @@ namespace Rock.Model
         /// <param name="mediaAccountId">The media account identifier to be synchronized.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
         public static async Task<SyncOperationResult> SyncMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
             using ( var rockContext = new RockContext() )
@@ -64,13 +63,19 @@ namespace Rock.Model
                     return new SyncOperationResult( new[] { "Media Account was not found." } );
                 }
 
+                var component = mediaAccount.GetMediaAccountComponent();
+                if ( component == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account component was not found." } );
+                }
+
                 // Set time to just before we start. Better to have a small
                 // amount of overlap than miss data.
                 var refreshDateTime = RockDateTime.Now;
 
                 var result = await EnqueueOperationAsync( mediaAccountId, () =>
                 {
-                    return mediaAccount.GetMediaAccountComponent().SyncMediaAsync( mediaAccount, cancellationToken );
+                    return component.SyncMediaAsync( mediaAccount, cancellationToken );
                 }, cancellationToken );
 
                 if ( result.IsSuccess )
@@ -90,7 +95,6 @@ namespace Rock.Model
         /// <param name="mediaAccountId">The media account identifier to be synchronized.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
         public static async Task<SyncOperationResult> SyncAnalyticsInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
             using ( var rockContext = new RockContext() )
@@ -102,9 +106,15 @@ namespace Rock.Model
                     return new SyncOperationResult( new[] { "Media Account was not found." } );
                 }
 
+                var component = mediaAccount.GetMediaAccountComponent();
+                if ( component == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account component was not found." } );
+                }
+
                 var result = await EnqueueOperationAsync( mediaAccountId, () =>
                 {
-                    return mediaAccount.GetMediaAccountComponent().SyncAnalyticsAsync( mediaAccount, cancellationToken );
+                    return component.SyncAnalyticsAsync( mediaAccount, cancellationToken );
                 }, cancellationToken );
 
                 return result;
@@ -119,7 +129,6 @@ namespace Rock.Model
         /// <param name="mediaAccountId">The media account identifier to be refreshed.</param>
         /// <param name="cancellationToken">The cancellation token that can be used to abort the operation.</param>
         /// <returns>A <see cref="SyncOperationResult"/> object with the result of the operation.</returns>
-        /// <exception cref="System.ArgumentNullException">mediaAccount</exception>
         public static async Task<SyncOperationResult> RefreshMediaInAccountAsync( int mediaAccountId, CancellationToken cancellationToken = default )
         {
             using ( var rockContext = new RockContext() )
@@ -131,13 +140,19 @@ namespace Rock.Model
                     return new SyncOperationResult( new[] { "Media Account was not found." } );
                 }
 
+                var component = mediaAccount.GetMediaAccountComponent();
+                if ( component == null )
+                {
+                    return new SyncOperationResult( new[] { "Media Account component was not found." } );
+                }
+
                 // Set time to just before we start. Better to have a small
                 // amount of overlap than miss data.
                 var refreshDateTime = RockDateTime.Now;
 
                 var result = await EnqueueOperationAsync( mediaAccountId, () =>
                 {
-                    return mediaAccount.GetMediaAccountComponent().RefreshAccountAsync( mediaAccount, cancellationToken );
+                    return component.RefreshAccountAsync( mediaAccount, cancellationToken );
                 }, cancellationToken );
 
                 if ( result.IsSuccess )

@@ -20,7 +20,7 @@
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Campaign Name" Required="true" CssClass="input-width-xxl" />
                     </div>
                     <div class="col-md-4">
-                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" Checked="true" Text="Yes"/>
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" Checked="true" />
                     </div>
                 </div>
 

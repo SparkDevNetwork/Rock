@@ -41,6 +41,9 @@ namespace Rock.Client
         public int GroupId { get; set; }
 
         /// <summary />
+        public bool HasValidMailingAddress { get; set; }
+
+        /// <summary />
         public bool IsComplete { get; set; }
 
         /// <summary />
@@ -57,6 +60,12 @@ namespace Rock.Client
 
         /// <summary />
         public bool? OptedOut { get; set; }
+
+        /// <summary />
+        public int? PaperlessStatementsIndividualCount { get; set; }
+
+        /// <summary />
+        public bool? PaperlessStatementUploaded { get; set; }
 
         /// <summary />
         public int? PersonId { get; set; }
@@ -76,12 +85,15 @@ namespace Rock.Client
             this.ContributionTotal = source.ContributionTotal;
             this.Country = source.Country;
             this.GroupId = source.GroupId;
+            this.HasValidMailingAddress = source.HasValidMailingAddress;
             this.IsComplete = source.IsComplete;
             this.IsInternationalAddress = source.IsInternationalAddress;
             this.LastName = source.LastName;
             this.LocationId = source.LocationId;
             this.NickName = source.NickName;
             this.OptedOut = source.OptedOut;
+            this.PaperlessStatementsIndividualCount = source.PaperlessStatementsIndividualCount;
+            this.PaperlessStatementUploaded = source.PaperlessStatementUploaded;
             this.PersonId = source.PersonId;
             this.PostalCode = source.PostalCode;
             this.RenderedPageCount = source.RenderedPageCount;

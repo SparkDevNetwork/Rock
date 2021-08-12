@@ -20,7 +20,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -150,7 +152,7 @@ namespace RockWeb.Blocks.Finance
                 TransactionDetailsState = JsonConvert.DeserializeObject<List<FinancialScheduledTransactionDetail>>( json );
             }
 
-            ForeignCurrencyDefinedValueId = (int?) ViewState[ViewStateKey.ForeignCurrencyDefinedValueId];
+            ForeignCurrencyDefinedValueId = ( int? ) ViewState[ViewStateKey.ForeignCurrencyDefinedValueId];
         }
 
         /// <summary>
@@ -727,8 +729,24 @@ namespace RockWeb.Blocks.Finance
 
             ForeignCurrencyDefinedValueId = financialScheduledTransaction.ForeignCurrencyCodeValueId;
 
-            hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
-            hlStatus.LabelType = financialScheduledTransaction.IsActive ? LabelType.Success : LabelType.Danger;
+            if ( financialScheduledTransaction.FinancialPaymentDetail.CardExpirationDate < RockDateTime.Now )
+            {
+                // Show that card is expired
+                hlStatus.Text = "Card Expired";
+                hlStatus.LabelType = LabelType.Warning;
+            }
+            else if ( financialScheduledTransaction.Status.HasValue && financialScheduledTransaction.Status != FinancialScheduledTransactionStatus.Active )
+            {
+                // show that that the gateway reported another problem 
+                hlStatus.Text = financialScheduledTransaction.Status.ConvertToString();
+                hlStatus.LabelType = LabelType.Warning;
+            }
+            else 
+            {
+
+                hlStatus.Text = financialScheduledTransaction.IsActive ? "Active" : "Inactive";
+                hlStatus.LabelType = financialScheduledTransaction.IsActive ? LabelType.Success : LabelType.Danger;
+            }
 
             string rockUrlRoot = ResolveRockUrl( "/" );
             Person person = null;

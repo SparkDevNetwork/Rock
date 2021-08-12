@@ -59,7 +59,7 @@ namespace Rock.Apps.StatementGenerator
             var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
             if ( !validSchemes.Contains( rockUri.Scheme ) )
             {
-                txtRockUrl.Text = "http://" + rockUri.AbsoluteUri;
+                txtRockUrl.Text = "https://" + rockUri.AbsoluteUri;
             }
 
             RestClient restClient = new RestClient( txtRockUrl.Text );

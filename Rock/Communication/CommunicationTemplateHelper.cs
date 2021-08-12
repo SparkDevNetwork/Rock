@@ -46,7 +46,7 @@ namespace Rock.Communication
             {
                 helpTextBuilder.Append(
             @"
-<p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
+<p>An email template needs to be an HTML document with some special divs to support the communication wizard.</p>
 <br>
 <p>The template needs to have at least one div with a 'dropzone' class in the BODY</p>
 <pre>
@@ -76,7 +76,7 @@ namespace Rock.Communication
 </pre>
 <br>
 
-<p>To enable the PREHEADER text, a div with an id of 'preheader-text' needs to be the first div in the BODY</p>
+<p>To enable the PREHEADER text, a div with an id of 'preheader-text' needs to be the first div in the <code>&lt;body&gt;</code></p>
 <pre>
 &lt;!-- HIDDEN PREHEADER TEXT --&gt;
 &lt;div id=""preheader-text"" style=""display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;""&gt;

@@ -740,7 +740,6 @@ namespace Rock.Web.UI.Controls
                 _cbIsActive = new RockCheckBox();
                 _cbIsActive.ID = this.ID + "_cbIsActive";
                 _cbIsActive.Label = "Active";
-                _cbIsActive.Text = "Yes";
                 Controls.Add( _cbIsActive );
 
                 _tbUrlSlug = new RockTextBox();

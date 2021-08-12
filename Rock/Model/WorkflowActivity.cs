@@ -407,6 +407,11 @@ namespace Rock.Model
         /// </returns>
         public static WorkflowActivity Activate( WorkflowActivityTypeCache activityTypeCache, Workflow workflow, RockContext rockContext )
         {
+            if ( !workflow.IsActive )
+            {
+                return null;
+            }
+
             var activity = new WorkflowActivity();
             activity.Workflow = workflow;
             activity.ActivityTypeId = activityTypeCache.Id;

@@ -51,6 +51,7 @@ namespace Rock.Apps.StatementGenerator
         /// <param name="e">The <see cref="System.Windows.Threading.DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
         void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
         {
+            LogException( e.Exception );
             ErrorMessageWindow errorMessageWindow = new ErrorMessageWindow( e.Exception );
             errorMessageWindow.Owner = MainWindow;
             errorMessageWindow.ShowDialog();

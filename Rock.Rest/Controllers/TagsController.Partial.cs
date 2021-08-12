@@ -50,7 +50,11 @@ namespace Rock.Rest.Controllers
             string tagName = WebUtility.UrlDecode( name );
             var tag = ( ( TagService ) Service ).Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid.AsGuidOrNull(), includeInactive );
 
-            if ( tag == null || !tag.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson() ) )
+            if ( !Tag.IsValidTagName( name ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Forbidden );
+            }
+            else if ( tag == null || !tag.IsAuthorized( Rock.Security.Authorization.TAG, GetPerson() ) )
             {
                 // NOTE: This exception is expected when adding a new Tag.  The Javascript responds to the NotFound error by prompting them to create a new tag
                 throw new HttpResponseException( HttpStatusCode.NotFound );

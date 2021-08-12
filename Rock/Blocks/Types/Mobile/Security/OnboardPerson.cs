@@ -1326,7 +1326,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
             if ( details.CampusGuid.HasValue )
             {
-                campusId = CampusCache.Get( details.CampusGuid.Value ).Id;
+                campusId = CampusCache.Get( details.CampusGuid.Value )?.Id;
             }
 
             PersonService.SaveNewPerson( person, rockContext, campusId, false );

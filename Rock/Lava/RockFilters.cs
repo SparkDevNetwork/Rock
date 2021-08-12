@@ -2141,6 +2141,8 @@ namespace Rock.Lava
 
         #region Attribute Filters
 
+        private const int _maxRecursionDepth = 10;
+
         /// <summary>
         /// DotLiquid Attribute Filter
         /// </summary>
@@ -2163,7 +2165,7 @@ namespace Rock.Lava
             int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
-            if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
+            if ( ( input is string ) && input.ToStringSafe().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
                 var globalAttributeCache = GlobalAttributesCache.Get();
                 attribute = globalAttributeCache.Attributes
@@ -2183,6 +2185,13 @@ namespace Rock.Lava
                                 mergeFields.Add( keyVal.Key, keyVal.Value );
                             }
                         }
+
+                        // Verify that the recursion depth is not exceeded.
+                        if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                        {
+                            return "## Lava Error: Recursive reference ##";
+                        }
+
                         rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
@@ -2195,12 +2204,12 @@ namespace Rock.Lava
             /*
                 04/28/2020 - Shaun
                 The "SystemSetting" filter argument does not retrieve the Attribute from the database
-                or perform any authorization checks.  It simply returns the value of the of the specified
+                or perform any authorization checks.  It simply returns the value of the specified
                 SystemSetting attribute (with any merge fields evaluated).  This is intentional.
             */
 
             // If Input is "SystemSetting" then look for a SystemSetting attribute with key
-            else if ( input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
+            else if ( ( input is string ) && input.ToStringSafe().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
             {
                 string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
                 if ( theValue.HasMergeFields() )
@@ -2215,6 +2224,12 @@ namespace Rock.Lava
                         }
                     }
 
+                    // Verify that the recursion depth has not been exceeded.
+                    if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                    {
+                        return "## Lava Error: Recursive reference ##";
+                    }
+
                     rawValue = theValue.ResolveMergeFields( mergeFields );
                 }
                 else
@@ -2224,17 +2239,16 @@ namespace Rock.Lava
 
                 return rawValue;
             }
-
             // If input is an object that has attributes, find its attribute value
             else
             {
                 if ( input is Attribute.IHasAttributes )
                 {
-                    item = ( Attribute.IHasAttributes ) input;
+                    item = (Attribute.IHasAttributes)input;
                 }
                 else if ( input is IHasAttributesWrapper )
                 {
-                    item = ( ( IHasAttributesWrapper ) input ).HasAttributesEntity;
+                    item = ( (IHasAttributesWrapper)input ).HasAttributesEntity;
                 }
 
                 if ( item != null )
@@ -2270,20 +2284,20 @@ namespace Rock.Lava
                     var field = attribute.FieldType.Field;
                     if ( qualifier.Equals( "Url", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ILinkableFieldType )
                     {
-                        return ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( rawValue, attribute.QualifierValues );
+                        return ( (Rock.Field.ILinkableFieldType)field ).UrlLink( rawValue, attribute.QualifierValues );
                     }
 
                     // check if attribute is a key value list and return a collection of key/value pairs
                     if ( field is Rock.Field.Types.KeyValueListFieldType )
                     {
-                        var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
+                        var keyValueField = (Rock.Field.Types.KeyValueListFieldType)field;
 
                         return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
                     }
 
                     if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )
                     {
-                        var cachedEntitiesField = ( Rock.Field.ICachedEntitiesFieldType ) field;
+                        var cachedEntitiesField = (Rock.Field.ICachedEntitiesFieldType)field;
                         var values = cachedEntitiesField.GetCachedEntities( rawValue );
 
                         if ( values == null || values.Count == 0 )
@@ -2305,7 +2319,7 @@ namespace Rock.Lava
                     // If qualifier was specified, and the attribute field type is an IEntityFieldType, try to find a property on the entity
                     if ( !string.IsNullOrWhiteSpace( qualifier ) && field is Rock.Field.IEntityFieldType )
                     {
-                        IEntity entity = ( ( Rock.Field.IEntityFieldType ) field ).GetEntity( rawValue );
+                        IEntity entity = ( (Rock.Field.IEntityFieldType)field ).GetEntity( rawValue );
                         if ( entity != null )
                         {
                             if ( qualifier.Equals( "object", StringComparison.OrdinalIgnoreCase ) )
@@ -2325,6 +2339,29 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Increment the specified recursion tracking key in the supplied Lava context
+        /// and verify that the recursion limit has not been exceeded.
+        /// </summary>
+        /// <param name="recursionDepthKey"></param>
+        /// <param name="mergeFields"></param>
+        /// <returns></returns>
+        private static bool IncrementRecursionTracker( string recursionDepthKey, IDictionary<string, object> mergeFields )
+        {
+            int currentRecursionDepth = mergeFields.GetValueOrDefault( recursionDepthKey, 0 ).ToStringSafe().AsInteger();
+
+            currentRecursionDepth++;
+
+            if ( currentRecursionDepth > _maxRecursionDepth )
+            {
+                return false;
+            }
+
+            mergeFields[recursionDepthKey] = currentRecursionDepth.ToString();
+
+            return true;
         }
 
         /// <summary>
@@ -3436,7 +3473,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returnes the nearest group of a specific type.
+        /// Returns the nearest group of a specific type.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -5105,6 +5142,27 @@ namespace Rock.Lava
             return $"Configuration setting \"{ input }\" is not available.";
         }
 
+
+        /// <summary>
+        /// Deletes the user preference.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="typeName">The type name.</param>
+        /// <param name="typeOrder">The type order.</param>
+        /// <returns></returns>
+        public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
+        {
+            RockPage page = HttpContext.Current.Handler as RockPage;
+
+            if ( input.IsNotNullOrWhiteSpace() )
+            {
+                RockPage.AddScriptToHead( page, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
+                typeName,
+                typeOrder,
+                input.ToString().EscapeQuotes() ), true );
+            }
+        }
+
         #endregion Misc Filters
 
         #region Array Filters
@@ -5368,12 +5426,21 @@ namespace Rock.Lava
                 return input;
             }
 
-            if ( !( input is IList ) )
+            IList inputList;
+
+            if ( ( input is IList ) )
+            {
+                inputList = input as IList;
+            }
+            else if ( ( input is IEnumerable ) )
+            {
+                inputList = ( input as IEnumerable ).Cast<object>().ToList();
+            }
+            else
             {
                 return input;
             }
 
-            var inputList = input as IList;
             var indexInt = index.ToString().AsIntegerOrNull();
             if ( !indexInt.HasValue || indexInt.Value < 0 || indexInt.Value >= inputList.Count )
             {

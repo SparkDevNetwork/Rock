@@ -569,7 +569,7 @@
                         <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger" />
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Label="Active" ValidationGroup="Trigger" />
                     </div>
                 </div>
                 <div class="row">

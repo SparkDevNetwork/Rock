@@ -34,7 +34,7 @@
 
 	{{ Group.Description }}
 
-	{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+	{% if Group.GroupCapacity != null and Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
 		{% assign warningLevel = 'warning' %}
 
 		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}

@@ -378,8 +378,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 using ( var cmd = connection.CreateCommand() )
                 {
                     cmd.CommandText = $@"USE [{dbName}];
-DBCC SHRINKFILE ({dbName}, 1);
-DBCC SHRINKFILE ({dbName}_Log, 1);
+DBCC SHRINKFILE ([{dbName}], 1);
+DBCC SHRINKFILE ([{dbName}_Log], 1);
 USE [master];";
                     cmd.ExecuteNonQuery();
                 }

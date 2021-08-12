@@ -29,6 +29,13 @@ namespace Rock.CheckIn
     [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}.." )]
     public class LocalDeviceConfiguration
     {
+        /* 08-05-2021 MDP
+
+        If you make changes to this class, keep in mind that the maximum cookie size is 4096 bytes.
+        As of 08-05-2021 the size is less than 300 bytes.
+         
+         */
+
         /// <summary>
         /// Gets or sets the current theme.
         /// </summary>

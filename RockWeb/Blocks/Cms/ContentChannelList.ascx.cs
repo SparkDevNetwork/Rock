@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Cms
             public const string Categories = "Categories";
         }
 
-        #endregion UserPreferanceKeys
+        #endregion UserPreferenceKeys
 
         #region Page Parameter Keys
 

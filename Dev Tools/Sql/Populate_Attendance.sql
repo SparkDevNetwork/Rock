@@ -1,19 +1,29 @@
-set nocount on
+--delete from attendance
+/*select ao.OccurrenceDate, count(*), min(StartDateTime), max(StartDateTime) 
+ from Attendance a
+ join AttendanceOccurrence ao on a.OccurrenceId = ao.Id
+ group by ao.OccurrenceDate
+ order by count(*) desc*/
 
+set nocount on
 -- configuration
 declare
     @populateStartDateTimeLastHour datetime = DateAdd(hour, -1, GetDate()),
-    @populateStartDateTimeLast12Months datetime = DateAdd(MONTH, -12, GetDate())
+    @populateStartDateTimeLast12Months datetime = DateAdd(MONTH, -12, GetDate()),
+    @populateStartDateTimeLast5Years datetime = DateAdd(MONTH, -60, GetDate())
 
 declare
     -- set this to @populateStartDateTimeLastHour or @populateStartDateTimeLast12Months (or custom), depending on what you need
-    @populateStartDateTime datetime = @populateStartDateTimeLastHour,
+    @populateStartDateTime datetime = @populateStartDateTimeLast5Years,
+    @avgAttendanceCountPerDay int = 100, 
+    
     @populateEndDateTime datetime  = DateAdd(hour, 0, GetDate()),
     
+
     @limitToChildren bit = 1, -- set this to true to only add attendance for children
     
     @populateGroupScheduling int = 0, -- set this to true if the attendance records should be for scheduling attendences
-    @maxAttendanceCount int = 1000, 
+    
     @personSampleSize int = 10000, -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
     @checkinAreaGroupTypeId int = (SELECT Id FROM GroupType WHERE [Guid] = 'FEDD389A-616F-4A53-906C-63D8255631C5') -- Weekly Service Checkin
     
@@ -40,10 +50,7 @@ declare
 declare
   @CheckinDateTime datetime = @populateStartDateTime,
   @PresentDateTime datetime = @populateStartDateTime,
-  @CheckoutDateTime datetime,
-  @attendancesPerDay int = @maxAttendanceCount/(DateDiff(day, @populateStartDateTime, @populateEndDateTime) +1)
-declare
-  @millsecondsIncrement int = DateDiff(ms, @populateStartDateTime, @populateEndDateTime)/@attendancesPerDay
+  @CheckoutDateTime datetime
 
 declare
     @attendanceGroupIds table ( id Int );
@@ -164,12 +171,17 @@ begin
 		       fetch next from scheduleIdCursor into @ScheduleId;
 		    end
         end
+
+        set @randomSeed = CHECKSUM(newid())
         
-        set @CheckinDateTime = DATEADD(ms, @millsecondsIncrement, @CheckinDateTime)
+        declare 
+            @secondsIncrement int = ((RAND(@randomSeed)*86000)/@avgAttendanceCountPerDay)*2;
+        
+        set @CheckinDateTime = DATEADD(SECOND, @secondsIncrement, @CheckinDateTime)
         set @PresentDateTime = @CheckinDateTime
         set @CheckoutDateTime = null
 		set @OccurrenceDate = convert(date, @CheckinDateTime);
-        set @randomSeed = CHECKSUM(newid())
+        
         set @DidAttend = (select case when FLOOR(rand(@randomSeed) * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
 
         set @randomSeed = CHECKSUM(newid());

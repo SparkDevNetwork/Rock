@@ -544,6 +544,15 @@ namespace Rock.Model
         [DataMember]
         public int? ContributionFinancialAccountId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Preferred Language for this person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the Preferred Language <see cref="Rock.Model.DefinedValue"/> for this person.
+        /// </value>
+        [DataMember]
+        public int? PreferredLanguageValueId { get; set; }
+
         #endregion
 
         #region Constructors
@@ -1100,6 +1109,15 @@ namespace Rock.Model
         /// </value>
         [LavaIgnore]
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's preferred language.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> object representing the Person's preferred language.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PreferredLanguageValue { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use <see cref="SetBirthDate(DateTime?)"/> set the Birthdate
@@ -2253,17 +2271,17 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
-            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
-            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
-            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
-            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
-            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
-
             // If the person was just added then update the GivingId to prevent "P0" values
             if ( this.GivingId == "P0" )
             {
                 PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
             }
+
+            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
+            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -3386,6 +3404,7 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
         }
     }
 

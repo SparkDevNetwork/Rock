@@ -22,7 +22,7 @@
 @navbarside-color:            @side-navigation-text-color;
 @navbarside-width:            @side-navigation-width;
 
-// Bootstrap Colors *show in editor*
+// Bootstrap Colors *show in editor* *advanced options*
 
 //// Bootstrap Colors {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
 @brand-success:               #16c98d; // #color
@@ -44,7 +44,7 @@
 @ui-4:                        #dbdbdb;                        // Table, panel, well, and hr border color. #color
 @ui-5:                        #aaa;                        // Grid action button color. #color
 
-// Text *show in editor*
+// Text *show in editor* *advanced options*
 @text-selection-background:   #bcd9ea;                      // Text selection background color (used when people select text with the mouse). #color
 @text-selection-color:        inherit;                        // Text selection text color (used when people select text with the mouse).
 @font-family-sans-serif:      -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; // The base font to use for text. Be sure when defining this font that the various weights are configured.
@@ -57,7 +57,7 @@
 
 @link-hover-decoration:       none;
 
-// Theme Configuration *show in editor*
+// Theme Configuration *show in editor* *advanced options*
 @badge-grid-width:            86px; // Width of the assessment grid icon badges.
 
 // Text Conversion
@@ -281,9 +281,14 @@
 @drawer-bg:                   @panel-subheading;
 //--
 @panel-heading-text-color:    #484848;                      // The heading's text color.
-@panel-heading-border:        @panel-heading-bg;              // The headings border color.
+@panel-heading-border:        @panel-border;              // The headings border color.
 //--
+@panel-following-offset-width:60px;
 @panel-following-active-bg:   @brand-color;                   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
+@panel-following-width:       50px;
+@panel-following-padding:     0;
+//--
+@panel-options-margin:        -15px -15px -15px 10px;
 //--
 @panel-footer-bg:             @panel-bg;                      // The background color of the panel's footer.
 @panel-footer-color:          @panel-text;                    // The color text of the panel's footer.
@@ -358,8 +363,8 @@
 @grid-footer-font-size:                 10px;
 @grid-footer-font-weight:               300;
 //--
-@grid-footer-button-bg:                 darken(@grid-footer-bg, 5%);
-@grid-footer-button-text-color:         @text-color;
+@grid-footer-button-bg:                 transparent;
+@grid-footer-button-text-color:         @ui-5;
 @grid-footer-button-border:             darken(@grid-footer-bg, 15%);
 
 // Popover
@@ -374,6 +379,9 @@
 @persondetails-bio-action-border:       @brand-color;
 @persondetails-bio-photo-border:        @ui-3;
 @persondetails-bio-photo-following:     @text-color;
+
+@persondetails-bio-firstname-font-size: .488em;
+@persondetails-bio-firstname-font-weight: 300;
 
 //// Badge Bar
 @persondetails-badge-bg:                lighten(@body-background, 2%);
@@ -443,10 +451,10 @@
 @listasblocks-active-color:             @white;
 
 // Tags { Styles for the tag control used on the person profile. }
-@tag-bg:                                #bababa;
+@tag-bg:                                #9E9EA0;
 @tag-text-color:                        @white;
 @tag-border-radius:                     @border-radius-base;
-@tag-bg-alt:                            lighten(@tag-bg, 15%);
+@tag-bg-alt:                            #BCBCBD;
 
 // Autocomplete Styles
 @autocomplete-bg:                       @white;

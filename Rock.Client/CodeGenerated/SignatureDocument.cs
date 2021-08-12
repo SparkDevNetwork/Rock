@@ -44,7 +44,16 @@ namespace Rock.Client
         public int? BinaryFileId { get; set; }
 
         /// <summary />
+        public DateTime? CompletionEmailSentDateTime { get; set; }
+
+        /// <summary />
         public string DocumentKey { get; set; }
+
+        /// <summary />
+        public int? EntityId { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -70,10 +79,34 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public string SignatureData { get; set; }
+
+        /// <summary />
         public int SignatureDocumentTemplateId { get; set; }
 
         /// <summary />
+        public string SignatureVerficationHash { get; set; }
+
+        /// <summary />
+        public string SignedByEmail { get; set; }
+
+        /// <summary />
         public int? SignedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public string SignedClientIp { get; set; }
+
+        /// <summary />
+        public string SignedClientUserAgent { get; set; }
+
+        /// <summary />
+        public DateTime? SignedDateTime { get; set; }
+
+        /// <summary />
+        public string SignedDocumentText { get; set; }
+
+        /// <summary />
+        public string SignedName { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.SignatureDocumentStatus Status { get; set; }
@@ -114,7 +147,10 @@ namespace Rock.Client
             this.AppliesToPersonAliasId = source.AppliesToPersonAliasId;
             this.AssignedToPersonAliasId = source.AssignedToPersonAliasId;
             this.BinaryFileId = source.BinaryFileId;
+            this.CompletionEmailSentDateTime = source.CompletionEmailSentDateTime;
             this.DocumentKey = source.DocumentKey;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InviteCount = source.InviteCount;
@@ -122,8 +158,16 @@ namespace Rock.Client
             this.LastStatusDate = source.LastStatusDate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.SignatureData = source.SignatureData;
             this.SignatureDocumentTemplateId = source.SignatureDocumentTemplateId;
+            this.SignatureVerficationHash = source.SignatureVerficationHash;
+            this.SignedByEmail = source.SignedByEmail;
             this.SignedByPersonAliasId = source.SignedByPersonAliasId;
+            this.SignedClientIp = source.SignedClientIp;
+            this.SignedClientUserAgent = source.SignedClientUserAgent;
+            this.SignedDateTime = source.SignedDateTime;
+            this.SignedDocumentText = source.SignedDocumentText;
+            this.SignedName = source.SignedName;
             this.Status = source.Status;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -148,6 +192,9 @@ namespace Rock.Client
 
         /// <summary />
         public BinaryFile BinaryFile { get; set; }
+
+        /// <summary />
+        public EntityType EntityType { get; set; }
 
         /// <summary />
         public PersonAlias SignedByPersonAlias { get; set; }

@@ -70,7 +70,7 @@ namespace Rock.Field.Types
 
             var tbIconCssClass = new RockTextBox();
             controls.Add( tbIconCssClass );
-            tbIconCssClass.Label = "IconCssClass";
+            tbIconCssClass.Label = "Icon CSS Class";
             tbIconCssClass.Help = "The icon that represents the social media network.";
 
             var cpColor = new ColorPicker();
@@ -86,7 +86,7 @@ namespace Rock.Field.Types
 
             var ulBaseUrl = new UrlLinkBox();
             controls.Add( ulBaseUrl );
-            ulBaseUrl.Label = "BaseUrl";
+            ulBaseUrl.Label = "Base URL";
             textTemplate.Help = "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.";
 
             return controls;
@@ -101,10 +101,10 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( NAME_KEY, new ConfigurationValue( "Name", "The name of the social media network.", "" ) );
-            configurationValues.Add( ICONCSSCLASS_KEY, new ConfigurationValue( "IconCssClass", "The icon that represents the social media network.", "" ) );
+            configurationValues.Add( ICONCSSCLASS_KEY, new ConfigurationValue( "Icon CSS Class", "The icon that represents the social media network.", "" ) );
             configurationValues.Add( COLOR_KEY, new ConfigurationValue( "Color", "The color to use for making buttons for the social media network.", "" ) );
             configurationValues.Add( TEXT_TEMPLATE, new ConfigurationValue( "Text Template", "Lava template to use to create a formatted version for the link. Primarily used for making the link text.", "" ) );
-            configurationValues.Add( BASEURL, new ConfigurationValue( "BaseUrl", "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.", "" ) );
+            configurationValues.Add( BASEURL, new ConfigurationValue( "Base URL", "The base URL for the social media network. If the entry does not have a URL in it this base URL will be prepended to the entered string.", "" ) );
 
             if ( controls != null )
             {

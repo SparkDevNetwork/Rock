@@ -55,6 +55,26 @@ namespace Rock.Tasks
                     return;
                 }
 
+                // Get the person that this alert was generated for. Several of the items below use this
+                var personAliasService = new PersonAliasService( rockContext );
+                var person = personAliasService.Queryable()
+                    .AsNoTracking()
+                    .Where( pa => pa.Id == alert.PersonAliasId )
+                    .Select( pa => pa.Person )
+                    .FirstOrDefault();
+
+                // Generate the merge objects for the lava templates used in the items below
+                var isoDate = alert.AlertDateTime.ToISO8601DateString();
+                var alertsPageId = PageCache.Get( SystemGuid.Page.GIVING_ALERTS ).Id;
+                var relativeAlertLink = $"page/{alertsPageId}?StartDate={isoDate}&EndDate={isoDate}&AlertTypeId={alertType.Id}";
+
+                var mergeObjects = new Dictionary<string, object> {
+                    { nameof(FinancialTransactionAlert), alert },
+                    { nameof(FinancialTransactionAlertType), alertType },
+                    { nameof(Person), person },
+                    { "RelativeAlertLink", relativeAlertLink }
+                };
+
                 // Launch workflow if configured
                 if ( alertType.WorkflowTypeId.HasValue )
                 {
@@ -111,21 +131,20 @@ namespace Rock.Tasks
                     var systemCommunicationService = new SystemCommunicationService( rockContext );
                     var systemCommunication = systemCommunicationService.Get( alertType.SystemCommunicationId.Value );
 
-                    var personAliasService = new PersonAliasService( rockContext );
-                    var person = personAliasService.Queryable()
-                        .AsNoTracking()
-                        .Where( pa => pa.Id == alert.PersonAliasId )
-                        .Select( pa => pa.Person )
-                        .FirstOrDefault();
-
                     if ( person != null && systemCommunication != null )
                     {
-                        CommunicationHelper.SendMessage( person, ( int ) person.CommunicationPreference, systemCommunication, new Dictionary<string, object> {
-                            { nameof(FinancialTransactionAlert), alert },
-                            { nameof(FinancialTransactionAlertType), alertType },
-                            { nameof(Person), person }
-                        } );
+                        CommunicationHelper.SendMessage( person, ( int ) person.CommunicationPreference, systemCommunication, mergeObjects );
                     }
+                }
+
+                // Send a notification to a group if configured
+                if ( alertType.AlertSummaryNotificationGroupId.HasValue )
+                {
+                    var systemEmailGuid = SystemGuid.SystemCommunication.FINANCIAL_TRANSACTION_ALERT_NOTIFICATION_SUMMARY.AsGuid();
+                    var systemCommunicationService = new SystemCommunicationService( rockContext );
+                    var systemCommunication = systemCommunicationService.Get( systemEmailGuid );
+
+                    CommunicationHelper.SendMessage( alertType.AlertSummaryNotificationGroupId.Value, systemCommunication, mergeObjects );
                 }
 
                 rockContext.SaveChanges();

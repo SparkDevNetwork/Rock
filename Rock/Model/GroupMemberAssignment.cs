@@ -40,6 +40,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Index( "IX_GroupMemberIdLocationIdScheduleId", IsUnique = true, Order = 0 )]
+        [IgnoreCanDelete]
         public int GroupMemberId { get; set; }
 
         /// <summary>

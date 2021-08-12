@@ -206,6 +206,7 @@ namespace Rock.Communication
             this.Subject = systemCommunication.Subject;
             this.Message = systemCommunication.Body;
             this.CssInliningEnabled = systemCommunication.CssInliningEnabled;
+            this.SystemCommunicationId = systemCommunication.Id;
         }
 
         #endregion
