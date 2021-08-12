@@ -38,7 +38,7 @@
                 <div class="popover-content">
 
                     <%-- Container for personalLinks.js to put the personalLinks links html into --%>
-                    <div id="divPersonalLinks" runat="server" class="popover-content js-personal-links-links" data-last-shared-link-update-utc="01-01-1900"></div>
+                    <div id="divPersonalLinks" runat="server" class="js-personal-links-links" data-last-shared-link-update-utc="01-01-1900"></div>
                 </div>
             </div>
             <div class="popover-panel">
