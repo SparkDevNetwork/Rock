@@ -41,8 +41,7 @@ namespace Rock.Model
         /// The marital status.
         /// </value>
         [DataMember]
-        // Hide from Reporting because Reporting will already have a Marital Status from MaritalStatusValueId
-        [HideFromReporting]
+        [HideFromReporting] // Hide from Reporting because Reporting will already have a Marital Status from MaritalStatusValueId
         public string MaritalStatus { get; set; }
 
         /// <summary>
