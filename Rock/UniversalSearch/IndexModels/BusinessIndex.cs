@@ -123,10 +123,10 @@ namespace Rock.UniversalSearch.IndexModels
             businessIndex.Name = business.LastName;
             businessIndex.DocumentName = business.LastName;
 
-            // get home address
+            // get mailing address
             var address = business.GetMailingLocation();
 
-            if (address != null)
+            if ( address != null )
             {
                 businessIndex.StreetAddress = address.Street1 + " " + address.Street2;
                 businessIndex.City = address.City;
