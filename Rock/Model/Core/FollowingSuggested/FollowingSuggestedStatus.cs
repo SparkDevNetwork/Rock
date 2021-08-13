@@ -22,17 +22,17 @@ namespace Rock.Model
     public enum FollowingSuggestedStatus
     {
         /// <summary>
-        /// The pending notification
+        /// Pending Notification
         /// </summary>
         PendingNotification = 0,
 
         /// <summary>
-        /// Emails can be sent to person
+        /// Suggested
         /// </summary>
         Suggested = 1,
 
         /// <summary>
-        /// No Mass emails should be sent to person
+        /// Ignored
         /// </summary>
         Ignored = 2,
     }
