@@ -73,9 +73,9 @@ namespace Rock.Model
                 // If this isn't a new group member, get the previous status and role values
                 if ( State == EntityContextState.Modified )
                 {
-                        updateGroupMemberMsg.PreviousGroupMemberStatus = ( GroupMemberStatus ) OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
-                        updateGroupMemberMsg.PreviousGroupMemberRoleId = OriginalValues["GroupRoleId"].ToStringSafe().AsInteger();
-                        updateGroupMemberMsg.PreviousIsArchived = OriginalValues["IsArchived"].ToStringSafe().AsBoolean();
+                    updateGroupMemberMsg.PreviousGroupMemberStatus = ( GroupMemberStatus ) OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
+                    updateGroupMemberMsg.PreviousGroupMemberRoleId = OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsInteger();
+                    updateGroupMemberMsg.PreviousIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
                 }
 
                 // If this isn't a deleted group member, get the group member guid
@@ -118,13 +118,13 @@ namespace Rock.Model
 
                     case EntityContextState.Modified:
                         {
-                            oldPersonId = OriginalValues["PersonId"].ToStringSafe().AsIntegerOrNull();
+                            oldPersonId = OriginalValues[nameof( GroupMember.PersonId )].ToStringSafe().AsIntegerOrNull();
                             newPersonId = Entity.PersonId;
 
-                            oldGroupId = OriginalValues["GroupId"].ToStringSafe().AsIntegerOrNull();
+                            oldGroupId = OriginalValues[nameof( GroupMember.GroupId )].ToStringSafe().AsIntegerOrNull();
                             newGroupId = Entity.GroupId;
 
-                            var originalStatus = OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
+                            var originalStatus = OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>();
 
                             // IsActive was modified, set the InactiveDateTime if it changed to Inactive, or set it to NULL if it changed to Active
                             if ( originalStatus != Entity.GroupMemberStatus )
@@ -232,7 +232,7 @@ namespace Rock.Model
                         History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", OriginalValues["IsArchived"].ToStringSafe().AsBoolean(), Entity.IsArchived );
 
                         // If the groupmember was Archived, make sure it is the first GroupMember History change (since they get summarized when doing a HistoryLog and Timeline
-                        bool origIsArchived = OriginalValues["IsArchived"].ToStringSafe().AsBoolean();
+                        bool origIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
 
                         if ( origIsArchived != Entity.IsArchived )
                         {
@@ -249,11 +249,11 @@ namespace Rock.Model
                             }
                         }
 
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", OriginalValues["GroupRoleId"].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", OriginalValues["Note"].ToStringSafe(), Entity.Note );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", OriginalValues["GroupMemberStatus"].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", OriginalValues["CommunicationPreference"].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", OriginalValues["GuestCount"].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", OriginalValues[nameof( GroupMember.Note )].ToStringSafe(), Entity.Note );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", OriginalValues[nameof( GroupMember.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", OriginalValues[nameof( GroupMember.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
                     }
 
                     if ( oldPersonId.HasValue && oldGroupId.HasValue &&

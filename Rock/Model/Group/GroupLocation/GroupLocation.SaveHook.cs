@@ -55,30 +55,30 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             string locationTypeName = DefinedValueCache.GetName( Entity.GroupLocationTypeValueId ) ?? "Unknown";
-                            int? oldLocationTypeId = OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull();
+                            int? oldLocationTypeId = OriginalValues[nameof( GroupLocation.GroupLocationTypeValueId )].ToStringSafe().AsIntegerOrNull();
                             if ( ( oldLocationTypeId ?? 0 ) == ( Entity.GroupLocationTypeValueId ?? 0 ) )
                             {
-                                History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), Entity.Location, Entity.LocationId, rockContext );
+                                History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", OriginalValues[nameof( GroupLocation.LocationId )].ToStringSafe().AsIntegerOrNull(), Entity.Location, Entity.LocationId, rockContext );
                             }
                             else
                             {
                                 Location newLocation = null;
-                                History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), newLocation, ( int? ) null, rockContext );
+                                History.EvaluateChange( GroupHistoryChanges, $"{DefinedValueCache.GetName( oldLocationTypeId ) ?? "Unknown"} Location", OriginalValues[nameof( GroupLocation.LocationId )].ToStringSafe().AsIntegerOrNull(), newLocation, ( int? ) null, rockContext );
                                 History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Location", ( int? ) null, Entity.Location, Entity.LocationId, rockContext );
                             }
 
-                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", OriginalValues["IsMailingLocation"].ToStringSafe().AsBoolean(), Entity.IsMailingLocation );
-                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", OriginalValues["IsMappedLocation"].ToStringSafe().AsBoolean(), Entity.IsMappedLocation );
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Mailing", OriginalValues[nameof( GroupLocation.IsMailingLocation )].ToStringSafe().AsBoolean(), Entity.IsMailingLocation );
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationTypeName} Is Map Location", OriginalValues[nameof( GroupLocation.IsMappedLocation )].ToStringSafe().AsBoolean(), Entity.IsMappedLocation );
 
                             break;
                         }
 
                     case EntityContextState.Deleted:
                         {
-                            string locationType = History.GetDefinedValueValue( null, OriginalValues["GroupLocationTypeValueId"].ToStringSafe().AsIntegerOrNull() );
+                            string locationType = History.GetDefinedValueValue( null, OriginalValues[nameof( GroupLocation.GroupLocationTypeValueId )].ToStringSafe().AsIntegerOrNull() );
                             locationType = locationType.IsNotNullOrWhiteSpace() ? locationType : "Unknown";
                             Location loc = null;
-                            History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", OriginalValues["LocationId"].ToStringSafe().AsIntegerOrNull(), loc, ( int? ) null, rockContext );
+                            History.EvaluateChange( GroupHistoryChanges, $"{locationType} Location", OriginalValues[nameof( GroupLocation.LocationId )].ToStringSafe().AsIntegerOrNull(), loc, ( int? ) null, rockContext );
                             break;
                         }
                 }

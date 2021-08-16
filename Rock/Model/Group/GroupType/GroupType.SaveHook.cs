@@ -60,7 +60,7 @@ namespace Rock.Model
                     var changeEntry = rockContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == Entity ).FirstOrDefault();
                     if ( changeEntry != null )
                     {
-                        var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
+                        var originalIndexState = ( bool ) changeEntry.OriginalValues[nameof( GroupType.IsIndexEnabled )];
 
                         if ( originalIndexState == true && Entity.IsIndexEnabled == false )
                         {

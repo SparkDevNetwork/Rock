@@ -28,17 +28,6 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         internal class SaveHook : EntitySaveHook<MediaElement>
         {
-            private bool SaveOperationIsAdd { get; set; }
-
-            /// <summary>
-            /// Called before the save operation is executed.
-            /// </summary>
-            protected override void PreSave()
-            {
-                SaveOperationIsAdd = Entry.State == EntityContextState.Added;
-
-                base.PreSave();
-            }
 
             /// <summary>
             /// Called after the save operation has been executed
@@ -49,7 +38,7 @@ namespace Rock.Model
             /// </remarks>
             protected override void PostSave()
             {
-                if ( SaveOperationIsAdd )
+                if ( PreSaveState == EntityContextState.Added )
                 {
                     // We don't need to wait for this to complete.
                     Task.Run( () => MediaElementService.TriggerPostSaveTasks( Entity.Id ) );
