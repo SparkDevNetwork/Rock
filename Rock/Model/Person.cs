@@ -32,7 +32,6 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
-using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -2574,10 +2573,10 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            //  There are a couple of cases where there would be no familyMembers
-            // 1) There are no adults in the family, and includeChildren=false .
+            // There are a couple of cases where there would be no familyMembers.
+            // 1) There are no adults in the family, and includeChildren=false.
             // 2) All the members of the family are deceased/inactive.
-            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen).
             if ( !familyMembersList.Any() )
             {
                 familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
@@ -3189,21 +3188,26 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GradeFormattedFromGradeOffset( int? gradeOffset )
         {
-            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
             {
-                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                if ( schoolGrades != null )
-                {
-                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                    if ( schoolGradeValue != null )
-                    {
-                        return schoolGradeValue.Description;
-                    }
-                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            return schoolGradeValue.Description;
         }
 
         /// <summary>
@@ -3215,27 +3219,27 @@ namespace Rock.Model
         /// </returns>
         internal static string GradeAbbreviationFromGradeOffset( int? gradeOffset )
         {
-            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
             {
-                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                if ( schoolGrades != null )
-                {
-                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                    if ( schoolGradeValue != null )
-                    {
-                        bool AttributeExists = schoolGradeValue.Attributes.ContainsKey( "Abbreviation" );
-                        string abbreviationValue = "";
-                        if ( AttributeExists )
-                        {
-                            abbreviationValue = schoolGradeValue.GetAttributeValue( "Abbreviation" );
-                        }
-                        return abbreviationValue;
-                    }
-                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            // If there is an abbreviation, return it.  Otherwise, return an empty string.
+            return schoolGradeValue.Attributes.ContainsKey( "Abbreviation" ) ? schoolGradeValue.GetAttributeValue( "Abbreviation" ) : string.Empty;
         }
 
         /// <summary>
