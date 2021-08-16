@@ -25,8 +25,11 @@ namespace Rock.Model
     /// <summary>
     /// This class represents all of the verification codes that can be used by the phone verification system.
     /// </summary>
+    [RockDomain( "CRM" )]
+    [Table( "IdentityVerificationCode" )]
     public partial class IdentityVerificationCode : Model<IdentityVerificationCode>
     {
+        #region Properties
         /// <summary>
         /// Gets or sets the code.
         /// </summary>
@@ -47,5 +50,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? LastIssueDateTime { get; set; }
+        #endregion Properties
     }
 }

@@ -87,8 +87,8 @@ namespace Rock.Model
         /// <summary>
         /// Creates the identity verification record.
         /// </summary>
-        /// <param name="ipAddress">The ip address.</param>
-        /// <param name="ipLimit">The ip limit.</param>
+        /// <param name="ipAddress">The IP address.</param>
+        /// <param name="ipLimit">The IP limit.</param>
         /// <param name="phoneNumber">The phone number.</param>
         /// <returns></returns>
         public IdentityVerification CreateIdentityVerificationRecord( string ipAddress, int ipLimit, string phoneNumber )
@@ -129,7 +129,7 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// This exception is thrown when the Phone Verification Ip throttle limit has been reached.
+    /// This exception is thrown when the Phone Verification IP throttle limit has been reached.
     /// </summary>
     /// <seealso cref="System.ArgumentOutOfRangeException" />
     public class IdentityVerificationIpLimitReachedException : Exception
@@ -139,6 +139,7 @@ namespace Rock.Model
         /// </summary>
         public IdentityVerificationIpLimitReachedException() :
             base( "Your IP address is over the maximum number of requests per day. Please request assistance from the organization administrator." )
-        { }
+        {
+        }
     }
 }

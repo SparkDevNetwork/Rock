@@ -26,7 +26,7 @@ namespace Rock.Model
     /// </summary>
     public partial class IdentityVerificationCodeService
     {
-        private static readonly Object _obj = new object();
+        private static readonly object _obj = new object();
         private static readonly Random _random = new Random( Guid.NewGuid().GetHashCode() );
 
         /// <summary>

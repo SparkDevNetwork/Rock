@@ -16,6 +16,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
@@ -25,6 +26,8 @@ namespace Rock.Model
     /// <summary>
     /// Used to verify individuals by phone number.
     /// </summary>
+    [RockDomain( "CRM" )]
+    [Table( "IdentityVerification" )]
     public partial class IdentityVerification : Model<IdentityVerification>
     {
         /// <summary>
@@ -32,7 +35,7 @@ namespace Rock.Model
         /// </summary>
         public const int DefaultMaxFailedMatchAttemptCount = 10;
 
-        #region Entity Properties
+        #region Properties
         /// <summary>
         /// Gets or sets the reference number.
         /// </summary>
@@ -80,9 +83,9 @@ namespace Rock.Model
         [DataMember]
         public int? FailedMatchAttemptCount { get; set; }
 
-        #endregion Entity Properties
+        #endregion Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the identity verification code.
@@ -92,7 +95,7 @@ namespace Rock.Model
         /// </value>
         public virtual IdentityVerificationCode IdentityVerificationCode { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration

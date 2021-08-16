@@ -686,6 +686,10 @@
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
     <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.Logic.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
+    <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
+    <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CRM\IdentityVerification\IdentityVerification.cs" />
+    <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
@@ -1036,10 +1040,6 @@
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
-    <Compile Include="Model\IdentityVerification.cs" />
-    <Compile Include="Model\IdentityVerificationCode.cs" />
-    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
-    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
