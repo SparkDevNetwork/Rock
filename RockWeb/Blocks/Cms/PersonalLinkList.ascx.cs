@@ -100,7 +100,14 @@ namespace RockWeb.Blocks.Cms
                 gLinkList.GridReorder += gLinkList_GridReorder;
                 gLinkList.GridRebind += gLinkList_GridRebind;
 
-                lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                if ( _personalLinkSection.IsShared )
+                {
+                    lTitle.Text = ( "Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                }
+                else
+                {
+                    lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
+                }
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -163,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         {
             var personalLink = new PersonalLinkService( new RockContext() ).Get( e.RowKeyId );
 
-            if ( personalLink.PersonAliasId != CurrentPersonAliasId.Value && personalLink.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( personalLink.PersonAliasId != CurrentPersonAliasId.Value && !personalLink.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 mdGridWarning.Show( "Not authorized to make changes to this link.", ModalAlertType.Information );
                 return;

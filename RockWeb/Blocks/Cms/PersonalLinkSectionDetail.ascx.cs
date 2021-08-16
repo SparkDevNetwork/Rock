@@ -213,9 +213,27 @@ namespace RockWeb.Blocks.Cms
                 if ( personalLinkSection.IsShared )
                 {
                     var groupService = new GroupService( rockContext );
+
+                    var communicationAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS.AsGuid() );
+                    if ( communicationAdministrators != null )
+                    {
+                        personalLinkSection.AllowSecurityRole( Authorization.VIEW, communicationAdministrators, rockContext );
+                        personalLinkSection.AllowSecurityRole( Authorization.EDIT, communicationAdministrators, rockContext );
+                        personalLinkSection.AllowSecurityRole( Authorization.ADMINISTRATE, communicationAdministrators, rockContext );
+                    }
+
+                    var webAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_WEB_ADMINISTRATORS.AsGuid() );
+                    if ( webAdministrators != null )
+                    {
+                        personalLinkSection.AllowSecurityRole( Authorization.VIEW, webAdministrators, rockContext );
+                        personalLinkSection.AllowSecurityRole( Authorization.EDIT, webAdministrators, rockContext );
+                        personalLinkSection.AllowSecurityRole( Authorization.ADMINISTRATE, webAdministrators, rockContext );
+                    }
+
                     var rockAdministrators = groupService.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() );
                     if ( rockAdministrators != null )
                     {
+                        personalLinkSection.AllowSecurityRole( Authorization.VIEW, rockAdministrators, rockContext );
                         personalLinkSection.AllowSecurityRole( Authorization.EDIT, rockAdministrators, rockContext );
                         personalLinkSection.AllowSecurityRole( Authorization.ADMINISTRATE, rockAdministrators, rockContext );
                     }

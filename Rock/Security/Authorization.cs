@@ -907,8 +907,12 @@ namespace Rock.Security
             // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax", "Strict", and "None".
             SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
 
+            // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
+            // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
+            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.Url.Scheme == "https" ? ";Secure" : string.Empty;
+
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
-            string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
+            string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
 
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {

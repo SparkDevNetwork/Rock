@@ -49,7 +49,10 @@
                         }
                     }
 
-                    if (!needsUpdate) {
+                    if (personalLinksData) {
+                        // Build the links, even if we are we are in 'needsUpdate' mode, just in case the REST call takes a second.
+                        // This way the links won't be blank while waiting, and when the REST call does return, the buildAllLinks will
+                        // run again with the updated data.
                         this.buildAllLinks();
                     }
                 }, saveQuickReturnsToLocalStorage: function () {
@@ -104,6 +107,8 @@
                         url: window.location.href
                     };
 
+                    debugger
+
                     const found = _quickReturnItemArray.some(el => el.url.toLowerCase() === window.location.href.toLowerCase());
                     if (found) {
                         _quickReturnItemArray = _quickReturnItemArray.filter(function (el) {
@@ -123,6 +128,7 @@
                     }
 
                     this.saveQuickReturnsToLocalStorage();
+                    this.buildQuickReturns();
                 },
                 removeDuplicateQuickReturnItems: function (newReturnItem) {
 
@@ -182,6 +188,7 @@
                     return itemsByType;
                 },
                 buildQuickReturns: function () {
+                    debugger
                     var $quickReturns = $('.js-personal-links-container .js-personal-links-quick-return');
                     if ($quickReturns.length) {
                         var quickReturnsByType = Rock.personalLinks.getQuickReturns();
