@@ -588,10 +588,10 @@ $(document).ready(function() {
             }
             else
             {
-                string quckReturnLava = "{{ Dataview.Name | AddQuickReturn:'Data Views', 30 }}";
-                var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                quckReturnMergeFields.Add( "Dataview", dataView );
-                quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+                string quickReturnLava = "{{ Dataview.Name | AddQuickReturn:'Data Views', 30 }}";
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quickReturnMergeFields.Add( "Dataview", dataView );
+                quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )

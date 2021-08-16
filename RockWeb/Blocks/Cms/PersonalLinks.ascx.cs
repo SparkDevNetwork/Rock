@@ -76,6 +76,10 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
+            // We don't bundle personalLinks.js, we'll only add it as needed.
+            // We only need it on this block, and for any page that uses RockFilters.AddQuickReturn lava filter.
+            RockPage.AddScriptLink( "~/Scripts/Rock/Controls/PersonalLinks/personalLinks.js" );
+
             // This event gets fired after block settings are updated. It's nice to repaint the screen if these settings would alter it.
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
