@@ -107,6 +107,8 @@
                         url: window.location.href
                     };
 
+                    debugger
+
                     const found = _quickReturnItemArray.some(el => el.url.toLowerCase() === window.location.href.toLowerCase());
                     if (found) {
                         _quickReturnItemArray = _quickReturnItemArray.filter(function (el) {
@@ -186,6 +188,7 @@
                     return itemsByType;
                 },
                 buildQuickReturns: function () {
+                    debugger
                     var $quickReturns = $('.js-personal-links-container .js-personal-links-quick-return');
                     if ($quickReturns.length) {
                         var quickReturnsByType = Rock.personalLinks.getQuickReturns();
