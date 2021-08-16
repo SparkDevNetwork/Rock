@@ -111,10 +111,15 @@ namespace Rock.Reporting.DataSelect.Person
         private class KidInfo
         {
             public string NickName { get; set; }
+
             public string LastName { get; set; }
+
             public int? SuffixValueId { get; set; }
+
             public Gender Gender { get; set; }
+
             public DateTime? BirthDate { get; set; }
+
             public int? GraduationYear { get; set; }
         }
 
@@ -145,15 +150,7 @@ namespace Rock.Reporting.DataSelect.Person
 
                         if ( includeGender && person.Gender != Gender.Unknown )
                         {
-                            // return F for Female, M for Male
-                            if ( person.Gender == Gender.Female )
-                            {
-                                formattedGenderAgeGrade += "F";
-                            }
-                            else if ( person.Gender == Gender.Male )
-                            {
-                                formattedGenderAgeGrade += "M";
-                            }
+                            formattedGenderAgeGrade = person.Gender == Gender.Female ? "F" : "M";
                         }
 
                         int? age = Rock.Model.Person.GetAge( person.BirthDate );
@@ -385,11 +382,9 @@ namespace Rock.Reporting.DataSelect.Person
                 var selectChildrenExpression = SelectExpressionExtractor.Extract( personChildrenQuery, entityIdProperty, "p" );
 
                 return selectChildrenExpression;
-
             }
 
             return null;
-
         }
 
         #endregion
