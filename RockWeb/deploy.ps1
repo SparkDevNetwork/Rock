@@ -61,9 +61,9 @@ If (Test-Path "$webroot\before-deploy.ps1"){
 }
 
 # delete the appveyor deploy cache
-# If (Test-Path c:\appveyor){
-# 	Remove-Item c:\appveyor -Force -Confirm:$False -Recurse
-# }
+If (Test-Path c:\appveyor){
+	Remove-Item c:\appveyor -Force -Confirm:$False -Recurse
+}
 
 # move connection string file back from temp
 If (Test-Path "$rootfolder\temp\web.connectionstrings.config"){
