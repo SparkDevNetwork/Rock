@@ -382,9 +382,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <param name="challenge">The challenge being worked on.</param>
         /// <param name="recentInteractions">The recent interactions.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>A dictionary whose keys identify the dates that can be filled in and whose values specify the details for that day.</returns>
-        private (IDictionary<DateTimeOffset, DailyChallenge>, Guid) GetMissedDays( CachedChallenge challenge, List<Interaction> recentInteractions, RockContext rockContext )
+        private (IDictionary<DateTimeOffset, DailyChallenge>, Guid) GetMissedDays( CachedChallenge challenge, List<Interaction> recentInteractions )
         {
             var missedDays = new Dictionary<DateTimeOffset, DailyChallenge>();
             var orderedItems = challenge.DailyChallenges.OrderBy( i => i.Order ).ToList();
@@ -443,7 +442,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 {
                     if ( data == null || !data.IsComplete )
                     {
-                        missedDays.Add( date.ToRockDateTimeOffset(), GetDailyChallenge( orderedItems[order], data, rockContext ) );
+                        missedDays.Add( date.ToRockDateTimeOffset(), GetDailyChallenge( orderedItems[order], data ) );
                     }
                 }
 
@@ -478,9 +477,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <param name="dailyChallenge">The item that describes this daily challenge.</param>
         /// <param name="data">The data from a previous session.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>A new <see cref="DailyChallenge"/> instance.</returns>
-        private static DailyChallenge GetDailyChallenge( CachedDailyChallenge dailyChallenge, InteractionChallengeDayData data, RockContext rockContext )
+        private static DailyChallenge GetDailyChallenge( CachedDailyChallenge dailyChallenge, InteractionChallengeDayData data )
         {
             // Load all the challenges for the current day.
             var challengeItems = dailyChallenge.ChallengeItems
@@ -536,9 +534,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="challenge">The challenge being worked on.</param>
         /// <param name="recentInteractions">The recent interactions.</param>
         /// <param name="challengeDate">The challenge date.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="DailyChallenge"/> for the date or <c>null</c> if it could not be fulfilled.</returns>
-        private static DailyChallenge GetDailyChallengeForDate( CachedChallenge challenge, List<Interaction> recentInteractions, DateTime challengeDate, RockContext rockContext )
+        private static DailyChallenge GetDailyChallengeForDate( CachedChallenge challenge, List<Interaction> recentInteractions, DateTime challengeDate )
         {
             var firstInteraction = recentInteractions.OrderBy( i => i.InteractionDateTime ).FirstOrDefault();
 
@@ -558,7 +555,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     var interaction = recentInteractions.FirstOrDefault( i => i.InteractionDateTime.Date == date );
                     var data = interaction?.InteractionData.FromJsonOrNull<InteractionChallengeDayData>();
 
-                    return GetDailyChallenge( orderedItems[order], data, rockContext );
+                    return GetDailyChallenge( orderedItems[order], data );
                 }
             }
 
@@ -571,9 +568,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="challenge">The challenge being worked on.</param>
         /// <param name="recentInteractions">The recent interactions.</param>
         /// <param name="dailyChallengeGuid">The daily challenge unique identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="DailyChallenge"/> for the unique identifier or <c>null</c> if it could not be fulfilled.</returns>
-        private static DailyChallenge GetDailyChallengeForGuid( CachedChallenge challenge, List<Interaction> recentInteractions, Guid dailyChallengeGuid, RockContext rockContext )
+        private static DailyChallenge GetDailyChallengeForGuid( CachedChallenge challenge, List<Interaction> recentInteractions, Guid dailyChallengeGuid )
         {
             var firstInteraction = recentInteractions.OrderBy( i => i.InteractionDateTime ).FirstOrDefault();
 
@@ -604,7 +600,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var interaction = recentInteractions.FirstOrDefault( i => i.InteractionDateTime.Date == date );
             var data = interaction?.InteractionData.FromJsonOrNull<InteractionChallengeDayData>();
 
-            return GetDailyChallenge( orderedItems[order], data, rockContext );
+            return GetDailyChallenge( orderedItems[order], data );
         }
 
         /// <summary>
@@ -612,9 +608,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <param name="challenge">The challenge being worked on.</param>
         /// <param name="recentInteractions">The recent interactions.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="ContentChannelItem"/> that identifies the daily challenge to use by default.</returns>
-        private DailyChallenge GetCurrentDailyChallenge( CachedChallenge challenge, List<Interaction> recentInteractions, RockContext rockContext )
+        private DailyChallenge GetCurrentDailyChallenge( CachedChallenge challenge, List<Interaction> recentInteractions )
         {
             var minimumRecentDate = RockDateTime.Now.AddDays( -AllowBackfillInDays ).Date;
             var lastInteraction = recentInteractions.Where( i => i.InteractionDateTime >= minimumRecentDate )
@@ -626,7 +621,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 var item = challenge.DailyChallenges.OrderBy( i => i.Order ).First();
 
-                return GetDailyChallenge( item, null, rockContext );
+                return GetDailyChallenge( item, null );
             }
 
             // If the most recent interaction is for today then return todays
@@ -636,22 +631,27 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var item = challenge.DailyChallenges.SingleOrDefault( i => i.Id == lastInteraction.EntityId );
                 var data = lastInteraction.InteractionData.FromJsonOrNull<InteractionChallengeDayData>();
 
-                return GetDailyChallenge( item, data, rockContext );
+                return GetDailyChallenge( item, data );
             }
 
-            // Take the most recent interaction and start counting forward until
-            // we get to today.
             var orderedItems = challenge.DailyChallenges.OrderBy( i => i.Order ).ToList();
-            int order = orderedItems.FindIndex( i => i.Id == lastInteraction.EntityId.Value );
-            order += RockDateTime.Now.Date.Subtract( lastInteraction.InteractionDateTime.Date ).Days;
 
-            if ( order < orderedItems.Count )
+            // If the most recent interaction is for yesterday, then check if
+            // that day was completed and if so return today daily challenge
+            // so they can continue.
+            if ( lastInteraction.InteractionDateTime.Date == RockDateTime.Now.Date.AddDays( -1 ) )
             {
-                return GetDailyChallenge( orderedItems[order], null, rockContext );
+                int order = orderedItems.FindIndex( i => i.Id == lastInteraction.EntityId.Value );
+                var data = lastInteraction.InteractionData?.FromJsonOrNull<InteractionChallengeDayData>();
+
+                if ( data != null && data.IsComplete && order != -1 && order + 1 < challenge.DailyChallenges.Count )
+                {
+                    return GetDailyChallenge( orderedItems[order + 1], null );
+                }
             }
 
             // If all else fails, they are starting a new challenge.
-            return GetDailyChallenge( orderedItems[0], null, rockContext );
+            return GetDailyChallenge( orderedItems[0], null );
         }
 
         /// <summary>
@@ -682,16 +682,23 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="challengeData">The challenge data.</param>
         /// <param name="challenge">The challenge channel that describes this challenge.</param>
         /// <param name="missedDayGuids">The missed day unique identifiers.</param>
+        /// <param name="recentInteractions">The recent interactions from the database.</param>
         /// <param name="continueDayGuid">The day that marks which day will be considered today if they continue with their missed days.</param>
-        private static void UpdateChallengeDataWithProgress( ChallengeDataResponse challengeData, CachedChallenge challenge, IList<Guid> missedDayGuids, Guid continueDayGuid )
+        private static void UpdateChallengeDataWithProgress( ChallengeDataResponse challengeData, CachedChallenge challenge, IList<Guid> missedDayGuids, List<Interaction> recentInteractions, Guid continueDayGuid )
         {
             if ( missedDayGuids.Any() )
             {
                 // Assume everything that isn't a missed day is complete.
                 bool isAssumedComplete = true;
+                var continueChallenge = GetDailyChallengeForGuid( challenge, recentInteractions, continueDayGuid );
 
                 foreach ( var item in challenge.DailyChallenges.OrderBy( i => i.Order ) )
                 {
+                    if ( item.Guid == continueChallenge.Guid )
+                    {
+                        isAssumedComplete = continueChallenge.IsComplete;
+                    }
+
                     var state = new ChallengeState
                     {
                         Guid = item.Guid,
@@ -836,7 +843,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // challenge sequence.
                 var recentInteractions = GetRecentInteractions( rockContext, cachedChallenge );
 
-                (var missedDays, var continueDayGuid) = GetMissedDays( cachedChallenge, recentInteractions, rockContext );
+                (var missedDays, var continueDayGuid) = GetMissedDays( cachedChallenge, recentInteractions );
 
                 DailyChallenge currentChallenge;
 
@@ -844,7 +851,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // date.
                 if ( challengeDate.HasValue )
                 {
-                    currentChallenge = GetDailyChallengeForDate( cachedChallenge, recentInteractions, challengeDate.Value.Date, rockContext );
+                    currentChallenge = GetDailyChallengeForDate( cachedChallenge, recentInteractions, challengeDate.Value.Date );
 
                     if ( currentChallenge == null )
                     {
@@ -853,7 +860,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
                 else
                 {
-                    currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions, rockContext );
+                    currentChallenge = GetCurrentDailyChallenge( cachedChallenge, recentInteractions );
                 }
 
                 var challengeData = new ChallengeDataResponse
@@ -864,7 +871,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     TodaysChallengeGuid = continueDayGuid
                 };
 
-                UpdateChallengeDataWithProgress( challengeData, cachedChallenge, missedDays.Select( d => d.Value.Guid ).ToList(), continueDayGuid );
+                UpdateChallengeDataWithProgress( challengeData, cachedChallenge, missedDays.Select( d => d.Value.Guid ).ToList(), recentInteractions, continueDayGuid );
 
                 return ActionOk( challengeData );
             }
@@ -897,7 +904,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 // challenge sequence.
                 var recentInteractions = GetRecentInteractions( rockContext, cachedChallenge );
 
-                var currentChallenge = GetDailyChallengeForGuid( cachedChallenge, recentInteractions, dailyChallengeGuid, rockContext );
+                var currentChallenge = GetDailyChallengeForGuid( cachedChallenge, recentInteractions, dailyChallengeGuid );
 
                 if ( currentChallenge == null )
                 {
@@ -1416,7 +1423,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 Title = item.Title;
                 Content = item.Content;
                 Order = item.Order;
-                ChallengeItems = item.ChildItems.Select( i => new CachedChallengeItem( i.ChildContentChannelItem ) ).ToList();
+                ChallengeItems = item.ChildItems
+                    .OrderBy( i => i.Order )
+                    .Select( i => new CachedChallengeItem( i.ChildContentChannelItem ) )
+                    .ToList();
 
                 if ( item.Attributes == null )
                 {
