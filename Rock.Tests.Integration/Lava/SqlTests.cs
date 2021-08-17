@@ -22,6 +22,7 @@ using Rock.Tests.Shared;
 namespace Rock.Tests.Integration.Lava
 {
     [TestClass]
+    [Ignore("These tests are long-running and should only be enabled when testing changes to the Sql Command Block.")]
     public class SqlTests : LavaIntegrationTestBase
     {
         [TestMethod]

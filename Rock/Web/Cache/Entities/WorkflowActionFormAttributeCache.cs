@@ -114,6 +114,15 @@ namespace Rock.Web.Cache
         public string PostHtml { get; private set; }
 
         /// <summary>
+        /// Gets the field visibility rules.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules.
+        /// </value>
+        [DataMember]
+        public virtual Field.FieldVisibilityRules FieldVisibilityRules { get; private set; }
+
+        /// <summary>
         /// Gets the workflow action form.
         /// </summary>
         /// <value>
@@ -153,6 +162,7 @@ namespace Rock.Web.Cache
             HideLabel = workflowActionFormAttribute.HideLabel;
             PreHtml = workflowActionFormAttribute.PreHtml;
             PostHtml = workflowActionFormAttribute.PostHtml;
+            FieldVisibilityRules = workflowActionFormAttribute.FieldVisibilityRules;
         }
 
         #endregion

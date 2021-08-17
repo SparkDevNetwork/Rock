@@ -49,6 +49,9 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class GroupSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string Caption = "Caption";
@@ -174,14 +177,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     lTitle.Text = GetTitleText();
-
-                    //string groupTypeNames = groupTypes
-                    //    .Where( t => t.GroupType != null )
-                    //    .Select( t => t.GroupType.Name )
-                    //    .ToList().AsDelimited( ", " );
-                    //lSubTitle.Text = string.Format( GetAttributeValue( AttributeKey.Subtitle ), groupTypeNames );
-
                     lCaption.Text = GetAttributeValue( AttributeKey.Caption );
+
                     var availGroups = groupTypes.SelectMany( t => t.GetAvailableGroups( schedule ) ).ToList();
                     if ( availGroups.Any() )
                     {
@@ -257,7 +254,8 @@ namespace RockWeb.Blocks.CheckIn
 
         private string GetTitleText()
         {
-            var checkinPerson = CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
+            var checkinPerson = CurrentCheckInState.CheckIn.CurrentPerson
+                ?? CurrentCheckInState.CheckIn.CurrentFamily.People.Where( p => p.Selected == true ).FirstOrDefault();
             var selectedGroup = checkinPerson?.SelectedGroupTypes( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.SelectedGroups( checkinPerson?.CurrentSchedule ).FirstOrDefault()?.Group;
             var selectedArea = CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.Where( a => a.Selected ).FirstOrDefault()?.GroupType
                 ?? CurrentCheckInState.CheckIn.CurrentPerson.GroupTypes.FirstOrDefault()?.GroupType;

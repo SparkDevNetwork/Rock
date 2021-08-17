@@ -2439,8 +2439,7 @@ namespace Rock.Slingshot
         private void AddLocationTypes()
         {
             // Convert to Dictionary<string, DefinedValueCache> for use in the AddDefinedValues() method.
-            var groupLocationTypeValues = this.GroupLocationTypeValues.Values
-                .ToDictionary( k => k.Value, p => p, StringComparer.OrdinalIgnoreCase );
+            var groupLocationTypeValues = this.GroupLocationTypeValues.GetUniqueValues();
 
             var importedAddressTypes = this.SlingshotPersonList
                 .SelectMany( a => a.Addresses )
@@ -2797,11 +2796,11 @@ namespace Rock.Slingshot
             this.PersonRecordTypeValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_RECORD_TYPE.AsGuid() );
             this.PersonRecordStatusValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() );
             this.RecordStatusReasonValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-            this.PersonConnectionStatusValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v, StringComparer.OrdinalIgnoreCase );
-            this.PersonTitleValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value.ToLower(), v => v, StringComparer.OrdinalIgnoreCase );
-            this.PersonSuffixValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value.ToLower(), v => v, StringComparer.OrdinalIgnoreCase );
+            this.PersonConnectionStatusValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).GetUniqueValues();
+            this.PersonTitleValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_TITLE.AsGuid() ).GetUniqueValues();
+            this.PersonSuffixValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).GetUniqueValues();
             this.PersonMaritalStatusValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-            this.PhoneNumberTypeValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).Select( a => a.Value ).ToDictionary( k => k.Value, v => v, StringComparer.OrdinalIgnoreCase );
+            this.PhoneNumberTypeValues = LoadDefinedValues( SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).GetUniqueValues();
             this.GroupLocationTypeValues = LoadDefinedValues( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() );
             this.LocationTypeValues = LoadDefinedValues( SystemGuid.DefinedType.LOCATION_TYPE.AsGuid() );
             this.CurrencyTypeValues = LoadDefinedValues( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() );
@@ -2883,4 +2882,27 @@ namespace Rock.Slingshot
         }
 
     }
+
+    #region Dictionary Extensions Helper Class
+
+    /// <summary>
+    /// Dictionary Extensions Helper Class
+    /// </summary>
+    public static class DictionaryExtensions
+    {
+        /// <summary>
+        /// Converts a DefinedValue dictionary (indexed by Guid) into a dictionary indexed by unique values.
+        /// </summary>
+        /// <param name="inputDictionary">The source dictionary (indexed by Guid).</param>
+        /// <returns></returns>
+        public static Dictionary<string, DefinedValueCache> GetUniqueValues( this Dictionary<Guid, DefinedValueCache> inputDictionary )
+        {
+            return inputDictionary.Values
+                .GroupBy( k => k.Value ).Select( grp => grp.First() )
+                .ToDictionary( v => v.Value, p => p, StringComparer.OrdinalIgnoreCase );
+        }
+    }
+
+    #endregion Dictionary Extensions Helper Class
+
 }

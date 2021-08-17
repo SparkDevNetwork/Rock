@@ -20,7 +20,7 @@
                 <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
-                    <button id="btnCopyToClipboard" runat="server" 
+                    <button id="btnCopyToClipboard" runat="server"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
                         class="btn btn-info btn-xs btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
@@ -90,8 +90,8 @@
                                 <fieldset>
                                     <h4>Context Parameters</h4>
                                     <p>
-                                        There are one or more blocks on this page that can load content based on a 'context' parameter.  
-                                        Please enter the route parameter name or query string parameter name that will contain the id for 
+                                        There are one or more blocks on this page that can load content based on a 'context' parameter.
+                                        Please enter the route parameter name or query string parameter name that will contain the id for
                                         each of the objects below.
                                     </p>
                                     <asp:PlaceHolder ID="phContext" runat="server"></asp:PlaceHolder>
@@ -129,7 +129,7 @@
 
             <div class="panel-body padding-all-none">
                 <div class="row row-eq-height row-no-gutters">
-                    <div class="col-lg-3 col-sm-4 hidden-xs js-mobile-block-types" style="background: #f3f3f3;">
+                    <div class="col-lg-3 col-sm-4 hidden-xs mobile-block-types js-mobile-block-types" style="background: #f3f3f3;">
                         <Rock:RockDropDownList ID="ddlBlockTypeCategory" runat="server" OnSelectedIndexChanged="ddlBlockTypeCategory_SelectedIndexChanged" AutoPostBack="true" CausesValidation="false" />
                         <ul class="components-list list-unstyled">
                             <li>
@@ -160,14 +160,12 @@
                                         <div class="drag-container js-drag-container list-unstyled panel-body mobile-pages-container" style="min-height: 100px;">
                                             <asp:Repeater ID="rptrBlocks" runat="server" OnItemCommand="rptrBlocks_ItemCommand" OnItemDataBound="rptrBlocks_ItemDataBound">
                                                 <ItemTemplate>
-                                                    <div class="panel panel-widget">
+                                                    <div class="panel panel-widget collapsed">
                                                         <div class="panel-heading js-block clearfix" data-block-id="<%# Eval( "Id" ) %>">
 
-                                                            <div class="pull-left">
-                                                                <i class="<%# Eval( "IconCssClass" ) %>"></i>
-                                                            </div>
-                                                                
-                                                            <div class="pull-left margin-l-md leading-snug">
+                                                            <i class="<%# Eval( "IconCssClass" ) %>"></i>
+
+                                                            <div class="margin-l-md leading-snug">
                                                                 <span><%# Eval( "Name" ) %></span> <br /><small class="margin-t-none"><%# Eval( "Type" ) %></small>
                                                             </div>
 
@@ -180,10 +178,10 @@
                                                                 <asp:PlaceHolder ID="phAdminButtons" runat="server" />
                                                             </div>
 
-                                                            <div class="pull-right padding-t-sm margin-r-lg">
+                                                            <div class="pull-right margin-r-lg">
                                                                 <asp:PlaceHolder ID="phSettings" runat="server" />
                                                             </div>
-                                                            
+
                                                         </div>
                                                     </div>
                                                 </ItemTemplate>

@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock.Tasks;
+using System.Threading.Tasks;
+
+using Rock.Model;
 using Rock.Utility;
 
 namespace Rock.Migrations.RockStartup
@@ -55,18 +57,44 @@ namespace Rock.Migrations.RockStartup
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),
+                
+                /* MDP 07-22-2021
+                
+                NOTE: We intentionally are excluding SystemGuid.ServiceJob.DATA_MIGRATIONS_122_INTERACTION_PERSONAL_DEVICE_ID
+                from DataMigrationStartup and will just wait for it to run at 2am.
+                See https://app.asana.com/0/0/1199506067368201/f
+
+                */
+                
                 SystemGuid.ServiceJob.DATA_MIGRATIONS_124_UPDATE_GROUP_SALUTATIONS.AsGuid(),
                 SystemGuid.ServiceJob.POST_INSTALL_DATA_MIGRATIONS.AsGuid(),
-                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid()
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_124_DECRYPT_FINANCIAL_PAYMENT_DETAILS.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_UPDATE_STEP_PROGRAM_COMPLETION.AsGuid(),
+                SystemGuid.ServiceJob.DATA_MIGRATIONS_125_ADD_COMMUNICATION_SYSTEM_COMMUNICATION_ID_INDEX.AsGuid()
             };
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
             var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable().Where( a => runOnceJobGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList();
 
-            foreach ( var runOnceJobId in runOnceJobIds )
-            {
-                new ProcessRunJobNow.Message { JobId = runOnceJobId }.Send();
-            }
+            // start a task that will run any incomplete RunOneJobs (one at a time)
+            Task.Run( () =>
+             {
+                 var rockContext = new Rock.Data.RockContext();
+                 var jobService = new Rock.Model.ServiceJobService( rockContext );
+                 foreach ( var runOnceJobId in runOnceJobIds )
+                 {
+                     try
+                     {
+                         var job = jobService.Get( runOnceJobId );
+                         jobService.RunNow( job, out _ );
+                     }
+                     catch ( Exception ex )
+                     {
+                         // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
+                         ExceptionLogService.LogException( ex );
+                     }
+                 }
+             } );
         }
     }
 }

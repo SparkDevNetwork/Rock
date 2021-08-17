@@ -19,27 +19,25 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
+
 using Microsoft.AspNet.SignalR;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using System.Globalization;
-using System.Web;
-using Rock.Tasks;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -56,6 +54,7 @@ namespace RockWeb.Blocks.Examples
     [BooleanField( "Fabricate Attendance", "If true, then fake attendance data will be fabricated (if the right parameters are in the XML)", true, "", 2 )]
     [BooleanField( "Enable Stopwatch", "If true, a stopwatch will be used to time each of the major operations.", false, "", 3 )]
     [BooleanField( "Enable Giving", "If true, the giving data will be loaded otherwise it will be skipped.", true, "", 4 )]
+    [IntegerField( "Random Number Seed", "If given, the randomizer used during the creation of attendance and financial transactions will be predictable. Use 0 to use a random seed.", false, 1, "", 5 )]
     public partial class SampleData : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -136,9 +135,9 @@ namespace RockWeb.Blocks.Examples
         private int summerPercentFactor = 30;
 
         /// <summary>
-        /// A random number generator for use when calculating random attendance data.
+        /// A random number generator for use when calculating random attendance data and financial giving frequency (skipping).
         /// </summary>
-        private static Random _random = new Random( (int)DateTime.Now.Ticks );
+        private static Random _random = new Random( ( int ) DateTime.Now.Ticks );
 
         /// <summary>
         /// The number of characters (length) that security codes should be.
@@ -328,6 +327,13 @@ namespace RockWeb.Blocks.Examples
         {
             string saveFile = Path.Combine( MapPath( "~" ), "sampledata1.xml" );
 
+            // Re-seed the randomizer with the given seed if it's non-0.
+            var randomizerSeed = GetAttributeValue( "RandomNumberSeed" ).AsInteger();
+            if ( randomizerSeed != 0 )
+            {
+                _random = new Random( randomizerSeed );
+            }
+
             try
             {
                 string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
@@ -335,7 +341,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
                     {
-                        GetHubContext().Clients.All.showLog( );
+                        GetHubContext().Clients.All.showLog();
                     }
 
                     ProcessXml( saveFile );
@@ -442,9 +448,9 @@ namespace RockWeb.Blocks.Examples
                 }
                 else
                 {
-                    var request = (HttpWebRequest)WebRequest.Create( GetAttributeValue( "XMLDocumentURL" ) );
+                    var request = ( HttpWebRequest ) WebRequest.Create( GetAttributeValue( "XMLDocumentURL" ) );
                     request.Method = "HEAD";
-                    var response = (HttpWebResponse)request.GetResponse();
+                    var response = ( HttpWebResponse ) request.GetResponse();
                     fileExists = response.StatusCode == HttpStatusCode.OK;
                 }
             }
@@ -453,7 +459,7 @@ namespace RockWeb.Blocks.Examples
                 nbError.Text += string.Format( "<br/>{0} Error trying to check the sample data file. {1}", RockDateTime.Now.ToShortTimeString(), ex.Message );
             }
 
-            if ( ! fileExists )
+            if ( !fileExists )
             {
                 nbError.Visible = true;
                 bbtnLoadData.Enabled = false;
@@ -618,9 +624,6 @@ namespace RockWeb.Blocks.Examples
                     LogElapsed( "previous names added" );
                 } );
 
-                // Add Person Meta-phone/Sounds-like stuff
-                AddMetaphone();
-
                 // since some PostSaveChanges was disabled, call these cleanup tasks
                 using ( var personRockContext = new Rock.Data.RockContext() )
                 {
@@ -672,31 +675,13 @@ namespace RockWeb.Blocks.Examples
         /// </summary>
         /// <param name="format"></param>
         /// <param name="args"></param>
-        private void AppendFormat( string format, params Object[] args)
+        private void AppendFormat( string format, params Object[] args )
         {
             if ( GetAttributeValue( "EnableStopwatch" ).AsBoolean() )
             {
                 var x = string.Format( format, args );
                 _sb.Append( x );
                 GetHubContext().Clients.All.receiveNotification( "sampleDataImport", x );
-            }
-        }
-
-        /// <summary>
-        /// Adds a transaction to add the meta-phone stuff for each person we've added.
-        /// </summary>
-        private void AddMetaphone()
-        {
-            foreach ( Person person in _personCache.Values )
-            {
-                //var person = pair.Value as Person;
-                var addNewMetaphonesMsg = new AddNewMetaphones.Message
-                {
-                    FirstName = person.FirstName,
-                    LastName = person.LastName,
-                    NickName = person.NickName
-                };
-                addNewMetaphonesMsg.Send();
             }
         }
         
@@ -809,7 +794,7 @@ namespace RockWeb.Blocks.Examples
                     AddPersonNote = element.Attribute( "addPersonNote" ) != null ? element.Attribute( "addPersonNote" ).Value.AsBoolean() : false,
                     LoginRequired = element.Attribute( "loginRequired" ) != null ? element.Attribute( "loginRequired" ).Value.AsBoolean() : false,
                     AllowExternalRegistrationUpdates = element.Attribute( "allowExternalUpdatesToSavedRegistrations" ) != null ? element.Attribute( "allowExternalUpdatesToSavedRegistrations" ).Value.AsBoolean() : false,
-//                    AllowGroupPlacement = element.Attribute( "allowGroupPlacement" ) != null ? element.Attribute( "allowGroupPlacement" ).Value.AsBoolean() : false,
+                    //                    AllowGroupPlacement = element.Attribute( "allowGroupPlacement" ) != null ? element.Attribute( "allowGroupPlacement" ).Value.AsBoolean() : false,
                     AllowMultipleRegistrants = element.Attribute( "allowMultipleRegistrants" ) != null ? element.Attribute( "allowMultipleRegistrants" ).Value.AsBoolean() : false,
                     MaxRegistrants = element.Attribute( "maxRegistrants" ).Value.AsInteger(),
                     RegistrantsSameFamily = registrantsSameFamily,
@@ -906,7 +891,7 @@ namespace RockWeb.Blocks.Examples
                                         {
                                             attrState.FieldTypeId = fieldType.Id;
                                             var attribute = Helper.SaveAttributeEdits( attrState, registrationRegistrantEntityTypeId, registrantAttributeQualifierColumn, registrationTemplate.Id.ToString(), rockContext );
-                                            
+
                                             //rockContext.ChangeTracker.DetectChanges();
                                             rockContext.SaveChanges( disablePrePostProcessing: true );
 
@@ -1013,7 +998,7 @@ namespace RockWeb.Blocks.Examples
                                     feeItem.Cost = option.Attribute( "cost" ).Value.AsDecimal();
                                     fee.FeeItems.Add( feeItem );
                                 }
-                                
+
                                 break;
                             case "single":
                                 {
@@ -1029,7 +1014,7 @@ namespace RockWeb.Blocks.Examples
                                 throw new NotSupportedException( string.Format( "unknown fee type: {0}", feeElement.Attribute( "type" ).Value ) );
                         }
 
-                        
+
                         fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
                         fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
                         fee.Order = feeOrder;
@@ -1074,7 +1059,7 @@ namespace RockWeb.Blocks.Examples
                                 rockContext.SaveChanges( disablePrePostProcessing: true );
                             }
                         }
-                        
+
                     }
                 }
             }
@@ -1182,7 +1167,7 @@ namespace RockWeb.Blocks.Examples
                     ContactPersonAliasId = contactPersonAliasId,
                     ContactPhone = element.Attribute( "contactPhone" ) != null ? element.Attribute( "contactPhone" ).Value : string.Empty,
                     ContactEmail = element.Attribute( "contactEmail" ) != null ? element.Attribute( "contactEmail" ).Value : string.Empty,
-                    AccountId = ( account != null ) ? (int?)account.Id : null,
+                    AccountId = ( account != null ) ? ( int? ) account.Id : null,
                     AdditionalReminderDetails = HttpUtility.HtmlDecode( additionalReminderDetails ),
                     AdditionalConfirmationDetails = HttpUtility.HtmlDecode( additionalConfirmationDetails ),
                     CreatedDateTime = RockDateTime.Now,
@@ -1212,11 +1197,11 @@ namespace RockWeb.Blocks.Examples
                                       Date = n.Attribute( "date" ) != null ? n.Attribute( "date" ).Value : null
                                   };
 
-	        foreach ( var r in peopleWithNotes )
-	        {
-                int personId = _peopleDictionary[ r.PersonGuid.AsGuid() ];
+            foreach ( var r in peopleWithNotes )
+            {
+                int personId = _peopleDictionary[r.PersonGuid.AsGuid()];
                 AddNote( personId, r.Type, r.Text, r.Date, r.ByPersonGuid, r.IsPrivate, r.IsAlert, rockContext );
-	        }
+            }
         }
 
         /// <summary>
@@ -1227,11 +1212,11 @@ namespace RockWeb.Blocks.Examples
         private void AddPeoplesPreviousNames( XElement elemFamilies, RockContext rockContext )
         {
             var previousNames = from n in elemFamilies.Elements( "family" ).Elements( "members" ).Elements( "person" ).Elements( "previousNames" ).Elements( "name" )
-                                  select new
-                                  {
-                                      PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
-                                      LastName = n.Attribute( "lastName" ).Value,
-                                  };
+                                select new
+                                {
+                                    PersonGuid = n.Parent.Parent.Attribute( "guid" ).Value,
+                                    LastName = n.Attribute( "lastName" ).Value,
+                                };
 
             foreach ( var r in previousNames )
             {
@@ -1249,13 +1234,13 @@ namespace RockWeb.Blocks.Examples
         /// <param name="rockContext">The rock context.</param>
         private void AddPreviousName( int personAliasId, string previousLastName, RockContext rockContext )
         {
-                var personPreviousNameService = new PersonPreviousNameService( rockContext );
-                var previousName = new PersonPreviousName()
-                {
-                    LastName = previousLastName,
-                    PersonAliasId = personAliasId
-                };
-                personPreviousNameService.Add( previousName );
+            var personPreviousNameService = new PersonPreviousNameService( rockContext );
+            var previousName = new PersonPreviousName()
+            {
+                LastName = previousLastName,
+                PersonAliasId = personAliasId
+            };
+            personPreviousNameService.Add( previousName );
         }
 
         /// <summary>
@@ -1559,7 +1544,7 @@ namespace RockWeb.Blocks.Examples
 
             // Create person alias records for each person manually since we set disablePrePostProcessing=true on save
             PersonService personService = new PersonService( rockContext );
-            foreach ( var person in personService.Queryable( true ).Include(a => a.Aliases )
+            foreach ( var person in personService.Queryable( true ).Include( a => a.Aliases )
                 .Where( p =>
                     _peopleDictionary.Keys.Contains( p.Guid ) &&
                     !p.Aliases.Any() ) )
@@ -1579,7 +1564,7 @@ namespace RockWeb.Blocks.Examples
                 .Where( a =>
                     _peopleDictionary.Keys.Contains( a.Person.Guid ) &&
                     a.PersonId == a.AliasPersonId ) )
-            { 
+            {
                 _peopleAliasDictionary.Add( personAlias.Person.Guid, personAlias.Id );
             }
 
@@ -1587,7 +1572,7 @@ namespace RockWeb.Blocks.Examples
             var attendanceService = new AttendanceService( rockContext );
             var attendanceGuids = attendanceData.Select( a => a.Key ).ToList();
             foreach ( var aliasKeyValue in _peopleAliasDictionary
-                .Where( a => attendanceGuids.Contains( a.Key )) )
+                .Where( a => attendanceGuids.Contains( a.Key ) ) )
             {
                 foreach ( var attendance in attendanceData[aliasKeyValue.Key] )
                 {
@@ -1659,13 +1644,13 @@ namespace RockWeb.Blocks.Examples
             }
 
             var allLocations = from n in elemLocations.Elements( "location" )
-                                select new
-                                {
-                                    Type = n.Attribute( "type" ).Value,
-                                    Name = n.Attribute( "name" ).Value,
-                                    Guid = n.Attribute( "guid" ).Value.AsGuid(),
-                                    ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
-                                };
+                               select new
+                               {
+                                   Type = n.Attribute( "type" ).Value,
+                                   Name = n.Attribute( "name" ).Value,
+                                   Guid = n.Attribute( "guid" ).Value.AsGuid(),
+                                   ParentLocationGuid = n.Attribute( "parentLocationGuid" ) != null ? n.Attribute( "parentLocationGuid" ).Value : null,
+                               };
 
             foreach ( var l in allLocations )
             {
@@ -1728,7 +1713,7 @@ namespace RockWeb.Blocks.Examples
             };
 
             // Set the location's parent location if given
-            if ( ! string.IsNullOrEmpty( parentLocationGuid ) )
+            if ( !string.IsNullOrEmpty( parentLocationGuid ) )
             {
                 // save changes in case the location was just added prior.
                 rockContext.SaveChanges();
@@ -1938,7 +1923,7 @@ namespace RockWeb.Blocks.Examples
                     }
                     LogElapsed( "group location schedules added" );
                 }
-             }
+            }
         }
 
         /// <summary>
@@ -1951,16 +1936,16 @@ namespace RockWeb.Blocks.Examples
         {
             group.Schedule = new Schedule();
 
-            DayOfWeek dow = (DayOfWeek)Enum.Parse(typeof(DayOfWeek), dayOfWeekName, true);
+            DayOfWeek dow = ( DayOfWeek ) Enum.Parse( typeof( DayOfWeek ), dayOfWeekName, true );
 
             group.Schedule.iCalendarContent = null;
             group.Schedule.WeeklyDayOfWeek = dow;
 
             TimeSpan timespan;
-            if ( TimeSpan.TryParse( time, out timespan ))
+            if ( TimeSpan.TryParse( time, out timespan ) )
             {
                 group.Schedule.WeeklyTimeOfDay = timespan;
-            }            
+            }
         }
 
         /// <summary>
@@ -2025,7 +2010,7 @@ namespace RockWeb.Blocks.Examples
                 if ( entityTypeName.ToLower() == "person" )
                 {
                     entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.PersonAlias ) ).Id;
-                    entityId =  _peopleAliasDictionary[entityGuid];
+                    entityId = _peopleAliasDictionary[entityGuid];
                 }
                 else if ( entityTypeName.ToLower() == "group" )
                 {
@@ -2087,7 +2072,7 @@ namespace RockWeb.Blocks.Examples
                 Guid personGuid = element.Attribute( "personGuid" ).Value.Trim().AsGuid();
 
                 var connectionOpportunity = coService.Queryable( "ConnectionType" ).AsNoTracking().Where( co => co.ConnectionType.Name == connectionTypeName && co.Name == opportunityName ).FirstOrDefault();
-                
+
                 // make sure we found a matching connection opportunity
                 if ( connectionOpportunity != null )
                 {
@@ -2206,7 +2191,7 @@ namespace RockWeb.Blocks.Examples
 
                     // delete the people records
                     string errorMessage;
-                    List<int> photoIds = members.Select( m => m.Person ).Where( p => p.PhotoId != null ).Select( a => (int)a.PhotoId ).ToList();
+                    List<int> photoIds = members.Select( m => m.Person ).Where( p => p.PhotoId != null ).Select( a => ( int ) a.PhotoId ).ToList();
 
                     foreach ( var person in members.Select( m => m.Person ) )
                     {
@@ -2242,8 +2227,8 @@ namespace RockWeb.Blocks.Examples
                         }
 
                         // delete notes created by them or on their record.
-                        foreach ( var note in noteService.Queryable().Where ( n => n.CreatedByPersonAlias.PersonId == person.Id
-                            || (n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
+                        foreach ( var note in noteService.Queryable().Where( n => n.CreatedByPersonAlias.PersonId == person.Id
+                           || ( n.NoteType.EntityTypeId == _personEntityTypeId && n.EntityId == person.Id ) ) )
                         {
                             noteService.Delete( note );
                         }
@@ -2274,7 +2259,7 @@ namespace RockWeb.Blocks.Examples
                         // delete any connection requests tied to them
                         foreach ( var request in connectionRequestService.Queryable().Where( r => r.PersonAlias.PersonId == person.Id || r.ConnectorPersonAlias.PersonId == person.Id ) )
                         {
-                            connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );    
+                            connectionRequestActivityService.DeleteRange( request.ConnectionRequestActivities );
                             connectionRequestService.Delete( request );
                         }
 
@@ -2353,6 +2338,12 @@ namespace RockWeb.Blocks.Examples
                 }
             }
 
+            if ( group.Groups.Any() )
+            {
+                groupService.DeleteRange( group.Groups );
+                rockContext.SaveChanges();
+            }
+
             // now delete the group
             if ( groupService.Delete( group ) )
             {
@@ -2384,6 +2375,7 @@ namespace RockWeb.Blocks.Examples
                 if ( group != null )
                 {
                     DeleteGroupAndMemberData( group, rockContext );
+                    rockContext.SaveChanges();
                 }
             }
         }
@@ -2430,6 +2422,7 @@ namespace RockWeb.Blocks.Examples
                             }
                             var registrations = registrationTemplate.Instances.SelectMany( i => i.Registrations );
                             new RegistrationService( rockContext ).DeleteRange( registrations );
+                            new RegistrationTemplatePlacementService( rockContext ).DeleteRange( registrationTemplate.Placements );
                             new RegistrationInstanceService( rockContext ).DeleteRange( registrationTemplate.Instances );
                         }
 
@@ -2497,7 +2490,7 @@ namespace RockWeb.Blocks.Examples
             Frequency frequency;
             if ( elemGiving.Attribute( "frequency" ) != null )
             {
-                Enum.TryParse( elemGiving.Attribute( "frequency" ).Value.Trim(), out frequency ); 
+                Enum.TryParse( elemGiving.Attribute( "frequency" ).Value.Trim(), out frequency );
             }
             else
             {
@@ -2509,12 +2502,12 @@ namespace RockWeb.Blocks.Examples
             // Build a dictionary of FinancialAccount Ids and the amount to give to that account.
             Dictionary<int, decimal> accountAmountDict = new Dictionary<int, decimal>();
             FinancialAccountService financialAccountService = new FinancialAccountService( rockContext );
-            var allAccountAmount = elemGiving.Attribute( "accountAmount" ).Value.Trim().Split(',');
+            var allAccountAmount = elemGiving.Attribute( "accountAmount" ).Value.Trim().Split( ',' );
             foreach ( var item in allAccountAmount )
             {
-                var accountAmount = item.Split(':');
+                var accountAmount = item.Split( ':' );
                 decimal amount;
-                if ( ! Decimal.TryParse( accountAmount[1], out amount ) )
+                if ( !Decimal.TryParse( accountAmount[1], out amount ) )
                 {
                     continue; // skip if not a valid decimal
                 }
@@ -2523,7 +2516,7 @@ namespace RockWeb.Blocks.Examples
                 var financialAccount = financialAccountService.Queryable().AsNoTracking().Where( a => a.Name.ToLower() == accountName ).FirstOrDefault();
                 if ( financialAccount != null )
                 {
-                    accountAmountDict.Add(financialAccount.Id, amount );
+                    accountAmountDict.Add( financialAccount.Id, amount );
                 }
                 else
                 {
@@ -2570,12 +2563,12 @@ namespace RockWeb.Blocks.Examples
 
             var imageUrlNode = circularImageList.First ?? null;
             // for each weekend or monthly between the starting and ending date...
-            for ( DateTime date = startingDate; date <= endDate; date = frequency == Frequency.weekly ? date.AddDays( 7 ) : frequency == Frequency.monthly ? date.AddMonths( 1 ) : endDate.AddDays(1) )
+            for ( DateTime date = startingDate; date <= endDate; date = frequency == Frequency.weekly ? date.AddDays( 7 ) : frequency == Frequency.monthly ? date.AddMonths( 1 ) : endDate.AddDays( 1 ) )
             {
-                weekNumber = (int)(date - startingDate).TotalDays / 7;
+                weekNumber = ( int ) ( date - startingDate ).TotalDays / 7;
 
                 // increase by growRatePercent every growFrequencyWeeks
-                if ( growFrequencyWeeks != 0 && growRatePercent != 0 && weekNumber !=0 && weekNumber % growFrequencyWeeks == 0 )
+                if ( growFrequencyWeeks != 0 && growRatePercent != 0 && weekNumber != 0 && weekNumber % growFrequencyWeeks == 0 )
                 {
                     var copy = accountAmountDict.ToDictionary( entry => entry.Key, entry => entry.Value );
                     foreach ( var item in accountAmountDict )
@@ -2600,15 +2593,17 @@ namespace RockWeb.Blocks.Examples
                 }
                 else
                 {
-                    batch = new FinancialBatch { 
-                        Id = 0, 
+                    batch = new FinancialBatch
+                    {
+                        Id = 0,
                         Guid = Guid.NewGuid(),
                         BatchStartDateTime = date,
                         BatchEndDateTime = date,
                         Status = BatchStatus.Closed,
                         ControlAmount = 0,
                         Name = string.Format( "SampleData{0}", date.ToJavascriptMilliseconds() ),
-                        CreatedByPersonAliasId = CurrentPerson.PrimaryAliasId };
+                        CreatedByPersonAliasId = CurrentPerson.PrimaryAliasId
+                    };
                     _contributionBatches.Add( date, batch );
                 }
 
@@ -2628,7 +2623,8 @@ namespace RockWeb.Blocks.Examples
                 // Add a transaction detail record for each account they're donating to
                 foreach ( var item in accountAmountDict )
                 {
-                    FinancialTransactionDetail transactionDetail = new FinancialTransactionDetail {
+                    FinancialTransactionDetail transactionDetail = new FinancialTransactionDetail
+                    {
                         AccountId = item.Key,
                         Amount = item.Value,
                         Guid = Guid.NewGuid()
@@ -2752,7 +2748,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="altScheduleId">The alt schedule identifier.</param>
         /// <param name="attendanceData">The attendance data.</param>
-        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance, 
+        private void CreateAttendance( ICollection<GroupMember> familyMembers, DateTime startingDate, DateTime endDate, int pctAttendance,
             int pctAttendedRegularService, int scheduleId, int altScheduleId, Dictionary<Guid, List<Attendance>> attendanceData, RockContext rockContext )
         {
             // for each weekend between the starting and ending date...
@@ -2807,11 +2803,11 @@ namespace RockWeb.Blocks.Examples
                     var attendance = attendanceService.AddOrUpdate( member.Person.PrimaryAliasId, checkinDateTime, item.GroupId, item.LocationId, scheduleId, 1, _kioskDeviceId, null, null, null, null );
                     attendance.AttendanceCode = attendanceCode;
 
-                    if ( !attendanceData.Keys.Contains( member.Person.Guid ))
+                    if ( !attendanceData.Keys.Contains( member.Person.Guid ) )
                     {
-                        attendanceData.Add( member.Person.Guid, new List<Attendance>());
+                        attendanceData.Add( member.Person.Guid, new List<Attendance>() );
                     }
-                    attendanceData[member.Person.Guid].Add( attendance);
+                    attendanceData[member.Person.Guid].Add( attendance );
                 }
             }
         }
@@ -2859,10 +2855,10 @@ namespace RockWeb.Blocks.Examples
                     person = new Person();
                     person.CreatedByPersonAliasId = CurrentPersonAliasId;
                     person.CreatedDateTime = RockDateTime.Now;
-                    
+
                     person.Guid = guid;
                     person.FirstName = personElem.Attribute( "firstName" ).Value.Trim();
-                    if ( personElem.Attribute( "suffix") != null )
+                    if ( personElem.Attribute( "suffix" ) != null )
                     {
                         person.SuffixValueId = GetOrAddDefinedValueId( personElem.Attribute( "suffix" ).Value.Trim(), _suffixDefinedType );
                     }
@@ -2889,11 +2885,11 @@ namespace RockWeb.Blocks.Examples
                     if ( personElem.Attribute( "grade" ) != null )
                     {
                         int? grade = personElem.Attribute( "grade" ).Value.AsIntegerOrNull();
-                        if (grade.HasValue)
+                        if ( grade.HasValue )
                         {
                             // convert the grade (0-12 where 12 = Senior), to a GradeOffset (12-0 where 12 = K and 0 = Senior)
                             int gradeOffset = 12 - grade.Value;
-                            person.GradeOffset = gradeOffset >= 0 ? gradeOffset : (int?)null;
+                            person.GradeOffset = gradeOffset >= 0 ? gradeOffset : ( int? ) null;
                         }
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
@@ -2957,7 +2953,7 @@ namespace RockWeb.Blocks.Examples
                             break;
                         case "inactive":
                             person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
-                            if ( personElem.Attribute( "recordStatusReason") != null )
+                            if ( personElem.Attribute( "recordStatusReason" ) != null )
                             {
                                 person.RecordStatusReasonValueId = GetOrAddDefinedValueId( personElem.Attribute( "recordStatusReason" ).Value.Trim(), _recordStatusReasonDefinedType );
                                 if ( person.RecordStatusReasonValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED.AsGuid() ).Id )
@@ -3060,6 +3056,8 @@ namespace RockWeb.Blocks.Examples
                 }
 
                 groupMember.Person = person;
+
+                new Rock.Transactions.SaveMetaphoneTransaction( person ).Enqueue();
 
                 if ( personElem.Attribute( "familyRole" ) != null && personElem.Attribute( "familyRole" ).Value.Trim().ToLower() == "adult" )
                 {
@@ -3408,7 +3406,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="state">The state.</param>
         /// <param name="postalCode">The zip.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void AddNewFamilyAddress( Group family, string locationTypeGuid, 
+        public void AddNewFamilyAddress( Group family, string locationTypeGuid,
             string street1, string street2, string city, string state, string postalCode, string country,
             RockContext rockContext )
         {

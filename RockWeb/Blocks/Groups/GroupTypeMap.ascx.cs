@@ -399,7 +399,14 @@ namespace RockWeb.Blocks.Groups
                             }
                             else
                             {
-                                infoWindow = lavaTemplate.Render( groupDict ).Replace( "\n", string.Empty );
+                                var result = LavaService.RenderTemplate( lavaTemplate, groupDict );
+
+                                infoWindow = result.Text;
+
+                                if ( !result.HasErrors )
+                                { 
+                                    infoWindow = infoWindow.Replace( "\n", string.Empty );
+                                }
                             }
 
                             sbGroupJson.Append( string.Format(

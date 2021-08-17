@@ -17,8 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -26,9 +25,19 @@ using Rock.Web.Cache;
 
 namespace Rock.Tasks
 {
+    /* 06/29/2021 MDP
+
+       We ran into mysterious issue where Payment Emails would have the message body for the wrong recipient. For example, Ted Decker would get a payment email
+       for Bill Marble's scheduled transaction! This problem appeared when switched to use the bus ProcessSendPaymentReceiptEmails task, and went away
+       when we switched back to the SendPaymentReceipts Transaction. We had trouble reproducing this locally, but it happened on a production system.
+       So, we need to figure out the problem before we start using the bus for payment emails. See https://app.asana.com/0/1121505495628584/1200223665792479/f
+     */
+
     /// <summary>
-    /// Sends an event registration confirmation
+    /// Uses the bus to send payment receipts for scheduled transaction payments that got downloaded from the Financial Gateway.
     /// </summary>
+    [Obsolete( "The bus shouldn't be used for this. Use SendPaymentReceipts Transaction instead." )]
+    [RockObsolete( "1.13" )]
     public sealed class ProcessSendPaymentReceiptEmails : BusStartedTask<ProcessSendPaymentReceiptEmails.Message>
     {
         /// <summary>

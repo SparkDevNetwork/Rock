@@ -65,7 +65,7 @@
 		<pagecount>200</pagecount>
 		<wordcount>0</wordcount>
 		<charcount/>
-		<appname>InstallShield Express</appname>
+		<appname>InstallShield</appname>
 		<security>1</security>
 	</summary>
 	
@@ -251,6 +251,7 @@
 		<col def="V0">Data</col>
 		<col def="S255">ISBuildSourcePath</col>
 		<row><td>ISExpHlp.dll</td><td/><td>&lt;ISRedistPlatformDependentFolder&gt;\ISExpHlp.dll</td></row>
+		<row><td>ISSELFREG.DLL</td><td/><td>&lt;ISRedistPlatformDependentFolder&gt;\isregsvr.dll</td></row>
 		<row><td>NewBinary1</td><td/><td>C:\Github\SparkDevNetwork\Rock\Installers\Resources\InstallBanner.jpg</td></row>
 		<row><td>NewBinary10</td><td/><td>&lt;ISProductFolder&gt;\Redist\Language Independent\OS Independent\CompleteSetupIco.ibd</td></row>
 		<row><td>NewBinary11</td><td/><td>&lt;ISProductFolder&gt;\Redist\Language Independent\OS Independent\CustomSetupIco.ibd</td></row>
@@ -341,7 +342,11 @@
 		<col def="S0">ISDotNetInstallerArgsCommit</col>
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
+		<row><td>ISO19770_LocalTag</td><td>{36654E44-66D6-46BF-97F0-F8A20C8F8CA3}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISO19770_SystemTag</td><td>{A961AE0C-B081-408D-A277-A4A706E5DBBA}</td><td>CommonAppDataFolder</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td>{D756635C-49FE-40AE-915C-B94977A79465}</td><td>INSTALLDIR</td><td>2</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>{074F6DC8-A282-4642-8C50-76BE3983EFB6}</td><td>INSTALLDIR</td><td>2</td><td/><td>statementgenerator.primary_o</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>StatementGenerator.Locally_Copied_Items</td><td>{38E6E739-BBA7-49F1-BF41-C24961582A35}</td><td>INSTALLDIR</td><td>2</td><td/><td>statementgenerator.locally_c</td><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -1052,6 +1057,7 @@
 	<table name="CreateFolder">
 		<col key="yes" def="s72">Directory_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>INSTALLDIR</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 	</table>
 
 	<table name="CustomAction">
@@ -1064,6 +1070,10 @@
 		<row><td>ISPreventDowngrade</td><td>19</td><td/><td>[IS_PREVENT_DOWNGRADE_EXIT]</td><td/><td>Exits install when a newer version of this product is found</td></row>
 		<row><td>ISPrint</td><td>1</td><td>SetAllUsers.dll</td><td>PrintScrollableText</td><td/><td>Prints the contents of a ScrollableText control on a dialog.</td></row>
 		<row><td>ISRunSetupTypeAddLocalEvent</td><td>1</td><td>ISExpHlp.dll</td><td>RunSetupTypeAddLocalEvent</td><td/><td>Run the AddLocal events associated with the Next button on the Setup Type dialog.</td></row>
+		<row><td>ISSelfRegisterCosting</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterCosting</td><td/><td/></row>
+		<row><td>ISSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFiles</td><td/><td/></row>
+		<row><td>ISSelfRegisterFinalize</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFinalize</td><td/><td/></row>
+		<row><td>ISUnSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISUnSelfRegisterFiles</td><td/><td/></row>
 		<row><td>LaunchProgramFileFromSetupCompleteSuccess</td><td>1</td><td>NewBinary19</td><td>LaunchProgram</td><td/><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%SystemRoot]\Profiles\All Users</td><td/><td/></row>
@@ -1863,7 +1873,11 @@
 	<table name="FeatureComponents">
 		<col key="yes" def="s38">Feature_</col>
 		<col key="yes" def="s72">Component_</col>
+		<row><td>AlwaysInstall</td><td>ISO19770_LocalTag</td></row>
+		<row><td>AlwaysInstall</td><td>ISO19770_SystemTag</td></row>
+		<row><td>AlwaysInstall</td><td>ISX_DEFAULTCOMPONENT1</td></row>
 		<row><td>AlwaysInstall</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td></row>
+		<row><td>AlwaysInstall</td><td>StatementGenerator.Locally_Copied_Items</td></row>
 	</table>
 
 	<table name="File">
@@ -1878,6 +1892,9 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
+		<row><td>regid.2021_06.tech.triumph_m</td><td>ISO19770_SystemTag</td><td>REGID2~1.SWI|regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock\Installers\StatementGeneratorInstall\StatementGeneratorInstaller\Express\Interm\regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>1</td><td/></row>
+		<row><td>regid.2021_06.tech.triumph_m1</td><td>ISO19770_LocalTag</td><td>REGID2~1.SWI|regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>0</td><td/><td/><td/><td>1</td><td>C:\Github\SparkDevNetwork\Rock\Installers\StatementGeneratorInstall\StatementGeneratorInstaller\Express\Interm\regid.2021-06.tech.Triumph,main_908BE439-C781-4B26-9119-5E804A295322.swidtag</td><td>1</td><td/></row>
+		<row><td>statementgenerator.locally_c</td><td>StatementGenerator.Locally_Copied_Items</td><td>StatementGenerator.Locally-Copied Items</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;StatementGenerator&gt;|ReferenceCopyLocalPaths</td><td>3</td><td/></row>
 		<row><td>statementgenerator.primary_o</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>StatementGenerator.Primary output</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;StatementGenerator&gt;|Built</td><td>3</td><td/></row>
 	</table>
 
@@ -2022,7 +2039,11 @@
 		<col def="S0">FTPLocation</col>
 		<col def="S0">HTTPLocation</col>
 		<col def="S0">Miscellaneous</col>
+		<row><td>ISO19770_LocalTag</td><td/><td/><td>_B35B4F71_4D4D_4A99_9C1B_E94D93583670_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISO19770_SystemTag</td><td/><td/><td>_8496ACFD_D597_4E84_ADA1_77660E514833_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>ISX_DEFAULTCOMPONENT1</td><td/><td/><td>_D2C10F6C_B0C6_49D6_94ED_3B948BBEBF49_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td/><td>_D1F6313F_12EE_4BF3_8945_211BFF450411_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>StatementGenerator.Locally_Copied_Items</td><td/><td/><td>_723087FA_EA2A_418F_B806_776351F85D9C_FILTER</td><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="ISCustomActionReference">
@@ -2613,7 +2634,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
-		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>623338192</td></row>
+		<row><td>COMPANY_NAME</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-492184018</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_ACROBAT5FOLDER</td><td>1033</td><td>   Adobe Acrobat 5 needs to be installed for this installation to continue.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_ADOBEREADER10FOLDER</td><td>1033</td><td>Adobe Reader 10 needs to be installed for this installation to continue.</td><td>0</td><td/><td>623370734</td></row>
@@ -3465,7 +3486,6 @@
 		<row><td>IDS_PROGMSG_XML_UPDATE_FILE</td><td>1033</td><td>Updating XML file %s...</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SETUPEXE_EXPIRE_MSG</td><td>1033</td><td>This setup works until %s. The setup will now exit.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SETUPEXE_LAUNCH_COND_E</td><td>1033</td><td>This setup was built with an evaluation version of InstallShield and can only be launched from setup.exe.</td><td>0</td><td/><td>623370734</td></row>
-		<row><td>IDS_SHORTCUT_DISPLAY_NAME1</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>623340304</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO</td><td>1033</td><td>From the list of servers below, select the database server you would like to target.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO_DB</td><td>1033</td><td>From the list of catalog names below, select the database catalog you would like to target.</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS_SQLBROWSE_INTRO_TEMPLATE</td><td>1033</td><td>[IS_SQLBROWSE_INTRO]</td><td>0</td><td/><td>623370734</td></row>
@@ -3758,15 +3778,20 @@
 		<row><td>IDS__TargetReq_DESC_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS__TargetReq_DESC_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>623370734</td></row>
 		<row><td>IDS__TargetReq_DESC_RESOLUTION</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>623370734</td></row>
-		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>623338192</td></row>
-		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>623338192</td></row>
+		<row><td>ID_STRING1</td><td>1033</td><td>http://www.SparkDevelopmentNetwork.com</td><td>0</td><td/><td>-492184018</td></row>
+		<row><td>ID_STRING2</td><td>1033</td><td>Spark Development Network</td><td>0</td><td/><td>-492184018</td></row>
 		<row><td>ID_STRING3</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>623340304</td></row>
+		<row><td>ID_STRING4</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589950350</td></row>
+		<row><td>ID_STRING5</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator - ToExe</td><td>0</td><td/><td>589900942</td></row>
+		<row><td>ID_STRING6</td><td>1033</td><td>ROCKRM~1|Rock RMS Statement Generator</td><td>0</td><td/><td>589927886</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>623370734</td></row>
 	</table>
 
 	<table name="ISSwidtagProperty">
 		<col key="yes" def="s72">Name</col>
 		<col def="s0">Value</col>
+		<row><td>TagCreatorRegid</td><td>regid.2021-06.tech.Triumph,main</td></row>
+		<row><td>UniqueId</td><td>908BE439-C781-4B26-9119-5E804A295322</td></row>
 	</table>
 
 	<table name="ISTargetImage">
@@ -3883,6 +3908,9 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
 		<row><td>ARPPRODUCTICON.exe</td><td/><td>C:\Github\SparkDevNetwork\Rock\Applications\Wpf\StatementGenerator\resources\statement-printer.ico</td><td>0</td></row>
+		<row><td>NewShortcut3_82391FE6762E433EBD497196096F2002.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
+		<row><td>_Built1_64C68A7287D941BBA6F2079F9907E00E.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
+		<row><td>_Built_C5F920F3F3EA40AE9767C99283A2208A.exe</td><td/><td>\StatementGenerator.Primary output</td><td>0</td></row>
 	</table>
 
 	<table name="IniFile">
@@ -3925,6 +3953,10 @@
 		<row><td>FindRelatedProducts</td><td>NOT ISSETUPDRIVEN</td><td>420</td><td>FindRelatedProducts</td><td/></row>
 		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
 		<row><td>ISRunSetupTypeAddLocalEvent</td><td>Not Installed And Not ISRUNSETUPTYPEADDLOCALEVENT</td><td>1050</td><td>ISRunSetupTypeAddLocalEvent</td><td/></row>
+		<row><td>ISSelfRegisterCosting</td><td/><td>2201</td><td/><td/></row>
+		<row><td>ISSelfRegisterFiles</td><td/><td>5601</td><td/><td/></row>
+		<row><td>ISSelfRegisterFinalize</td><td/><td>6601</td><td/><td/></row>
+		<row><td>ISUnSelfRegisterFiles</td><td/><td>2202</td><td/><td/></row>
 		<row><td>InstallFiles</td><td/><td>4000</td><td>InstallFiles</td><td/></row>
 		<row><td>InstallFinalize</td><td/><td>6600</td><td>InstallFinalize</td><td/></row>
 		<row><td>InstallInitialize</td><td/><td>1501</td><td>InstallInitialize</td><td/></row>
@@ -4010,7 +4042,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISCompilerOption_WarningLevel</td><td>3</td></row>
 		<row><td>ISCompilerOption_WarningsAsErrors</td><td>1</td></row>
 		<row><td>ISTheme</td><td>InstallShield Blue.theme</td></row>
-		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI</td></row>
+		<row><td>ISUpdateNotifications</td><td>0</td></row>
+		<row><td>ISVisitedViews</td><td>viewRelease,viewAssistant,viewUI,viewProject,viewSetupDesign,viewISToday,viewShortcuts</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4021,7 +4054,9 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>779</td></row>
+		<row><td>SchemaVersion</td><td>784</td></row>
+		<row><td>SwidtagLocalComponent</td><td>ISO19770_LocalTag</td></row>
+		<row><td>SwidtagSystemComponent</td><td>ISO19770_SystemTag</td></row>
 		<row><td>Type</td><td>MSIE</td></row>
 	</table>
 
@@ -4387,7 +4422,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]StatementGenerator.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{D40E4125-237C-4379-AF5F-F2883D5E48A2}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Statement Generator</td><td/></row>
-		<row><td>ProductVersion</td><td>1.10.0.1</td><td/></row>
+		<row><td>ProductVersion</td><td>1.12.5.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -4465,7 +4500,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="i2">InstallMode</col>
 		<row><td>FileKey1</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>sparkd_1_spark_development_network</td><td>2</td></row>
 		<row><td>FileKey2</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
-		<row><td>_Built</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
+		<row><td>NewShortcut1</td><td>ISX_DEFAULTCOMPONENT1</td><td/><td>rockrm_1_rock_rms_statement_generator</td><td>2</td></row>
 	</table>
 
 	<table name="RemoveIniFile">
@@ -4551,8 +4586,8 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<col def="S255">ISComments</col>
 		<col def="S255">ISShortcutName</col>
 		<col def="I4">ISAttributes</col>
-		<row><td>_Built</td><td>rockrm_1_rock_rms_statement_generator</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>_Built1</td><td>DesktopFolder</td><td>##IDS_SHORTCUT_DISPLAY_NAME1##</td><td>PROJECT_ASSISTANT_DEFAULT_COMPONENT</td><td>AlwaysInstall</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>NewShortcut1</td><td>rockrm_1_rock_rms_statement_generator</td><td>##ID_STRING4##</td><td>ISX_DEFAULTCOMPONENT1</td><td>[INSTALLDIR]StatementGenerator.exe</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>NewShortcut3</td><td>DesktopFolder</td><td>##ID_STRING6##</td><td>ISX_DEFAULTCOMPONENT1</td><td>[INSTALLDIR]StatementGenerator.exe</td><td/><td/><td/><td/><td/><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">

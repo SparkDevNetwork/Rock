@@ -97,6 +97,7 @@
     <Compile Include="CodeGenerated\Block.cs" />
     <Compile Include="CodeGenerated\BlockType.cs" />
     <Compile Include="CodeGenerated\Campus.cs" />
+    <Compile Include="CodeGenerated\CampusSchedule.cs" />
     <Compile Include="CodeGenerated\Category.cs" />
     <Compile Include="CodeGenerated\Communication.cs" />
     <Compile Include="CodeGenerated\CommunicationAttachment.cs" />
@@ -160,9 +161,11 @@
     <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientRequest.cs" />
     <Compile Include="CodeGenerated\FinancialStatementGeneratorRecipientResult.cs" />
     <Compile Include="CodeGenerated\FinancialStatementGeneratorUploadGivingStatementData.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementGeneratorUploadGivingStatementResult.cs" />
     <Compile Include="CodeGenerated\FinancialStatementIndividualSaveOptions.cs" />
     <Compile Include="CodeGenerated\FinancialStatementReportConfiguration.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplate.cs" />
+    <Compile Include="CodeGenerated\FinancialStatementTemplateHeaderFooterSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplatePDFSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplatePledgeSettings.cs" />
     <Compile Include="CodeGenerated\FinancialStatementTemplateReportSettings.cs" />
@@ -250,6 +253,9 @@
     <Compile Include="CodeGenerated\Person.cs" />
     <Compile Include="CodeGenerated\PersonalDevice.cs" />
     <Compile Include="CodeGenerated\PersonAlias.cs" />
+    <Compile Include="CodeGenerated\PersonalLink.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSection.cs" />
+    <Compile Include="CodeGenerated\PersonalLinkSectionOrder.cs" />
     <Compile Include="CodeGenerated\PersonDuplicate.cs" />
     <Compile Include="CodeGenerated\PersonExport.cs" />
     <Compile Include="CodeGenerated\PersonPreviousName.cs" />
@@ -294,6 +300,7 @@
     <Compile Include="CodeGenerated\SmsPipeline.cs" />
     <Compile Include="CodeGenerated\Step.cs" />
     <Compile Include="CodeGenerated\StepProgram.cs" />
+    <Compile Include="CodeGenerated\StepProgramCompletion.cs" />
     <Compile Include="CodeGenerated\StepStatus.cs" />
     <Compile Include="CodeGenerated\StepType.cs" />
     <Compile Include="CodeGenerated\StepTypePrerequisite.cs" />

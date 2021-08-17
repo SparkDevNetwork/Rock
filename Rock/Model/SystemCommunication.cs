@@ -188,7 +188,7 @@ namespace Rock.Model
         {
             get
             {
-                return LavaFields.ToJson( Formatting.None );
+                return LavaFields.ToJson( indentOutput: false );
             }
 
             set

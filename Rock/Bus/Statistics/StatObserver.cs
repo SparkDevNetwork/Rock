@@ -19,7 +19,8 @@ using System;
 using System.Threading.Tasks;
 using MassTransit;
 using Rock.Bus.Message;
-using Rock.Bus.Queue;
+using Rock.Logging;
+using Rock.Model;
 
 namespace Rock.Bus.Statistics
 {
@@ -38,6 +39,8 @@ namespace Rock.Bus.Statistics
         /// <exception cref="NotImplementedException"></exception>
         public Task ConsumeFault<T>( ConsumeContext<T> context, Exception exception ) where T : class
         {
+            ExceptionLogService.LogException( exception );
+            RockLogger.Log.Error( RockLogDomains.Core, "A Consume Fault occurred Original Message: @originalMessage Exception: @exception", context.Message, exception );
             return RockMessageBus.GetCompletedTask();
         }
 

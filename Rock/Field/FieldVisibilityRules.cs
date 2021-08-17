@@ -82,15 +82,16 @@ namespace Rock.Field
                 return true;
             }
 
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToFormFieldGuid.HasValue ) )
             {
                 bool conditionResult;
                 var filterValues = new List<string>();
-                var comparedToField = RegistrationTemplateFormFieldCache.Get( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.Value );
+                var comparedToField = RegistrationTemplateFormFieldCache.Get( fieldVisibilityRule.ComparedToFormFieldGuid.Value );
+                var comparedToFieldAttributeId = comparedToField?.AttributeId ?? AttributeCache.Get( fieldVisibilityRule.ComparedToFormFieldGuid.Value )?.Id;
 
-                if ( comparedToField?.AttributeId != null )
+                if ( comparedToFieldAttributeId != null )
                 {
-                    var comparedToAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                    var comparedToAttribute = AttributeCache.Get( comparedToFieldAttributeId.Value );
 
                     // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
                     if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
@@ -132,7 +133,7 @@ namespace Rock.Field
 
                     conditionResult = conditionFunc.Invoke( attributeValueToEvaluate );
                 }
-                else if ( IsFieldSupported( comparedToField.PersonFieldType ) )
+                else if ( comparedToField != null && IsFieldSupported( comparedToField.PersonFieldType ) )
                 {
                     var comparedToFieldValue = personFieldValues.GetValueOrNull( comparedToField.PersonFieldType );
                     conditionResult = comparedToFieldValue == fieldVisibilityRule.ComparedToValue;
@@ -270,7 +271,7 @@ namespace Rock.Field
         /// The compared to form field unique identifier.
         /// </value>
         [DataMember]
-        public Guid? ComparedToRegistrationTemplateFormFieldGuid { get; set; }
+        public Guid? ComparedToFormFieldGuid { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier.
@@ -307,19 +308,26 @@ namespace Rock.Field
         /// </returns>
         public override string ToString()
         {
-            if ( ComparedToRegistrationTemplateFormFieldGuid.HasValue )
+            if ( ComparedToFormFieldGuid.HasValue )
             {
-                var comparedToField = RegistrationTemplateFormFieldCache.Get( this.ComparedToRegistrationTemplateFormFieldGuid.Value );
+                var comparedToRegistrationTemplateField = RegistrationTemplateFormFieldCache.Get( this.ComparedToFormFieldGuid.Value );
+                var comparedToWorkflowFormField = AttributeCache.Get( this.ComparedToFormFieldGuid.Value );
 
-                if ( comparedToField?.AttributeId.HasValue == true )
+                if ( comparedToRegistrationTemplateField?.AttributeId.HasValue == true )
                 {
-                    var comparedToAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
+                    var comparedToAttribute = AttributeCache.Get( comparedToRegistrationTemplateField.AttributeId.Value );
                     var filterValues = new List<string>( new string[2] { this.ComparisonType.ConvertToString(), this.ComparedToValue } );
                     return $"{comparedToAttribute?.Name} {comparedToAttribute?.FieldType.Field.FormatFilterValues( comparedToAttribute.QualifierValues, filterValues ) } ";
                 }
-                else if ( comparedToField.FieldSource == RegistrationFieldSource.PersonField )
+                else if ( comparedToWorkflowFormField != null )
                 {
-                    return $"{comparedToField.PersonFieldType.ConvertToString()} is {ComparedToValue}";
+                    var comparedToAttribute = AttributeCache.Get( comparedToWorkflowFormField.Id );
+                    var filterValues = new List<string>( new string[2] { this.ComparisonType.ConvertToString(), this.ComparedToValue } );
+                    return $"{comparedToAttribute?.Name} {comparedToAttribute?.FieldType.Field.FormatFilterValues( comparedToAttribute.QualifierValues, filterValues ) } ";
+                }
+                else if ( comparedToRegistrationTemplateField?.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    return $"{comparedToRegistrationTemplateField.PersonFieldType.ConvertToString()} is {ComparedToValue}";
                 }
             }
 

@@ -1039,6 +1039,13 @@ namespace RockWeb.Blocks.Reporting
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
+            else
+            {
+                string quckReturnLava = "{{ Report.Name | AddQuickReturn:'Reports', 40 }}";
+                var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quckReturnMergeFields.Add( "Report", report );
+                quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+            }
 
             pnlDetails.Visible = true;
             hfReportId.Value = report.Id.ToString();

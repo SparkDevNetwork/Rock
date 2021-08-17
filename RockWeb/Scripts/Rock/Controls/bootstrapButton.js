@@ -9,9 +9,9 @@
 
             showLoading: function (btn) {
 
-                if (typeof (Page_ClientValidate) == 'function') {
+                if (typeof (Page_ClientValidate) === 'function') {
 
-                    if (Page_IsValid) {
+                    if (typeof Page_IsValid === 'undefined' || Page_IsValid) {
                         // make sure page really is valid
                         Page_ClientValidate();
                     }
@@ -19,7 +19,7 @@
 
                 var $btn = $(btn);
 
-                if (Page_IsValid) {
+                if (typeof Page_IsValid === 'undefined' || Page_IsValid) {
                     setTimeout(function () {
                         $btn.prop('disabled', true);
                         $btn.attr('disabled', 'disabled');
@@ -37,14 +37,14 @@
                 $btn.attr('disabled', 'disabled');
                 $btn.addClass('disabled');
                 var completedTxt = $btn.attr('data-completed-text');
-                if (completedTxt && completedTxt != '') {
+                if (completedTxt && completedTxt !== '') {
                     $btn.html(completedTxt);
                 } else {
                     $btn.html($btn.attr('data-init-text'));
                 }
 
                 var completedMessage = $btn.attr('data-completed-message');
-                if (completedMessage && completedMessage != '') {
+                if (completedMessage && completedMessage !== '') {
                     var id = $btn.attr("id") + "_msg";
                     var $span = $('<span />').attr('id', id).html(completedMessage);
                     $btn.after( $span );

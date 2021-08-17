@@ -1,10 +1,26 @@
-﻿using System.Linq;
-using DotLiquid;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
-using Rock.Lava.Blocks;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -27,9 +43,16 @@ namespace Rock.Tests.Integration.Lava
     <<{{ eventItemOccurrence.Name }}|{{ eventItemOccurrence.Date | Date: 'yyyy-MM-dd' }}|{{ eventItemOccurrence.Time }}|{{ eventItemOccurrence.Location }}>>
     <<Calendars: {{ eventItemOccurrence.CalendarNames | Join:', ' }}>>
     <<Audiences: {{ eventItemOccurrence.AudienceNames | Join:', ' }}>>
+    <<Campus: {{ eventItemOccurrence.Campus }}>>
   {% endfor %}
 {% endeventscheduledinstance %}
 ";
+
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            InitializeTestData();
+        }
 
         private string GetTestTemplate( string parameters )
         {
@@ -43,9 +66,14 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'1' unknown_parameter:'any_value'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"unknown_parameter\"." );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"unknown_parameter\"." );
+            } );
         }
 
         [TestMethod]
@@ -53,11 +81,16 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+
+            } );
         }
 
         [TestMethod]
@@ -73,10 +106,16 @@ namespace Rock.Tests.Integration.Lava
 
             var template = GetTestTemplate( $"eventid:{eventId} startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+
+            } );
 
         }
 
@@ -85,10 +124,15 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( $"eventid:'{StaffMeetingEventGuidString}' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+            } );
         }
 
         [TestMethod]
@@ -96,9 +140,14 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "Event Occurrences not available. An Event reference must be specified." );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Event Occurrences not available. An Event reference must be specified." );
+            } );
         }
 
         [TestMethod]
@@ -106,9 +155,14 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'no_event' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "Event Occurrences not available. Cannot find an Event matching the reference \"no_event\"." );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Event Occurrences not available. Cannot find an Event matching the reference \"no_event\"." );
+            } );
         }
 
         [TestMethod]
@@ -116,14 +170,19 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'3m'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-02-26|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-03-25|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
-            // Staff Meeting recurs every 2 weeks, so our date range of 3 months weeks should not include the meeting in month 4.
-            Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-04-08|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-02-26|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-03-25|12:00 AM|All Campuses>>" );
+
+                // Staff Meeting recurs every 2 weeks, so our date range of 3 months weeks should not include the meeting in month 4.
+                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-04-08|12:00 AM|All Campuses>>" );
+            } );
         }
 
         [TestMethod]
@@ -131,13 +190,18 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'5w'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            // Staff Meeting recurs every 2 weeks, so our date range of 5 weeks should only include 2 occurrences.
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
-            Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
+                // Staff Meeting recurs every 2 weeks, so our date range of 5 weeks should only include 2 occurrences.
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+
+                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
+            } );
         }
 
         [TestMethod]
@@ -145,13 +209,18 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'27d'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            // Staff Meeting recurs every 2 weeks, so our date range of 27d should only include 2 occurrences.
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-            Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
-            Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
+                // Staff Meeting recurs every 2 weeks, so our date range of 27d should only include 2 occurrences.
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
+                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
+
+                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
+            } );
         }
 
         [TestMethod]
@@ -159,9 +228,15 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'1020-1-1' daterange:'12m'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "<EventCount = 0>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "<EventCount = 0>" );
+            } );
         }
 
         [TestMethod]
@@ -169,10 +244,15 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:200" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            // Ensure that the maximum number of occurrences has been retrieved.
-            Assert.That.Contains( output, "<EventCount = 200>" );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Ensure that the maximum number of occurrences has been retrieved.
+                Assert.That.Contains( output, "<EventCount = 200>" );
+            } );
         }
 
         [TestMethod]
@@ -180,46 +260,61 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' daterange:'invalid'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "Event Occurrences not available. The specified Date Range is invalid." );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                Assert.That.Contains( output, "Event Occurrences not available. The specified Date Range is invalid." );
+            } );            
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithMaxOccurrencesUnspecified_ReturnsDefaultNumberOfOccurrences()
         {
-            // First, ensure that there are more than the default maximum number of events to return.
-            // The default maximum is 100 events.
-            var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:101" );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // First, ensure that there are more than the default maximum number of events to return.
+                // The default maximum is 100 events.
+                var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:101" );
 
-            var output1 = template1.ResolveMergeFields( null );
+                var output1 = TestHelper.GetTemplateOutput( engine, template1 );
 
-            Assert.That.Contains( output1, "<EventCount = 101>" );
+                TestHelper.DebugWriteRenderResult( engine, template1, output1 );
 
-            // Now ensure that the default limit is applied.
-            var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1'" );
+                Assert.That.Contains( output1, "<EventCount = 101>" );
 
-            var output2 = template2.ResolveMergeFields( null );
+                // Now ensure that the default limit is applied.
+                var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1'" );
 
-            Assert.That.Contains( output2, "<EventCount = 100>" );
+                var output2 = TestHelper.GetTemplateOutput( engine, template2 );
+
+                TestHelper.DebugWriteRenderResult( engine, template2, output2 );
+
+                Assert.That.Contains( output2, "<EventCount = 100>" );
+            } );
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithMaxOccurrencesLessThanAvailableEvents_ReturnsMaxOccurrences()
         {
-            // First, ensure that there are more than the test maximum number of events to return.
-            var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:11" );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // First, ensure that there are more than the test maximum number of events to return.
+                var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:11" );
 
-            var output1 = template1.ResolveMergeFields( null );
+                var output1 = TestHelper.GetTemplateOutput( engine, template1 );
 
-            Assert.That.Contains( output1, "<EventCount = 11>" );
+                Assert.That.Contains( output1, "<EventCount = 11>" );
 
-            // Now ensure that the maxoccurences limit is applied.
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:10" );
+                // Now ensure that the maxoccurences limit is applied.
+                var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:10" );
 
-            var output = template.ResolveMergeFields( null );
+                var output2 = TestHelper.GetTemplateOutput( engine, template2 );
 
-            Assert.That.Contains( output, "<EventCount = 10>" );
+                Assert.That.Contains( output2, "<EventCount = 10>" );
+            } );
         }
 
         [TestMethod]
@@ -227,23 +322,29 @@ namespace Rock.Tests.Integration.Lava
         {
             var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:'invalid_value'" );
 
-            var output = template.ResolveMergeFields( null );
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-            Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\"." );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "Event Occurrences not available. Invalid configuration setting \"maxoccurrences\"." );
+            } );
         }
 
         [TestMethod]
-        [Ignore("In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop.")]
+        [Ignore( "In the Fluid framework, this test incorrectly displays the same EventItemOccurrence on each pass through the loop." )]
         // This bug may be fixed, included in the next release: https://github.com/sebastienros/fluid/issues/317
         public void EventScheduledInstanceCommand_EventWithMultipleSchedules_ReturnsMultipleEventItemEntries()
         {
             var template = @"
-{%- eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' -%}
-    {%- for occurrence in EventItems -%}
+{% eventscheduledinstance eventid:'Rock Solid Finances Class' startdate:'2020-1-1' maxoccurrences:'25' daterange:'2m' %}
+    {% for occurrence in EventItems %}
         <b>Series {{forloop.index}}</b><br>
 
-        {%- for item in occurrence -%}
-            {%- if forloop.first -%}
+        {% for item in occurrence %}
+            {% if forloop.first %}
                 {{ item.Name }}
                 <b>{{ item.DateTime | Date:'dddd' }} Series</b><br>
                 <ol>
@@ -251,7 +352,7 @@ namespace Rock.Tests.Integration.Lava
 
             <li>{{ item.DateTime | Date:'MMM d, yyyy' }} in {{ item.LocationDescription }}</li>
 
-            {%- if forloop.last -%}
+            {% if forloop.last %}
                 </ol>
             {% endif %}
         {% endfor %}
@@ -261,9 +362,9 @@ namespace Rock.Tests.Integration.Lava
 ";
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, template );
+                var output = TestHelper.GetTemplateOutput( engine, template );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, template, output );
+                TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 // Verify that the output contains series headings and relevant dates for both schedules.
                 Assert.That.Contains( output, "<b>Series 1</b>" );
@@ -271,6 +372,82 @@ namespace Rock.Tests.Integration.Lava
                 Assert.That.Contains( output, "<b>Series 2</b>" );
                 Assert.That.Contains( output, "<li>Jan 5, 2020 in Meeting Room 2</li>" );
             } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusAsName_RetrievesEventsWithMatchingCampus()
+        {
+            var template = GetTestTemplate( "eventid:'Rock Solid Finances Class' campusids:'Main Campus' startdate:'2018-1-1'" );
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                // Verify that the output contains series headings and relevant dates for both schedules.
+                Assert.That.Contains( output, "<Campus: Main Campus>" );
+                Assert.That.DoesNotContain( output, "<Campus: Secondary Campus>" );
+            } );
+        }
+
+        public void EventScheduledInstanceCommand_WithCampusAsMultipleValues_RetrievesEventsWithAnyMatchingCampus()
+        {
+            var template = GetTestTemplate( "eventid:'Rock Solid Finances Class' campusids:'Main Campus,Stepping Stone' startdate:'2020-1-1' daterange:'12m' maxoccurrences:99" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Stepping Stone>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusAsId_RetrievesEventsWithMatchingCampus()
+        {
+            var rockContext = new RockContext();
+
+            var campusId = new CampusService( rockContext ).Queryable()
+                .FirstOrDefault().Id;
+
+            var template = GetTestTemplate( $"eventid:'Rock Solid Finances Class' campusids:'{campusId}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusAsGuid_RetrievesEventsWithMatchingCampus()
+        {
+            var template = GetTestTemplate( $"eventid:'Rock Solid Finances Class' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusInvalidValue_RendersErrorMessage()
+        {
+            var template = GetTestTemplate( "eventid:'Staff Meeting' campusids:'no_campus'" );
+
+            TestHelper.AssertTemplateOutput( "Event Occurrences not available. Cannot apply a campus filter for the reference \"no_campus\".",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+        }
+
+        [TestMethod]
+        public void EventScheduledInstanceCommand_WithCampusSpecified_RetrievesEventsWithMatchingCampusAndUnspecifiedCampus()
+        {
+            // The "Warrior Youth Event" is not assigned to a specific Campus, so it should be returned for all campus filter values.
+            var template = GetTestTemplate( $"eventid:'Warrior Youth Event' campusids:'{MainCampusGuidString}' startdate:'2018-1-1'" );
+
+            TestHelper.AssertTemplateOutput( "<Campus: All Campuses>",
+                template,
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
 
         #region Test Data
@@ -281,10 +458,37 @@ namespace Rock.Tests.Integration.Lava
         private const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
         private const string FinancesClassOccurrenceSat1630Guid = "E7116C5A-9FEE-42D4-A0DB-7FEBFCCB6B8B";
         private const string FinancesClassOccurrenceSun1200Guid = "3F3EA420-E3F0-435A-9401-C2D058EF37DE";
+        private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+        private static string SecondaryCampusGuidString = "089844AF-6310-4C20-9434-A845F982B0C5";
 
         private static void InitializeTestData()
         {
+            InitializeEventRockSolidFinancesClassTestData();
+        }
+
+        /// <summary>
+        /// Modifies the Rock Solid Finances Class to add multiple schedules and campuses.
+        /// </summary>
+        private static void InitializeEventRockSolidFinancesClassTestData()
+        {
             var rockContext = new RockContext();
+
+            // Add a new campus
+            var campusService = new CampusService( rockContext );
+
+            var campus2 = campusService.Get( SecondaryCampusGuidString.AsGuid() );
+
+            if ( campus2 == null )
+            {
+                campus2 = new Campus();
+
+                campusService.Add( campus2 );
+            }
+
+            campus2.Name = "Stepping Stone";
+            campus2.Guid = SecondaryCampusGuidString.AsGuid();
+
+            rockContext.SaveChanges();
 
             // Get existing schedules.
             var scheduleService = new ScheduleService( rockContext );
@@ -306,10 +510,14 @@ namespace Rock.Tests.Integration.Lava
                 financeEvent1 = new EventItemOccurrence();
             }
 
+            var mainCampusId = CampusCache.GetId( MainCampusGuidString.AsGuid() );
+            var secondCampusId = CampusCache.GetId( SecondaryCampusGuidString.AsGuid() );
+
             financeEvent1.Location = "Meeting Room 1";
             financeEvent1.ForeignKey = TestDataForeignKey;
             financeEvent1.ScheduleId = scheduleSat1630Id;
             financeEvent1.Guid = FinancesClassOccurrenceSat1630Guid.AsGuid();
+            financeEvent1.CampusId = mainCampusId;
 
             financeEvent.EventItemOccurrences.Add( financeEvent1 );
 
@@ -324,6 +532,7 @@ namespace Rock.Tests.Integration.Lava
             financeEvent2.ForeignKey = TestDataForeignKey;
             financeEvent2.ScheduleId = scheduleSat1800Id;
             financeEvent2.Guid = FinancesClassOccurrenceSun1200Guid.AsGuid();
+            financeEvent2.CampusId = secondCampusId;
 
             financeEvent.EventItemOccurrences.Add( financeEvent2 );
 

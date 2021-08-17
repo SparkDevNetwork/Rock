@@ -217,7 +217,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .ToList()
                         .Where( crm => crm.ConnectionType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                         .Where( crm => crm.ConnectionOpportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                        .OrderBy( a => a.ConnectionType.Name );
+                        .OrderBy( a => a.ConnectionType.Order )
+                        .ThenBy( a => a.ConnectionType.Name );
                     rConnectionTypes.DataBind();
                 }
             }

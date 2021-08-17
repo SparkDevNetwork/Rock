@@ -65,10 +65,36 @@ namespace Rock.Tests.Shared
         /// <param name="actualDate">The actual date.</param>
         public static void AreEqualDate( this Assert assert, DateTime? expectedDate, DateTime? actualDate, string message = null )
         {
+            if ( !AreEqualDate( expectedDate, actualDate, message ) )
+            {
+                throw new Exception( message ?? string.Format( "\nExpected Date: {0}\nActual Date: {1}\n", expectedDate, actualDate ) );
+            }
+        }
+
+        /// <summary>
+        /// Asserts that the two DateTime objects can be considered equivalent because they occur on the same date, regardless of the time of day.
+        /// </summary>
+        /// <param name="excludedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        public static void AreNotEqualDate( this Assert assert, DateTime? excludedDate, DateTime? actualDate, string message = null )
+        {
+            if ( AreEqualDate( excludedDate, actualDate, message ) )
+            {
+                throw new Exception( message ?? string.Format( "\nExcluded Date matches Actual Date: {0}\n", excludedDate ) );
+            }
+        }
+
+        /// <summary>
+        /// Asserts that the two DateTime objects can be considered equivalent because they occur on the same date, regardless of the time of day.
+        /// </summary>
+        /// <param name="expectedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        private static bool AreEqualDate( DateTime? expectedDate, DateTime? actualDate, string message = null )
+        {
             if ( expectedDate == null
                  && actualDate == null )
             {
-                return;
+                return true;
             }
             else if ( expectedDate == null )
             {
@@ -79,10 +105,7 @@ namespace Rock.Tests.Shared
                 throw new NullReferenceException( message ?? "The actual date was null" );
             }
 
-            if ( expectedDate.Value.Date != actualDate.Value.Date )
-            {
-                throw new Exception( message ?? string.Format( "\nExpected Date: {0}\nActual Date: {1}\n", expectedDate, actualDate ) );
-            }
+            return ( expectedDate.Value.Date == actualDate.Value.Date );
         }
     }
 }

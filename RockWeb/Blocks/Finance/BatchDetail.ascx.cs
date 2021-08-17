@@ -404,6 +404,13 @@ namespace RockWeb.Blocks.Finance
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
+            else
+            {
+                string quckReturnLava = "{{ Batch.Name | AddQuickReturn:'Batches', 50 }}";
+                var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quckReturnMergeFields.Add( "Batch", batch );
+                quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+            }
 
             hfBatchId.Value = batch.Id.ToString();
 

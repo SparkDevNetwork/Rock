@@ -161,6 +161,27 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Deletes a RelatedEntity for the given source entity, target entity, purpose key, and qualifier value.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="targetEntity">The target entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        public void DeleteTargetEntityFromSourceEntity<TT>( int entityId, TT targetEntity, string purposeKey, string qualifierValue = null ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntity = relatedEntityService.GetRelatedEntityRecordToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, targetEntity.Id, purposeKey, qualifierValue );
+            if ( relatedEntity.IsNotNull() )
+            {
+                relatedEntityService.Delete( relatedEntity );
+            }
+        }
+
+        /// <summary>
         /// Determines if relationship to the source entity already exists.
         /// </summary>
         /// <typeparam name="TT">The type of the t.</typeparam>

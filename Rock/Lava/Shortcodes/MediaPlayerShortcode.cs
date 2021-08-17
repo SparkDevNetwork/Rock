@@ -161,6 +161,14 @@ namespace Rock.Lava.Shortcodes
             public const string Thumbnail = "thumbnail";
 
             /// <summary>
+            /// Determines if an anonymous user's session should be tracked
+            /// and stored as an Interaction in the system. This is required
+            /// to provide play metrics for non-logged in users but will not
+            /// provide the resume feature. The default value is true.
+            /// </summary>
+            public const string TrackAnonymousSession = "trackanonymoussession";
+
+            /// <summary>
             /// Determines if the user's session should be tracked and stored
             /// as an Interaction in the system. This is required to provide
             /// play metrics as well as use the resume feature later. The
@@ -209,6 +217,7 @@ namespace Rock.Lava.Shortcodes
             + "," + ParameterKeys.SeekTime
             + "," + ParameterKeys.Source
             + "," + ParameterKeys.Thumbnail
+            + "," + ParameterKeys.TrackAnonymousSession
             + "," + ParameterKeys.TrackSession
             + "," + ParameterKeys.Type
             + "," + ParameterKeys.Volume
@@ -239,7 +248,7 @@ it will automatically get the best video URL to use and the thumbnail URL. Even
 better it will automatically track playback sessions and record them in Rock so
 you get metrics about the videos being watched.</p>
 
-<pre>{[ mediaplayer media:'18' ]}[{ endmediaplayer ]}</pre>
+<pre>{[ mediaplayer media:'18' ]}{[ endmediaplayer ]}</pre>
 
 <p>Let's take a look at some of the parameters and options that are available so
 so you can customize this to be exactly what you want.</p>
@@ -261,6 +270,7 @@ so you can customize this to be exactly what you want.</p>
     <li><strong>seektime</strong> (10) - The number of seconds to seek forward or backward when the fast-forward or rewind controls are clicked.</li>
     <li><strong>src</strong> - The URL of the media file to be played.</li>
     <li><strong>thumbnail</strong> - The thumbnail image URL to display before the video starts playing. This only works with HTML5 style videos, it will not work with embed links such as YouTube uses.</li>
+    <li><strong>trackanonymoussession</strong> (true) - Determines if an anonymous user's session should be tracked and stored as an Interaction in the system. This is required to provide play metrics for non-logged in users but will not provide the resume feature.
     <li><strong>tracksession</strong> (true) - Determines if the user's session should be tracked and stored as an Interaction in the system. This is required to provide play metrics as well as use the resume feature later.</li>
     <li><strong>type</strong> - Specifies the type of media to be played. Can be either ""audio"" or ""video"". Default is to auto-detect.</li>
     <li><strong>volume</strong> (1) - The initial volume to start the media player at. This is a value between 0 and 1, with 1 meaning full volume.</li>
@@ -392,7 +402,9 @@ so you can customize this to be exactly what you want.</p>
                 TrackProgress = true,
                 Type = parms[ParameterKeys.Type],
                 Volume = parms[ParameterKeys.Volume].AsDoubleOrNull() ?? 1.0,
-                WriteInteraction = parms[ParameterKeys.TrackSession].AsBoolean( true )
+                WriteInteraction = currentPerson != null
+                    ? parms[ParameterKeys.TrackSession].AsBoolean( true )
+                    : parms[ParameterKeys.TrackAnonymousSession].AsBoolean( true )
             };
 
             // Get the rest of the parameters in easy to access variables.
@@ -403,154 +415,29 @@ so you can customize this to be exactly what you want.</p>
             var primaryColor = parms[ParameterKeys.PrimaryColor];
             var width = parms[ParameterKeys.Width];
 
-            UpdateOptionsFromMedia( options, mediaId, mediaGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson );
+            options.UpdateValuesFromMedia( mediaId, mediaGuid, autoResumeInDays, combinePlayStatisticsInDays, currentPerson );
 
             var elementId = $"mediaplayer_{Guid.NewGuid()}";
 
             // Construct the CSS style for this media player.
-            var style = $@"<style>
-#{elementId} {{
-  --plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};
-  {( width.IsNotNullOrWhiteSpace() ? $"width: {width};" : string.Empty )}
-}}
-</style>";
+            var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};";
+            style += $"width: {( width.IsNotNullOrWhiteSpace() ? width : "100%" )};";
 
             // Construct the JavaScript to initialize the player.
             var script = $@"<script>
 (function() {{
-    new Rock.UI.MediaPlayer(""#{elementId}"", {options.ToJson( Newtonsoft.Json.Formatting.None )});
+    new Rock.UI.MediaPlayer(""#{elementId}"", {options.ToJson( indentOutput: false )});
 }})();
 </script>";
 
-            result.WriteLine( style );
-            result.WriteLine( $"<div id=\"{elementId}\"></div>" );
+            result.WriteLine( $"<div id=\"{elementId}\" style=\"{style}\"></div>" );
             result.WriteLine( script );
 
             // If we have a RockPage related to the current request then
             // register all the JS and CSS links we need.
-            if ( HttpContext.Current != null && HttpContext.Current.Handler is RockPage rockPage )
+            if ( HttpContext.Current != null && HttpContext.Current.Handler is System.Web.UI.Page page )
             {
-                RockPage.AddScriptLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.js", false );
-                RockPage.AddCSSLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/plyr/3.6.7/plyr.min.css", false );
-
-                if ( options.MediaUrl.IndexOf( ".m3u8", StringComparison.OrdinalIgnoreCase ) != -1 )
-                {
-                    RockPage.AddScriptLink( rockPage, "https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.0.2/hls.min.js", false );
-                }
-
-                RockPage.AddScriptLink( rockPage, rockPage.ResolveRockUrl( "~/Scripts/Rock/UI/mediaplayer/mediaplayer.js" ) );
-            }
-        }
-
-        /// <summary>
-        /// Updates the options from a <see cref="MediaElement"/>. If one is
-        /// not found then no changes are made.
-        /// </summary>
-        /// <param name="options">The options to be updated.</param>
-        /// <param name="mediaElementId">The media element identifier.</param>
-        /// <param name="mediaElementGuid">The media element unique identifier.</param>
-        /// <param name="autoResumeInDays">The number of days back to look for an existing watch map to auto-resume from. Pass -1 to mean forever or 0 to disable.</param>
-        /// <param name="combinePlayStatisticsInDays">The number of days back to look for an existing interaction to be updated. Pass -1 to mean forever or 0 to disable.</param>
-        /// <param name="currentPerson">The person to use when searching for existing interactions.</param>
-        internal static void UpdateOptionsFromMedia( MediaPlayerOptions options, int? mediaElementId, Guid? mediaElementGuid, int autoResumeInDays, int combinePlayStatisticsInDays, Person currentPerson )
-        {
-            if ( !mediaElementId.HasValue && !mediaElementGuid.HasValue )
-            {
-                return;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var mediaElementService = new MediaElementService( rockContext );
-                var interactionService = new InteractionService( rockContext );
-                var mediaEventsChannelGuid = Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid();
-                var now = RockDateTime.Now;
-                MediaElement mediaElement = null;
-
-                if ( mediaElementId.HasValue )
-                {
-                    mediaElement = mediaElementService.Get( mediaElementId.Value );
-                }
-                else
-                {
-                    mediaElement = mediaElementService.Get( mediaElementGuid.Value );
-                }
-
-                // No media found means we don't have anything to do.
-                if ( mediaElement == null )
-                {
-                    return;
-                }
-
-                options.MediaUrl = mediaElement.DefaultFileUrl;
-                options.MediaElementGuid = mediaElement.Guid;
-
-                // Let the users value override the default thumbnail.
-                if ( options.PosterUrl.IsNullOrWhiteSpace() )
-                {
-                    options.PosterUrl = mediaElement.DefaultThumbnailUrl;
-                }
-
-                // Check if either autoResumeInDays or combinePlayStatisticsInDays
-                // are enabled. If not we are done.
-                if ( autoResumeInDays == 0 && combinePlayStatisticsInDays == 0 )
-                {
-                    return;
-                }
-
-                var interactionQry = interactionService.Queryable()
-                    .Where( i => i.InteractionComponent.InteractionChannel.Guid == mediaEventsChannelGuid
-                        && i.InteractionComponent.EntityId == mediaElement.Id
-                        && i.PersonAlias.PersonId == currentPerson.Id );
-
-                // A negative value means "forever".
-                int daysBack = Math.Max( autoResumeInDays >= 0 ? autoResumeInDays : int.MaxValue,
-                    combinePlayStatisticsInDays >= 0 ? combinePlayStatisticsInDays : int.MaxValue );
-
-                // A value of MaxValue means "forever" now so we don't need
-                // to filter on it.
-                if ( daysBack != int.MaxValue )
-                {
-                    var limitDateTime = now.AddDays( -daysBack );
-
-                    interactionQry = interactionQry.Where( i => i.InteractionDateTime >= limitDateTime );
-                }
-
-                var interaction = interactionQry.OrderByDescending( i => i.InteractionDateTime )
-                    .Select( i => new
-                    {
-                        i.Guid,
-                        i.InteractionDateTime,
-                        i.InteractionData
-                    } )
-                    .FirstOrDefault();
-
-                // If we didn't find any interaction then we are done.
-                if ( interaction == null )
-                {
-                    return;
-                }
-
-                // Check if this interaction is within our auto-resume window.
-                if ( autoResumeInDays != 0 )
-                {
-                    if ( autoResumeInDays < 0 || interaction.InteractionDateTime >= now.AddDays( -autoResumeInDays ) )
-                    {
-                        options.ResumePlaying = true;
-
-                        var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>();
-                        options.Map = data?.WatchMap;
-                    }
-                }
-
-                // Check if this interaction is within our combine window.
-                if ( combinePlayStatisticsInDays != 0 )
-                {
-                    if ( combinePlayStatisticsInDays < 0 || interaction.InteractionDateTime >= now.AddDays( -combinePlayStatisticsInDays ) )
-                    {
-                        options.InteractionGuid = interaction.Guid;
-                    }
-                }
+                Rock.Web.UI.Controls.MediaPlayer.AddLinksForMediaToPage( options.MediaUrl, page );
             }
         }
 
@@ -590,16 +477,17 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.HideControls, "true" },
                 { ParameterKeys.Media, "" },
                 { ParameterKeys.Muted, "false" },
-                { ParameterKeys.PrimaryColor, "" },
+                { ParameterKeys.PrimaryColor, "var(--brand-primary)" },
                 { ParameterKeys.RelatedEntityId, "" },
                 { ParameterKeys.RelatedEntityTypeId, "" },
                 { ParameterKeys.SeekTime, "10" },
                 { ParameterKeys.Source, "" },
                 { ParameterKeys.Thumbnail, "" },
+                { ParameterKeys.TrackAnonymousSession, "true" },
                 { ParameterKeys.TrackSession, "true" },
                 { ParameterKeys.Type, "" },
                 { ParameterKeys.Volume, "1" },
-                { ParameterKeys.Width, "" }
+                { ParameterKeys.Width, "100%" }
             };
 
             // Parse each parameter name and value in the format of name:'value'
@@ -619,58 +507,6 @@ so you can customize this to be exactly what you want.</p>
             }
 
             return parms;
-        }
-
-        #endregion
-
-        #region Support Classes
-
-        [Newtonsoft.Json.JsonObject(
-            NamingStrategyType = typeof( Newtonsoft.Json.Serialization.CamelCaseNamingStrategy ),
-            ItemNullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore )]
-        internal class MediaPlayerOptions
-        {
-            public bool Autopause { get; set; }
-
-            public bool Autoplay { get; set; }
-
-            public bool ClickToPlay { get; set; }
-
-            public string Controls { get; set; }
-
-            public bool Debug { get; set; }
-
-            public bool HideControls { get; set; }
-
-            public Guid? InteractionGuid { get; set; }
-
-            public string Map { get; set; }
-
-            public Guid? MediaElementGuid { get; set; }
-
-            public string MediaUrl { get; set; }
-
-            public bool Muted { get; set; }
-
-            public string PosterUrl { get; set; }
-
-            public int? RelatedEntityId { get; set; }
-
-            public int? RelatedEntityTypeId { get; set; }
-
-            public bool ResumePlaying { get; set; }
-
-            public double SeekTime { get; set; }
-
-            public bool Title { get; set; }
-
-            public bool TrackProgress { get; set; }
-
-            public string Type { get; set; }
-
-            public double Volume { get; set; }
-
-            public bool WriteInteraction { get; set; }
         }
 
         #endregion

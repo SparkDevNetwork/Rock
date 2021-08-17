@@ -38,7 +38,7 @@
                                         <asp:Repeater ID="rptAccountList" runat="server" OnItemDataBound="rptAccountList_ItemDataBound">
                                             <ItemTemplate>
                                                 <Rock:RockLiteral ID="txtAccountAmountLiteral" runat="server" Visible="false" />
-                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" Placeholder="0.00" CssClass="account-amount" />
+                                                <Rock:CurrencyBox ID="txtAccountAmount" runat="server" CssClass="account-amount" />
                                             </ItemTemplate>
                                         </asp:Repeater>
 
@@ -141,8 +141,9 @@
                                         <asp:Literal ID="lPaymentInfoTitle" runat="server" /></h3>
                                 </div>
                                 <div class="panel-body">
+                           
+                            <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" />
 
-                                    <Rock:RockRadioButtonList ID="rblSavedAccount" runat="server" CssClass="radio-list margin-b-lg" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
 
                                     <div id="divNewPayment" runat="server" class="radio-content">
 

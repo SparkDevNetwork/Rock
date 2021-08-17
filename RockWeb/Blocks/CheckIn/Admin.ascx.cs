@@ -73,6 +73,9 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also had inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string AllowManualSetup = "AllowManualSetup";

@@ -917,8 +917,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="rockContext">The rock context.</param>
         /// <param name="action">The action currently being processed.</param>
         /// <param name="currentPersonId">The current person identifier.</param>
+        /// <param name="mergeFields">The merge fields to use for Lava parsing.</param>
         /// <returns>The object that will be included in the response that details the person entry part of the form.</returns>
-        private static WorkflowFormPersonEntry GetPersonEntryDetails( RockContext rockContext, WorkflowAction action, int? currentPersonId )
+        private static WorkflowFormPersonEntry GetPersonEntryDetails( RockContext rockContext, WorkflowAction action, int? currentPersonId, IDictionary<string, object> mergeFields )
         {
             var form = action.ActionTypeCache.WorkflowForm;
 
@@ -970,8 +971,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             return new WorkflowFormPersonEntry
             {
-                PreHtml = form.PersonEntryPreHtml,
-                PostHtml = form.PersonEntryPostHtml,
+                PreHtml = form.PersonEntryPreHtml.ResolveMergeFields( mergeFields ),
+                PostHtml = form.PersonEntryPostHtml.ResolveMergeFields( mergeFields ),
                 CampusIsVisible = form.PersonEntryCampusIsVisible,
                 SpouseEntryOption = GetVisibility( form.PersonEntrySpouseEntryOption ),
                 GenderEntryOption = GetVisibility( form.PersonEntryGenderEntryOption ),
@@ -1104,12 +1105,18 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var activity = action.Activity;
             var form = action.ActionTypeCache.WorkflowForm;
 
+            // Prepare the merge fields for the HTML content.
+            var mergeFields = RequestContext.GetCommonMergeFields( currentPerson );
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", activity );
+            mergeFields.Add( "Workflow", workflow );
+
             var mobileForm = new WorkflowForm
             {
                 WorkflowGuid = workflow.Id != 0 ? ( Guid? ) workflow.Guid : null,
-                HeaderHtml = form.Header,
-                FooterHtml = form.Footer,
-                PersonEntry = GetPersonEntryDetails( rockContext, action, RequestContext.CurrentPerson?.Id )
+                HeaderHtml = form.Header.ResolveMergeFields( mergeFields ),
+                FooterHtml = form.Footer.ResolveMergeFields( mergeFields ),
+                PersonEntry = GetPersonEntryDetails( rockContext, action, RequestContext.CurrentPerson?.Id, mergeFields )
             };
 
             //

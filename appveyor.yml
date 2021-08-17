@@ -25,6 +25,9 @@ image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
 
+init:
+ - git config --global core.autocrlf true
+
 # clone directory and depth
 clone_depth: 1
 clone_folder: C:\projects\Rock
@@ -76,6 +79,12 @@ build:
   publish_wap: true
   parallel: true
   verbosity: minimal
+
+build_script:
+- Script: >-
+    nuget restore "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
+
+    "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:

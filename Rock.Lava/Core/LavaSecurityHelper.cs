@@ -17,8 +17,6 @@
 using System;
 using System.Linq;
 
-using Rock.Common;
-
 namespace Rock.Lava
 {
     /// <summary>

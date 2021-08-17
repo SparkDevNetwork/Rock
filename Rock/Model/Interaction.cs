@@ -64,7 +64,7 @@ namespace Rock.Model
         public DateTime InteractionDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the operation.
+        /// Gets or sets the operation. For example: 'Viewed', 'Opened', 'Click', 'Prayed', 'Form Viewed', 'Form Completed'
         /// </summary>
         /// <value>
         /// The operation.
@@ -74,7 +74,7 @@ namespace Rock.Model
         public string Operation { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that that is associated with this Interaction.
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that is associated with this Interaction.
         /// </summary>
         /// <value>
         /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.InteractionComponent"/> component that this Interaction is associated with.
@@ -84,12 +84,21 @@ namespace Rock.Model
         public int InteractionComponentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
-        /// For example:
-        ///  if this is a Page View:
-        ///     Interaction.EntityId is the Page.Id of the page that was viewed
-        ///  if this is a Communication Recipient activity:
-        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
+        /// Gets or sets the Id of the entity that this interaction component is tracking activity for.
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>Page Views</term>
+        ///     <description>null, Page is the Component, Site is the Channel</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="Rock.Model.CommunicationRecipient" /> Id. Communication is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity</term>
+        ///     <description>null, ContentChannel is the Component, single Channel</description></item>
+        /// <item>
+        ///     <term>Workflow Form Entry</term>
+        ///     <description><see cref="Workflow"/> Id, WorkflowType is the Component, single Channel </description></item>
+        /// </list>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this interaction component is related to.

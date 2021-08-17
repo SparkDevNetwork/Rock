@@ -22,84 +22,15 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    /// Handy string extensions that don't require any nuget packages or Rock references
+    /// Handy string extensions that don't require any NuGet packages or Rock references
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class StringExtensions
     {
         #region String Extensions
-
-        /// <summary>
-        /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
-        /// </summary>
-        /// <param name="monthDayString">The month day string.</param>
-        /// <returns></returns>
-        public static DateTime? MonthDayStringAsDateTime( this string monthDayString )
-        {
-            if ( !string.IsNullOrEmpty( monthDayString ) )
-            {
-                if ( monthDayString.Length <= 5 )
-                {
-                    if ( monthDayString.Contains( '/' ) )
-                    {
-                        DateTime value;
-                        var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
-                        if ( DateTime.TryParseExact(
-                                monthDayYearString,
-                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" },
-                                CultureInfo.InvariantCulture,
-                                DateTimeStyles.AllowWhiteSpaces,
-                                out value ) )
-                        {
-                            return value;
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
-        /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
-        /// However, in those cases, it would be better to use <seealso cref="MonthDayStringAsDateTime(string)"/>
-        /// Non-ASCI and control characters are stripped from the string to prevent invisible control characters from causing a null to return.
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <returns></returns>
-        public static DateTime? AsDateTime( this string str )
-        {
-            if ( str == null )
-            {
-                return null;
-            }
-
-            // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
-            // This will correct the error and any other caused by non-ASCI & control characters.
-            str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
-
-            DateTime value;
-            DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
-
-            // first check if this is a "MM/dd", "M/dd", "M/d" or "MM/d" string ( We want Rock to treat "MM/dd", "M/dd", "M/d" or "MM/d" strings consistently regardless of culture )
-            if ( valueFromMMDD.HasValue )
-            {
-                return valueFromMMDD;
-            }
-            else if ( DateTime.TryParse( str, out value ) )
-            {
-                return value;
-            }
-            else
-            {
-                return null;
-            }
-        }
 
         /// <summary>
         /// Converts string to MD5 hash
@@ -208,10 +139,10 @@ namespace Rock.Common
         /// Accepts an encoded string and returns an encoded string
         /// </summary>
         /// <param name="encodedString"></param>
-        public static string ScrubEncodedStringForXSSObjects( string encodedString )
+        public static string ScrubEncodedStringForXSSObjects( this string encodedString )
         {
             // Characters used by DOM Objects; javascript, document, window and URLs
-            char[] badCharacters = new char[] { '<', '>', ':', '*', '.' };
+            char[] badCharacters = new char[] { '<', '>', ':', '*' };
 
             if ( encodedString.IndexOfAny( badCharacters ) >= 0 )
             {
@@ -222,12 +153,13 @@ namespace Rock.Common
                 return encodedString;
             }
         }
+
         /// <summary>
         /// Joins and array of strings using the provided separator.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="separator">The separator.</param>
-        /// <returns>Concatenated string.</returns>
+        /// <returns>Concatencated string.</returns>
         public static string JoinStrings( this IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
@@ -315,6 +247,25 @@ namespace Rock.Common
         public static string RemoveAllNonAlphaNumericCharacters( this string str )
         {
             return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
+        /// Removes all non numeric characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonNumericCharacters( this string str )
+        {
+            Regex digitsOnly = new Regex( @"[^\d]" );
+
+            if ( !string.IsNullOrEmpty( str ) )
+            {
+                return digitsOnly.Replace( str, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -461,7 +412,8 @@ namespace Rock.Common
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
-        public static IEnumerable<int> StringToIntList( this string str ) {
+        public static IEnumerable<int> StringToIntList( this string str )
+        {
             // https://stackoverflow.com/questions/1763613/convert-comma-separated-string-of-ints-to-int-array
 
             if ( String.IsNullOrEmpty( str ) )
@@ -469,7 +421,8 @@ namespace Rock.Common
                 yield break;
             }
 
-            foreach(var s in str.Split(',')) {
+            foreach ( var s in str.Split( ',' ) )
+            {
                 int num;
                 if ( int.TryParse( s, out num ) )
                 {
@@ -580,7 +533,7 @@ namespace Rock.Common
             // Replace the custom delimiter string with a single unprintable character that will not appear in the target string, then use the default string split function.
             var newDelimiter = new char[] { '\x0001' };
 
-            var replaceString = str.Replace( delimiter, new string( newDelimiter) )
+            var replaceString = str.Replace( delimiter, new string( newDelimiter ) )
                                    .Split( newDelimiter, options );
 
             return replaceString;
@@ -675,6 +628,21 @@ namespace Rock.Common
         }
 
         /// <summary>
+        /// Standardize quotes in a string. It replaces curly single quotes into the standard single quote character (ASCII 39).
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string StandardizeQuotes( this string str )
+        {
+            if ( str == null )
+            {
+                return null;
+            }
+
+            return str.Replace( "’", "'" );
+        }
+
+        /// <summary>
         /// Adds Quotes around the specified string and escapes any quotes that are already in the string.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -716,26 +684,59 @@ namespace Rock.Common
         /// <returns></returns>
         public static string LeftWithEllipsis( this string str, int length )
         {
-            return Left( str, length ) + (char)8230;
+            if ( str.Length <= length )
+            {
+                return str;
+            }
+
+            return Left( str, length ) + ( char ) 8230;
         }
 
         /// <summary>
-        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (The built-in method would throw an exception in these cases).
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
         /// </summary>
         /// <param name="str">The string.</param>
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
+        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
+        [RockObsolete( "1.12" )]
         public static string SafeSubstring( this string str, int startIndex, int maxLength )
+        {
+            return str.SubstringSafe( startIndex, maxLength );
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <param name="maxLength">The maximum length.</param>
+        /// <returns></returns>
+        public static string SubstringSafe( this string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
             {
                 return string.Empty;
             }
-            else
+
+            return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
+        }
+
+        /// <summary>
+        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="startIndex">The 0-based starting position.</param>
+        /// <returns></returns>
+        public static string SubstringSafe( this string str, int startIndex )
+        {
+            if ( str == null )
             {
-                return str.Substring( startIndex, Math.Min( maxLength, str.Length - startIndex ) );
+                return string.Empty;
             }
+
+            return str.SubstringSafe( startIndex, Math.Max( str.Length - startIndex, 0 ) );
         }
 
         /// <summary>
@@ -745,6 +746,18 @@ namespace Rock.Common
         /// <param name="maxLength"></param>
         /// <returns></returns>
         public static string Truncate( this string str, int maxLength )
+        {
+            return Truncate( str, maxLength, true );
+        }
+
+        /// <summary>
+        /// Truncates a string after a max length with an option to add an ellipsis at the end.  Truncation will occur at first space prior to maxLength.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="maxLength">The maximum length of the return value, including the ellipsis if added.</param>
+        /// <param name="addEllipsis">if set to <c>true</c> add an ellipsis to the end of the truncated string.</param>
+        /// <returns></returns>
+        public static string Truncate( this string str, int maxLength, bool addEllipsis )
         {
             if ( str == null )
             {
@@ -756,7 +769,9 @@ namespace Rock.Common
                 return str;
             }
 
-            maxLength -= 3;
+            // If adding an ellipsis then reduce the maxlength by three to allow for the additional characters
+            maxLength = addEllipsis ? maxLength - 3 : maxLength;
+
             var truncatedString = str.Substring( 0, maxLength );
             var lastSpace = truncatedString.LastIndexOf( ' ' );
             if ( lastSpace > 0 )
@@ -764,7 +779,7 @@ namespace Rock.Common
                 truncatedString = truncatedString.Substring( 0, lastSpace );
             }
 
-            return truncatedString + "...";
+            return addEllipsis ? truncatedString + "..." : truncatedString;
         }
 
         /// <summary>
@@ -787,7 +802,26 @@ namespace Rock.Common
         public static string ReplaceLastOccurrence( this string source, string find, string replace )
         {
             int place = source.LastIndexOf( find );
-            return place >= 0 ? source.Remove( place, find.Length ).Insert( place, replace ) : source;
+            return place > 0 ? source.Remove( place, find.Length ).Insert( place, replace ) : source;
+        }
+
+        /// <summary>
+        /// Replaces string found at the very end of the content.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="suffix">The suffix.</param>
+        /// <param name="replacement">The replacement.</param>
+        /// <returns></returns>
+        public static string ReplaceIfEndsWith( this string content, string suffix, string replacement )
+        {
+            if ( content.EndsWith( suffix ) )
+            {
+                return content.Substring( 0, content.Length - suffix.Length ) + replacement;
+            }
+            else
+            {
+                return content;
+            }
         }
 
         /// <summary>
@@ -830,51 +864,72 @@ namespace Rock.Common
         }
 
         /// <summary>
-        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns an empty dictionary if unsuccessful.
+        /// Attempts to convert a "MM/dd", "M/dd", "M/d" or "MM/d" string to a datetime, with the year as the current year. Returns null if unsuccessful.
         /// </summary>
-        /// <param name="str">The string.</param>
+        /// <param name="monthDayString">The month day string.</param>
         /// <returns></returns>
-        public static System.Collections.Generic.Dictionary<string, string> AsDictionary( this string str )
+        public static DateTime? MonthDayStringAsDateTime( this string monthDayString )
         {
-            var dictionary = new System.Collections.Generic.Dictionary<string, string>();
-            string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
-
-            // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
-            // If we haven't found any pipes, check for commas
-            if ( nameValues.Count() == 1 && nameValues[0] == str )
+            if ( !string.IsNullOrEmpty( monthDayString ) )
             {
-                nameValues = str.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-            }
-
-            foreach ( string nameValue in nameValues )
-            {
-                string[] nameAndValue = nameValue.Split( new char[] { '^' }, 2 );
-                if ( nameAndValue.Count() == 2 )
+                if ( monthDayString.Length <= 5 )
                 {
-                    dictionary[nameAndValue[0]] = nameAndValue[1];
+                    if ( monthDayString.Contains( '/' ) )
+                    {
+                        DateTime value;
+                        var monthDayYearString = $"{monthDayString}/{RockDateTime.Today.Year}";
+                        if ( DateTime.TryParseExact(
+                                monthDayYearString,
+                                new[] { "MM/dd/yyyy", "M/dd/yyyy", "M/d/yyyy", "MM/d/yyyy" },
+                                CultureInfo.InvariantCulture,
+                                DateTimeStyles.AllowWhiteSpaces,
+                                out value ) )
+                        {
+                            return value;
+                        }
+                    }
                 }
             }
 
-            return dictionary;
+            return null;
         }
 
         /// <summary>
-        /// Attempts to convert string to an dictionary using the |/comma and ^ delimiter Key/Value syntax.  Returns null if unsuccessful.
+        /// Attempts to convert string to DateTime.  Returns null if unsuccessful.
+        /// NOTE: If this is a '#[#]/#[#]' string it will be interpreted as a "MM/dd", "M/dd", "M/d" or "MM/d" string and will resolve to a datetime with the year as the current year.
+        /// However, in those cases, it would be better to use <seealso cref="MonthDayStringAsDateTime(string)"/>
+        /// Non-ASCI and control characters are stripped from the string to prevent invisible control characters from causing a null to return.
         /// </summary>
         /// <param name="str">The string.</param>
         /// <returns></returns>
         [System.Diagnostics.DebuggerStepThrough]
-        public static System.Collections.Generic.Dictionary<string, string> AsDictionaryOrNull( this string str )
+        public static DateTime? AsDateTime( this string str )
         {
-            var dictionary = AsDictionary( str );
-            if ( dictionary.Count() > 0 )
+            if ( str == null )
             {
-                return dictionary;
+                return null;
             }
 
-            return null;
+            // Edge likes to put in 8206 when doing a toLocaleString(), which makes this method return null.
+            // This will correct the error and any other caused by non-ASCI & control characters.
+            str = new string( str.Where( c => c > 31 && c < 127 ).ToArray() );
+
+            DateTime value;
+            DateTime? valueFromMMDD = str.MonthDayStringAsDateTime();
+
+            // first check if this is a "MM/dd", "M/dd", "M/d" or "MM/d" string ( We want Rock to treat "MM/dd", "M/dd", "M/d" or "MM/d" strings consistently regardless of culture )
+            if ( valueFromMMDD.HasValue )
+            {
+                return valueFromMMDD;
+            }
+            else if ( DateTime.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -982,6 +1037,30 @@ namespace Rock.Common
         }
 
         /// <summary>
+        /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static decimal? AsDecimalInvariantCultureOrNull( this string str )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off non numeric and characters at the beginning of the line (currency symbols)
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            decimal value;
+            if ( decimal.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Attempts to convert string to double.  Returns 0 if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -1043,7 +1122,7 @@ namespace Rock.Common
         {
             var converter = TypeDescriptor.GetConverter( typeof( T ) );
             return converter.IsValid( value )
-                ? (T)converter.ConvertFrom( value )
+                ? ( T ) converter.ConvertFrom( value )
                 : default( T );
         }
 
@@ -1194,6 +1273,16 @@ namespace Rock.Common
         }
 
         /// <summary>
+        /// Removes all whitespace in a string, including carriage return and line feed characters.
+        /// </summary>
+        /// <param name="input">The input string.</param>
+        /// <returns></returns>
+        public static string RemoveWhiteSpace( this string input )
+        {
+            return string.Concat( input.Where( c => !char.IsWhiteSpace( c ) ) );
+        }
+
+        /// <summary>
         /// Breaks a string into chunks. Handy for splitting a large string into smaller chunks
         /// from https://stackoverflow.com/a/1450889/1755417
         /// </summary>
@@ -1246,6 +1335,59 @@ namespace Rock.Common
             writer.Flush();
             stream.Position = 0;
             return new System.IO.StreamReader( stream );
+        }
+
+        /// <summary>
+        /// Turns a string into a properly XML Encoded string.
+        /// </summary>
+        /// <param name="str">Plain text to convert to XML Encoded string</param>
+        /// <param name="isAttribute">If <c>true</c> then additional encoding is done to ensure proper use in an XML attribute value.</param>
+        /// <returns>XML encoded string</returns>
+        public static string EncodeXml( this string str, bool isAttribute = false )
+        {
+            var sb = new StringBuilder( str.Length );
+
+            foreach ( var chr in str )
+            {
+                if ( chr == '<' )
+                {
+                    sb.Append( "&lt;" );
+                }
+                else if ( chr == '>' )
+                {
+                    sb.Append( "&gt;" );
+                }
+                else if ( chr == '&' )
+                {
+                    sb.Append( "&amp;" );
+                }
+                else if ( isAttribute && chr == '\"' )
+                {
+                    sb.Append( "&quot;" );
+                }
+                else if ( isAttribute && chr == '\'' )
+                {
+                    sb.Append( "&apos;" );
+                }
+                else if ( chr == '\n' )
+                {
+                    sb.Append( isAttribute ? "&#xA;" : "\n" );
+                }
+                else if ( chr == '\r' )
+                {
+                    sb.Append( isAttribute ? "&#xD;" : "\r" );
+                }
+                else if ( chr == '\t' )
+                {
+                    sb.Append( isAttribute ? "&#x9;" : "\t" );
+                }
+                else
+                {
+                    sb.Append( chr );
+                }
+            }
+
+            return sb.ToString();
         }
 
         #endregion String Extensions

@@ -21,6 +21,7 @@ using System.Net.Http;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -79,7 +80,7 @@ namespace Rock.Net
         /// <value>
         /// The page parameters.
         /// </value>
-        internal protected virtual IDictionary<string, string> PageParameters { get; set; }
+        internal protected virtual IDictionary<string, string> PageParameters { get; private set; }
 
         /// <summary>
         /// Gets or sets the context entities.
@@ -113,7 +114,7 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
+        /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an HttpContext load that we will initialize from.</param>
         internal RockRequestContext( HttpRequest request )
@@ -129,7 +130,7 @@ namespace Rock.Net
             // Setup the page parameters.
             //
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-            foreach ( var key in request.QueryString.AllKeys )
+            foreach ( var key in request.QueryString.AllKeys.Where( k => !k.IsNullOrWhiteSpace() ) )
             {
                 PageParameters.AddOrReplace( key, request.QueryString[key] );
             }
@@ -153,7 +154,7 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockRequestContext"/> class.
+        /// Initializes a new instance of the <see cref="RockRequestContext" /> class.
         /// </summary>
         /// <param name="request">The request from an API call that we will initialize from.</param>
         internal RockRequestContext( HttpRequestMessage request )
@@ -283,6 +284,17 @@ namespace Rock.Net
                     } ) );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the page parameters. This is used by things like block actions
+        /// so they can update the request with the original page parameters
+        /// rather than what is currently on the query string.
+        /// </summary>
+        /// <param name="parameters">The parameters to use for the page.</param>
+        internal virtual void SetPageParameters( IDictionary<string, string> parameters )
+        {
+            PageParameters = new Dictionary<string, string>( parameters, StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>

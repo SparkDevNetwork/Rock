@@ -17,9 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
+
 using Rock.Achievement;
+using Rock.Achievement.Component;
 using Rock.Data;
 using Rock.Model;
 
@@ -124,32 +125,34 @@ namespace Rock.Web.Cache
         [DataMember]
         public string AchievementIconCssClass { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the maximum accomplishments allowed.
-        /// </summary>
-        /// <value>
-        /// The maximum accomplishments allowed.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.AchievementType.MaxAccomplishmentsAllowed"/>
         [DataMember]
         public int? MaxAccomplishmentsAllowed { get; private set; }
 
-        /// <summary>
-        /// Gets or sets whether over achievement is allowed. This cannot be true if <see cref="MaxAccomplishmentsAllowed"/> is greater than 1.
-        /// </summary>
-        /// <value>
-        /// The allow over achievement.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.AchievementType.AllowOverAchievement"/>
         [DataMember]
         public bool AllowOverAchievement { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the category identifier.
-        /// </summary>
-        /// <value>
-        /// The category identifier.
-        /// </value>
+        /// <inheritdoc cref="Rock.Model.AchievementType.CategoryId"/>
         [DataMember]
         public int? CategoryId { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.AchievementType.IsPublic"/>
+        [DataMember]
+        public bool IsPublic { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.AchievementType.ImageBinaryFileId"/>
+        [DataMember]
+        public int? ImageBinaryFileId { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.AchievementType.CustomSummaryLavaTemplate"/>
+        [DataMember]
+        public string CustomSummaryLavaTemplate { get; private set; }
+
+        /// <summary>
+        /// The default SummaryLavaTemplate if <see cref="Rock.Model.AchievementType.CustomSummaryLavaTemplate" /> is not set.
+        /// </summary>
+        public readonly string DefaultSummaryLavaTemplate = @"{% include '~/Assets/Lava/Achievements/AchievementTypeSummaryLavaTemplate.lava' %}";
 
         #endregion Entity Properties
 
@@ -263,7 +266,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetComponentConfigValue(string key)
+        public string GetComponentConfigValue( string key )
         {
             return ComponentConfig.GetValueOrNull( key );
         }
@@ -300,6 +303,9 @@ namespace Rock.Web.Cache
             MaxAccomplishmentsAllowed = achievementType.MaxAccomplishmentsAllowed;
             AllowOverAchievement = achievementType.AllowOverAchievement;
             CategoryId = achievementType.CategoryId;
+            IsPublic = achievementType.IsPublic;
+            ImageBinaryFileId = achievementType.ImageBinaryFileId;
+            CustomSummaryLavaTemplate = achievementType.CustomSummaryLavaTemplate;
         }
 
         /// <summary>
@@ -326,7 +332,8 @@ namespace Rock.Web.Cache
                 .Where( at =>
                     at.SourceEntityTypeId == sourceEntityTypeCache.Id &&
                     at.IsActive )
-                .Where( at => {
+                .Where( at =>
+                {
                     var component = at.AchievementComponent;
                     return component.ShouldProcess( at, sourceEntity );
                 } )
@@ -371,6 +378,78 @@ namespace Rock.Web.Cache
             }
 
             return updatedAttempts.Values.ToList();
+        }
+
+        /// <summary>
+        /// Gets the progress count based on <see cref="AchievementAttempt.Progress" />
+        /// and <see cref="NumberToAchieve"/> or <see cref="NumberToAccumulate"/>
+        /// </summary>
+        /// <param name="achievementAttempt">The achievement attempt.</param>
+        /// <returns></returns>
+        public int? GetProgressCount( AchievementAttempt achievementAttempt )
+        {
+            if ( achievementAttempt == null)
+            {
+                return null;
+            }
+
+            var targetCount = NumberToAchieve ?? NumberToAccumulate;
+            if ( targetCount.HasValue )
+            {
+                var progressCount = decimal.Multiply( achievementAttempt.Progress, targetCount.Value );
+                return ( int ) Math.Round( progressCount, 0 );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// If this is a Streak based achievement, returns the number of achieve
+        /// </summary>
+        /// <value>
+        /// The number to achieve.
+        /// </value>
+        public int? NumberToAchieve
+        {
+            get
+            {
+                return this.GetAttributeValue( StreakAchievement.AttributeKey.NumberToAchieve ).AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
+        /// If this is based on an accumulative achievement, return the NumberTo Accumulate.
+        /// Gets the number to accumulate.
+        /// </summary>
+        /// <value>
+        /// The number to accumulate.
+        /// </value>
+        public int? NumberToAccumulate
+        {
+            get
+            {
+                return this.GetAttributeValue( AccumulativeAchievement.AttributeKey.NumberToAccumulate ).AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
+        /// If this is a Streak based achievement, this is the StreakType that this AchievementType is based on
+        /// </summary>
+        /// <value>
+        /// The number to achieve.
+        /// </value>
+        public StreakTypeCache StreakType
+        {
+            get
+            {
+                var streakTypeGuid = this.GetAttributeValue( StreakAchievement.AttributeKey.StreakType ).AsGuidOrNull();
+                if ( streakTypeGuid.HasValue )
+                {
+                    return StreakTypeCache.Get( streakTypeGuid.Value );
+                }
+
+                return null;
+            }
         }
 
         /// <summary>

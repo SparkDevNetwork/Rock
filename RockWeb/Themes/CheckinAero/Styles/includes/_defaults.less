@@ -1,3 +1,4 @@
+/* stylelint-disable order/properties-order, declaration-block-no-shorthand-property-overrides */
 body {
   display: block !important;
   height: 100%;
@@ -5,8 +6,10 @@ body {
   -ms-touch-action: none !important;
   touch-action: none; /* Disable any special actions on tap/touch */
   background-color: @background-color;
+  background: @background-gradient;
   -ms-content-zooming: none; /* Disables zooming */
 }
+/* stylelint-enable order/properties-order, declaration-block-no-shorthand-property-overrides */
 
 #form1,
 .edit-family .modal-footer {

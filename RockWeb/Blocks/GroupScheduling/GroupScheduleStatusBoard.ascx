@@ -46,7 +46,7 @@
         <%-- Date Range Picker Modal --%>
         <Rock:ModalDialog ID="dlgDateRangeSlider" runat="server" Title="Dates" Visible="false" OnSaveClick="dlgDateRangeSlider_SaveClick">
             <Content>
-                <Rock:RangeSlider ID="rsDateRange" runat="server" Label="Number of Weeks To Show." MaxValue="16" MinValue="1" />
+                <Rock:RangeSlider ID="rsDateRange" runat="server" Label="Number of Weeks to Show." MaxValue="16" MinValue="1" />
             </Content>
         </Rock:ModalDialog>
         <script type="text/javascript">
@@ -65,16 +65,20 @@
                     var $groupLocations = $(this).closest('.js-group-locations');
                     var locationsExpanded = $groupLocations.data('locations-expanded') == 1;
                     if (locationsExpanded) {
-                        $('.js-location-row', $groupLocations)
+                        var locationRow = $('.js-location-row', $groupLocations);
+                            locationRow
                             .children('td')
                             .children()
-                            .slideUp();
+                            .slideUp(function() {
+                                // Hide Row After Animation completes.
+                                locationRow.addClass('d-none')
+                            });
                         //.addClass('hidden-row');
                         $groupLocations.data('locations-expanded', 0);
                     }
                     else {
                         $(this).find('.js-toggle-panel').css({'transform' : 'rotate(0deg)'});
-                        $('.js-location-row', $groupLocations).children('td')
+                        $('.js-location-row', $groupLocations).removeClass('d-none').children('td')
                             .children()
                             .slideDown();
                         $groupLocations.data('locations-expanded', 1);

@@ -103,7 +103,6 @@ namespace Rock.Lava.Blocks
             if ( cacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
-                base.OnRender( context, result );
                 return;
             }
 
@@ -131,8 +130,6 @@ namespace Rock.Lava.Blocks
                 {
                     result.Write( cachedResult.Content );
                 }
-
-                base.OnRender( context, result );
                 return;
             }
 
@@ -164,10 +161,6 @@ namespace Rock.Lava.Blocks
             }
 
             result.Write( lavaResults );
-
-
-            // TODO: Removed to fix for DotLiquid implementation - if present, output prints twice.
-            //base.OnRender( context, result );
         }
 
         /// <summary>
@@ -215,13 +208,15 @@ namespace Rock.Lava.Blocks
         private string MergeLava( string lavaTemplate, ILavaRenderContext context )
         {
             // Resolve the Lava template contained in this block in a new context.
-            var newContext = LavaService.NewRenderContext();
+            var engine = context.GetService<ILavaEngine>();
+
+            var newContext = engine.NewRenderContext();
 
             newContext.SetMergeFields( context.GetMergeFields() );
             newContext.SetInternalFields( context.GetInternalFields() );
 
             // Resolve the inner template.
-            var result = LavaService.RenderTemplate( lavaTemplate, LavaRenderParameters.WithContext( newContext ) );
+            var result = engine.RenderTemplate( lavaTemplate, LavaRenderParameters.WithContext( newContext ) );
 
             return result.Text;
         }

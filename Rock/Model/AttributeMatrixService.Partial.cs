@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,24 +33,19 @@ namespace Rock.Model
         /// Gets the orphaned attribute matrices.
         /// </summary>
         /// <returns></returns>
+        [Obsolete("No longer used. It could have returned false positives, especially if Plugins reference this.") ]
+        [RockObsolete( "1.12.5" )]
         public IEnumerable<AttributeMatrix> GetOrphanedAttributeMatrices()
         {
-            string sql = @"
-                DECLARE @MatrixFieldTypeId INT = (SELECT [Id] FROM [dbo].[FieldType] WHERE [Guid] = 'F16FC460-DC1E-4821-9012-5F21F974C677')
+            /* 07-22-2021 MDP
+              
+            After researching why there were sometimes performance issues with this query, we found a few things:
+            1) It could return false positives, especially if Plugins reference the AttributeMatrix table.
+            2) There could be performance issues that make that query timeout, depending on the system.
+             
+            */
 
-                SELECT am.*
-                    FROM [dbo].[AttributeMatrix] AS am
-                    LEFT JOIN [dbo].[ConnectionRequest] AS cr ON cr.AssignedGroupMemberAttributeValues LIKE ('%' + CONVERT(nvarchar(36), am.[Guid]) + '%')
-                    WHERE (am.[CreatedDateTime] < GETDATE() -1 ) 
-                    AND cr.Id IS NULL -- Not linked to a connection request via AssignedGroupMemberAttributeValues JSON
-	                AND ( NOT (CONVERT(nvarchar(36), am.[Guid]) IN (
-		                SELECT isnull(av.[Value],'') AS [Value]
-		                FROM  [dbo].[AttributeValue] AS av
-		                INNER JOIN [dbo].[Attribute] AS a ON av.[AttributeId] = a.[Id]
-		                WHERE a.[FieldTypeId] = @MatrixFieldTypeId
-	                )))";
-
-            return this.ExecuteQuery( sql );
+            return new List<AttributeMatrix>().AsQueryable();
         }
     }
 }

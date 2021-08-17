@@ -16,12 +16,10 @@
 //
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Net;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Rock.Net;
+using RestSharp;
 
 namespace Rock.Apps.StatementGenerator
 {
@@ -57,17 +55,18 @@ namespace Rock.Apps.StatementGenerator
             lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
-            Uri rockUrl = new Uri( txtRockUrl.Text );
+            Uri rockUri = new Uri( txtRockUrl.Text );
             var validSchemes = new string[] { Uri.UriSchemeHttp, Uri.UriSchemeHttps };
-            if ( !validSchemes.Contains(rockUrl.Scheme) )
+            if ( !validSchemes.Contains( rockUri.Scheme ) )
             {
-                txtRockUrl.Text = "http://" + rockUrl.AbsoluteUri;
+                txtRockUrl.Text = "https://" + rockUri.AbsoluteUri;
             }
 
-            RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
+            RestClient restClient = new RestClient( txtRockUrl.Text );
 
             string userName = txtUsername.Text;
             string password = txtPassword.Password;
+            string rockUrl = txtRockUrl.Text;
 
             if ( string.IsNullOrWhiteSpace( userName ) )
             {
@@ -78,60 +77,35 @@ namespace Rock.Apps.StatementGenerator
 
             // start a background thread to Login since this could take a little while and we want a Wait cursor
             BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += delegate( object s, DoWorkEventArgs ee )
+            bw.DoWork += delegate ( object s, DoWorkEventArgs ee )
             {
                 ee.Result = null;
-                rockRestClient.Login( userName, password );
+                restClient.LoginToRock( userName, password );
             };
 
             // when the Background Worker is done with the Login, run this
-            bw.RunWorkerCompleted += delegate( object s, RunWorkerCompletedEventArgs ee )
+            bw.RunWorkerCompleted += delegate ( object s, RunWorkerCompletedEventArgs ee )
             {
                 this.Cursor = null;
                 btnLogin.IsEnabled = true;
-                try
+
+                if ( ee.Error != null )
                 {
-                    if ( ee.Error != null )
-                    {
-                        throw ee.Error;
-                    }
-
-                    Rock.Client.Person person = rockRestClient.GetData<Rock.Client.Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
-                    RockConfig rockConfig = RockConfig.Load();
-                    rockConfig.RockBaseUrl = txtRockUrl.Text;
-                    rockConfig.Username = txtUsername.Text;
-                    rockConfig.Password = txtPassword.Password;
-                    rockConfig.Save();
-
-                    if ( this.NavigationService.CanGoBack )
-                    {
-                        // if we got here from some other Page, go back
-                        this.NavigationService.GoBack();
-                    }
-                    else
-                    {
-                        StartPage startPage = new StartPage();
-                        this.NavigationService.Navigate( startPage );
-                    }
+                    lblRockUrl.Visibility = Visibility.Visible;
+                    txtRockUrl.Visibility = Visibility.Visible;
+                    lblLoginWarning.Content = ee.Error.Message;
+                    lblLoginWarning.Visibility = Visibility.Visible;
+                    return;
                 }
-                catch ( WebException wex )
-                {
-                    // show WebException on the form, but any others should end up in the ExceptionDialog
-                    HttpWebResponse response = wex.Response as HttpWebResponse;
-                    if ( response != null )
-                    {
-                        if ( response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
-                        {
-                            lblLoginWarning.Content = "Invalid Login";
-                            lblLoginWarning.Visibility = Visibility.Visible;
-                            return;
-                        }
-                    }
 
-                    string message = wex.Message;
-                    if ( wex.InnerException != null )
+                var getByUserNameRequest = new RestRequest( string.Format( "api/People/GetByUserName/{0}", userName ) );
+                var getByUserNameResponse = restClient.Execute<Rock.Client.Person>( getByUserNameRequest );
+                if ( getByUserNameResponse.ErrorException != null )
+                {
+                    string message = getByUserNameResponse.ErrorException.Message;
+                    if ( getByUserNameResponse.ErrorException.InnerException != null )
                     {
-                        message += "\n" + wex.InnerException.Message;
+                        message += "\n" + getByUserNameResponse.ErrorException.InnerException.Message;
                     }
 
                     lblRockUrl.Visibility = Visibility.Visible;
@@ -139,6 +113,24 @@ namespace Rock.Apps.StatementGenerator
                     lblLoginWarning.Content = message;
                     lblLoginWarning.Visibility = Visibility.Visible;
                     return;
+                }
+
+                Rock.Client.Person person = getByUserNameResponse.Data;
+                RockConfig rockConfig = RockConfig.Load();
+                rockConfig.RockBaseUrl = rockUrl;
+                rockConfig.Username = userName;
+                rockConfig.Password = password;
+                rockConfig.Save();
+
+                if ( this.NavigationService.CanGoBack )
+                {
+                    // if we got here from some other Page, go back
+                    this.NavigationService.GoBack();
+                }
+                else
+                {
+                    StartPage startPage = new StartPage();
+                    this.NavigationService.Navigate( startPage );
                 }
             };
 
@@ -198,17 +190,6 @@ namespace Rock.Apps.StatementGenerator
         private void HideLoginWarning( object sender, System.Windows.Input.KeyEventArgs e )
         {
             lblLoginWarning.Visibility = Visibility.Hidden;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnRunReport control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
-        private void btnRunReport_Click( object sender, RoutedEventArgs e )
-        {
-            ProgressPage progressPage = new ProgressPage();
-            this.NavigationService.Navigate( progressPage );
         }
 
         /// <summary>

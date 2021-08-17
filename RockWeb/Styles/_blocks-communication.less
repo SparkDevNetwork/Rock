@@ -46,8 +46,15 @@ iframe.email-body {
 .panel-fill-body {
   height: ~"calc(100vh - var(--email-editor-offset, 360px))";
   min-height: 300px;
-  margin: -15px -15px 0 -15px;
-  border-bottom: 1px solid @panel-border;
+  margin: -@panel-body-padding -@panel-body-padding 0 -@panel-body-padding;
+  //border-bottom: 1px solid @panel-border;
+}
+
+// TODO: Find Better Way
+.communication-entry-wizard {
+  .actions {
+    margin-top: 0 !important;
+  }
 }
 
 .panel-actions-bordered {
@@ -60,6 +67,11 @@ iframe.email-body {
   width: 40%;
   padding: (@grid-gutter-width / 2);
   background-color: @panel-heading-bg;
+
+  .actions {
+    margin-right: -(@grid-gutter-width / 2);
+    margin-left: -(@grid-gutter-width / 2);
+  }
 }
 
 
@@ -564,6 +576,13 @@ iframe.email-body {
   }
 }
 
+.mobile-block-types {
+  .form-control {
+    border-color: transparent;
+    border-radius: 0;
+  }
+}
+
 .sms-actions-container {
   padding: 20px !important;
   counter-reset: section;
@@ -657,9 +676,10 @@ iframe.email-body {
 }
 
 .panel-palette {
-  margin: 20px;
-  border: 1px solid @panel-border;
-  box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.24);
+  margin: 0;
+  border: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid @panel-border;
 
   .panel-heading {
     font-weight: 500;
@@ -699,12 +719,12 @@ iframe.email-body {
   }
 
   h4 {
-    padding: 12px 15px;
-    margin: 1px -15px 16px;
+    padding: 12px @panel-body-padding;
+    margin: 1px -@panel-body-padding 16px;
     font-size: 18px;
     font-weight: 500;
     background: @panel-heading-bg;
-    border-top: 1px solid fade(@panel-border, 100%);
+    border-top: 1px solid @panel-border;
   }
 
   .component.gu-transit {

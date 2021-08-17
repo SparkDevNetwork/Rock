@@ -34,7 +34,7 @@ using Rock.Constants;
 namespace RockWeb.Blocks.Groups
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Group Requirement Type Detail" )]
     [Category( "Groups" )]
@@ -97,7 +97,7 @@ namespace RockWeb.Blocks.Groups
             RockContext rockContext = new RockContext();
             GroupRequirementType groupRequirementType = null;
             GroupRequirementTypeService groupRequirementTypeService = new GroupRequirementTypeService( rockContext );
-            
+
             if ( !groupRequirementTypeId.Equals( 0 ) )
             {
                 groupRequirementType = groupRequirementTypeService.Get( groupRequirementTypeId );
@@ -143,13 +143,13 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         WHERE [LastName] = 'Decker'
     {% if Person != empty %}
         AND [Id] = {{ Person.Id }}
-    {% endif &}
+    {% endif %}
 </pre>
 ";
 
             nbSQLHelp.InnerHtml += groupRequirementType.GetMergeObjects( new Group(), this.CurrentPerson ).lavaDebugInfo();
 
-            ceSqlExpression.Text = groupRequirementType.SqlExpression; 
+            ceSqlExpression.Text = groupRequirementType.SqlExpression;
 
             ceWarningSqlExpression.Text = groupRequirementType.WarningSqlExpression;
 
@@ -222,7 +222,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
                 groupRequirementType.DataViewId = null;
                 groupRequirementType.WarningDataViewId = null;
             }
-            
+
             groupRequirementType.PositiveLabel = tbPositiveLabel.Text;
             groupRequirementType.NegativeLabel = tbNegativeLabel.Text;
             groupRequirementType.WarningLabel = tbWarningLabel.Text;
@@ -235,7 +235,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
 
             if ( !groupRequirementType.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 

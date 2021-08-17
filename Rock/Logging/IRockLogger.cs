@@ -41,17 +41,17 @@ namespace Rock.Logging
         bool ShouldLogEntry( RockLogLevel logLevel, string domain );
 
         /// <summary>
-        /// Ensures the logger exists and updated.
-        /// </summary>
-        void ReloadConfiguration();
-
-        /// <summary>
         /// Gets the log files.
         /// </summary>
         /// <value>
         /// The log files.
         /// </value>
         List<string> LogFiles { get; }
+
+        /// <summary>
+        /// Ensures the logger exists and updated.
+        /// </summary>
+        void ReloadConfiguration();
 
         /// <summary>
         /// Closes this instance and releases file locks.

@@ -76,9 +76,9 @@
                         <Rock:PanelWidget ID="pwReportSettings" runat="server" Title="Report Settings" Expanded="true">
                             <Rock:CodeEditor ID="ceReportTemplate" runat="server" Label="Report Template" EditorMode="Lava" EditorHeight="400" />
                             <Rock:CodeEditor ID="ceFooterTemplateHtmlFragment" runat="server" Label="Footer Template" EditorMode="Lava" EditorHeight="200">
-                                <HelpBlock>PDF Merge fields include: <code>{page} {total-pages} {url} {date} {time} {html-title} {pdf-title}</code>
+                                <HelpBlock>PDF Merge fields include: <code>{date} {title} {url} {pageNumber} {totalPages}</code>
                                     Specify these as a span class to include them in the footer. For example:
-                                    <code>&lt;span class='total-pages'&gt;&lt;span&gt;</code></HelpBlock>
+                                    <code>&lt;span class='totalPages'&gt;&lt;span&gt;</code></HelpBlock>
                             </Rock:CodeEditor>
 
                             <Rock:ImageUploader ID="imgTemplateLogo" runat="server" Label="Logo" />

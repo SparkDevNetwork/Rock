@@ -28,6 +28,8 @@ namespace Rock.Tasks
     /// <summary>
     /// Update the status of scheduled transactions
     /// </summary>
+    [Obsolete( "The bus shouldn't be used for this. Use UpdatePaymentStatusTransaction Transaction instead." )]
+    [RockObsolete( "1.13" )]
     public sealed class UpdatePaymentStatusFinancialScheduledTransactions : BusStartedTask<UpdatePaymentStatusFinancialScheduledTransactions.Message>
     {
         /// <summary>

@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SignatureDocumentTemplate" )]
     [DataContract]
-    public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>
+    public partial class SignatureDocumentTemplate : Model<SignatureDocumentTemplate>, IHasActiveFlag
     {
 
         #region Entity Properties
@@ -106,6 +106,55 @@ namespace Rock.Model
         [RockObsolete( "1.10" )]
         public int? InviteSystemEmailId { get; set; }
 
+        /// <summary>
+        /// The Lava template that will be used to build the signature document.
+        /// </summary>
+        [DataMember]
+        public string LavaTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this item is active or not.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> that is  <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+
+        private bool _isActive = true;
+
+        /// <summary>
+        /// The term used to simply describe the document (wavier, release form, etc.).
+        /// </summary>
+        /// <value>
+        /// The document term.
+        /// </value>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string DocumentTerm { get; set; }
+
+        /// <summary>
+        /// This is used to define which kind of signature is being collected from the individual. (Ex: typed name, drawn, etc.)
+        /// </summary>
+        /// <value>
+        /// The type of the signature.
+        /// </value>
+        [DataMember]
+        public SignatureType SignatureType { get; set; }
+
+        /// <summary>
+        /// The System Communication that will be used when sending the signature document completion email.
+        /// </summary>
+        /// <value>
+        /// The completion system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? CompletionSystemCommunicationId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -161,6 +210,15 @@ namespace Rock.Model
         }
         private ICollection<SignatureDocument> _documents;
 
+        /// <summary>
+        /// The System Communication that will be used when sending the signature document completion email.
+        /// </summary>
+        /// <value>
+        /// The completion system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication CompletionSystemCommunication { get; set; }
+
         #endregion
 
         #region Methods
@@ -200,7 +258,28 @@ namespace Rock.Model
 #pragma warning disable CS0618 // Type or member is obsolete
             this.HasOptional( t => t.InviteSystemEmail ).WithMany().HasForeignKey( t => t.InviteSystemEmailId ).WillCascadeOnDelete( false );
 #pragma warning restore CS0618 // Type or member is obsolete
+            this.HasOptional( t => t.CompletionSystemCommunication ).WithMany().HasForeignKey( t => t.CompletionSystemCommunicationId ).WillCascadeOnDelete( false );
         }
+    }
+
+    #endregion
+
+    #region Enumerations
+
+    /// <summary>
+    /// Represents the type of signature
+    /// </summary>
+    public enum SignatureType
+    {
+        /// <summary>
+        /// Drawn
+        /// </summary>
+        Drawn = 0,
+
+        /// <summary>
+        /// Typed
+        /// </summary>
+        Typed = 1
     }
 
     #endregion

@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using Rock.Utility;
 
 //// <summary>
@@ -29,7 +31,7 @@ namespace Rock.MyWell
     #region Customer Related
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#create-a-new-customer
+    /// https://sandbox.gotnpgateway.com/docs/api/#create-customer-deprecated
     /// </summary>
     public class CreateCustomerRequest
     {
@@ -71,7 +73,8 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// from https://sandbox.gotnpgateway.com/docs/api/#create-a-new-customer and https://sandbox.gotnpgateway.com/docs/api/#get-a-specific-customer
+    /// from https://sandbox.gotnpgateway.com/docs/api/#create-customer-deprecated
+    /// and https://sandbox.gotnpgateway.com/docs/api/#get-customer-by-id-deprecated
     /// </summary>
     public class CustomerResponse : BaseResponseData
     {
@@ -86,7 +89,8 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// from https://sandbox.gotnpgateway.com/docs/api/#create-a-new-customer and https://sandbox.gotnpgateway.com/docs/api/#get-a-specific-customer
+    /// from https://sandbox.gotnpgateway.com/docs/api/#create-customer-deprecated
+    /// and https://sandbox.gotnpgateway.com/docs/api/#get-customer-by-id-deprecated
     /// </summary>
     public class CustomerResponseData
     {
@@ -146,14 +150,14 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#update-a-specific-customer-address
+    /// https://sandbox.gotnpgateway.com/docs/api/#update-address-token-deprecated
     /// </summary>
     public class UpdateCustomerAddressRequest : BillingAddress
     {
     }
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#update-a-specific-customer-address
+    /// https://sandbox.gotnpgateway.com/docs/api/#update-address-token-deprecated
     /// </summary>
     public class UpdateCustomerAddressResponse : BaseResponseData
     {
@@ -909,7 +913,7 @@ namespace Rock.MyWell
     #region Transactions 
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#processing-a-transaction
+    /// https://sandbox.gotnpgateway.com/docs/api/#process-a-transaction
     /// </summary>
     public class CreateTransaction
     {
@@ -1491,7 +1495,7 @@ namespace Rock.MyWell
     #region Plans
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#create-a-plan
+    /// https://sandbox.gotnpgateway.com/docs/api/#create-plan
     /// </summary>
     public class CreatePlanParameters : BillingPlanParameters
     {
@@ -1665,8 +1669,8 @@ namespace Rock.MyWell
     #region Subscriptions
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription and
-    /// https://sandbox.gotnpgateway.com/docs/api/#update-a-subscription
+    /// https://sandbox.gotnpgateway.com/docs/api/#create-subscription and
+    /// https://sandbox.gotnpgateway.com/docs/api/#update-subscription
     /// </summary>
     public class SubscriptionRequestParameters : BillingPlanParameters
     {
@@ -1711,10 +1715,46 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "id" )]
         public string Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the payment method.
+        /// </summary>
+        /// <value>
+        /// The type of the payment method.
+        /// </value>
+        [JsonProperty( "payment_method_type" )]
+        public string PaymentMethodType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the payment method identifier.
+        /// </summary>
+        /// <value>
+        /// The payment method identifier.
+        /// </value>
+        [JsonProperty( "payment_method_id" )]
+        public string PaymentMethodId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the billing address identifier.
+        /// </summary>
+        /// <value>
+        /// The billing address identifier.
+        /// </value>
+        [JsonProperty( "billing_address_id" )]
+        public string BillingAddressId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the shipping address identifier.
+        /// </summary>
+        /// <value>
+        /// The shipping address identifier.
+        /// </value>
+        [JsonProperty( "shipping_address_id" )]
+        public string ShippingAddressId { get; set; }
     }
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
+    /// https://sandbox.gotnpgateway.com/docs/api/#create-subscription
     /// </summary>
     public class SubscriptionResponse : BaseResponseData
     {
@@ -1729,7 +1769,7 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
+    /// https://sandbox.gotnpgateway.com/docs/api/#create-subscription
     /// </summary>
     public class SubscriptionData
     {
@@ -1743,13 +1783,40 @@ namespace Rock.MyWell
         public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the plan identifier.
         /// </summary>
         /// <value>
-        /// The name.
+        /// The plan identifier.
         /// </value>
-        [JsonProperty( "name" )]
-        public string Name { get; set; }
+        [JsonProperty( "plan_id" )]
+        public string PlanId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the plan.
+        /// </summary>
+        /// <value>
+        /// The name of the plan.
+        /// </value>
+        [JsonProperty( "plan_name" )]
+        public string PlanName { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the raw subscription status.
+        /// </summary>
+        /// <value>
+        /// The raw subscription status.
+        /// </value>
+        [JsonProperty( "status" )]
+        public string SubscriptionStatusRaw { get; set; }
+
+        /// <summary>
+        /// Gets the subscription status, converted from <seealso cref="SubscriptionStatusRaw"/>
+        /// </summary>
+        /// <value>
+        /// The subscription status.
+        /// </value>
+        public MyWellSubscriptionStatus? SubscriptionStatus => MyWellSubscriptionStatusHelper.ConvertFromString( SubscriptionStatusRaw );
 
         /// <summary>
         /// Gets or sets the description.
@@ -1759,6 +1826,24 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "description" )]
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the customer.
+        /// </summary>
+        /// <value>
+        /// The name of the customer.
+        /// </value>
+        [JsonProperty( "customer_name" )]
+        public string CustomerName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="SubscriptionData"/> is shared.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if shared; otherwise, <c>false</c>.
+        /// </value>
+        [JsonProperty( "shared" )]
+        public bool Shared { get; set; }
 
         /// <summary>
         /// Gets or sets the customer.
@@ -1790,6 +1875,42 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "amount" )]
         public int AmountCents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency.
+        /// </summary>
+        /// <value>
+        /// The currency.
+        /// </value>
+        [JsonProperty( "currency" )]
+        public string Currency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the processor identifier.
+        /// </summary>
+        /// <value>
+        /// The processor identifier.
+        /// </value>
+        [JsonProperty( "processor_id" )]
+        public string ProcessorId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total adds.
+        /// </summary>
+        /// <value>
+        /// The total adds.
+        /// </value>
+        [JsonProperty( "total_adds" )]
+        public int TotalAdds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the total discounts.
+        /// </summary>
+        /// <value>
+        /// The total discounts.
+        /// </value>
+        [JsonProperty( "total_discounts" )]
+        public int TotalDiscounts { get; set; }
 
         /// <summary>
         /// "How often to run the billing cycle. Run every x months"
@@ -1836,6 +1957,24 @@ namespace Rock.MyWell
         [JsonProperty( "next_bill_date" )]
         [JsonConverter( typeof( MyWellGatewayUTCIsoDateConverter ) )]
         public DateTime? NextBillDateUTC { get; set; }
+
+        /// <summary>
+        /// Gets or sets the add ons.
+        /// </summary>
+        /// <value>
+        /// The add ons.
+        /// </value>
+        [JsonProperty( "add_ons" )]
+        public object AddOns { get; set; }
+
+        /// <summary>
+        /// Gets or sets the discounts.
+        /// </summary>
+        /// <value>
+        /// The discounts.
+        /// </value>
+        [JsonProperty( "discounts" )]
+        public object Discounts { get; set; }
 
         /// <summary>
         /// Gets or sets the created date time.
@@ -1980,7 +2119,7 @@ namespace Rock.MyWell
         /// <summary>
         /// Maximum records to return (0-100, optional)
         /// Gets or sets the limit (MyWell default is 10, but we can set it to 0 to get all of them )
-        /// https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+        /// https://sandbox.gotnpgateway.com/docs/api/#search-transactions
         /// </summary>
         /// <value>
         /// The limit.
@@ -1990,7 +2129,7 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Number of records to offset the return by (optional)
-        /// https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+        /// https://sandbox.gotnpgateway.com/docs/api/#search-transactions
         /// </summary>
         /// <value>
         /// The offset.
@@ -2000,7 +2139,7 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// see https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+    /// see https://sandbox.gotnpgateway.com/docs/api/#search-transactions
     /// </summary>
     public class QuerySearchString
     {
@@ -2049,7 +2188,7 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// see https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+    /// see https://sandbox.gotnpgateway.com/docs/api/#search-transactions
     /// </summary>
     public class QuerySearchInt
     {
@@ -2401,7 +2540,7 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Gets or sets the status.
-        /// https://sandbox.gotnpgateway.com/docs/api/#query-transactions.
+        /// https://sandbox.gotnpgateway.com/docs/api/#search-transactions.
         /// possible values include: unknown, declined, authorized, pending_settlement, settled, voided, reversed, refunded
         /// </summary>
         /// <value>
@@ -2690,7 +2829,7 @@ namespace Rock.MyWell
     }
 
     /// <summary>
-    /// see DateFormats specs from https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+    /// see DateFormats specs from https://sandbox.gotnpgateway.com/docs/api/#search-transactions
     /// this is mostly just needed for JSON Payloads that are POST'd to the gateway
     /// </summary>
     /// <seealso cref="Newtonsoft.Json.Converters.IsoDateTimeConverter" />
@@ -2809,6 +2948,72 @@ namespace Rock.MyWell
         /// The ach
         /// </summary>
         ach
+    }
+
+    /// <summary>
+    /// MyWell Subscription Status Enum
+    /// </summary>
+    [JsonConverter( typeof(StringEnumConverter) )]
+    public enum MyWellSubscriptionStatus
+    {
+        /// <summary>
+        /// Active
+        /// </summary>
+        active,
+
+        /// <summary>
+        /// Completed
+        /// </summary>
+        completed,
+
+        /// <summary>
+        /// Paused
+        /// </summary>
+        paused,
+
+        /// <summary>
+        /// canceled
+        /// </summary>
+        canceled,
+
+        /// <summary>
+        /// failed
+        /// </summary>
+        failed,
+
+        /// <summary>
+        /// Past Due
+        /// </summary>
+        past_due
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Newtonsoft.Json.Converters.StringEnumConverter" />
+    internal class MyWellSubscriptionStatusHelper
+    {
+        /// <summary>
+        /// Converts from string.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        internal static MyWellSubscriptionStatus? ConvertFromString( string value )
+        {
+            if ( value == null )
+            {
+                return null;
+            }
+
+            if ( value == "cancelled" || value == "canceled" )
+            {
+                //// The canceled statuses, MyWell spells it 'cancelled' (British spelling), but just in case they change it to 'canceled'
+                //// https://www.grammarly.com/blog/canceled-vs-cancelled/
+                return MyWellSubscriptionStatus.canceled;
+            }
+
+            return value.ConvertToEnumOrNull<MyWellSubscriptionStatus>();
+        }
     }
 
     #endregion Rock Wrapper Types

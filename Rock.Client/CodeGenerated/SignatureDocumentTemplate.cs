@@ -38,7 +38,13 @@ namespace Rock.Client
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary />
+        public int? CompletionSystemCommunicationId { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public string DocumentTerm { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -54,6 +60,12 @@ namespace Rock.Client
         [Obsolete( "Use InviteSystemCommunicationId instead.", false )]
         public int? InviteSystemEmailId { get; set; }
 
+        /// <summary />
+        public bool IsActive { get; set; } = true;
+
+        /// <summary />
+        public string LavaTemplate { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -67,6 +79,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ProviderTemplateKey { get; set; }
+
+        /// <summary />
+        public Rock.Client.Enums.SignatureType SignatureType { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -102,17 +117,22 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.BinaryFileTypeId = source.BinaryFileTypeId;
+            this.CompletionSystemCommunicationId = source.CompletionSystemCommunicationId;
             this.Description = source.Description;
+            this.DocumentTerm = source.DocumentTerm;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
             #pragma warning disable 612, 618
             this.InviteSystemEmailId = source.InviteSystemEmailId;
             #pragma warning restore 612, 618
+            this.IsActive = source.IsActive;
+            this.LavaTemplate = source.LavaTemplate;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.ProviderEntityTypeId = source.ProviderEntityTypeId;
             this.ProviderTemplateKey = source.ProviderTemplateKey;
+            this.SignatureType = source.SignatureType;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -130,6 +150,9 @@ namespace Rock.Client
     {
         /// <summary />
         public BinaryFileType BinaryFileType { get; set; }
+
+        /// <summary />
+        public SystemCommunication CompletionSystemCommunication { get; set; }
 
         /// <summary />
         public SystemCommunication InviteSystemCommunication { get; set; }

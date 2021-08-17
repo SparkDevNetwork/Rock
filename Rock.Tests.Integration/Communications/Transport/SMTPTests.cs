@@ -64,7 +64,7 @@ namespace Rock.Tests.Integration.Communications.Transport
             }, new Dictionary<string, object>() ) );
 
             // Act
-            smtp.Send( (RockMessage)rockEmailMessage, 0, null, out List<string> errorMessages );
+            smtp.Send( (RockMessage)rockEmailMessage, 0, new Dictionary<string, string>(), out List<string> errorMessages );
 
             // Assert
             Assert.That.AreEqual( 0, errorMessages.Count, errorMessages.JoinStrings(", ") );

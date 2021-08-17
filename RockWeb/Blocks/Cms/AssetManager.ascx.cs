@@ -348,7 +348,7 @@ upnlFiles.ClientID // {2}
 
         /// <summary>
         /// Handles the Click event of the lbRefresh control.
-        /// Refreshes the list of flles.
+        /// Refreshes the list of files.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>

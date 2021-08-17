@@ -161,7 +161,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                var recipientList = to.SplitDelimitedValues().ToList();
+                var recipientList = to.ResolveMergeFields( mergeFields ).SplitDelimitedValues().ToList();
                 foreach ( string recipient in recipientList )
                 {
                     recipients.Add( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );

@@ -5,6 +5,8 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
+            <Rock:ModalAlert ID="mdSyncMessage" runat="server" />
+
             <div class="panel-heading ">
                 <h1 class="panel-title"><i class="fa fa-play-circle"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
@@ -33,15 +35,13 @@
                         </div>
                     </div>
 
-                    <Rock:NotificationBox ID="nbActionResult" runat="server" NotificationBoxType="Info" Dismissable="true" />
-
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
 
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnSyncWithProvider" runat="server" CssClass="btn btn-sm btn-default" ToolTip="Download all data from provider." data-toggle="tooltip" OnClick="btnSyncWithProvider_Click" CausesValidation="false">
+                            <asp:LinkButton ID="btnSyncWithProvider" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Download all data from provider." data-toggle="tooltip" OnClick="btnSyncWithProvider_Click" CausesValidation="false">
                                 <i class="fa fa-download"></i>
                             </asp:LinkButton>
                         </span>

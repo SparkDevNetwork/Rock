@@ -45,7 +45,7 @@ namespace Rock.Field.Types
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string ALLOW_ADDING_NEW_VALUES_KEY = "AllowAddingNewValues";
         private const string REPEAT_COLUMNS_KEY = "RepeatColumns";
-
+        private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValuesId";
 
         /// <summary>
         /// Returns a list of the configuration keys.
@@ -61,6 +61,7 @@ namespace Rock.Field.Types
             configKeys.Add( INCLUDE_INACTIVE_KEY );
             configKeys.Add( ALLOW_ADDING_NEW_VALUES_KEY );
             configKeys.Add( REPEAT_COLUMNS_KEY );
+            configKeys.Add( SELECTABLE_VALUES_KEY );
             return configKeys;
         }
 
@@ -74,55 +75,64 @@ namespace Rock.Field.Types
 
             // build a drop down list of defined types (the one that gets selected is
             // used to build a list of defined values) 
-            var ddlDefinedType = new RockDropDownList();
-            controls.Add( ddlDefinedType );
-            ddlDefinedType.AutoPostBack = true;
-            ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
-            ddlDefinedType.Label = "Defined Type";
-            ddlDefinedType.Help = "The Defined Type to select values from.";
+            var ddlDefinedType = new RockDropDownList
+            {
+                AutoPostBack = true,
+                Label = "Defined Type",
+                Help = "The Defined Type to select values from."
+            };
 
-            Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService( new RockContext() );
+            ddlDefinedType.SelectedIndexChanged += OnQualifierUpdated;
+
+            var definedTypeService = new DefinedTypeService( new RockContext() );
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Name ) )
             {
                 ddlDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
 
-            // Add checkbox for deciding if the defined values list is rendered as a drop
-            // down list or a checkbox list.
-            var cbAllowMultipleValues = new RockCheckBox();
-            controls.Add( cbAllowMultipleValues );
-            cbAllowMultipleValues.AutoPostBack = true;
+            // Add checkbox for deciding if the defined values list is rendered as a drop down list or a checkbox list.
+            var cbAllowMultipleValues = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Allow Multiple Values",
+                Text = "Yes",
+                Help = "When set, allows multiple defined type values to be selected."
+            };
+
             cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
-            cbAllowMultipleValues.Label = "Allow Multiple Values";
-            cbAllowMultipleValues.Text = "Yes";
-            cbAllowMultipleValues.Help = "When set, allows multiple defined type values to be selected.";
 
             // option for Display Descriptions
-            var cbDescription = new RockCheckBox();
-            controls.Add( cbDescription );
-            cbDescription.AutoPostBack = true;
+            var cbDescription = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Display Descriptions",
+                Text = "Yes",
+                Help = "When set, the defined value descriptions will be displayed instead of the values."
+            };
+
             cbDescription.CheckedChanged += OnQualifierUpdated;
-            cbDescription.Label = "Display Descriptions";
-            cbDescription.Text = "Yes";
-            cbDescription.Help = "When set, the defined value descriptions will be displayed instead of the values.";
 
             // option for Displaying an enhanced 'chosen' value picker
-            var cbEnhanced = new RockCheckBox();
-            controls.Add( cbEnhanced );
-            cbEnhanced.AutoPostBack = true;
+            var cbEnhanced = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Enhance For Long Lists",
+                Text = "Yes",
+                Help = "When set, will render a searchable selection of options."
+            };
+
             cbEnhanced.CheckedChanged += OnQualifierUpdated;
-            cbEnhanced.Label = "Enhance For Long Lists";
-            cbEnhanced.Text = "Yes";
-            cbEnhanced.Help = "When set, will render a searchable selection of options.";
 
             // Add checkbox for deciding if the list should include inactive items
-            var cbIncludeInactive = new RockCheckBox();
-            controls.Add( cbIncludeInactive );
-            cbIncludeInactive.AutoPostBack = true;
+            var cbIncludeInactive = new RockCheckBox
+            {
+                AutoPostBack = true,
+                Label = "Include Inactive",
+                Text = "Yes",
+                Help = "When set, inactive defined values will be included in the list."
+            };
+
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
-            cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
-            cbIncludeInactive.Help = "When set, inactive defined values will be included in the list.";
 
             // Checkbox to indicate if new defined types can be added via the field type.
             var cbAllowAddingNewValues = new RockCheckBox
@@ -134,7 +144,6 @@ namespace Rock.Field.Types
             };
 
             cbAllowAddingNewValues.CheckedChanged += OnQualifierUpdated;
-            controls.Add( cbAllowAddingNewValues );
 
             var tbRepeatColumns = new NumberBox
             {
@@ -145,7 +154,28 @@ namespace Rock.Field.Types
             };
 
             tbRepeatColumns.TextChanged += OnQualifierUpdated;
+
+            var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+            var cblSelectableDefinedValues = new RockCheckBoxList
+            {
+                AutoPostBack = true,
+                RepeatDirection = RepeatDirection.Horizontal,
+                Label = "Selectable Values",
+                DataTextField = "Text",
+                DataValueField = "Value",
+                DataSource = definedValues
+            };
+
+            cblSelectableDefinedValues.DataBind();
+
+            controls.Add( ddlDefinedType );
+            controls.Add( cbAllowMultipleValues );
+            controls.Add( cbDescription );
+            controls.Add( cbEnhanced );
+            controls.Add( cbIncludeInactive );
+            controls.Add( cbAllowAddingNewValues );
             controls.Add( tbRepeatColumns );
+            controls.Add( cblSelectableDefinedValues );
 
             return controls;
         }
@@ -165,6 +195,7 @@ namespace Rock.Field.Types
             configurationValues.Add( INCLUDE_INACTIVE_KEY, new ConfigurationValue( "Include Inactive", "When set, inactive defined values will be included in the list.", string.Empty ) );
             configurationValues.Add( ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue( "Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty ) );
             configurationValues.Add( REPEAT_COLUMNS_KEY, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty ) );
+            configurationValues.Add( SELECTABLE_VALUES_KEY, new ConfigurationValue( "Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
 
             if ( controls != null )
             {
@@ -175,6 +206,7 @@ namespace Rock.Field.Types
                 CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
                 CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
                 NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
 
                 if ( ddlDefinedType != null )
                 {
@@ -210,6 +242,25 @@ namespace Rock.Field.Types
                 {
                     configurationValues[REPEAT_COLUMNS_KEY].Value = nbRepeatColumns.Text;
                 }
+
+                if ( cblSelectableValues != null )
+                {
+                    var selectableValues = new List<string>( cblSelectableValues.SelectedValues );
+
+                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() )?.DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    cblSelectableValues.DataSource = definedValues;
+                    cblSelectableValues.DataBind();
+
+                    if ( selectableValues != null && selectableValues.Any() )
+                    {
+                        foreach ( ListItem listItem in cblSelectableValues.Items )
+                        {
+                            listItem.Selected = selectableValues.Contains( listItem.Value );
+                        }
+                    }
+
+                    configurationValues[SELECTABLE_VALUES_KEY].Value = cblSelectableValues.SelectedValues.AsDelimited( "," );
+                }
             }
 
             return configurationValues;
@@ -231,6 +282,7 @@ namespace Rock.Field.Types
                 CheckBox cbIncludeInactive = controls.Count > 4 ? controls[4] as CheckBox : null;
                 CheckBox cbAllowAddNewValues = controls.Count > 5 ? controls[5] as CheckBox : null;
                 NumberBox nbRepeatColumns = controls.Count > 6 ? controls[6] as NumberBox : null;
+                RockCheckBoxList cblSelectableValues = controls.Count > 7 ? controls[7] as RockCheckBoxList : null;
 
                 if ( ddlDefinedType != null )
                 {
@@ -266,6 +318,22 @@ namespace Rock.Field.Types
                 {
                     nbRepeatColumns.Text = configurationValues.GetValueOrNull( REPEAT_COLUMNS_KEY );
                 }
+
+                if ( cblSelectableValues != null )
+                {
+                    var definedValues = DefinedTypeCache.Get( ddlDefinedType.SelectedValue.AsInteger() ).DefinedValues.Select( v => new { Text = v.Value, Value = v.Id } );
+                    cblSelectableValues.DataSource = definedValues;
+                    cblSelectableValues.DataBind();
+
+                    var selectableValues = configurationValues.GetValueOrNull( SELECTABLE_VALUES_KEY )?.SplitDelimitedValues( false );
+                    if ( selectableValues != null && selectableValues.Any() )
+                    {
+                        foreach ( ListItem listItem in cblSelectableValues.Items )
+                        {
+                            listItem.Selected = selectableValues.Contains( listItem.Value );
+                        }
+                    }
+                }
             }
         }
 
@@ -288,6 +356,7 @@ namespace Rock.Field.Types
             configurationValues.Add( ENHANCED_SELECTION_KEY, new ConfigurationValue( "Enhance For Long Lists", "When set, will render a searchable selection of options.", string.Empty ) );
             configurationValues.Add( ALLOW_ADDING_NEW_VALUES_KEY, new ConfigurationValue( "Allow Adding New Values", "When set the defined type picker can be used to add new defined types.", string.Empty ) );
             configurationValues.Add( REPEAT_COLUMNS_KEY, new ConfigurationValue( "Repeat Columns", "Select how many columns the list should use before going to the next row, if not set 4 is used. This setting has no effect if 'Enhance For Long Lists' is selected since that will not use a checkbox list.", string.Empty ) );
+            configurationValues.Add( SELECTABLE_VALUES_KEY, new ConfigurationValue( "Selectable Values", "Specify the values eligible for this control. If none are specified then all will be displayed.", string.Empty ) );
 
             if ( entityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) )
             {
@@ -375,8 +444,6 @@ namespace Rock.Field.Types
             return base.SortValue( parentControl, value, configurationValues );
         }
 
-
-
         #endregion
 
         #region Edit Control
@@ -391,14 +458,23 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
+            if ( configurationValues == null )
+            {
+                return null;
+            }
+
             Control editControl;
 
-            bool useDescription = configurationValues != null && configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
-            int? definedTypeId = configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
-            int repeatColumns = ( configurationValues != null && configurationValues.ContainsKey( REPEAT_COLUMNS_KEY ) ? configurationValues[REPEAT_COLUMNS_KEY].Value.AsIntegerOrNull() : null ) ?? 4;
-            bool allowAdd = configurationValues != null && configurationValues.ContainsKey( ALLOW_ADDING_NEW_VALUES_KEY ) ? configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean() : false;
-            bool enhanceForLongLists = configurationValues != null && configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
-            bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+            bool useDescription = configurationValues.ContainsKey( DISPLAY_DESCRIPTION ) && configurationValues[DISPLAY_DESCRIPTION].Value.AsBoolean();
+            int? definedTypeId = configurationValues.ContainsKey( DEFINED_TYPE_KEY ) ? configurationValues[DEFINED_TYPE_KEY].Value.AsIntegerOrNull() : null;
+            int repeatColumns = ( configurationValues.ContainsKey( REPEAT_COLUMNS_KEY ) ? configurationValues[REPEAT_COLUMNS_KEY].Value.AsIntegerOrNull() : null ) ?? 4;
+            bool allowAdd = configurationValues.ContainsKey( ALLOW_ADDING_NEW_VALUES_KEY ) && configurationValues[ALLOW_ADDING_NEW_VALUES_KEY].Value.AsBoolean();
+            bool enhanceForLongLists = configurationValues.ContainsKey( ENHANCED_SELECTION_KEY ) && configurationValues[ENHANCED_SELECTION_KEY].Value.AsBoolean();
+            bool allowMultiple = configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+
+            int[] selectableValues = configurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) && configurationValues[SELECTABLE_VALUES_KEY].Value.IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_VALUES_KEY].Value.Split( ',' ).Select( int.Parse ).ToArray()
+                : null;
 
             if ( allowMultiple )
             {
@@ -411,31 +487,60 @@ namespace Rock.Field.Types
                         DefinedTypeId = definedTypeId,
                         RepeatColumns = repeatColumns,
                         IsAllowAddDefinedValue = allowAdd,
-                        EnhanceForLongLists = enhanceForLongLists
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues
                     };
                 }
                 else
                 {
                     if ( enhanceForLongLists )
                     {
-                        editControl = new DefinedValuesPickerEnhanced { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId };
+                        editControl = new DefinedValuesPickerEnhanced
+                        {
+                            ID = id,
+                            DisplayDescriptions = useDescription,
+                            DefinedTypeId = definedTypeId,
+                            SelectableDefinedValuesId = selectableValues
+                        };
                     }
                     else
                     {
-                        editControl = new DefinedValuesPicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId, RepeatColumns = repeatColumns };
+                        editControl = new DefinedValuesPicker
+                        {
+                            ID = id,
+                            DisplayDescriptions = useDescription,
+                            DefinedTypeId = definedTypeId,
+                            RepeatColumns = repeatColumns,
+                            SelectableDefinedValuesId = selectableValues
+                        };
                     }
                 }
             }
             else
             {
-                //TODO: The add versions of the controls are not working with AttributeValuesContainer, so keep the old ones for now
+                // TODO: The add versions of the controls are not working with AttributeValuesContainer, so keep the old ones for now
                 if ( allowAdd )
                 {
-                    editControl = new DefinedValuePickerWithAddSingleSelect { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId, IsAllowAddDefinedValue = allowAdd, EnhanceForLongLists = enhanceForLongLists };
+                    editControl = new DefinedValuePickerWithAddSingleSelect
+                    {
+                        ID = id,
+                        DisplayDescriptions = useDescription,
+                        DefinedTypeId = definedTypeId,
+                        IsAllowAddDefinedValue = allowAdd,
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues
+                    };
                 }
                 else
                 {
-                    editControl = new DefinedValuePicker { ID = id, DisplayDescriptions = useDescription, DefinedTypeId = definedTypeId, EnhanceForLongLists = enhanceForLongLists };
+                    editControl = new DefinedValuePicker
+                    {
+                        ID = id,
+                        DisplayDescriptions = useDescription,
+                        DefinedTypeId = definedTypeId,
+                        EnhanceForLongLists = enhanceForLongLists,
+                        SelectableDefinedValuesId = selectableValues
+                    };
                 }
             }
 
@@ -591,7 +696,7 @@ namespace Rock.Field.Types
                 overrideConfigValues.Add( keyVal.Key, keyVal.Value );
             }
 
-            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( ( true ).ToString() ) );
+            overrideConfigValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new ConfigurationValue( true.ToString() ) );
 
             return base.FilterValueControl( overrideConfigValues, id, required, filterMode );
         }
@@ -789,12 +894,12 @@ namespace Rock.Field.Types
                 }
 
                 //// OR up the where clauses for each of the selected values 
-                // and make sure to wrap commas around things so we don't collide with partial matches
-                // so it'll do something like this:
-                //
-                // WHERE ',' + Value + ',' like '%,bacon,%'
-                // OR ',' + Value + ',' like '%,lettuce,%'
-                // OR ',' + Value + ',' like '%,tomato,%'
+                //// and make sure to wrap commas around things so we don't collide with partial matches
+                //// so it'll do something like this:
+                ////
+                //// WHERE ',' + Value + ',' like '%,bacon,%'
+                //// OR ',' + Value + ',' like '%,lettuce,%'
+                //// OR ',' + Value + ',' like '%,tomato,%'
 
                 if ( filterValues.Count > 1 )
                 {

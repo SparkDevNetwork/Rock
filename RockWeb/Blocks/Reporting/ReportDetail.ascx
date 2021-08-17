@@ -58,15 +58,9 @@
 
                             <section class="panel panel-widget">
                                 <header class="panel-heading clearfix">
-                                    <div class="pull-left">
-                                        <h3 class="panel-title">
-                                            <span>Fields</span>
-                                        </h3>
-                                    </div>
+                                    <h3 class="panel-title pull-left">Fields</h3>
                                     <div class="pull-right">
-                                        <div class="btn-group btn-group-xs pull-right">
-                                            <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton></td>
-                                        </div>
+                                        <asp:LinkButton runat="server" ID="btnAddField" CssClass="btn btn-xs btn-action" CausesValidation="false" OnClick="btnAddField_Click"><i class="fa fa-plus"></i> Add Field</asp:LinkButton>
                                     </div>
                                 </header>
                                 <div class="panel-body panel-widget-sort-container">
@@ -89,7 +83,7 @@
                         </div>
                         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
-                            <div class="text-right">
+                            <div class="pull-right">
                                 <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
 
                                 <Rock:HighlightLabel runat="server" ID="hlRunSince" />
@@ -97,9 +91,9 @@
                                 <Rock:HighlightLabel runat="server" ID="hlLastRun" />
                             </div>
 
-                            <p class="description">
+                            <div class="description">
                                 <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
-                            </p>
+                            </div>
 
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                             <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" Visible="false" />

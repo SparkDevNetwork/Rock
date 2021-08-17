@@ -121,6 +121,16 @@ namespace Rock.Model
         [DataMember]
         public string PostHtml { get; set; }
 
+        /// <summary>
+        /// Gets the field visibility rules json.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules json.
+        /// </value>
+        /// <remarks>This value should never be used outside of Rock. FieldVisibilityRules should be used. </remarks>
+        [DataMember]
+        public string FieldVisibilityRulesJSON { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -142,6 +152,36 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Attribute Attribute { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field visibility rules.
+        /// </summary>
+        /// <value>
+        /// The field visibility rules.
+        /// </value>
+        [NotMapped]
+        public virtual Field.FieldVisibilityRules FieldVisibilityRules
+        {
+            get
+            {
+                if ( FieldVisibilityRulesJSON.IsNullOrWhiteSpace() )
+                {
+                    return new Field.FieldVisibilityRules();
+                }
+                return FieldVisibilityRulesJSON.FromJsonOrNull<Field.FieldVisibilityRules>() ?? new Field.FieldVisibilityRules();
+            }
+            set
+            {
+                if ( value == null || value.RuleList.Count == 0 )
+                {
+                    FieldVisibilityRulesJSON = null;
+                }
+                else
+                {
+                    FieldVisibilityRulesJSON = value.ToJson();
+                }
+            }
+        }
 
         #endregion
 
@@ -187,7 +227,7 @@ namespace Rock.Model
         /// </summary>
         public WorkflowActionFormAttributeConfiguration()
         {
-            this.HasRequired( a => a.WorkflowActionForm ).WithMany( f => f.FormAttributes).HasForeignKey( a => a.WorkflowActionFormId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.WorkflowActionForm ).WithMany( f => f.FormAttributes ).HasForeignKey( a => a.WorkflowActionFormId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Attribute ).WithMany().HasForeignKey( a => a.AttributeId ).WillCascadeOnDelete( true );
         }
     }

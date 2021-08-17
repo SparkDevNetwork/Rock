@@ -14,11 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -28,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Sends a communication approval email
+    /// Sends a communication approval <see cref="RockEmailMessage">email</see>
     /// </summary>
     public sealed class ProcessSendCommunicationApprovalEmail : BusStartedTask<ProcessSendCommunicationApprovalEmail.Message>
     {

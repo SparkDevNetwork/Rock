@@ -106,14 +106,20 @@ namespace Rock.Rest.Controllers
             IQueryable<Location> qry;
             if ( id == 0 )
             {
-                qry = Get().Where( a => a.ParentLocationId == null );
                 if ( rootLocationId != 0 )
                 {
-                    qry = qry.Where( a => a.Id == rootLocationId );
+                    // ignore ParentLocationId when RootLocationId is supplied.
+                    qry = Get().Where( a => a.Id == rootLocationId );
+                }
+                else
+                {
+                    // continue looking for top-level named locations when RootLocationId is not supplied.
+                    qry = Get().Where( a => a.ParentLocationId == null );
                 }
             }
             else
             {
+                // look for child locations when a LocationId has been supplied.
                 qry = Get().Where( a => a.ParentLocationId == id );
             }
 

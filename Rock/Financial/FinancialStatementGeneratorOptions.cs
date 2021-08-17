@@ -61,14 +61,6 @@ namespace Rock.Financial
         public int? DataViewId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [include individuals with no address].
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [include individuals with no address]; otherwise, <c>false</c>.
-        /// </value>
-        public bool IncludeIndividualsWithNoAddress { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [exclude in active individuals].
         /// </summary>
         /// <value>
@@ -197,19 +189,24 @@ namespace Rock.Financial
             public enum FinancialStatementIndividualSaveOptionsSaveFor
             {
                 /// <summary>
-                /// All active adults
+                /// All active adults ( within the same giving group )
+                /// Note that want to limit to Giving Group because some members
+                /// of the Family may giving individually and have a different statement
                 /// </summary>
-                AllActiveAdults,
+                AllActiveAdultsInGivingGroup,
 
                 /// <summary>
-                /// The primary giver
+                /// The primary giver if Giving Group,
+                /// or the Individual if person gives individually
                 /// </summary>
                 PrimaryGiver,
 
                 /// <summary>
-                /// All active family members
+                /// All active family members ( within the same giving group ).
+                /// Note that want to limit to Giving Group because some members
+                /// of the Family may giving individually and have a different statement
                 /// </summary>
-                AllActiveFamilyMembers
+                AllActiveFamilyMembersInGivingGroup
             }
         }
 
@@ -314,11 +311,21 @@ namespace Rock.Financial
 
             /// <summary>
             /// Gets or sets a value indicating whether [exclude opted out individuals].
+            /// If this is a statement for a GivingGroup, exclude if *any* members of the giving group have opted out.
             /// </summary>
             /// <value>
             ///   <c>true</c> if [exclude opted out individuals]; otherwise, <c>false</c>.
             /// </value>
             public bool ExcludeOptedOutIndividuals { get; set; } = true;
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [exclude recipients that have an incomplete address].
+            /// Either the recipient has no mailing address, or the address is missing <seealso cref="Rock.Model.Location.PostalCode"/> or <seealso cref="Rock.Model.Location.Street1"/> 
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [exclude recipients that have an incomplete address]; otherwise, <c>false</c>.
+            /// </value>
+            public bool ExcludeRecipientsThatHaveAnIncompleteAddress { get; set; } = true;
 
             /// <summary>
             /// Gets or sets the created date time.

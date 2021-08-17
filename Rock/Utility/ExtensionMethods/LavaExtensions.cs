@@ -27,7 +27,6 @@ using DotLiquid;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -650,6 +649,10 @@ namespace Rock
 
                                 lavaEngineOutput = result.Text;
                             }
+                            catch ( System.Threading.ThreadAbortException )
+                            {
+                                // Ignore abort error caused by Lava PageRedirect filter.
+                            }
                             catch ( Exception ex )
                             {
                                 // Log the exception and continue, because the final render will be performed by RockLiquid.
@@ -693,7 +696,7 @@ namespace Rock
             }
             catch ( System.Threading.ThreadAbortException )
             {
-                // Do nothing...it's just a Lava PageRedirect that just happened.
+                // Ignore abort error caused by Lava PageRedirect filter.
                 return string.Empty;
             }
             catch ( Exception ex )
@@ -705,7 +708,7 @@ namespace Rock
                 else
                 {
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
-                    return "Error resolving Lava merge fields: " + ex.Message;
+                    return "Error resolving Lava merge fields: " + ex.Message + "\n[Engine: DotLiquid]";
                 }
             }
         }
@@ -776,6 +779,13 @@ namespace Rock
             context.SetMergeFields( mergeObjects );
 
             var result = LavaService.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
+
+            if ( result.HasErrors
+                 && LavaService.ExceptionHandlingStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
+            {
+                // If the result is an error, encode the error message to prevent any part of it from appearing as rendered content, and then add markup for line breaks.
+                result.Text = result.Text.EncodeHtml().ConvertCrLfToHtmlBr();
+            }
 
             return result;
         }

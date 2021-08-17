@@ -86,7 +86,6 @@ namespace Rock.Lava.RockLiquid.Blocks
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
                 return;
             }
 

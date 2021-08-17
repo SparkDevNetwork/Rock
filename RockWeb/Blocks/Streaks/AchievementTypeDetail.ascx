@@ -70,8 +70,11 @@
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="Name" />
                         </div>
-                        <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" Text="Yes" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" Checked="true" Text="Yes" />
                         </div>
                     </div>
 
@@ -153,6 +156,14 @@
                             </div>
                             <div class="col-sm-12">
                                 <Rock:CodeEditor ID="ceResultsLava" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Results Lava Template" Help="The template to use when displaying the results of this achievement." />
+                            </div>
+                            <div class="col-sm-6">
+                                <Rock:ImageUploader ID="imgupImageBinaryFile" runat="server" IsBinaryFile="true" Label="Image" Help="The image that will be used in the summary. For example, a trophy icon." />
+                            </div>
+                            <div class="col-sm-6">
+                            </div>
+                            <div class="col-sm-12">
+                                <Rock:CodeEditor ID="ceCustomSummaryLavaTemplate" runat="server" EditorHeight="200" EditorMode="Lava" EditorTheme="Rock" Label="Custom Summary Lava Template" Help="The lava template used to render the status summary of the achievement. If this is blank, a default will be used." />
                             </div>
                         </div>
                     </Rock:PanelWidget>

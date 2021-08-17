@@ -38,8 +38,11 @@
             </div>
 
             <div class="panel-body styled-scroll">
-                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click “done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
-                <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
+                <Rock:NotificationBox ID="nbNoUnmatchedTransactionsRemaining" runat="server" NotificationBoxType="Success" Text="<i class='fa fa-check-circle'></i> There are no more unmatched transactions in this batch. Click “Done” to change the batch status from 'Pending' to 'Open' and return to batch details to close this batch." />
+
+                <div class="actions">
+                    <asp:LinkButton ID="lbFinish" runat="server" CssClass="btn btn-default" OnClick="lbFinish_Click">Done</asp:LinkButton>
+                </div>
                 <asp:Panel ID="pnlEdit" runat="server">
                     <div class="row">
                         <div class="col-md-5 transaction-matching-image">
@@ -166,14 +169,11 @@
                         </div>
                     </div>
 
-                    <div class="row actions">
-                        <div class="col-md-12">
-                            <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
-                            <div class="pull-right">
-                                <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
-                                <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
-                            </div>
-                            <div class="clearfix"></div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn btn-default" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
+                        <div class="pull-right">
+                            <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-default" Visible="false" OnClick="btnCancel_Click">Cancel</asp:LinkButton>
+                            <asp:LinkButton ID="btnNext" runat="server" AccessKey="n" ToolTip="Alt+n" CssClass="btn btn-primary" OnClick="btnNext_Click">Next <i class="fa fa-chevron-right"></i></asp:LinkButton>
                         </div>
                     </div>
 
@@ -313,8 +313,8 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-xs btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
-                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
+                        <asp:LinkButton ID="btnSaveNewMatch" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveNewMatch_Click" CausesValidation="true" ValidationGroup="vgAddNewMatch" />
+                        <asp:LinkButton ID="btnCancelNewMatch" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelNewMatch_Click" />
                     </div>
                 </div>
 
@@ -463,7 +463,7 @@
 
             /**
              *  returns true if the amount was changed from the original(if there was an amount to start with)
-             */ 
+             */
             function hasUnallocated() {
                 $unallocatedAmountEl = $('#<%=pnlView.ClientID%>').find('.js-unallocated-amount');
                 if ($unallocatedAmountEl.is(':visible')) {

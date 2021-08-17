@@ -5,51 +5,52 @@
 
         <asp:HiddenField ID="hfExpandedIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedItemId" runat="server" />
-
         <div class="treeview js-pagestreeview">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title">Pages</h1>
+                    <div class="treeview-actions" id="divTreeviewActions" runat="server">
 
-            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title="<asp:Literal ID="ltAddPage" runat="server" Text=" Add Page" />">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                <li>
+                                    <asp:LinkButton ID="lbAddPageRoot" OnClick="lbAddPageRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li>
+                                    <asp:LinkButton ID="lbAddPageChild" OnClick="lbAddPageChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
+                        </div>
 
-                <div class="pull-left margin-r-sm">
-                    <div class="btn-group ">
-                        <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-plus-circle"></i>
-                            <asp:Literal ID="ltAddPage" runat="server" Text=" Add Page" />
-                            <span class="fa fa-caret-down"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <asp:LinkButton ID="lbAddPageRoot" OnClick="lbAddPageRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                            <li>
-                                <asp:LinkButton ID="lbAddPageChild" OnClick="lbAddPageChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                        </ul>
                     </div>
                 </div>
 
-            </div>
+                <div class="panel-body">
+                    <!-- Keep the treeview hidden to avoid flashing while the RockTree is being rendered -->
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal js-pages-scroll-container" style="visibility: hidden">
 
-            <!-- Keep the treeview hidden to avoid flashing while the RockTree is being rendered -->
-            <div class="treeview-scroll scroll-container scroll-container-horizontal js-pages-scroll-container" style="visibility: hidden">
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="treeview-frame">
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server">
+                                        <asp:Literal ID="lPages" runat="server" ViewStateMode="Disabled"></asp:Literal>
+                                    </asp:Panel>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <asp:Panel ID="pnlTreeviewContent" runat="server">
-                                <asp:Literal ID="lPages" runat="server" ViewStateMode="Disabled"></asp:Literal>
-                            </asp:Panel>
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="scrollbar">
-                    <div class="track">
-                        <div class="thumb">
-                            <div class="end"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
-
         </div>
 
         <script type="text/javascript">

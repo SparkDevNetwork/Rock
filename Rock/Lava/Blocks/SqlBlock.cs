@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -78,9 +79,27 @@ namespace Rock.Lava.Blocks
                 switch ( parms["statement"] )
                 {
                     case "select":
+
+                        var stopWatch = new Stopwatch();
+                        stopWatch.Start();
                         var results = DbService.GetDataSet( sql.ToString(), CommandType.Text, parms.ToDictionary( i => i.Key, i => (object)i.Value ), sqlTimeout );
+                        stopWatch.Stop();
 
                         context.SetMergeField( parms["return"], results.Tables[0].ToDynamic(), LavaContextRelativeScopeSpecifier.Root );
+
+                        // Manually add query timings
+                        var rockMockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                        rockMockContext.QueryCount++;
+                        if ( rockMockContext.QueryMetricDetailLevel == QueryMetricDetailLevel.Full )
+                        {
+                            rockMockContext.QueryMetricDetails.Add( new QueryMetricDetail
+                            {
+                                Sql = sql.ToString(), 
+                                Duration = stopWatch.ElapsedTicks,
+                                Database = rockMockContext.Database.Connection.Database,
+                                Server = rockMockContext.Database.Connection.DataSource
+                            } );
+                        }
                         break;
                     case "command":
                         var sqlParameters = new List<System.Data.SqlClient.SqlParameter>();
@@ -90,7 +109,7 @@ namespace Rock.Lava.Blocks
                             sqlParameters.Add( new System.Data.SqlClient.SqlParameter( p.Key, p.Value ) );
                         }
 
-                        using ( var rockContext = new RockContext() )
+                        using ( var rockContext = LavaHelper.GetRockContextFromLavaContext( context ) )
                         {
                             if ( sqlTimeout != null )
                             {

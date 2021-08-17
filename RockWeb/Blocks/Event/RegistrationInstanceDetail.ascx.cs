@@ -595,6 +595,7 @@ namespace RockWeb.Blocks.Event
             {
                 lCost.Visible = false;
                 lMinimumInitialPayment.Visible = false;
+                lDefaultPaymentAmount.Visible = false;
             }
 
             lAccount.Visible = registrationInstance.Account != null;

@@ -38,6 +38,9 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Lava;
+using Rock.Lava.DotLiquid;
+using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.WebFarm;
@@ -101,6 +104,8 @@ namespace Rock.WebStartup
             // Indicate to always log to file during initialization.
             ExceptionLogService.AlwaysLogToFile = true;
 
+            InitializeRockOrgTimeZone();
+
             StartDateTime = RockDateTime.Now;
 
             // If there are Task.Runs that don't handle their exceptions, this will catch those
@@ -118,6 +123,8 @@ namespace Rock.WebStartup
 
             ShowDebugTimingMessage( "EF Migrations" );
 
+            ConfigureEntitySaveHooks();
+
             // Now that EF Migrations have gotten the Schema in sync with our Models,
             // get the RockContext initialized (which can take several seconds)
             // This will help reduce the chances of multiple instances RockWeb causing problems,
@@ -127,6 +134,10 @@ namespace Rock.WebStartup
                 new AttributeService( rockContext ).Get( 0 );
                 ShowDebugTimingMessage( "Initialize RockContext" );
             }
+
+            // Configure the values for RockDateTime.
+            RockDateTime.FirstDayOfWeek = Rock.Web.SystemSettings.StartDayOfWeek;
+            InitializeRockGraduationDate();
 
             if ( runMigrationFileInfo.Exists )
             {
@@ -199,6 +210,48 @@ namespace Rock.WebStartup
             // Start stage 2 of the web farm
             RockWebFarm.StartStage2();
             ShowDebugTimingMessage( "Web Farm (stage 2)" );
+        }
+
+        /// <summary>
+        /// Initializes the Rock organization time zone.
+        /// </summary>
+        private static void InitializeRockOrgTimeZone()
+        {
+            string orgTimeZoneSetting = ConfigurationManager.AppSettings["OrgTimeZone"];
+
+            if ( string.IsNullOrWhiteSpace( orgTimeZoneSetting ) )
+            {
+                RockDateTime.Initialize( TimeZoneInfo.Local );
+            }
+            else
+            {
+                // if Web.Config has the OrgTimeZone set to the special "Local" (intended for Developer Mode), just use the Local DateTime. However, a production install of Rock will always have a real Time Zone string
+                if ( orgTimeZoneSetting.Equals( "Local", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    RockDateTime.Initialize( TimeZoneInfo.Local );
+                }
+                else
+                {
+                    RockDateTime.Initialize( TimeZoneInfo.FindSystemTimeZoneById( orgTimeZoneSetting ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes the rock graduation date.
+        /// </summary>
+        private static void InitializeRockGraduationDate()
+        {
+            var graduationDateWithCurrentYear = GlobalAttributesCache.Get().GetValue( "GradeTransitionDate" ).MonthDayStringAsDateTime() ?? new DateTime( RockDateTime.Today.Year, 6, 1 );
+            if ( graduationDateWithCurrentYear < RockDateTime.Today )
+            {
+                // if the graduation date already occurred this year, return next year' graduation date
+                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear.AddYears( 1 );
+            }
+            else
+            {
+                RockDateTime.CurrentGraduationDate = graduationDateWithCurrentYear;
+            }
         }
 
         /// <summary>
@@ -441,6 +494,36 @@ namespace Rock.WebStartup
         }
 
         /// <summary>
+        /// Searches all assemblies for <see cref="IEntitySaveHook"/> subclasses
+        /// that need to be registered in the default save hook provider.
+        /// </summary>
+        private static void ConfigureEntitySaveHooks()
+        {
+            var hookProvider = Rock.Data.DbContext.SharedSaveHookProvider;
+            var entityHookType = typeof( EntitySaveHook<> );
+
+            var hookTypes = Rock.Reflection.FindTypes( typeof( Rock.Data.IEntitySaveHook ) )
+                .Select( a => a.Value )
+                .ToList();
+
+            foreach ( var hookType in hookTypes )
+            {
+                if ( !hookType.IsDescendentOf( entityHookType ) )
+                {
+                    continue;
+                }
+
+                var genericTypes = hookType.GetGenericArgumentsOfBaseType( entityHookType );
+                var entityType = genericTypes[0];
+
+                if ( entityType.Assembly == hookType.Assembly )
+                {
+                    hookProvider.AddHook( entityType, hookType );
+                }
+            }
+        }
+
+        /// <summary>
         /// Migrates the plugins.
         /// </summary>
         /// <returns></returns>
@@ -621,7 +704,7 @@ namespace Rock.WebStartup
         private static void InitializeLava()
         {
             // Get the Lava Engine configuration settings.
-            LavaEngineTypeSpecifier? engineType = null;
+            Type engineType = null;
 
             var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK )?.ToLower();
 
@@ -637,12 +720,12 @@ namespace Rock.WebStartup
             }
             else if ( liquidEngineTypeValue == "fluid" )
             {
-                engineType = LavaEngineTypeSpecifier.Fluid;
+                engineType = typeof( FluidEngine );
                 LavaService.RockLiquidIsEnabled = false;
             }
             else if ( liquidEngineTypeValue == "fluidverification" )
             {
-                engineType = LavaEngineTypeSpecifier.Fluid;
+                engineType = typeof( FluidEngine );
                 LavaService.RockLiquidIsEnabled = true;
             }
             else
@@ -657,23 +740,75 @@ namespace Rock.WebStartup
                 }
             }
 
-            InitializeRockLiquidLibrary();
+            InitializeLavaEngines();
 
-            InitializeGlobalLavaEngineInstance( engineType );
+            if ( engineType != null )
+            {
+                InitializeGlobalLavaEngineInstance( engineType );
+            }
+
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                InitializeRockLiquidLibrary();
+            }
+        }
+
+        private static void InitializeLavaEngines()
+        {
+            // Register the RockLiquid Engine (pre-v13).
+            LavaService.RegisterEngine( ( engineServiceType, options ) =>
+            {
+                var engineOptions = new LavaEngineConfigurationOptions();
+
+                var rockLiquidEngine = new RockLiquidEngine();
+
+                rockLiquidEngine.Initialize( engineOptions );
+
+                return rockLiquidEngine;
+            } );
+
+            // Register the DotLiquid Engine.
+            LavaService.RegisterEngine( ( engineServiceType, options ) =>
+                        {
+                            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+
+                            var engineOptions = new LavaEngineConfigurationOptions
+                            {
+                                FileSystem = new WebsiteLavaFileSystem(),
+                                CacheService = new WebsiteLavaTemplateCacheService(),
+                                DefaultEnabledCommands = defaultEnabledLavaCommands
+                            };
+
+                            var dotLiquidEngine = new DotLiquidEngine();
+
+                            dotLiquidEngine.Initialize( engineOptions );
+
+                            return dotLiquidEngine;
+                        } );
+
+            // Register the Fluid Engine.
+            LavaService.RegisterEngine( ( engineServiceType, options ) =>
+                        {
+                            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+
+                            var engineOptions = new LavaEngineConfigurationOptions
+                            {
+                                FileSystem = new WebsiteLavaFileSystem(),
+                                CacheService = new WebsiteLavaTemplateCacheService(),
+                                DefaultEnabledCommands = defaultEnabledLavaCommands
+                            };
+
+                            var fluidEngine = new FluidEngine();
+
+                            fluidEngine.Initialize( engineOptions );
+
+                            return fluidEngine;
+                        } );
         }
 
         private static void InitializeRockLiquidLibrary()
         {
-            // Only initialize the RockLiquid library if we are operating in legacy mode.
-            if ( !LavaService.RockLiquidIsEnabled )
-            {
-                return;
-            }
-
-            // Initialize an instance of the RockLiquid engine.
-            // This engine is used for testing purposes and is not referenced in Rock source code.
-            // However, it is created here to perform some necessary global initialization tasks for the RockLiquid framework.
-            _ = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.RockLiquid, new LavaEngineConfigurationOptions() );
+            _ = LavaService.NewEngineInstance( typeof( RockLiquidEngine ) );
 
             // Register the set of filters that are compatible with RockLiquid.
             Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
@@ -683,24 +818,21 @@ namespace Rock.WebStartup
             Template.FileSystem = new LavaFileSystem();
         }
 
-        private static void InitializeGlobalLavaEngineInstance( LavaEngineTypeSpecifier? engineType )
+        private static void InitializeGlobalLavaEngineInstance( Type engineType )
         {
-            if ( engineType == null )
+            // Initialize the Lava engine.
+            var options = new LavaEngineConfigurationOptions();
+
+            if ( engineType != typeof( RockLiquidEngine ) )
             {
-                return;
+                var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
+
+                options.FileSystem = new WebsiteLavaFileSystem();
+                options.CacheService = new WebsiteLavaTemplateCacheService();
+                options.DefaultEnabledCommands = defaultEnabledLavaCommands;
             }
 
-            // Initialize the Lava engine.
-            var defaultEnabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" ).SplitDelimitedValues( "," ).ToList();
-
-            var engineOptions = new LavaEngineConfigurationOptions
-            {
-                FileSystem = new WebsiteLavaFileSystem(),
-                CacheService = new WebsiteLavaTemplateCacheService(),
-                DefaultEnabledCommands = defaultEnabledLavaCommands
-            };
-
-            LavaService.Initialize( engineType, engineOptions );
+            LavaService.SetCurrentEngine( engineType, options );
 
             // Subscribe to exception notifications from the Lava Engine.
             var engine = LavaService.GetCurrentEngine();

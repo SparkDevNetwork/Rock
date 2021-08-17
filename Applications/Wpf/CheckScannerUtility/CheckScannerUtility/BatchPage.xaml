@@ -553,7 +553,7 @@
                         BorderThickness="1"
                         CanUserAddRows="False"
                         CanUserDeleteRows="False"
-                        CellStyle="{StaticResource gridCellStyle}"
+                        CellStyle="{StaticResource gridCellStyleAmount}"
                         ColumnWidth="SizeToHeader"
                         GridLinesVisibility="Horizontal"
                         HeadersVisibility="Column"

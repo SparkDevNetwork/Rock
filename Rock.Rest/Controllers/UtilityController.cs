@@ -164,9 +164,22 @@ namespace Rock.Rest.Controllers
         {
             var processResponse = string.Empty;
 
-            Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
+            Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
 
             return processResponse;
+        }
+
+        /// <summary>
+        /// Gets the formatted date.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        [HttpGet]
+        [System.Web.Http.Route( "api/Utility/FormatDate" )]
+        public string GetFormattedDate( [FromUri] DateTime value, [FromUri] string format = "MM/dd/yyyy" )
+        {
+            return value.ToString( format );
         }
     }
 }

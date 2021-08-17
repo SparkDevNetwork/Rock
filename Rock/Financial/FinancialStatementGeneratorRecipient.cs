@@ -39,7 +39,7 @@ namespace Rock.Financial
         /// Initializes a new instance of the <see cref="FinancialStatementGeneratorRecipientResult"/> class.
         /// </summary>
         /// <param name="recipient">The recipient.</param>
-        public FinancialStatementGeneratorRecipientResult( FinancialStatementGeneratorRecipient recipient)
+        public FinancialStatementGeneratorRecipientResult( FinancialStatementGeneratorRecipient recipient )
         {
             Recipient = recipient;
         }
@@ -86,7 +86,8 @@ namespace Rock.Financial
         public decimal ContributionTotal { get; set; }
 
         /// <summary>
-        /// The total amount of pledges reported on the statement.
+        /// The total Pledged Amount of pledges reported on the statement. For example, if $100 was pledged, but only $25
+        /// was given, use $100 as the Pledge Total
         /// </summary>
         /// <value>
         /// The pledge total.
@@ -97,7 +98,7 @@ namespace Rock.Financial
     /// <summary>
     /// 
     /// </summary>
-    [DebuggerDisplay( "GroupId:{GroupId}, PersonId:{PersonId}, LocationGuid:{LocationGuid}" )]
+    [DebuggerDisplay( "GroupId:{GroupId}, PersonId:{PersonId}" )]
     [RockClientInclude( "Recipient Information for the Statement Generator" )]
     public class FinancialStatementGeneratorRecipient
     {
@@ -125,7 +126,16 @@ namespace Rock.Financial
         /// <value>
         /// The location identifier.
         /// </value>
-        public Guid? LocationGuid { get; set; }
+        public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has valid mailing address.
+        /// Either <see cref="LocationId"/> is null, or the address is missing <seealso cref="Rock.Model.Location.PostalCode"/> or <seealso cref="Rock.Model.Location.Street1"/> 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has valid mailing address; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasValidMailingAddress { get; set; }
 
         /// <summary>
         /// Gets or sets the postal code.
@@ -176,5 +186,37 @@ namespace Rock.Financial
         ///   <c>true</c> if this instance is complete; otherwise, <c>false</c>.
         /// </value>
         public bool IsComplete { get; set; }
+
+        /// <summary>
+        /// Gets or sets the opted out.
+        /// </summary>
+        /// <value>
+        /// The opted out.
+        /// </value>
+        public bool? OptedOut { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [paperless statement uploaded].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [paperless statement uploaded]; otherwise, <c>false</c>.
+        /// </value>
+        public bool? PaperlessStatementUploaded { get; set; }
+
+        /// <summary>
+        /// Gets or sets the paperless statements individual count.
+        /// </summary>
+        /// <value>
+        /// The paperless statements individual count.
+        /// </value>
+        public int? PaperlessStatementsIndividualCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the contribution total.
+        /// </summary>
+        /// <value>
+        /// The contribution total.
+        /// </value>
+        public decimal? ContributionTotal { get; set; }
     }
 }

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,13 +24,15 @@ using Rock.Web.Cache;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Launches a Group Member PlacedElsewhere workflow
+    /// Launches a Group Member PlacedElsewhere workflow using the <seealso cref="ITransaction"/> Queue.
     /// </summary>
-    [Obsolete( "Use LaunchGroupMemberPlacedElsewhereWorkflow Task instead." )]
-    [RockObsolete( "1.13" )]
     public class GroupMemberPlacedElsewhereTransaction : ITransaction
     {
-        private GroupMemberWorkflowTrigger Trigger { get; set; }
+        private bool TriggerIsActive { get; set; }
+
+        private int TriggerWorkflowTypeId { get; set; }
+
+        private string TriggerName { get; set; }
 
         private int? GroupId { get; set; }
 
@@ -53,7 +54,9 @@ namespace Rock.Transactions
         /// <param name="trigger">The GroupMemberWorkflowTrigger.</param>
         public GroupMemberPlacedElsewhereTransaction( GroupMember groupMember, string note, GroupMemberWorkflowTrigger trigger )
         {
-            this.Trigger = trigger;
+            this.TriggerIsActive = trigger.IsActive;
+            this.TriggerWorkflowTypeId = trigger.WorkflowTypeId;
+            this.TriggerName = trigger.Name;
             this.GroupId = groupMember.GroupId;
             this.PersonId = groupMember.PersonId;
             this.GroupMemberStatusName = groupMember.GroupMemberStatus.ConvertToString();
@@ -69,9 +72,9 @@ namespace Rock.Transactions
         public void Execute()
         {
             var rockContext = new RockContext();
-            if ( Trigger.IsActive )
+            if ( TriggerIsActive )
             {
-                LaunchWorkflow( rockContext, Trigger.WorkflowTypeId, Trigger.Name );
+                LaunchWorkflow( rockContext, TriggerWorkflowTypeId, TriggerName );
             }
         }
 

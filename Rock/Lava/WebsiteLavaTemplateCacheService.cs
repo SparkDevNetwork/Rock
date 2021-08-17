@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Rock.Web.Cache;
 
@@ -26,6 +25,8 @@ namespace Rock.Lava
     /// </summary>
     public class WebsiteLavaTemplateCacheService : ILavaTemplateCacheService
     {
+        private string _cacheKeyPrefix = string.Empty;
+
         #region Constructors
 
         /// <summary>
@@ -33,50 +34,36 @@ namespace Rock.Lava
         /// </summary>
         public WebsiteLavaTemplateCacheService()
         {
-            //
-        }
-
-        /// <summary>
-        /// Create a new instance of the cache for the specified Lava engine.
-        /// </summary>
-        public WebsiteLavaTemplateCacheService( ILavaEngine engine )
-        {
-            //_cache = new WebsiteLavaTemplateCache();
-            _engine = engine;
-
             WebsiteLavaTemplateCache.DefaultLifespan = TimeSpan.FromMinutes( 10 );
         }
 
         #endregion
 
-        #region Static Methods
-
         /// <summary>
-        /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
-        /// will be read and added to cache
+        /// Initialize the cache service.
         /// </summary>
-        /// <param name="content">The content.</param>
-        /// <returns></returns>
-        public WebsiteLavaTemplateCache Get( string content )
+        /// <param name="cacheKeyPrefix"></param>
+        public void Initialize( string cacheKeyPrefix )
         {
-            return Get( content, content );
+            _cacheKeyPrefix = cacheKeyPrefix;
         }
 
         /// <summary>
         /// Returns LavaTemplate object from cache.  If template does not already exist in cache, it
         /// will be read and added to cache
         /// </summary>
+        /// <param name="engine">The key.</param>
         /// <param name="key">The key.</param>
         /// <param name="content">The content.</param>
         /// <returns></returns>
-        public WebsiteLavaTemplateCache Get( string key, string content )
+        public WebsiteLavaTemplateCache Get( ILavaEngine engine, string key, string content )
         {
             WebsiteLavaTemplateCache template;
 
             // If cache items need to be serialized, do not cache the template because it isn't serializable.
             if ( RockCache.IsCacheSerialized )
             {
-                template = Load( content );
+                template = Load( engine, content );
             }
             else
             {
@@ -85,7 +72,7 @@ namespace Rock.Lava
                 template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
                 {
                     fromCache = false;
-                    return Load( content );
+                    return Load( engine, content );
                 } );
 
                 if ( fromCache )
@@ -124,27 +111,24 @@ namespace Rock.Lava
             return contains;
         }
 
-        private WebsiteLavaTemplateCache Load( string content )
+        private WebsiteLavaTemplateCache Load( ILavaEngine engine, string content )
         {
-            if ( _engine == null )
+            if ( engine == null )
             {
                 throw new Exception( "WebsiteLavaTemplateCache template load failed. The cache must be initialized for a specific engine." );
             }
 
-            var result = _engine.ParseTemplate( content );
+            var result = engine.ParseTemplate( content );
 
             var cacheEntry = new WebsiteLavaTemplateCache { Template = result.Template };
 
             return cacheEntry;
         }
 
-        #endregion
-
         #region ILavaTemplateCacheService implementation
 
         private long _cacheHits = 0;
         private long _cacheMisses = 0;
-        private ILavaEngine _engine = null;
 
         void ILavaTemplateCacheService.AddTemplate( ILavaTemplate template, string cacheKey )
         {
@@ -171,21 +155,12 @@ namespace Rock.Lava
             }
         }
 
-        ILavaEngine ILavaTemplateCacheService.LavaEngine
-        {
-            get
-            {
-                return _engine;
-            }
-            set
-            {
-                _engine = value;
-            }
-        }
-
         void ILavaTemplateCacheService.ClearCache()
         {
             WebsiteLavaTemplateCache.Clear();
+
+            _cacheHits = 0;
+            _cacheMisses = 0;
         }
 
         bool ILavaTemplateCacheService.ContainsKey( string key )
@@ -207,14 +182,14 @@ namespace Rock.Lava
             WebsiteLavaTemplateCache.Remove( key );
         }
 
-        ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( string templateContent, string cacheKey )
+        ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
         {
             if ( string.IsNullOrWhiteSpace( cacheKey ) )
             {
                 cacheKey = GetTemplateKey( templateContent );
             }
 
-            var templateCache = Get( cacheKey, templateContent );
+            var templateCache = Get( engine, cacheKey, templateContent );
 
             if ( templateCache == null )
             {
@@ -253,7 +228,7 @@ namespace Rock.Lava
                 templateKey = content.XxHash();
             }
 
-            return $"{ _engine.EngineType}:{templateKey}";
+            return $"{ _cacheKeyPrefix }:{templateKey}";
         }
 
         #endregion

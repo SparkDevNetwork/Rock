@@ -13,28 +13,21 @@
                 </div>
             </div>
             <div class="panel-body">
-
-                <div class="list-as-blocks clearfix">
-                    <ul class="list-unstyled">
-                        <asp:Repeater ID="rptConnectionTypes" runat="server">
-                            <ItemTemplate>
-                                <li>
-                                    <asp:LinkButton ID="lbConnectionType" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display">
-                                        <i class='<%# Eval("IconCssClass") %>'></i>
-                                        <h3><%# Eval("Name") %> </h3>
-                                    </asp:LinkButton>
-                                </li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
+                <div class="grid grid-panel">
+                    <Rock:ModalAlert ID="mdGridWarning" runat="server" />
+                    <Rock:Grid ID="gConnectionType" runat="server" RowItemText="Connection Type" OnRowSelected="gConnectionType_Edit" TooltipField="Id">
+                        <Columns>
+                            <Rock:ReorderField />
+                            <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                            <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
+                            <Rock:RockBoundField DataField="OpportunityCount" HeaderText="Opportunity Count" SortExpression="OpportunityCount" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
+                            <Rock:SecurityField />
+                            <Rock:DeleteField OnClick="gConnectionType_Delete" />
+                        </Columns>
+                    </Rock:Grid>
                 </div>
             </div>
         </div>
-        <script>
-            $(".my-workflows .list-as-blocks li").on("click", function () {
-                $(".my-workflows .list-as-blocks li").removeClass('active');
-                $(this).addClass('active');
-            });
-        </script>
     </ContentTemplate>
 </asp:UpdatePanel>

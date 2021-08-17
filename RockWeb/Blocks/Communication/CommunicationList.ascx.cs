@@ -375,34 +375,34 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
 
-            var communications = new CommunicationService( rockContext )
+            var communicationsQuery = new CommunicationService( rockContext )
                     .Queryable().AsNoTracking()
                     .Where( c => c.Status != CommunicationStatus.Transient );
 
             string subject = tbSubject.Text;
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
-                communications = communications.Where( c => ( string.IsNullOrEmpty( c.Subject ) && c.Name.Contains( subject ) ) || c.Subject.Contains( subject ) );
+                communicationsQuery = communicationsQuery.Where( c => ( string.IsNullOrEmpty( c.Subject ) && c.Name.Contains( subject ) ) || c.Subject.Contains( subject ) );
             }
 
             var communicationType = ddlType.SelectedValueAsEnumOrNull<CommunicationType>();
             if ( communicationType != null )
             {
-                communications = communications.Where( c => c.CommunicationType == communicationType );
+                communicationsQuery = communicationsQuery.Where( c => c.CommunicationType == communicationType );
             }
 
             string status = ddlStatus.SelectedValue;
             if ( !string.IsNullOrWhiteSpace( status ) )
             {
                 var communicationStatus = ( CommunicationStatus ) System.Enum.Parse( typeof( CommunicationStatus ), status );
-                communications = communications.Where( c => c.Status == communicationStatus );
+                communicationsQuery = communicationsQuery.Where( c => c.Status == communicationStatus );
             }
 
             if ( canApprove )
             {
                 if ( ppSender.PersonId.HasValue )
                 {
-                    communications = communications
+                    communicationsQuery = communicationsQuery
                         .Where( c =>
                             c.SenderPersonAlias != null &&
                             c.SenderPersonAlias.PersonId == ppSender.PersonId.Value );
@@ -411,7 +411,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 // If can't approve, only show current person's communications
-                communications = communications
+                communicationsQuery = communicationsQuery
                     .Where( c =>
                         c.SenderPersonAlias != null &&
                         c.SenderPersonAlias.PersonId == CurrentPersonId );
@@ -419,40 +419,40 @@ namespace RockWeb.Blocks.Communication
 
             if ( nreRecipientCount.LowerValue.HasValue )
             {
-                communications = communications.Where( a => a.Recipients.Count() >= nreRecipientCount.LowerValue.Value );
+                communicationsQuery = communicationsQuery.Where( a => a.Recipients.Count() >= nreRecipientCount.LowerValue.Value );
             }
 
             if ( nreRecipientCount.UpperValue.HasValue )
             {
-                communications = communications.Where( a => a.Recipients.Count() <= nreRecipientCount.UpperValue.Value );
+                communicationsQuery = communicationsQuery.Where( a => a.Recipients.Count() <= nreRecipientCount.UpperValue.Value );
             }
 
             if ( drpCreatedDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value >= drpCreatedDates.LowerValue.Value );
+                communicationsQuery = communicationsQuery.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value >= drpCreatedDates.LowerValue.Value );
             }
 
             if ( drpCreatedDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpCreatedDates.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < upperDate );
+                communicationsQuery = communicationsQuery.Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < upperDate );
             }
 
             if ( drpSentDates.LowerValue.HasValue )
             {
-                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= drpSentDates.LowerValue.Value );
+                communicationsQuery = communicationsQuery.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= drpSentDates.LowerValue.Value );
             }
 
             if ( drpSentDates.UpperValue.HasValue )
             {
                 DateTime upperDate = drpSentDates.UpperValue.Value.Date.AddDays( 1 );
-                communications = communications.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
+                communicationsQuery = communicationsQuery.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
             }
 
             string content = tbContent.Text;
             if ( !string.IsNullOrWhiteSpace( content ) )
             {
-                communications = communications.Where( c =>
+                communicationsQuery = communicationsQuery.Where( c =>
                     c.Message.Contains( content ) ||
                     c.SMSMessage.Contains( content ) ||
                     c.PushMessage.Contains( content ) );
@@ -461,12 +461,21 @@ namespace RockWeb.Blocks.Communication
             var recipients = new CommunicationRecipientService( rockContext ).Queryable();
 
             // We want to limit to only communications that they are authorized to view, but if there are a large number of communications, that could be very slow.
-            // So, since communication security is based on CommunicationTemplate, take a shortcut and just limit based on authorized communication templates
+            // So, since communication security is based on CommunicationTemplate or SystemCommunication, take a shortcut and just limit based on
+            // authorized CommunicationTemplates and authorized SystemCommunications
             var authorizedCommunicationTemplateIds = new CommunicationTemplateService( rockContext ).Queryable()
-                .Where( a => communications.Where( x => x.CommunicationTemplateId.HasValue ).Select( x => x.CommunicationTemplateId.Value ).Distinct().Contains( a.Id ) )
+                .Where( a => communicationsQuery.Any( x => x.CommunicationTemplateId.HasValue && x.CommunicationTemplateId == a.Id ) )
                 .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
 
-            var queryable = communications.Where( a => a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains( a.CommunicationTemplateId.Value ) )
+            var authorizedSystemCommunicationIds = new SystemCommunicationService( rockContext ).Queryable()
+    .Where( a => communicationsQuery.Any( x => x.SystemCommunicationId.HasValue && a.Id == x.SystemCommunicationId ) )
+    .ToList().Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Id ).ToList();
+
+            var communicationItemQuery = communicationsQuery.Where( a =>
+                    ( a.CommunicationTemplateId == null || authorizedCommunicationTemplateIds.Contains( a.CommunicationTemplateId.Value ) )
+                    &&
+                    ( a.SystemCommunicationId == null || authorizedSystemCommunicationIds.Contains( a.SystemCommunicationId.Value ) )
+                    )
                 .Select( c => new CommunicationItem
                 {
                     Id = c.Id,
@@ -490,11 +499,11 @@ namespace RockWeb.Blocks.Communication
             var sortProperty = gCommunication.SortProperty;
             if ( sortProperty != null )
             {
-                queryable = queryable.Sort( sortProperty );
+                communicationItemQuery = communicationItemQuery.Sort( sortProperty );
             }
             else
             {
-                queryable = queryable.OrderByDescending( c => c.SendDateTime );
+                communicationItemQuery = communicationItemQuery.OrderByDescending( c => c.SendDateTime );
             }
 
             gCommunication.EntityTypeId = EntityTypeCache.Get<Rock.Model.Communication>().Id;
@@ -502,7 +511,7 @@ namespace RockWeb.Blocks.Communication
 
             try
             {
-                gCommunication.SetLinqDataSource( queryable );
+                gCommunication.SetLinqDataSource( communicationItemQuery );
                 gCommunication.DataBind();
             }
             catch ( Exception exception )

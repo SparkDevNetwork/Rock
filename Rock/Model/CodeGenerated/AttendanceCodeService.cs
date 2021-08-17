@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,12 +54,12 @@ namespace Rock.Model
         public bool CanDelete( AttendanceCode item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<Attendance>( Context ).Queryable().Any( a => a.AttendanceCodeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", AttendanceCode.FriendlyTypeName, Attendance.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
@@ -121,5 +124,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }
