@@ -51,8 +51,8 @@ install:
 
 # directories to preserve between builds
 cache:
-node_modules
-packages
+- node_modules
+- packages
 
 # scripts to run before build
 before_build:
