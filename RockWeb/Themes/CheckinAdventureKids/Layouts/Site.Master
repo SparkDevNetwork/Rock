@@ -79,6 +79,15 @@
             });
 
             if ($('.checkin-celebrations').length) {
+                if (navigator.userAgent.match(/Trident\/7\./)) {
+                    var confettiColors = [ '#122417', '#1a4a24', '#dbedcc', '#a38254', '#ffc871', '#ffffff' ];
+                } else {
+                    var confettiColors = [];
+                    var style = getComputedStyle(document.body);
+                    for (var i = 1; i < 7; i++) {
+                        confettiColors.push(style.getPropertyValue('--celebration-'+ i) )
+                    }
+                }
                 setTimeout(
                     function () {
                         celebrateSound.play();
@@ -89,7 +98,7 @@
                             startVelocity: 30,
                             particleCount: 200,
                             decay: 0.95,
-                            colors: [ '#f24730', '#6abfd3', '#ffc639', '#ff9239', '#fc83a3', '#5395e5' ]
+                            colors: confettiColors
                         });
                     }, 500);
                 setTimeout(

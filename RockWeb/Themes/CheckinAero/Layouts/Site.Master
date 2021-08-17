@@ -71,6 +71,15 @@
             });
 
             if ($('.checkin-celebrations').length) {
+                if (navigator.userAgent.match(/Trident\/7\./)) {
+                    var confettiColors = [ '#f24730', '#6abfd3', '#ffc639', '#ff9239', '#fc83a3', '#5395e5' ];
+                } else {
+                    var confettiColors = [];
+                    var style = getComputedStyle(document.body);
+                    for (var i = 1; i < 7; i++) {
+                        confettiColors.push(style.getPropertyValue('--celebration-'+ i) )
+                    }
+                }
                 setTimeout(
                     function () {
                         celebrateSound.play();
