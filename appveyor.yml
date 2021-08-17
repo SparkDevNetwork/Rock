@@ -25,6 +25,10 @@ image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
 
+init:
+  - cmd: >-
+    git config --global core.autocrlf true
+
 # clone directory and depth
 clone_depth: 1
 clone_folder: C:\projects\Rock
@@ -51,21 +55,15 @@ install:
 
 # directories to preserve between builds
 cache:
-- node_modules
-- packages
+# - node_modules
+# - packages
 
 # scripts to run before build
 before_build:
 - ps: >-
-    if (Test-Path 'C:\Tools\NuGet3') { $nugetDir = 'C:\Tools\NuGet3' } else { $nugetDir = 'C:\Tools\NuGet' }
+    nuget restore
 
-    nuget restore Rock.sln
-
-    $src = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\Facades"
-
-    $dst = "C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2"
-
-    Get-ChildItem $src | Copy-Item -Destination $dst -Force
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv" "c:\projects\rock\rock.sln" /build Release
 
     (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
 
