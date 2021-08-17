@@ -83,7 +83,7 @@ namespace Rock.Tests.Integration.Model
             var result = rockContext.Database.
                             SqlQuery<int>( $"SELECT CreatedDateKey FROM Registration WHERE Id = {connectionRequestId}" ).First();
 
-            Assert.AreEqual( Convert.ToInt32( DateTime.Now.ToString( "yyyyMMdd" ) ), result );
+            Assert.AreEqual( Convert.ToInt32( RockDateTime.Now.ToString( "yyyyMMdd" ) ), result );
         }
 
         [TestMethod]

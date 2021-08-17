@@ -4763,7 +4763,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = RockDateTime.Now.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -5377,19 +5377,24 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Deletes the user preference.
+        /// Adds a QuickReturn to PersonalLinks.
+        /// Note that this is only supported for pages that have the PersonalLinks block on it.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="typeName">The type name.</param>
+        /// <param name="typeName">Name of the type.</param>
         /// <param name="typeOrder">The type order.</param>
-        /// <returns></returns>
         public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
         {
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            RockPage rockPage = HttpContext.Current.Handler as RockPage;
 
             if ( input.IsNotNullOrWhiteSpace() )
             {
-                RockPage.AddScriptToHead( page, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
+
+                /*  08-16-2021 MDP
+                  This is only supported for pages that have the PersonalLinks block on it.
+                */
+                
+                RockPage.AddScriptToHead( rockPage, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
                 typeName,
                 typeOrder,
                 input.ToString().EscapeQuotes() ), true );

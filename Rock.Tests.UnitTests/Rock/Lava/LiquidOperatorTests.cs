@@ -625,6 +625,26 @@ namespace Rock.Tests.UnitTests.Lava
         /// <summary>
         /// Verify the "not equals" comparison operator.
         /// </summary>
+        [TestMethod]
+        public void FluidNotEqual_BooleanOperandAndEmptyString_AlwaysReturnsTrue()
+        {
+            var template = @"
+{% assign operandTrue = true %}
+{% assign operandFalse = false %}
+{% if operandTrue != '' %}1{% endif %}
+{% if operandFalse != '' %}2{% endif %}
+{% if '' != operandTrue %}3{% endif %}
+{% if '' != operandFalse %}4{% endif %}
+";
+
+            var expectedOutput = @"1234";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verify the "not equals" comparison operator.
+        /// </summary>
         [DataTestMethod]
         [DataRow( "'abc' != 'abd'", true )]
         [DataRow( "'' != ' '", true )]

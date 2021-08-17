@@ -125,12 +125,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable request security].

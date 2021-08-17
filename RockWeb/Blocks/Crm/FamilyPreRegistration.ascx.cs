@@ -134,6 +134,22 @@ namespace RockWeb.Blocks.Crm
         IsRequired = false,
         Order = 10 )]
 
+    [WorkflowTypeField(
+        "Parent Workflow",
+        Key = AttributeKey.ParentWorkflow,
+        Description = BlockAttributeDescription.ParentWorkflow,
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 11 )]
+
+    [WorkflowTypeField(
+        "Child Workflow",
+        Key = AttributeKey.ChildWorkflow,
+        Description = BlockAttributeDescription.ChildWorkflow,
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 12 )]
+
     [CodeEditorField(
         "Redirect URL",
         Key = AttributeKey.RedirectURL,
@@ -142,14 +158,14 @@ namespace RockWeb.Blocks.Crm
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = true,
-        Order = 11 )]
+        Order = 13 )]
 
     [BooleanField(
         "Require Campus",
         Key = AttributeKey.RequireCampus,
         Description = "Require that a campus be selected",
         DefaultBooleanValue = true,
-        Order = 12 )]
+        Order = 14 )]
 
     [CustomDropdownListField(
         "Number of Columns",
@@ -158,7 +174,7 @@ namespace RockWeb.Blocks.Crm
         ListSource = ListSource.COLUMNS,
         IsRequired = false,
         DefaultValue = "4",
-        Order = 11 )]
+        Order = 15 )]
 
     #region Adult Category
 
@@ -377,6 +393,8 @@ namespace RockWeb.Blocks.Crm
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
             public const string WorkflowTypes = "WorkflowTypes";
+            public const string ParentWorkflow = "ParentWorkflow";
+            public const string ChildWorkflow = "ChildWorkflow";
             public const string RedirectURL = "RedirectURL";
             public const string RequireCampus = "RequireCampus";
             public const string Columns = "Columns";
@@ -416,6 +434,8 @@ namespace RockWeb.Blocks.Crm
         private static class BlockAttributeDescription
         {
             public const string WorkflowTypes = @"The workflow type(s) to launch when a family is added. The primary family will be passed to each workflow as the entity. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: ParentIds, ChildIds, PlannedVisitDate.";
+            public const string ParentWorkflow = @"If set, this workflow type will launch for each parent provided. The parent will be passed to the workflow as the Entity.";
+            public const string ChildWorkflow = @"If set, this workflow type will launch for each child provided. The child will be passed to the workflow as the Entity.";
             public const string RedirectURL = @"The URL to redirect user to when they have completed the registration. The merge fields that are available includes 'Family', which is an object for the primary family that is created/updated; 'RelatedChildren', which is a list of the children who have a relationship with the family, but are not in the family; 'ParentIds' which is a comma-delimited list of the person ids for each adult; 'ChildIds' which is a comma-delimited list of the person ids for each child; and 'PlannedVisitDate' which is the value entered for the Planned Visit Date field if it was displayed.";
         }
 
@@ -1116,15 +1136,59 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
+                var parentWorkflowTypeGuid = GetAttributeValue( AttributeKey.ParentWorkflow ).AsGuidOrNull();
+                if ( parentWorkflowTypeGuid.HasValue )
+                {
+                    var workflowType = WorkflowTypeCache.Get( parentWorkflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        foreach ( var adult in adults )
+                        {
+                            try
+                            {
+                                var workflow = Workflow.Activate( workflowType, adult.FullName );
+                                List<string> workflowErrors;
+                                new WorkflowService( new RockContext() ).Process( workflow, adult, out workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex, this.Context );
+                            }
+                        }
+                    }
+                }
+
+                var childIds = new List<int>( newChildIds );
+                childIds.AddRange( newRelationships.Select( r => r.Key ).ToList() );
+                var childWorkflowTypeGuid = GetAttributeValue( AttributeKey.ChildWorkflow ).AsGuidOrNull();
+                if ( childWorkflowTypeGuid.HasValue && childIds.Any() )
+                {
+                    var workflowType = WorkflowTypeCache.Get( childWorkflowTypeGuid.Value );
+                    if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                    {
+                        var childs = personService.Queryable().Where( p => childIds.Contains( p.Id ) ).ToList();
+                        foreach ( var child in childs )
+                        {
+                            try
+                            {
+                                var workflow = Workflow.Activate( workflowType, child.FullName );
+                                List<string> workflowErrors;
+                                new WorkflowService( new RockContext() ).Process( workflow, child, out workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex, this.Context );
+                            }
+                        }
+                    }
+                }
+
                 List<Guid> workflows = GetAttributeValue( AttributeKey.WorkflowTypes ).SplitDelimitedValues().AsGuidList();
                 string redirectUrl = GetAttributeValue( AttributeKey.RedirectURL );
                 if ( workflows.Any() || redirectUrl.IsNotNullOrWhiteSpace() )
                 {
                     var family = groupService.Get( primaryFamily.Id );
                     var schedule = new ScheduleService( _rockContext ).Get( ddlScheduleTime.SelectedValue.AsGuid() );
-
-                    var childIds = new List<int>( newChildIds );
-                    childIds.AddRange( newRelationships.Select( r => r.Key ).ToList() );
 
                     // Create parameters
                     var parameters = new Dictionary<string, string>();

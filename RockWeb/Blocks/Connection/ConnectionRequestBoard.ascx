@@ -554,7 +554,7 @@
                                         <Rock:NotificationBox
                                             runat="server"
                                             ID="nbTranferFailed"
-                                            Text="You must select a new opportunity to transfer this request."
+                                            Text="You must select a new opportunity or connector to transfer this request."
                                             NotificationBoxType="Warning"
                                             Visible="false"></Rock:NotificationBox>
                                     </div>

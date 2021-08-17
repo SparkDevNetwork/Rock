@@ -337,7 +337,7 @@ namespace Rock.Tests.UnitTests.Lava
         [TestMethod]
         public void DateAdd_Now_ResolvesToCurrentDate()
         {
-            TestHelper.AssertTemplateOutputDate( DateTime.Now.AddDays( 5 ), "{{ 'Now' | DateAdd:5,'d' }}", TimeSpan.FromSeconds( 300 ) );
+            TestHelper.AssertTemplateOutputDate( RockDateTime.Now.AddDays( 5 ), "{{ 'Now' | DateAdd:5,'d' }}", TimeSpan.FromSeconds( 300 ) );
         }
 
         /// <summary>

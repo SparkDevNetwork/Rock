@@ -70,14 +70,14 @@ namespace Rock.Model
                             // Don't log Pin Authentication user names.
                             var isUserNameSensitive = ( entityType?.Guid == Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() ) ? true : false;
 
-                            History.EvaluateChange( HistoryChanges, "User Login", OriginalValues["UserName"].ToStringSafe(), Entity.UserName, isUserNameSensitive );
-                            History.EvaluateChange( HistoryChanges, "Is Confirmed", OriginalValues["IsConfirmed"].ToStringSafe().AsBooleanOrNull(), Entity.IsConfirmed );
-                            History.EvaluateChange( HistoryChanges, "Is Password Change Required", OriginalValues["IsPasswordChangeRequired"].ToStringSafe().AsBooleanOrNull(), Entity.IsPasswordChangeRequired );
-                            History.EvaluateChange( HistoryChanges, "Is Locked Out", OriginalValues["IsLockedOut"].ToStringSafe().AsBooleanOrNull(), Entity.IsLockedOut );
-                            History.EvaluateChange( HistoryChanges, "Password", OriginalValues["Password"].ToStringSafe(), Entity.Password, true );
+                            History.EvaluateChange( HistoryChanges, "User Login", OriginalValues[nameof( UserLogin.UserName )].ToStringSafe(), Entity.UserName, isUserNameSensitive );
+                            History.EvaluateChange( HistoryChanges, "Is Confirmed", OriginalValues[nameof( UserLogin.IsConfirmed )].ToStringSafe().AsBooleanOrNull(), Entity.IsConfirmed );
+                            History.EvaluateChange( HistoryChanges, "Is Password Change Required", OriginalValues[nameof( UserLogin.IsPasswordChangeRequired )].ToStringSafe().AsBooleanOrNull(), Entity.IsPasswordChangeRequired );
+                            History.EvaluateChange( HistoryChanges, "Is Locked Out", OriginalValues[nameof( UserLogin.IsLockedOut )].ToStringSafe().AsBooleanOrNull(), Entity.IsLockedOut );
+                            History.EvaluateChange( HistoryChanges, "Password", OriginalValues[nameof( UserLogin.Password )].ToStringSafe(), Entity.Password, true );
 
                             // Did the provider type change?
-                            int? origEntityTypeId = OriginalValues["EntityTypeId"].ToStringSafe().AsIntegerOrNull();
+                            int? origEntityTypeId = OriginalValues[nameof( UserLogin.EntityTypeId )].ToStringSafe().AsIntegerOrNull();
                             int? entityTypeId = Entity.EntityType != null ? Entity.EntityType.Id : Entity.EntityTypeId;
                             if ( !entityTypeId.Equals( origEntityTypeId ) )
                             {

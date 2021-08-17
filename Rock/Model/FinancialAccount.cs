@@ -155,12 +155,7 @@ namespace Rock.Model
         ///  A <see cref="System.Boolean"/> that is <c>true</c> if this FinancialAccount is active, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating if this FinancialAccount is public.

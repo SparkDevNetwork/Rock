@@ -342,7 +342,7 @@ namespace Rock.Model
             var qry = Queryable( "Group,Schedule" ).AsNoTracking().Where( a => a.GroupId == group.Id );
 
             // Filter by date range
-            var fromDate = DateTime.Now.Date;
+            var fromDate = RockDateTime.Now.Date;
             var toDate = fromDate.AddMonths( 6 ); // Default to 6 months in the future.
             if ( toDateTime.HasValue )
             {

@@ -30,7 +30,7 @@ namespace Rock.Model
         public void UpdateLastReminderDateForPersonAlias( int personAliasId )
         {
             var sqlParams = new Dictionary<string, object>();
-            sqlParams.Add( "@lastReminderDate", DateTime.Now );
+            sqlParams.Add( "@lastReminderDate", RockDateTime.Now );
             sqlParams.Add( "@status", AssessmentRequestStatus.Pending );
             sqlParams.Add( "@personAliasId", personAliasId );
 

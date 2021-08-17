@@ -569,7 +569,7 @@ namespace RockWeb.Blocks.Cms
                     mdBlockMove.Title = string.Format( "Move {0} Block", block.Name );
 
                     ddlMoveToZoneList.SetValue( block.Zone );
-                    cblBlockMovePageOrLayout.Items.Clear();
+                    cblBlockMovePageLayoutOrSite.Items.Clear();
 
                     var page = PageCache.Get( hfPageId.Value.AsInteger() );
 
@@ -579,12 +579,18 @@ namespace RockWeb.Blocks.Cms
                     listItemPage.Selected = block.PageId.HasValue;
 
                     var listItemLayout = new ListItem();
-                    listItemLayout.Text = string.Format( "All Pages use the '{0}' Layout", page.Layout );
+                    listItemLayout.Text = string.Format( "All Pages that use the '{0}' Layout", page.Layout );
                     listItemLayout.Value = "Layout";
                     listItemLayout.Selected = block.LayoutId.HasValue;
 
-                    cblBlockMovePageOrLayout.Items.Add( listItemPage );
-                    cblBlockMovePageOrLayout.Items.Add( listItemLayout );
+                    var listItemSite = new ListItem();
+                    listItemSite.Text = string.Format( "All Pages that use the '{0}' Site", page.Layout?.Site );
+                    listItemSite.Value = "Site";
+                    listItemSite.Selected = block.SiteId.HasValue;
+
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemPage );
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemLayout );
+                    cblBlockMovePageLayoutOrSite.Items.Add( listItemSite );
 
                     mdBlockMove.Show();
                 }
@@ -734,10 +740,16 @@ namespace RockWeb.Blocks.Cms
             if ( block != null )
             {
                 block.Zone = ddlMoveToZoneList.SelectedValue;
-                if ( cblBlockMovePageOrLayout.SelectedValue == "Page" )
+                if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Page" )
                 {
                     block.PageId = page.Id;
                     block.LayoutId = null;
+                }
+                else if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Site" && page.Layout?.SiteId != null )
+                {
+                    block.PageId = null;
+                    block.LayoutId = null;
+                    block.SiteId = page.Layout?.SiteId;
                 }
                 else
                 {

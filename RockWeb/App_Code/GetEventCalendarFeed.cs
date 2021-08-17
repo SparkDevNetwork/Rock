@@ -88,7 +88,7 @@ namespace RockWeb
                 response.Clear();
                 response.ClearHeaders();
                 response.ClearContent();
-                response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", DateTime.Now.ToString( "yyyy-MM-dd_hhmmss" ) ) );
+                response.AddHeader( "content-disposition", string.Format( "attachment; filename={0}_ical.ics", RockDateTime.Now.ToString( "yyyy-MM-dd_hhmmss" ) ) );
                 response.ContentType = "text/calendar";
                 response.Write( s );
             }
@@ -479,7 +479,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _startDate ?? DateTime.Now.AddMonths( -3 ).Date;
+                    return _startDate ?? RockDateTime.Now.AddMonths( -3 ).Date;
                 }
 
                 set
@@ -498,7 +498,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _endDate ?? DateTime.Now.AddMonths( 12 ).Date;
+                    return _endDate ?? RockDateTime.Now.AddMonths( 12 ).Date;
                 }
 
                 set

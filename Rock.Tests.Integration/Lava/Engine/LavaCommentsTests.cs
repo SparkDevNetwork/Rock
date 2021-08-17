@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using DotLiquid;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Tests.Shared;
@@ -60,11 +59,7 @@ Line 2<br>
 Line 3<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -92,13 +87,8 @@ or '/- Block Comment 2...
 -- End Example --
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
-
 
         [TestMethod]
         public void LavaHelperRemoveComments_LineCommentContainingQuotedString_IsRemoved()
@@ -115,11 +105,7 @@ Line 2<br>
 Line 3<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         public void LavaHelperRemoveComments_BlockCommentContainingQuotedString_IsRemoved()
@@ -140,11 +126,7 @@ Line 2<br>
 Line 3<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -170,11 +152,7 @@ or
 Example End<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
         [TestMethod]
         public void LavaHelperRemoveComments_BlockCommentSpanningMultipleLines_RemovesNewLinesContainedInComment()
@@ -194,11 +172,7 @@ Line 2 Start<br>Line 2 End<br>
 Line 3<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
         [TestMethod]
@@ -216,11 +190,7 @@ Line 2 Start<br>Line 2 End<br>
 Line 3<br>
 ";
 
-            var templateUncommented = LavaHelper.RemoveLavaComments( input );
-
-            var output = templateUncommented.ResolveMergeFields( null );
-
-            Assert.That.AreEqual( expectedOutput, output );
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
     }
 }

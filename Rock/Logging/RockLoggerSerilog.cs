@@ -811,7 +811,7 @@ namespace Rock.Logging
                      fileSizeLimitBytes: rockLogConfiguration.MaxFileSize * 1024 * 1024 )
                  .CreateLogger();
 
-            _ConfigurationLastLoaded = DateTime.Now;
+            _ConfigurationLastLoaded = RockDateTime.Now;
         }
 
         /// <summary>

@@ -1414,7 +1414,7 @@ namespace RockWeb.Blocks.Groups
 
             // If there are group requirements that that member doesn't meet, show an icon in the grid
             var groupService = new GroupService( rockContext );
-            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false ).Select( a => a.Key.Id ).ToList().Distinct() );
+            _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( groupService.GroupMembersNotMeetingRequirements( _group, false, true ).Select( a => a.Key.Id ).ToList().Distinct() );
             _groupMemberIdsWithWarnings = groupService.GroupMemberIdsWithRequirementWarnings( _group );
 
             gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;

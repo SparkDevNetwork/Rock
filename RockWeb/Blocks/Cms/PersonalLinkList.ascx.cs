@@ -15,16 +15,19 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
-using System.ComponentModel;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -84,35 +87,27 @@ namespace RockWeb.Blocks.Cms
                 gfFilter.ClearFilterClick += gfFilter_ClearFilterClick;
                 gfFilter.DisplayFilterValue += gfFilter_DisplayFilterValue;
 
-                // Block Security and special attributes (RockPage takes care of View)
-                var canEdit = !_personalLinkSection.IsShared || ( _personalLinkSection.IsShared && _personalLinkSection.IsAuthorized( Authorization.EDIT, CurrentPerson ) );
-
                 gLinkList.DataKeyNames = new string[] { "Id" };
-                gLinkList.Actions.ShowAdd = canEdit;
-                gLinkList.IsDeleteEnabled = canEdit;
+
+                // anybody can add a non-shared link
+                // EDIT auth users can add shared link
+                gLinkList.Actions.ShowAdd = true;
+
+                // edit and delete buttons will be enabled/disabled per row based on security
+                gLinkList.IsDeleteEnabled = true;
+
                 gLinkList.Actions.AddClick += gLinkList_Add;
                 gLinkList.GridReorder += gLinkList_GridReorder;
                 gLinkList.GridRebind += gLinkList_GridRebind;
 
-                var reOrderField = gLinkList.ColumnsOfType<ReorderField>().FirstOrDefault();
-                if ( reOrderField != null )
+                if ( _personalLinkSection.IsShared )
                 {
-                    reOrderField.Visible = canEdit;
+                    lTitle.Text = ( "Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
                 }
-
-                var editField = gLinkList.ColumnsOfType<EditField>().FirstOrDefault();
-                if ( editField != null )
+                else
                 {
-                    editField.Visible = canEdit;
+                    lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
                 }
-
-                var deleteField = gLinkList.ColumnsOfType<DeleteField>().FirstOrDefault();
-                if ( deleteField != null )
-                {
-                    deleteField.Visible = canEdit;
-                }
-
-                lTitle.Text = ( "Personal Links for " + _personalLinkSection.Name ).FormatAsHtmlTitle();
             }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -175,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         {
             var personalLink = new PersonalLinkService( new RockContext() ).Get( e.RowKeyId );
 
-            if ( personalLink.PersonAliasId != CurrentPersonAliasId.Value && personalLink.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            if ( personalLink.PersonAliasId != CurrentPersonAliasId.Value && !personalLink.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
             {
                 mdGridWarning.Show( "Not authorized to make changes to this link.", ModalAlertType.Information );
                 return;
@@ -203,6 +198,12 @@ namespace RockWeb.Blocks.Cms
             if ( personalLink != null )
             {
                 string errorMessage;
+                if ( !personalLink.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    mdGridWarning.Show( "You are not authorized to delete this link", ModalAlertType.Information );
+                    return;
+                }
+
                 if ( !personalLinkService.CanDelete( personalLink, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
@@ -235,7 +236,7 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
 
-            var personalLinks = GetPersonalLinks( rockContext );
+            var personalLinks = GetDataGridList( rockContext );
             if ( personalLinks != null )
             {
                 new PersonalLinkService( rockContext ).Reorder( personalLinks.ToList(), e.OldIndex, e.NewIndex );
@@ -295,10 +296,23 @@ namespace RockWeb.Blocks.Cms
             {
                 personalLink = new PersonalLink
                 {
-                    PersonAliasId = CurrentPersonAliasId.Value,
                     SectionId = _personalLinkSection.Id
                 };
+
+                // add the new link to the bottom of the list for that section
+                var lastLinkOrder = personalLinkService.Queryable().Where( a => a.SectionId == _personalLinkSection.Id ).Max( a => ( int? ) a.Order ) ?? 0;
+                personalLink.Order = lastLinkOrder + 1;
+
                 personalLinkService.Add( personalLink );
+            }
+
+            if ( _personalLinkSection?.IsShared == true )
+            {
+                personalLink.PersonAliasId = null;
+            }
+            else
+            {
+                personalLink.PersonAliasId = CurrentPersonAliasId.Value;
             }
 
             personalLink.Name = tbName.Text;
@@ -307,6 +321,52 @@ namespace RockWeb.Blocks.Cms
 
             mdAddPersonalLink.Hide();
             BindGrid();
+        }
+
+        /// <summary>
+        /// Handles the OnDataBound event of the EditButton control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void EditButton_OnDataBound( object sender, RowEventArgs e )
+        {
+            var personalLink = e.Row.DataItem as PersonalLink;
+
+            if ( personalLink == null )
+            {
+                return;
+            }
+
+            var editButton = sender as LinkButton;
+            if ( editButton == null )
+            {
+                return;
+            }
+
+            editButton.Enabled = personalLink.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Handles the OnDataBound event of the DeleteButton control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void DeleteButton_OnDataBound( object sender, RowEventArgs e )
+        {
+            var personalLink = e.Row.DataItem as PersonalLink;
+
+            if ( personalLink == null )
+            {
+                return;
+            }
+
+            var deleteButton = sender as LinkButton;
+            if ( deleteButton == null )
+            {
+                return;
+            }
+
+            deleteButton.Enabled = personalLink.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson );
         }
 
         #endregion
@@ -328,7 +388,9 @@ namespace RockWeb.Blocks.Cms
         {
             var rockContext = new RockContext();
             gLinkList.EntityTypeId = EntityTypeCache.GetId<PersonalLink>();
-            gLinkList.DataSource = GetPersonalLinks( rockContext ).ToList();
+            var dataList = GetDataGridList( rockContext );
+
+            gLinkList.DataSource = dataList;
             gLinkList.DataBind();
         }
 
@@ -352,10 +414,10 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the personal links.
+        /// Gets the personal links that will be displayed in the grid
         /// </summary>
         /// <returns></returns>
-        private IQueryable<PersonalLink> GetPersonalLinks( RockContext rockContext )
+        private List<PersonalLink> GetDataGridList( RockContext rockContext )
         {
             var qry = new PersonalLinkService( rockContext ).Queryable().Where( a => a.SectionId == _personalLinkSection.Id );
 
@@ -367,7 +429,13 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( a => a.Name.Contains( name ) );
             }
 
-            return qry.OrderBy( g => g.Order ).ThenBy( g => g.Name );
+            qry = qry.OrderBy( g => g.Order ).ThenBy( g => g.Name );
+
+            var dataGridList = qry.ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                .ToList();
+
+            return dataGridList;
         }
 
         #endregion

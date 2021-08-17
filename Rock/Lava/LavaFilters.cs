@@ -4017,33 +4017,45 @@ namespace Rock.Lava
             var dataObjectType = dataObject.GetType();
 
             // Determine if dataset is a collection or a single object
-            bool isCollection;
+            bool isCollection = false;
             bool isEntityCollection = false;
             int? dataObjectEntityTypeId = null;
 
             if ( dataObject is IEntity entity )
             {
+                // The input object is a single Entity.
                 resultDataObject = new RockDynamic( dataObject );
                 resultDataObject.EntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
-                isCollection = false;
             }
-            else
+            else if ( dataObject is ExpandoObject xo )
             {
+                resultDataObject = ( resultDataObject as ExpandoObject )?.ShallowCopy() ?? resultDataObject;
+            }
+            else if ( dataObject is IEnumerable collection )
+            {
+                // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects
+                // to see if we should treat it as a collection.
                 isCollection = false;
 
-                if ( dataObject is IEnumerable entityList )
+                var enumerator = collection.GetEnumerator();
+
+                var firstItem = enumerator.MoveNext() ? enumerator.Current : null;
+
+                if ( firstItem == null )
                 {
-                    var enumerator = entityList.GetEnumerator();
+                    isCollection = false;
+                }
+                else
+                {
+                    isCollection = true;
 
-                    var firstEntity = enumerator.MoveNext() ? enumerator.Current as IEntity : null;
-
-                    if ( firstEntity != null )
+                    if ( firstItem is IEntity firstEntity )
                     {
                         dataObjectEntityTypeId = EntityTypeCache.GetId( firstEntity.GetType() );
 
                         var dynamicEntityList = new List<RockDynamic>();
 
-                        foreach ( var item in entityList )
+                        foreach ( var item in collection )
                         {
                             dynamic rockDynamicItem = new RockDynamic( item );
                             rockDynamicItem.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
@@ -4053,26 +4065,18 @@ namespace Rock.Lava
                         resultDataObject = dynamicEntityList;
 
                         isEntityCollection = true;
-                        isCollection = true;
                     }
-                }
-
-                if ( !isEntityCollection )
-                {
-                    // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
-                    resultDataObject = dataObject;
-
-                    // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
-                    isCollection = resultDataObject is IEnumerable<ExpandoObject>;
-
-                    // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
-                    if ( isCollection )
+                    else if ( firstItem is ExpandoObject )
                     {
-                        resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();
+                        // If the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset.
+                        var expandoCollection = collection.Cast<ExpandoObject>();
+
+                        resultDataObject = expandoCollection.Select( a => a.ShallowCopy() ).ToList();
                     }
                     else
                     {
-                        resultDataObject = ( resultDataObject as ExpandoObject )?.ShallowCopy() ?? resultDataObject;
+                        // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
+                        resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();
                     }
                 }
             }
@@ -4130,7 +4134,7 @@ namespace Rock.Lava
 
             if ( currentPerson != null )
             {
-                followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
+                followedEntityIds = new FollowingService( LavaHelper.GetRockContextFromLavaContext( context ) ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
                     .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
             }
             else
@@ -4490,7 +4494,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = RockDateTime.Now.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );

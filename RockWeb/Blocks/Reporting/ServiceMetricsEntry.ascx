@@ -20,7 +20,7 @@
 
                 <asp:Panel ID="pnlSelection" runat="server">
 
-                    <h3>
+                    <h3 class="mt-0">
                         <asp:Literal ID="lSelection" runat="server"></asp:Literal></h3>
 
                     <asp:Repeater ID="rptrSelection" runat="server" OnItemCommand="rptrSelection_ItemCommand">

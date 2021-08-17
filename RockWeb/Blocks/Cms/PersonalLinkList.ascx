@@ -19,8 +19,8 @@
                             <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Name" HeaderText="Link Name" />
                             <Rock:RockBoundField DataField="Url" HeaderText="Link Url" TruncateLength="65" />
-                            <Rock:EditField OnClick="gLinkList_Edit" />
-                            <Rock:DeleteField OnClick="gLinkList_Delete" />
+                            <Rock:EditField OnClick="gLinkList_Edit" OnDataBound="EditButton_OnDataBound" />
+                            <Rock:DeleteField OnClick="gLinkList_Delete" OnDataBound="DeleteButton_OnDataBound" />
                         </Columns>
                     </Rock:Grid>
                 </div>

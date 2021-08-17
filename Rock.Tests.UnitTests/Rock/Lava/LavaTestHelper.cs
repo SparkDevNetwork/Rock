@@ -198,7 +198,10 @@ namespace Rock.Tests.UnitTests.Lava
 
             var result = engine.RenderTemplate( inputTemplate.Trim(), new LavaRenderParameters { Context = context } );
 
-            Assert.That.IsFalse( result.HasErrors, "Lava Template is invalid." );
+            if ( result.HasErrors )
+            {
+                throw result.Error;
+            }
 
             return result.Text;
         }

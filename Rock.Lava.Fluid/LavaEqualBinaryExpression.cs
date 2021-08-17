@@ -94,6 +94,33 @@ namespace Rock.Lava.Fluid
                 }
             }
 
+            // If either value is boolean, perform a boolean comparison.
+            if ( leftValue is BooleanValue || rightValue is BooleanValue )
+            {
+                // If comparing with an empty string, any value will satisfy the predicate.
+                if ( leftValue.Type == FluidValues.String && leftValue.ToStringValue() == string.Empty )
+                {
+                    return FailIfEqual ? BooleanValue.True : BooleanValue.False;
+                }
+                else if ( rightValue.Type == FluidValues.String && rightValue.ToStringValue() == string.Empty )
+                {
+
+                    return FailIfEqual ? BooleanValue.True : BooleanValue.False;
+                }
+
+                var leftBoolean = leftValue.ToBooleanValue();
+                var rightBoolean = rightValue.ToBooleanValue();
+
+                if ( FailIfEqual )
+                {
+                    return leftBoolean == rightBoolean ? BooleanValue.False : BooleanValue.True;
+                }
+                else
+                {
+                    return leftBoolean == rightBoolean ? BooleanValue.True : BooleanValue.False;
+                }
+            }
+
             // If either value is numeric, perform a numeric comparison.
             if ( leftValue is NumberValue || rightValue is NumberValue )
             {

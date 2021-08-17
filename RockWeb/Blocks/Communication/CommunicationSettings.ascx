@@ -17,7 +17,7 @@
                         <Rock:RockDropDownList ID="ddlApprovalEmailTemplate" runat="server" Label="Communication Approval Email Template" Help="The system communication to use for emailing approval notifications when a new message is pending approval." Required="true" />
                     </div>
                 </div>
-                <div class="actions margin-t-lg">
+                <div class="actions">
                     <Rock:BootstrapButton ID="btnSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSave_Click" Text="Save" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
                         CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"></Rock:BootstrapButton>
                 </div>
