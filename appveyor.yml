@@ -26,8 +26,7 @@ configuration: Release
 platform: Any CPU
 
 init:
-  - cmd: >-
-    git config --global core.autocrlf true
+  - git config --global core.autocrlf true
 
 # clone directory and depth
 clone_depth: 1
