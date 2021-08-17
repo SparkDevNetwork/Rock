@@ -81,7 +81,8 @@ build:
   verbosity: minimal
 
 build_script:
-- nuget restore "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv" "c:\projects\Rock\rock.sln" /build Release
+- nuget restore "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
+- "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
