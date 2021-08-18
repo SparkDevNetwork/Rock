@@ -41,8 +41,8 @@
             volume: 0.8
         });
 
-        var confettiSound = new Howl({
-            src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/confetti_gun.mp3") %>' ],
+        var lionSound = new Howl({
+            src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/lion.mp3") %>' ],
                 volume: 1
             } );
 
@@ -79,32 +79,15 @@
             });
 
             if ($('.checkin-celebrations').length) {
-                if (navigator.userAgent.match(/Trident\/7\./)) {
-                    var confettiColors = [ '#122417', '#1a4a24', '#dbedcc', '#a38254', '#ffc871', '#ffffff' ];
-                } else {
-                    var confettiColors = [];
-                    var style = getComputedStyle(document.body);
-                    for (var i = 1; i < 7; i++) {
-                        confettiColors.push(style.getPropertyValue('--celebration-'+ i) )
-                    }
-                }
+                //celebrateSound.play();
                 setTimeout(
                     function () {
-                        celebrateSound.play();
-                        confetti({
-                            origin: { y: -0.2 },
-                            angle: -90,
-                            spread: 150,
-                            startVelocity: 30,
-                            particleCount: 200,
-                            decay: 0.95,
-                            colors: confettiColors
-                        });
-                    }, 500);
+                        $( "body" ).append( "<div class='lion-cage'><div class='lion'></div></div>" );
+                    }, 200);
                 setTimeout(
                     function () {
-                        confettiSound.play();
-                    }, 800);
+                        lionSound.play();
+                    }, 1000);
             }
         }
     </script>
