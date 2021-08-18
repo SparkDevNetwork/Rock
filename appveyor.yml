@@ -70,7 +70,7 @@ build:
 
 build_script:
 - ps: >-
-    nuget restore c:\projects\Rock\Rock.sln
+    nuget restore "c:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv" "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
