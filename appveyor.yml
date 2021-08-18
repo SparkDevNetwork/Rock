@@ -72,8 +72,6 @@ build_script:
 - ps: >-
     nuget restore c:\projects\Rock\Rock.sln
 
-    /build Release
-
 # flag to stop building if an error throws
 matrix:
   fast_finish: true
