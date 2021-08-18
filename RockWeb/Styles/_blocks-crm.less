@@ -59,6 +59,9 @@
 
     .action {
       float: left;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       width: 45px;
       height: 100%;
       color: lighten(@persondetails-bio-color, 15%);
@@ -67,13 +70,6 @@
       border-color: darken(@persondetails-bio-bg, @const-border-darken-amt);
       border-style: solid;
       border-width: 0 0 1px 1px;
-
-      & > i {
-        position: relative;
-        top: 50%;
-        height: 20px;
-        transform: translateY(-50%);
-      }
     }
 
     .action-extended {
@@ -498,6 +494,7 @@
       min-height: 1px;
       max-height: 100%;
       background: @persondetails-badge-color;
+      border-radius: 2px 2px 0 0;
 
       .animate & {
         -webkit-animation: bar-grow 1s ease-in-out;
@@ -871,17 +868,16 @@
 
 .persondetails-group {
   header {
+    display: flex;
     position: relative;
-    padding: 10px 15px;
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
     border-top: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
     border-bottom: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
-    .clearfix();
 
     h1 {
       float: left;
-      margin: 0;
+      margin: 10px 15px;
       font-size: @font-size-h4;
       font-weight: 600;
       line-height: 25px;
@@ -889,24 +885,18 @@
 
     .action-wrapper {
       float: right;
-      height: 45px;
-      margin: -10px -15px -10px 0;
+      margin-left: auto;
 
       .action {
-        display: block;
+        display: flex;
         float: right;
         width: 45px;
         height: 100%;
         text-align: center;
         cursor: pointer;
         border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
-
-        i {
-          position: relative;
-          top: 50%;
-          height: 20px;
-          transform: translateY(-50%);
-        }
+        justify-content: center;
+        align-items: center;
       }
     }
   }
@@ -1641,8 +1631,8 @@ tr.inactive {
 
 .add-step-buttons {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   padding: 8px @panel-body-padding;
   margin: -@panel-body-padding -@panel-body-padding 0;
   background: @panel-drawer-bg;
