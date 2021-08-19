@@ -58,8 +58,8 @@ cache:
 # scripts to run before build
 # (New-Object Net.WebClient).DownloadFile('https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe', "$nugetDir\NuGet.exe")
 before_build:
-- ps: >-
-    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
+#- ps: >-
+#    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
 
 # build configuration
 build:
