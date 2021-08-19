@@ -18,7 +18,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
-using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -273,6 +272,47 @@ This is the cache content.
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
             } );
+        }
+
+        /// <summary>
+        /// Verify that multiple cached Sql blocks on the same page maintain their individual contexts and output.
+        /// </summary>
+        [TestMethod]
+        public void CacheBlock_MultipleInstancesOfCachedSqlBlocks_RendersCorrectOutput()
+        {
+            var input = @"
+{% cache key:'test1' duration:'10' %}
+{% sql %}
+    SELECT 1 AS [Count]
+{% endsql %}
+{% assign item = results | First %}
+Cache #{{ item.Count }}
+{% endcache %}
+
+{%- cache key:'test2' duration:'10' -%}
+{% sql %}
+    SELECT 2 AS [Count]
+{% endsql %}
+{% assign item = results | First %}
+Cache #{{ item.Count }}
+{% endcache %}
+
+{%- cache key:'test3' duration:'10' -%}
+{% sql %}
+    SELECT 3 AS [Count]
+{% endsql %}
+{% assign item = results | First %}
+Cache #{{ item.Count }}
+{% endcache %}
+";
+
+            input = input.Replace( "`", "\"" );
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Cache,Sql" };
+
+            var expectedOutput = @"Cache #1 Cache #2 Cache #3";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
         }
 
         #endregion
