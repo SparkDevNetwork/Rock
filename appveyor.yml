@@ -69,7 +69,7 @@ before_build:
     
 #    Get-ChildItem $src | Copy-Item -Destination $dst -Force
     
-    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
+#    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
 
 # build configuration
 build:
@@ -83,7 +83,7 @@ build_script:
     nuget restore
     
     "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
-    "C:\projects\Rock\rock.sln" /build Release
+    "c:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
