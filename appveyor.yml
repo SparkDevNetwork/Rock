@@ -69,7 +69,7 @@ before_build:
     
     Get-ChildItem $src | Copy-Item -Destination $dst -Force
     
-    Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
+    (Get-Content "C:\projects\Rock\RockWeb\web.config").Replace('<compilation debug="true"', '<compilation debug="false"') | Set-Content "C:\projects\Rock\RockWeb\web.config"
 
 # build configuration
 build:
