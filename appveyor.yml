@@ -26,7 +26,7 @@ configuration: Release
 platform: Any CPU
 
 init:
- - git config --global core.autocrlf true
+ - cmd: git config --global core.autocrlf true
 
 # clone directory and depth
 clone_depth: 1
@@ -69,8 +69,12 @@ build:
   verbosity: minimal
 
 build_script:
-- ps: >-
-    nuget restore Rock.sln
+- cmd: >-
+    nuget restore
+    
+    "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv"
+    
+    "C:\projects\Rock\rock.sln" /build Release
 
 # flag to stop building if an error throws
 matrix:
