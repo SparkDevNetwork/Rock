@@ -701,10 +701,10 @@ namespace RockWeb.Blocks.Reporting
 
                     if ( GetAttributeValue( AttributeKey.EnableQuickReturn ).AsBoolean() && setData && RockPage.PageTitle.IsNotNullOrWhiteSpace() )
                     {
-                        string quckReturnLava = "{{ Title | AddQuickReturn:'Dynamic Data', 80 }}";
-                        var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                        quckReturnMergeFields.Add( "Title", RockPage.PageTitle );
-                        quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+                        string quickReturnLava = "{{ Title | AddQuickReturn:'Dynamic Data', 80 }}";
+                        var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        quickReturnMergeFields.Add( "Title", RockPage.PageTitle );
+                        quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
                     }
 
                     if ( string.IsNullOrWhiteSpace( formattedOutput ) )

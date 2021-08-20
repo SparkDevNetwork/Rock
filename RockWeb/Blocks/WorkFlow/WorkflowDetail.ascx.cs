@@ -699,10 +699,10 @@ namespace RockWeb.Blocks.WorkFlow
             hlType.Text = Workflow.WorkflowType.Name;
             hlblWorkflowId.Text = Workflow.WorkflowId;
 
-            string quckReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
-            var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-            quckReturnMergeFields.Add( "Workflow", Workflow );
-            quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+            string quickReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
+            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            quickReturnMergeFields.Add( "Workflow", Workflow );
+            quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
             ShowReadonlyDetails();
         }

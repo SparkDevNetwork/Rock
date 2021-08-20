@@ -356,7 +356,8 @@ namespace Rock.Web.UI.Controls
 
             if ( rockPage != null )
             {
-                rockPage.AddScriptLink( "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize", false );
+                // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
+                rockPage.AddScriptSrcToHead( "captchaScriptId", "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize" );
             }
 
             string script = string.Format( @"

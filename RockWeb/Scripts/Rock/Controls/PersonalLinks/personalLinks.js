@@ -49,7 +49,10 @@
                         }
                     }
 
-                    if (!needsUpdate) {
+                    if (personalLinksData) {
+                        // Build the links, even if we are we are in 'needsUpdate' mode, just in case the REST call takes a second.
+                        // This way the links won't be blank while waiting, and when the REST call does return, the buildAllLinks will
+                        // run again with the updated data.
                         this.buildAllLinks();
                     }
                 }, saveQuickReturnsToLocalStorage: function () {
@@ -123,6 +126,7 @@
                     }
 
                     this.saveQuickReturnsToLocalStorage();
+                    this.buildQuickReturns();
                 },
                 removeDuplicateQuickReturnItems: function (newReturnItem) {
 

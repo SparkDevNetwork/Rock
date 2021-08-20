@@ -330,11 +330,11 @@ namespace RockWeb.Blocks.Cms
             var sortProperty = gFolderList.SortProperty;
             if ( gFolderList.AllowSorting && sortProperty != null )
             {
-                qry = qry.Sort( sortProperty );
+                selectQry = selectQry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( a => a.Name );
+                selectQry = selectQry.OrderBy( a => a.Name );
             }
 
             gFolderList.EntityTypeId = EntityTypeCache.GetId<MediaFolder>();
