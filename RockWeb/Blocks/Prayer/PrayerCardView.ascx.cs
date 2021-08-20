@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
 using System;
 using System.Collections.Generic;
@@ -118,6 +117,20 @@ namespace RockWeb.Blocks.Prayer
         IsRequired = false,
         Order = 10,
         Key = AttributeKey.MaxResults )]
+    [WorkflowTypeField(
+        "Prayed Workflow",
+        AllowMultiple = false,
+        Key = AttributeKey.PrayedWorkflow,
+        Description = "The workflow type to launch when someone presses the Pray button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: PrayerOfferedByPersonId.",
+        IsRequired = false,
+        Order = 11 )]
+    [WorkflowTypeField(
+        "Flagged Workflow",
+        AllowMultiple = false,
+        Key = AttributeKey.FlaggedWorkflow,
+        Description = "The workflow type to launch when someone presses the Flag button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: FlaggedByPersonId.",
+        IsRequired = false,
+        Order = 12 )]
     #endregion Block Attributes
     public partial class PrayerCardView : RockBlock
     {
@@ -175,6 +188,8 @@ namespace RockWeb.Blocks.Prayer
             public const string CampusTypes = "CampusTypes";
             public const string CampusStatuses = "CampusStatuses";
             public const string MaxResults = "MaxResults";
+            public const string PrayedWorkflow = "PrayedWorkflow";
+            public const string FlaggedWorkflow = "FlaggedWorkflow";
         }
 
         #endregion Attribute Keys
@@ -298,6 +313,8 @@ namespace RockWeb.Blocks.Prayer
                 }
 
                 rockContext.SaveChanges();
+
+                StartWorkflow( request, rockContext, AttributeKey.FlaggedWorkflow );
             }
         }
 
@@ -315,6 +332,8 @@ namespace RockWeb.Blocks.Prayer
             {
                 request.PrayerCount = ( request.PrayerCount ?? 0 ) + 1;
                 rockContext.SaveChanges();
+
+                StartWorkflow( request, rockContext, AttributeKey.PrayedWorkflow );
             }
         }
 
@@ -327,7 +346,7 @@ namespace RockWeb.Blocks.Prayer
             var showCampusFilter = GetAttributeValue( AttributeKey.ShowCampusFilter ).AsBoolean();
             var showCampus = showCampusFilter;
             var qryCampusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
-            // filter occurrences for campus (always include the "All Campuses" events)
+
             if ( qryCampusId.HasValue && showCampus )
             {
                 var campus = CampusCache.Get( qryCampusId.Value );
@@ -374,7 +393,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 cpCampus.SelectedCampusId = GetUserPreference( CAMPUS_SETTING ).AsIntegerOrNull();
             }
-
         }
 
         /// <summary>
@@ -482,7 +500,34 @@ namespace RockWeb.Blocks.Prayer
             mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ) );
             string template = GetAttributeValue( AttributeKey.DisplayLavaTemplate );
             lContent.Text = template.ResolveMergeFields( mergeFields );
+        }
 
+        /// <summary>
+        /// Starts the workflow if one was defined in the block setting.
+        /// </summary>
+        /// <param name="prayerRequest">The prayer request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="key">The key.</param>
+        private void StartWorkflow( PrayerRequest prayerRequest, RockContext rockContext, string key )
+        {
+            Guid? workflowTypeGuid = GetAttributeValue( key ).AsGuidOrNull();
+            if ( workflowTypeGuid.HasValue )
+            {
+                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                {
+                    try
+                    {
+                        var workflow = Workflow.Activate( workflowType, prayerRequest.Name );
+                        List<string> workflowErrors;
+                        new WorkflowService( rockContext ).Process( workflow, prayerRequest, out workflowErrors );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, this.Context );
+                    }
+                }
+            }
         }
 
         #endregion
