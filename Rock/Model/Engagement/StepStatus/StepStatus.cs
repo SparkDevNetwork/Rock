@@ -84,7 +84,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
@@ -101,33 +101,10 @@ namespace Rock.Model
             get => _steps ?? ( _steps = new Collection<Step>() );
             set => _steps = value;
         }
+
         private ICollection<Step> _steps;
 
-        /// <summary>
-        /// Gets the status color or default color depending on IsCompleteStatus.
-        /// </summary>
-        /// <value>
-        /// The status color or default.
-        /// </value>
-        public virtual string StatusColorOrDefault
-        {
-            get
-            {
-                if ( !StatusColor.IsNullOrWhiteSpace() )
-                {
-                    return StatusColor;
-                }
-
-                if ( IsCompleteStatus )
-                {
-                    return "#16c98d";
-                }
-
-                return "#f3f3f3";
-            }
-        }
-
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

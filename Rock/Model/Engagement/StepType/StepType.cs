@@ -16,7 +16,6 @@
 //
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
@@ -36,36 +35,36 @@ namespace Rock.Model
     public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants
-
-        private const string _defaultCardLavaTemplate =
-@"<div class=""card-top"">
-    <h3 class=""step-name"">{{ StepType.Name }}</h3>
-</div>
-<div class=""card-middle"">
-    {% if StepType.HighlightColor == '' or IsComplete == false %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
-    {% else %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
-    {% endif %}
-</div>
-<div class=""card-bottom"">
-    <p class=""step-status"">
-        {% if LatestStepStatus %}
-            <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
-        {% endif %}
-        {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
-            <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
-        {% endif %}
-        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
-            <br />
-            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
-        {% endif %}
-    </p>
-    {% if StepCount > 1 %}
-        <span class=""badge"">{{ StepCount }}</span>
-    {% endif %}
-</div>
-";
+        // StyleCop suggests this start with an upper-case letter, but since this is a private constant it falls under the 'private' and 'variable' rules.
+        private const string DefaultCardLavaTemplate =
+            @"<div class=""card-top"">
+                <h3 class=""step-name"">{{ StepType.Name }}</h3>
+            </div>
+            <div class=""card-middle"">
+                {% if StepType.HighlightColor == '' or IsComplete == false %}
+                    <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+                {% else %}
+                    <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+                {% endif %}
+            </div>
+            <div class=""card-bottom"">
+                <p class=""step-status"">
+                    {% if LatestStepStatus %}
+                        <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+                    {% endif %}
+                    {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
+                        <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
+                    {% endif %}
+                    {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+                        <br />
+                        <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+                    {% endif %}
+                </p>
+                {% if StepCount > 1 %}
+                    <span class=""badge"">{{ StepCount }}</span>
+                {% endif %}
+            </div>
+            ";
 
         #endregion Constants
 
@@ -144,21 +143,6 @@ namespace Rock.Model
         [DataMember]
         public string HighlightColor { get; set; }
 
-        /// <summary>
-        /// Gets or sets the lava template used to render custom card details.
-        /// </summary>
-        [DataMember]
-        public string CardLavaTemplate
-        {
-            get
-            {
-                return _cardLavaTemplate.IsNullOrWhiteSpace() ? _defaultCardLavaTemplate : _cardLavaTemplate;
-            }
-            set
-            {
-                _cardLavaTemplate = value;
-            }
-        }
         private string _cardLavaTemplate;
 
         /// <summary>
@@ -229,7 +213,7 @@ namespace Rock.Model
 
         #endregion ICacheable
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
@@ -246,6 +230,7 @@ namespace Rock.Model
             get => _steps ?? ( _steps = new Collection<Step>() );
             set => _steps = value;
         }
+
         private ICollection<Step> _steps;
 
         /// <summary>
@@ -258,6 +243,7 @@ namespace Rock.Model
             get => _stepTypePrerequisites ?? ( _stepTypePrerequisites = new Collection<StepTypePrerequisite>() );
             set => _stepTypePrerequisites = value;
         }
+
         private ICollection<StepTypePrerequisite> _stepTypePrerequisites;
 
         /// <summary>
@@ -271,6 +257,7 @@ namespace Rock.Model
             get => _stepTypeDependencies ?? ( _stepTypeDependencies = new Collection<StepTypePrerequisite>() );
             set => _stepTypeDependencies = value;
         }
+
         private ICollection<StepTypePrerequisite> _stepTypeDependencies;
 
         /// <summary>
@@ -303,6 +290,7 @@ namespace Rock.Model
             get => _stepWorkflowTriggers ?? ( _stepWorkflowTriggers = new Collection<StepWorkflowTrigger>() );
             set => _stepWorkflowTriggers = value;
         }
+
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
 
         /// <summary>
@@ -317,9 +305,10 @@ namespace Rock.Model
             get => _achievementTypes ?? ( _achievementTypes = new Collection<AchievementType>() );
             set => _achievementTypes = value;
         }
+
         private ICollection<AchievementType> _achievementTypes;
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

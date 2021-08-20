@@ -58,7 +58,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepType"/>.
@@ -72,7 +72,7 @@ namespace Rock.Model
         [DataMember]
         public virtual StepType PrerequisiteStepType { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 
@@ -87,9 +87,9 @@ namespace Rock.Model
             public StepTypePrerequisiteConfiguration()
             {
                 HasRequired( stp => stp.StepType ).WithMany( st => st.StepTypePrerequisites ).HasForeignKey( stp => stp.StepTypeId ).WillCascadeOnDelete( true );
-                HasRequired( stp => stp.PrerequisiteStepType ).WithMany( st => st.StepTypeDependencies ).HasForeignKey( stp => stp.PrerequisiteStepTypeId )
-                    // This has to be false because otherwise SQL server doesn't like the possiblity of dependency cycles
-                    .WillCascadeOnDelete( false );
+
+                // This has to be false because otherwise SQL server doesn't like the possibility of dependency cycles
+                HasRequired( stp => stp.PrerequisiteStepType ).WithMany( st => st.StepTypeDependencies ).HasForeignKey( stp => stp.PrerequisiteStepTypeId ).WillCascadeOnDelete( false );
             }
         }
 

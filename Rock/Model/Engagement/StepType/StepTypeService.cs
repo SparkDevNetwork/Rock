@@ -28,7 +28,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Returns a collection of Step Types that can be selected as prerequisites of the specified Step Type.
-        /// A Step Type cannot be a prequisite of itself, or of any Step Type that has it as a prerequisite.
+        /// A Step Type cannot be a prerequisite of itself, or of any Step Type that has it as a prerequisite.
         /// </summary>
         /// <param name="stepTypeId">The unique identifier of the Step Type for which prerequisites are required.</param>
         /// <returns></returns>

@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Dynamic;
 using System.Threading.Tasks;
-
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Web.Cache;
@@ -38,29 +36,29 @@ namespace Rock.Model
         /// <summary>
         /// Days per week
         /// </summary>
-        private static int DaysPerWeek = 7;
+        private static readonly int DaysPerWeek = 7;
 
         /// <summary>
         /// Bits per byte
         /// </summary>
-        private static int BitsPerByte = 8;
+        private static readonly int BitsPerByte = 8;
 
         /// <summary>
         /// The minimum size of a byte array for a streak related map. The point is to reduce memory reallocations which
         /// are costly, by starting and growing by this size. 128 bytes is trivial memory, but has 1024 bits, which is enough to represent
         /// almost 3 years worth of daily streak data.
         /// </summary>
-        private static int MapByteGrowthCount = 128;
+        private static readonly int MapByteGrowthCount = 128;
 
         /// <summary>
         /// The number of hex chars per byte
         /// </summary>
-        private static int HexDigitsPerByte = 2;
+        private static readonly int HexDigitsPerByte = 2;
 
         /// <summary>
         /// The number of possible values per single hex digit
         /// </summary>
-        private static int Base16 = 16;
+        private static readonly int Base16 = 16;
 
         #endregion Constants
 
@@ -93,9 +91,7 @@ namespace Rock.Model
                     .Any( av =>
                         av.Attribute.FieldTypeId == streakTypeFieldTypeId
                         && av.Value == streakTypeGuid
-                        && av.Attribute.EntityTypeId == entityTypeIdAchievementType
-                        );
-
+                        && av.Attribute.EntityTypeId == entityTypeIdAchievementType );
                 if ( usedAsAchievementType )
                 {
                     errorMessage = string.Format( "This {0} is assigned to an {1}.", StreakType.FriendlyTypeName, Rock.Model.AchievementType.FriendlyTypeName );
@@ -698,8 +694,7 @@ namespace Rock.Model
         /// <param name="alignedStreakTypeStartDate">The aligned streak type start date.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        private static void RebuildStreak( RockContext rockContext, StreakTypeCache streakTypeCache, StreakType streakType,
-            DateTime alignedStreakTypeStartDate, int personId, out string errorMessage )
+        private static void RebuildStreak( RockContext rockContext, StreakTypeCache streakTypeCache, StreakType streakType, DateTime alignedStreakTypeStartDate, int personId, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -828,8 +823,7 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="minDate"></param>
         /// <returns></returns>
-        private static IQueryable<DateTime> GetLinkedActivityEngagementDatesQuery( RockContext rockContext, StreakTypeCache streakTypeCache,
-            int personId, DateTime minDate )
+        private static IQueryable<DateTime> GetLinkedActivityEngagementDatesQuery( RockContext rockContext, StreakTypeCache streakTypeCache, int personId, DateTime minDate )
         {
             // Not enough info in these cases to get any dates
             if ( !streakTypeCache.StructureType.HasValue || (
@@ -881,8 +875,7 @@ namespace Rock.Model
         /// <param name="endDate">The end date.</param>
         /// <param name="iterationAction">The iteration action.</param>
         /// <param name="errorMessage">The error message.</param>
-        public void IterateStreakMap( StreakTypeCache streakTypeCache, int personAliasId, DateTime startDate, DateTime endDate,
-            Func<int, DateTime, bool, bool, bool, bool> iterationAction, out string errorMessage )
+        public void IterateStreakMap( StreakTypeCache streakTypeCache, int personAliasId, DateTime startDate, DateTime endDate, Func<int, DateTime, bool, bool, bool, bool> iterationAction, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -977,9 +970,7 @@ namespace Rock.Model
         /// <param name="maxStreaksToReturn">Specify the maximum number of streak objects "ComputedStreaks" to include in the response</param>
         /// <param name="errorMessage"></param>
         /// <returns></returns>
-        public StreakData GetStreakData( StreakTypeCache streakTypeCache, int personId, out string errorMessage,
-            DateTime? startDate = null, DateTime? endDate = null, bool createObjectArray = false, bool includeBitMaps = false,
-            int? maxStreaksToReturn = null )
+        public StreakData GetStreakData( StreakTypeCache streakTypeCache, int personId, out string errorMessage, DateTime? startDate = null, DateTime? endDate = null, bool createObjectArray = false, bool includeBitMaps = false, int? maxStreaksToReturn = null )
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1254,8 +1245,7 @@ namespace Rock.Model
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="errorMessage"></param>
         /// <returns></returns>
-        public StreakData GetStreakData( int streakId, out string errorMessage,
-        DateTime? startDate = null, DateTime? endDate = null, bool createObjectArray = false, bool includeBitMaps = false )
+        public StreakData GetStreakData( int streakId, out string errorMessage, DateTime? startDate = null, DateTime? endDate = null, bool createObjectArray = false, bool includeBitMaps = false )
         {
             var rockContext = Context as RockContext;
             var personAliasService = new PersonAliasService( rockContext );
@@ -1293,9 +1283,7 @@ namespace Rock.Model
         /// <param name="addOrUpdateAttendanceRecord">Should this method add or create <see cref="Attendance"/> models?</param>
         [Obsolete( "Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead" )]
         [RockObsolete( "1.12" )]
-        public void MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage,
-            DateTime? dateOfEngagement = null, int? groupId = null, int? locationId = null, int? scheduleId = null,
-            bool addOrUpdateAttendanceRecord = true )
+        public void MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage, DateTime? dateOfEngagement = null, int? groupId = null, int? locationId = null, int? scheduleId = null, bool addOrUpdateAttendanceRecord = true )
         {
             var attendanceEngagementArgs = new AttendanceEngagementArgs
             {
@@ -1316,8 +1304,7 @@ namespace Rock.Model
         /// <param name="interactionEngagementArgs"></param>
         /// <param name="errorMessage"></param>
         /// <param name="dateOfEngagement">Defaults to today</param>
-        public void MarkInteractionEngagement( StreakTypeCache streakTypeCache, int personId, InteractionEngagementArgs interactionEngagementArgs,
-            out string errorMessage, DateTime? dateOfEngagement = null )
+        public void MarkInteractionEngagement( StreakTypeCache streakTypeCache, int personId, InteractionEngagementArgs interactionEngagementArgs, out string errorMessage, DateTime? dateOfEngagement = null )
         {
             // Apply default values to parameters
             if ( !dateOfEngagement.HasValue )
@@ -1379,8 +1366,7 @@ namespace Rock.Model
         /// <param name="attendanceEngagementArgs"></param>
         /// <param name="errorMessage"></param>
         /// <param name="dateOfEngagement">Defaults to today</param>
-        public void MarkAttendanceEngagement( StreakTypeCache streakTypeCache, int personId, AttendanceEngagementArgs attendanceEngagementArgs,
-            out string errorMessage, DateTime? dateOfEngagement = null )
+        public void MarkAttendanceEngagement( StreakTypeCache streakTypeCache, int personId, AttendanceEngagementArgs attendanceEngagementArgs, out string errorMessage, DateTime? dateOfEngagement = null )
         {
             // Apply default values to parameters
             if ( !dateOfEngagement.HasValue )
@@ -1421,9 +1407,7 @@ namespace Rock.Model
                 var attendanceService = new AttendanceService( rockContext );
 
                 // Add or update the attendance, but don't sync streaks since that would create a logic loop
-                attendanceService.AddOrUpdate( streak.PersonAliasId, dateOfEngagement.Value, attendanceEngagementArgs.GroupId,
-                    attendanceEngagementArgs.LocationId, attendanceEngagementArgs.ScheduleId, null, null, null, null,
-                    null, null, null );
+                attendanceService.AddOrUpdate( streak.PersonAliasId, dateOfEngagement.Value, attendanceEngagementArgs.GroupId, attendanceEngagementArgs.LocationId, attendanceEngagementArgs.ScheduleId, null, null, null, null, null, null, null );
             }
         }
 
@@ -2127,8 +2111,7 @@ namespace Rock.Model
         /// <returns></returns>
         [Obsolete( "Downgrading the visibility of this method and renaming to GetMostRecentOccurrences" )]
         [RockObsolete( "1.10" )]
-        public static OccurrenceEngagement[] GetMostRecentEngagementBits( byte[] engagementMap, byte[] occurrenceMap, DateTime mapStartDate,
-            StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
+        public static OccurrenceEngagement[] GetMostRecentEngagementBits( byte[] engagementMap, byte[] occurrenceMap, DateTime mapStartDate, StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
         {
             // Try to accommodate this without knowing the streak type id until this method is removed since it is obsolete
             var streakTypeCache = StreakTypeCache.All().FirstOrDefault( st =>
@@ -2153,8 +2136,7 @@ namespace Rock.Model
         /// <param name="unitCount">The unit count.</param>
         /// <param name="unconditionallyIncludeCurrentUnit">if set to <c>true</c> [unconditionally include current unit].</param>
         /// <returns></returns>
-        private static OccurrenceEngagement[] GetMostRecentOccurrences( StreakTypeCache streakTypeCache, byte[] engagementMap, byte[] exclusionMap,
-            int unitCount = 24, bool unconditionallyIncludeCurrentUnit = false )
+        private static OccurrenceEngagement[] GetMostRecentOccurrences( StreakTypeCache streakTypeCache, byte[] engagementMap, byte[] exclusionMap, int unitCount = 24, bool unconditionallyIncludeCurrentUnit = false )
         {
             if ( unitCount < 1 )
             {
@@ -2276,7 +2258,7 @@ namespace Rock.Model
             }
 
             var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, occurrenceFrequency, false );
-            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
             var byteIndex = map.Length - bytesNeeded;
             var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
 
@@ -2316,7 +2298,7 @@ namespace Rock.Model
             }
 
             var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, streakTypeCache, false );
-            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
             var byteIndex = map.Length - bytesNeeded;
             var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
 
@@ -2359,7 +2341,7 @@ namespace Rock.Model
             }
 
             var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, occurrenceFrequency, false );
-            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
 
             if ( map == null )
             {
@@ -2412,7 +2394,7 @@ namespace Rock.Model
             }
 
             var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, streakTypeCache, false );
-            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
 
             if ( map == null )
             {
@@ -2470,7 +2452,7 @@ namespace Rock.Model
                 return string.Empty;
             }
 
-            return BitConverter.ToString( map ).Replace( "-", "" );
+            return BitConverter.ToString( map ).Replace( "-", string.Empty );
         }
 
         /// <summary>
@@ -2867,7 +2849,7 @@ namespace Rock.Model
         /// <returns></returns>
         private static byte[] AllocateNewByteArray( int? bytesNeeded = null )
         {
-            var growthUnits = ( bytesNeeded ?? 0 ) / MapByteGrowthCount + 1;
+            var growthUnits = ( ( bytesNeeded ?? 0 ) / MapByteGrowthCount ) + 1;
             return new byte[growthUnits * MapByteGrowthCount];
         }
 
@@ -2952,8 +2934,7 @@ namespace Rock.Model
         /// <param name="exclusionMap">The exclusion map.</param>
         /// <param name="actionPerIteration">The action per iteration. Returns a bool indicating if the iteration should stop early (isDone).</param>
         /// <param name="errorMessage">The error message.</param>
-        private static void IterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate, byte[] engagementMap,
-            byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
+        private static void IterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate, byte[] engagementMap, byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -2989,7 +2970,7 @@ namespace Rock.Model
             // Prepare to iterate over the bytes
             var currentUnit = 0;
             var currentDate = minDate;
-            var initialByteOffset = slideStartUnitsToFuture / BitsPerByte + 1;
+            var initialByteOffset = ( slideStartUnitsToFuture / BitsPerByte ) + 1;
             var currentByteBitValue = 1 << ( slideStartUnitsToFuture % BitsPerByte );
 
             var occurrenceMap = streakTypeCache.OccurrenceMap ?? new byte[0];
@@ -3055,8 +3036,7 @@ namespace Rock.Model
         /// <param name="exclusionMap">The exclusion map.</param>
         /// <param name="actionPerIteration">The action per iteration. Returns a bool indicating if the iteration should stop early (isDone).</param>
         /// <param name="errorMessage">The error message.</param>
-        private static void ReverseIterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate,
-            byte[] engagementMap, byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
+        private static void ReverseIterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate, byte[] engagementMap, byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -3092,7 +3072,7 @@ namespace Rock.Model
             // Prepare to iterate over the bytes
             var currentUnit = numberOfFrequencyUnits - 1;
             var currentDate = maxDate;
-            var initialByteOffset = slideStartUnitsToFuture / BitsPerByte + 1;
+            var initialByteOffset = ( slideStartUnitsToFuture / BitsPerByte ) + 1;
             var currentByteBitValue = 1 << ( slideStartUnitsToFuture % BitsPerByte );
 
             var occurrenceMap = streakTypeCache.OccurrenceMap ?? new byte[0];

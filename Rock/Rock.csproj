@@ -690,6 +690,17 @@
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerification.cs" />
     <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
+    <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
+    <Compile Include="Model\Engagement\StepProgram\StepProgram.Logic.cs" />
+    <Compile Include="Model\Engagement\StepStatus\StepStatus.Logic.cs" />
+    <Compile Include="Model\Engagement\StepType\StepType.Logic.cs" />
+    <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTrigger.Logic.cs" />
+    <Compile Include="Model\Engagement\Step\Step.Logic.cs" />
+    <Compile Include="Model\Engagement\Step\Step.SaveHook.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakOccurrenceFrequency.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakStructureType.cs" />
+    <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
+    <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
@@ -975,7 +986,7 @@
     <Compile Include="Model\PersonalLinkService.partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.cs" />
-    <Compile Include="Model\Engagement\StepProgram\StepProgramService.Partial.cs" />
+    <Compile Include="Model\Engagement\StepProgram\StepProgramService.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedService.cs" />
     <Compile Include="Model\WebFarmNodeLog.cs" />
@@ -1186,8 +1197,8 @@
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
-    <Compile Include="Model\Engagement\StepType\StepTypeService.Partial.cs" />
-    <Compile Include="Model\Engagement\Step\StepService.Partial.cs" />
+    <Compile Include="Model\Engagement\StepType\StepTypeService.cs" />
+    <Compile Include="Model\Engagement\Step\StepService.cs" />
     <Compile Include="Model\AchievementAttempt.cs" />
     <Compile Include="Model\AchievementTypePrerequisite.cs" />
     <Compile Include="Model\AchievementTypeService.Partial.cs" />
@@ -1315,8 +1326,8 @@
     <Compile Include="Model\CodeGenerated\StepWorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowTriggerService.cs" />
     <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusionService.Partial.cs" />
-    <Compile Include="Model\Engagement\Streak\StreakService.Partial.cs" />
-    <Compile Include="Model\Engagement\StreakType\StreakTypeService.Partial.cs" />
+    <Compile Include="Model\Engagement\Streak\StreakService.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakTypeService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CodeGenerated\StepProgramService.cs" />
     <Compile Include="Model\CodeGenerated\StepService.cs" />
@@ -1371,7 +1382,7 @@
     <Compile Include="Model\Engagement\StepType\StepType.cs" />
     <Compile Include="Model\Engagement\StepStatus\StepStatus.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgram.cs" />
-    <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTriggerService.Partial.cs" />
+    <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTriggerService.cs" />
     <Compile Include="Badge\Component\StreakEngagement.cs" />
     <Compile Include="Plugin\HotFixes\051_SparkData.cs" />
     <Compile Include="Model\AttributeMatrixService.Partial.cs" />

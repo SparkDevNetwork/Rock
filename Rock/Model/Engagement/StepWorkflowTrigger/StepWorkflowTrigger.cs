@@ -19,7 +19,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Utility;
@@ -88,7 +87,7 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
@@ -117,32 +116,10 @@ namespace Rock.Model
             get => _stepWorkflows ?? ( _stepWorkflows = new Collection<StepWorkflow>() );
             set => _stepWorkflows = value;
         }
+
         private ICollection<StepWorkflow> _stepWorkflows;
 
-        #endregion Virtual Properties
-
-        #region Overrides
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        public override bool IsValid
-        {
-            get
-            {
-                var isValid = base.IsValid;
-
-                if ( !StepProgramId.HasValue && !StepTypeId.HasValue )
-                {
-                    ValidationResults.Add( new ValidationResult( "The StepProgramId or the StepTypeId must be set" ) );
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        }
-
-        #endregion Overrides
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

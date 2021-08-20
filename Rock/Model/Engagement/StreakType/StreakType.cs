@@ -96,6 +96,7 @@ namespace Rock.Model
             get => _startDate;
             set => _startDate = value.Date;
         }
+
         private DateTime _startDate = RockDateTime.Now;
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace Rock.Model
 
         #endregion ICacheable
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Streak">Streaks</see> that are of this streak type.
@@ -161,6 +162,7 @@ namespace Rock.Model
             get => _streaks ?? ( _streaks = new Collection<Streak>() );
             set => _streaks = value;
         }
+
         private ICollection<Streak> _streaks;
 
         /// <summary>
@@ -173,74 +175,9 @@ namespace Rock.Model
             get => _streakTypeExclusions ?? ( _streakTypeExclusions = new Collection<StreakTypeExclusion>() );
             set => _streakTypeExclusions = value;
         }
+
         private ICollection<StreakTypeExclusion> _streakTypeExclusions;
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
     }
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the attendance association of a <see cref="StreakType"/>.
-    /// </summary>
-    public enum StreakStructureType
-    {
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with any attendance record.
-        /// </summary>
-        AnyAttendance = 0,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to a single group.
-        /// </summary>
-        Group = 1,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to groups of a given type.
-        /// </summary>
-        GroupType = 2,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance to groups within group types of a common purpose (defined type).
-        /// </summary>
-        GroupTypePurpose = 3,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
-        /// </summary>
-        CheckInConfig = 4,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
-        /// </summary>
-        InteractionChannel = 5,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions in a certain component.
-        /// </summary>
-        InteractionComponent = 6,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> is associated with interactions over a certain.
-        /// </summary>
-        InteractionMedium = 7
-    }
-
-    /// <summary>
-    /// Represents the timespan represented by each of the <see cref="StreakType"/> bits.
-    /// </summary>
-    public enum StreakOccurrenceFrequency
-    {
-        /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a day.
-        /// </summary>
-        Daily = 0,
-
-        /// <summary>
-        /// The <see cref="StreakType"/> has bits that represent a week.
-        /// </summary>
-        Weekly = 1
-    }
-
-    #endregion
 }

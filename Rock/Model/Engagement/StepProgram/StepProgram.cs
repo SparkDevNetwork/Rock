@@ -36,7 +36,7 @@ namespace Rock.Model
     {
         #region Constants
 
-        private const string _defaultStepTerm = "Step";
+        private const string DefaultStepTerm = "Step";
 
         #endregion Constants
 
@@ -56,16 +56,6 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
-        /// <summary>
-        /// Gets or sets the term used for steps within this program. This property is required.
-        /// </summary>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string StepTerm
-        {
-            get => _stepTerm.IsNullOrWhiteSpace() ? _defaultStepTerm : _stepTerm;
-            set => _stepTerm = value;            
-        }
         private string _stepTerm;
 
         /// <summary>
@@ -99,29 +89,6 @@ namespace Rock.Model
 
         #endregion
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return StepProgramCache.Get( Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            StepProgramCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
-
         #region IOrdered
 
         /// <summary>
@@ -132,7 +99,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/>.
@@ -149,6 +116,7 @@ namespace Rock.Model
             get => _stepStatuses ?? ( _stepStatuses = new Collection<StepStatus>() );
             set => _stepStatuses = value;
         }
+
         private ICollection<StepStatus> _stepStatuses;
 
         /// <summary>
@@ -160,6 +128,7 @@ namespace Rock.Model
             get => _stepTypes ?? ( _stepTypes = new Collection<StepType>() );
             set => _stepTypes = value;
         }
+
         private ICollection<StepType> _stepTypes;
 
         /// <summary>
@@ -171,9 +140,10 @@ namespace Rock.Model
             get => _stepWorkflowTriggers ?? ( _stepWorkflowTriggers = new Collection<StepWorkflowTrigger>() );
             set => _stepWorkflowTriggers = value;
         }
+
         private ICollection<StepWorkflowTrigger> _stepWorkflowTriggers;
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

@@ -20,10 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Lava;
 
@@ -32,7 +29,7 @@ namespace Rock.Model
     /*
        5/20/2021 SK, NA, JE 
       
-       We originally planned to try to track Step Program "Engagement" but this became dificult to accurately
+       We originally planned to try to track Step Program "Engagement" but this became difficult to accurately
        determine which steps should be considered part of an active, on-going program.  That is because a 
        person could have multiple attempts at one step over several years and they really shouldn't necessarily
        be considered part of the current "engagement".  Therefore, we changed this to track 'completed' 
@@ -49,7 +46,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepProgramCompletion" )]
     [DataContract]
-    public class StepProgramCompletion : Model<StepProgramCompletion>
+    public partial class StepProgramCompletion : Model<StepProgramCompletion>
     {
         #region Entity Properties
 
@@ -88,40 +85,9 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public DateTime? EndDateTime { get; set; }
-
-        /// <summary>
-        /// Gets the start date key.
-        /// </summary>
-        /// <value>
-        /// The start date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int StartDateKey
-        {
-            get => StartDateTime.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the end date key.
-        /// </summary>
-        /// <value>
-        /// The end date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? EndDateKey
-        {
-            get => ( EndDateTime == null || EndDateTime.Value == default ) ?
-                        ( int? ) null :
-                        EndDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepProgram"/>.
@@ -157,9 +123,10 @@ namespace Rock.Model
             get => _steps ?? ( _steps = new Collection<Step>() );
             set => _steps = value;
         }
+
         private ICollection<Step> _steps;
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

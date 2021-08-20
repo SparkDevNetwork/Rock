@@ -55,7 +55,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepWorkflowTrigger"/>.
@@ -75,7 +75,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Workflow Workflow { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

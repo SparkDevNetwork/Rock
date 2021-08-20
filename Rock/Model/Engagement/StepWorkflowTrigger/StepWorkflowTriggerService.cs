@@ -90,6 +90,5 @@ namespace Rock.Model
                 return triggerType.ToString();
             }
         }
-
     }
 }

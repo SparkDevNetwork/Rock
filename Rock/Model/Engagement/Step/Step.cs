@@ -20,13 +20,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity.Infrastructure;
-
 using System.Runtime.Serialization;
 using Rock.Data;
-using Rock.Tasks;
-using System.Linq;
-using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -102,54 +97,6 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets the start date key.
-        /// </summary>
-        /// <value>
-        /// The start date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? StartDateKey
-        {
-            get => ( StartDateTime == null || StartDateTime.Value == default ) ?
-                        ( int? ) null :
-                        StartDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the end date key.
-        /// </summary>
-        /// <value>
-        /// The end date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? EndDateKey
-        {
-            get => ( EndDateTime == null || EndDateTime.Value == default ) ?
-                        ( int? ) null :
-                        EndDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
-        /// Gets the completed date key.
-        /// </summary>
-        /// <value>
-        /// The completed date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? CompletedDateKey
-        {
-            get => ( CompletedDateTime == null || CompletedDateTime.Value == default ) ?
-                        ( int? ) null :
-                        CompletedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.StepProgramCompletion"/> to which this step belongs.
         /// </summary>
         [DataMember]
@@ -167,7 +114,7 @@ namespace Rock.Model
 
         #endregion IOrdered
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.StepType"/>.
@@ -208,16 +155,8 @@ namespace Rock.Model
             get => _stepWorkflows ?? ( _stepWorkflows = new Collection<StepWorkflow>() );
             set => _stepWorkflows = value;
         }
-        private ICollection<StepWorkflow> _stepWorkflows;
 
-        /// <summary>
-        /// Indicates if this step has been completed
-        /// </summary>
-        [DataMember]
-        public virtual bool IsComplete
-        {
-            get => StepStatus != null && StepStatus.IsCompleteStatus;
-        }
+        private ICollection<StepWorkflow> _stepWorkflows;
 
         /// <summary>
         /// Gets or sets the start source date.
@@ -245,167 +184,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate CompletedSourceDate { get; set; }
-        #endregion Virtual Properties
-
-        #region Overrides
-
-        /// <summary>
-        /// Returns a string that represents the current object.
-        /// </summary>
-        /// <returns>A string that represents the current object.</returns>
-        public override string ToString()
-        {
-            RockContext rockContext = null;
-
-            // Get PersonAlias.
-            var person = this.PersonAlias?.Person;
-            if ( person == null && this.PersonAliasId != 0 )
-            {
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                }
-                var personAlias = new PersonAliasService( rockContext ).Get( this.PersonAliasId );
-                person = personAlias?.Person;
-            }
-
-            // Get StepType.
-            var stepType = this.StepType;
-            if ( stepType == null )
-            {
-                if ( rockContext == null )
-                {
-                    rockContext = new RockContext();
-                }
-                stepType = new StepTypeService( rockContext ).Get( this.StepTypeId );
-            }
-
-            if ( person != null && stepType != null )
-            {
-                if ( stepType.AllowMultiple )
-                {
-                    // If "AllowMultiple" is set, include the Order to distinguish this from duplicate steps.
-                    return $"{stepType.Name} {this.Order} - {person.FullName}";
-                }
-
-                return $"{stepType.Name} - {person.FullName}";
-            }
-
-            return base.ToString();
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        public override bool IsValid
-        {
-            get
-            {
-                var isValid = base.IsValid;
-
-                if ( StartDateTime.HasValue && EndDateTime.HasValue && StartDateTime.Value > EndDateTime.Value )
-                {
-                    ValidationResults.Add( new ValidationResult( "The StartDateTime must occur before the EndDateTime" ) );
-                    isValid = false;
-                }
-
-                if ( StartDateTime.HasValue && CompletedDateTime.HasValue && StartDateTime.Value > CompletedDateTime.Value )
-                {
-                    ValidationResults.Add( new ValidationResult( "The StartDateTime must occur before the CompletedDateTime" ) );
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        }
-
-        /// <summary>
-        /// Perform tasks prior to saving changes to this entity.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            int? previousStepStatusId = null;
-
-            if ( entry.State == System.Data.Entity.EntityState.Modified )
-            {
-                var dbProperty = entry.Property( nameof( StepStatusId ) );
-                previousStepStatusId = dbProperty?.OriginalValue as int?;
-            }
-
-            // Send a task to process workflows associated with changes to this Step.
-            new LaunchStepChangeWorkflows.Message
-            {
-                EntityGuid = Guid,
-                EntityState = entry.State,
-                StepTypeId = StepTypeId,
-                CurrentStepStatusId = StepStatusId,
-                PreviousStepStatusId = previousStepStatusId
-            }.Send();
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        /// <summary>
-        /// Posts the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            base.PostSaveChanges( dbContext );
-
-            UpdateStepProgramCompletion( dbContext as RockContext );
-        }
-
-        private void UpdateStepProgramCompletion( RockContext rockContext )
-        {
-            if ( !this.CompletedDateTime.HasValue )
-            {
-                return;
-            }
-
-            var stepTypeService = new StepTypeService( rockContext );
-            var stepType = this.StepType ?? stepTypeService.Get( this.StepTypeId );
-
-            if ( stepType == null )
-            {
-                return;
-            }
-
-            var programStepTypeIds = stepTypeService
-                .Queryable()
-                .Where( a => a.StepProgramId == stepType.StepProgramId && a.IsActive )
-                .Select( a => a.Id )
-                .ToList();
-
-            var steps = new StepService( rockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Where( a => a.PersonAliasId == this.PersonAliasId && !a.StepProgramCompletionId.HasValue && a.CompletedDateTime.HasValue )
-                .OrderBy( a => a.CompletedDateTime )
-                .ToList();
-
-            while ( steps.Any() && programStepTypeIds.All( a => steps.Any( b => b.StepTypeId == a ) ) )
-            {
-                var stepSet = new List<Step>();
-                foreach ( var programStepTypeId in programStepTypeIds )
-                {
-                    var step = steps.Where( a => a.StepTypeId == programStepTypeId ).FirstOrDefault();
-                    if ( step == null )
-                    {
-                        continue;
-                    }
-
-                    stepSet.Add( step );
-                    steps.RemoveAll( a => a.Id == step.Id );
-                }
-
-                StepService.UpdateStepProgramCompletion( stepSet, PersonAliasId, stepType.StepProgramId, rockContext );
-            }
-        }
-
-        #endregion Overrides
+        #endregion Navigation Properties
 
         #region Entity Configuration
 
