@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Communication
 
     [CustomCheckboxListField( "Communication Types",
         Key = AttributeKey.CommunicationTypes,
-        Description = "The communication types that should be available to use for the communication (If none are selected, all will be available).",
+        Description = "The communication types that should be available to use for the communication (If none are selected, all will be available). Selecting 'Recipient Preference' will automatically enable Email and SMS as mediums that . Push is not an option for selection as a communication preference as delivery is not as reliable as other mediums based on an individual’s privacy settings.",
         ListSource = "Recipient Preference,Email,SMS,Push",
         IsRequired = false,
         Order = 5 )]
@@ -670,15 +670,38 @@ function onTaskCompleted( resultData )
         /// </summary>
         private List<CommunicationType> GetAllowedCommunicationTypes(bool forSelector = false)
         {
+            /*
+                JME 8/20/2021
+                How the communication type configuration works is tricky. First some background on recipient preference.
+
+                When an individual picks a communication preference there are not giving 'Push' as an option. This is
+                becuase push is a very unreliable medium. We often don't know if the person has disabled it and so the
+                probablility of them getting the message is much lower than email or SMS.
+
+                Before the change below when the block configuration had 'Recipient Preference' enabled it showed ALL
+                mediums. NewSpring did not want that. They wanted 'Recipient Preference' (email and sms) but not push. We
+                made the change below to allow for that.
+
+                At some point we should probably clean up this code a bit to no rely on text values as the keys and make
+                the logic more reusable for other places in Rock.
+            */
+
             var communicationTypes = this.GetAttributeValue( AttributeKey.CommunicationTypes ).SplitDelimitedValues( false );
 
             var result = new List<CommunicationType>();
             if ( !forSelector && communicationTypes.Contains( "Recipient Preference" ) )
             {
                 result.Add( CommunicationType.RecipientPreference );
+
+                // Recipent preference requires email and sms to be shown
                 result.Add( CommunicationType.Email );
                 result.Add( CommunicationType.SMS );
-                result.Add( CommunicationType.PushNotification );
+
+                // Enabled push only if it is also enabled
+                if ( communicationTypes.Contains( "Push" ) )
+                {
+                    result.Add( CommunicationType.PushNotification );
+                }
             }
             else if ( communicationTypes.Any() )
             {
@@ -1588,7 +1611,7 @@ function onTaskCompleted( resultData )
             var communicationTypeIsAllowed = !allowedCommunicationTypes.Any() || allowedCommunicationTypes.Contains( communicationType );
 
             var selecedCommunicationType = SelectedCommunicationType;
-            var communicationTypeIsSelected = selecedCommunicationType == communicationType || selecedCommunicationType == CommunicationType.RecipientPreference;
+            var communicationTypeIsSelected = selecedCommunicationType == communicationType || ( selecedCommunicationType == CommunicationType.RecipientPreference && communicationType != CommunicationType.PushNotification); 
 
             return communicationTypeIsAllowed && communicationTypeIsSelected;
         }
@@ -2918,11 +2941,11 @@ function onTaskCompleted( resultData )
                     ShowHideConfirmationTabLinks( false, false, true );
                     ShowHideTabPanel( false, false, true );
                     break;
-                default:
+                default: // Recipient Preference
                     var allowedCommunicationTypes = GetAllowedCommunicationTypes();
                     var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
                     var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
-                    var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
+                    var pushTransportEnabled = false; //_pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification ); // Recipient preference should not use push
 
                     if ( emailTransportEnabled )
                     {

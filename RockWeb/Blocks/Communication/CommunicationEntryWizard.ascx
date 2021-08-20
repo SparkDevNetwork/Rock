@@ -252,7 +252,7 @@
                                             RepeatDirection="Horizontal"
                                             CssClass="js-medium-radio" />
 
-                                        <span class="small help-block js-medium-recipientpreference-notification" style="display: none">Selecting 'Recipient Preference' will require adding content for all active mediums.</span>
+                                        <span class="small help-block js-medium-recipientpreference-notification" style="display: none">Selecting 'Recipient Preference' will require adding content for email and SMS mediums.</span>
                                     </div>
                                 </div>
 
