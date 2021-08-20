@@ -699,9 +699,15 @@
     <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.Logic.cs" />
     <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.Logic.cs" />
     <Compile Include="Model\Core\FollowingEventType\FollowingEventType.Logic.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
     <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.Logic.cs" />
+    <Compile Include="Model\Core\NoteAttachment\NoteAttachment.SaveHook.cs" />
+    <Compile Include="Model\Core\NoteWatch\NoteWatch.Logic.cs" />
+    <Compile Include="Model\Core\Note\Note.Logic.cs" />
+    <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
+    <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
@@ -1960,7 +1966,7 @@
     <Compile Include="Model\ContentChannelItemSlugService.Partial.cs" />
     <Compile Include="Model\DataViewPersistedValue.cs" />
     <Compile Include="Model\ContentChannelItemService.Partial.cs" />
-    <Compile Include="Model\FinancialAccountService.Partial.cs" />
+    <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccountService.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
     <Compile Include="Model\InteractionComponentService.Partial.cs" />
@@ -2205,7 +2211,7 @@
     <Compile Include="Model\ExceptionLogService.Partial.cs" />
     <Compile Include="Model\FieldType.cs" />
     <Compile Include="Model\FieldTypeService.Partial.cs" />
-    <Compile Include="Model\FinancialAccount.cs" />
+    <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccount.cs" />
     <Compile Include="Model\FinancialBatch.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\FinancialGateway.cs" />
