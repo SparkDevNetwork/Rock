@@ -389,7 +389,7 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService
                 .Queryable()
-                .Where( r => r.IsActive ?? true && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) );
+                .Where( r => r.IsActive ?? true && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) && r.IsApproved == true );
 
             if ( GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean() )
             {
