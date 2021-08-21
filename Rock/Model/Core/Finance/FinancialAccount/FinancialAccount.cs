@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.Lava;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -222,9 +218,9 @@ namespace Rock.Model
         [DataMember]
         public string Url { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the parent FinancialAccount.
@@ -262,94 +258,7 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile ImageBinaryFile { get; set; }
 
-        /// <summary>
-        /// Gets or sets a collection containing the FinancialAccounts that are sub accounts/child accounts of this account.  This is not a recursive search.
-        /// </summary>
-        /// <value>
-        /// A collection containing all FinancialAccounts that are sub accounts/child accounts of this account.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<FinancialAccount> ChildAccounts
-        {
-            get { return _childAccounts ?? ( _childAccounts = new Collection<FinancialAccount>() ); }
-            set { _childAccounts = value; }
-        }
-        private ICollection<FinancialAccount> _childAccounts;
-
-        /// <summary>
-        /// Returns an enumerable collection of the <see cref="Rock.Model.FinancialAccount" /> Ids that are ancestors of a specified accountId sorted starting with the most immediate parent
-        /// </summary>
-        /// <value>
-        /// The parent account ids.
-        /// </value>
-        [LavaVisible]
-        public List<int> ParentAccountIds
-        {
-            get
-            {
-                using ( var rockContext = new RockContext() )
-                {
-                    return new FinancialAccountService( rockContext ).GetAllAncestorIds( this.Id ).ToList();
-                }
-            }
-        }
-
-        #endregion
-
-        #region overrides
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public override bool IsValid
-        {
-            get
-            {
-                var result = base.IsValid;
-                if ( result )
-                {
-                    // make sure it isn't getting saved with a recursive parent hierarchy
-                    var parentIds = new List<int>();
-                    parentIds.Add( this.Id );
-                    var parent = this.ParentAccountId.HasValue ? ( this.ParentAccount ?? new FinancialAccountService( new RockContext() ).Get( this.ParentAccountId.Value ) ) : null;
-                    while ( parent != null )
-                    {
-                        if ( parentIds.Contains( parent.Id ) )
-                        {
-                            this.ValidationResults.Add( new ValidationResult( "Parent Account cannot be a child of this Account (recursion)" ) );
-                            return false;
-                        }
-                        else
-                        {
-                            parentIds.Add( parent.Id );
-                            parent = parent.ParentAccount;
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this FinancialAccount.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this FinancialAccount.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.PublicName;
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
