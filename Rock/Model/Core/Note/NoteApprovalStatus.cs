@@ -17,8 +17,6 @@
 
 namespace Rock.Model
 {
-    #endregion
-
     /// <summary>
     /// Represents the approval status of a note
     /// </summary>
@@ -39,5 +37,4 @@ namespace Rock.Model
         /// </summary>
         Denied = 2
     }
-
 }
