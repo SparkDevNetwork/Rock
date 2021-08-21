@@ -14,17 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
+using Rock.Lava;
+using Rock.Web.Cache;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Workflow;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -36,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -133,9 +129,9 @@ namespace Rock.Model
         [DataMember]
         public string CriteriaValue { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.WorkflowActivityType"/> that performs this ActionType.
@@ -156,20 +152,6 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Workflow.ActionComponent"/>
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Workflow.ActionComponent"/>
-        /// </value>
-        public virtual ActionComponent WorkflowAction
-        {
-            get
-            {
-                return GetWorkflowAction( this.EntityTypeId );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the workflow form.
         /// </summary>
         /// <value>
@@ -178,90 +160,7 @@ namespace Rock.Model
         [DataMember]
         public virtual WorkflowActionForm WorkflowForm { get; set; }
 
-        /// <summary>
-        /// Gets the parent security authority for this ActionType.
-        /// </summary>
-        /// <value>
-        /// The parent security authority for this ActionType.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ActivityType != null ? this.ActivityType : base.ParentAuthority;
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        /// <summary>
-        /// Gets the workflow action.
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <returns></returns>
-        public static ActionComponent GetWorkflowAction( int entityTypeId )
-        {
-            var entityType = EntityTypeCache.Get( entityTypeId );
-            if ( entityType != null )
-            {
-                foreach ( var serviceEntry in ActionContainer.Instance.Components )
-                {
-                    var component = serviceEntry.Value.Value;
-                    string componentName = component.GetType().FullName;
-                    if ( componentName == entityType.Name )
-                    {
-                        return component;
-                    }
-                }
-            }
-            return null;
-        }
-
-        #endregion
-
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return WorkflowActionTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            var workflowTypeId = WorkflowActivityTypeCache.Get( this.ActivityTypeId, dbContext as RockContext )?.WorkflowTypeId;
-            if ( workflowTypeId.HasValue )
-            {
-                WorkflowTypeCache.UpdateCachedEntity( workflowTypeId.Value, EntityState.Modified );
-            }
-
-            WorkflowActivityTypeCache.UpdateCachedEntity( this.ActivityTypeId, EntityState.Modified ); 
-            WorkflowActionTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -281,7 +180,6 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
 

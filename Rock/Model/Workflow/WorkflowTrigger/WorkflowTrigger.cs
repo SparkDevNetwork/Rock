@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Data;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -95,29 +94,6 @@ namespace Rock.Model
         public string EntityTypeQualifierValuePrevious { get; set; }
 
         /// <summary>
-        /// Indicates if this WorkflowTrigger is looking for a Value that is Changed From one value To another, or just if the Value Equals something
-        /// This is determined by the values for EntityTypeQualifierValue and EntityTypeQualifierValuePrevious. If EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are the same value,
-        /// this is a trigger that only fires if the ValueEquals on save. Otherwise, it'll only fire if the previous value was Changed From EntityTypeQualifierValuePrevious To EntityTypeQualifierValue
-        /// </summary>
-        /// <value>
-        /// The type of the value change.
-        /// </value>
-        public virtual WorkflowTriggerValueChangeType WorkflowTriggerValueChangeType
-        {
-            get
-            {
-                if ( this.EntityTypeQualifierValuePrevious == this.EntityTypeQualifierValue )
-                {
-                    return WorkflowTriggerValueChangeType.ValueEqual;
-                }
-                else
-                {
-                    return WorkflowTriggerValueChangeType.ChangeFromTo;
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is executed by this WorkflowTrigger. This property is required.
         /// </summary>
         /// <value>
@@ -151,9 +127,9 @@ namespace Rock.Model
         [DataMember]
         public string WorkflowName { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EntityType"/> that contains the entities that are affected by this WorkflowTrigger.
@@ -173,24 +149,7 @@ namespace Rock.Model
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            // TODO ask David if we can EntityType.ToStringSafe() instead of EntityType.Name below
-            return this.WorkflowName ?? EntityType.Name + " " + WorkflowTriggerType.ConvertToString();
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -210,62 +169,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// This is determined by the values for EntityTypeQualifierValue and EntityTypeQualifierValuePrevious
-    /// </summary>
-    public enum WorkflowTriggerValueChangeType
-    {
-        /// <summary>
-        /// EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are different, so we are looking to see if the value Changed From/To
-        /// </summary>
-        ChangeFromTo = 0,
-
-        /// <summary>
-        /// EntityTypeQualifierValue and EntityTypeQualifierValuePrevious are the same value, so the trigger is simply looking to see if the value is equal to the specified value
-        /// </summary>
-        ValueEqual = 1
-    }
-
-    /// <summary>
-    /// Type of workflow trigger
-    /// </summary>
-    public enum WorkflowTriggerType
-    {
-        /// <summary>
-        /// Pre Save
-        /// </summary>
-        PreSave = 0,
-
-        /// <summary>
-        /// Post Save
-        /// </summary>
-        PostSave = 1,
-
-        /// <summary>
-        /// Pre Delete
-        /// </summary>
-        PreDelete = 2,
-
-        /// <summary>
-        /// Post Delete
-        /// </summary>
-        PostDelete = 3,
-
-        /// <summary>
-        /// Immediate Post Save
-        /// </summary>
-        ImmediatePostSave = 4,
-
-        /// <summary>
-        /// Post Add
-        /// </summary>
-        PostAdd = 5,
-    }
-
-    #endregion
-
+    #endregion Entity Configuration
 }

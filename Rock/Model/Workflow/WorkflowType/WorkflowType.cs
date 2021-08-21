@@ -14,17 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration;
-using System.Linq;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -41,9 +36,7 @@ namespace Rock.Model
     [Table( "WorkflowType" )]
     [DataContract]
     public partial class WorkflowType : Model<WorkflowType>, IOrdered, ICategorized, IHasActiveFlag, ICacheable
-
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -111,7 +104,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Description { get; set; }
-
 
         /// <summary>
         /// Gets or sets the CategoryId of the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to. 
@@ -226,9 +218,9 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string IconCssClass { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this WorkflowType belongs to.
@@ -239,148 +231,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Category Category { get; set; }
 
-        /// <summary>
-        /// Gets or sets a collection containing  the <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that will be executed/performed as part of this WorkflowType.
-        /// </summary>
-        /// <value>
-        /// A collection of <see cref="Rock.Model.WorkflowActivityType">ActivityTypes</see> that are executed/performed as part of this WorkflowType.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActivityType> ActivityTypes
-        {
-            get { return _activityTypes ?? ( _activityTypes = new Collection<WorkflowActivityType>() ); }
-            set { _activityTypes = value; }
-        }
-        private ICollection<WorkflowActivityType> _activityTypes;
-
-        /// <summary>
-        /// Gets a value indicating whether this instance has active forms.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance has active forms; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasActiveForms
-        {
-            get
-            {
-                return ActivityTypes
-                    .Where( t => t.IsActive.HasValue && t.IsActive.Value )
-                    .SelectMany( t => t.ActionTypes )
-                    .Where( a => a.WorkflowFormId.HasValue )
-                    .Any();
-            }
-        }
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( "ViewList", "The roles and/or users that have access to view the workflow lists of this type." );
-                return supportedActions;
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Pres the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                var rockContext = dbContext as RockContext;
-
-                // manually clear any registrations using this workflow type
-                foreach ( var template in new RegistrationTemplateService( rockContext )
-                    .Queryable()
-                    .Where( r =>
-                        r.RegistrationWorkflowTypeId.HasValue &&
-                        r.RegistrationWorkflowTypeId.Value == this.Id ) )
-                {
-                    template.RegistrationWorkflowTypeId = null;
-                }
-
-                foreach ( var instance in new RegistrationInstanceService( rockContext )
-                    .Queryable()
-                    .Where( r =>
-                        r.RegistrationWorkflowTypeId.HasValue &&
-                        r.RegistrationWorkflowTypeId.Value == this.Id ) )
-                {
-                    instance.RegistrationWorkflowTypeId = null;
-                }
-
-                /*
-                    7/6/2020 - JH
-                    The deletion of the Workflow object graph is accomplished by a combination of SQL cascade deletes and
-                    PreSaveChanges() implementations.
-
-                    When a WorkflowType is deleted, any child Workflows will be cascade-deleted. Most children of the deleted
-                    Workflows will also be cascade-deleted, with the exception of any ConnectionRequestWorkflow records. Therefore,
-                    we need to manually delete those here in order to prevent foreign key violations within the database.
-
-                    Reason: GitHub Issue #4068
-                    https://github.com/SparkDevNetwork/Rock/issues/4068#issuecomment-648908315
-                */
-                var connectionRequestWorkflows = new ConnectionRequestWorkflowService( rockContext )
-                    .Queryable()
-                    .Where( c => c.Workflow.WorkflowTypeId == this.Id );
-
-                if ( connectionRequestWorkflows.Any() )
-                {
-                    dbContext.BulkDelete( connectionRequestWorkflows );
-                }
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this WorkflowType.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this WorkflowType.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return WorkflowTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            WorkflowTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -399,38 +250,6 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The level of details to log
-    /// </summary>
-    public enum WorkflowLoggingLevel
-    {
-
-        /// <summary>
-        /// Don't log any details
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Log workflow events
-        /// </summary>
-        Workflow = 1,
-
-        /// <summary>
-        /// Log workflow and activity events
-        /// </summary>
-        Activity = 2,
-
-        /// <summary>
-        /// Log workflow, activity, and action events
-        /// </summary>
-        Action = 3
-    }
-
-    #endregion
-
+    #endregion Entity Configuration
 }
 

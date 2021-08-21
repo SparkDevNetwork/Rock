@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using Rock.Data;
+using Rock.Lava;
+using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -36,7 +32,6 @@ namespace Rock.Model
     [DataContract]
     public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -96,9 +91,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> that runs this WorkflowActivityType.
@@ -109,76 +104,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual WorkflowType WorkflowType { get; set; }
 
-        /// <summary>
-        /// Gets or sets a collection containing the <see cref="Rock.Model.WorkflowActionType">WorkflowActionTypes</see> that are 
-        /// performed by this WorkflowActivityType.
-        /// </summary>
-        /// <value>
-        /// The action types.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<WorkflowActionType> ActionTypes
-        {
-            get { return _actionTypes ?? ( _actionTypes = new Collection<WorkflowActionType>() ); }
-            set { _actionTypes = value; }
-        }
-        private ICollection<WorkflowActionType> _actionTypes;
-
-        /// <summary>
-        /// Gets the parent security authority for this WorkflowActivityType. 
-        /// </summary>
-        /// <value>
-        /// An entity object implementing the  <see cref="Security.ISecured"/> interface, representing the parent security authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.WorkflowType != null ? this.WorkflowType : base.ParentAuthority;
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this WorkflowActivityType.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this WorkflowActivityType.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return WorkflowActivityTypeCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
-        {
-            WorkflowTypeCache.UpdateCachedEntity( this.WorkflowTypeId, EntityState.Modified );
-            WorkflowActivityTypeCache.UpdateCachedEntity( this.Id, entityState );
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -197,7 +123,6 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
 

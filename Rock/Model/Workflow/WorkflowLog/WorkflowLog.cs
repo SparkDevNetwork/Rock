@@ -34,7 +34,6 @@ namespace Rock.Model
     [NotAudited]
     public partial class WorkflowLog
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -79,9 +78,9 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string LogText { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Workflow"/> instance that is being logged.
@@ -92,23 +91,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual Workflow Workflow { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this WorkflowLog.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this WorkflowLog.
-        /// </returns>
-        public override string ToString()
-        {
-            return string.Format( "{0}: {1}", this.LogDateTime.ToStringSafe(), this.LogText );
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -127,7 +110,6 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
 
