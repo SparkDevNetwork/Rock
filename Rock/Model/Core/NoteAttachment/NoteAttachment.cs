@@ -14,14 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.ModelConfiguration;
-using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
+using System.Runtime.Serialization;
 
 namespace Rock.Model
 {
@@ -33,7 +30,6 @@ namespace Rock.Model
     [DataContract]
     public partial class NoteAttachment : Model<NoteAttachment>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -54,9 +50,9 @@ namespace Rock.Model
         [DataMember]
         public int BinaryFileId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Note"/> that this attachment belongs to.
@@ -76,61 +72,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual BinaryFile BinaryFile { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var rockContext = ( RockContext ) dbContext;
-            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-            var binaryFile = binaryFileService.Get( BinaryFileId );
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
-                        if ( binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
-                        if ( binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = false;
-                        }
-
-                        break;
-                    }
-                case EntityState.Deleted:
-                    {
-                        // if deleting, and there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=true 
-                        // so that it'll get cleaned up
-                        if ( !binaryFile.IsTemporary )
-                        {
-                            binaryFile.IsTemporary = true;
-                        }
-
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        #endregion
+        #endregion Navigation
     }
 
     #region Entity Configuration
@@ -150,5 +92,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

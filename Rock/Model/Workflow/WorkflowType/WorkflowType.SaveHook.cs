@@ -36,20 +36,20 @@ namespace Rock.Model
                 if ( State == EntityContextState.Deleted )
                 {
                     // manually clear any registrations using this workflow type
-                    foreach ( var template in new RegistrationTemplateService( RockContext )
-                        .Queryable()
-                        .Where( r =>
-                            r.RegistrationWorkflowTypeId.HasValue &&
-                            r.RegistrationWorkflowTypeId.Value == this.Entity.Id ) )
+                    var templates = new RegistrationTemplateService( RockContext ).Queryable().Where( r =>
+                        r.RegistrationWorkflowTypeId.HasValue &&
+                        r.RegistrationWorkflowTypeId.Value == this.Entity.Id );
+
+                    foreach ( var template in templates )
                     {
                         template.RegistrationWorkflowTypeId = null;
                     }
 
-                    foreach ( var instance in new RegistrationInstanceService( RockContext )
-                        .Queryable()
-                        .Where( r =>
-                            r.RegistrationWorkflowTypeId.HasValue &&
-                            r.RegistrationWorkflowTypeId.Value == this.Id ) )
+                    var instances = new RegistrationInstanceService( RockContext ).Queryable().Where( r =>
+                        r.RegistrationWorkflowTypeId.HasValue &&
+                        r.RegistrationWorkflowTypeId.Value == this.Entity.Id );
+
+                    foreach ( var instance in instances )
                     {
                         instance.RegistrationWorkflowTypeId = null;
                     }
