@@ -77,8 +77,10 @@ namespace Rock.Lava.Fluid
         {
             AssertWriteToParameters( writer, encoder, cultureInfo );
 
-            // Output the value as a local datetime in the General Short Date/Long Time format.
-            writer.Write( _value.LocalDateTime.ToString( "G", cultureInfo ) );
+            // Output the value in the General Short Date/Long Time format.
+            var outputDate = LavaDateTime.ToString( _value, "G", cultureInfo );
+
+            writer.Write( outputDate );
         }
 
         public override object ToObjectValue()

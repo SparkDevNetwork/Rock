@@ -22,7 +22,6 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -33,17 +32,13 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.HtmlControls;
 
-using Ical.Net.DataTypes;
-
 using DotLiquid;
-using DotLiquid.Util;
 using Context = DotLiquid.Context;
 using Condition = DotLiquid.Condition;
 
 using Humanizer;
 using Humanizer.Localisation;
 using ImageResizer;
-using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -54,6 +49,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using UAParser;
+using Ical.Net;
 
 namespace Rock.Lava
 {
@@ -1179,52 +1175,81 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="format"></param>
         /// <returns></returns>
-        public static string Date( object input, string format )
+        public static string Date( object input, string format = null )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            if ( input.ToString() == "Now" )
+            // If input is "now", use the current Rock date/time as the input value.
+            if ( input.ToString().ToLower() == "now" )
             {
-                input = RockDateTime.Now.ToString( "yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture );
+                // To correctly include the Rock configured timezone, we need to use a DateTimeOffset.
+                // The DateTime object can only represent local server time or UTC time.
+                input = new DateTimeOffset( RockDateTime.Now, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
             }
 
+            // Use the General Short Date/Long Time format by default.
             if ( string.IsNullOrWhiteSpace( format ) )
             {
-                return input.ToString();
+                format = "G";
+            }
+            // Consider special 'Standard Date' and 'Standard Time' formats.
+            else if ( format == "sd" )
+            {
+                format = "d";
+            }
+            else if ( format == "st" )
+            {
+                format = "t";
             }
 
-            // if format string is one character add a space since a format string can't be a single character http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers
-            if ( format.Length == 1 )
+            // If the format string is a single character, add a space to produce a valid custom format string.
+            // (refer http://msdn.microsoft.com/en-us/library/8kb3ddd4.aspx#UsingSingleSpecifiers)
+            else if ( format.Length == 1 )
             {
                 format = " " + format;
             }
 
-            var inputDateTime = input.ToString().AsDateTime();
-
-            // Check for invalid date
-            if ( !inputDateTime.HasValue )
+            if ( input is DateTimeOffset inputDateTimeOffset )
             {
+                // Preserve the value of the specified offset and return the formatted datetime value.
+                return inputDateTimeOffset.ToString( format ).Trim();
+            }
+            else if ( input is DateTime dt )
+            {
+                // Translate the DateTime to an offset
+                if ( dt.Kind == DateTimeKind.Utc )
+                {
+                    // The input date is expressed in UTC, so convert it to a string expressed in Rock time.
+                    var dtoUtc = new DateTimeOffset( dt, TimeSpan.Zero );
+                    var dtoRock = TimeZoneInfo.ConvertTime( dtoUtc, RockDateTime.OrgTimeZoneInfo );
+
+                    return dtoRock.ToString( format ).Trim();
+                }
+                else
+                {
+                    // The input date kind is unspecified, so assume it is expressed in Rock time?
+                    var rockDateTime = new DateTimeOffset( dt, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+
+                    return rockDateTime.ToString( format ).Trim();
+                }
+            }
+
+            // Convert the input to a valid Rock DateTime if possible.
+            var outputDateTime = LavaDateTime.ParseToOffset( input.ToString() );
+
+            if ( !outputDateTime.HasValue )
+            {
+                // Not a valid date, so return the input unformatted.
                 return input.ToString().Trim();
             }
 
-            // Consider special 'Standard Date' format
-            if ( format == "sd" )
-            {
-                return inputDateTime.Value.ToShortDateString();
-            }
+            var output = LavaDateTime.ToString( outputDateTime.Value, format ).Trim();
 
-            // Consider special 'Standard Time' format
-            if ( format == "st" )
-            {
-                return inputDateTime.Value.ToShortTimeString();
-            }
-
-            return Liquid.UseRubyDateFormat ? inputDateTime.Value.ToStrFTime( format ).Trim() : inputDateTime.Value.ToString( format ).Trim();
+            return output;
         }
-
 
         /// <summary>
         /// Current datetime.
@@ -1284,19 +1309,19 @@ namespace Rock.Lava
         /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
         /// <param name="option">The quantity option (either an integer or "all").</param>
         /// <returns>a list of datetimes</returns>
-        public static List<DateTime> DatesFromICal( object input, object option = null )
+        public static List<DateTimeOffset> DatesFromICal( object input, object option = null )
         {
             return DatesFromICal( input, option, endDateTimeOption: null );
         }
 
         /// <summary>
-        /// Returns the occurrence Dates from an iCal string or list.
+        /// Returns the occurrence Dates from an iCal string or list, expressed in UTC.
         /// </summary>
         /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
         /// <param name="option">The quantity option (either an integer or "all").</param>
         /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
         /// <returns>a list of datetimes</returns>
-        public static List<DateTime> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
+        public static List<DateTimeOffset> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -1317,7 +1342,7 @@ namespace Rock.Lava
 
             bool useEndDateTime = ( endDateTimeOption is string && (string)endDateTimeOption == "enddatetime" );
 
-            List<DateTime> nextOccurrences = new List<DateTime>();
+            List<DateTimeOffset> nextOccurrences = new List<DateTimeOffset>();
 
             if ( input is string )
             {
@@ -1336,34 +1361,55 @@ namespace Rock.Lava
 
             nextOccurrences.Sort( ( a, b ) => a.CompareTo( b ) );
 
-            return nextOccurrences.Take( returnCount ).ToList();
+            nextOccurrences = nextOccurrences.Take( returnCount ).ToList();
+
+            return nextOccurrences;
         }
 
         /// <summary>
-        /// Gets the occurrence dates.
+        /// Gets the occurrence dates from an iCalendar string, calculated in Rock time and expressed in UTC.
         /// </summary>
-        /// <param name="iCalString">The i cal string.</param>
+        /// <param name="iCalString">The iCal string.</param>
         /// <param name="returnCount">The return count.</param>
         /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
-        /// <returns>a list of datetimes</returns>
-        private static List<DateTime> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
+        /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
+        private static List<DateTimeOffset> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
         {
-            var calendarEvent = InetCalendarHelper.CreateCalendarEvent( iCalString );
-            
+            // Construct a calendar for the Rock timezone, and read the occurrence dates.
+            var startDate = RockDateTime.Now;
+
+            var endDate = startDate.AddYears( 1 );
+
+            var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
+
+            var tzName = RockDateTime.OrgTimeZoneInfo.Id;
+
+            var calendarEvent = calendar.Events[0] as Event;
+
+            List<DateTimeOffset> dates;
+
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.StartTime.Value ).ToList();
+                dates = calendar.GetOccurrences( startDate, endDate )
+                    .Take( returnCount )
+                    .Select( d => new DateTimeOffset( d.Period.StartTime.ToTimeZone( tzName ).Value ) )
+                    .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                List<Occurrence> dates = InetCalendarHelper.GetOccurrences( iCalString, RockDateTime.Now, RockDateTime.Now.AddYears( 1 ) ).Take( returnCount ).ToList();
-                return dates.Select( d => d.Period.EndTime.Value ).ToList();
+                dates = calendar.GetOccurrences( startDate, endDate )
+                    .Take( returnCount )
+                    .Select( d => new DateTimeOffset( d.Period.EndTime.ToTimeZone( tzName ).Value ) )
+                    .ToList();
             }
             else
             {
-                return new List<DateTime>();
+                dates = new List<DateTimeOffset>();
             }
+
+            dates = dates.Select( x => x.ToOffset( RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ) ).ToList();
+
+            return dates;
         }
 
         /// <summary>
@@ -1373,7 +1419,7 @@ namespace Rock.Lava
         /// <param name="amount">The amount.</param>
         /// <param name="interval">The interval.</param>
         /// <returns></returns>
-        public static DateTime? DateAdd( object input, object amount, string interval = "d" )
+        public static DateTimeOffset? DateAdd( object input, object amount, string interval = "d" )
         {
             var integerAmount = amount.ToStringSafe().AsInteger();
 
@@ -1387,28 +1433,9 @@ namespace Rock.Lava
         /// <param name="amount">The amount.</param>
         /// <param name="interval">The interval.</param>
         /// <returns></returns>
-        public static DateTime? DateAdd( object input, int amount, string interval = "d" )
+        public static DateTimeOffset? DateAdd( object input, int amount, string interval = "d" )
         {
-            DateTime? date = null;
-
-            if ( input == null )
-            {
-                return null;
-            }
-
-            if ( input.ToString() == "Now" )
-            {
-                date = RockDateTime.Now;
-            }
-            else
-            {
-                DateTime d;
-                bool success = DateTime.TryParse( input.ToString(), out d );
-                if ( success )
-                {
-                    date = d;
-                }
-            }
+            var date = GetDateTimeOffsetFromInputParameter( input, null );
 
             if ( date.HasValue )
             {
@@ -1484,12 +1511,21 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string DaysFromNow( object input )
         {
-            DateTime dtInputDate = GetDateFromObject( input ).Date;
-            DateTime dtCompareDate = RockDateTime.Now.Date;
+            // We are calculating a difference in calendar days, so we must compare days from the Rock timezone calendar.
+            var dtInputDate = GetDateTimeOffsetFromInputParameter( input, null );
 
-            int daysDiff = ( dtInputDate - dtCompareDate ).Days;
+            if ( dtInputDate == null )
+            {
+                return string.Empty;
+            }
 
-            string response = string.Empty;
+            dtInputDate = LavaDateTime.ConvertToRockDateTime( dtInputDate.Value );
+
+            var dtCompareDate = LavaDateTime.NowDateTime;
+
+            int daysDiff = ( dtInputDate.Value.Date - dtCompareDate.Date ).Days;
+
+            string response;
 
             switch ( daysDiff )
             {
@@ -1607,12 +1643,12 @@ namespace Rock.Lava
                 precisionUnit = (int)precision;
             }
 
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            var startDate = GetDateTimeOffsetFromInputParameter( sStartDate, null );
+            var endDate = GetDateTimeOffsetFromInputParameter( sEndDate, null );
 
-            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            if ( startDate != null && endDate != null )
             {
-                TimeSpan difference = endDate - startDate;
+                TimeSpan difference = endDate.Value - startDate.Value;
                 return difference.Humanize( precisionUnit );
             }
             else
@@ -1631,8 +1667,8 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string HumanizeTimeSpan( object sStartDate, object sEndDate, string unit = "Day", string direction = "min" )
         {
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            var startDate = GetDateTimeOffsetFromInputParameter( sStartDate, null );
+            var endDate = GetDateTimeOffsetFromInputParameter( sEndDate, null );
 
             TimeUnit unitValue = TimeUnit.Day;
 
@@ -1661,9 +1697,9 @@ namespace Rock.Lava
                     break;
             }
 
-            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            if ( startDate != null && endDate != null )
             {
-                TimeSpan difference = endDate - startDate;
+                TimeSpan difference = endDate.Value - startDate.Value;
 
                 if ( direction.ToLower() == "max" )
                 {
@@ -1681,38 +1717,34 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Gets the date from object.
+        /// Converts an input value to a DateTimeOffset.
         /// </summary>
-        /// <param name="date">The date.</param>
+        /// <param name="input">The date.</param>
+        /// <param name="defaultValue"></param>
         /// <returns></returns>
-        private static DateTime GetDateFromObject( object date )
+        private static DateTimeOffset? GetDateTimeOffsetFromInputParameter( object input, DateTimeOffset? defaultValue )
         {
-            DateTime oDateTime = DateTime.MinValue;
-
-            if ( date is String )
+            if ( input is String inputString )
             {
-                if ( (string)date == "Now" )
+                if ( inputString.Trim().ToLower() == "now" )
                 {
-                    return RockDateTime.Now;
+                    return LavaDateTime.NowOffset;
                 }
                 else
                 {
-                    if ( DateTime.TryParse( (string)date, out oDateTime ) )
-                    {
-                        return oDateTime;
-                    }
-                    else
-                    {
-                        return DateTime.MinValue;
-                    }
+                    return LavaDateTime.ParseToOffset( inputString, defaultValue );
                 }
             }
-            else if ( date is DateTime )
+            else if ( input is DateTime dt )
             {
-                return (DateTime)date;
+                return LavaDateTime.ConvertToDateTimeOffset( dt );
+            }
+            else if ( input is DateTimeOffset inputDateTimeOffset )
+            {
+                return inputDateTimeOffset;
             }
 
-            return DateTime.MinValue;
+            return defaultValue;
         }
 
         /// <summary>
@@ -1724,12 +1756,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Int64? DateDiff( object sStartDate, object sEndDate, string unit )
         {
-            DateTime startDate = GetDateFromObject( sStartDate );
-            DateTime endDate = GetDateFromObject( sEndDate );
+            var startDate = GetDateTimeOffsetFromInputParameter( sStartDate, null );
+            var endDate = GetDateTimeOffsetFromInputParameter( sEndDate, null );
 
-            if ( startDate != DateTime.MinValue && endDate != DateTime.MinValue )
+            if ( startDate != null && endDate != null )
             {
-                TimeSpan difference = endDate - startDate;
+                TimeSpan difference = endDate.Value - startDate.Value;
 
                 switch ( unit )
                 {
@@ -1740,9 +1772,9 @@ namespace Rock.Lava
                     case "m":
                         return (Int64)difference.TotalMinutes;
                     case "M":
-                        return (Int64)GetMonthsBetween( startDate, endDate );
+                        return (Int64)GetMonthsBetween( startDate.Value, endDate.Value );
                     case "Y":
-                        return (Int64)( endDate.Year - startDate.Year );
+                        return (Int64)( endDate.Value.Year - startDate.Value.Year );
                     case "s":
                         return (Int64)difference.TotalSeconds;
                     default:
@@ -1755,7 +1787,7 @@ namespace Rock.Lava
             }
         }
 
-        private static int GetMonthsBetween( DateTime from, DateTime to )
+        private static int GetMonthsBetween( DateTimeOffset from, DateTimeOffset to )
         {
             if ( from > to )
             {
@@ -1779,33 +1811,20 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
-        public static DateTime? ToMidnight( object input )
+        public static DateTimeOffset? ToMidnight( object input )
         {
-            if ( input == null )
+            // Parse the input to a valid date.
+            var inputDate = GetDateTimeOffsetFromInputParameter( input, null );
+
+            if ( inputDate == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                return ( (DateTime)input ).Date;
-            }
+            // Return a time of 12:00am on the specified date.
+            var date = new DateTimeOffset( inputDate.Value.Year, inputDate.Value.Month, inputDate.Value.Day, 0, 0, 0, inputDate.Value.Offset );
 
-            if ( input.ToString() == "Now" )
-            {
-                return RockDateTime.Now.Date;
-            }
-            else
-            {
-                DateTime date;
-
-                if ( DateTime.TryParse( input.ToString(), out date ) )
-                {
-                    return date.Date;
-                }
-            }
-
-            return null;
+            return date;
         }
 
         /// <summary>
@@ -1906,28 +1925,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public static int? DaysUntil( object input )
         {
-            DateTime date;
+            var inputDate = GetDateTimeOffsetFromInputParameter( input, null );
 
-            if ( input == null )
+            if ( inputDate == null )
             {
                 return null;
             }
 
-            if ( input is DateTime )
-            {
-                date = (DateTime)input;
-            }
-            else
-            {
-                DateTime.TryParse( input.ToString(), out date );
-            }
+            // We need to calculate the difference in actual calendar days, so we must compares dates converted to Rock time.
+            var rockInputDate = LavaDateTime.ConvertToRockDateTime( inputDate.Value ).Date;
 
-            if ( date == null )
-            {
-                return null;
-            }
+            var days = ( rockInputDate - RockDateTime.Now.Date ).Days;
 
-            return ( date - RockDateTime.Now ).Days;
+            return days;
         }
 
         /// <summary>
@@ -5135,16 +5145,40 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="input">The input value to be parsed into DateTime form.</param>
         /// <returns>A DateTime value or null if the cast could not be performed.</returns>
-        public static DateTime? AsDateTime( object input )
+        public static DateTimeOffset? AsDateTime( object input )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            return input.ToString().AsDateTime();
-        }
+            // If the input is a DateTime object, return it.
+            if ( input is DateTime dt )
+            {
+                return dt;
+            }
 
+            // If the input is a DateTimeOffset object, return it unchanged.
+            if ( input is DateTimeOffset dto )
+            {
+                return dto;
+            }
+
+            // Parse the input to a DateTime.
+            var offset = LavaDateTime.ParseToOffset( input.ToString() );
+
+            if ( offset == null )
+            {
+                return null;
+            }
+
+            // DotLiquid does not handle UTC dates correctly, so we need to return the Rock time with a Kind of "Unspecified".
+            // For example, in DotLiquid the Condition.Equals operator parses a string literal date as a local system time.
+            // If the system time is not the same timezone as Rock time, the equals comparison fails because the parsed value does not match Rock time.
+            //rockDateTime = RockDateTime.ConvertToRockOffset( rockDateTime.Value );
+
+            return offset;
+        }
 
         /// <summary>
         /// Creates the short link.

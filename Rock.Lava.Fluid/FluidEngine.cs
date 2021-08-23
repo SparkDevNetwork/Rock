@@ -209,6 +209,11 @@ namespace Rock.Lava.Fluid
 
                 // Set Fluid to use the local server culture for formatting dates, times and currencies.
                 _templateOptions.CultureInfo = CultureInfo.CurrentCulture;
+
+                // Set Fluid to use the Rock Organization timezone.
+                _templateOptions.TimeZone = RockDateTime.OrgTimeZoneInfo;
+
+                TemplateOptions.Default.TimeZone = RockDateTime.OrgTimeZoneInfo;
             }
 
             return _templateOptions;

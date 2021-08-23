@@ -14,17 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
-using Fluid.Values;
 using Parlot;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
@@ -200,9 +194,11 @@ namespace Rock.Lava.Fluid
             };
         }
 
+        /// <summary>
+        /// Replace the default Fluid comment block to allow empty content.
+        /// </summary>
         private void RegisterLavaCommentTag()
         {
-            // Replace the default Fluid comment block to allow empty content.
             var commentTag = LavaTagParsers.LavaTagEnd()
                 .SkipAnd( AnyCharBefore( CreateTag( "endcomment" ), canBeEmpty: true ) )
                 .AndSkip( CreateTag( "endcomment" ).ElseError( $"'{{% endcomment %}}' was expected" ) )
@@ -212,6 +208,9 @@ namespace Rock.Lava.Fluid
             RegisteredTags["comment"] = commentTag;
         }
 
+        /// <summary>
+        /// Replace the default Fluid comment block to allow embedded tags.
+        /// </summary>
         private void RegisterLavaCaptureTag()
         {
             var captureTag = Identifier
@@ -224,9 +223,11 @@ namespace Rock.Lava.Fluid
             RegisteredTags["capture"] = captureTag;
         }
 
+        /// <summary>
+        /// Redefine the standard Liquid {% if %} tag to allow "{% elsif %}" or "{% elseif %}".
+        /// </summary>
         private void RegisterLavaElseIfTag()
         {
-            // Redefine the standard Liquid {% if %} tag to allow "{% elsif %}" or "{% elseif %}".
             var ifTag = LogicalExpression
                 .AndSkip( TagEnd )
                 .And( AnyTagsList )
