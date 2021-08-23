@@ -1267,7 +1267,7 @@
                                 <asp:Label ID="lblSMSMessageCount" runat="server" CssClass="badge margin-all-sm pull-right" />
                                 <Rock:RockTextBox ID="tbSMSTextMessage" runat="server" CssClass="js-sms-text-message" TextMode="MultiLine" Rows="3" Required="true" ValidationGroup="vgMobileTextEditor" RequiredErrorMessage="Message is required" ValidateRequestMode="Disabled" />
                                 <Rock:NotificationBox ID="nbSMSTestResult" CssClass="margin-t-md" runat="server" NotificationBoxType="Success" Text="Test SMS has been sent." Visible="false" />
-                                <div class="actions margin-t-sm pull-right">
+                                <div class="control-actions margin-t-sm pull-right">
                                     <a class="btn btn-xs btn-default js-sms-sendtest" href="#">Send Test</a>
                                     <asp:LinkButton ID="btnSMSEditorSaveDraft" runat="server" CssClass="btn btn-xs btn-default" Text="Save" OnClick="btnSMSEditorSaveDraft_Click" />
                                     <div class="js-sms-sendtest-inputs" style="display: none">
@@ -1282,7 +1282,7 @@
                             <Rock:NotificationBox ID="nbMobileAttachmentFileTypeWarning" runat="server" NotificationBoxType="Warning" Text="" Dismissable="true" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <div class="device device-mobile hidden-sm hidden-xs">
+                            <div class="device device-mobile hidden-sm hidden-xs mb-5">
                                 <div class="sms">
                                     <header>
                                         <span class="left">Messages</span><h2>
@@ -1402,7 +1402,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <div class="device device-mobile hidden-sm hidden-xs">
+                                                    <div class="device device-mobile hidden-sm hidden-xs mb-5">
                                                         <div class="sms">
                                                             <header>
                                                                 <span class="left">Messages</span><h2>
