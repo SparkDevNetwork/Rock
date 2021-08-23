@@ -1,0 +1,36 @@
+{#
+
+{% set blockData = { 
+    title: "", 
+    imageUrl: '',
+    typeIcon: '',
+    linkUrl: '',
+} %}{% include "call-to-action.html" %}
+
+#}
+
+<div class="media rounded push-bottom">
+
+    {% if blockData.imageUrl %}
+        <div class="media-left media-middle soft-half-right vertical-align-middle">
+            <a href="#">
+                <span class="ratio-square position-relative background-center background-cover rounded mx-auto overflow-hidden" style="background-image: url('{{ blockData.imageUrl }}'); width: 80px;">
+
+                    {% if blockData.typeIcon %}
+                        <i class="media-type fas {{ blockData.typeIcon }} position-absolute top-zero right-zero bg-gray-darker text-white rounded-bottom-left"></i>
+                    {% endif %}
+
+                </span>
+            </a>
+        </div>
+    {% else %}
+        <div class="media-left position-relative" style="top: 1px;">
+            <a href="#"><i class="fas fa-arrow-square-right text-primary pull-left"></i></a>
+        </div>
+    {% endif %}
+
+    <div class="media-body vertical-align-middle">
+        <h6 class="flush"><a href="#">{{ blockData.title }}</a></h6>
+    </div>
+
+</div>

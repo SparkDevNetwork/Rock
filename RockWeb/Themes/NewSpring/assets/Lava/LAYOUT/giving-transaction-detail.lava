@@ -1,0 +1,80 @@
+{% for row in rows %}
+
+    {%- comment -%}Get the person IDs of people authorized to view this transaction (same GivingGroupId or Child of current person's family).{%- endcomment -%}
+    {%- sql return:'rows2' -%}
+    SELECT p2.Id
+    FROM GroupMember gm
+    JOIN Person p
+    ON gm.PersonId = p.Id
+    JOIN [Group] g
+    ON gm.GroupId = g.Id
+    JOIN GroupMember gm2
+    ON g.Id = gm2.GroupId
+    JOIN Person p2
+    ON gm2.PersonId = p2.Id
+    WHERE gm.PersonId = {{ row.PersonId }}
+    AND g.GroupTypeId = 10
+    AND (
+        p.GivingGroupId = p2.GivingGroupId
+        OR p2.AgeClassification = 2
+    )
+    {%- endsql -%}
+
+    {%- comment -%}Set variables to compare to check if user is authorized to view transaction{%- endcomment -%}
+    {% assign currentPersonId = CurrentPerson.Id | AsString %}
+    {% capture authorizedPersonIds %}|{% for row in rows2 %}{{ row.Id }}|{% endfor %}{% endcapture %}
+
+    {%- comment -%}If user is authorized to view this transaction, show it{%- endcomment -%}
+    {% if authorizedPersonIds contains currentPersonId %}
+        <section class="bg-white soft xs-soft-half push-bottom xs-push-half-bottom rounded shadowed text-constrained mx-auto text-center">
+
+            {%- comment -%}Set giver of transaction{%- endcomment -%}
+            {% assign giver = row.PersonId | PersonById %}
+
+            {%- comment -%}Set transaction type value from defined value{%- endcomment -%}
+            {% definedvalue id:'{{ row.CurrencyTypeValueId }}' where:'DefinedTypeId == 10' iterator:'values' %}
+                {% for value in values %}
+                    {% assign transactionType = value.Value %}
+                {% endfor %}
+            {% enddefinedvalue %}
+
+            {%- comment -%}Set page title{%- endcomment -%}
+            {% capture pageTitle %}Transaction #{{ row.Id }}{% endcapture %}
+            {{ pageTitle | SetPageTitle }}
+
+            <div class="soft-half hard-bottom">
+                <h2 class="push-half-bottom">{{ row.PublicName1 }}</h2>
+                <h3 class="push-half-bottom">{{ row.Amount | FormatAsCurrency }}</h3>
+                <p class="sans-serif stronger text-gray-light letter-spacing-condensed push-half-bottom">{{ row.TransactionDateTime | Date:'MMM d, yyyy' }} &middot; {{ giver.FullName }} &middot; {{ transactionType }} {{ row.AccountNumberMasked | Right:4  }}</p>
+                {% assign status = row.Status %}
+                {% capture statusIcon %}
+                    {% if status == 'Complete' %}
+                        <i class="fas fa-check-circle text-primary"></i>
+                    {% elseif status == 'Pending' %}
+                        <i class="fas fa-spinner-third rotating text-warning"></i>&nbsp;
+                    {% else %}
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                    {% endif %}
+                {% endcapture %}
+
+                <p class="sans-serif stronger letter-spacing-condensed"><small>{{ statusIcon }} Transaction {{ status }}</small></p>
+                <p class="text-center">Thank you for your contribution to NewSpring Church. Because you are obedient in giving, we'll be able to connect more people to Jesus and each other.</p>
+                <p><a href="/account/giving" class="btn btn-primary">Back to Giving History</a></p>
+            </div>
+            <p class="well flush">If you have any questions about this or believe it to be a mistake, please contact us at <a href="mailto:giving@newspring.cc">giving@newspring.cc</a></p>
+        </section>
+    {% else %}
+        {%- comment -%}Transaction not found dialogue for unauthorized users{%- endcomment -%}
+        <section class="bg-white soft xs-soft-half push-bottom xs-push-half-bottom rounded shadowed text-constrained mx-auto text-center">
+
+            {%- comment -%}Set page title{%- endcomment -%}
+            {% capture pageTitle %}Transaction #{{ row.Id }}{% endcapture %}
+            {{ pageTitle | SetPageTitle }}
+
+            <div class="soft-half hard-bottom">
+                <h2 class="push-half-bottom">Transaction Not Found</h2>
+            </div>
+            <p class="well flush">We were unable to locate this transaction. If you have questions about this or believe this to be an error, please contact us at <a href="mailto:giving@newspring.cc">giving@newspring.cc</a></p>
+        </section>
+    {% endif %}
+{% endfor %}
