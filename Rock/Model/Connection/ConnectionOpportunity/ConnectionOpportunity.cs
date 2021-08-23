@@ -157,7 +157,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
@@ -167,23 +167,6 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
-
-        /// <summary>
-        /// Gets the URL of the Opportunity's photo.
-        /// </summary>
-        /// <value>
-        /// URL of the photo
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string PhotoUrl
-        {
-            get
-            {
-                return ConnectionOpportunity.GetPhotoUrl( this.PhotoId );
-            }
-            private set { }
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that contains the Opportunity's photo.
@@ -281,130 +264,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Methods
-
-        /// <summary>
-        /// Gets the photo URL.
-        /// </summary>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="maxWidth">The maximum width.</param>
-        /// <param name="maxHeight">The maximum height.</param>
-        /// <returns></returns>
-        public static string GetPhotoUrl( int? photoId, int? maxWidth = null, int? maxHeight = null )
-        {
-            string virtualPath = String.Empty;
-            if ( photoId.HasValue )
-            {
-                string widthHeightParams = string.Empty;
-                if ( maxWidth.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
-                }
-
-                if ( maxHeight.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
-                }
-
-                virtualPath = String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
-            }
-            else
-            {
-                virtualPath = "~/Assets/Images/no-picture.svg?";
-            }
-
-            if ( System.Web.HttpContext.Current == null )
-            {
-                return virtualPath;
-            }
-            else
-            {
-                return VirtualPathUtility.ToAbsolute( virtualPath );
-            }
-        }
-
-        /// <summary>
-        /// Gets the default connector person alias.
-        /// </summary>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <returns></returns>
-        private PersonAlias GetDefaultConnectorPersonAlias( int? campusId )
-        {
-            if ( ConnectionOpportunityCampuses == null )
-            {
-                return null;
-            }
-
-            if ( !campusId.HasValue && CampusCache.All().Count == 1 )
-            {
-                // Rock hides campus pickers if there is only one campus
-                campusId = CampusCache.All().First().Id;
-            }
-
-            if ( campusId.HasValue )
-            {
-                var connectionOpportunityCampus = ConnectionOpportunityCampuses
-                    .Where( c => c.CampusId == campusId.Value )
-                    .FirstOrDefault();
-
-                if ( connectionOpportunityCampus != null )
-                {
-                    return connectionOpportunityCampus.DefaultConnectorPersonAlias;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the default connector person identifier.
-        /// </summary>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <returns></returns>
-        public int? GetDefaultConnectorPersonId( int? campusId )
-        {
-            var personAlias = GetDefaultConnectorPersonAlias( campusId );
-            {
-                if ( personAlias != null )
-                {
-                    return personAlias.PersonId;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the default connector.
-        /// </summary>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <returns></returns>
-        public int? GetDefaultConnectorPersonAliasId( int? campusId )
-        {
-            var personAlias = GetDefaultConnectorPersonAlias( campusId );
-            {
-                if ( personAlias != null )
-                {
-                    return personAlias.Id;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ConnectionType != null ? this.ConnectionType : base.ParentAuthority;
-            }
-        }
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

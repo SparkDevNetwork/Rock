@@ -14,19 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Tasks;
-using Rock.Web.Cache;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -154,22 +149,6 @@ namespace Rock.Model
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets the created date key.
-        /// </summary>
-        /// <value>
-        /// The created date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int? CreatedDateKey
-        {
-            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
-                        ( int? ) null :
-                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-
-        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -198,7 +177,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionStatus"/>.
@@ -291,242 +270,10 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
+
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and
-        /// then the authorization on the Rock.Security.GlobalDefault entity
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ConnectionOpportunity ?? base.ParentAuthority;
-            }
-        }
-
-        /// <summary>
-        /// Determines whether the specified action is authorized.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="person">The person.</param>
-        /// <returns>True if the person is authorized; false otherwise.</returns>
-        public override bool IsAuthorized( string action, Person person )
-        {
-            if ( this.ConnectionOpportunity != null
-                && this.ConnectionOpportunity.ConnectionType != null
-                && this.ConnectionOpportunity.ConnectionType.EnableRequestSecurity
-                && this.ConnectorPersonAlias != null
-                && this.ConnectorPersonAlias.PersonId == person.Id )
-            {
-                return true;
-            }
-            else
-            {
-                return base.IsAuthorized( action, person );
-            }
-        }
-
-        /// <summary>
-        /// Pres the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( entry );
-            processConnectionRequestChangeMessage.Send();
-
-            var rockContext = ( RockContext ) dbContext;
-            var connectionOpportunity = ConnectionOpportunity;
-            if ( connectionOpportunity == null )
-            {
-                connectionOpportunity = new ConnectionOpportunityService( ( RockContext ) dbContext ).Get( ConnectionOpportunityId );
-            }
-
-            HistoryChangeList = new History.HistoryChangeList();
-            PersonHistoryChangeList = new History.HistoryChangeList();
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "ConnectionRequest" );
-
-                        History.EvaluateChange( HistoryChangeList, "Connector", string.Empty, History.GetValue<PersonAlias>( ConnectorPersonAlias, ConnectorPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "ConnectionStatus", string.Empty, History.GetValue<ConnectionStatus>( ConnectionStatus, ConnectionStatusId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "ConnectionState", null, ConnectionState );
-                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestAdded, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                        if ( ConnectionState == ConnectionState.Connected )
-                        {
-                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                        }
-                        break;
-                    }
-
-                case EntityState.Modified:
-                    {
-                        var originalConnectorPersonAliasId =  entry.OriginalValues["ConnectorPersonAliasId"].ToStringSafe().AsIntegerOrNull();
-                        string originalConnector = History.GetValue<PersonAlias>( null, entry.OriginalValues["ConnectorPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
-                        string connector = History.GetValue<PersonAlias>( ConnectorPersonAlias, ConnectorPersonAliasId, rockContext );
-                        History.EvaluateChange( HistoryChangeList, "Connector", originalConnector, connector );
-
-                        int? originalConnectionStatusId = entry.OriginalValues["ConnectionStatusId"].ToStringSafe().AsIntegerOrNull();
-                        int? connectionStatusId = ConnectionStatus != null ? ConnectionStatus.Id : ConnectionStatusId;
-                        if ( !connectionStatusId.Equals( originalConnectionStatusId ) )
-                        {
-                            string origConnectionStatus = History.GetValue<ConnectionStatus>( null, originalConnectionStatusId, rockContext );
-                            string connectionStatus = History.GetValue<ConnectionStatus>( ConnectionStatus, ConnectionStatusId, rockContext );
-                            History.EvaluateChange( HistoryChangeList, "ConnectionStatus", origConnectionStatus, connectionStatus );
-                            PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStatusModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                        }
-
-                        var originalConnectionState = entry.OriginalValues["ConnectionState"].ToStringSafe().ConvertToEnum<ConnectionState>();
-                        History.EvaluateChange( HistoryChangeList, "ConnectionState", entry.OriginalValues["ConnectionState"].ToStringSafe().ConvertToEnum<ConnectionState>(), ConnectionState );
-                        if ( ConnectionState != originalConnectionState )
-                        {
-                            if ( ConnectionState == ConnectionState.Connected )
-                            {
-                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestConnected, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                            }
-                            else
-                            {
-                                PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestStateModify, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                            }
-                        }
-
-                        break;
-                    }
-
-                case EntityState.Deleted:
-                    {
-                        HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "ConnectionRequest" );
-                        PersonHistoryChangeList.AddChange( History.HistoryVerb.ConnectionRequestDelete, History.HistoryChangeType.Record, connectionOpportunity.Name );
-                        break;
-                    }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
-
-        private ProcessConnectionRequestChange.Message GetProcessConnectionRequestChangeMessage( DbEntityEntry entry )
-        {
-            var transaction = new ProcessConnectionRequestChange.Message();
-
-            // If entity was a connection request, save the values
-            var connectionRequest = entry.Entity as ConnectionRequest;
-            if ( connectionRequest != null )
-            {
-                transaction.State = entry.State;
-
-                // If this isn't a deleted connection request, get the connection request guid
-                if ( transaction.State != EntityState.Deleted )
-                {
-                    transaction.ConnectionRequestGuid = connectionRequest.Guid;
-
-                    if ( connectionRequest.PersonAlias != null )
-                    {
-                        transaction.PersonId = connectionRequest.PersonAlias.PersonId;
-                    }
-                    else if ( connectionRequest.PersonAliasId != default )
-                    {
-                        transaction.PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
-                    }
-
-                    if ( connectionRequest.ConnectionOpportunity != null )
-                    {
-                        transaction.ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
-                    }
-
-                    transaction.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                    transaction.ConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
-                    transaction.ConnectionState = connectionRequest.ConnectionState;
-                    transaction.ConnectionStatusId = connectionRequest.ConnectionStatusId;
-                    transaction.AssignedGroupId = connectionRequest.AssignedGroupId;
-
-                    if ( transaction.State == EntityState.Modified )
-                    {
-                        var dbOpportunityIdProperty = entry.Property( "ConnectionOpportunityId" );
-                        if ( dbOpportunityIdProperty != null )
-                        {
-                            transaction.PreviousConnectionOpportunityId = dbOpportunityIdProperty.OriginalValue as int?;
-                        }
-
-                        var dbConnectorPersonAliasIdProperty = entry.Property( "ConnectorPersonAliasId" );
-                        if ( dbConnectorPersonAliasIdProperty != null )
-                        {
-                            transaction.PreviousConnectorPersonAliasId = dbConnectorPersonAliasIdProperty.OriginalValue as int?;
-                        }
-
-                        var dbStateProperty = entry.Property( "ConnectionState" );
-                        if ( dbStateProperty != null )
-                        {
-                            transaction.PreviousConnectionState = ( ConnectionState ) dbStateProperty.OriginalValue;
-                        }
-
-                        var dbStatusProperty = entry.Property( "ConnectionStatusId" );
-                        if ( dbStatusProperty != null )
-                        {
-                            transaction.PreviousConnectionStatusId = ( int ) dbStatusProperty.OriginalValue;
-                        }
-
-                        var dbAssignedGroupIdProperty = entry.Property( "AssignedGroupId" );
-                        if ( dbAssignedGroupIdProperty != null )
-                        {
-                            transaction.PreviousAssignedGroupId = dbAssignedGroupIdProperty.OriginalValue as int?;
-                        }
-                    }
-                }
-            }
-
-            return transaction;
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
-        {
-            if ( ConnectionStatus == null )
-            {
-                ConnectionStatus = new ConnectionStatusService( ( RockContext ) dbContext ).Get( ConnectionStatusId );
-            }
-
-            if ( ConnectionStatus != null && ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive )
-            {
-                ConnectionState = ConnectionState.Inactive;
-                var rockContext = ( RockContext ) dbContext;
-                rockContext.SaveChanges();
-            }
-
-            if ( HistoryChangeList?.Any() == true )
-            {
-                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( ConnectionRequest ), Rock.SystemGuid.Category.HISTORY_CONNECTION_REQUEST.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
-            }
-
-            if ( PersonHistoryChangeList?.Any() == true )
-            {
-                var personAlias = PersonAlias ?? new PersonAliasService( ( RockContext ) dbContext ).Get( PersonAliasId );
-                HistoryService.SaveChanges(
-                            ( RockContext ) dbContext,
-                            typeof( Person ),
-                            Rock.SystemGuid.Category.HISTORY_PERSON_CONNECTION_REQUEST.AsGuid(),
-                            personAlias.PersonId,
-                            PersonHistoryChangeList,
-                            "Request",
-                            typeof( ConnectionRequest ),
-                            this.Id,
-                            true,
-                            this.ModifiedByPersonAliasId,
-                            ( ( RockContext ) dbContext ).SourceOfChange );
-            }
-
-            base.PostSaveChanges( dbContext );
-        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Connection Request's Name that represents this instance.
@@ -537,33 +284,6 @@ namespace Rock.Model
         public override string ToString()
         {
             return $"{ ConnectionOpportunity } Connection Request for { PersonAlias.Person }";
-        }
-
-        /// <summary>
-        /// Get a list of all inherited Attributes that should be applied to this entity.
-        /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var connectionOpportunity = this.ConnectionOpportunity;
-            if ( connectionOpportunity == null && this.ConnectionOpportunityId > 0 )
-            {
-                connectionOpportunity = new ConnectionOpportunityService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( g => g.Id == this.ConnectionOpportunityId );
-            }
-
-            if ( connectionOpportunity != null )
-            {
-                var connectionType = connectionOpportunity.ConnectionType;
-
-                if ( connectionType != null )
-                {
-                    return connectionType.GetInheritedAttributesForQualifier( rockContext, TypeId, "ConnectionTypeId" );
-                }
-            }
-
-            return null;
         }
 
         #endregion
@@ -596,33 +316,3 @@ namespace Rock.Model
 
     #endregion
 }
-
-#region Enumerations
-
-/// <summary>
-/// Type of connection state
-/// </summary>
-public enum ConnectionState
-{
-    /// <summary>
-    /// Active
-    /// </summary>
-    Active = 0,
-
-    /// <summary>
-    /// Inactive
-    /// </summary>
-    Inactive = 1,
-
-    /// <summary>
-    /// Future Follow-up
-    /// </summary>
-    FutureFollowUp = 2,
-
-    /// <summary>
-    /// Connected
-    /// </summary>
-    Connected = 3,
-}
-
-#endregion

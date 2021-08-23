@@ -14,16 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-
 using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-
     public partial class ConnectionWorkflowService
     {
         /// <summary>

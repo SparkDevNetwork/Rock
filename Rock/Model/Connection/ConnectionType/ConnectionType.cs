@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -22,7 +23,6 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Lava;
@@ -193,7 +193,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the owner <see cref="Rock.Model.PersonAlias"/>.
@@ -284,63 +284,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return ConnectionTypeCache.Get( Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            ConnectionTypeCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
-
-        #region overrides
-
-        /// <summary>
-        /// Gets a list of all attributes defined for the ConnectionTypes specified that
-        /// match the entityTypeQualifierColumn and the ConnectionRequest Ids.
-        /// </summary>
-        /// <param name="rockContext">The database context to operate in.</param>
-        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
-        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
-        /// <returns>A list of attributes defined in the inheritance tree.</returns>
-        public List<AttributeCache> GetInheritedAttributesForQualifier( Rock.Data.RockContext rockContext, int entityTypeId, string entityTypeQualifierColumn )
-        {
-            var attributes = new List<AttributeCache>();
-            //
-            // Walk each group type and generate a list of matching attributes.
-            //
-            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
-            {
-                // group type ids exist and qualifier is for a group type id
-                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
-                {
-                    int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && this.Id == groupTypeIdValue )
-                    {
-                        foreach ( int attributeId in entityAttributes.AttributeIds )
-                        {
-                            attributes.Add( AttributeCache.Get( attributeId ) );
-                        }
-                    }
-                }
-            }
-
-            return attributes.OrderBy( a => a.Order ).ToList();
-        }
+        #region Public Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -375,24 +319,4 @@ namespace Rock.Model
     }
 
     #endregion Entity Configuration
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the view mode of a <see cref="ConnectionType"/>.
-    /// </summary>
-    public enum ConnectionTypeViewMode
-    {
-        /// <summary>
-        /// The <see cref="ConnectionType"/> is viewed as list.
-        /// </summary>
-        List = 0,
-
-        /// <summary>
-        /// The <see cref="ConnectionType"/> is viewed as a board.
-        /// </summary>
-        Board = 1
-    }
-
-    #endregion
 }

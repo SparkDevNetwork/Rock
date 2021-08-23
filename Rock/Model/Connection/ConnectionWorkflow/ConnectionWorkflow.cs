@@ -14,15 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -85,7 +82,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionType">type</see> of the connection.
@@ -114,64 +111,6 @@ namespace Rock.Model
         [DataMember]
         public virtual WorkflowType WorkflowType { get; set; }
 
-        /// <summary>
-        /// Gets the type of the cache workflow.
-        /// </summary>
-        /// <value>
-        /// The type of the cache workflow.
-        /// </value>
-        [LavaVisible]
-        public virtual WorkflowTypeCache WorkflowTypeCache
-        {
-            get
-            {
-                if ( WorkflowTypeId.HasValue && WorkflowTypeId.Value > 0 )
-                {
-                    return WorkflowTypeCache.Get( WorkflowTypeId.Value );
-                }
-                return null;
-            }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                DeleteConnectionRequestWorkflows( dbContext );
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Deletes any connection request workflows tied to this connection workflow.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        private void DeleteConnectionRequestWorkflows( Data.DbContext dbContext )
-        {
-            var rockContext = ( RockContext ) dbContext;
-            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
-            var connectionRequestWorkflows = connectionRequestWorkflowService.Queryable().Where( c => c.ConnectionWorkflowId == this.Id );
-
-            if ( connectionRequestWorkflows.Any() )
-            {
-                dbContext.BulkDelete( connectionRequestWorkflows );
-            }
-        }
-
         #endregion
     }
 
@@ -196,64 +135,3 @@ namespace Rock.Model
 
     #endregion
 }
-
-#region Enumerations
-
-/// <summary>
-/// Type of workflow trigger
-/// </summary>
-public enum ConnectionWorkflowTriggerType
-{
-    /// <summary>
-    /// Request Started
-    /// </summary>
-    RequestStarted = 0,
-
-    /// <summary>
-    /// Request Connected
-    /// </summary>
-    RequestConnected = 1,
-
-    /// <summary>
-    /// Status Changed
-    /// </summary>
-    StatusChanged = 2,
-
-    /// <summary>
-    /// State Changed
-    /// </summary>
-    StateChanged = 3,
-
-    /// <summary>
-    /// Activity Added
-    /// </summary>
-    ActivityAdded = 4,
-
-    /// <summary>
-    /// Placed in a group
-    /// </summary>
-    PlacementGroupAssigned = 5,
-
-    /// <summary>
-    /// Manual
-    /// </summary>
-    Manual = 6,
-
-    /// <summary>
-    /// Request Transferred
-    /// </summary>
-    RequestTransferred = 7,
-
-    /// <summary>
-    /// Request Assigned
-    /// </summary>
-    RequestAssigned = 8,
-
-    /// <summary>
-    /// Future Follow-up Date Reached
-    /// </summary>
-    FutureFollowupDateReached = 9
-
-}
-
-#endregion

@@ -14,16 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Tasks;
 
 namespace Rock.Model
 {
@@ -88,7 +85,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ConnectionRequest"/>.
@@ -125,36 +122,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ConnectionOpportunity ConnectionOpportunity { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Pres the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            if ( entry.State == EntityState.Added )
-            {
-                var connectionRequestActivity = entry.Entity as ConnectionRequestActivity;
-                if ( connectionRequestActivity != null )
-                {
-                    var processConnectionRequestActivityChangeMsg = new ProcessConnectionRequestActivityChange.Message()
-                    {
-                        ConnectionRequestActivityGuid = connectionRequestActivity.Guid,
-                        ConnectionOpportunityId = connectionRequestActivity.ConnectionOpportunityId,
-                        ConnectionActivityTypeId = connectionRequestActivity.ConnectionActivityTypeId
-                    };
-
-                    processConnectionRequestActivityChangeMsg.Send();
-                }
-            }
-
-            base.PreSaveChanges( dbContext, entry );
-        }
 
         #endregion
     }
