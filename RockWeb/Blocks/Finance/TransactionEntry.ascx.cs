@@ -2689,11 +2689,17 @@ TransactionAccountDetails: [
             }
             else
             {
-                paymentInfo.FirstName = "-";
-                paymentInfo.LastName = txtBusinessName.Text;
+                paymentInfo.BusinessName = txtBusinessName.Text;
             }
 
-            tdNameConfirm.Description = paymentInfo.FullName.Trim();
+            if ( givingAsBusiness )
+            {
+                tdNameConfirm.Description = paymentInfo.BusinessName.Trim();
+            }
+            else
+            {
+                tdNameConfirm.Description = paymentInfo.FullName.Trim();
+            }
             tdPhoneConfirm.Description = paymentInfo.Phone;
             tdEmailConfirm.Description = paymentInfo.Email;
             tdAddressConfirm.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );

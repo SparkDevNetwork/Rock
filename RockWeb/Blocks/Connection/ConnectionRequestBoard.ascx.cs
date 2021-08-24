@@ -2692,12 +2692,9 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null )
                 {
                     int? newOpportunityId = ddlRequestModalViewModeTransferModeOpportunity.SelectedValueAsId();
+                    int? sourceConnectorPersonAliasId = connectionRequest.ConnectorPersonAliasId;
+                    int sourceOpportunityId = connectionRequest.ConnectionOpportunityId;
 
-                    if ( connectionRequest.ConnectionOpportunityId == newOpportunityId )
-                    {
-                        nbTranferFailed.Visible = true;
-                        return;
-                    }
                     nbTranferFailed.Visible = false;
 
                     var guid = Rock.SystemGuid.ConnectionActivityType.TRANSFERRED.AsGuid();
@@ -2760,6 +2757,13 @@ namespace RockWeb.Blocks.Connection
                             }
 
                             connectionRequest.ConnectorPersonAliasId = connectorPersonAliasId;
+                        }
+
+                        // if the Opportunity and Connector haven't changed then don't transfer.
+                        if ( connectionRequest.ConnectionOpportunityId == sourceOpportunityId && connectionRequest.ConnectorPersonAliasId == sourceConnectorPersonAliasId )
+                        {
+                            nbTranferFailed.Visible = true;
+                            return;
                         }
 
                         // Add a new request activity to log the transfer

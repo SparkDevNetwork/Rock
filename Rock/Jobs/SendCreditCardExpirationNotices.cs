@@ -202,7 +202,7 @@ namespace Rock.Jobs
             }
 
             var financialScheduledTransactionQuery = new FinancialScheduledTransactionService( rockContext ).Queryable()
-                .Where( t => t.IsActive && t.FinancialPaymentDetail.CardExpirationDate != null && ( t.EndDate == null || t.EndDate > DateTime.Now ) )
+                .Where( t => t.IsActive && t.FinancialPaymentDetail.CardExpirationDate != null && ( t.EndDate == null || t.EndDate > RockDateTime.Now ) )
                 .AsNoTracking();
 
             List<ScheduledTransactionInfo> scheduledTransactionInfoList = financialScheduledTransactionQuery.Select( a => new ScheduledTransactionInfo
@@ -214,7 +214,7 @@ namespace Rock.Jobs
             } ).ToList();
 
             // Get the current month and year 
-            DateTime now = DateTime.Now;
+            var now = RockDateTime.Now;
             int currentMonth = now.Month;
             int currentYYYY = now.Year;
 

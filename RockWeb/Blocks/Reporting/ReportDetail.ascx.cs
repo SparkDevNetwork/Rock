@@ -1041,10 +1041,10 @@ namespace RockWeb.Blocks.Reporting
             }
             else
             {
-                string quckReturnLava = "{{ Report.Name | AddQuickReturn:'Reports', 40 }}";
-                var quckReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                quckReturnMergeFields.Add( "Report", report );
-                quckReturnLava.ResolveMergeFields( quckReturnMergeFields );
+                string quickReturnLava = "{{ Report.Name | AddQuickReturn:'Reports', 40 }}";
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quickReturnMergeFields.Add( "Report", report );
+                quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }
 
             pnlDetails.Visible = true;

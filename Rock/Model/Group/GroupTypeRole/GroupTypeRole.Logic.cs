@@ -48,20 +48,5 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> containing Name of the GroupRole that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> containing the Name of the GroupRole that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Name;
-        }
-
-        #endregion
     }
 }

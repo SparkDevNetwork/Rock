@@ -78,7 +78,7 @@
                 <asp:HiddenField ID="hfBlockMoveBlockId" runat="server" />
                 <legend>New Location</legend>
                 <Rock:RockDropDownList ID="ddlMoveToZoneList" runat="server" Label="Zone" />
-                <Rock:RockRadioButtonList ID="cblBlockMovePageOrLayout" runat="server" Label="Parent" RepeatDirection="Horizontal" />
+                <Rock:RockRadioButtonList ID="cblBlockMovePageLayoutOrSite" runat="server" Label="Parent" RepeatDirection="Horizontal" />
 
             </Content>
         </Rock:ModalDialog>

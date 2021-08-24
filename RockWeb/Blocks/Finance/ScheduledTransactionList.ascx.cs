@@ -283,7 +283,7 @@ namespace RockWeb.Blocks.Finance
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
                 if ( this.TargetPerson != null )
                 {
-                    var impersonationToken = this.TargetPerson.GetImpersonationToken( DateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
+                    var impersonationToken = this.TargetPerson.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addScheduledTransactionPage.PageId );
                     parms.Add( "Person", impersonationToken );
                 }
             }

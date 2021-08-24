@@ -1715,9 +1715,10 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Add any new attributes
                 foreach ( var attribute in attributes )
                 {
-                    if ( !formAttributes.Select( a => a.Attribute.Guid ).Contains( attribute.Key ) )
+                    var formAttribute = formAttributes.Where( fa => fa.Attribute.Guid == attribute.Key ).FirstOrDefault();
+                    if ( formAttribute == null )
                     {
-                        var formAttribute = new WorkflowActionFormAttribute();
+                        formAttribute = new WorkflowActionFormAttribute();
                         formAttribute.Attribute = new Attribute { Guid = attribute.Key, Name = attribute.Value.Name, FieldTypeId = attribute.Value.FieldTypeId };
                         formAttribute.Guid = Guid.NewGuid();
                         formAttribute.Order = formAttributes.Any() ? formAttributes.Max( a => a.Order ) + 1 : 0;
@@ -1729,6 +1730,9 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                         formAttribute.PostHtml = string.Empty;
                         formAttributes.Add( formAttribute );
                     }
+
+                    // make sure formAttribute AttributeQualifiers matches the current qualifiers if they have been added/edited
+                    formAttribute.Attribute.AttributeQualifiers = attribute.Value.AttributeQualifiers.ToList();
                 }
             }
             control.SetWorkflowActionType( actionType, attributes );

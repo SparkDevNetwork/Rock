@@ -31,7 +31,7 @@ namespace Rock.Jobs
     [DisplayName( "Location Services Verify" )]
     [Description( "Attempts to standardize and geocode addresses that have not been verified yet. It also attempts to re-verify address that failed in the past after a given wait period." )]
 
-    [IntegerField("Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
+    [IntegerField( "Max Records Per Run", "The maximum number of records to run per run.", true, 1000 )]
     [IntegerField( "Throttle Period", "The number of milliseconds to wait between records. This helps to throttle requests to the lookup services.", true, 500 )]
     [IntegerField( "Retry Period", "The number of days to wait before retrying a unsuccessful address lookup.", true, 200 )]
     [DisallowConcurrentExecution]
@@ -57,7 +57,7 @@ namespace Rock.Jobs
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
-        public virtual void  Execute(IJobExecutionContext context)
+        public virtual void Execute(IJobExecutionContext context)
         {
             // get the job map
             JobDataMap dataMap = context.JobDetail.JobDataMap;
@@ -66,10 +66,10 @@ namespace Rock.Jobs
             int throttlePeriod = dataMap.GetString( "ThrottlePeriod" ).AsIntegerOrNull() ?? 500;
             int retryPeriod = dataMap.GetString( "RetryPeriod" ).AsIntegerOrNull() ?? 200;
 
-            DateTime retryDate = DateTime.Now.Subtract(new TimeSpan(retryPeriod, 0, 0, 0));
+            var retryDate = RockDateTime.Now.Subtract( new TimeSpan( retryPeriod, 0, 0, 0 ) );
 
             var rockContext = new Rock.Data.RockContext();
-            LocationService locationService = new LocationService(rockContext);
+            LocationService locationService = new LocationService( rockContext );
             var addresses = locationService.Queryable()
                 .Where( l => 
                     (
@@ -98,8 +98,6 @@ namespace Rock.Jobs
             }
 
             context.Result = string.Format( "{0:N0} address verifications attempted; {1:N0} successfully verified", attempts, successes );
-
         }
-
     }
 }

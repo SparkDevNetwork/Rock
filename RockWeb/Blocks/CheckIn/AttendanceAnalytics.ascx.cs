@@ -1105,11 +1105,11 @@ function(item) {
             }
 
             // Adjust the start/end times to reflect the attendance dates who's SundayDate value would fall between the date range selected
-            DateTime start = dateRange.Start.HasValue ?
+            var start = dateRange.Start.HasValue ?
                 dateRange.Start.Value.Date.AddDays( 0 - ( dateRange.Start.Value.DayOfWeek == DayOfWeek.Sunday ? 6 : ( int ) dateRange.Start.Value.DayOfWeek - 1 ) ) :
                 new DateTime( 1900, 1, 1 );
 
-            DateTime end = dateRange.End.HasValue ?
+            var end = dateRange.End.HasValue ?
                 dateRange.End.Value.AddDays( 0 - ( int ) dateRange.End.Value.DayOfWeek ) :
                 new DateTime( 2100, 1, 1, 23, 59, 59 );
 
@@ -1259,7 +1259,7 @@ function(item) {
                 // whith attendance that matches the selected criteria.
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Attendee Dates", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Attendee Dates", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     DataTable dtAttendeeDates = AttendanceService.GetAttendanceAnalyticsAttendeeDates(
@@ -1272,7 +1272,7 @@ function(item) {
                         var result = allAttendeeVisits[personId];
                         result.PersonId = personId;
 
-                        DateTime summaryDate = DateTime.MinValue;
+                        var summaryDate = DateTime.MinValue;
                         switch ( groupBy )
                         {
                             case ChartGroupBy.Week:
@@ -1291,33 +1291,33 @@ function(item) {
                         }
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
                 // Call the stored procedure to get the last attendance
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Last Attendance", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Last Attendance", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dtAttendeeLastAttendance = AttendanceService.GetAttendanceAnalyticsAttendeeLastAttendance(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
                 // Call the stored procedure to get the names/demographic info for attendees
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Name/Demographic Data", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dtAttendees = AttendanceService.GetAttendanceAnalyticsAttendees(
                         groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList, includeParents, includeChildren ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
 
@@ -1328,7 +1328,7 @@ function(item) {
                 {
                     qryTasks.Add( Task.Run( () =>
                     {
-                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = DateTime.Now };
+                        var ti = new TaskInfo { name = "Get Missed Attendee Dates", start = RockDateTime.Now };
                         taskInfos.Add( ti );
 
                         personIdsWhoDidNotMiss = new List<int>();
@@ -1345,7 +1345,7 @@ function(item) {
                             var missedResult = missedResults[personId];
                             missedResult.PersonId = personId;
 
-                            DateTime summaryDate = DateTime.MinValue;
+                            var summaryDate = DateTime.MinValue;
                             switch ( groupBy )
                             {
                                 case ChartGroupBy.Week:
@@ -1373,7 +1373,7 @@ function(item) {
                             .Select( m => m.Key )
                             .ToList();
 
-                        ti.end = DateTime.Now;
+                        ti.end = RockDateTime.Now;
 
                     } ) );
                 }
@@ -1381,13 +1381,13 @@ function(item) {
                 // Call the stored procedure to get the first five dates that any person attended this group type
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get First Five Dates", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get First Five Dates", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     dtAttendeeFirstDates = AttendanceService.GetAttendanceAnalyticsAttendeeFirstDates(
                         groupTypeIdList, groupIdList, start, end, campusIdList, includeNullCampus, scheduleIdList ).Tables[0];
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1395,7 +1395,7 @@ function(item) {
             {
                 qryTasks.Add( Task.Run( () =>
                 {
-                    var ti = new TaskInfo { name = "Get Non-Attendees", start = DateTime.Now };
+                    var ti = new TaskInfo { name = "Get Non-Attendees", start = RockDateTime.Now };
                     taskInfos.Add( ti );
 
                     DataSet ds = AttendanceService.GetAttendanceAnalyticsNonAttendees(
@@ -1458,7 +1458,7 @@ function(item) {
                         allResults.Add( result );
                     }
 
-                    ti.end = DateTime.Now;
+                    ti.end = RockDateTime.Now;
 
                 } ) );
             }
@@ -1467,7 +1467,7 @@ function(item) {
             List<int> dataViewPersonIds = null;
             qryTasks.Add( Task.Run( () =>
             {
-                var ti = new TaskInfo { name = "Get DataView People", start = DateTime.Now };
+                var ti = new TaskInfo { name = "Get DataView People", start = RockDateTime.Now };
                 taskInfos.Add( ti );
 
                 var dataViewId = dvpDataView.SelectedValueAsInt();
@@ -1490,7 +1490,7 @@ function(item) {
                     }
                 }
 
-                ti.end = DateTime.Now;
+                ti.end = RockDateTime.Now;
 
             } ) );
 

@@ -42,6 +42,26 @@ namespace Rock.Model
         public IdentityVerificationCodeService(RockContext context) : base(context)
         {
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( IdentityVerificationCode item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( new Service<IdentityVerification>( Context ).Queryable().Any( a => a.IdentityVerificationCodeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", IdentityVerificationCode.FriendlyTypeName, IdentityVerification.FriendlyTypeName );
+                return false;
+            }
+            return true;
+        }
     }
 
     /// <summary>

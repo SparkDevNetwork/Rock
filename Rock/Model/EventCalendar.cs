@@ -76,12 +76,7 @@ namespace Rock.Model
         /// The is active.
         /// </value>
         [DataMember]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is index enabled.

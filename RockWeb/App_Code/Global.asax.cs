@@ -34,6 +34,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
@@ -836,7 +837,7 @@ namespace RockWeb
                     "IISCallBack",
                     60,
                     null,
-                    DateTime.Now.AddSeconds( 60 ),
+                    RockInstanceConfig.SystemDateTime.AddSeconds( 60 ),
                     Cache.NoSlidingExpiration,
                     CacheItemPriority.NotRemovable,
                     _onCacheRemove );

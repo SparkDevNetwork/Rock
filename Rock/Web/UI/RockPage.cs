@@ -40,6 +40,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
+using Rock.Utility.Settings;
 using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -930,7 +931,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = DateTime.Now.AddDays( -1 );
+                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -2474,7 +2475,7 @@ Sys.Application.add_load(function () {
             }
 
             contextCookie.Values[entityType.FullName] = HttpUtility.UrlDecode( entity.ContextKey );
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
 
             AddOrUpdateCookie( contextCookie );
 
@@ -2507,7 +2508,7 @@ Sys.Application.add_load(function () {
             }
 
             contextCookie.Values[entityType.FullName] = null;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
 
             AddOrUpdateCookie( contextCookie );
 
@@ -2568,7 +2569,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = DateTime.Now.AddDays( -1 );
+                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }
@@ -2594,7 +2595,7 @@ Sys.Application.add_load(function () {
         {
             var cookie = new HttpCookie( name )
             {
-                Expires = expirationDate ?? RockDateTime.Now.AddYears( 1 ),
+                Expires = expirationDate ?? RockInstanceConfig.SystemDateTime.AddYears( 1 ),
                 Value = value
             };
 
@@ -2615,8 +2616,13 @@ Sys.Application.add_load(function () {
             {
                 SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
 
+                // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
+                // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
+                var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.Url.Scheme == "https" ? ";Secure" : string.Empty;
+
                 // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
-                string sameSiteCookieValue = ";SameSite=" + sameSiteCookieSetting + ";Secure";
+                string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
+
                 cookie.Path += sameSiteCookieValue;
             }
 

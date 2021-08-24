@@ -421,7 +421,7 @@ so you can customize this to be exactly what you want.</p>
 
             // Construct the CSS style for this media player.
             var style = $"--plyr-color-main: {( primaryColor.IsNotNullOrWhiteSpace() ? primaryColor : "var(--brand-primary)" )};";
-            style += $"width: {( width.IsNotNullOrWhiteSpace() ? width : "100%" )};";
+            style += ( width.IsNotNullOrWhiteSpace() ? $" width:{width}" : "" );
 
             // Construct the JavaScript to initialize the player.
             var script = $@"<script>
@@ -487,7 +487,7 @@ so you can customize this to be exactly what you want.</p>
                 { ParameterKeys.TrackSession, "true" },
                 { ParameterKeys.Type, "" },
                 { ParameterKeys.Volume, "1" },
-                { ParameterKeys.Width, "100%" }
+                { ParameterKeys.Width, "" }
             };
 
             // Parse each parameter name and value in the format of name:'value'

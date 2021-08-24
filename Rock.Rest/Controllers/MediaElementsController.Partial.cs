@@ -202,12 +202,15 @@ namespace Rock.Rest.Controllers
 
             if ( interaction != null )
             {
+                var watchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap );
+
                 // Update the interaction data with the new watch map.
                 var data = interaction.InteractionData.FromJsonOrNull<MediaWatchedInteractionData>() ?? new MediaWatchedInteractionData();
                 data.WatchMap = mediaInteraction.WatchMap;
-                data.WatchedPercentage = CalculateWatchedPercentage( mediaInteraction.WatchMap );
+                data.WatchedPercentage = watchedPercentage;
 
                 interaction.InteractionData = data.ToJson();
+                interaction.InteractionLength = watchedPercentage;
                 interaction.InteractionEndDateTime = RockDateTime.Now;
                 interaction.PersonAliasId = interaction.PersonAliasId ?? personAliasId;
 

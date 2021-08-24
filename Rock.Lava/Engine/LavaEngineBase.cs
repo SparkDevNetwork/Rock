@@ -912,6 +912,8 @@ namespace Rock.Lava
             }
         }
 
+        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
+
         /// <summary>
         /// Convert a Lava template to a Liquid-compatible template by replacing Lava-specific syntax and keywords.
         /// </summary>
@@ -919,9 +921,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public string ConvertToLiquid( string lavaTemplateText )
         {
-            var converter = new LavaToLiquidTemplateConverter();
-
-            return converter.ConvertToLiquid( lavaTemplateText );
+            return _lavaToLiquidConverter.ConvertToLiquid( lavaTemplateText );
         }
 
         /// <summary>

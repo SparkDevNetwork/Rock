@@ -32,7 +32,6 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
-using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -2574,10 +2573,10 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            //  There are a couple of cases where there would be no familyMembers
-            // 1) There are no adults in the family, and includeChildren=false .
+            // There are a couple of cases where there would be no familyMembers.
+            // 1) There are no adults in the family, and includeChildren=false.
             // 2) All the members of the family are deceased/inactive.
-            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen).
             if ( !familyMembersList.Any() )
             {
                 familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
@@ -3171,27 +3170,76 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade abbreviation attribute based on graduation year.
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGraduationYear( int? graduationYear )
+        {
+            return GradeAbbreviationFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
         /// Formats the grade based on grade offset
         /// </summary>
         /// <param name="gradeOffset">The grade offset.</param>
         /// <returns></returns>
         public static string GradeFormattedFromGradeOffset( int? gradeOffset )
         {
-            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
             {
-                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                if ( schoolGrades != null )
-                {
-                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                    if ( schoolGradeValue != null )
-                    {
-                        return schoolGradeValue.Description;
-                    }
-                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            return schoolGradeValue.Description;
+        }
+
+        /// <summary>
+        /// Gets the grade abbreviation attribute based on grade offset.
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGradeOffset( int? gradeOffset )
+        {
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
+            {
+                return string.Empty;
+            }
+
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            // If there is an abbreviation, return it.  Otherwise, return an empty string.
+            return schoolGradeValue.Attributes.ContainsKey( "Abbreviation" ) ? schoolGradeValue.GetAttributeValue( "Abbreviation" ) : string.Empty;
         }
 
         /// <summary>

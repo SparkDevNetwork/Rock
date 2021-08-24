@@ -79,6 +79,7 @@ var Rock;
                 var mediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");
                 mediaElement.setAttribute("playsinline", "");
                 mediaElement.setAttribute("controls", "");
+                mediaElement.setAttribute("style", "width: 100%;");
                 this.element.appendChild(mediaElement);
                 var plyrOptions = {
                     storage: {
