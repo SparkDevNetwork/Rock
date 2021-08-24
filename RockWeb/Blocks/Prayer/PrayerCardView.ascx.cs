@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Prayer
     [TextField(
         "Prayed Button Text",
         Description = "The text to display inside the Prayed button.",
-        DefaultValue = "Pray",
+        DefaultValue = "Prayed!",
         IsRequired = true,
         Key = AttributeKey.PrayedButtonText,
         Order = 1 )]
@@ -158,11 +158,16 @@ namespace RockWeb.Blocks.Prayer
 	    {% if EnablePrayerTeamFlagging == true %}
 	    <a href = ""#"" onclick=""{{ item.Id | Postback:'Flag' }}""><i class='fa fa-flag'></i> Flag</a>
 	    {% endif %}
-		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""{{ item.Id | Postback:'Pray' }}"">{{ prayedButtonText }}</a>
+		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""iPrayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
 	</div>
    </div>
   {% endfor -%}
 </div>
+<script>function iPrayed(elmnt) { 
+        var iPrayedText = '{{PrayedButtonText}}';
+        elmnt.innerHTML = iPrayedText;
+    }
+</script>
 ";
 
         #endregion Constants
@@ -514,13 +519,24 @@ namespace RockWeb.Blocks.Prayer
             if ( workflowTypeGuid.HasValue )
             {
                 var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) && CurrentPerson != null )
                 {
                     try
                     {
-                        var workflow = Workflow.Activate( workflowType, prayerRequest.Name );
-                        List<string> workflowErrors;
-                        new WorkflowService( rockContext ).Process( workflow, prayerRequest, out workflowErrors );
+                        // Create parameters
+                        var parameters = new Dictionary<string, string>();
+
+                        if ( key == AttributeKey.PrayedWorkflow )
+                        {
+                            parameters.Add( "PrayerOfferedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
+                        }
+                        else
+                        {
+                            parameters.Add( "FlaggedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
+                        }
+
+                        parameters.Add( "EntityGuid", prayerRequest.Guid.ToString() );
+                        prayerRequest.LaunchWorkflow( workflowTypeGuid.Value, prayerRequest.Name, parameters );
                     }
                     catch ( Exception ex )
                     {
