@@ -252,6 +252,7 @@ iframe.email-body {
     }
 
     .sms-name {
+      font-weight: 600;
       color: #000;
     }
 
@@ -265,10 +266,6 @@ iframe.email-body {
       -webkit-box-direction: normal;
     }
 
-    .unread {
-      font-weight: 600;
-    }
-
     .table {
       table-layout: fixed;
 
@@ -278,10 +275,6 @@ iframe.email-body {
 
       tr:first-child td {
         border-top: 0;
-      }
-
-      tr.selected {
-        box-shadow: inset 4px 0 0 0 @brand-primary;
       }
     }
 
@@ -295,6 +288,15 @@ iframe.email-body {
       text-align: right;
       text-transform: capitalize;
       -webkit-box-flex: 1;
+    }
+
+    // Message States
+    .selected {
+      background: rgba(0,0,0,.02);
+    }
+
+    .unread {
+      box-shadow: inset 4px 0 0 0 @brand-primary;
     }
   }
 
