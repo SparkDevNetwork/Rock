@@ -505,7 +505,8 @@ namespace Rock.Data
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
         /// <param name="workflowName">Name of the workflow.</param>
         /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
-        public void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        /// <param name="initiatorPersonAliasId">The Initiator Person Alias Identifier.</param>
+        public void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null, int? initiatorPersonAliasId = null )
         {
             if ( workflowTypeGuid.HasValue )
             {
@@ -515,7 +516,8 @@ namespace Rock.Data
                     WorkflowName = workflowName,
                     EntityId = Id,
                     EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues
+                    WorkflowAttributeValues = workflowAttributeValues,
+                    InitiatorPersonAliasId = initiatorPersonAliasId
                 }.Send();
             }
         }
@@ -526,7 +528,8 @@ namespace Rock.Data
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         /// <param name="workflowName">Name of the workflow.</param>
         /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
-        public void LaunchWorkflow( int? workflowTypeId, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        /// <param name="initiatorPersonAliasId">The Initiator Person Alias Identifier.</param>
+        public void LaunchWorkflow( int? workflowTypeId, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null, int? initiatorPersonAliasId = null )
         {
             if ( workflowTypeId.HasValue )
             {
@@ -536,7 +539,8 @@ namespace Rock.Data
                     WorkflowName = workflowName,
                     EntityId = Id,
                     EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues
+                    WorkflowAttributeValues = workflowAttributeValues,
+                    InitiatorPersonAliasId = initiatorPersonAliasId
                 }.Send();
             }
         }
