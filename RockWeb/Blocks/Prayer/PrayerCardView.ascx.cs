@@ -519,24 +519,26 @@ namespace RockWeb.Blocks.Prayer
             if ( workflowTypeGuid.HasValue )
             {
                 var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                if ( workflowType != null && ( workflowType.IsActive ?? true ) && CurrentPerson != null )
+                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                 {
                     try
                     {
                         // Create parameters
                         var parameters = new Dictionary<string, string>();
-
-                        if ( key == AttributeKey.PrayedWorkflow )
-                        {
-                            parameters.Add( "PrayerOfferedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
-                        }
-                        else
-                        {
-                            parameters.Add( "FlaggedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
-                        }
-
                         parameters.Add( "EntityGuid", prayerRequest.Guid.ToString() );
-                        prayerRequest.LaunchWorkflow( workflowTypeGuid.Value, prayerRequest.Name, parameters );
+                        if ( CurrentPerson != null )
+                        {
+                            if ( key == AttributeKey.PrayedWorkflow )
+                            {
+                                parameters.Add( "PrayerOfferedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
+                            }
+                            else
+                            {
+                                parameters.Add( "FlaggedByPersonAliasGuid", CurrentPerson.PrimaryAlias.Guid.ToString() );
+                            }
+                        }
+
+                        prayerRequest.LaunchWorkflow( workflowTypeGuid.Value, prayerRequest.Name, parameters, CurrentPersonAliasId );
                     }
                     catch ( Exception ex )
                     {
