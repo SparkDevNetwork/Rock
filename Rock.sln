@@ -102,6 +102,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apollosProject.OneSignal", "..\apollos-onesignal\apollosProject.OneSignal.csproj", "{237D789F-52EF-48EF-A213-8D2284A6DE6F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{13568622-324E-4493-B605-C9896E725D30} = {13568622-324E-4493-B605-C9896E725D30}
+		{185A31D7-3037-4DAE-8797-0459849A84BD} = {185A31D7-3037-4DAE-8797-0459849A84BD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
