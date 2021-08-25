@@ -544,9 +544,6 @@
                 return;
             }
 
-            // Update the QueryString parameters to include the ConnectionRequestId on the click. 
-            updateConnectionQuerystringParameters( "ConnectionRequestId", connectionRequestId, true);
-
             // If the execution makes it this far then the user clicked the card (not a button) and we will open the modal
             sendPostback('view', connectionRequestId);
         };
@@ -605,83 +602,3 @@
 
     })();
 }(jQuery));
-
-//
-// Region: Querystring replaceState
-//
-
-function AddRemoveQuerystringParameterToModalCloseButton ()
-{
-    // Find the modal close button by the partial ID name.
-    var modalCloseButton = document.querySelector('[id$="Request_closeLink"]');
-
-    // If the modalCloseButton exists and and the "onclick" attribute isn't there.
-    if (modalCloseButton != null && modalCloseButton.attributes.getNamedItem("onclick") == null)
-    {
-        // Add an 'onclick' to the modal button to remove the specified querystring parameter.
-        modalCloseButton.setAttribute("onclick", "removeConnectionQuerystringParameters('ConnectionRequestId')");
-    }
-}
-
-
-const removeConnectionQuerystringParameters = function (chosenParameter)
-{
-    // Get the current querystring parameters as a variable.
-    var urlParameters = new URLSearchParams(location.search);
-    // Start with the question mark for the querystring parameters.
-    var newQueryString = "?";
-    for (var [ key, value ] of urlParameters.entries())
-    {
-        // If the key is the same as 'chosenParameter', it will NOT be added to the querystring.
-        if (key != chosenParameter)
-        {
-            // Assign the existing querystring value to the parameter.
-            newQueryString += key + "=" + value + "&";
-        }
-    }
-    // Replace the last character in the string with a blank.  The goal is to remove the last ampersand.
-    newQueryString = newQueryString.replace(/.$/, "");
-    window.history.replaceState({ page: chosenParameter }, "", newQueryString);
-}
-const updateConnectionQuerystringParameters = function (chosenParameter, id, keepOtherParameters)
-{
-    // Get the current querystring parameters as a variable.
-    var urlParameters = new URLSearchParams(location.search);
-
-    // Start with the question mark for the querystring parameters.
-    var newQueryString = "?";
-    // Keep track whether "chosenParameter" is new to the querystring, or is already there.
-    var hasChangingParameters = false;
-
-    if (keepOtherParameters == true)
-    {
-        for (var [ key, value ] of urlParameters.entries())
-        {
-            // If the key is the same as the chosen parameter, assign the id value to it.
-            if (key == chosenParameter)
-            {
-                newQueryString += key + "=" + id + "&";
-                hasChangingParameters = true;
-            }
-            else
-            {
-                // Assign the existing querystring value to the parameter.
-                newQueryString += key + "=" + value + "&";
-            }
-        }
-        // If the function call said the parameters weren't going to change, just use the one parameter and its value.
-        if (!hasChangingParameters)
-        {
-            newQueryString += chosenParameter + "=" + id + "&";
-        }
-    }
-    else
-    {
-        newQueryString += chosenParameter + "=" + id + "&";
-    }
-    //replace the last character in the string with a blank.  The goal is to remove the last ampersand.
-    newQueryString = newQueryString.replace(/.$/, "");
-
-    // This will change the querystring parameters to match the new ones.
-    window.history.replaceState({ page: chosenParameter }, "", newQueryString);
-}

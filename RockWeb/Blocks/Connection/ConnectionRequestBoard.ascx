@@ -122,7 +122,6 @@
 
         $('#<%= upnlRoot.ClientID %> .js-transfer-connector').on('click', syncTransferConnectorControls);
         $("#<%=ddlRequestModalViewModeTransferModeOpportunityConnector.ClientID%>").toggle($('#<%=rbRequestModalViewModeTransferModeSelectConnector.ClientID%>').is(":checked"));
-        AddRemoveQuerystringParameterToModalCloseButton();
     });
 
     const toggleFilterDrawer = function () {
@@ -195,10 +194,8 @@
                                             <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                                 <ItemTemplate>
                                                     <li>
-                                                        <asp:LinkButton runat="server"
-                                                            OnClientClick='<%# string.Format("return updateConnectionQuerystringParameters(\"{0}\", \"{1}\", \"{2}\");", "ConnectionOpportunityId", Eval("Id"), false) %>'
-                                                            CommandArgument='<%# Eval("Id") %>'>
-                                                            <i class="<%# Eval("IconCssClass") %>"></i>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
+                                                                    <i class="<%# Eval("IconCssClass") %>"></i>
                                                                     <%# Eval("PublicName") %>
                                                         </asp:LinkButton>
                                                     </li>
