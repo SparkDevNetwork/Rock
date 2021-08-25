@@ -238,4 +238,7 @@
   <data name="_202108031829239_Rollup_0803_LavaDocumentationUpdates" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 12.0\version 1.12.5\202108031829239_rollup_0803_lavadocumentationupdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="_202108251744427_Rollups_20210825_kpilinkshortcode" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>202108251744427_rollups_20210825_kpilinkshortcode.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
+  </data>
 </root>

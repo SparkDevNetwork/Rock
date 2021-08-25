@@ -826,5 +826,21 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202108031829239_Rollup_0803_LavaDocumentationUpdates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h4 id=&quot;s [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202108251744427_Rollups_20210825_kpilinkshortcode {
+            get {
+                return ResourceManager.GetString("_202108251744427_Rollups_20210825_kpilinkshortcode", resourceCulture);
+            }
+        }
     }
 }
