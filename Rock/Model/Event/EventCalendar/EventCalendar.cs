@@ -26,7 +26,6 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Security;
 using Rock.Tasks;
-using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
