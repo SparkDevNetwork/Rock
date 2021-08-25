@@ -37,7 +37,8 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
-
+                HistoryChangeList = new History.HistoryChangeList();
+                PersonHistoryChangeList = new History.HistoryChangeList();
                 var connectionRequest = this.Entity as ConnectionRequest;
                 var processConnectionRequestChangeMessage = GetProcessConnectionRequestChangeMessage( Entry, connectionRequest );
                 processConnectionRequestChangeMessage.Send();
