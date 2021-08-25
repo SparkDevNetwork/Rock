@@ -5093,6 +5093,31 @@ namespace Rock.Lava
             return $"Configuration setting \"{ input }\" is not available.";
         }
 
+        /// <summary>
+        /// Adds a QuickReturn to PersonalLinks.
+        /// Note that this is only supported for pages that have the PersonalLinks block on it.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="typeName">Name of the type.</param>
+        /// <param name="typeOrder">The type order.</param>
+        public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
+        {
+            RockPage rockPage = HttpContext.Current.Handler as RockPage;
+
+            if ( input.IsNotNullOrWhiteSpace() )
+            {
+
+                /*  08-16-2021 MDP
+                  This is only supported for pages that have the PersonalLinks block on it.
+                */
+
+                RockPage.AddScriptToHead( rockPage, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
+                typeName,
+                typeOrder,
+                input.ToString().EscapeQuotes() ), true );
+            }
+        }
+
         #endregion Misc Filters
 
         #region Array Filters
