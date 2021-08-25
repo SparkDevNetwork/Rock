@@ -41,26 +41,21 @@ namespace Rock.Model
                 return null;
             }
 
-            var stepTypeIds = stepProgram.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
             var rockContext = Context as RockContext;
-            var stepService = new StepService( rockContext );
+            var stepProgramCompletionService = new StepProgramCompletionService( rockContext );
 
             // Start with all the completed steps to try to narrow the set
-            var completedStepQuery = stepService.Queryable()
+            var completedStepQuery = stepProgramCompletionService.Queryable()
                 .AsNoTracking()
                 .Where( s =>
-                    stepTypeIds.Contains( s.StepTypeId ) &&
-                    s.CompletedDateKey != null );
+                    s.StepProgramId == stepProgram.Id );
 
-            // Group the completed steps by person where the person has all the step types completed
-            // Then find the date the person started (min start date) and the max(min complete date of each step type)
-            var personQuery = completedStepQuery.GroupBy( s => s.PersonAlias.PersonId )
-                .Where( g => !stepTypeIds.Except( g.Select( s => s.StepTypeId ) ).Any() )
+            var personQuery = completedStepQuery
                 .Select( g => new PersonStepProgramViewModel
                 {
-                    PersonId = g.Key,
-                    StartedDateTime = g.Min( s => s.StartDateTime ),
-                    CompletedDateTime = stepTypeIds.Select( i => g.Where( s => s.StepTypeId == i ).Min( s => s.CompletedDateTime ) ).Max()
+                    PersonId = g.PersonAlias.PersonId,
+                    StartedDateTime = g.StartDateTime,
+                    CompletedDateTime = g.EndDateTime
                 } );
 
             return personQuery;

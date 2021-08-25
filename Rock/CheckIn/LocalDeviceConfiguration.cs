@@ -29,6 +29,13 @@ namespace Rock.CheckIn
     [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}.." )]
     public class LocalDeviceConfiguration
     {
+        /* 08-05-2021 MDP
+
+        If you make changes to this class, keep in mind that the maximum cookie size is 4096 bytes.
+        As of 08-05-2021 the size is less than 300 bytes.
+         
+         */
+
         /// <summary>
         /// Gets or sets the current theme.
         /// </summary>
@@ -61,6 +68,14 @@ namespace Rock.CheckIn
         /// The current group type ids.
         /// </value>
         public List<int> CurrentGroupTypeIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current group ids.
+        /// </summary>
+        /// <value>
+        /// The current group ids.
+        /// </value>
+        public List<int> CurrentGroupIds { get; set; }
 
         /// <summary>
         /// Gets home page Guid to use instead of the one configured in <seealso cref="CheckInBlock"/>'s HomePage block setting.
@@ -148,7 +163,7 @@ namespace Rock.CheckIn
         /// </summary>
         public void SaveToCookie()
         {
-            var localDeviceConfigValue = this.ToJson( Newtonsoft.Json.Formatting.None );
+            var localDeviceConfigValue = this.ToJson( indentOutput: false );
             var encryptedValue = Encryption.EncryptString( localDeviceConfigValue );
 
             RockPage.AddOrUpdateCookie( CheckInCookieKey.LocalDeviceConfig, encryptedValue, RockDateTime.Now.AddYears( 1 ) );

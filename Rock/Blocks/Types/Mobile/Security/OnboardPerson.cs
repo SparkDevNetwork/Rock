@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Http;
 
 using Rock.Attribute;
 using Rock.Common.Mobile;
@@ -1326,7 +1325,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
             if ( details.CampusGuid.HasValue )
             {
-                campusId = CampusCache.Get( details.CampusGuid.Value ).Id;
+                campusId = CampusCache.Get( details.CampusGuid.Value )?.Id;
             }
 
             PersonService.SaveNewPerson( person, rockContext, campusId, false );
@@ -1555,11 +1554,35 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Sends a one-time use verification code to the email or phone number.
         /// </summary>
+        /// <param name="sendSms"><c>true</c> if the code should be sent via SMS.</param>
+        /// <param name="sendEmail"><c>true</c> if the code should be sent via e-mail.</param>
+        /// <param name="phoneNumber">The phone number to send the code to.</param>
+        /// <param name="email">The e-mail address to send the code to.</param>
+        /// <returns>A <see cref="SendCodeResponse"/> object or an error message.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "SendCode" )]
+        public BlockActionResult SendCodeLegacy( bool sendSms, bool sendEmail, string phoneNumber, string email )
+        {
+            var request = new SendCodeRequest
+            {
+                SendSms = sendSms,
+                SendEmail = sendEmail,
+                PhoneNumber = phoneNumber,
+                Email = email
+            };
+
+            return SendCode( request );
+        }
+
+        /// <summary>
+        /// Sends a one-time use verification code to the email or phone number.
+        /// </summary>
         /// <param name="request">The code request.</param>
         /// <returns>A <see cref="SendCodeResponse"/> object or an error message.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult SendCode( [FromBody] SendCodeRequest request )
+        public BlockActionResult SendCode( SendCodeRequest request )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1644,11 +1667,31 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Verifies the code entered by the user.
         /// </summary>
+        /// <param name="state">The custom state data that was sent to the client.</param>
+        /// <param name="code">The code entered by the individual.</param>
+        /// <returns>A <see cref="VerifyCodeResponse"/> object or an error message.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "VerifyCode" )]
+        public BlockActionResult VerifyCodeLegacy( string state, string code )
+        {
+            var request = new VerifyCodeRequest
+            {
+                State = state,
+                Code = code
+            };
+
+            return VerifyCode( request );
+        }
+
+        /// <summary>
+        /// Verifies the code entered by the user.
+        /// </summary>
         /// <param name="request">The code request.</param>
         /// <returns>A <see cref="VerifyCodeResponse"/> object or an error message.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult VerifyCode( [FromBody] VerifyCodeRequest request )
+        public BlockActionResult VerifyCode( VerifyCodeRequest request )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1684,11 +1727,33 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <summary>
         /// Attempts to perform final login of the person.
         /// </summary>
+        /// <param name="state">The custom state data that was sent to the client.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier that the client has been assigned.</param>
+        /// <param name="details">The details that the individual filled out.</param>
+        /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
+        /// <remarks>This can be removed once all mobile apps are on shell v3 or later.</remarks>
+        [RockObsolete( "1.13" )]
+        [Obsolete]
+        [BlockAction( "CreatePerson" )]
+        public BlockActionResult CreatePersonLegacy( string state, Guid? personalDeviceGuid, OnboardDetails details )
+        {
+            var request = new CreatePersonRequest
+            {
+                State = state,
+                PersonalDeviceGuid = personalDeviceGuid,
+                Details = details
+            };
+
+            return CreatePerson( request );
+        }
+
+        /// <summary>
+        /// Attempts to perform final login of the person.
+        /// </summary>
         /// <param name="request">The details of the request.</param>
         /// <returns>A <see cref="CreatePersonResponse"/> that contains the login result or an error object.</returns>
         [BlockAction]
-        [HttpPost]
-        public BlockActionResult CreatePerson( [FromBody] CreatePersonRequest request )
+        public BlockActionResult CreatePerson( CreatePersonRequest request )
         {
             using ( var rockContext = new RockContext() )
             {

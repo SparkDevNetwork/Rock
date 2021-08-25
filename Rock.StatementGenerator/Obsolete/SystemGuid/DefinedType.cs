@@ -22,11 +22,11 @@ namespace Rock.StatementGenerator.SystemGuid
     /// Static Guids used by the Rock.StatementGenerator application
     /// </summary>
     [Obsolete( "Use FinancialStatementTemplate instead" )]
-    [RockObsolete( "12.4" )]
+    [RockObsolete( "1.12.4" )]
     public static class DefinedType
     {
         /// <summary>
-        /// The statement generator lava template
+        /// The statement generator lava template (Legacy)
         /// </summary>
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
     }

@@ -364,6 +364,30 @@ BEGIN
 		DELETE Person
 		WHERE [Id] = @OldId
 
+        -- Reset FirstTime Attendance for all but the to the oldest first time record.
+        DECLARE @Records AS TABLE(Id INT, StartDateTime DATETIME)
+
+        INSERT INTO @Records
+        SELECT Attendance.Id, Attendance.StartDateTime
+        FROM Attendance
+        INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
+        WHERE PersonId = @NewId AND IsFirstTime = 1
+
+        DECLARE @FirstTimeRecordId AS INT
+        SELECT TOP 1 @FirstTimeRecordId = a.Id
+        FROM @Records a
+        ORDER BY a.StartDateTime ASC
+
+        UPDATE Attendance
+        SET IsFirstTime = 0
+        FROM Attendance
+        INNER JOIN PersonAlias ON PersonAlias.Id = Attendance.PersonAliasId
+        WHERE Attendance.Id IN (
+		    SELECT a.Id
+		    FROM @Records a
+		)
+        AND Attendance.Id != @FirstTimeRecordId
+
 	END
 
 END

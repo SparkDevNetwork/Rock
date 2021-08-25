@@ -58,15 +58,15 @@ namespace Rock.Migrations
                 WHERE [GroupViewLavaTemplate] like '%warningLevel = ''''warning''''%'" );
         }
 
+        // These are const values in v13, keeping the names here to make it clear what they are referring to.
+        private const string GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK = "9CBDD352-A4F5-47D6-9EFE-6115774B2DFE";
+        private const string LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
+
         /// <summary>
         /// DL: Add Lava Engine Framework Setting
         /// </summary>
         private void UpLavaEngineSystemSettings()
         {
-            // These are const values in v13, keeping the names here to make it clear what they are referring to.
-            var GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK = "9CBDD352-A4F5-47D6-9EFE-6115774B2DFE";
-            var LAVA_ENGINE_LIQUID_FRAMEWORK = "core_LavaEngine_LiquidFramework";
-
             RockMigrationHelper.AddGlobalAttribute(
                 Rock.SystemGuid.FieldType.SINGLE_SELECT,
                 string.Empty,
@@ -88,7 +88,6 @@ namespace Rock.Migrations
         public void DownLavaEngineSystemSettings()
         {
             // This is a const value in v13, keeping the name here to make it clear what it is referring to.
-            var GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK = "9CBDD352-A4F5-47D6-9EFE-6115774B2DFE";
             RockMigrationHelper.DeleteAttribute( GLOBAL_LAVA_ENGINE_LIQUID_FRAMEWORK );
         }
 

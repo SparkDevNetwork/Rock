@@ -71,7 +71,7 @@ namespace Rock.Web.UI.Controls
 
             // as per docs (https://farbelous.io/bootstrap-colorpicker/v2/) colorSelectors is a "List of pre selected colors (hex format)."
             string script = $@"$('.rock-colorpicker-input').colorpicker({{
-                colorSelectors: {definedValues.ToJson(Newtonsoft.Json.Formatting.Indented).Replace("\"","'")}
+                colorSelectors: {definedValues.ToJson( indentOutput: true ).Replace("\"","'")}
             }});";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "rock-colorpicker", script, true );
             base.RenderControl( writer );

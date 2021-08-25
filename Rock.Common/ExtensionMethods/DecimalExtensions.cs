@@ -16,12 +16,12 @@
 //
 using System;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    ///
+    /// Extension methods for the <see cref="decimal"/> type.
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class DecimalExtensions
     {
         /// <summary>
         /// Returns the number of digits following the decimal place. 5.68 would return 2. 17.9998 would return 4.
@@ -51,6 +51,16 @@ namespace Rock.Common
             var shiftedFloor = Math.Floor( shiftedValue );
             var unshiftedFloor = shiftedFloor / shiftFactor;
             return unshiftedFloor;
+        }
+
+        /// <summary>
+        /// Converts a decimal to a percentage and returns a string with the percent sign
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string FormatAsPercent( this decimal value )
+        {
+            return $"{( int ) Math.Round( value *= 100 ) }%";
         }
     }
 }

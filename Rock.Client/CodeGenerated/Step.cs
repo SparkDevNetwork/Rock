@@ -67,6 +67,9 @@ namespace Rock.Client
         public DateTime? StartDateTime { get; set; }
 
         /// <summary />
+        public int? StepProgramCompletionId { get; set; }
+
+        /// <summary />
         public int? StepStatusId { get; set; }
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
             this.Order = source.Order;
             this.PersonAliasId = source.PersonAliasId;
             this.StartDateTime = source.StartDateTime;
+            this.StepProgramCompletionId = source.StepProgramCompletionId;
             this.StepStatusId = source.StepStatusId;
             this.StepTypeId = source.StepTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -158,6 +162,9 @@ namespace Rock.Client
 
         /// <summary />
         public AnalyticsSourceDate StartSourceDate { get; set; }
+
+        /// <summary />
+        public StepProgramCompletion StepProgramCompletion { get; set; }
 
         /// <summary />
         public StepStatus StepStatus { get; set; }

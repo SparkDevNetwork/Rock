@@ -192,7 +192,6 @@ namespace Rock.Communication.SmsActions
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        [LavaHidden]
         public object GetValue( object key )
         {
             return this[key];

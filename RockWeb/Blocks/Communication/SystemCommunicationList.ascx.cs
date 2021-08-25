@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -122,6 +123,12 @@ namespace RockWeb.Blocks.Communication
                 gEmailTemplates.Actions.ShowAdd = true;
                 gEmailTemplates.Actions.AddClick += gEmailTemplates_AddClick;
                 gEmailTemplates.GridRebind += gEmailTemplates_GridRebind;
+
+                var securityField = gEmailTemplates.ColumnsOfType<SecurityField>().FirstOrDefault();
+                if ( securityField != null )
+                {
+                    securityField.EntityTypeId = EntityTypeCache.Get( typeof( SystemCommunication ) ).Id;
+                }
             }
         }
 
@@ -164,7 +171,7 @@ namespace RockWeb.Blocks.Communication
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             int? categoryId = cpCategory.SelectedValueAsInt();
-            rFilter.SaveUserPreference( FilterSettingName.Category, categoryId.HasValue ? categoryId.Value.ToString() : "");
+            rFilter.SaveUserPreference( FilterSettingName.Category, categoryId.HasValue ? categoryId.Value.ToString() : "" );
 
             rFilter.SaveUserPreference( FilterSettingName.Supports, ddlSupports.SelectedValue );
             rFilter.SaveUserPreference( FilterSettingName.Active, ddlActiveFilter.SelectedValue );
@@ -319,13 +326,13 @@ namespace RockWeb.Blocks.Communication
             var SystemCommunicationService = new SystemCommunicationService( new RockContext() );
             SortProperty sortProperty = gEmailTemplates.SortProperty;
 
-            var systemCommunications = SystemCommunicationService.Queryable( "Category" );
+            var systemCommunicationsQuery = SystemCommunicationService.Queryable( "Category" );
 
             // Filter By: Category
             int? categoryId = rFilter.GetUserPreference( FilterSettingName.Category ).AsIntegerOrNull();
             if ( categoryId.HasValue )
             {
-                systemCommunications = systemCommunications.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value  );
+                systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.CategoryId.HasValue && a.CategoryId.Value == categoryId.Value );
             }
 
             // Filter By: Is Active
@@ -333,10 +340,10 @@ namespace RockWeb.Blocks.Communication
             switch ( activeFilter )
             {
                 case "Active":
-                    systemCommunications = systemCommunications.Where( a => a.IsActive ?? false );
+                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.IsActive ?? false );
                     break;
                 case "Inactive":
-                    systemCommunications = systemCommunications.Where( a => !(a.IsActive ?? false) );
+                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => !( a.IsActive ?? false ) );
                     break;
             }
 
@@ -345,24 +352,30 @@ namespace RockWeb.Blocks.Communication
             switch ( supports )
             {
                 case NotificationTypeSupportedFilterValueSpecifier.SMS:
-                    systemCommunications = systemCommunications.Where( a => a.SMSMessage != null && a.SMSMessage.Trim() != "" );
+                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.SMSMessage != null && a.SMSMessage.Trim() != "" );
                     break;
                 case NotificationTypeSupportedFilterValueSpecifier.Push:
-                    systemCommunications = systemCommunications.Where( a => a.PushMessage != null && a.PushMessage.Trim() != "" );
+                    systemCommunicationsQuery = systemCommunicationsQuery.Where( a => a.PushMessage != null && a.PushMessage.Trim() != "" );
                     break;
             }
 
             // Apply grid sort order.
             if ( sortProperty != null )
             {
-                gEmailTemplates.DataSource = systemCommunications.Sort( sortProperty ).ToList();
+                systemCommunicationsQuery = systemCommunicationsQuery.Sort( sortProperty );
             }
             else
             {
-                gEmailTemplates.DataSource = systemCommunications.OrderBy( a => a.Category.Name ).ThenBy( a => a.Title ).ToList();
+                systemCommunicationsQuery = systemCommunicationsQuery.OrderBy( a => a.Category.Name ).ThenBy( a => a.Title );
             }
 
+            var viewableSystemCommunicationsList = systemCommunicationsQuery
+                .ToList()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
+                .ToList();
+
             gEmailTemplates.EntityTypeId = EntityTypeCache.Get<Rock.Model.SystemCommunication>().Id;
+            gEmailTemplates.DataSource = viewableSystemCommunicationsList;
             gEmailTemplates.DataBind();
         }
 

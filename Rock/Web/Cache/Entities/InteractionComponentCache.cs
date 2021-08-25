@@ -212,7 +212,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the component identifier by channel identifier and entity identifier, and creates it if it doesn't exist.
+        /// Gets the component identifier by channel identifier and component entity identifier, and creates it if it doesn't exist.
         /// </summary>
         /// <param name="interactionChannelId">The interaction channel identifier.</param>
         /// <param name="componentEntityId">The component entity identifier.</param>

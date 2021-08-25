@@ -73,7 +73,6 @@ namespace Rock.Lava.RockLiquid.Blocks
             if ( !this.IsAuthorized( context ) )
             {
                 result.Write( string.Format( RockLavaBlockBase.NotAuthorizedMessage, this.Name ) );
-                base.Render( context, result );
                 return;
             }
 
@@ -88,7 +87,7 @@ namespace Rock.Lava.RockLiquid.Blocks
                 {
                     sqlTimeout = parms["timeout"].AsIntegerOrNull();
                 }
-                
+
                 switch ( parms["statement"] )
                 {
                     case "select":
@@ -153,7 +152,7 @@ namespace Rock.Lava.RockLiquid.Blocks
             var parms = new Dictionary<string, string>();
             parms.Add( "return", "results" );
             parms.Add( "statement", "select" );
-            
+
             var markupItems = Regex.Matches( markup, @"(\S*?:'[^']+')" )
                 .Cast<Match>()
                 .Select( m => m.Value )

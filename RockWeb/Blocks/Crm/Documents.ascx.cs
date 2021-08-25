@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Crm
         Order = 0,
         Key = AttributeKeys.HeadingTitle )]
 
-    [TextField( "Heading Icon Css Class",
+    [TextField( "Heading Icon CSS Class",
         Description = "The Icon CSS Class for use in the heading.",
         IsRequired = false,
         Order = 1,

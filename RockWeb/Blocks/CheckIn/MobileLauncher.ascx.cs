@@ -116,7 +116,7 @@ namespace RockWeb.Blocks.CheckIn
         "Identify you Prompt Template <span class='tip tip-lava'></span>",
         Key = AttributeKey.IdentifyYouPromptTemplate,
         Category = "Text",
-        DefaultValue = "Before we proceed we'll need you to identify you for check-in.",
+        DefaultValue = "Before we proceed we'll need to identify you for check-in.",
         EditorHeight = 100,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         IsRequired = true,
@@ -197,6 +197,9 @@ namespace RockWeb.Blocks.CheckIn
     {
         #region Attribute Keys
 
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string DeviceIdList = "DeviceIdList";

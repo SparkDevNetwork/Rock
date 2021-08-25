@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -39,7 +42,66 @@ namespace Rock.Model
         public IdentityVerificationCodeService(RockContext context) : base(context)
         {
         }
+
+        /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( IdentityVerificationCode item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( new Service<IdentityVerification>( Context ).Queryable().Any( a => a.IdentityVerificationCodeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", IdentityVerificationCode.FriendlyTypeName, IdentityVerification.FriendlyTypeName );
+                return false;
+            }
+            return true;
+        }
     }
+
+    /// <summary>
+    /// IdentityVerificationCode View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( IdentityVerificationCode ) )]
+    public partial class IdentityVerificationCodeViewModelHelper : ViewModelHelper<IdentityVerificationCode, Rock.ViewModel.IdentityVerificationCodeViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.IdentityVerificationCodeViewModel CreateViewModel( IdentityVerificationCode model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.IdentityVerificationCodeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                Code = model.Code,
+                LastIssueDateTime = model.LastIssueDateTime,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -109,5 +171,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.IdentityVerificationCodeViewModel ToViewModel( this IdentityVerificationCode model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new IdentityVerificationCodeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

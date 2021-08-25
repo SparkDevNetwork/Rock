@@ -34,6 +34,20 @@ namespace Rock
     public static class Reflection
     {
         /// <summary>
+        /// Gets the namespaces that start with the given root.
+        /// </summary>
+        /// <param name="assembly">The assembly.</param>
+        /// <param name="rootNamespace">The root namespace.</param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetNamespacesThatStartWith( Assembly assembly, string rootNamespace )
+        {
+            return assembly.GetTypes()
+                .Select( t => t.Namespace )
+                .Where( ns => ns != null && ns.StartsWith( rootNamespace ) )
+                .Distinct();
+        }
+
+        /// <summary>
         /// Finds the first matching type in Rock or any of the assemblies that reference Rock
         /// </summary>
         /// <param name="baseType">Type of the base.</param>
@@ -474,6 +488,25 @@ namespace Rock
             }
 
             return rawTypeName;
+        }
+
+        /// <summary>
+        /// Gets the types with attribute.
+        /// https://stackoverflow.com/a/720171/13215483
+        /// </summary>
+        /// <typeparam name="TAttribute">The type of the attribute.</typeparam>
+        /// <param name="inherit">if set to <c>true</c> [inherit].</param>
+        /// <returns></returns>
+        public static IEnumerable<Type> GetTypesWithAttribute<TAttribute>( bool inherit )
+            where TAttribute : System.Attribute
+        {
+            var assemblies = GetRockAndPluginAssemblies();
+
+            return
+                from a in assemblies
+                from t in a.GetTypes()
+                where t.IsDefined( typeof( TAttribute ), inherit )
+                select t;
         }
     }
 }

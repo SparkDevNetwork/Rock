@@ -26,42 +26,40 @@
                 <div id="pnlViewDetails" runat="server">
                     <div class="row">
                         <div class="col-sm-6 col-md-7 col-lg-8">
-                            <div class="margin-b-lg">
-                                <asp:Literal ID="lDescription" runat="server" />
-                            </div>
+                            <asp:Literal ID="lDescription" runat="server" />
                         </div>
                         <div class="col-sm-6 col-md-5 col-lg-4">
                             <asp:Literal ID="lMetricData" runat="server" />
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <label>Media Files</label>
-                            <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" >
-                                <Columns>
-                                    <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
-                                    <Rock:RockBoundField DataField="Format" HeaderText="Format" />
-                                    <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
-                                    <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
-                                    <Rock:BoolField DataField="AllowDownload" HeaderText="Allow Download" SortExpression="AllowDownload" />
-                                    <Rock:RockBoundField DataField="Link" HeaderText="Link" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
-                        <div class="col-md-12 margin-t-lg">
-                            <label>Thumbnail Files</label>
-                            <Rock:Grid ID="gViewThumbnailFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
-                                <Columns>
-                                    <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
-                                    <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
-                                    <Rock:RockBoundField DataField="Link" HeaderText="Link" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
+                    <div class="form-group">
+                        <label  class="control-label">Media Files</label>
+                        <Rock:Grid ID="gViewMediaFiles" runat="server" EmptyDataText="No Media Files" DisplayType="Light" ShowHeader="true" >
+                            <Columns>
+                                <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
+                                <Rock:RockBoundField DataField="Format" HeaderText="Format" />
+                                <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
+                                <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
+                                <Rock:BoolField DataField="AllowDownload" HeaderText="Allow Download" SortExpression="AllowDownload" />
+                                <Rock:RockBoundField DataField="Link" HeaderText="Link" />
+                            </Columns>
+                        </Rock:Grid>
                     </div>
 
-                    <div class="actions margin-t-lg">
+                    <div class="form-group">
+                        <label class="control-label">Thumbnail Files</label>
+                        <Rock:Grid ID="gViewThumbnailFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
+                            <Columns>
+                                <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
+                                <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
+                                <Rock:RockBoundField DataField="Link" HeaderText="Link" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+
+
+                    <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                     </div>
                 </div>
@@ -72,43 +70,38 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaElement, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                        </div>
-                        <div class="col-md-12">
-                           <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" AppendText="seconds" />
-                        </div>
+                    <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.MediaElement, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
 
-                        <div class="col-md-12">
-                            <label>Media Files</label>
-                            <Rock:Grid ID="gMediaFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Media" DisplayType="Light" ShowHeader="true">
-                                <Columns>
-                                    <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
-                                    <Rock:RockBoundField DataField="Format" HeaderText="Format" />
-                                    <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
-                                    <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
-                                    <Rock:BoolField DataField="AllowDownload" HeaderText="Allow Download" SortExpression="AllowDownload" />
-                                    <Rock:RockBoundField DataField="Link" HeaderText="Link" />
-                                    <Rock:EditField OnClick="gMediaFiles_Edit" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
+                    <Rock:NumberBox ID="nbDuration" CssClass="input-width-xl" runat="server" NumberType="Integer" Label="Duration" AppendText="seconds" />
 
-                        <div class="col-md-12">
-                            <label>Thumbnail Files</label>
-                            <Rock:Grid ID="gThumbnailFiles" runat="server" EmptyDataText="No Thumbnail Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
-                                <Columns>
-                                    <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
-                                    <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
-                                    <Rock:RockBoundField DataField="Link" HeaderText="Link" />
-                                    <Rock:EditField OnClick="gThumbnailFiles_Edit" />
-                                </Columns>
-                            </Rock:Grid>
-                        </div>
+                    <div class="form-group">
+                        <label class="control-label">Media Files</label>
+                        <Rock:Grid ID="gMediaFiles" runat="server" EmptyDataText="No Media Files" RowItemText="Media" DisplayType="Light" ShowHeader="true">
+                            <Columns>
+                                <Rock:RockBoundField DataField="Quality" HeaderText="Quality" />
+                                <Rock:RockBoundField DataField="Format" HeaderText="Format" />
+                                <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
+                                <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
+                                <Rock:BoolField DataField="AllowDownload" HeaderText="Allow Download" SortExpression="AllowDownload" />
+                                <Rock:RockBoundField DataField="Link" HeaderText="Link" />
+                                <Rock:EditField OnClick="gMediaFiles_Edit" />
+                            </Columns>
+                        </Rock:Grid>
                     </div>
 
-                    <div class="actions margin-t-lg">
+                    <div class="form-group">
+                        <label class="control-label">Thumbnail Files</label>
+                        <Rock:Grid ID="gThumbnailFiles" runat="server" EmptyDataText="No Thumbnail Files" RowItemText="Thumbnail" DisplayType="Light" ShowHeader="true">
+                            <Columns>
+                                <Rock:RockBoundField DataField="Dimension" HeaderText="Dimension" />
+                                <Rock:RockBoundField DataField="FormattedFileSize" HeaderText="Size" />
+                                <Rock:RockBoundField DataField="Link" HeaderText="Link" />
+                                <Rock:EditField OnClick="gThumbnailFiles_Edit" />
+                            </Columns>
+                        </Rock:Grid>
+                    </div>
+
+                    <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>

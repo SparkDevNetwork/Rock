@@ -9,16 +9,18 @@ SET DefaultValue = '9999'
 WHERE Guid IN (
         @IdleSecondsGuidAttended
         ,@IdleSecondsGuidCore
-        );
+        )
+AND [DefaultValue] != '9999'
 
 -- Set all idle redirect attribute values to 9999
 UPDATE AttributeValue
-SET Value = '9999'
+SET [Value] = '9999'
 WHERE AttributeId IN (
         SELECT Id
         FROM [Attribute]
-        WHERE Guid IN (
+        WHERE [Guid] IN (
                 @IdleSecondsGuidAttended
                 ,@IdleSecondsGuidCore
                 )
         )
+        AND [Value] != '9999'        

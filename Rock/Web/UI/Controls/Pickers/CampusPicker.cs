@@ -71,7 +71,6 @@ namespace Rock.Web.UI.Controls
             get
             {
                 return ViewState["CampusIds"] as List<int> ?? CampusCache.All().Select( c => c.Id ).ToList();
-
             }
 
             set
@@ -139,7 +138,6 @@ namespace Rock.Web.UI.Controls
                 LoadItems( null );
             }
         }
-
 
         /// <summary>
         /// Gets or sets the campuses.
@@ -272,6 +270,5 @@ namespace Rock.Web.UI.Controls
                 Items.Add( li );
             }
         }
-
     }
 }

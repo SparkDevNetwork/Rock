@@ -20,8 +20,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-
+using System.Web.UI;
 using Rock.Data;
+using Rock.Field;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -352,6 +353,45 @@ namespace Rock.Utility
             {
                 return expression;
             }
+        }
+
+        /// <summary>
+        /// Builds an expression using the specified FieldType and control.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="fieldType">Type of the field.</param>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="serviceInstance">The service instance.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public static Expression BuildExpressionFromFieldType<T>( IFieldType fieldType, Control filterControl, AttributeCache attribute, IService serviceInstance, ParameterExpression parameterExpression, FilterMode filterMode ) where T : Entity<T>, new()
+        {
+            if ( filterControl == null || attribute == null )
+            {
+                return null;
+            }
+
+            // We're going to assume the QualifierValues are the same for all attributes in the array.
+            var filterValues = fieldType.GetFilterValues( filterControl, attribute.QualifierValues, filterMode );
+
+            // If the filterValues are all empty then no filtering needs to be done.
+            if ( filterValues == null || filterValues.All( v => v.IsNullOrWhiteSpace() ) )
+            {
+                return null;
+            }
+
+            var entityFields = EntityHelper.GetEntityFields( typeof( T ) );
+
+            var entityField = entityFields.Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid == attribute.Guid ).FirstOrDefault();
+            if ( entityField == null )
+            {
+                entityField = EntityHelper.GetEntityFieldForAttribute( attribute, false );
+            }
+
+            var attributeExpression = ExpressionHelper.GetAttributeExpression( serviceInstance, parameterExpression, entityField, filterValues );
+            return attributeExpression;
         }
     }
 }

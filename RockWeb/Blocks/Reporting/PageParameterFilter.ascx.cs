@@ -659,11 +659,11 @@ namespace RockWeb.Blocks.Reporting
                     if ( control != null )
                     {
                         var value = PageParameter( attribute.Key );
-                        if ( value != null )
+                        if ( value.IsNotNullOrWhiteSpace() )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, value );
                         }
-                        else if ( attribute.Value.DefaultValue != null )
+                        else if ( attribute.Value.DefaultValue.IsNotNullOrWhiteSpace() )
                         {
                             attributeCache.FieldType.Field.SetEditValue( control, null, attribute.Value.DefaultValue );
                         }

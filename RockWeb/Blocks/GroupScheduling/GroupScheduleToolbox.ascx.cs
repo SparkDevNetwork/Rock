@@ -1321,7 +1321,7 @@ $('#{0}').tooltip();
         /// </summary>
         protected void gBlackoutDates_BindGrid()
         {
-            var currentDate = DateTime.Now.Date;
+            var currentDate = RockDateTime.Now.Date;
 
             using ( var rockContext = new RockContext() )
             {
@@ -1801,8 +1801,8 @@ $('#{0}').tooltip();
         {
             List<PersonScheduleSignup> personScheduleSignups = new List<PersonScheduleSignup>();
             int numOfWeeks = GetAttributeValue( AttributeKey.FutureWeeksToShow ).AsIntegerOrNull() ?? 6;
-            var startDate = DateTime.Now.AddDays( 1 );
-            var endDate = DateTime.Now.AddDays( numOfWeeks * 7 );
+            var startDate = RockDateTime.Now.AddDays( 1 );
+            var endDate = RockDateTime.Now.AddDays( numOfWeeks * 7 );
 
             using ( var rockContext = new RockContext() )
             {

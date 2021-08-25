@@ -35,3 +35,9 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
+[assembly: InternalsVisibleTo( "Rock.WebStartup" )]
+
+// The following type forwardings were setup in Rock 1.13.0
+[assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]
+[assembly: TypeForwardedTo( typeof( Rock.RockDateTime ) )]
+[assembly: TypeForwardedTo( typeof( Rock.Utility.RockColor ) )]

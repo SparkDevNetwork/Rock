@@ -72,40 +72,6 @@
     &.open {
       display: inline-block;
     }
-
-    &::before {
-      position: absolute;
-      top: -7px;
-      left: 6px;
-      display: inline-block;
-      content: "";
-      border: 7px solid transparent;
-      border-top: 0;
-      border-bottom-color: @dropdown-border;
-    }
-
-    &::after {
-      position: absolute;
-      top: -6px;
-      left: 7px;
-      display: inline-block;
-      content: "";
-      border: 6px solid transparent;
-      border-top: 0;
-      border-bottom-color: @dropdown-bg;
-    }
-  }
-  &.timepicker-orient-bottom::before {
-    top: auto;
-    bottom: -7px;
-    border-top: 7px solid @dropdown-border;
-    border-bottom: 0;
-  }
-  &.timepicker-orient-bottom::after {
-    top: auto;
-    bottom: -6px;
-    border-top: 6px solid @dropdown-bg;
-    border-bottom: 0;
   }
 
   a.btn {
@@ -157,7 +123,7 @@
 
       input {
         width: 45px;
-        padding: @padding-base-vertical @padding-base-horizontal;
+        padding: @padding-base-vertical 4px;
         margin: 0;
         font-size: 12px;
         text-align: center;

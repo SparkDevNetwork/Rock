@@ -15,10 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -26,7 +23,8 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Transaction to execute when a page's name is changed
+    /// Task to execute when a page's name is changed. This will take care of updating <see cref="InteractionComponent"/> data
+    /// to reflect the new page name.
     /// </summary>
     public sealed class AddPageRenameInteraction : BusStartedTask<AddPageRenameInteraction.Message>
     {

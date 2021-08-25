@@ -107,15 +107,18 @@ namespace Rock.Web.UI.Controls
                 _ddlDefinedValues.Items.Add( new ListItem() );
 
                 var definedTypeCache = DefinedTypeCache.Get( DefinedTypeId.Value );
-                var definedValuesList = definedTypeCache?.DefinedValues
-                    .Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId )
-                    .OrderBy( v => v.Order )
-                    .ThenBy( v => v.Value )
-                    .ToList();
+                var definedValuesList = definedTypeCache?.DefinedValues.Where( a => a.IsActive || IncludeInactive || a.Id == SelectedDefinedValueId );
 
-                if ( definedValuesList != null && definedValuesList.Any() )
+                if ( SelectableDefinedValuesId != null && SelectableDefinedValuesId.Any() )
                 {
-                    foreach ( var definedValue in definedValuesList )
+                    definedValuesList = definedValuesList.Where( a => SelectableDefinedValuesId.Contains( a.Id ) );
+                }
+
+                var filteredList = definedValuesList.OrderBy( v => v.Order ).ThenBy( v => v.Value ).ToList();
+
+                if ( filteredList != null && filteredList.Any() )
+                {
+                    foreach ( var definedValue in filteredList )
                     {
                         _ddlDefinedValues.Items.Add(
                             new ListItem

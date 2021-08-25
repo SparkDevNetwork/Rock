@@ -54,13 +54,53 @@ namespace Rock.Jobs
 
             foreach ( var personId in personIdList )
             {
-                using ( var rockContext = new RockContext() )
+                try
                 {
-                    recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        // Ensure the person's primary family has a group name set set one if it doesn't.
+                        CheckFamilyGroupName( personId, rockContext );
+
+                        // Update the Group Salutations
+                        recordsUpdated += PersonService.UpdateGroupSalutations( personId, rockContext );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error running the job 'PostV124DataMigrationsUpdateGroupSalutations'. UpdateGroupSalutations failed for person ID {personId}", ex ) );
                 }
             }
 
             ServiceJobService.DeleteJob( context.GetJobId() );
+        }
+
+        /// <summary>
+        /// Checks the primary family of the person to ensure it has a group name.
+        /// If not then the string "{LastName} Family" is used where the LastName is the LastName of the GivingLeader.
+        /// If no GivingLeader is found then the string "Family" is used.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void CheckFamilyGroupName( int personId, RockContext rockContext )
+        {
+            // Get the person
+            var personService = new PersonService( rockContext );
+            var person = personService.Get( personId );
+            var group = person.PrimaryFamily;
+            if ( group.Name.IsNotNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            // The group doesn't have a name so we'll need to create one
+            group.Name = "Family";
+            var givingLeader = personService.Get( person.GivingLeaderId );
+            if ( givingLeader != null )
+            {
+                group.Name = $"{givingLeader.LastName} Family";
+            }
+
+            rockContext.SaveChanges();
         }
     }
 }

@@ -22,7 +22,7 @@ var Rock;
         var MediaPlayer = (function () {
             function MediaPlayer(elementSelector, options) {
                 if (options === void 0) { options = {}; }
-                this.timerId = -1;
+                this.timerId = null;
                 this.watchBits = Array();
                 this.watchBitsInitialized = false;
                 this.watchBitsDirty = false;
@@ -64,11 +64,22 @@ var Rock;
                 enumerable: false,
                 configurable: true
             });
+            Object.defineProperty(MediaPlayer.prototype, "duration", {
+                get: function () {
+                    return this.player.duration;
+                },
+                enumerable: false,
+                configurable: true
+            });
+            MediaPlayer.prototype.seek = function (positionInSeconds) {
+                this.player.currentTime = positionInSeconds;
+            };
             MediaPlayer.prototype.setupPlayer = function () {
                 var _this = this;
                 var mediaElement = document.createElement(this.options.type === "audio" ? "audio" : "video");
                 mediaElement.setAttribute("playsinline", "");
                 mediaElement.setAttribute("controls", "");
+                mediaElement.setAttribute("style", "width: 100%;");
                 this.element.appendChild(mediaElement);
                 var plyrOptions = {
                     storage: {
@@ -206,6 +217,9 @@ var Rock;
                 this.writeDebugMessage("Player Time: " + this.player.currentTime + "; Current Time: " + playBit + "; Percent Watched: " + this.percentWatched + "; Unwatched Items: " + (this.watchBits.length - watchedItemCount) + "; Map Size: " + this.watchBits.length);
             };
             MediaPlayer.prototype.prepareForPlay = function () {
+                if (this.watchBitsInitialized !== false) {
+                    return;
+                }
                 this.writeDebugMessage("Preparing the player.");
                 this.initializeMap();
                 this.setResume();
@@ -243,6 +257,8 @@ var Rock;
                 var existingMapString = this.options.map;
                 this.writeDebugMessage("Map provided in .map property: " + existingMapString);
                 this.watchBits = MediaPlayer.rleToArray(existingMapString);
+                var watchedItemCount = this.watchBits.filter(function (item) { return item > 0; }).length;
+                this.percentWatchedInternal = watchedItemCount / this.watchBits.length;
             };
             MediaPlayer.prototype.validateMap = function () {
                 var mediaLength = Math.ceil(this.player.duration);
@@ -257,6 +273,7 @@ var Rock;
                     mapSize = 0;
                 }
                 this.watchBits = new Array(mapSize).fill(0);
+                this.percentWatchedInternal = 0;
                 this.writeDebugMessage("Blank map created of size: " + this.watchBits.length);
             };
             MediaPlayer.rleToArray = function (value) {
@@ -292,9 +309,7 @@ var Rock;
                     }
                 };
                 this.player.on("play", function () {
-                    if (_this.watchBitsInitialized === false) {
-                        _this.prepareForPlay();
-                    }
+                    _this.prepareForPlay();
                     if (_this.options.trackProgress) {
                         _this.timerId = setInterval(function () { return _this.trackPlay(); }, 250);
                     }
@@ -311,7 +326,9 @@ var Rock;
                     _this.writeDebugMessage("Event 'play' called.");
                 });
                 this.player.on("pause", function () {
-                    clearInterval(_this.timerId);
+                    if (_this.timerId) {
+                        clearInterval(_this.timerId);
+                    }
                     _this.markBitWatched();
                     window.removeEventListener("pagehide", pageHideHandler);
                     window.removeEventListener("visibilitychange", visibilityChangeHandler);

@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 
 namespace Rock.Lava
 {
     /// <summary>
     /// Marks a property as being inaccessible to a Lava template if an object of the type exists in the Lava context.
     /// </summary>
-    public class LavaHiddenAttribute : System.Attribute
+    [AttributeUsage( AttributeTargets.Field | AttributeTargets.Property  )]
+    public class LavaHiddenAttribute : Attribute
     {
+        //
     }
 }

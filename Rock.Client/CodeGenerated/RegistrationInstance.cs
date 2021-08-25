@@ -117,6 +117,15 @@ namespace Rock.Client
         /// <summary />
         public DateTime? StartDateTime { get; set; }
 
+        /// <summary />
+        public bool TimeoutIsEnabled { get; set; }
+
+        /// <summary />
+        public int? TimeoutLengthMinutes { get; set; }
+
+        /// <summary />
+        public int? TimeoutThreshold { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -177,6 +186,9 @@ namespace Rock.Client
             this.ReminderSent = source.ReminderSent;
             this.SendReminderDateTime = source.SendReminderDateTime;
             this.StartDateTime = source.StartDateTime;
+            this.TimeoutIsEnabled = source.TimeoutIsEnabled;
+            this.TimeoutLengthMinutes = source.TimeoutLengthMinutes;
+            this.TimeoutThreshold = source.TimeoutThreshold;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

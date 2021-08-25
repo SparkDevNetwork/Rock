@@ -90,6 +90,21 @@ namespace RockWeb.Blocks.Finance
             /// The campus identifier
             /// </summary>
             public const string CampusId = "CampusId";
+
+            /// <summary>
+            /// The start date
+            /// </summary>
+            public const string StartDate = "StartDate";
+
+            /// <summary>
+            /// The end date
+            /// </summary>
+            public const string EndDate = "EndDate";
+
+            /// <summary>
+            /// The alert type id
+            /// </summary>
+            public const string AlertTypeId = "AlertTypeId";
         }
 
         #endregion
@@ -463,44 +478,66 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            drpDateRange.DelimitedValues = gfAlertFilter.GetUserPreference( FilterKey.DateRange );
+            // Set the date range
+            var startDate = PageParameter( PageParameterKey.StartDate ).AsDateTime();
+            var endDate = PageParameter( PageParameterKey.EndDate ).AsDateTime();
 
-            // Bind alert types: the names of the alert types
-            using ( var rockContext = new RockContext() )
+            if ( startDate.HasValue || endDate.HasValue )
             {
-                var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
-
-                cblAlertTypes.DataTextField = "Value";
-                cblAlertTypes.DataValueField = "Key";
-                cblAlertTypes.DataSource = alertTypeService.Queryable()
-                    .AsNoTracking()
-                    .Select( at => new
-                    {
-                        Key = at.Id,
-                        Value = at.Name
-                    } )
-                    .ToList();
-
-                cblAlertTypes.DataBind();
+                drpDateRange.Visible = false;
+            }
+            else
+            {
+                drpDateRange.DelimitedValues = gfAlertFilter.GetUserPreference( FilterKey.DateRange );
             }
 
-            var alertTypesValue = gfAlertFilter.GetUserPreference( FilterKey.AlertTypes );
+            // Bind alert types and categories if there is no query param
+            var alertTypeId = PageParameter( PageParameterKey.AlertTypeId ).AsIntegerOrNull();
 
-            if ( !string.IsNullOrWhiteSpace( alertTypesValue ) )
+            if ( alertTypeId.HasValue )
             {
-                cblAlertTypes.SetValues( alertTypesValue.Split( ';' ).ToList() );
+                cblAlertTypes.Visible = false;
+                cblAlertCategory.Visible = false;
+            }
+            else
+            {
+                // Bind alert types: the names of the alert types
+                using ( var rockContext = new RockContext() )
+                {
+                    var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
+
+                    cblAlertTypes.DataTextField = "Value";
+                    cblAlertTypes.DataValueField = "Key";
+                    cblAlertTypes.DataSource = alertTypeService.Queryable()
+                        .AsNoTracking()
+                        .Select( at => new
+                        {
+                            Key = at.Id,
+                            Value = at.Name
+                        } )
+                        .ToList();
+
+                    cblAlertTypes.DataBind();
+                }
+
+                var alertTypesValue = gfAlertFilter.GetUserPreference( FilterKey.AlertTypes );
+
+                if ( !string.IsNullOrWhiteSpace( alertTypesValue ) )
+                {
+                    cblAlertTypes.SetValues( alertTypesValue.Split( ';' ).ToList() );
+                }
+
+                // Bind alert categories: gratitude and follow-up
+                cblAlertCategory.BindToEnum<AlertType>();
+                var alertCategoryValue = gfAlertFilter.GetUserPreference( FilterKey.AlertCategory );
+
+                if ( !string.IsNullOrWhiteSpace( alertCategoryValue ) )
+                {
+                    cblAlertCategory.SetValues( alertCategoryValue.Split( ';' ).ToList() );
+                }
             }
 
-            // Bind alert categories: gratitude and follow-up
-            cblAlertCategory.BindToEnum<AlertType>();
-            var alertCategoryValue = gfAlertFilter.GetUserPreference( FilterKey.AlertCategory );
-
-            if ( !string.IsNullOrWhiteSpace( alertCategoryValue ) )
-            {
-                cblAlertCategory.SetValues( alertCategoryValue.Split( ';' ).ToList() );
-            }
-
-            // Don't show the person picker if the the current context is already a specific person.
+            // Don't show the person picker if the current context is already a specific person.
             if ( GetPerson() != null )
             {
                 ppPerson.Visible = false;
@@ -516,10 +553,10 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            // Set the transaction amount filter
             nreTransactionAmount.DelimitedValues = gfAlertFilter.GetUserPreference( FilterKey.TransactionAmount );
 
-            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
-
+            // Campus picker
             if ( GetCampusFromQuery() != null )
             {
                 cpCampus.Visible = false;
@@ -560,22 +597,36 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var financialTransactionAlertQry = new FinancialTransactionAlertService( rockContext ).Queryable();
 
+            // Filter by date range
+            var startDate = PageParameter( PageParameterKey.StartDate ).AsDateTime()?.Date;
+            var endDate = PageParameter( PageParameterKey.EndDate ).AsDateTime()?.Date;
+
+            if ( endDate.HasValue )
+            {
+                endDate = endDate.Value.AddDays( 1 ).AddTicks( -1 );
+            }
+
             var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateRange.DelimitedValues );
 
-            if ( dateRange.Start.HasValue )
+            if ( startDate.HasValue || dateRange.Start.HasValue )
             {
-                financialTransactionAlertQry = financialTransactionAlertQry.Where( se => se.AlertDateTime >= dateRange.Start.Value );
+                financialTransactionAlertQry = financialTransactionAlertQry.Where( se => se.AlertDateTime >= ( startDate ?? dateRange.Start.Value ) );
             }
 
-            if ( dateRange.End.HasValue )
+            if ( endDate.HasValue || dateRange.End.HasValue )
             {
-                financialTransactionAlertQry = financialTransactionAlertQry.Where( se => se.AlertDateTime <= dateRange.End.Value );
+                financialTransactionAlertQry = financialTransactionAlertQry.Where( se => se.AlertDateTime <= ( endDate ?? dateRange.End.Value ) );
             }
 
-            // Filter by alert types
+            // Filter by alert type ids
+            var alertTypeId = PageParameter( PageParameterKey.AlertTypeId ).AsIntegerOrNull();
             var alertTypeIds = cblAlertTypes.SelectedValues.AsIntegerList();
 
-            if ( alertTypeIds.Any() )
+            if ( alertTypeId.HasValue )
+            {
+                financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.AlertTypeId == alertTypeId );
+            }
+            else if ( alertTypeIds.Any() )
             {
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( a => alertTypeIds.Contains( a.AlertTypeId ) );
             }
@@ -595,6 +646,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( m => alertCategories.Contains( m.FinancialTransactionAlertType.AlertType ) );
             }
 
+            // Filter by person
             var personId = GetPerson( rockContext );
             if ( !personId.HasValue && ppPerson.Visible )
             {
@@ -614,6 +666,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.PersonAlias.PersonId == personId.Value );
             }
 
+            // Filter by transaction amount
             if ( nreTransactionAmount.LowerValue.HasValue )
             {
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.Amount >= nreTransactionAmount.LowerValue.Value );
@@ -624,6 +677,7 @@ namespace RockWeb.Blocks.Finance
                 financialTransactionAlertQry = financialTransactionAlertQry.Where( a => a.Amount <= nreTransactionAmount.UpperValue.Value );
             }
 
+            // Filter by campus id
             var campusId = GetCampusFromQuery();
 
             if ( campusId.HasValue )

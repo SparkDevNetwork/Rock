@@ -15,17 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a dataview is run.
+    /// Task to update statistics when a <see cref="DataView"/> is run.
     /// </summary>
     public sealed class UpdateDataViewStatistics : BusStartedTask<UpdateDataViewStatistics.Message>
     {

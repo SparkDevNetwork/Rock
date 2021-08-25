@@ -14,7 +14,7 @@
   display: inline-block;
   width: 100%;
   padding: 0 10px 10px;
-  border: 1px solid @panel-default-border;
+  border: 1px solid @calendar-border;
   border-radius: @border-radius-base;
 }
 
@@ -24,7 +24,7 @@
   border: 0;
 
   a {
-    color: @text-color !important;
+    color: @calendar-color !important;
     text-decoration: none;
   }
 
@@ -51,8 +51,8 @@
 
   .calendar-today,
   .calendar-selecteditem {
-    color: @alert-info-text !important;
-    background-color: @alert-info-bg !important;
+    color: @calendar-today-color !important;
+    background-color: @calendar-today-bg !important;
     border-radius: 0;
   }
 
@@ -61,19 +61,11 @@
   }
 
   .calendar-selected {
-    color: @label-color !important;
-    background-color: @label-info-bg !important;
+    color: @calendar-selected-color !important;
+    background-color: @calendar-selected-bg !important;
 
     a {
-      color: @label-color !important;
-    }
-
-    &:first-child {
-      border-radius: @border-radius-base 0 0 @border-radius-base;
-    }
-
-    &:last-child {
-      border-radius: 0 @border-radius-base @border-radius-base 0;
+      color: @calendar-selected-color !important;
     }
   }
 
@@ -133,7 +125,7 @@
   .row.fee-header {
     padding-bottom: 2px;
     margin-bottom: 6px;
-    font-size: 14px;
+    font-size: @font-size-small;
     border-bottom: 2px solid lighten(@text-color, 40%);
   }
 

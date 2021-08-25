@@ -7,63 +7,56 @@
         <asp:HiddenField ID="hfSelectedItemId" runat="server" />
         <asp:HiddenField ID="hfPageRouteTemplate" runat="server" />
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
-
         <div class="treeview js-categorytreeview">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><asp:Literal ID="lPanelTitle" runat="server" Text="Title" /></h1>
 
-            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+                    <div class="panel-labels treeview-actions" id="divTreeviewActions" runat="server">
+                        <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-link" ToolTip="Add Item" CausesValidation="false" OnClick="lbAddItem_Click">
+                            <i class="fa fa-plus"></i>
+                        </asp:LinkButton>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-link btn-xs dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
+                                <i class="fa fa-folder-plus"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                                <li>
+                                    <asp:LinkButton ID="lbAddCategoryRoot" OnClick="lbAddCategoryRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
+                                <li>
+                                    <asp:LinkButton ID="lbAddCategoryChild" OnClick="lbAddCategoryChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
+                            </ul>
+                        </div>
 
-                <div class="pull-left margin-r-sm">
-                    <div class="btn-group ">
-                        <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
-                            <i class="fa fa-plus-circle"></i>
-                            <asp:Literal ID="ltAddCategory" runat="server" Text=" Add Category" />
-                            <span class="fa fa-caret-down"></span>
+                        <button type="button" id="pnlRolloverConfig" class="btn btn-link btn-xs clickable js-show-config" onclick="$(this).closest('.js-categorytreeview').find('.js-config-panel').slideToggle()" runat="server">
+                            <i class="fa fa-ellipsis-v"></i>
                         </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <asp:LinkButton ID="lbAddCategoryRoot" OnClick="lbAddCategoryRoot_Click" Text="Add Top-Level" runat="server"></asp:LinkButton></li>
-                            <li>
-                                <asp:LinkButton ID="lbAddCategoryChild" OnClick="lbAddCategoryChild_Click" Text="Add Child To Selected" runat="server"></asp:LinkButton></li>
-                        </ul>
                     </div>
-
-                    <asp:LinkButton ID="lbAddItem" runat="server" CssClass="add btn btn-xs btn-action" ToolTip="Add Item" CausesValidation="false" OnClick="lbAddItem_Click">
-                        <i class="fa fa-plus-circle"></i>
-                        <asp:Literal ID="lAddItem" runat="server" Text="Add Item" />
-                    </asp:LinkButton>
                 </div>
+                <div class="panel-body">
 
-                <div class="rollover-item" id="pnlRolloverConfig" runat="server">
-                    <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-categorytreeview').find('.js-config-panel').slideToggle()"></i>
-                </div>
-
-            </div>
-
-            <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
-                <Rock:Toggle ID="tglHideInactiveItems" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveItems_CheckedChanged" Label="Show" />
-            </div>
-
-            <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
-
-            <div class="treeview-scroll scroll-container scroll-container-horizontal">
-
-                <div class="viewport">
-                    <div class="overview">
-                        <div class="panel-body treeview-frame">
-                            <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                    <div class="rocktree-drawer js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
+                        <Rock:Toggle ID="tglHideInactiveItems" runat="server" OnText="Active" OffText="All" Checked="true" ButtonSizeCssClass="btn-xs" OnCheckedChanged="tglHideInactiveItems_CheckedChanged" Label="Show" />
+                    </div>
+                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
+                    <div class="treeview-scroll scroll-container scroll-container-horizontal">
+                        <div class="viewport">
+                            <div class="overview">
+                                <div class="treeview-frame">
+                                    <asp:Panel ID="pnlTreeviewContent" runat="server" />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="scrollbar">
-                    <div class="track">
-                        <div class="thumb">
-                            <div class="end"></div>
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
         </div>
 
         <script type="text/javascript">

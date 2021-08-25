@@ -26,13 +26,10 @@ using Rock.Web.Cache;
 namespace Rock.Transactions
 {
     /// <summary>
-    /// Runs a job now
+    /// Sends payment receipts for scheduled transaction payments that got downloaded from the Financial Gateway.
     /// </summary>
-    [Obsolete( "Use ProcessSendPaymentReceiptEmails Task instead." )]
-    [RockObsolete( "1.13" )]
     public class SendPaymentReceipts : ITransaction
     {
-
         /// <summary>
         /// Gets or sets the system email unique identifier.
         /// </summary>

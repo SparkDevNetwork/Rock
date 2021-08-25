@@ -24,7 +24,7 @@ using UAParser;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Tracks when a short link is used.
+    /// Updates Interaction data to track when a <see cref="PageShortLink">short link</see> is used
     /// </summary>
     public sealed class AddShortLinkInteraction : BusStartedTask<AddShortLinkInteraction.Message>
     {

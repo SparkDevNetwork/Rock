@@ -53,6 +53,15 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
+    <Reference Include="Azure.Core, Version=1.15.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Core.1.15.0\lib\net461\Azure.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Azure.Storage.Blobs, Version=12.9.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Blobs.12.9.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
+    </Reference>
+    <Reference Include="Azure.Storage.Common, Version=12.8.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Common.12.8.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
+    </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
     </Reference>
@@ -198,6 +207,9 @@
     <Reference Include="Microsoft.Azure.Storage.Common, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Storage.Common.11.1.3\lib\net452\Microsoft.Azure.Storage.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
     </Reference>
@@ -308,12 +320,18 @@
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net46\StackExchange.Redis.StrongName.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.6.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
@@ -336,10 +354,20 @@
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Management.Automation.6.1.7601.17515\lib\net45\System.Management.Automation.dll</HintPath>
     </Reference>
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory.Data, Version=1.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.Data.1.0.2\lib\net461\System.Memory.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
@@ -347,9 +375,18 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
+    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.4.7.2\lib\net461\System.Text.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -543,8 +580,16 @@
     <Compile Include="Attribute\WorkflowAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTextOrAttributeAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
+    <Compile Include="Blocks\BlockActionGridResponse.cs" />
+    <Compile Include="Blocks\IRockObsidianBlockType.cs" />
+    <Compile Include="Blocks\IRockWebBlockType.cs" />
+    <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="CheckIn\CheckinResult.cs" />
+    <Compile Include="CheckIn\PersonAchievementType.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\DailyChallengeEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\AddToGroup.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
@@ -622,18 +667,92 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Data\EntityContextState.cs" />
+    <Compile Include="Data\EntitySaveHook.cs" />
+    <Compile Include="Data\IEntitySaveEntry.cs" />
+    <Compile Include="Data\IEntitySaveHook.cs" />
+    <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Field\Types\MediaWatchFieldType.cs" />
+    <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\Core\Campus\Campus.Logic.cs" />
+    <Compile Include="Model\Core\Campus\Campus.SaveHook.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.Logic.cs" />
+    <Compile Include="Model\Core\Document\Document.Logic.cs" />
+    <Compile Include="Model\Core\Document\Document.SaveHook.cs" />
+    <Compile Include="Model\Core\FollowingEventType\FollowingEventType.Logic.cs" />
+    <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedStatus.cs" />
+    <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.Logic.cs" />
+    <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
+    <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
+    <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
+    <Compile Include="Model\CRM\IdentityVerification\IdentityVerification.cs" />
+    <Compile Include="Model\CRM\IdentityVerification\IdentityVerificationService.cs" />
+    <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
+    <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
+    <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
+    <Compile Include="Model\Group\GroupHistorical\GroupHistorical.cs" />
+    <Compile Include="Model\Group\GroupHistorical\GroupHistorical.Logic.cs" />
+    <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalSchedule.cs" />
+    <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.cs" />
+    <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistorical.Logic.cs" />
+    <Compile Include="Model\Group\GroupLocationHistorical\GroupLocationHistoricalService.cs" />
+    <Compile Include="Model\Group\GroupLocationScheduleConfig\GroupLocationScheduleConfig.cs" />
+    <Compile Include="Model\Group\GroupLocation\GroupLocation.cs" />
+    <Compile Include="Model\Group\GroupLocation\GroupLocation.SaveHook.cs" />
+    <Compile Include="Model\Group\GroupLocation\GroupLocationExtensions.cs" />
+    <Compile Include="Model\Group\GroupLocation\GroupLocationService.cs" />
+    <Compile Include="Model\Group\GroupMemberAssignment\GroupMemberAssignment.cs" />
+    <Compile Include="Model\Group\GroupMemberAssignment\GroupMemberAssignmentService.cs" />
+    <Compile Include="Model\Group\GroupMemberHistorical\GroupMemberHistorical.cs" />
+    <Compile Include="Model\Group\GroupMemberHistorical\GroupMemberHistorical.Logic.cs" />
+    <Compile Include="Model\Group\GroupMemberHistorical\GroupMemberHistoricalService.cs" />
+    <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirement.cs" />
+    <Compile Include="Model\Group\GroupMemberRequirement\GroupMemberRequirement.Logic.cs" />
+    <Compile Include="Model\Group\GroupMemberScheduleTemplate\GroupMemberScheduleTemplate.cs" />
+    <Compile Include="Model\Group\GroupMemberWorkflowTrigger\GroupMemberWorkflowTrigger.cs" />
+    <Compile Include="Model\Group\GroupMemberWorkflowTrigger\GroupMemberWorkflowTriggerService.cs" />
+    <Compile Include="Model\Group\GroupMemberWorkflowTrigger\GroupMemberWorkflowTriggerType.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMember.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMember.Logic.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMember.SaveHook.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMemberService.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMemberStatus.cs" />
+    <Compile Include="Model\Group\GroupMember\GroupMemberValidationException.cs" />
+    <Compile Include="Model\Group\GroupMember\HistoryItem.cs" />
+    <Compile Include="Model\Group\GroupRequirementType\GroupRequirementType.Logic.cs" />
+    <Compile Include="Model\Group\GroupRequirementType\RequirementCheckType.cs" />
+    <Compile Include="Model\Group\GroupRequirement\GroupRequirement.Logic.cs" />
+    <Compile Include="Model\Group\GroupRequirement\GroupRequirementStatus.cs" />
+    <Compile Include="Model\Group\GroupRequirement\MeetsGroupRequirement.cs" />
+    <Compile Include="Model\Group\GroupRequirement\PersonGroupRequirementStatus.cs" />
+    <Compile Include="Model\Group\GroupType\AttendanceRule.cs" />
+    <Compile Include="Model\Group\GroupType\CheckinAreaPath.cs" />
+    <Compile Include="Model\Group\GroupType\GroupCapacityRule.cs" />
+    <Compile Include="Model\Group\GroupType\GroupLocationPickerMode.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSyncServiceExtensions.cs" />
+    <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.Logic.cs" />
+    <Compile Include="Model\Group\GroupType\GroupType.Logic.cs" />
+    <Compile Include="Model\Group\GroupType\GroupType.SaveHook.cs" />
+    <Compile Include="Model\Group\GroupType\GroupTypePath.cs" />
+    <Compile Include="Model\Group\Group\AttendanceRecordRequiredForCheckIn.cs" />
+    <Compile Include="Model\Group\Group\Group.Logic.cs" />
+    <Compile Include="Model\Group\Group\Group.SaveHook.cs" />
+    <Compile Include="Model\Group\Group\GroupParentCircularReferenceException.cs" />
+    <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Financial\IRedirectionGateway.cs" />
     <Compile Include="Financial\TestRedirectionGateway.cs" />
     <Compile Include="Lava\CommonMergeFieldsOptions.cs" />
+    <Compile Include="Lava\LavaService.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\MediaPlayer.cs" />
     <Compile Include="Lava\Shortcodes\MediaPlayerShortcode.cs" />
-    <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Jobs\GroupAttendanceReporting.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Cache.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\CalendarEvents.cs" />
-    <Compile Include="Lava\RockLiquid\Blocks\CalendarEventsLavaDataSource.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\EventScheduledInstance.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Execute.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\InteractionContentChannelItemWrite.cs" />
@@ -660,10 +779,46 @@
     <Compile Include="Lava\RockLiquid\Shortcodes\RockLavaShortcodeBlockBase.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\ScheduledContent.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\Scripturize.cs" />
+    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\WebsiteLavaShortcodeProvider.cs" />
+    <Compile Include="Lava\WebsiteLavaTemplateCache.cs" />
     <Compile Include="Lava\WebsiteLavaTemplateCacheService.cs" />
+    <Compile Include="Media\MediaPlayerControls.cs" />
+    <Compile Include="Media\MediaPlayerInterfaceType.cs" />
+    <Compile Include="Media\MediaPlayerOptions.cs" />
     <Compile Include="Media\MediaWatchedInteractionData.cs" />
+    <Compile Include="Model\Core\Tag\Tag.cs" />
+    <Compile Include="Model\Core\Tag\Tag.Logic.cs" />
+    <Compile Include="Model\Core\Tag\TagService.cs" />
+    <Compile Include="Model\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFamilyBase\AnalyticsDimFamilyBase.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimPersonBase\AnalyticsDimPersonBase.cs" />
+    <Compile Include="Model\Reporting\AnalyticsBaseAttendance\AnalyticsBaseAttendance.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceCampusBase\AnalyticsSourceCampusBase.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceDate\AnalyticsSourceDate.Logic.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceDate\HolidayHelper.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceFamilyBase\AnalyticsSourceFamilyBase.cs" />
+    <Compile Include="Model\Reporting\AnalyticsBaseFinancialTransaction\AnalyticsBaseFinancialTransaction.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourcePersonBase\AnalyticsSourcePersonBase.cs" />
+    <Compile Include="Model\Reporting\MetricCategory\MetricCategory.Logic.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValue.Logic.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValueType.cs" />
+    <Compile Include="Model\Reporting\Metric\Metric.Logic.cs" />
+    <Compile Include="Model\Reporting\Metric\MetricNumericDataType.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.Logic.cs" />
+    <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
+    <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\AuthenticationServiceType.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.SaveHook.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginWithPlainTextPassword.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="SystemGuid\AchievementType.cs" />
+    <Compile Include="SystemGuid\StreakType.cs" />
+    <Compile Include="Tasks\AddCommunicationRecipients.cs" />
     <Compile Include="Tasks\AddNewMetaphones.cs" />
     <Compile Include="Tasks\AddPageRenameInteraction.cs" />
     <Compile Include="Tasks\AddShortLinkInteraction.cs" />
@@ -701,13 +856,22 @@
     <Compile Include="Tasks\LaunchWorkflow.cs" />
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
+    <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
+    <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\ObjectExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHtmlExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
     <Compile Include="Communication\CommunicationTemplateHelper.cs" />
     <Compile Include="Data\DecimalPrecisionAttribute.cs" />
     <Compile Include="Data\DecimalPrecisionAttributeConvention.cs" />
+    <Compile Include="Data\Interception\RockEfInterceptor.cs" />
     <Compile Include="Data\MigrationIndexHelper.cs" />
     <Compile Include="Data\SaveChangesResult.cs" />
     <Compile Include="Data\SaveChangesArgs.cs" />
@@ -721,9 +885,11 @@
     <Compile Include="Field\Types\StepFieldType.cs" />
     <Compile Include="Field\Types\InteractionChannelInteractionComponentFieldType.cs" />
     <Compile Include="Field\Types\AchievementTypeFieldType.cs" />
+    <Compile Include="Financial\FinancialGivingAnalyticsFrequencyLabel.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorHelper.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorRecipientRequest.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorUploadGivingStatementData.cs" />
+    <Compile Include="Financial\FinancialStatementGeneratorUploadGivingStatementResult.cs" />
     <Compile Include="Financial\IFeeCoverageGatewayComponent.cs" />
     <Compile Include="Financial\IHostedGatewayPaymentControlCurrencyTypeEvent.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorPledgeSummary.cs" />
@@ -740,9 +906,11 @@
     <Compile Include="Jobs\PostV110DataMigrationsUpdateRelatedDataViewId.cs" />
     <Compile Include="Jobs\PostV124DataMigrationsUpdateGroupSalutations.cs" />
     <Compile Include="Jobs\PostV124DataMigrationUnencryptPaymentDetailFields.cs" />
+    <Compile Include="Jobs\PostV125DataMigrationsAddSystemCommunicationIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
     <Compile Include="Jobs\PostV12DataMigrationsAddInteractionIndexes.cs" />
+    <Compile Include="Jobs\PostV125DataMigrationsUpdateStepProgramCompletion.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendGroupAttendanceDigest.cs" />
@@ -757,7 +925,6 @@
     <Compile Include="Lava\Blocks\CalendarEventsBlock.cs" />
     <Compile Include="Lava\ILiquidizable.cs" />
     <Compile Include="Lava\LavaElementAttributes.cs" />
-    <Compile Include="Lava\WebsiteLavaFileSystem.cs" />
     <Compile Include="Lava\LavaFilters.cs" />
     <Compile Include="Logging\IRockLogReader.cs" />
     <Compile Include="Logging\RockLogEvent.cs" />
@@ -772,8 +939,10 @@
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\AchievementAttemptService.Partial.cs" />
-    <Compile Include="Model\AnalyticsSourceGivingUnit.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceGivingUnit\AnalyticsSourceGivingUnit.cs" />
+    <Compile Include="Model\CampusSchedule.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsSourceGivingUnitService.cs" />
+    <Compile Include="Model\CodeGenerated\CampusScheduleService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationResponseAttachmentService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialStatementTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionAlertService.cs" />
@@ -781,7 +950,11 @@
     <Compile Include="Model\CodeGenerated\MediaAccountService.cs" />
     <Compile Include="Model\CodeGenerated\MediaElementService.cs" />
     <Compile Include="Model\CodeGenerated\MediaFolderService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkSectionOrderService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkSectionService.cs" />
+    <Compile Include="Model\CodeGenerated\PersonalLinkService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationSessionService.cs" />
+    <Compile Include="Model\CodeGenerated\StepProgramCompletionService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeLogService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeMetricService.cs" />
     <Compile Include="Model\CodeGenerated\WebFarmNodeService.cs" />
@@ -789,16 +962,22 @@
     <Compile Include="Model\FinancialStatementTemplate.cs" />
     <Compile Include="Model\FinancialTransactionAlert.cs" />
     <Compile Include="Model\FinancialTransactionAlertType.cs" />
-    <Compile Include="Model\MediaAccount.cs" />
-    <Compile Include="Model\MediaAccountService.Partial.cs" />
-    <Compile Include="Model\MediaElement.cs" />
-    <Compile Include="Model\MediaElementService.Partial.cs" />
-    <Compile Include="Model\MediaFolder.cs" />
-    <Compile Include="Model\MediaFolderService.Partial.cs" />
+    <Compile Include="Model\CMS\MediaAccount\MediaAccount.cs" />
+    <Compile Include="Model\CMS\MediaAccount\MediaAccountService.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElement.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElementService.Partial.cs" />
+    <Compile Include="Model\CMS\MediaFolder\MediaFolder.cs" />
+    <Compile Include="Model\CMS\MediaFolder\MediaFolderService.cs" />
+    <Compile Include="Model\PersonalLink.cs" />
+    <Compile Include="Model\PersonalLinkSection.cs" />
+    <Compile Include="Model\PersonalLinkSectionOrder.cs" />
+    <Compile Include="Model\PersonalLinkSectionOrderService.Partial.cs" />
+    <Compile Include="Model\PersonalLinkService.partial.cs" />
     <Compile Include="Model\RegistrationSession.cs" />
+    <Compile Include="Model\StepProgramCompletion.cs" />
     <Compile Include="Model\StepProgramService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
-    <Compile Include="Model\FollowingSuggestedService.Partial.cs" />
+    <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedService.cs" />
     <Compile Include="Model\WebFarmNodeLog.cs" />
     <Compile Include="Model\WebFarmNode.cs" />
     <Compile Include="Model\AttendanceCheckInSession.cs" />
@@ -813,9 +992,8 @@
     <Compile Include="Model\CodeGenerated\IdentityVerificationCodeService.cs" />
     <Compile Include="Model\CodeGenerated\IdentityVerificationService.cs" />
     <Compile Include="Model\ConnectionRequestService.Partial.cs" />
-    <Compile Include="Model\DocumentService.Partial.cs" />
+    <Compile Include="Model\Core\Document\DocumentService.cs" />
     <Compile Include="Model\FinancialPaymentDetailService.Partial.cs" />
-    <Compile Include="Model\GroupSyncService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeService.Partial.cs" />
     <Compile Include="Model\WebFarmNodeMetricService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\139_ProfileEdit_RequireGender.cs" />
@@ -838,7 +1016,9 @@
     <Compile Include="Security\Authentication\OidcClient.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
+    <Compile Include="SystemGuid\BinaryFile.cs" />
     <Compile Include="SystemGuid\FinancialStatementTemplate.cs" />
+    <Compile Include="SystemKey\LanguageDefinedValueAttributeKey.cs" />
     <Compile Include="SystemKey\DeviceAttributeKey.cs" />
     <Compile Include="SystemKey\TwilioAttributeKey.cs" />
     <Compile Include="Tasks\ProcessTransactionAlertActions.cs" />
@@ -860,10 +1040,6 @@
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
-    <Compile Include="Model\IdentityVerification.cs" />
-    <Compile Include="Model\IdentityVerificationCode.cs" />
-    <Compile Include="Model\IdentityVerificationCodeService.Partial.cs" />
-    <Compile Include="Model\IdentityVerificationService.Partial.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\117_FieldContainerXAMLMigration.cs" />
@@ -909,12 +1085,17 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
+    <Compile Include="ViewModel\IViewModelHelper.cs" />
+    <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
+    <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
     <Compile Include="WebFarm\RockWebFarm.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
+    <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
     <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
     <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
@@ -926,7 +1107,10 @@
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
+    <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
+    <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
+    <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
     <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
@@ -936,6 +1120,7 @@
     <Compile Include="Web\UI\Controls\Pickers\IntervalPicker.cs" />
     <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MediaElementPicker.cs" />
+    <Compile Include="Web\UI\Controls\TagLiteral.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -988,18 +1173,16 @@
     <Compile Include="Model\CodeGenerated\AchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\AchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
-    <Compile Include="Model\DocumentTypeService.Partial.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
     <Compile Include="Model\RegistrationTemplatePlacement.cs" />
     <Compile Include="Model\RegistrationTemplatePlacementService.partial.cs" />
     <Compile Include="Model\RelatedEntity.cs" />
-    <Compile Include="Model\GroupDemographicType.cs" />
-    <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
-    <Compile Include="Model\Document.cs" />
-    <Compile Include="Model\DocumentType.cs" />
+    <Compile Include="Model\Core\Document\Document.cs" />
+    <Compile Include="Model\Core\DocumentType\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
@@ -1024,6 +1207,7 @@
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
+    <Compile Include="Security\SimpleCookie.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
@@ -1115,8 +1299,8 @@
     <Compile Include="Financial\AutomatedPaymentArgs.cs" />
     <Compile Include="Financial\IAutomatedGatewayComponent.cs" />
     <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
-    <Compile Include="Model\Assessment.cs" />
-    <Compile Include="Model\AssessmentService.Partial.cs" />
+    <Compile Include="Model\CRM\Assessment\Assessment.cs" />
+    <Compile Include="Model\CRM\Assessment\AssessmentService.cs" />
     <Compile Include="Model\AssessmentType.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
@@ -1133,10 +1317,6 @@
     <Compile Include="Model\StreakTypeExclusionService.Partial.cs" />
     <Compile Include="Model\StreakService.Partial.cs" />
     <Compile Include="Model\StreakTypeService.Partial.cs" />
-    <Compile Include="Model\GroupLocationScheduleConfig.cs" />
-    <Compile Include="Model\GroupMemberAssignment.cs" />
-    <Compile Include="Model\GroupMemberAssignmentService.Partial.cs" />
-    <Compile Include="Model\GroupMemberScheduleTemplate.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
     <Compile Include="Model\CodeGenerated\StepProgramService.cs" />
     <Compile Include="Model\CodeGenerated\StepService.cs" />
@@ -1151,7 +1331,6 @@
     <Compile Include="Model\StreakTypeExclusion.cs" />
     <Compile Include="Model\SmsAction.cs" />
     <Compile Include="Model\SmsActionService.Partial.cs" />
-    <Compile Include="Model\GroupLocationHistoricalService.Partial.cs" />
     <Compile Include="Model\MotivatorService.cs" />
     <Compile Include="Model\NoteAttachment.cs" />
     <Compile Include="Model\PersonScheduleExclusionService.Partial.cs" />
@@ -1275,17 +1454,15 @@
     <Compile Include="Utility\EntityCoding\Reference.cs" />
     <Compile Include="Utility\EntityCoding\WorkflowTypeExporter.cs" />
     <Compile Include="Utility\EnumOrderAttribute.cs" />
-    <Compile Include="Utility\ExtensionMethods\DictionaryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DictionaryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DictionaryFieldExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EnumUtilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ScheduleExtensions.cs" />
     <Compile Include="Mobile\MobileHelper.cs" />
     <Compile Include="Utility\JsonInterfaceContractResolver.cs" />
     <Compile Include="Utility\DynamicPropertyMapContractResolver.cs" />
-    <Compile Include="Utility\RockObsolete.cs" />
     <Compile Include="SystemGuid\SystemSetting.cs" />
     <Compile Include="SystemKey\GroupTypeAttributeKey.cs" />
-    <Compile Include="Utility\RockColor.cs" />
     <Compile Include="Utility\Scripturize.cs" />
     <Compile Include="Utility\ExtensionMethods\StringRockExtensions.cs" />
     <Compile Include="Utility\WebRequestHelper.cs" />
@@ -1667,23 +1844,23 @@
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
-    <Compile Include="Model\AnalyticsDimAttendanceLocation.cs" />
-    <Compile Include="Model\AnalyticsDimCampus.cs" />
-    <Compile Include="Model\AnalyticsSourceCampus.cs" />
-    <Compile Include="Model\AnalyticsDimFinancialAccount.cs" />
-    <Compile Include="Model\AnalyticsDimFinancialBatch.cs" />
-    <Compile Include="Model\AnalyticsDimFamilyHistorical.cs" />
-    <Compile Include="Model\AnalyticsDimFamilyCurrent.cs" />
-    <Compile Include="Model\AnalyticsDimFamilyHeadOfHousehold.cs" />
-    <Compile Include="Model\AnalyticsDimPersonHistorical.cs" />
-    <Compile Include="Model\AnalyticsDimPersonCurrent.cs" />
-    <Compile Include="Model\AnalyticsSourceDate.cs" />
-    <Compile Include="Model\AnalyticsFactAttendance.cs" />
-    <Compile Include="Model\AnalyticsSourceAttendance.cs" />
-    <Compile Include="Model\AnalyticsSourceFamilyHistorical.cs" />
-    <Compile Include="Model\AnalyticsSourcePersonHistorical.cs" />
-    <Compile Include="Model\AnalyticsFactFinancialTransaction.cs" />
-    <Compile Include="Model\AnalyticsSourceFinancialTransaction.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimAttendanceLocation\AnalyticsDimAttendanceLocation.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimCampus\AnalyticsDimCampus.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceCampus\AnalyticsSourceCampus.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFinancialAccount\AnalyticsDimFinancialAccount.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFinancialBatch\AnalyticsDimFinancialBatch.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFamilyHistorical\AnalyticsDimFamilyHistorical.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFamilyCurrent\AnalyticsDimFamilyCurrent.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimFamilyHeadOfHousehold\AnalyticsDimFamilyHeadOfHousehold.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimPersonHistorical\AnalyticsDimPersonHistorical.cs" />
+    <Compile Include="Model\Reporting\AnalyticsDimPersonCurrent\AnalyticsDimPersonCurrent.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceDate\AnalyticsSourceDate.cs" />
+    <Compile Include="Model\Reporting\AnalyticsFactAttendance\AnalyticsFactAttendance.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceAttendance\AnalyticsSourceAttendance.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceFamilyHistorical\AnalyticsSourceFamilyHistorical.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourcePersonHistorical\AnalyticsSourcePersonHistorical.cs" />
+    <Compile Include="Model\Reporting\AnalyticsFactFinancialTransaction\AnalyticsFactFinancialTransaction.cs" />
+    <Compile Include="Model\Reporting\AnalyticsSourceFinancialTransaction\AnalyticsSourceFinancialTransaction.cs" />
     <Compile Include="Model\AssetStorageProvider.cs" />
     <Compile Include="Model\AssetStorageProviderService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AssetStorageProviderService.cs" />
@@ -1739,18 +1916,13 @@
     <Compile Include="Model\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\FinancialAccountService.Partial.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
-    <Compile Include="Model\GroupLocationHistoricalSchedule.cs" />
-    <Compile Include="Model\GroupLocationHistorical.cs" />
-    <Compile Include="Model\GroupMemberHistorical.cs" />
-    <Compile Include="Model\GroupHistorical.cs" />
-    <Compile Include="Model\GroupSync.cs" />
-    <Compile Include="Model\GroupMemberHistoricalService.Partial.cs" />
+    <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
     <Compile Include="Model\InteractionComponentService.Partial.cs" />
     <Compile Include="Model\InteractionService.Partial.cs" />
     <Compile Include="Model\MetaFirstNameGenderLookup.cs" />
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
-    <Compile Include="Model\MetricService.Partial.cs" />
+    <Compile Include="Model\Reporting\Metric\MetricService.cs" />
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\Attribute.cs" />
@@ -1775,8 +1947,8 @@
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockType.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
-    <Compile Include="Model\Campus.cs" />
-    <Compile Include="Model\CampusService.partial.cs" />
+    <Compile Include="Model\Core\Campus\Campus.cs" />
+    <Compile Include="Model\Core\Campus\CampusService.cs" />
     <Compile Include="Model\Category.cs" />
     <Compile Include="Model\CategoryService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\AnalyticsDimFinancialAccountService.cs" />
@@ -2008,31 +2180,24 @@
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
-    <Compile Include="Model\Following.cs" />
-    <Compile Include="Model\FollowingEventNotification.cs" />
-    <Compile Include="Model\FollowingEventSubscription.cs" />
-    <Compile Include="Model\FollowingEventType.cs" />
-    <Compile Include="Model\FollowingService.partial.cs" />
-    <Compile Include="Model\FollowingSuggested.cs" />
-    <Compile Include="Model\FollowingSuggestionType.cs" />
-    <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\GroupLocation.cs" />
-    <Compile Include="Model\GroupLocationService.Partial.cs" />
-    <Compile Include="Model\GroupMember.cs" />
-    <Compile Include="Model\GroupMemberRequirement.cs" />
-    <Compile Include="Model\GroupMemberService.Partial.cs" />
-    <Compile Include="Model\GroupMemberWorkflowTrigger.cs" />
-    <Compile Include="Model\GroupMemberWorkflowTrigger.Partial.cs" />
-    <Compile Include="Model\GroupRequirement.cs" />
-    <Compile Include="Model\GroupRequirementType.cs" />
-    <Compile Include="Model\GroupScheduleExclusion.cs" />
-    <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupType.cs" />
+    <Compile Include="Model\Core\Following\Following.cs" />
+    <Compile Include="Model\Core\FollowingEventNotification\FollowingEventNotification.cs" />
+    <Compile Include="Model\Core\FollowingEventSubscription\FollowingEventSubscription.cs" />
+    <Compile Include="Model\Core\FollowingEventType\FollowingEventType.cs" />
+    <Compile Include="Model\Core\Following\FollowingService.cs" />
+    <Compile Include="Model\Core\FollowingSuggested\FollowingSuggested.cs" />
+    <Compile Include="Model\Core\FollowingSuggestionType\FollowingSuggestionType.cs" />
+    <Compile Include="Model\Group\Group\Group.cs" />
+    <Compile Include="Model\Group\GroupRequirement\GroupRequirement.cs" />
+    <Compile Include="Model\Group\GroupRequirementType\GroupRequirementType.cs" />
+    <Compile Include="Model\Group\GroupScheduleExclusion\GroupScheduleExclusion.cs" />
+    <Compile Include="Model\Group\Group\GroupService.cs" />
+    <Compile Include="Model\Group\GroupType\GroupType.cs" />
     <Compile Include="Model\GroupTypeLocationType.cs" />
-    <Compile Include="Model\GroupTypeRole.cs" />
-    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
+    <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.cs" />
+    <Compile Include="Model\Group\GroupTypeRole\GroupTypeRoleService.cs" />
     <Compile Include="Model\ContentChannelService.Partial.cs" />
-    <Compile Include="Model\GroupTypeService.Partial.cs" />
+    <Compile Include="Model\Group\GroupType\GroupTypeService.cs" />
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
     <Compile Include="Model\HtmlContent.cs" />
@@ -2048,17 +2213,17 @@
     <Compile Include="Model\LocationService.Partial.cs" />
     <Compile Include="Model\MergeTemplate.cs" />
     <Compile Include="Model\Metaphone.cs" />
-    <Compile Include="Model\Metric.cs" />
-    <Compile Include="Model\MetricCategory.cs" />
-    <Compile Include="Model\MetricPartition.cs" />
-    <Compile Include="Model\MetricValue.cs" />
-    <Compile Include="Model\MetricValuePartition.cs" />
+    <Compile Include="Model\Reporting\Metric\Metric.cs" />
+    <Compile Include="Model\Reporting\MetricCategory\MetricCategory.cs" />
+    <Compile Include="Model\Reporting\MetricPartition\MetricPartition.cs" />
+    <Compile Include="Model\Reporting\MetricValue\MetricValue.cs" />
+    <Compile Include="Model\Reporting\MetricValuePartition\MetricValuePartition.cs" />
     <Compile Include="Model\NcoaHistory.cs" />
     <Compile Include="Model\NcoaHistoryService.Partial.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
-    <Compile Include="Model\NoteType.cs" />
-    <Compile Include="Model\NoteTypeService.Partial.cs" />
+    <Compile Include="Model\Core\NoteType\NoteType.cs" />
+    <Compile Include="Model\Core\NoteType\NoteTypeService.cs" />
     <Compile Include="Model\NoteWatch.cs" />
     <Compile Include="Model\Notification.cs" />
     <Compile Include="Model\NotificationRecipient.cs" />
@@ -2242,16 +2407,14 @@
     <Compile Include="Model\SiteDomainService.Partial.cs" />
     <Compile Include="Model\SiteService.Partial.cs" />
     <Compile Include="Model\SystemEmail.cs" />
-    <Compile Include="Model\Tag.cs" />
     <Compile Include="Model\TaggedItem.cs" />
     <Compile Include="Model\TaggedItemService.Partial.cs" />
-    <Compile Include="Model\TagService.Partial.cs" />
-    <Compile Include="Model\UserLogin.cs" />
-    <Compile Include="Model\UserLoginService.Partial.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLogin.cs" />
+    <Compile Include="Model\CRM\UserLogin\UserLoginService.cs" />
     <Compile Include="Model\Workflow.cs" />
     <Compile Include="Model\WorkflowAction.cs" />
     <Compile Include="Model\WorkflowActionForm.cs" />
-    <Compile Include="Model\WorkflowActionFormAttribute.cs" />
+    <Compile Include="Model\Workflow\WorkflowActionFormAttribute\WorkflowActionFormAttribute.cs" />
     <Compile Include="Model\WorkflowActionType.cs" />
     <Compile Include="Model\WorkflowActivity.cs" />
     <Compile Include="Model\WorkflowActivityType.cs" />
@@ -2684,15 +2847,15 @@
     <Compile Include="Utility\EnumAsStringJsonConverter.cs" />
     <Compile Include="Utility\ExpressionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\AttributesExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\BooleanExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\BooleanExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ColorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ControlExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CurrencyExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DateTimeExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\DecimalExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DateTimeExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\DecimalExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\DefinedValueExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\EnumExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\EnumExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\ExceptionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\GridExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\JsonExtensions.cs" />
@@ -2704,13 +2867,13 @@
     <Compile Include="Utility\ExtensionMethods\ReportingExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\StringHtmlExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringHumanizerExtensions.cs" />
-    <Compile Include="Utility\ExtensionMethods\StringPluralizationExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringHumanizerExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\Obsolete\StringPluralizationExtensions.cs" />
     <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
     <Compile Include="Utility\IRockStartup.cs" />
     <Compile Include="Utility\NotNullJsonConverter.cs" />
     <Compile Include="Utility\Reflection.cs" />
-    <Compile Include="Utility\RockDateTime.cs" />
+    <Compile Include="Utility\RockDateTimeHelper.cs" />
     <Compile Include="Utility\RockJsonMediaTypeFormatter.cs" />
     <Compile Include="Utility\RockJsonTextReader.cs" />
     <Compile Include="Utility\RockJsonTextWriter.cs" />
@@ -3252,9 +3415,21 @@
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj">
       <Project>{cadd9206-2c6b-42e4-b20b-2dfc3eb4d6d4}</Project>
       <Name>Rock.DownhillCss</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
+      <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
+      <Name>Rock.Lava.DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
+      <Project>{afce6f84-bf3a-4182-a816-8fb47afc0305}</Project>
+      <Name>Rock.Lava.Fluid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>
@@ -3267,6 +3442,10 @@
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
       <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
       <Name>Rock.Version</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModel\Rock.ViewModel.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModel</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

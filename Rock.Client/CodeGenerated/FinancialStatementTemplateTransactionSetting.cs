@@ -35,10 +35,10 @@ namespace Rock.Client
         public int /* FinancialStatementTemplateTransactionSettingAccountSelectionOption*/ AccountSelectionOption { get; set; }
 
         /// <summary />
-        public List<int> CurrencyTypesForCashGiftIds { get; set; }
+        public List<Guid> CurrencyTypesForCashGiftGuids { get; set; }
 
         /// <summary />
-        public List<int> CurrencyTypesForNonCashIds { get; set; }
+        public List<Guid> CurrencyTypesForNonCashGuids { get; set; }
 
         /// <summary />
         public bool HideCorrectedTransactionOnSameData { get; set; }
@@ -50,7 +50,7 @@ namespace Rock.Client
         public List<int> SelectedAccountIds { get; set; }
 
         /// <summary />
-        public List<int> TransactionTypeIds { get; set; }
+        public List<Guid> TransactionTypeGuids { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source FinancialStatementTemplateTransactionSetting object
@@ -59,12 +59,12 @@ namespace Rock.Client
         public void CopyPropertiesFrom( FinancialStatementTemplateTransactionSetting source )
         {
             this.AccountSelectionOption = source.AccountSelectionOption;
-            this.CurrencyTypesForCashGiftIds = source.CurrencyTypesForCashGiftIds;
-            this.CurrencyTypesForNonCashIds = source.CurrencyTypesForNonCashIds;
+            this.CurrencyTypesForCashGiftGuids = source.CurrencyTypesForCashGiftGuids;
+            this.CurrencyTypesForNonCashGuids = source.CurrencyTypesForNonCashGuids;
             this.HideCorrectedTransactionOnSameData = source.HideCorrectedTransactionOnSameData;
             this.HideRefundedTransactions = source.HideRefundedTransactions;
             this.SelectedAccountIds = source.SelectedAccountIds;
-            this.TransactionTypeIds = source.TransactionTypeIds;
+            this.TransactionTypeGuids = source.TransactionTypeGuids;
 
         }
     }

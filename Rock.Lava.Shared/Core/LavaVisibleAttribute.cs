@@ -14,13 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 
 namespace Rock.Lava
 {
     /// <summary>
     /// Marks a property as being accessible to a Lava template during rendering.
     /// </summary>
-    public class LavaVisibleAttribute : System.Attribute
+    [AttributeUsage( AttributeTargets.Property )]
+    public class LavaVisibleAttribute : Attribute
     {
+        //
     }
 }

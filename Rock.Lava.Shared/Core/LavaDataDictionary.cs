@@ -26,14 +26,14 @@ namespace Rock.Lava
     /// </summary>
     /// <remarks>
     /// The Lava Engine is able to work with any Type that can provide a set of values accessible through the IDictionary<string, object> interface.
-    /// This class provides a basic implementation of that interface, with the addition of case-insensitivity and lazy-loading of values.
+    /// This class provides a basic implementation of that interface, with support for lazy-loaded values.
     /// </remarks>
     public class LavaDataDictionary : IDictionary<string, object>, IDictionary, ILavaDataDictionary
     {
         #region Fields
 
-        private readonly Func<LavaDataDictionary, string, object> _lambda;
-        private readonly Dictionary<string, object> _nestedDictionary = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+        private readonly Func<LavaDataDictionary, string, object> _valueGetterFunction;
+        private readonly Dictionary<string, object> _dictionary = new Dictionary<string, object>();
 
         #endregion
 
@@ -63,6 +63,10 @@ namespace Rock.Lava
 
         #region Constructors
 
+        /// <summary>
+        /// Create a new instance that stores the property names and values for an existing object.
+        /// </summary>
+        /// <param name="anonymousObject"></param>
         public LavaDataDictionary( object anonymousObject )
         {
             if ( anonymousObject == null )
@@ -76,6 +80,10 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Create a new instance from an existing dictionary.
+        /// </summary>
+        /// <param name="dictionary"></param>
         public LavaDataDictionary( IDictionary<string, object> dictionary )
         {
             foreach ( var keyValue in dictionary )
@@ -84,10 +92,14 @@ namespace Rock.Lava
             }
         }
 
-        public LavaDataDictionary( Func<LavaDataDictionary, string, object> lambda )
+        /// <summary>
+        /// Create a new instance and use the specified function to lazy-load values.
+        /// </summary>
+        /// <param name="valueGetter"></param>
+        public LavaDataDictionary( Func<LavaDataDictionary, string, object> valueGetter )
             : this()
         {
-            _lambda = lambda;
+            _valueGetterFunction = valueGetter;
         }
 
         public LavaDataDictionary()
@@ -104,7 +116,7 @@ namespace Rock.Lava
         {
             foreach ( string key in otherValues.Keys )
             {
-                _nestedDictionary[key] = otherValues[key];
+                _dictionary[key] = otherValues[key];
             }
         }
 
@@ -115,14 +127,14 @@ namespace Rock.Lava
         /// <returns></returns>
         public object GetValue( string key )
         {
-            if ( _nestedDictionary.ContainsKey( key ) )
+            if ( _dictionary.ContainsKey( key ) )
             {
-                return _nestedDictionary[key];
+                return _dictionary[key];
             }
 
-            if ( _lambda != null )
+            if ( _valueGetterFunction != null )
             {
-                return _lambda( this, key );
+                return _valueGetterFunction( this, key );
             }
 
             return null;
@@ -135,7 +147,7 @@ namespace Rock.Lava
         /// <param name="value"></param>
         public void SetValue( string key, object value )
         {
-            _nestedDictionary[key] = value;
+            _dictionary[key] = value;
         }
 
         /// <summary>
@@ -146,19 +158,19 @@ namespace Rock.Lava
         /// <returns></returns>
         public T Get<T>( string key )
         {
-            return (T)this[key];
+            return ( T ) this[key];
         }
 
         #region IDictionary<string, object>
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            return _nestedDictionary.GetEnumerator();
+            return _dictionary.GetEnumerator();
         }
 
         public void Remove( object key )
         {
-            ( (IDictionary)_nestedDictionary ).Remove( key );
+            ( ( IDictionary ) _dictionary ).Remove( key );
         }
 
         object IDictionary.this[object key]
@@ -167,54 +179,54 @@ namespace Rock.Lava
             {
                 if ( !( key is string ) )
                     throw new NotSupportedException();
-                return GetValue( (string)key );
+                return GetValue( ( string ) key );
             }
-            set { ( (IDictionary)_nestedDictionary )[key] = value; }
+            set { ( ( IDictionary ) _dictionary )[key] = value; }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _nestedDictionary.GetEnumerator();
+            return _dictionary.GetEnumerator();
         }
 
         public void Add( KeyValuePair<string, object> item )
         {
-            ( (IDictionary<string, object>)_nestedDictionary ).Add( item );
+            ( ( IDictionary<string, object> ) _dictionary ).Add( item );
         }
 
         public bool Contains( object key )
         {
-            return ( (IDictionary)_nestedDictionary ).Contains( key );
+            return ( ( IDictionary ) _dictionary ).Contains( key );
         }
 
         public void Add( object key, object value )
         {
-            ( (IDictionary)_nestedDictionary ).Add( key, value );
+            ( ( IDictionary ) _dictionary ).Add( key, value );
         }
 
         public void Clear()
         {
-            _nestedDictionary.Clear();
+            _dictionary.Clear();
         }
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            return ( (IDictionary)_nestedDictionary ).GetEnumerator();
+            return ( ( IDictionary ) _dictionary ).GetEnumerator();
         }
 
         public bool Contains( KeyValuePair<string, object> item )
         {
-            return ( (IDictionary<string, object>)_nestedDictionary ).Contains( item );
+            return ( ( IDictionary<string, object> ) _dictionary ).Contains( item );
         }
 
         public void CopyTo( KeyValuePair<string, object>[] array, int arrayIndex )
         {
-            ( (IDictionary<string, object>)_nestedDictionary ).CopyTo( array, arrayIndex );
+            ( ( IDictionary<string, object> ) _dictionary ).CopyTo( array, arrayIndex );
         }
 
         public bool Remove( KeyValuePair<string, object> item )
         {
-            return ( (IDictionary<string, object>)_nestedDictionary ).Remove( item );
+            return ( ( IDictionary<string, object> ) _dictionary ).Remove( item );
         }
 
         #endregion
@@ -223,57 +235,57 @@ namespace Rock.Lava
 
         public void CopyTo( Array array, int index )
         {
-            ( (IDictionary)_nestedDictionary ).CopyTo( array, index );
+            ( ( IDictionary ) _dictionary ).CopyTo( array, index );
         }
 
         public int Count
         {
-            get { return _nestedDictionary.Count; }
+            get { return _dictionary.Count; }
         }
 
         public object SyncRoot
         {
-            get { return ( (IDictionary)_nestedDictionary ).SyncRoot; }
+            get { return ( ( IDictionary ) _dictionary ).SyncRoot; }
         }
 
         public bool IsSynchronized
         {
-            get { return ( (IDictionary)_nestedDictionary ).IsSynchronized; }
+            get { return ( ( IDictionary ) _dictionary ).IsSynchronized; }
         }
 
         ICollection IDictionary.Values
         {
-            get { return ( (IDictionary)_nestedDictionary ).Values; }
+            get { return ( ( IDictionary ) _dictionary ).Values; }
         }
 
         public bool IsReadOnly
         {
-            get { return ( (IDictionary<string, object>)_nestedDictionary ).IsReadOnly; }
+            get { return ( ( IDictionary<string, object> ) _dictionary ).IsReadOnly; }
         }
 
         public bool IsFixedSize
         {
-            get { return ( (IDictionary)_nestedDictionary ).IsFixedSize; }
+            get { return ( ( IDictionary ) _dictionary ).IsFixedSize; }
         }
 
         public bool ContainsKey( string key )
         {
-            return _nestedDictionary.ContainsKey( key );
+            return _dictionary.ContainsKey( key );
         }
 
         public void Add( string key, object value )
         {
-            _nestedDictionary.Add( key, value );
+            _dictionary.Add( key, value );
         }
 
         public bool Remove( string key )
         {
-            return _nestedDictionary.Remove( key );
+            return _dictionary.Remove( key );
         }
 
         public bool TryGetValue( string key, out object value )
         {
-            return _nestedDictionary.TryGetValue( key, out value );
+            return _dictionary.TryGetValue( key, out value );
         }
 
         public object GetValue( object key )
@@ -298,33 +310,33 @@ namespace Rock.Lava
 
         public Dictionary<string, object> ToDictionary()
         {
-            return new Dictionary<string, object>( _nestedDictionary );
+            return new Dictionary<string, object>( _dictionary );
         }
 
         public object this[string key]
         {
             get { return GetValue( key ); }
-            set { _nestedDictionary[key] = value; }
+            set { _dictionary[key] = value; }
         }
 
         public ICollection<string> Keys
         {
-            get { return _nestedDictionary.Keys; }
+            get { return _dictionary.Keys; }
         }
 
         ICollection IDictionary.Keys
         {
-            get { return ( (IDictionary)_nestedDictionary ).Keys; }
+            get { return ( ( IDictionary ) _dictionary ).Keys; }
         }
 
         public ICollection<object> Values
         {
-            get { return _nestedDictionary.Values; }
+            get { return _dictionary.Values; }
         }
 
         public List<string> AvailableKeys
         {
-            get { return new List<string>( _nestedDictionary.Keys ); }
+            get { return new List<string>( _dictionary.Keys ); }
         }
 
         #endregion

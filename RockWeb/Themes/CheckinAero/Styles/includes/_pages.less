@@ -98,6 +98,7 @@
 }
 
 .checkin-footer .checkin-actions .btn-primary,
+.ability-level-select .actions .btn-checkin,
 .btn-footer {
   position: absolute;
   right: 15px;
@@ -108,6 +109,7 @@
   font-size: 24px;
   font-weight: @checkin-button-text-weight;
   background: @primary-button-background;
+  border-color: @primary-button-border;
   border-radius: 30px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
 
@@ -130,10 +132,10 @@
     bottom: 88px;
     left: 15px;
     z-index: 100;
+    min-height: 0 !important;
     padding: 14px 26px !important;
     font-size: 24px !important;
     font-weight: @checkin-button-text-weight !important;
-    min-height: 0 !important;
 
     @media (min-width: @screen-xs-min) {
       right: 100px;

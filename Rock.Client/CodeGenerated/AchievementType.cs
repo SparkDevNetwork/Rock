@@ -71,6 +71,9 @@ namespace Rock.Client
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary />
+        public string CustomSummaryLavaTemplate { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -80,7 +83,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsPublic { get; set; }
 
         /// <summary />
         public int? MaxAccomplishmentsAllowed { get; set; } = 1;
@@ -144,10 +153,13 @@ namespace Rock.Client
             this.CategoryId = source.CategoryId;
             this.ComponentConfigJson = source.ComponentConfigJson;
             this.ComponentEntityTypeId = source.ComponentEntityTypeId;
+            this.CustomSummaryLavaTemplate = source.CustomSummaryLavaTemplate;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.ImageBinaryFileId = source.ImageBinaryFileId;
             this.IsActive = source.IsActive;
+            this.IsPublic = source.IsPublic;
             this.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
@@ -194,6 +206,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<AchievementTypePrerequisite> Dependencies { get; set; }
+
+        /// <summary />
+        public BinaryFile ImageBinaryFile { get; set; }
 
         /// <summary />
         public ICollection<AchievementTypePrerequisite> Prerequisites { get; set; }

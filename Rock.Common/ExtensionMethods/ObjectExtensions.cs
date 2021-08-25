@@ -20,12 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
-    /// Object and Stream Extensions that don't require any nuget packages
+    /// Extension methods for <see cref="object"/>.
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class ObjectExtensions
     {
         #region Object Extensions
 
@@ -95,7 +95,7 @@ namespace Rock.Common
                         obj = null;
                     }
                 }
-                
+
                 propPath = propPath.Skip( 1 ).ToList();
             }
 
@@ -157,6 +157,27 @@ namespace Rock.Common
         }
 
         /// <summary>
+        /// Returns a string representation of the object or a default value.
+        /// </summary>
+        /// <param name="obj">an object</param>
+        /// <param name="defaultValue"></param>
+        /// <returns>A string representation of the object, or the default value if the representation is null or whitespace.</returns>
+        public static string ToStringOrDefault( this object obj, string defaultValue )
+        {
+            if ( obj != null )
+            {
+                var stringValue = obj.ToString();
+
+                if ( !string.IsNullOrWhiteSpace( stringValue ) )
+                {
+                    return stringValue;
+                }
+            }
+
+            return defaultValue;
+        }
+
+        /// <summary>
         /// Safely attempt to convert any object to an integer value, or return a default value if unsuccessful.
         /// </summary>
         /// <param name="obj">an object</param>
@@ -190,67 +211,7 @@ namespace Rock.Common
             var property = instance.GetType().GetProperty( propertyName );
             return ( T ) property.GetCustomAttributes( attrType, false ).First();
         }
+
         #endregion
-
-        #region Stream extension methods
-
-        /// <summary>
-        /// Reads entire stream and converts to byte array.
-        /// </summary>
-        /// <param name="stream">The stream.</param>
-        /// <returns></returns>
-        public static byte[] ReadBytesToEnd( this System.IO.Stream stream )
-        {
-            long originalPosition = 0;
-
-            if ( stream.CanSeek )
-            {
-                originalPosition = stream.Position;
-                stream.Position = 0;
-            }
-
-            try
-            {
-                byte[] readBuffer = new byte[4096];
-
-                int totalBytesRead = 0;
-                int bytesRead;
-
-                while ( ( bytesRead = stream.Read( readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead ) ) > 0 )
-                {
-                    totalBytesRead += bytesRead;
-
-                    if ( totalBytesRead == readBuffer.Length )
-                    {
-                        int nextByte = stream.ReadByte();
-                        if ( nextByte != -1 )
-                        {
-                            byte[] temp = new byte[readBuffer.Length * 2];
-                            Buffer.BlockCopy( readBuffer, 0, temp, 0, readBuffer.Length );
-                            Buffer.SetByte( temp, totalBytesRead, ( byte ) nextByte );
-                            readBuffer = temp;
-                            totalBytesRead++;
-                        }
-                    }
-                }
-
-                byte[] buffer = readBuffer;
-                if ( readBuffer.Length != totalBytesRead )
-                {
-                    buffer = new byte[totalBytesRead];
-                    Buffer.BlockCopy( readBuffer, 0, buffer, 0, totalBytesRead );
-                }
-                return buffer;
-            }
-            finally
-            {
-                if ( stream.CanSeek )
-                {
-                    stream.Position = originalPosition;
-                }
-            }
-        }
-
-        #endregion Stream extension methods
     }
 }

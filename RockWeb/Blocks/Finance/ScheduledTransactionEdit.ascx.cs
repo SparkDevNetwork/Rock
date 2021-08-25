@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -832,14 +833,15 @@ achieve our mission.  We are so grateful for your commitment.
                     .Select( a => new SavedAccountViewModel
                     {
                         Id = a.Id,
-                        Name = "Use " + a.Name + " (" + a.FinancialPaymentDetail.AccountNumberMasked + ")",
+                        SavedAccountName = a.Name,
+                        FinancialPaymentDetail = a.FinancialPaymentDetail,
                         GatewayPersonIdentifier = a.GatewayPersonIdentifier,
                         ReferenceNumber = a.ReferenceNumber,
                         TransactionCode = a.TransactionCode,
                         IsCard = isCard
                     } )
                     .ToList()
-                    .OrderBy( a => a.Name )
+                    .OrderBy( a => a.SavedAccountName )
                     .ToList();
 
                 rblSavedAccounts.DataSource = savedAccountViewModels;
@@ -1546,7 +1548,7 @@ achieve our mission.  We are so grateful for your commitment.
                     $(this).parents('div.input-group').removeClass('has-error');
                 }}
             }});
-            $('.total-amount').html(symbol + totalAmt.toFixed(decimalPlaces));
+            $('.total-amount').html(symbol + totalAmt.toLocaleString(undefined, {{ minimumFractionDigits: decimalPlaces, maximumFractionDigits: decimalPlaces }}));
             return false;
         }});
 
@@ -1702,9 +1704,30 @@ achieve our mission.  We are so grateful for your commitment.
             public int Id { get; set; }
 
             /// <summary>
-            /// Name
+            /// Gets the display name.
             /// </summary>
-            public string Name { get; set; }
+            /// <value>
+            /// The display name.
+            /// </value>
+            public string DisplayName
+            {
+                get
+                {
+                    if ( FinancialPaymentDetail == null )
+                    {
+                        return null;
+                    }
+
+                    if ( FinancialPaymentDetail.ExpirationDate.IsNotNullOrWhiteSpace() )
+                    {
+                        return $"Use {SavedAccountName} ( {FinancialPaymentDetail.AccountNumberMasked} Expires {FinancialPaymentDetail.ExpirationDate})";
+                    }
+                    else
+                    {
+                        return $"Use {SavedAccountName} ( {FinancialPaymentDetail.AccountNumberMasked} )";
+                    }
+                }
+            }
 
             /// <summary>
             /// Reference Number
@@ -1717,6 +1740,14 @@ achieve our mission.  We are so grateful for your commitment.
             public string TransactionCode { get; set; }
 
             /// <summary>
+            /// Gets or sets the name of the saved account.
+            /// </summary>
+            /// <value>
+            /// The name of the saved account.
+            /// </value>
+            public string SavedAccountName { get; internal set; }
+
+            /// <summary>
             /// Gateway Person Identifier
             /// </summary>
             public string GatewayPersonIdentifier { get; set; }
@@ -1725,6 +1756,14 @@ achieve our mission.  We are so grateful for your commitment.
             /// Is this a card?
             /// </summary>
             public bool IsCard { get; set; }
+
+            /// <summary>
+            /// Gets or sets the financial payment detail.
+            /// </summary>
+            /// <value>
+            /// The financial payment detail.
+            /// </value>
+            public FinancialPaymentDetail FinancialPaymentDetail { get; internal set; }
         }
 
         #endregion

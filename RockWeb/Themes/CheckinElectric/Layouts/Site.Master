@@ -8,6 +8,8 @@
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.3/dist/confetti.browser.min.js"></script>
+
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
@@ -33,6 +35,16 @@
             volume: 0.8
         });
 
+        var confettiSound = new Howl({
+            src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/confetti_gun.mp3") %>' ],
+                volume: 1
+            } );
+
+        var celebrateSound = new Howl( {
+            src: [ '<%= ResolveRockUrl("~~/Assets/Sounds/fanfare_trumpets.mp3") %>' ],
+            volume: 0.8
+        });
+
         // Use add_load to fire with page load and postbacks
         Sys.Application.add_load(function() {
             // add quick fade-in effect to the form element to persist bg.
@@ -54,6 +66,26 @@
                     tapSound.play();
                 }
             });
+
+            if ($('.checkin-celebrations').length) {
+                setTimeout(
+                    function () {
+                        celebrateSound.play();
+                        confetti({
+                            origin: { y: -0.2 },
+                            angle: -90,
+                            spread: 150,
+                            startVelocity: 30,
+                            particleCount: 200,
+                            decay: 0.95,
+                            colors: [ '#f24730', '#6abfd3', '#ffc639', '#ff9239', '#fc83a3', '#5395e5' ]
+                        });
+                    }, 500);
+                setTimeout(
+                    function () {
+                        confettiSound.play();
+                    }, 800);
+            }
         }
     </script>
 </body>

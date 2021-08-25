@@ -22,7 +22,7 @@
 
                 <Rock:CodeEditor ID="ceTabletLayout" runat="server" Label="Tablet Layout XAML" EditorMode="Xml" />
 
-                <div class="actions margin-t-md">
+                <div class="actions">
                     <asp:LinkButton ID="lbSave" runat="server" CssClass="btn btn-primary" Text="Save" OnClick="lbSave_Click" />
                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" />
                 </div>

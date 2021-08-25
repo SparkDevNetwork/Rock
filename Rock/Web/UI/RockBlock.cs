@@ -566,24 +566,9 @@ namespace Rock.Web.UI
         {
             try
             {
-                if ( this.PageParameter( "ShowDebugTimings" ).AsBoolean() )
+                if ( PageParameter( "ShowDebugTimings" ).AsBoolean() )
                 {
-                    TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                    var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
-                    if ( lblShowDebugTimings != null )
-                    {
-                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
-                        if ( previousPointInTimeMS.HasValue )
-                        {
-                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
-                        }
-
-                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>({2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache?.BlockType );
-
-                        lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
-                    }
+                    RockPage.ReportOnLoadDebugTiming( BlockName, BlockCache?.BlockType?.ToString() );
                 }
             }
             catch
@@ -1412,6 +1397,7 @@ namespace Rock.Web.UI
                 {
                     // if this is an IsSystem block, don't render it as an anchor (they shouldn't be able to delete ti)
                     aDeleteBlock = new HtmlGenericControl( "div" );
+                    aDeleteBlock.Attributes.Add( "title", "System blocks cannot be deleted" );
                     aDeleteBlock.Attributes.Add( "class", "delete block-delete disabled js-disabled" );
                     configControls.Add( aDeleteBlock );
                 }

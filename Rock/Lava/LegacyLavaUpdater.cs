@@ -122,7 +122,7 @@ namespace Rock.Lava
         /// </summary>
         public void OutputToText()
         {
-            System.IO.File.WriteAllLines( $"C:\\temp\\LegacyLavaUpdater_UpdateSQL_{DateTime.Now.ToString("yyyyMMdd-HHmmss")}.txt", SQLUpdateScripts );
+            System.IO.File.WriteAllLines( $"C:\\temp\\LegacyLavaUpdater_UpdateSQL_{RockDateTime.Now.ToString("yyyyMMdd-HHmmss")}.txt", SQLUpdateScripts );
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Rock.Lava
         /// <param name="fileContnets">The file contents.</param>
         public void OutputToText(string fileName, string fileContnets)
         {
-            System.IO.File.WriteAllText( $"C:\\temp\\LegacyLavaUpdater_{fileName}_{DateTime.Now.ToString( "yyyyMMdd-HHmmss" )}.txt", fileContnets );
+            System.IO.File.WriteAllText( $"C:\\temp\\LegacyLavaUpdater_{fileName}_{RockDateTime.Now.ToString( "yyyyMMdd-HHmmss" )}.txt", fileContnets );
         }
 
         /// <summary>

@@ -87,6 +87,12 @@ namespace Rock.Client
         public bool PersonEntryCampusIsVisible { get; set; } = true;
 
         /// <summary />
+        public int? PersonEntryCampusStatusValueId { get; set; }
+
+        /// <summary />
+        public int? PersonEntryCampusTypeValueId { get; set; }
+
+        /// <summary />
         public int? PersonEntryConnectionStatusValueId { get; set; }
 
         /// <summary />
@@ -182,6 +188,8 @@ namespace Rock.Client
             this.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             this.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
             this.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            this.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
+            this.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             this.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             this.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             this.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;
@@ -214,6 +222,12 @@ namespace Rock.Client
     {
         /// <summary />
         public ICollection<WorkflowActionFormAttribute> FormAttributes { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntryCampusStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue PersonEntryCampusTypeValue { get; set; }
 
         /// <summary />
         public DefinedValue PersonEntryConnectionStatusValue { get; set; }

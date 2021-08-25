@@ -903,7 +903,7 @@ namespace RockWeb.Blocks.Cms
             cbEnableMobileRedirect.Checked = site.EnableMobileRedirect;
             ppMobilePage.SetValue( site.MobilePage );
             tbExternalURL.Text = site.ExternalUrl;
-            tbAllowedFrameDomains.Text = site.AllowedFrameDomains.Replace( " ", Environment.NewLine );
+            tbAllowedFrameDomains.Text = site.AllowedFrameDomains?.Replace( " ", Environment.NewLine );
             cbRedirectTablets.Checked = site.RedirectTablets;
             cbEnablePageViews.Checked = site.EnablePageViews;
 

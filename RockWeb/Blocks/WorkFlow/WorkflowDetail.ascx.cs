@@ -614,18 +614,21 @@ namespace RockWeb.Blocks.WorkFlow
                 if (activityType != null)
                 {
                     var activity = WorkflowActivity.Activate( activityType, Workflow );
-                    activity.Guid = Guid.NewGuid();
-
-                    foreach( var action in activity.Actions)
+                    if ( activity != null )
                     {
-                        action.Guid = Guid.NewGuid();
+                        activity.Guid = Guid.NewGuid();
+
+                        foreach ( var action in activity.Actions )
+                        {
+                            action.Guid = Guid.NewGuid();
+                        }
+
+                        Workflow.AddLogEntry( string.Format( "Manually Activated new '{0}' activity", activityType.ToString() ) );
+
+                        ExpandedActivities.Add( activity.Guid );
+
+                        BuildControls( true, activity.Guid );
                     }
-
-                    Workflow.AddLogEntry( string.Format( "Manually Activated new '{0}' activity", activityType.ToString() ) );
-
-                    ExpandedActivities.Add( activity.Guid ); 
-
-                    BuildControls( true, activity.Guid );
                 }
             }
 
@@ -695,6 +698,11 @@ namespace RockWeb.Blocks.WorkFlow
             }
             hlType.Text = Workflow.WorkflowType.Name;
             hlblWorkflowId.Text = Workflow.WorkflowId;
+
+            string quickReturnLava = "{{ Workflow.Name | AddQuickReturn:'Workflows', 70 }}";
+            var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            quickReturnMergeFields.Add( "Workflow", Workflow );
+            quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
 
             ShowReadonlyDetails();
         }

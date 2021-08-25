@@ -60,7 +60,7 @@
                         <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
                         <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >
                             <Rock:NumberRangeEditor ID="nreAmount" runat="server" CssClass="input-width-sm" NumberType="Currency" Label="Total Amount" />
-                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnSelectedIndexChanged="dvpDataView_SelectedIndexChanged" EnhanceForLongLists="true" />
+                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Limit by Data View" AutoPostBack="true" OnValueChanged="dvpDataView_ValueChanged" EnhanceForLongLists="true" />
                             <Rock:RockControlWrapper ID="rcwAccounts" runat="server" Label="Available Accounts">
                             <div class="row">
                                 <div class="col-sm-5">
@@ -97,8 +97,8 @@
                                 </div>
                             </div>
                             <div class="col-sm-4">
-                                <div class="actions text-right">
-                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                <div class="panel-actions text-right">
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>

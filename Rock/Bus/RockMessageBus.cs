@@ -15,8 +15,14 @@
 // </copyright>
 //
 
+using System;
+using System.Configuration;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MassTransit;
 using Rock.Bus.Consumer;
+using Rock.Bus.Faults;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Bus.Statistics;
@@ -24,11 +30,6 @@ using Rock.Bus.Transport;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using System;
-using System.Configuration;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Rock.Bus
 {
@@ -41,6 +42,11 @@ namespace Rock.Bus
         /// The stat observer
         /// </summary>
         private static StatObserver _statObserver = new StatObserver();
+
+        /// <summary>
+        /// The receive fault observer
+        /// </summary>
+        private static ReceiveFaultObserver _receiveFaultObserver = new ReceiveFaultObserver();
 
         /// <summary>
         /// Is the bus started?
@@ -265,6 +271,7 @@ namespace Rock.Bus
 
             _bus = _transportComponent.GetBusControl( RockConsumer.ConfigureRockConsumers );
             _bus.ConnectConsumeObserver( _statObserver );
+            _bus.ConnectReceiveObserver( _receiveFaultObserver );
 
             // Allow the bus to try to connect for some seconds at most
             var cancelToken = new CancellationTokenSource();

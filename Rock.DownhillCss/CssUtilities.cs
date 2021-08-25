@@ -581,6 +581,10 @@ Resets
     background-color: transparent;
 }
 
+^radiobutton {
+    background-color: transparent;
+}
+
 NavigationPage {
     -rock-status-bar-text: dark;
 }
@@ -1523,6 +1527,12 @@ formfield .required-indicator {
 ^grid.unordered-list ^grid.ordered-list,
 ^grid.unordered-list ^grid.unordered-list {
     margin-bottom: 0;
+}
+
+
+/* RadioButton */
+^radiobutton {
+  color: ?color-text;
 }
 ";
         #endregion

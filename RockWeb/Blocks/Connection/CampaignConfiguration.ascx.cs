@@ -267,7 +267,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionCampaignItem.Guid == Guid.Empty )
             {
-                lTitle.Text = ActionTitle.Add( "Campaign Connection Configuration" ).FormatAsHtmlTitle();
+                lTitle.Text = ActionTitle.Add( "Connection Campaign Configuration" ).FormatAsHtmlTitle();
             }
             else
             {

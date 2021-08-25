@@ -73,7 +73,7 @@ namespace Rock.StatementGenerator.Rest
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/FinancialGivingStatement/UploadGivingStatementDocument" )]
-        public void UploadGivingStatementDocument( [FromBody] FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData )
+        public FinancialStatementGeneratorUploadGivingStatementResult UploadGivingStatementDocument( [FromBody] FinancialStatementGeneratorUploadGivingStatementData uploadGivingStatementData )
         {
             var rockContext = new RockContext();
 
@@ -128,65 +128,77 @@ namespace Rock.StatementGenerator.Rest
 
             var documentName = saveOptions.DocumentName;
 
-            var groupId = financialStatementGeneratorRecipient.GroupId;
-            var givingFamilyMembersQuery = new GroupMemberService( rockContext ).GetByGroupId( groupId, false );
-
             List<int> documentPersonIds;
-            if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdults )
+            if ( financialStatementGeneratorRecipient.PersonId.HasValue )
             {
-                documentPersonIds = givingFamilyMembersQuery.Where( a => a.Person.AgeClassification == AgeClassification.Adult ).Select( a => a.PersonId ).ToList();
-            }
-            else if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembers )
-            {
-                documentPersonIds = givingFamilyMembersQuery.Select( a => a.PersonId ).ToList();
+                // If we are saving for a person that gives an individual, just give document to that person (ignore the FinancialStatementIndividualSaveOptionsSaveFor option)
+                // only upload the document to the individual person
+                documentPersonIds = new List<int>();
+                documentPersonIds.Add( financialStatementGeneratorRecipient.PersonId.Value );
             }
             else
             {
-                var headOfHouseHoldPersonId = givingFamilyMembersQuery.GetHeadOfHousehold( s => ( int? ) s.PersonId );
-                documentPersonIds = new List<int>();
-                if ( headOfHouseHoldPersonId.HasValue )
+                var groupId = financialStatementGeneratorRecipient.GroupId;
+                var givingFamilyMembersQuery = new GroupMemberService( rockContext ).GetByGroupId( groupId, false );
+
+                // limit to family members within the same giving group
+                givingFamilyMembersQuery = givingFamilyMembersQuery.Where( a => a.Person.GivingGroupId.HasValue && a.Person.GivingGroupId == groupId );
+
+                if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveAdultsInGivingGroup )
                 {
-                    documentPersonIds.Add( headOfHouseHoldPersonId.Value );
+                    documentPersonIds = givingFamilyMembersQuery
+                        .Where( a => a.Person.AgeClassification == AgeClassification.Adult ).Select( a => a.PersonId ).ToList();
+                }
+                else if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.AllActiveFamilyMembersInGivingGroup )
+                {
+                    documentPersonIds = givingFamilyMembersQuery
+                        .Select( a => a.PersonId ).ToList();
+                }
+                else if ( saveOptions.DocumentSaveFor == FinancialStatementGeneratorOptions.FinancialStatementIndividualSaveOptions.FinancialStatementIndividualSaveOptionsSaveFor.PrimaryGiver )
+                {
+                    // Set document for PrimaryGiver (aka Head of Household).
+                    // Note that HeadOfHouseHold would calculated based on family members within the same giving group
+                    var headOfHouseHoldPersonId = givingFamilyMembersQuery.GetHeadOfHousehold( s => ( int? ) s.PersonId );
+                    documentPersonIds = new List<int>();
+                    if ( headOfHouseHoldPersonId.HasValue )
+                    {
+                        documentPersonIds.Add( headOfHouseHoldPersonId.Value );
+                    }
+                }
+                else
+                {
+                    // shouldn't happen
+                    documentPersonIds = new List<int>();
                 }
             }
 
-            var documentService = new DocumentService( rockContext );
             var today = RockDateTime.Today;
             var tomorrow = today.AddDays( 1 );
 
             foreach ( var documentPersonId in documentPersonIds )
             {
                 // Create the document, linking the entity and binary file.
-                Document document = null;
                 if ( saveOptions.OverwriteDocumentsOfThisTypeCreatedOnSameDate == true )
                 {
-                    // See if there is an existing one.
-                    // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
-                    document = documentService.Queryable().Where(
-                        a => a.DocumentTypeId == documentTypeId.Value
-                        && a.EntityId == documentPersonId
-                        && a.CreatedDateTime.HasValue
-                        && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
-                        .Include( a => a.BinaryFile )
-                        .FirstOrDefault();
-                }
-
-                if ( document == null )
-                {
-                    document = new Document
+                    using ( var deleteDocContext = new RockContext() )
                     {
-                        DocumentTypeId = documentTypeId.Value,
-                        EntityId = documentPersonId,
-                    };
+                        var deleteDocumentService = new DocumentService( deleteDocContext );
 
-                    documentService.Add( document );
-                }
-                else
-                {
-                    // we'll overwrite with a new binary file, so mark the old one as temporary so it'll get cleared up
-                    if ( document.BinaryFile != null )
-                    {
-                        document.BinaryFile.IsTemporary = true;
+                        // See if there is an existing one.
+                        // Note include BinaryFile in the Get since we'll have to mark it temporary if it exists.
+                        var existingDocument = deleteDocumentService.Queryable().Where(
+                            a => a.DocumentTypeId == documentTypeId.Value
+                            && a.EntityId == documentPersonId
+                            && a.CreatedDateTime.HasValue
+                            && a.CreatedDateTime >= today && a.CreatedDateTime < tomorrow )
+                            .Include( a => a.BinaryFile ).FirstOrDefault();
+
+                        // NOTE: Delete vs update since we normally don't change the contents of documents/binary files once they've been created
+                        if ( existingDocument != null )
+                        {
+                            deleteDocumentService.Delete( existingDocument );
+                            deleteDocContext.SaveChanges();
+                        }
                     }
                 }
 
@@ -202,14 +214,30 @@ namespace Rock.StatementGenerator.Rest
                 };
 
                 new BinaryFileService( rockContext ).Add( binaryFile );
+                rockContext.SaveChanges();
 
-                document.PurposeKey = saveOptions.DocumentPurposeKey;
-                document.Name = saveOptions.DocumentName;
-                document.Description = saveOptions.DocumentDescription;
-                document.BinaryFile = binaryFile;
+                Document document = new Document
+                {
+                    DocumentTypeId = documentTypeId.Value,
+                    EntityId = documentPersonId,
+                    PurposeKey = saveOptions.DocumentPurposeKey,
+                    Name = saveOptions.DocumentName,
+                    Description = saveOptions.DocumentDescription
+                };
+
+                document.SetBinaryFile( binaryFile.Id, rockContext );
+
+                var documentService = new DocumentService( rockContext );
+
+                documentService.Add( document );
             }
 
             rockContext.SaveChanges();
+
+            return new FinancialStatementGeneratorUploadGivingStatementResult
+            {
+                NumberOfIndividuals = documentPersonIds.Count
+            };
         }
 
         /// <summary>

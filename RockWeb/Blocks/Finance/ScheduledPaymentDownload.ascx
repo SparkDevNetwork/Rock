@@ -20,7 +20,6 @@
                 <div class="actions">
                     <Rock:BootstrapButton ID="btnDownload" runat="server" CssClass="btn btn-primary" Text="Download Transactions" DataLoadingText="Downloading..." CausesValidation="true" OnClick="btnDownload_Click" />
                 </div>
-                <br />
 
                 <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Heading="Transaction Download Summary:" Visible="false" />
                 <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />

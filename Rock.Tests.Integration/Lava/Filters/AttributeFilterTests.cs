@@ -70,6 +70,46 @@ namespace Rock.Tests.Integration.Lava
             TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
         }
 
+        /// <summary>
+        /// Using the Attribute filter output in a conditional operator returns the expected result.
+        /// </summary>
+        [TestMethod]
+        public void AttributeFilter_RawValueBooleanComparison_ConvertsRawValueToBoolean()
+        {
+            // Set Attribute [BaptizedHere] = True for Ted Decker. 
+            var personDecker = TestHelper.GetTestPersonTedDecker();
+
+            var tedDeckerGuid = TestGuids.TestPeople.TedDecker.AsGuid();
+
+            var rockContext = new RockContext();
+
+            var personService = new PersonService( rockContext );
+
+            var tedDeckerPerson = personService.Queryable().First( x => x.Guid == tedDeckerGuid );
+
+            tedDeckerPerson.LoadAttributes();
+
+            tedDeckerPerson.SetAttributeValue( "BaptizedHere", "True" );
+
+            rockContext.SaveChanges();
+
+            var values = new LavaDataDictionary { { "Person", tedDeckerPerson } };
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            // Test a boolean comparison for the Raw Value of the [BaptizedHere] Attribute.
+            var inputTemplate = @"
+{%- assign isBaptizedHere = Person | Attribute:'BaptizedHere','RawValue' | AsBoolean -%}
+{%- if isBaptizedHere != '' and isBaptizedHere == true -%}
+True
+{%- endif -%}
+";
+
+            var expectedOutput = @"True";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, inputTemplate, options );
+        }
+
         #endregion
     }
 }

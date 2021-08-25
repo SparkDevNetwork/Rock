@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using Rock.Common;
-
 namespace Rock.Lava.Filters
 {
     public static partial class TemplateFilters
@@ -29,7 +27,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson( Newtonsoft.Json.Formatting.Indented );
+            return input.ToJson( indentOutput: true );
         }
 
         /// <summary>

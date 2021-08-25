@@ -926,7 +926,7 @@ var dnutChart = new Chart(dnutCtx, {{
                             // only set the RSVP and Date if the value is changing 
                             if ( attendance.RSVP != Rock.Model.RSVP.Yes )
                             {
-                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVPDateTime = RockDateTime.Now;
                                 attendance.RSVP = Rock.Model.RSVP.Yes;
                             }
                             attendance.Note = string.Empty;
@@ -937,7 +937,7 @@ var dnutChart = new Chart(dnutCtx, {{
                             // only set the RSVP and Date if the value is changing 
                             if ( attendance.RSVP != Rock.Model.RSVP.No )
                             {
-                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVPDateTime = RockDateTime.Now;
                                 attendance.RSVP = Rock.Model.RSVP.No;
                             }
 

@@ -16,10 +16,7 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -27,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Writes any entity chnages that are configured to be tracked
+    /// Processes a <seealso cref="WorkflowTrigger"/>
     /// </summary>
     public sealed class ProcessWorkflowTrigger : BusStartedTask<ProcessWorkflowTrigger.Message>
     {

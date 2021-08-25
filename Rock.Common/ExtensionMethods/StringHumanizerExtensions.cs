@@ -16,12 +16,12 @@
 //
 using Humanizer;
 
-namespace Rock.Common
+namespace Rock
 {
     /// <summary>
     /// Handy string extensions that require Humanizer
     /// </summary>
-    public static partial class ExtensionMethods
+    public static class StringHumanizerExtensions
     {
         #region String/Humanizer Extensions
 

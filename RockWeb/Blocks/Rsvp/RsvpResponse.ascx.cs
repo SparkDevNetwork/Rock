@@ -514,7 +514,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -627,7 +627,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -676,7 +676,7 @@ $(document).ready(function () {
                 occurrence.Attendees.Add( attendance );
             }
             attendance.RSVP = rsvpStatus;
-            attendance.RSVPDateTime = DateTime.Now;
+            attendance.RSVPDateTime = RockDateTime.Now;
             if ( rsvpStatus == Rock.Model.RSVP.No )
             {
                 if ( declineReasonId != 0 )
@@ -729,7 +729,7 @@ $(document).ready(function () {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -821,7 +821,7 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                    if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                     {
                         // This event has expired.
                         isExpired = true;
@@ -879,7 +879,7 @@ $(document).ready(function () {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                    if ( occurrence.OccurrenceDate.EndOfDay() < RockDateTime.Now )
                     {
                         continue;
                     }

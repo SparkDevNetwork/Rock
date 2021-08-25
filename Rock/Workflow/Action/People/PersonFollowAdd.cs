@@ -37,12 +37,50 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Person Follow Add" )]
 
-    [WorkflowAttribute( "Person", "Workflow attribute that contains the person who is following the entity.", true, "", "", 0, null,
-        new string[] { "Rock.Field.Types.PersonFieldType" } )]
-    [EntityTypeField( "Entity Type", "Workflow attribute that contains the entity type to follow.", true, "", 1, "EntityType" )]
-    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>", true, "", "", 2, "Entity" )]
+    #region Block Attributes
+
+    [WorkflowAttribute(
+        "Person",
+        Description = "Workflow attribute that contains the person who is following the entity.",
+        IsRequired = true,
+        DefaultValue = "",
+        Category = "",
+        Order = 0,
+        Key = AttributeKey.Person,
+        FieldTypeClassNames = new string[] { "Rock.Field.Types.PersonFieldType" } )]
+
+    [EntityTypeField(
+        "Entity Type",
+        Description = "Workflow attribute that contains the entity type to follow.",
+        IsRequired = true,
+        DefaultValue = "",
+        Order = 1,
+        Key = AttributeKey.EntityType )]
+
+    [WorkflowTextOrAttribute( "Entity To Follow", "Attribute Value", "The Entity Id or Guid or an attribute that contains the entity to follow. <span class='tip tip-lava'></span>", true, "", "", 2, AttributeKey.Entity )]
+
+    [TextField(
+        "Purpose Key",
+        Description = "The custom purpose to identify the type of Following.  Leave blank if you are unsure of the desired behavior since some components (such as SendFollowingEvents) expect the PurposeKey to be blank.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 2,
+        Key = AttributeKey.PurposeKey )]
+
+    #endregion
     public class PersonFollowAdd : ActionComponent
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Person = "Person";
+            public const string EntityType = "EntityType";
+            public const string Entity = "Entity";
+            public const string PurposeKey = "PurposeKey";
+        }
+
+        #endregion Attribute Keys
         /// <summary>
         /// Executes the action.
         /// </summary>
@@ -55,9 +93,9 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            // get person
+            // Get the Person entity from Attribute.
             PersonAlias personAlias = null;
-            string personAttributeValue = GetAttributeValue( action, "Person" );
+            string personAttributeValue = GetAttributeValue( action, AttributeKey.Person );
             Guid? guidPersonAttribute = personAttributeValue.AsGuidOrNull();
             if ( guidPersonAttribute.HasValue )
             {
@@ -73,15 +111,16 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
+
             if ( personAlias == null )
             {
                 errorMessages.Add( string.Format( "Person could not be found for selected value ('{0}')!", guidPersonAttribute.ToString() ) );
                 return false;
             }
 
-            //get entity type
+            // Get the entity type from Attribute.
             EntityTypeCache entityType = null;
-            Guid? guidEntityType = GetAttributeValue( action, "EntityType" ).AsGuidOrNull();
+            Guid? guidEntityType = GetAttributeValue( action, AttributeKey.EntityType ).AsGuidOrNull();
             if ( guidEntityType.HasValue )
             {
                 entityType = EntityTypeCache.Get( guidEntityType.Value );
@@ -92,19 +131,25 @@ namespace Rock.Workflow.Action
                 }
             }
 
+            string purposeKey = GetAttributeValue( action, AttributeKey.PurposeKey );
+
             var followingService = new FollowingService( rockContext );
 
-            //get entity(ies)
+            // Get the entity or entities that should be in Following.
             List<IEntity> entitiesToFollow = GetEntities( entityType, rockContext, action );
             if ( entitiesToFollow != null && entitiesToFollow.Any() )
             {
                 foreach ( var entityToFollow in entitiesToFollow )
                 {
+                    // Query the FollowingService to find whether the requested Following already exists.
                     var following = followingService.Queryable()
                         .FirstOrDefault( f =>
                             f.EntityTypeId == entityType.Id &&
                             f.EntityId == entityToFollow.Id &&
-                            string.IsNullOrEmpty( f.PurposeKey ) &&
+
+                            // The result must have a null / empty PurposeKey in Following & null / empty PurposeKey text field
+                            // or have a Following PurposeKey that matches the value in the PurposeKey text field.
+                            ( ( string.IsNullOrEmpty( f.PurposeKey ) && string.IsNullOrEmpty( purposeKey ) ) || f.PurposeKey == purposeKey ) &&
                             f.PersonAlias.Person.Id == personAlias.PersonId );
 
                     if ( following == null )
@@ -113,6 +158,21 @@ namespace Rock.Workflow.Action
                         following.EntityTypeId = entityType.Id;
                         following.EntityId = entityToFollow.Id;
                         following.PersonAliasId = personAlias.Id;
+                        /*
+                            8/10/2021 - CWR
+                            If the Workflow creator wants to include a custom purpose text value for a Following add, they can add text to this "Purpose Key" TextField.
+                            Some components (such as SendFollowingEvents) expect the PurposeKey to be blank, so be aware.
+                            
+                            See here for the introduction of PurposeKey to Following:
+                            https://github.com/SparkDevNetwork/Rock/commit/f92f4502772f6a19edc945b5c021115ad11d48a9
+                        */
+
+                        // If the PurposeKey is not null or empty, add a PurposeKey to the Following.
+                        if ( !string.IsNullOrEmpty( purposeKey ) )
+                        {
+                            following.PurposeKey = purposeKey;
+                        }
+
                         followingService.Add( following );
                     }
                 }
@@ -127,7 +187,6 @@ namespace Rock.Workflow.Action
 
                 return false;
             }
-
         }
 
         /// <summary>
@@ -143,9 +202,9 @@ namespace Rock.Workflow.Action
 
             List<IEntity> entities = new List<IEntity>();
 
-            string entityValue = GetAttributeValue( action, "Entity" ).ResolveMergeFields( GetMergeFields( action ) );
+            string entityValue = GetAttributeValue( action, AttributeKey.Entity ).ResolveMergeFields( GetMergeFields( action ) );
 
-            // If an ID was specified, just use that as the entity id to follow
+            // If an ID was specified, just use that as the Entity ID to follow.
             int? intEntity = entityValue.AsIntegerOrNull();
             if ( intEntity.HasValue )
             {
@@ -155,15 +214,15 @@ namespace Rock.Workflow.Action
             Guid? guidEntity = entityValue.AsGuidOrNull();
             if ( guidEntity.HasValue )
             {
-                // If the value is a Guid, it could either be a guid of an attribute, or the entity's guid.
-                // Check for an attribute first.
+                // If the value is a Guid, it could either be a Guid of an Attribute or Entity.
+                // Check if it is a Guid for an Attribute first.
                 var attribute = AttributeCache.Get( guidEntity.Value, rockContext );
                 if ( attribute != null )
                 {
-                    // It was for an attribute, get the value
+                    // It was for an Attribute, so get the value.
                     string attributeValue = action.GetWorkflowAttributeValue( guidEntity.Value );
 
-                    // First check if that attribute's field type is an IEntityFieldType (like person or group)
+                    // First check if that Attribute's field type is an IEntityFieldType (like Person or Group).
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;
                     if ( entityFieldType != null )
                     {
@@ -173,23 +232,24 @@ namespace Rock.Workflow.Action
                             entities.Add( entity );
                         }
                     }
-                    else 
+                    else
                     {
-                        // not an entity attribute... maybe its a list of ints or guids
+                        // This Attribute is not a recognized Entity field.  Check to see if it is a list of Integers or Guids.
                         var values = attributeValue.SplitDelimitedValues();
-                        foreach( int intValue in values.AsIntegerList() )
+                        foreach ( int intValue in values.AsIntegerList() )
                         {
                             AddEntityById( entityTypeService, entityType.Id, intValue, entities );
                         }
-                        foreach( Guid guidValue in values.AsGuidList() )
-                        { 
+
+                        foreach ( Guid guidValue in values.AsGuidList() )
+                        {
                             AddEntityByGuid( entityTypeService, entityType.Id, guidValue, entities );
                         }
                     }
                 }
                 else
                 {
-                    // It was not for an attribute, so it must be the entity's guid
+                    // It was not the Guid for an Attribute, so it must be the Guid for an Entity.
                     AddEntityByGuid( entityTypeService, entityType.Id, guidEntity.Value, entities );
                 }
             }

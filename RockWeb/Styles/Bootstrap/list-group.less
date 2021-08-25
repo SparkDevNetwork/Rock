@@ -105,6 +105,21 @@ button.list-group-item {
 }
 
 
+// Flush list items
+//
+// Remove borders and border-radius to keep list group items edge-to-edge. Most
+// useful within other components (e.g., cards).
+
+.list-group-flush {
+  > .list-group-item {
+    border-width: 0 0 1px;
+
+    &:last-child {
+      border-bottom-width: 0;
+    }
+  }
+}
+
 // Contextual variants
 //
 // Add modifier classes to change text and background color on individual items.

@@ -76,6 +76,9 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class AbilityLevelSelect : CheckInBlockMultiPerson
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlockMultiPerson also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string FamilyPreviousPage = "FamilyPreviousPage";
@@ -84,7 +87,6 @@ namespace RockWeb.Blocks.CheckIn
             public const string NoOptionCaption = "NoOptionCaption";
             public const string SelectionNoOption = "SelectionNoOption";
             public const string MultiPersonLastPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonLastPage;
-
         }
 
         private string _personAbilityLevelGuid;
@@ -352,12 +354,23 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         person.Person.LoadAttributes();
                         _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
+                        person.StateParameters.Add( "AbilityLevel", _personAbilityLevelGuid );
 
-                        var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
-                        if ( abilityLevelDType != null )
+                        if ( CurrentCheckInState.CheckInType.AbilityLevelDetermination == AbilityLevelDeterminationOptions.DoNotAsk )
                         {
-                            rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                            rSelection.DataBind();
+                            if ( !ProcessSelection() )
+                            {
+                                NavigateToNextPage( true );
+                            }
+                        }
+                        else
+                        {
+                            var abilityLevelDType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE.AsGuid() );
+                            if ( abilityLevelDType != null )
+                            {
+                                rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                                rSelection.DataBind();
+                            }
                         }
                     }
                 }

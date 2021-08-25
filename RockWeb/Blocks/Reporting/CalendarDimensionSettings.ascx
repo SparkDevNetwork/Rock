@@ -22,13 +22,11 @@
                     </div>
                 </div>
 
+                <Rock:NotificationBox ID="nbGenerateSuccess" runat="server" NotificationBoxType="Success" Visible="true" Dismissable="true" />
+
                 <div class="actions">
                     <asp:LinkButton ID="btnGenerate" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Generate Dimension" CssClass="btn btn-primary" OnClick="btnGenerate_Click" />
                 </div>
-
-                <br />
-                <Rock:NotificationBox ID="nbGenerateSuccess" runat="server" NotificationBoxType="Success" Visible="true" Dismissable="true" />
-
             </div>
 
         </asp:Panel>
