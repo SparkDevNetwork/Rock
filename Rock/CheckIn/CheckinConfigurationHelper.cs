@@ -208,6 +208,27 @@ namespace Rock.CheckIn
             /// </summary>
             Closed,
         }
+
+        /// <summary>
+        /// If a group has more than one available location how should one be chosen. Choosing an option other than "Ask" will auto select a location for the user.
+        /// </summary>
+        public enum LocationSelectionStrategy
+        {
+            /// <summary>
+            /// The Ask strategy will present a list of rooms to the user so they can select one. This is the default behavior.
+            /// </summary>
+            Ask = 0,
+
+            /// <summary>
+            /// The balance strategy will attempt to fill all locations with an equal number of persons up to the soft threshold
+            /// </summary>
+            Balance = 1,
+
+            /// <summary>
+            /// The Fill In Order strategy will fill in the locations in a group in their sort order. When the location's soft threshold is reached the next one is used untill it fills up.
+            /// </summary>
+            FillInOrder = 2
+        }
     }
 
     /// <summary>

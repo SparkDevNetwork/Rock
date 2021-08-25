@@ -3190,6 +3190,7 @@
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationsByLocationSelectionStrategy.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByPreviousCheckin.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
