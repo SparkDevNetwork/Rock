@@ -95,6 +95,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
     }
 }

@@ -23,6 +23,7 @@ namespace Rock.Model
     public partial class Step
     {
         #region Entity Properties
+
         /// <summary>
         /// Gets the start date key.
         /// </summary>
@@ -73,6 +74,7 @@ namespace Rock.Model
 
             private set { }
         }
+
         #endregion Entity Properties
 
         /// <summary>
@@ -85,6 +87,7 @@ namespace Rock.Model
         }
 
         #region Overrides
+
         /// <summary>
         /// Returns a string that represents the current object.
         /// </summary>

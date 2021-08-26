@@ -20,6 +20,8 @@ namespace Rock.Model
 {
     public partial class StepType
     {
+        private string _cardLavaTemplate;
+
         /// <summary>
         /// Gets or sets the lava template used to render custom card details.
         /// </summary>

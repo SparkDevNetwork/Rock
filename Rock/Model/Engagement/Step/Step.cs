@@ -184,6 +184,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate CompletedSourceDate { get; set; }
+
         #endregion Navigation Properties
 
         #region Entity Configuration
@@ -213,6 +214,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
     }
 }

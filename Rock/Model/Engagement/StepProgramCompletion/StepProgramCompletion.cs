@@ -85,6 +85,7 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public DateTime? EndDateTime { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -146,6 +147,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
     }
 }

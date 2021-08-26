@@ -35,36 +35,36 @@ namespace Rock.Model
     public partial class StepType : Model<StepType>, IOrdered, IHasActiveFlag, ICacheable
     {
         #region Constants
-        // StyleCop suggests this start with an upper-case letter, but since this is a private constant it falls under the 'private' and 'variable' rules.
+
         private const string DefaultCardLavaTemplate =
-            @"<div class=""card-top"">
-                <h3 class=""step-name"">{{ StepType.Name }}</h3>
-            </div>
-            <div class=""card-middle"">
-                {% if StepType.HighlightColor == '' or IsComplete == false %}
-                    <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
-                {% else %}
-                    <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
-                {% endif %}
-            </div>
-            <div class=""card-bottom"">
-                <p class=""step-status"">
-                    {% if LatestStepStatus %}
-                        <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
-                    {% endif %}
-                    {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
-                        <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
-                    {% endif %}
-                    {% if LatestStep and LatestStep.CompletedDateTime != '' %}
-                        <br />
-                        <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
-                    {% endif %}
-                </p>
-                {% if StepCount > 1 %}
-                    <span class=""badge"">{{ StepCount }}</span>
-                {% endif %}
-            </div>
-            ";
+@"<div class=""card-top"">
+    <h3 class=""step-name"">{{ StepType.Name }}</h3>
+</div>
+<div class=""card-middle"">
+    {% if StepType.HighlightColor == '' or IsComplete == false %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+    {% else %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+    {% endif %}
+</div>
+<div class=""card-bottom"">
+    <p class=""step-status"">
+        {% if LatestStepStatus %}
+            <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+        {% endif %}
+        {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
+            <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
+        {% endif %}
+        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+            <br />
+            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+        {% endif %}
+    </p>
+    {% if StepCount > 1 %}
+        <span class=""badge"">{{ StepCount }}</span>
+    {% endif %}
+</div>
+";
 
         #endregion Constants
 
@@ -142,8 +142,6 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string HighlightColor { get; set; }
-
-        private string _cardLavaTemplate;
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.MergeTemplate"/> associated with this step type. This template can represent things like
@@ -330,6 +328,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
     }
 }

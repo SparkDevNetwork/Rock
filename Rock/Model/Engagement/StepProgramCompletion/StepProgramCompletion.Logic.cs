@@ -52,6 +52,7 @@ namespace Rock.Model
 
             private set { }
         }
+
         #endregion Entity Properties
     }
 }

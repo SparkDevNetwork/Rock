@@ -28,22 +28,13 @@ namespace Rock.Model
         internal class SaveHook : EntitySaveHook<Streak>
         {
             /// <summary>
-            /// Called before the save operation is executed.
-            /// </summary>
-            protected override void PreSave()
-            {
-                Entity._isDeleted = State == EntityContextState.Deleted;
-                base.PreSave();
-            }
-
-            /// <summary>
             /// Called after the save operation is executed.
             /// </summary>
             protected override void PostSave()
             {
                 base.PostSave();
 
-                if ( !Entity._isDeleted )
+                if (PreSaveState != EntityContextState.Deleted)
                 {
                     // Running this as a task allows possibly changed streak type properties to be
                     // propagated to the streak type cache. Also there isn't really a reason that

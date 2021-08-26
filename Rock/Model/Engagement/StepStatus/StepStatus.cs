@@ -72,7 +72,7 @@ namespace Rock.Model
         [DataMember]
         public bool IsActive { get; set; } = true;
 
-        #endregion
+        #endregion Entity Properties
 
         #region IOrdered
 
@@ -122,6 +122,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
     }
 }

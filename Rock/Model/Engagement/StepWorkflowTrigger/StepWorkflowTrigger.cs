@@ -142,7 +142,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
 
         #region Enumerations
 
@@ -167,7 +167,7 @@ namespace Rock.Model
             IsComplete = 2
         }
 
-        #endregion
+        #endregion Enumerations
 
         #region Support Classes
 
@@ -241,6 +241,6 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Support Classes
     }
 }

@@ -87,7 +87,7 @@ namespace Rock.Model
         [DataMember]
         public bool IsActive { get; set; } = true;
 
-        #endregion
+        #endregion IHasActiveFlag
 
         #region IOrdered
 
@@ -161,7 +161,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Entity Configuration
 
         #region Enumerations
 
@@ -181,6 +181,6 @@ namespace Rock.Model
             Grid = 1
         }
 
-        #endregion
+        #endregion Enumerations
     }
 }
