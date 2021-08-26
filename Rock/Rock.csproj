@@ -725,6 +725,35 @@
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.cs" />
+    <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.SaveHook.cs" />
+    <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationSession\SessionStatus.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscount.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFeeItem\RegistrationTemplateFeeItem.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationFeeType.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFee.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationFieldSource.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationPersonFieldType.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\PaymentRedirectVendor.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrantsSameFamily.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrarOption.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationNotify.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.SaveHook.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\SignatureDocumentAction.cs" />
+    <Compile Include="Model\Event\Registration\FeeInfo.cs" />
+    <Compile Include="Model\Event\Registration\FieldValueConverter.cs" />
+    <Compile Include="Model\Event\Registration\FieldValueObject.cs" />
+    <Compile Include="Model\Event\Registration\RegistrantInfo.cs" />
+    <Compile Include="Model\Event\Registration\Registration.Logic.cs" />
+    <Compile Include="Model\Event\Registration\RegistrationCostSummaryInfo.cs" />
+    <Compile Include="Model\Event\Registration\RegistrationCostSummaryType.cs" />
+    <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
+    <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
@@ -2308,7 +2337,9 @@
     <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
-    <Compile Include="Model\Event\Registration\Registration.cs" />
+    <Compile Include="Model\Event\Registration\Registration.cs">
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.cs" />
     <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.cs" />

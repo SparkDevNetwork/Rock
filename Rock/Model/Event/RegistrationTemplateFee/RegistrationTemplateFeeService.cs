@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -314,7 +314,6 @@ namespace Rock.Model
             set => FeeItemOption = value;
         }
        
-
         /// <summary>
         /// Gets or sets the fee item option.
         /// </summary>

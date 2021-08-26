@@ -13,21 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Security;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -583,9 +580,9 @@ namespace Rock.Model
         [DataMember]
         public bool IsRegistrationMeteringEnabled { get; set; } = false;
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/>.
@@ -707,47 +704,9 @@ namespace Rock.Model
 
         private ICollection<RegistrationTemplateForm> _registrationTemplateForms;
 
-        /// <summary>
-        /// A dictionary of actions that this class supports and the description of each.
-        /// </summary>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                if ( _supportedActions == null )
-                {
-                    _supportedActions = new Dictionary<string, string>();
-                    _supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                    _supportedActions.Add( "Register", "The roles and/or users that have access to add/edit/remove registrations and registrants." );
-                    _supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
-                    _supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
-                }
-
-                return _supportedActions;
-            }
-        }
-
-        private Dictionary<string, string> _supportedActions;
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
-        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
@@ -760,7 +719,7 @@ namespace Rock.Model
             return Name;
         }
 
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -783,116 +742,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Flag indicating if registrants are typically in the same family
-    /// </summary>
-    public enum RegistrantsSameFamily
-    {
-        /// <summary>
-        /// The no
-        /// </summary>
-        No = 0,
-
-        /// <summary>
-        /// The yes
-        /// </summary>
-        Yes = 1,
-
-        /// <summary>
-        /// The ask
-        /// </summary>
-        Ask = 2,
-    }
-
-    /// <summary>
-    /// Flag indicating who should be notified on a new registration
-    /// </summary>
-    [Flags]
-    public enum RegistrationNotify
-    {
-        /// <summary>
-        /// The none
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// The registration contact
-        /// </summary>
-        RegistrationContact = 1,
-
-        /// <summary>
-        /// The group followers
-        /// </summary>
-        GroupFollowers = 2,
-
-        /// <summary>
-        /// The group leaders
-        /// </summary>
-        GroupLeaders = 4,
-
-        /// <summary>
-        /// All
-        /// </summary>
-        All = RegistrationContact | GroupFollowers | GroupLeaders
-    }
-
-    /// <summary>
-    /// How signature document should be presented to registrant
-    /// </summary>
-    public enum SignatureDocumentAction
-    {
-        /// <summary>
-        /// Email document
-        /// </summary>
-        Email = 0,
-
-        /// <summary>
-        /// Embed document in registration
-        /// </summary>
-        Embed = 1,
-    }
-
-    /// <summary>
-    /// How registrar information should be collected.
-    /// </summary>
-    public enum RegistrarOption
-    {
-        /// <summary>
-        /// Prompt for registrar
-        /// </summary>
-        PromptForRegistrar = 0,
-
-        /// <summary>
-        /// Prefill first registrant
-        /// </summary>
-        PrefillFirstRegistrant = 1,
-
-        /// <summary>
-        /// Use first registrant
-        /// </summary>
-        UseFirstRegistrant = 2,
-
-        /// <summary>
-        /// Use the LoggedIn person and keep fields readonly, except for fields that haven't been collected yet
-        /// For example, if EmailAddress wasn't known, Email would be prompted vs readonly.
-        /// </summary>
-        UseLoggedInPerson = 3
-    }
-
-    /// <summary>
-    /// Payment processor vendors which handle payment directly through a redirect.
-    /// </summary>
-    public enum PaymentRedirectVendor
-    {
-        /// <summary>
-        /// Pushpay
-        /// </summary>
-        Pushpay = 1
-    }
-
-    #endregion
+    #endregion Entity Configuration
 }

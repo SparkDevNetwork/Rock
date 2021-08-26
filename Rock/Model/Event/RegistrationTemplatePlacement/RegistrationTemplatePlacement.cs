@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,7 +22,6 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -114,9 +113,9 @@ namespace Rock.Model
         [DataMember]
         public decimal? Cost { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
@@ -136,27 +135,7 @@ namespace Rock.Model
         [DataMember]
         public virtual GroupType GroupType { get; set; }
 
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the Icon CSS class from either <see cref="IconCssClass"/> or from <see cref="GroupType.IconCssClass" />
-        /// </summary>
-        /// <returns></returns>
-        public string GetIconCssClass()
-        {
-            if ( this.IconCssClass.IsNotNullOrWhiteSpace() )
-            {
-                return this.IconCssClass;
-            }
-            else
-            {
-                return GroupTypeCache.Get( this.GroupTypeId ).IconCssClass;
-            }
-        }
-
-        #endregion Methods
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration

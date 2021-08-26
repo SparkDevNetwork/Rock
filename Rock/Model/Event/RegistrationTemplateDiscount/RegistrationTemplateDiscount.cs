@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -36,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationTemplateDiscount : Model<RegistrationTemplateDiscount>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -140,9 +138,9 @@ namespace Rock.Model
         [DataMember]
         public bool AutoApplyDiscount { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
@@ -153,70 +151,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual RegistrationTemplate RegistrationTemplate { get; set; }
 
-        /// <summary>
-        /// Gets the discount string.
-        /// </summary>
-        /// <value>
-        /// The discount string.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string DiscountString
-        {
-            get
-            {
-                if ( DiscountAmount != 0.0m )
-                {
-                    return DiscountAmount.FormatAsCurrency();
-                }
-                else if ( DiscountPercentage != 0.0m )
-                {
-                    return DiscountPercentage.ToString( "P0" );
-                }
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// String representation of any discount limits.
-        /// </summary>
-        /// <value>
-        /// The discount limits string.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string DiscountLimitsString
-        {
-            get
-            {
-                var limits = new List<string>();
-
-                if ( MaxUsage.HasValue )
-                {
-                    limits.Add( string.Format( "Max Usage: {0}", MaxUsage.Value ) );
-                }
-                if ( MaxRegistrants.HasValue )
-                {
-                    limits.Add( string.Format( "Max Registrants: {0}", MaxRegistrants.Value ) );
-                }
-                if ( MinRegistrants.HasValue )
-                {
-                    limits.Add( string.Format( "Min Registrants: {0}", MinRegistrants.Value ) );
-                }
-                if ( StartDate.HasValue )
-                {
-                    limits.Add( string.Format( "Effective: {0}", StartDate.Value.ToShortDateString() ) );
-                }
-                if ( EndDate.HasValue )
-                {
-                    limits.Add( string.Format( "Expires: {0}", EndDate.Value.ToShortDateString() ) );
-                }
-
-                return limits.AsDelimited( "; " );
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -232,7 +167,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -252,5 +186,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

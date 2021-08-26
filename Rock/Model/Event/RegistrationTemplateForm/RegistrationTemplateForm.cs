@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -36,7 +36,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationTemplateForm : Model<RegistrationTemplateForm>, IOrdered
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -93,6 +92,7 @@ namespace Rock.Model
             get { return _fields ?? ( _fields = new Collection<RegistrationTemplateFormField>() ); }
             set { _fields = value; }
         }
+
         private ICollection<RegistrationTemplateFormField> _fields;
 
         #endregion
@@ -111,7 +111,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -131,5 +130,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

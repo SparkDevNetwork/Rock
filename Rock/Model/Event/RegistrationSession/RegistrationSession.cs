@@ -17,8 +17,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -119,10 +117,9 @@ namespace Rock.Model
         [DataMember]
         public int? RegistrationId { get; set; }
 
-
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the registration instance.
@@ -142,7 +139,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Registration Registration { get; set; }
 
-        #endregion Virtual Properties
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -163,28 +160,4 @@ namespace Rock.Model
     }
 
     #endregion Entity Configuration
-
-    #region Enums
-    /// <summary>
-    /// The status of the RegistrationSession
-    /// </summary>
-    public enum SessionStatus
-    {
-        /// <summary>
-        /// Transient
-        /// </summary>
-        Transient = 0,
-
-        /// <summary>
-        /// Payment Pending
-        /// </summary>
-        PaymentPending = 1,
-
-        /// <summary>
-        /// Completed
-        /// </summary>
-        Completed = 2
-    }
-
-    #endregion Enums
 }

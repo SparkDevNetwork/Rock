@@ -13,17 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
 
 namespace Rock.Model
@@ -36,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationRegistrant : Model<RegistrationRegistrant>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -92,16 +88,17 @@ namespace Rock.Model
         /// The discount applies.
         /// </value>
         [DataMember]
-        public bool DiscountApplies 
+        public bool DiscountApplies
         {
             get { return _discountApplies; }
             set { _discountApplies = value; }
         }
+
         private bool _discountApplies = true;
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Registration"/>.
@@ -139,7 +136,10 @@ namespace Rock.Model
         [NotMapped]
         public virtual int? PersonId
         {
-            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+            get
+            {
+                return PersonAlias != null ? PersonAlias.PersonId : ( int? ) null;
+            }
         }
 
         /// <summary>
@@ -151,237 +151,20 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<RegistrationRegistrantFee> Fees
         {
-            get { return _fees ?? ( _fees = new Collection<RegistrationRegistrantFee>() ); }
-            set { _fees = value; }
+            get
+            {
+                return _fees ?? ( _fees = new Collection<RegistrationRegistrantFee>() );
+            }
+
+            set
+            {
+                _fees = value;
+            }
         }
+
         private ICollection<RegistrationRegistrantFee> _fees;
 
-        /// <summary>
-        /// Gets the name of the nick.
-        /// </summary>
-        /// <value>
-        /// The name of the nick.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string NickName 
-        {
-            get 
-            {
-                if ( PersonAlias != null && PersonAlias.Person != null )
-                {
-                    return PersonAlias.Person.NickName;
-                }
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets the first name.
-        /// </summary>
-        /// <value>
-        /// The first name.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string FirstName 
-        {
-            get 
-            {
-                if ( PersonAlias != null && PersonAlias.Person != null )
-                {
-                    return PersonAlias.Person.FirstName;
-                }
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets the last name.
-        /// </summary>
-        /// <value>
-        /// The last name.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string LastName
-        {
-            get 
-            {
-                if ( PersonAlias != null && PersonAlias.Person != null )
-                {
-                    return PersonAlias.Person.LastName;
-                }
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets the email.
-        /// </summary>
-        /// <value>
-        /// The email.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string Email
-        {
-            get
-            {
-                if ( PersonAlias != null && PersonAlias.Person != null )
-                {
-                    return PersonAlias.Person.Email;
-                }
-                return string.Empty;
-            }
-        }
-
-        /// <summary>
-        /// Gets the cost with fees.
-        /// </summary>
-        /// <value>
-        /// The cost with fees.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual decimal TotalCost
-        {
-            get
-            {
-                if ( OnWaitList )
-                {
-                    return 0.0M;
-                }
-
-                var cost = Cost;
-                if ( Fees != null )
-                {
-                    cost += Fees
-                        .Sum( f => f.TotalCost );
-                }
-                return cost;
-            }
-        }
-
-        /// <summary>
-        /// Gets the <see cref="Rock.Model.Person"/>.
-        /// </summary>
-        /// <value>
-        /// The person.
-        /// </value>
-        [LavaVisible]
-        public virtual Person Person
-        {
-            get
-            {
-                if ( PersonAlias != null )
-                {
-                    return PersonAlias.Person;
-                }
-                return null;
-            }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Discounts the cost.
-        /// </summary>
-        /// <param name="discountPercent">The discount percent.</param>
-        /// <param name="discountAmount">The discount amount.</param>
-        /// <returns></returns>
-        public virtual decimal DiscountedCost( decimal discountPercent, decimal discountAmount )
-        {
-            if ( OnWaitList )
-            {
-                return 0.0M;
-            }
-
-            var discountedCost = Cost - ( DiscountApplies ? ( Cost * discountPercent ) : 0.0M );
-            if ( Fees != null )
-            {
-                foreach( var fee in Fees )
-                {
-                    discountedCost += DiscountApplies ? fee.DiscountedCost( discountPercent ) : fee.TotalCost;
-                }
-            }
-            discountedCost = discountedCost - ( DiscountApplies ? discountAmount : 0.0M );
-
-            return discountedCost > 0.0m ? discountedCost : 0.0m;
-        }
-
-        /// <summary>
-        /// Get a list of all inherited Attributes that should be applied to this entity.
-        /// </summary>
-        /// <returns>A list of all inherited AttributeCache objects.</returns>
-        public override List<AttributeCache> GetInheritedAttributes( Rock.Data.RockContext rockContext )
-        {
-            var entityTypeCache = EntityTypeCache.Get( TypeId );
-
-            // Get the registration
-            var registration = this.Registration;
-            if ( registration == null && this.RegistrationId > 0 )
-            {
-                registration = new RegistrationService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( r => r.Id == this.RegistrationId );
-            }
-            if ( entityTypeCache == null || registration == null )
-            {
-                return null;
-            }
-
-            // Get the instance
-            var registrationInstance = registration.RegistrationInstance;
-            if ( registrationInstance == null && registration.RegistrationInstanceId > 0 )
-            {
-                registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .FirstOrDefault( r => r.Id == registration.RegistrationInstanceId );
-            }
-            if ( registrationInstance == null )
-            {
-                return null;
-            }
-
-            // Get all attributes there were defined for instance's template.
-            var attributes = new List<AttributeCache>();
-            foreach( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
-                .Where( e => 
-                    e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
-                    e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
-            {
-                foreach ( int attributeId in entityAttributes.AttributeIds )
-                {
-                    attributes.Add( AttributeCache.Get( attributeId ) );
-                }
-            }
-
-            return attributes;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if ( PersonAlias != null && PersonAlias.Person != null )
-            {
-                return PersonAlias.Person.ToString();
-            }
-            else
-            {
-                return "Registrant";
-            }
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -403,5 +186,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

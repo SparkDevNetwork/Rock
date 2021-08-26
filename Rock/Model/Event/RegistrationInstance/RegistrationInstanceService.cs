@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
+
 using Rock.ViewModel.Blocks;
 
 namespace Rock.Model
@@ -209,8 +210,9 @@ namespace Rock.Model
                             // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
                             costSummary.DiscountedCost = discountModel.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * discountModel.DiscountPercentage );
                         }
-                        else if ( discountModel.DiscountAmount > 0 ) // Apply the discount amount
+                        else if ( discountModel.DiscountAmount > 0 )
                         {
+                            // Apply the discount amount
                             // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
                             if ( discountModel.DiscountAmount > costSummary.Cost )
                             {

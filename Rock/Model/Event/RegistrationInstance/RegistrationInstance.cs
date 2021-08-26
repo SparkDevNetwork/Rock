@@ -13,20 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-using Rock.Communication;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -40,7 +37,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationInstance : Model<RegistrationInstance>, IHasActiveFlag
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -298,9 +294,9 @@ namespace Rock.Model
         [DataMember]
         public int? TimeoutThreshold { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.RegistrationTemplate"/>.
@@ -349,6 +345,7 @@ namespace Rock.Model
             get { return _registrations ?? ( _registrations = new Collection<Registration>() ); }
             set { _registrations = value; }
         }
+
         private ICollection<Registration> _registrations;
 
         /// <summary>
@@ -362,9 +359,10 @@ namespace Rock.Model
             get { return _linkages ?? ( _linkages = new Collection<EventItemOccurrenceGroupMap>() ); }
             set { _linkages = value; }
         }
+
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -380,43 +378,6 @@ namespace Rock.Model
             {
                 return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
             }
-        }
-
-        /// <summary>
-        /// Gets the contact recipient as either an email to the person that registered, or as an anonymous email to the specified contact email if it is different than the person's email.
-        /// </summary>
-        /// <param name="mergeObjects">The merge objects.</param>
-        /// <returns></returns>
-        public RockMessageRecipient GetContactRecipient( Dictionary<string, object> mergeObjects )
-        {
-            var person = this.ContactPersonAlias?.Person;
-            string personEmail = person?.Email;
-
-            var contactEmail = this.ContactEmail;
-            if ( personEmail == contactEmail )
-            {
-                return new RockEmailMessageRecipient( person, mergeObjects );
-            }
-            else
-            {
-                return RockEmailMessageRecipient.CreateAnonymous( contactEmail, mergeObjects );
-            }
-        }
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                new RegistrationInstanceService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
         }
 
         /// <summary>
@@ -452,6 +413,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+
 using Rock.Data;
 using Rock.ViewModel.Blocks;
 using Rock.Web.Cache;

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -31,7 +31,6 @@ namespace Rock.Model
     [DataContract]
     public partial class RegistrationRegistrantFee : Model<RegistrationRegistrantFee>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -88,9 +87,9 @@ namespace Rock.Model
         [DataMember]
         public decimal Cost { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the registration registrant.
@@ -119,53 +118,7 @@ namespace Rock.Model
         [LavaVisible]
         public virtual RegistrationTemplateFeeItem RegistrationTemplateFeeItem { get; set; }
 
-        /// <summary>
-        /// Gets the total cost.
-        /// </summary>
-        /// <value>
-        /// The total cost.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual decimal TotalCost
-        {
-            get { return Quantity * Cost; }
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Discounts the cost.
-        /// </summary>
-        /// <param name="discountPercent">The discount percent.</param>
-        /// <returns></returns>
-        public decimal DiscountedCost ( decimal discountPercent )
-        {
-            var discountedCost = TotalCost;
-            
-            if ( RegistrationTemplateFee != null && RegistrationTemplateFee.DiscountApplies && ( RegistrationRegistrant == null || RegistrationRegistrant.DiscountApplies ) )
-            {
-                discountedCost = discountedCost - ( discountedCost * discountPercent );
-            }
-
-            return discountedCost;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="string"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="string"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return RegistrationTemplateFee != null ? RegistrationTemplateFee.Name : "Fee";
-        }
-
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -186,6 +139,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
+    #endregion Entity Configuration
 }
