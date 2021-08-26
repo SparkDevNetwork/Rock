@@ -196,6 +196,8 @@
     <Compile Include="Parser\LavaGreaterThanExpression.cs" />
     <Compile Include="Parser\LavaLessThanExpression.cs" />
     <Compile Include="LavaObjectMemberAccessStrategy.cs" />
+    <Compile Include="Parser\LavaTagParsers.cs" />
+    <Compile Include="Parser\LavaTagResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
