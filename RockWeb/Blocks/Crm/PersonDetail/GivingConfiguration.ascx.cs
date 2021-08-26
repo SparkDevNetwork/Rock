@@ -258,7 +258,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var statementYear = e.CommandArgument.ToString();
                 Dictionary<string, string> queryParams = new Dictionary<string, string>();
-                queryParams.Add( "StatementYear", statementYear );
+                queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
+                queryParams.AddOrReplace( "StatementYear", statementYear );
                 NavigateToLinkedPage( AttributeKey.ContributionStatementDetailPage, queryParams );
             }
         }
