@@ -183,18 +183,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FluidLavaTagStatement.cs" />
-    <Compile Include="FluidLavaBlockStatement.cs" />
+    <Compile Include="Parser\FluidLavaTagStatement.cs" />
+    <Compile Include="Parser\FluidLavaBlockStatement.cs" />
     <Compile Include="FluidFileSystem.cs" />
     <Compile Include="FluidEngine.cs" />
     <Compile Include="FluidExtensions.cs" />
     <Compile Include="FluidRenderContext.cs" />
     <Compile Include="FluidTemplateProxy.cs" />
     <Compile Include="LavaDateTimeValue.cs" />
-    <Compile Include="LavaEqualBinaryExpression.cs" />
-    <Compile Include="LavaFluidParser.cs" />
-    <Compile Include="LavaGreaterThanExpression.cs" />
-    <Compile Include="LavaLessThanExpression.cs" />
+    <Compile Include="Parser\LavaEqualBinaryExpression.cs" />
+    <Compile Include="Parser\LavaFluidParser.cs" />
+    <Compile Include="Parser\LavaGreaterThanExpression.cs" />
+    <Compile Include="Parser\LavaLessThanExpression.cs" />
     <Compile Include="LavaObjectMemberAccessStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
