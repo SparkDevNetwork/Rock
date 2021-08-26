@@ -18,8 +18,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
@@ -587,7 +589,23 @@ namespace Rock.Lava.Fluid
 
             var result = new LavaRenderResult();
 
-            result.Text = template.Render( templateContext.FluidContext );
+            var sb = new StringBuilder();
+            var writer = new StringWriter( sb );
+
+            try
+            {
+                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+            }
+            catch ( LavaInterruptException )
+            {
+                // Ignore this exception, it is thrown by custom Lava components to terminate the render process prematurely.
+            }
+
+            writer.Flush();
+
+            result.Text = sb.ToString();
+
+            writer.Dispose();
 
             return result;
         }

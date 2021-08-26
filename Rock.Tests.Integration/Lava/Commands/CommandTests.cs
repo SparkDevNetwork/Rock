@@ -738,5 +738,67 @@ Cache #{{ item.Count }}
         }
 
         #endregion
+
+
+        /// <summary>
+        /// The "return" tag can be used at the root level of a document.
+        /// </summary>
+        [TestMethod]
+        public void ReturnTag_AtRootLevel_TerminatesRenderingImmediately()
+        {
+            var template = @"
+12345
+{% return %}
+67890
+";
+
+            var expectedOutput = @"12345";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template );
+        }
+
+        /// <summary>
+        /// The "return" tag can be used to exit immediately from a nested block.
+        /// </summary>
+        [TestMethod]
+        public void ReturnTag_InNestedBlock_TerminatesRenderingImmediately()
+        {
+            var template = @"
+{% assign isTrue = true %}
+{% assign isFalse = false %}
+Step 1
+{% if isTrue == false %}
+    {% return %}
+{% endif %}
+<hr>
+Step 2
+{% if isTrue == true %}
+    {% return %}
+{% endif %}
+<hr>
+Step 3
+";
+
+            var expectedOutput = @"Step1<hr>Step2";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template );
+        }
+
+        /// <summary>
+        /// The "return" tag can be used to exit immediately from within a loop.
+        /// </summary>
+        [TestMethod]
+        public void ReturnTag_InForLoop_TerminatesDocumentRenderImmediately()
+        {
+            var template = @"
+{% assign list = '10,9,8,7,6,5,4,3,2,1' | Split: ',' %}
+{% for i in list %}{{ i }}...{% if i == 1 %}{% return %}{% endif %}{% endfor %}
+Lift-Off!
+";
+
+            var expectedOutput = @"10...9...8...7...6...5...4...3...2...1...";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template );
+        }
     }
 }

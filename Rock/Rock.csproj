@@ -674,6 +674,8 @@
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Lava\Blocks\ReturnTag.cs" />
+    <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
