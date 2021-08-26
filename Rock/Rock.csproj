@@ -1963,10 +1963,10 @@
     <Compile Include="Model\CommunicationAttachment.cs" />
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
-    <Compile Include="Model\ContentChannelItemSlug.cs" />
-    <Compile Include="Model\ContentChannelItemSlugService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlugService.Partial.cs" />
     <Compile Include="Model\DataViewPersistedValue.cs" />
-    <Compile Include="Model\ContentChannelItemService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemService.Partial.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccountService.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
@@ -2180,9 +2180,9 @@
     <Compile Include="Model\Connection\ConnectionType\ConnectionType.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflowService.cs" />
-    <Compile Include="Model\ContentChannel.cs" />
-    <Compile Include="Model\ContentChannelItem.cs" />
-    <Compile Include="Model\ContentChannelType.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannel.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.cs" />
+    <Compile Include="Model\CMS\ContentChannelType\ContentChannelType.cs" />
     <Compile Include="Model\DataView.cs" />
     <Compile Include="Model\DataViewFilter.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
@@ -2228,7 +2228,7 @@
     <Compile Include="Model\FinancialTransaction.cs" />
     <Compile Include="Model\FinancialTransactionDetail.cs" />
     <Compile Include="Model\FinancialTransactionDetailService.Partial.cs" />
-    <Compile Include="Model\ContentChannelItemAssociation.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemAssociation\ContentChannelItemAssociation.cs" />
     <Compile Include="Model\FinancialTransactionImage.cs" />
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialTransactionService.Partial.cs" />
@@ -2248,7 +2248,7 @@
     <Compile Include="Model\GroupTypeLocationType.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRoleService.cs" />
-    <Compile Include="Model\ContentChannelService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannelService.Partial.cs" />
     <Compile Include="Model\Group\GroupType\GroupTypeService.cs" />
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />
@@ -3190,7 +3190,6 @@
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationsByLocationSelectionStrategy.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsBySchedule.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByPreviousCheckin.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationsByThreshold.cs" />
