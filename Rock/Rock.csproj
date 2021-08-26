@@ -776,7 +776,7 @@
     <Compile Include="Model\Group\Group\Group.Logic.cs" />
     <Compile Include="Model\Group\Group\Group.SaveHook.cs" />
     <Compile Include="Model\Group\Group\GroupParentCircularReferenceException.cs" />
-    <Compile Include="Model\RegistrationTemplateService.Partial.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplateService.cs" />
     <Compile Include="Data\LavaIgnoreAttribute.cs" />
     <Compile Include="Data\LavaIncludeAttribute.cs" />
     <Compile Include="Financial\IRedirectionGateway.cs" />
@@ -1026,7 +1026,7 @@
     <Compile Include="Model\PersonalLinkSectionOrder.cs" />
     <Compile Include="Model\PersonalLinkSectionOrderService.Partial.cs" />
     <Compile Include="Model\PersonalLinkService.partial.cs" />
-    <Compile Include="Model\RegistrationSession.cs" />
+    <Compile Include="Model\Event\RegistrationSession\RegistrationSession.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.cs" />
     <Compile Include="Model\Engagement\StepProgram\StepProgramService.cs" />
     <Compile Include="Model\WebFarmNodeMetric.cs" />
@@ -1228,10 +1228,10 @@
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\Core\DocumentType\DocumentTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
-    <Compile Include="Model\RegistrationInstanceService.partial.cs" />
-    <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
-    <Compile Include="Model\RegistrationTemplatePlacement.cs" />
-    <Compile Include="Model\RegistrationTemplatePlacementService.partial.cs" />
+    <Compile Include="Model\Event\RegistrationInstance\RegistrationInstanceService.cs" />
+    <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrantService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.cs" />
+    <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\RelatedEntity.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Core\Document\Document.cs" />
@@ -1388,7 +1388,7 @@
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.cs" />
     <Compile Include="Model\PersonScheduleExclusionService.Partial.cs" />
     <Compile Include="Model\PersonScheduleExclusion.cs" />
-    <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFeeItem\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
     <Compile Include="Bulk\BulkExport\AttributesExport.cs" />
     <Compile Include="Bulk\BulkExport\FinancialTransactionExport.cs" />
@@ -2308,17 +2308,17 @@
     <Compile Include="Model\PrayerRequest.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\RangeValue.cs" />
-    <Compile Include="Model\Registration.cs" />
-    <Compile Include="Model\RegistrationInstance.cs" />
-    <Compile Include="Model\RegistrationRegistrant.cs" />
-    <Compile Include="Model\RegistrationRegistrantFee.cs" />
-    <Compile Include="Model\RegistrationService.partial.cs" />
-    <Compile Include="Model\RegistrationTemplate.cs" />
-    <Compile Include="Model\RegistrationTemplateDiscount.cs" />
-    <Compile Include="Model\RegistrationTemplateFee.cs" />
-    <Compile Include="Model\RegistrationTemplateDiscountService.Partial.cs" />
-    <Compile Include="Model\RegistrationTemplateForm.cs" />
-    <Compile Include="Model\RegistrationTemplateFormField.cs" />
+    <Compile Include="Model\Event\Registration\Registration.cs" />
+    <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.cs" />
+    <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.cs" />
+    <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.cs" />
+    <Compile Include="Model\Event\Registration\RegistrationService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscount.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFee.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscountService.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateForm.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\ScheduleCategoryExclusion.cs" />
     <Compile Include="Model\ReportField.cs" />
@@ -3436,7 +3436,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
+    <Compile Include="Model\Event\RegistrationTemplateFee\RegistrationTemplateFeeService.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
