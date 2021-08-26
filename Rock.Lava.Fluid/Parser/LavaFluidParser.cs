@@ -19,6 +19,7 @@ using System.Linq;
 using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
+using Fluid.Values;
 using Parlot;
 using Parlot.Fluent;
 using static Parlot.Fluent.Parsers;
@@ -100,6 +101,7 @@ namespace Rock.Lava.Fluid
             RegisterLavaOperators();
 
             DefineLavaElementParsers();
+            DefineLavaTrueFalseAsCaseInsensitive();
             DefineLavaDocumentParsers();
         }
 
@@ -113,6 +115,39 @@ namespace Rock.Lava.Fluid
                                 Identifier.AndSkip( Colon ).And( Primary ).Then( x => new FilterArgument( x.Item1, x.Item2 ) ),
                                 Primary.Then( x => new FilterArgument( null, x ) )
                             ) ) );
+        }
+
+        /// <summary>
+        /// Redefines the True/False keywords to be case-insensitive.
+        /// </summary>
+        private void DefineLavaTrueFalseAsCaseInsensitive()
+        {
+            // To redefine the True and False parsers, we need to rebuild the Fluid Primary expression parser.
+            // Fluid defines a Primary expression as: primary => NUMBER | STRING | BOOLEAN | MEMBER
+
+            // Reproduce the standard Fluid parsers that are internally defined by the default parser.
+            var Indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
+
+            var Member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
+                ZeroOrMany(
+                    Dot.SkipAnd( Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ) )
+                    .Or( Indexer ) ) )
+                .Then( x =>
+                {
+                    x.Item2.Insert( 0, x.Item1 );
+                    return new MemberExpression( x.Item2 );
+                } );
+
+            // Redefine the Fluid keywords "true" and "false" as case-insensitive.
+            var TrueParser = Terms.Text( "true", caseInsensitive: true );
+            var FalseParser = Terms.Text( "false", caseInsensitive: true );
+
+            // Replace the default definition of the Fluid Primary parser.
+            Primary.Parser = Number.Then<Expression>( x => new LiteralExpression( NumberValue.Create( x ) ) )
+                .Or( String.Then<Expression>( x => new LiteralExpression( StringValue.Create( x.ToString() ) ) ) )
+                .Or( TrueParser.Then<Expression>( x => new LiteralExpression( BooleanValue.True ) ) )
+                .Or( FalseParser.Then<Expression>( x => new LiteralExpression( BooleanValue.False ) ) )
+                .Or( Member.Then<Expression>( x => x ) );
         }
 
         private void DefineLavaDocumentParsers()

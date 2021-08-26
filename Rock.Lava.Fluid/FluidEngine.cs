@@ -69,6 +69,14 @@ namespace Rock.Lava.Fluid
         {
             var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
 
+            // Context variables are case-sensitive, so add both upper/lower case entries for built-in symbols.
+            fluidContext.SetValue( "Empty", NilValue.Empty );
+            fluidContext.SetValue( "empty", NilValue.Empty );
+
+            fluidContext.SetValue( "Blank", NilValue.Empty );
+            fluidContext.SetValue( "blank", NilValue.Empty );
+
+
             var context = new FluidRenderContext( fluidContext );
 
             return context;
