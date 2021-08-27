@@ -298,7 +298,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The credit card type JCB
         /// </summary>
-        public const string CREDITCARD_TYPE_JCB = "	4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
+        public const string CREDITCARD_TYPE_JCB = "4DD7F0C2-F6B7-4510-90E6-287ADC25FD05";
 
         /// <summary>
         /// The credit card type MasterCard
