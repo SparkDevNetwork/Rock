@@ -676,6 +676,14 @@
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.Logic.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.SaveHook.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemStatus.cs" />
+    <Compile Include="Model\CMS\ContentChannelType\ContentChannelDateType.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannel.Logic.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannel.SaveHook.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannelPath.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentControlType.cs" />
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
@@ -2004,9 +2012,9 @@
     <Compile Include="Model\CodeGenerated\PageShortLinkService.cs" />
     <Compile Include="Model\CodeGenerated\PersonTokenService.cs" />
     <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.cs" />
-    <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlugService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlugService.cs" />
     <Compile Include="Model\DataViewPersistedValue.cs" />
-    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemService.cs" />
     <Compile Include="Model\Core\Finance\FinancialAccount\FinancialAccountService.cs" />
     <Compile Include="Data\IAnalyticsAddresses.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSync.cs" />
@@ -2288,7 +2296,7 @@
     <Compile Include="Model\GroupTypeLocationType.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.cs" />
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRoleService.cs" />
-    <Compile Include="Model\CMS\ContentChannel\ContentChannelService.Partial.cs" />
+    <Compile Include="Model\CMS\ContentChannel\ContentChannelService.cs" />
     <Compile Include="Model\Group\GroupType\GroupTypeService.cs" />
     <Compile Include="Model\History.cs" />
     <Compile Include="Model\HistoryService.Partial.cs" />

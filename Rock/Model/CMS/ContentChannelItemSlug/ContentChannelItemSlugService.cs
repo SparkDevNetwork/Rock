@@ -14,10 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -63,7 +61,7 @@ namespace Rock.Model
             slug = MakeSlugValid( slug );
 
             // If MakeSlugValid removes all the characters then just return null.
-            if( slug.IsNullOrWhiteSpace() )
+            if ( slug.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -85,6 +83,7 @@ namespace Rock.Model
                         customSlug = slug + paddedString;
                     }
                 }
+
                 var qry = this
                     .Queryable()
                     .Where( b => ( ( contentChannelItemSlugId.HasValue && b.Id != contentChannelItemSlugId.Value ) || !contentChannelItemSlugId.HasValue ) )
@@ -104,7 +103,6 @@ namespace Rock.Model
                 {
                     slug = customSlug;
                 }
-
             } while ( !isValid );
 
             return slug;
@@ -155,7 +153,7 @@ namespace Rock.Model
         /// <returns></returns>
         private string MakeSlugValid( string slug )
         {
-            slug =  slug
+            slug = slug
                 .Trim()
                 .ToLower()
                 .Replace( "&nbsp;", "-" )
@@ -167,12 +165,12 @@ namespace Rock.Model
                 .Replace( "_", "-" )
                 .Replace( " ", "-" );
 
-            // Remove multiple -- in a row
+            // Remove multiple -- in a row from the slug.
             slug = Regex.Replace( slug, @"-+", "-" );
 
             // Remove any none alphanumeric characters, this negates the need
             // for .RemoveInvalidReservedUrlChars()
-            slug = Regex.Replace( slug, @"[^a-zA-Z0-9 -]", string.Empty ); 
+            slug = Regex.Replace( slug, @"[^a-zA-Z0-9 -]", string.Empty );
 
             return slug
                     .Left( 75 )

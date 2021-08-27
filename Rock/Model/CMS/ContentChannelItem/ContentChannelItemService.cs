@@ -23,7 +23,6 @@ namespace Rock.Model
     /// </summary>
     public partial class ContentChannelItemService
     {
-
         /// <summary>
         /// Gets the maximum item order value for content channel.
         /// </summary>
@@ -42,7 +41,7 @@ namespace Rock.Model
         public int GetNextItemOrderValueForContentChannel( int contentChannelId )
         {
             int? i = GetMaxItemOrderValueForContentChannel( contentChannelId );
-            return i == null ? 0 : (int)i + 1;
+            return i == null ? 0 : ( int ) i + 1;
         }
     }
 }

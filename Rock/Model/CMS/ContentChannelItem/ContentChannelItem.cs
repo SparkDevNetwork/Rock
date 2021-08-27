@@ -23,11 +23,10 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
+using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Lava;
 
 namespace Rock.Model
 {
@@ -39,7 +38,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -113,7 +111,7 @@ namespace Rock.Model
         /// Gets or sets the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. If no approval action has been performed on this item, this value will be null.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the PersonAliasId of hte <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. This value will be null if no approval action has been
+        /// A <see cref="System.Int32"/> representing the PersonAliasId of the <see cref="Rock.Model.Person"/> who either approved or declined the ContentItem. This value will be null if no approval action has been
         /// performed on this add.
         /// </value>
         [DataMember]
@@ -175,9 +173,9 @@ namespace Rock.Model
         [DataMember]
         public string ItemGlobalKey { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the content channel.
@@ -207,22 +205,6 @@ namespace Rock.Model
         public virtual PersonAlias ApprovedByPersonAlias { get; set; }
 
         /// <summary>
-        /// Gets the primary slug.
-        /// </summary>
-        /// <value>
-        /// The primary alias.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual string PrimarySlug
-        {
-            get
-            {
-                return ContentChannelItemSlugs.Select( a => a.Slug ).FirstOrDefault( );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the content channel item slugs.
         /// </summary>
         /// <value>
@@ -243,6 +225,7 @@ namespace Rock.Model
             get { return _childItems ?? ( _childItems = new Collection<ContentChannelItemAssociation>() ); }
             set { _childItems = value; }
         }
+
         private ICollection<ContentChannelItemAssociation> _childItems;
 
         /// <summary>
@@ -257,6 +240,7 @@ namespace Rock.Model
             get { return _parentItems ?? ( _parentItems = new Collection<ContentChannelItemAssociation>() ); }
             set { _parentItems = value; }
         }
+
         private ICollection<ContentChannelItemAssociation> _parentItems;
 
         /// <summary>
@@ -270,6 +254,7 @@ namespace Rock.Model
             get { return _eventItemOccurrences ?? ( _eventItemOccurrences = new Collection<EventItemOccurrenceChannelItem>() ); }
             set { _eventItemOccurrences = value; }
         }
+
         private ICollection<EventItemOccurrenceChannelItem> _eventItemOccurrences;
 
         /// <summary>
@@ -290,21 +275,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        [NotMapped]
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return ContentChannel != null ? ContentChannel : base.ParentAuthority;
-            }
-        }
-
-        /// <summary>
         /// Gets a value indicating whether [allows interactive bulk indexing].
         /// </summary>
         /// <value>
@@ -320,7 +290,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Index Methods
 
@@ -426,7 +396,7 @@ namespace Rock.Model
         {
             return true;
         }
-        #endregion
+        #endregion Index Methods
 
         #region Methods
 
@@ -445,30 +415,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
-        {
-            var channel = this.ContentChannel;
-
-            if ( state == EntityState.Deleted )
-            {
-                ChildItems.Clear();
-                ParentItems.Clear();
-
-                DeleteRelatedSlugs( dbContext );
-            }
-            else
-            {
-                AssignItemGlobalKey( dbContext );
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
-
-        /// <summary>
         /// Delete any related slugs.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
@@ -484,24 +430,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Posts the save changes.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            base.PostSaveChanges( dbContext );
-
-            var rockContext = ( RockContext ) dbContext;
-            var contentChannelItemSerivce = new ContentChannelItemService( rockContext );
-            var contentChannelSlugSerivce = new ContentChannelItemSlugService( rockContext );
-
-            if ( !contentChannelSlugSerivce.Queryable().Any( a => a.ContentChannelItemId == this.Id ) && contentChannelItemSerivce.Queryable().Any(a=>a.Id == Id) )
-            {
-                contentChannelSlugSerivce.SaveSlug( Id, Title, null );
-            }
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -512,7 +440,7 @@ namespace Rock.Model
             return this.Title;
         }
 
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -532,31 +460,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the approval status of a content channel item
-    /// </summary>
-    public enum ContentChannelItemStatus
-    {
-        /// <summary>
-        /// The <see cref="ContentChannelItem"/> is pending approval.
-        /// </summary>
-        PendingApproval = 1,
-
-        /// <summary>
-        /// The <see cref="ContentChannelItem"/> has been approved.
-        /// </summary>
-        Approved = 2,
-
-        /// <summary>
-        /// The <see cref="ContentChannelItem"/> was denied.
-        /// </summary>
-        Denied = 3
-    }
-
-    #endregion
-
+    #endregion Entity Configuration
 }

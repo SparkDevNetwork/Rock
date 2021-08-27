@@ -21,10 +21,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -36,7 +35,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ContentChannelType : Model<ContentChannelType>, ICacheable
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -108,7 +106,7 @@ namespace Rock.Model
 
         /// <summary>
         /// A flag indicating if a <see cref="Rock.Model.ContentChannel"/> of this ContentChannelType will be shown in the content channel list.
-        /// Whem false, it means any 'Channel Types Include' settings MUST specifically include in order to show it.
+        /// When false, it means any 'Channel Types Include' settings MUST specifically include in order to show it.
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if a <see cref="Rock.Model.Group"/> of this Content Channel Type will be shown in the Channel list; otherwise <c>false</c>.
@@ -116,9 +114,9 @@ namespace Rock.Model
         [DataMember]
         public bool ShowInChannelList { get; set; } = true;
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ContentChannel">channels</see>.
@@ -147,7 +145,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Constructors
 
@@ -159,7 +157,7 @@ namespace Rock.Model
             Channels = new Collection<ContentChannel>();
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -174,7 +172,7 @@ namespace Rock.Model
             return this.Name;
         }
 
-        #endregion
+        #endregion Methods
 
         #region ICacheable
 
@@ -215,31 +213,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the type of DateRange that is supported.
-    /// </summary>
-    public enum ContentChannelDateType
-    {
-        /// <summary>
-        /// Allows a single date.
-        /// </summary>
-        SingleDate = 1,
-
-        /// <summary>
-        /// Allows a date range (start - end date)
-        /// </summary>
-        DateRange = 2,
-
-        /// <summary>
-        /// Hides Date Controls
-        /// </summary>
-        NoDates = 3
-    }
-
-    #endregion
-
+    #endregion Entity Configuration
 }
