@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Security;
 using Rock.Lava;
@@ -33,6 +33,7 @@ namespace Rock.Model
     [DataContract]
     public partial class EventCalendarItem : Model<EventCalendarItem>, ISecured
     {
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem belongs to. This property is required.
@@ -56,7 +57,8 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int EventItemId { get; set; }
 
-        #region Virtual Properties
+        #endregion
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventCalendar"/> that this EventCalendarItem is a member of.
@@ -77,24 +79,6 @@ namespace Rock.Model
         public virtual EventItem EventItem { get; set; }
 
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return this.EventCalendar != null ? this.EventCalendar : base.ParentAuthority;
-            }
-        }
-        #endregion
-
     }
 
     #region Entity Configuration

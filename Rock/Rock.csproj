@@ -727,6 +727,15 @@
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.cs" />
+    <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.Logic.cs" />
+    <Compile Include="Model\Event\EventCalendarItem\EventCalendarItem.Logic.cs" />
+    <Compile Include="Model\Event\EventCalendar\EventCalendar.Logic.cs" />
+    <Compile Include="Model\Event\EventCalendar\EventCalendar.SaveHook.cs" />
+    <Compile Include="Model\Event\EventItemOccurrenceGroupMap\EventItemOccurrenceGroupMap.Logic.cs" />
+    <Compile Include="Model\Event\EventItemOccurrence\EventItemOccurrence.Logic.cs" />
+    <Compile Include="Model\Event\EventItem\EventItem.Logic.cs" />
+    <Compile Include="Model\Event\EventItem\EventItemService.cs" />
+    <Compile Include="Model\Event\EventItem\EventItemServiceExtensions.cs" />
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.Logic.cs" />
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.Logic.cs" />
@@ -856,7 +865,6 @@
     <Compile Include="Model\Core\Tag\Tag.cs" />
     <Compile Include="Model\Core\Tag\Tag.Logic.cs" />
     <Compile Include="Model\Core\Tag\TagService.cs" />
-    <Compile Include="Model\Event\EventItem\EventItemService.Partial.cs" />
     <Compile Include="Model\FinancialGatewayService.Partial.cs" />
     <Compile Include="Model\Reporting\AnalyticsDimFamilyBase\AnalyticsDimFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsDimPersonBase\AnalyticsDimPersonBase.cs" />

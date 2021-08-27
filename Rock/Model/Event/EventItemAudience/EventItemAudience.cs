@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,6 +31,8 @@ namespace Rock.Model
     [DataContract]
     public partial class EventItemAudience : Model<EventItemAudience>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.EventItem"/> that this EventItemAudience is associated with. This property is required.
         /// </summary>
@@ -50,8 +52,9 @@ namespace Rock.Model
         [Required]
         [DataMember]
         public int DefinedValueId { get; set; }
-       
-        #region Virtual Properties
+
+        #endregion
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemAudience is associated with.
@@ -72,7 +75,6 @@ namespace Rock.Model
         public virtual DefinedValue DefinedValue { get; set; }
 
         #endregion
-
     }
 
     #region Entity Configuration

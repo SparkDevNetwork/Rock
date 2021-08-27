@@ -14,18 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Security;
-using Rock.Tasks;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -38,6 +35,8 @@ namespace Rock.Model
     [DataContract]
     public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable, ICampusFilterable
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the Name of the EventCalendar. This property is required.
         /// </summary>
@@ -86,7 +85,8 @@ namespace Rock.Model
         [DataMember]
         public bool IsIndexEnabled { get; set; } = false;
 
-        #region Virtual Properties
+        #endregion
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventCalendarItem">event calendar items</see>.
@@ -115,8 +115,7 @@ namespace Rock.Model
         private ICollection<EventCalendarContentChannel> _contentChannels;
 
         #endregion
-
-        #region Methods
+        #region Public Methods
 
         /// <summary>
         /// Returns the default authorization for a specific action.
@@ -126,149 +125,6 @@ namespace Rock.Model
         public override bool IsAllowedByDefault( string action )
         {
             return false;
-        }
-
-        /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        /// <value>
-        /// The supported actions.
-        /// </value>
-        public override Dictionary<string, string> SupportedActions
-        {
-            get
-            {
-                var supportedActions = base.SupportedActions;
-                supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve calendar items." );
-                return supportedActions;
-            }
-        }
-
-        #endregion
-
-        #region Index Methods
-
-        /// <summary>
-        /// Deletes the indexed documents by calendar.
-        /// </summary>
-        /// <param name="calendarId">The calendar identifier.</param>
-        public void DeleteIndexedDocumentsByCalendarId( int calendarId )
-        {
-            // Ensure provided calendar is indexable
-            var calendar = EventCalendarCache.Get( calendarId );
-            
-            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
-            {
-                return;
-            }
-
-            // Get event items for this calendar that are ONLY on this calendar.
-            // We don't want to delete items that are also on another calendar.
-            var eventItems = new EventItemService( new RockContext() )
-                                    .GetActiveItemsByCalendarId( calendarId )
-                                    .Where( i => i.EventCalendarItems.Count() == 1 )
-                                    .Select( a => a.Id ).ToList();
-
-            int eventItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.EventItem>().Value;
-
-            foreach ( var eventItemId in eventItems )
-            {
-                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
-                {
-                    EntityTypeId = eventItemEntityTypeId,
-                    EntityId = eventItemId
-                };
-
-                deleteEntityTypeIndexMsg.Send();
-            }
-        }
-
-
-        /// <summary>
-        /// Bulks the index documents by calendar.
-        /// </summary>
-        /// <param name="calendarId">The calendar identifier.</param>
-        public void BulkIndexDocumentsByCalendar( int calendarId )
-        {
-            // Ensure provided calendar is indexable
-            var calendar = EventCalendarCache.Get( calendarId );
-
-            if ( calendar.IsNull() || !calendar.IsIndexEnabled )
-            {
-                return;
-            }
-
-            var eventItems = new EventItemService( new RockContext() )
-                                    .GetActiveItemsByCalendarId( calendarId )
-                                    .Select( a => a.Id ).ToList();
-
-            int eventItemEntityTypeId = EntityTypeCache.GetId<Rock.Model.EventItem>().Value;
-
-            foreach ( var eventItemId in eventItems )
-            {
-                var deleteEntityTypeIndexMsg = new DeleteEntityTypeIndex.Message
-                {
-                    EntityTypeId = eventItemEntityTypeId,
-                    EntityId = eventItemId
-                };
-
-                deleteEntityTypeIndexMsg.Send();
-            }
-        }
-        #endregion
-
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="state"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
-        {
-            // Keep the indexed Event Items correct
-            if ( state == EntityState.Deleted && IsIndexEnabled )
-            {
-                this.DeleteIndexedDocumentsByCalendarId( Id );
-            }
-            else if( state == EntityState.Modified )
-            {
-                var changeEntry = dbContext.ChangeTracker.Entries<EventCalendar>().Where( a => a.Entity == this ).FirstOrDefault();
-                if ( changeEntry != null )
-                {
-                    var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
-
-                    if ( originalIndexState == true && IsIndexEnabled == false )
-                    {
-                        // clear out index items
-                        this.DeleteIndexedDocumentsByCalendarId( Id );
-                    }
-                    else if ( IsIndexEnabled == true )
-                    {
-                        // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
-                        BulkIndexDocumentsByCalendar( Id );
-                    }
-                }
-            }
-        }
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return EventCalendarCache.Get( this.Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            EventCalendarCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

@@ -14,12 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -33,6 +32,7 @@ namespace Rock.Model
     [DataContract]
     public partial class EventItemOccurrenceGroupMap : Model<EventItemOccurrenceGroupMap>
     {
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" /> identifier.
@@ -83,7 +83,8 @@ namespace Rock.Model
         [DataMember]
         public string UrlSlug { get; set; }
 
-        #region Virtual Properties
+        #endregion
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" />.
@@ -113,55 +114,7 @@ namespace Rock.Model
         public virtual RegistrationInstance RegistrationInstance { get; set; }
 
         #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return ToString( false, true, true );
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <param name="includeEventItem">if set to <c>true</c> [include event item].</param>
-        /// <param name="includeRegistrationInstance">if set to <c>true</c> [include registration instance].</param>
-        /// <param name="includeGroup">if set to <c>true</c> [include group].</param>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public string ToString( bool includeEventItem, bool includeRegistrationInstance, bool includeGroup )
-        { 
-            var parts = new List<string>();
-
-            if ( includeEventItem && EventItemOccurrence != null )
-            {
-                parts.Add( EventItemOccurrence.ToString() );
-            }
-
-            if ( includeRegistrationInstance && RegistrationInstance != null )
-            {
-                parts.Add( RegistrationInstance.ToString() );
-            }
-
-            if ( includeGroup && Group != null )
-            {
-                parts.Add( Group.ToString() );
-            }
-
-            return parts.AsDelimited( " - " );
-        }
-
-        #endregion
-
     }
-
 
     #region Entity Configuration
 

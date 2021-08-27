@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +22,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -35,6 +35,7 @@ namespace Rock.Model
     [DataContract]
     public partial class EventItemOccurrence : Model<EventItemOccurrence>
     {
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItem"/> identifier.
@@ -116,7 +117,9 @@ namespace Rock.Model
         [DataMember]
         public string Note { get; set; }
 
-        #region Virtual Properties
+        #endregion
+
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItem"/> that this EventItemOccurrence is a member of.
@@ -169,26 +172,6 @@ namespace Rock.Model
         private ICollection<EventItemOccurrenceGroupMap> _linkages;
 
         /// <summary>
-        /// Gets the next start date time.
-        /// </summary>
-        /// <value>
-        /// The next start date time.
-        /// </value>
-        [NotMapped]
-        public virtual DateTime? NextStartDateTime
-        {
-            get
-            {
-                if ( Schedule != null )
-                {
-                    return Schedule.GetNextStartDateTime( RockDateTime.Now );
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItemOccurrenceChannelItem">content channel items</see>.
         /// </summary>
         /// <value>
@@ -201,61 +184,6 @@ namespace Rock.Model
             set { _contentChannelItems = value; }
         }
         private ICollection<EventItemOccurrenceChannelItem> _contentChannelItems;
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// Gets the start times.
-        /// </summary>
-        /// <param name="beginDateTime">The begin date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <returns></returns>
-        public virtual List<DateTime> GetStartTimes ( DateTime beginDateTime, DateTime endDateTime )
-        {
-            if ( Schedule != null )
-            {
-                return Schedule.GetScheduledStartTimes( beginDateTime, endDateTime );
-            }
-            else
-            {
-                return new List<DateTime>();
-            }
-        }
-
-        /// <summary>
-        /// Gets the first start date time.
-        /// </summary>
-        /// <returns></returns>
-        public virtual DateTime? GetFirstStartDateTime()
-        {
-            if ( Schedule != null )
-            {
-                return Schedule.GetFirstStartDateTime();
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            if ( this.EventItem != null )
-            {
-                return string.Format( "{0} ({1})", this.EventItem.Name,
-                    this.Campus != null ? this.Campus.Name : "All Campuses" );
-            }
-
-            return base.ToString();
-        }
 
         #endregion
     }

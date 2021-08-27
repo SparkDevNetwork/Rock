@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -31,6 +31,7 @@ namespace Rock.Model
     [DataContract]
     public partial class EventItemOccurrenceChannelItem : Model<EventItemOccurrenceChannelItem>
     {
+        #region Entity Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" /> identifier.
@@ -50,7 +51,8 @@ namespace Rock.Model
         [DataMember]
         public int ContentChannelItemId { get; set; }
 
-        #region Virtual Properties
+        #endregion
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.EventItemOccurrence" />.
@@ -71,14 +73,7 @@ namespace Rock.Model
         public virtual ContentChannelItem ContentChannelItem { get; set; }
 
         #endregion
-
-        #region Methods
-
-        #endregion
-
     }
-
-
     #region Entity Configuration
 
     /// <summary>
