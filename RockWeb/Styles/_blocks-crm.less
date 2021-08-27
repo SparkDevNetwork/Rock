@@ -58,10 +58,10 @@
     height: 39px;
 
     .action {
-      float: left;
       display: flex;
       align-items: center;
       justify-content: center;
+      float: left;
       width: 45px;
       height: 100%;
       color: lighten(@persondetails-bio-color, 15%);
@@ -868,8 +868,8 @@
 
 .persondetails-group {
   header {
-    display: flex;
     position: relative;
+    display: flex;
     margin: 0 -15px;
     background-color: @persondetails-bio-bg;
     border-top: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
@@ -889,14 +889,14 @@
 
       .action {
         display: flex;
+        align-items: center;
+        justify-content: center;
         float: right;
         width: 45px;
         height: 100%;
         text-align: center;
         cursor: pointer;
         border-left: 1px solid darken(@persondetails-bio-bg, @const-border-darken-amt);
-        justify-content: center;
-        align-items: center;
       }
     }
   }
