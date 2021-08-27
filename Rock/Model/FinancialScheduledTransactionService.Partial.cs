@@ -87,7 +87,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Sets the status.
+        /// Gets the status of the <see cref="FinancialScheduledTransaction"/> from it's <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// If the schedule is no longer active on the gateway, <see cref="FinancialScheduledTransaction.IsActive"/> is set to <c>false</c>.
+        /// If this method returns false, see <paramref name="errorMessages"/>.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessages">The error messages.</param>
