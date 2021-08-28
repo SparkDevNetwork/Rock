@@ -55,10 +55,11 @@ namespace Rock.Lava
     /// Defines filter methods available for use with the Lava library.
     /// </summary>
     /// <remarks>
+    /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
     /// Filters defined in this class should be moved to the TemplateFilters class once they are confirmed to operate correctly
     /// in both the Rock Web and Rock Mobile applications.
     /// </remarks>
-    public static class LavaFilters
+    internal static class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
 
