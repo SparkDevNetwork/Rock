@@ -41,54 +41,68 @@ namespace Rock.Tests.UnitTests.Lava
         // Modifying this value simulates executing the test set for a different timezone, but should have no impact on the result.
         private static TimeSpan _utcBaseOffset = new TimeSpan( 4, 0, 0 );
 
-        private static CalendarSerializer serializer = new CalendarSerializer();
+        private static CalendarSerializer _serializer = new CalendarSerializer();
 
-        private static RecurrencePattern weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
-        private static RecurrencePattern monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
+        private static RecurrencePattern _weeklyRecurrence = new RecurrencePattern( "RRULE:FREQ=WEEKLY;BYDAY=SA" );
+        private static RecurrencePattern _monthlyRecurrence = new RecurrencePattern( "RRULE:FREQ=MONTHLY;BYDAY=1SA" );
 
-        private static readonly DateTime today = RockDateTime.Today;
-        private static readonly DateTime nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
-        private static readonly DateTime firstSaturdayOfMonth = RockDateTime.Now.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
+        private static string _tzId;
+        private static DateTime _today;
+        private static DateTime _nextSaturday;
+        private static DateTime _firstSaturdayOfMonth;
 
-        private static readonly Calendar weeklySaturday430 = new Calendar()
-        {
-            Events =
-            {
-                new Event
-                    {
-                        DtStart = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 ),
-                        DtEnd = new CalDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 ),
-                        DtStamp = new CalDateTime( today.Year, today.Month, today.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { weeklyRecurrence },
-                        Sequence = 0,
-                        Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
-                    }
-                }
-        };
+        private static Calendar _weeklySaturday430;
+        private static Calendar _monthlyFirstSaturday;
 
-        private static readonly Calendar monthlyFirstSaturday = new Calendar()
-        {
-            Events =
-            {
-                new Event
-                    {
-                        DtStart = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 8, 0, 0 ),
-                        DtEnd = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day, 10, 0, 0 ),
-                        DtStamp = new CalDateTime( firstSaturdayOfMonth.Year, firstSaturdayOfMonth.Month, firstSaturdayOfMonth.Day ),
-                        RecurrenceRules = new List<IRecurrencePattern> { monthlyRecurrence },
-                        Sequence = 0,
-                        Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
-                    }
-                }
-        };
-
-        private static readonly string iCalStringSaturday430 = serializer.SerializeToString( weeklySaturday430 );
-        private static readonly string iCalStringFirstSaturdayOfMonth = serializer.SerializeToString( monthlyFirstSaturday );
+        private static string _iCalStringSaturday430;
+        private static string _iCalStringFirstSaturdayOfMonth;
 
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
+            // Set the test timezone.
             LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+              
+            // Initialize the test calendar data.
+            _tzId = RockDateTime.OrgTimeZoneInfo.Id;
+            _today = RockDateTime.Today;
+            _nextSaturday = RockDateTime.Today.GetNextWeekday( DayOfWeek.Saturday );
+            _firstSaturdayOfMonth = RockDateTime.Now.StartOfMonth().GetNextWeekday( DayOfWeek.Saturday );
+
+            _weeklySaturday430 = new Calendar()
+            {
+                Events =
+                {
+                    new Event
+                    {
+                        DtStart = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 16, 30, 0, _tzId ),
+                        DtEnd = new CalDateTime( _nextSaturday.Year, _nextSaturday.Month, _nextSaturday.Day, 17, 30, 0, _tzId ),
+                        DtStamp = new CalDateTime( _today.Year, _today.Month, _today.Day, _tzId ),
+                        RecurrenceRules = new List<IRecurrencePattern> { _weeklyRecurrence },
+                        Sequence = 0,
+                        Uid = @"d74561ac-c0f9-4dce-a610-c39ca14b0d6e"
+                    }
+                }
+            };
+
+            _monthlyFirstSaturday = new Calendar()
+            {
+                Events =
+                {
+                    new Event
+                    {
+                        DtStart = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 8, 0, 0 ),
+                        DtEnd = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day, 10, 0, 0 ),
+                        DtStamp = new CalDateTime( _firstSaturdayOfMonth.Year, _firstSaturdayOfMonth.Month, _firstSaturdayOfMonth.Day ),
+                        RecurrenceRules = new List<IRecurrencePattern> { _monthlyRecurrence },
+                        Sequence = 0,
+                        Uid = @"517d77dd-6fe8-493b-925f-f266aa2d852c"
+                    }
+                }
+            };
+
+            _iCalStringSaturday430 = _serializer.SerializeToString( _weeklySaturday430 );
+            _iCalStringFirstSaturdayOfMonth = _serializer.SerializeToString( _monthlyFirstSaturday );
         }
 
         [ClassCleanup]
@@ -347,10 +361,6 @@ namespace Rock.Tests.UnitTests.Lava
         {
             // Get an input time of 2018-05-01 at 10am +04:00 offset.
             var textInput = "2018-05-01T10:00:00+04:00";
-            //var dateTimeOffset = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 4, 0, 0 ) );
-
-            // Convert the input time to Rock time, which has a different UTC offset.
-            //var rockTimeString = RockDateTime.ConvertToRockOffset( dateTimeOffset ).ToString( "yyyy-MM-ddTHH:mm:sszzz" );
 
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "textInput", textInput } };
@@ -627,7 +637,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             template = template.Replace( "$filterOption", filterOption );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+              TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
 
@@ -645,35 +655,13 @@ namespace Rock.Tests.UnitTests.Lava
             } );
         }
 
-        private DateTime GetExpectedTestResultDate( DateTime expectedDate1, DateTime expectedDate2 )
-        {
-            TestHelper.AssertDateIsUtc( expectedDate1 );
-            TestHelper.AssertDateIsUtc( expectedDate2 );
-
-            var systemNow = RockDateTime.Now; // DateTime.UtcNow;
-
-            // Note that due to the implementation of the DatesFromICal filter, the current date will only appear in the results
-            // if this unit test is executed when the current system time is prior to the scheduled time of the event.
-            // If the expected date is today but the time is prior to the current system time,
-            // adjust the expected date to the next date in the schedule.
-            if ( expectedDate1.Date == systemNow.Date
-                 && expectedDate1.TimeOfDay <= systemNow.TimeOfDay )
-            {
-                return expectedDate2;
-            }
-            else
-            {
-                return expectedDate1;
-            }
-        }
-
         /// <summary>
         /// A schedule that specifies an infinite recurrence pattern should return dates for GetOccurrences() only up to the requested end date.
         /// </summary>
         [TestMethod]
         public void DatesFromICal_SingleDayEventWithInfiniteRecurrencePattern_ReturnsRequestedOccurrences()
         {
-            // Create a new schedule starting at 11am today Rock time.
+            // Create a new schedule starting at 11am today Rock time.            
             var now = RockDateTime.Now;
 
             var startDateTime = LavaDateTime.NewUtcDateTime( now.Year, now.Month, now.Day, 11, 0, 0 );
@@ -683,11 +671,9 @@ namespace Rock.Tests.UnitTests.Lava
                 eventDuration: new TimeSpan( 1, 0, 0 ),
                 null );
 
-            var expectedDate1 = GetExpectedTestResultDate( startDateTime, startDateTime.AddDays( 1 ) );
-
             VerifyDatesExistInDatesFromICalResult( schedule.iCalendarContent,
-                new List<DateTime> { expectedDate1, expectedDate1.AddDays( 1 ), expectedDate1.AddDays( 2 ) },
-                "3" );
+                new List<DateTime> { startDateTime, startDateTime.AddDays( 1 ), startDateTime.AddDays( 2 ) },
+                $"3,'','{startDateTime.Date:u}'" );
         }
 
         /// <summary>
@@ -703,13 +689,11 @@ namespace Rock.Tests.UnitTests.Lava
             var nextSaturday = now.AddDays( daysUntilSaturday );
 
             // Get a Rock time of 4:30PM for next Saturday, expressed in UTC.
-            var expectedDate = LavaDateTime.NewUtcDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 );
+            var expectedDateTime = LavaDateTime.NewUtcDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 16, 30, 0 );
 
-            expectedDate = GetExpectedTestResultDate( expectedDate, expectedDate.AddDays( 7 ) );
-
-            VerifyDatesExistInDatesFromICalResult( iCalStringSaturday430,
-                new List<DateTime> { expectedDate },
-                "1" );
+            VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
+                new List<DateTime> { expectedDateTime },
+                $"1,'','{expectedDateTime.Date:u}'" );
         }
 
         /// <summary>
@@ -725,11 +709,9 @@ namespace Rock.Tests.UnitTests.Lava
             // Get a Rock time of 5:30PM for next Saturday, expressed in UTC.
             var expectedDateTime = LavaDateTime.NewUtcDateTime( nextSaturday.Year, nextSaturday.Month, nextSaturday.Day, 17, 30, 0 );
 
-            expectedDateTime = GetExpectedTestResultDate( expectedDateTime, expectedDateTime.AddDays( 7 ) );
-
-            VerifyDatesExistInDatesFromICalResult( iCalStringSaturday430,
+            VerifyDatesExistInDatesFromICalResult( _iCalStringSaturday430,
                 new List<DateTime> { expectedDateTime },
-                "1,'enddatetime'" );
+                $"1,'enddatetime','{expectedDateTime.Date:u}'" );
         }
 
         /// <summary>
@@ -752,7 +734,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             expectedDateTime = LavaDateTime.NewUtcDateTime( expectedDateTime.Year, expectedDateTime.Month, expectedDateTime.Day, 10, 0, 0 );
 
-            VerifyDatesExistInDatesFromICalResult( iCalStringFirstSaturdayOfMonth,
+            VerifyDatesExistInDatesFromICalResult( _iCalStringFirstSaturdayOfMonth,
              new List<DateTime> { expectedDateTime },
              "12,'enddatetime'" );
         }
@@ -1466,28 +1448,8 @@ namespace Rock.Tests.UnitTests.Lava
             // Get an input time of 10:00+04:00.
             var datetimeInput = new DateTimeOffset( 2018, 5, 1, 10, 0, 0, new TimeSpan( 2, 0, 0 ) );
 
-            // Convert the input time to local server time, which may have a different UTC offset to the input date.
-            //var expectedDateString = datetimeInput
-            //    .AddHours( 1 )
-            //    .ToString( "yyyy-MM-ddTHH:mm:sszzz" );
-
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
-
-            //var localOffset = RockDateTime.OrgTimeZoneInfo.GetUtcOffset( RockDateTime.Now );
-
-            // First, verify that the Lava filter returns a predictable result for input expressed in Rock time.
-            //var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
-
-            //var mergeValues = new LavaDataDictionary() { { "dateTimeInput", datetimeInput } };
-
-            //TestHelper.AssertTemplateOutput( "2020-05-15 00:00:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-dd HH:mm:ss' }}", mergeValues );
-
-            // Next, verify that the Lava filter returns a lesser result if the DateTimeOffset is increased such that the datetime
-            // crosses the boundary to the previous day when translated to local time.
-            //var datetimeInput2 = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, new TimeSpan( 2, 0, 0 ) ) );
-
-            //var mergeValues2 = new LavaDataDictionary() { { "dateTimeInput", datetimeInput2 } };
 
             TestHelper.AssertTemplateOutput( "2018-05-01T00:00:00+02:00", "{{ dateTimeInput | ToMidnight | Date:'yyyy-MM-ddTHH:mm:sszzz' }}", mergeValues );
         }
