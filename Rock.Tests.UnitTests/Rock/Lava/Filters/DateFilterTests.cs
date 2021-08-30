@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Ical.Net;
 using Ical.Net.DataTypes;
 using Ical.Net.Interfaces.DataTypes;
@@ -195,9 +194,6 @@ namespace Rock.Tests.UnitTests.Lava
             var dateTimeInputString = dateTimeInput.ToString();
 
             var expectedOutput = dateTimeInput.ToString( "yyyy-MM-ddTHH:mm:sszzz" );
-
-            // Convert the input time to local server time, which most likely has a different UTC offset to the input date.
-            //var serverLocalTimeString = RockDateTime.ConvertToRockOffset( dateTimeInput ).ToString( "yyyy-MM-ddTHH:mm:sszzz" );
 
             // Add the input DateTimeOffset object to the Lava context.
             var mergeValues = new LavaDataDictionary() { { "dateTimeInput", dateTimeInputString } };
@@ -637,7 +633,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             template = template.Replace( "$filterOption", filterOption );
 
-              TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 var output = TestHelper.GetTemplateOutput( engine, template, mergeValues );
 
@@ -650,7 +646,10 @@ namespace Rock.Tests.UnitTests.Lava
 
                     var rockDateTimeString = LavaDateTime.ToString( date, "yyyy-MM-dd HH:mm:ss tt" );
 
-                    Assert.That.Contains( output, $"<li>{ rockDateTimeString }</li>" );
+                    if ( !output.Contains( $"<li>{ rockDateTimeString }</li>" ) )
+                    {
+                        Assert.That.Fail( $"Lava Output '{ output }' does not contain date string '{ rockDateTimeString }'.\n[SystemDateTime = {DateTime.Now:O}, RockDateTime = {RockDateTime.Now:O}]" );
+                    }
                 }
             } );
         }

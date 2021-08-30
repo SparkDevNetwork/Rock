@@ -1260,16 +1260,18 @@ namespace Rock.Lava
 
             List<DateTimeOffset> dates;
 
+            // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
+            // express the start and end dates for the occurrence period in UTC.
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
+                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.StartTime.ToTimeZone( tzName ).Value ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                dates = calendar.GetOccurrences( startDateTime.Value.DateTime, endDate.DateTime )
+                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.EndTime.ToTimeZone( tzName ).Value ) )
                     .ToList();
