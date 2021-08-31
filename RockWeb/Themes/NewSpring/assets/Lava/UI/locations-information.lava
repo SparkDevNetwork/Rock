@@ -1,4 +1,4 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'greenville','eastlan' | Replace:'-',' ' | Capitalize %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 {% assign mailingAddress = campus.MailingAddress %}
 {% assign officeAddress = campus.OfficeAddress %}
