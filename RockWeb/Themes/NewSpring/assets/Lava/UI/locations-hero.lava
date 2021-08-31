@@ -1,4 +1,4 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'greenville','eastlan' | Replace:'-',' ' | Capitalize %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
 
 {% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
@@ -15,7 +15,7 @@
 {% capture id %}{% endcapture %}
 {% capture title %}{% if servicetype != 'Fuse' %}{{ 'Global' | Attribute:'OrganizationName' }}{% else %}Fuse Student Ministry{% endif %}{% endcapture %}
 {% capture titlesize %}{% endcapture %}
-{% capture content %}<p class="italic">- of -</p> <h3 class="flush">{{ campus.Name | Replace:'Eastlan','Greenville' }}, SC</h3>{% endcapture %}
+{% capture content %}<p class="italic">- of -</p> <h3 class="flush">{{ campus.Name }}, SC</h3>{% endcapture %}
 {% capture textalignment %}{% endcapture %}
 {% capture label %}{% endcapture %}
 {% capture subtitle %}{% endcapture %}
