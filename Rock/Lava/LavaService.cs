@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Web;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
@@ -26,11 +28,11 @@ namespace Rock.Lava
     public static class LavaService
     {
         private static LavaServiceProvider _serviceProvider = new LavaServiceProvider();
-        private static ILavaEngine _engine = null;        
+        private static ILavaEngine _engine = null;
 
         private static object _initializationLock = new object();
         private static bool _rockLiquidIsEnabled = true;
-        
+
         /// <summary>
         /// A flag indicating if RockLiquid Lava processing is enabled.
         /// RockLiquid is the Rock-specific fork of the DotLiquid framework that provides Lava rendering for Rock v12 or below.
@@ -477,6 +479,40 @@ namespace Rock.Lava
                 return null;
             }
 
+            // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference
+            // to the associated Rock theme. This is necessary because Lava templates that include references
+            // to theme assets may appear identical, but will render differently if the asset content is different for each theme.
+            // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output if the content
+            // of the "template.lava" file is different for each theme.
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            if ( page != null )
+            {
+                var themeName = page?.Site?.Theme;
+
+                string cacheKey;
+
+                if ( string.IsNullOrEmpty( themeName ) )
+                {
+                    cacheKey = "(theme)";
+                }
+                else
+                {
+                    cacheKey = themeName.Replace( " ", string.Empty );
+                }
+
+                if ( string.IsNullOrEmpty( parameters.CacheKey ) )
+                {
+                    cacheKey = $"{cacheKey}@{_engine.TemplateCacheService.GetCacheKeyForTemplate( inputTemplate )}";
+                }
+                else
+                {
+                    cacheKey = $"{cacheKey}@{parameters.CacheKey}";
+                }
+
+                parameters.CacheKey = cacheKey;
+            }
+
             return _engine.RenderTemplate( inputTemplate, parameters );
         }
 
@@ -500,24 +536,6 @@ namespace Rock.Lava
         /// Render the provided template in a new context with the specified parameters.
         /// </summary>
         /// <param name="inputTemplate"></param>
-        /// <param name="parameters">The settings applied to the rendering process.</param>
-        /// <returns>
-        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
-        {
-            if ( _engine == null )
-            {
-                return null;
-            }
-
-            return _engine.RenderTemplate( inputTemplate, parameters );
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified parameters.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
         /// <param name="context">The settings applied to the rendering process.</param>
         /// <returns>
         /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
@@ -529,7 +547,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            return _engine.RenderTemplate( inputTemplate, context );
+            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( context ) );
         }
 
         /// <summary>
@@ -546,6 +564,24 @@ namespace Rock.Lava
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
 
             return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="parameters">The settings applied to the rendering process.</param>
+        /// <returns>
+        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
+        {
+            if ( _engine == null )
+            {
+                return null;
+            }
+
+            return _engine.RenderTemplate( inputTemplate, parameters );
         }
 
         /// <summary>
