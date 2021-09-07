@@ -398,7 +398,14 @@ namespace Rock.Financial
         /// <returns></returns>
         public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
         {
-            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
+            if ( scheduledTransaction.IsActive )
+            {
+                return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
+            }
+            else
+            {
+                return scheduledTransaction.NextPaymentDate;
+            }
         }
 
         #endregion
