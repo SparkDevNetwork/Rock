@@ -102,6 +102,15 @@ namespace Rock.Model
         [DataMember]
         public int? StepProgramCompletionId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the caption.
+        /// </summary>
+        /// <value>
+        /// The caption.
+        /// </value>
+        [NotMapped]
+        public virtual string Caption { get; set; }
+
         #endregion Entity Properties
 
         #region IOrdered

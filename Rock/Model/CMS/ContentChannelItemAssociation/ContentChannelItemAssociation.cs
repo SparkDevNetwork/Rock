@@ -17,7 +17,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -62,9 +61,9 @@ namespace Rock.Model
         [DataMember]
         public int Order { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/>.
@@ -84,7 +83,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ContentChannelItem ChildContentChannelItem { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -104,5 +103,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

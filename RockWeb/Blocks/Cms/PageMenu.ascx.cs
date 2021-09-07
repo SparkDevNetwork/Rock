@@ -154,7 +154,16 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
-            LavaTemplateCache.Remove( CacheKey() );
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                // Remove the template from the DotLiquid cache.
+                LavaTemplateCache.Remove( CacheKey() );
+            }
+
+            // Remove the existing template from the cache.
+            var cacheKey = CacheKey();
+
+            LavaService.RemoveTemplateCacheEntry( cacheKey );
         }
 
         private void Render()

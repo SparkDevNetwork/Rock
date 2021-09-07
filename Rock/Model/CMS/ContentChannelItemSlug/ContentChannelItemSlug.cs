@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,7 +30,6 @@ namespace Rock.Model
     [DataContract]
     public partial class ContentChannelItemSlug : Model<ContentChannelItemSlug>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -64,9 +62,9 @@ namespace Rock.Model
         [DataMember]
         public bool IsPrimary { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ContentChannelItem"/>.
@@ -77,7 +75,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ContentChannelItem ContentChannelItem { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Methods
 
@@ -92,7 +90,7 @@ namespace Rock.Model
             return this.Slug;
         }
 
-        #endregion
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -111,5 +109,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

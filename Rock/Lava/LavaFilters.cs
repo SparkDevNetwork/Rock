@@ -55,10 +55,11 @@ namespace Rock.Lava
     /// Defines filter methods available for use with the Lava library.
     /// </summary>
     /// <remarks>
+    /// This class is marked for internal use because it should only be used in the context of resolving a Lava template.
     /// Filters defined in this class should be moved to the TemplateFilters class once they are confirmed to operate correctly
     /// in both the Rock Web and Rock Mobile applications.
     /// </remarks>
-    public static class LavaFilters
+    internal static class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
 
@@ -1180,8 +1181,9 @@ namespace Rock.Lava
         /// <param name="input">The input is either an iCal string or a list of iCal strings.</param>
         /// <param name="option">The quantity option (either an integer or "all").</param>
         /// <param name="endDateTimeOption">The 'enddatetime' option if supplied will return the ending datetime of the occurrence; otherwise the start datetime is returned.</param>
+        /// <param name="startDateTime">An optional date/time value that represents the start of the occurrence period.</param>
         /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
-        public static List<DateTimeOffset> DatesFromICal( object input, object option = null, object endDateTimeOption = null )
+        public static List<DateTimeOffset> DatesFromICal( object input, object option = null, object endDateTimeOption = null, object startDateTime = null )
         {
             // if no option was specified, default to returning just 1 (to preserve previous behavior)
             option = option ?? 1;
@@ -1202,11 +1204,13 @@ namespace Rock.Lava
 
             bool useEndDateTime = ( endDateTimeOption is string && ( string ) endDateTimeOption == "enddatetime" );
 
+            var startDto = GetDateTimeOffsetFromInputParameter( startDateTime, null );
+
             var nextOccurrences = new List<DateTimeOffset>();
 
             if ( input is string )
             {
-                nextOccurrences = GetOccurrenceDates( ( string ) input, returnCount, useEndDateTime );
+                nextOccurrences = GetOccurrenceDates( ( string ) input, returnCount, useEndDateTime, startDto );
             }
             else if ( input is IList )
             {
@@ -1214,7 +1218,7 @@ namespace Rock.Lava
                 {
                     if ( item is string )
                     {
-                        nextOccurrences.AddRange( GetOccurrenceDates( ( string ) item, returnCount, useEndDateTime ) );
+                        nextOccurrences.AddRange( GetOccurrenceDates( ( string ) item, returnCount, useEndDateTime, startDto ) );
                     }
                 }
             }
@@ -1232,13 +1236,21 @@ namespace Rock.Lava
         /// <param name="iCalString">The iCal string.</param>
         /// <param name="returnCount">The return count.</param>
         /// <param name="useEndDateTime">if set to <c>true</c> uses the EndTime in the returned dates; otherwise it uses the StartTime.</param>
+        /// <param name="startDateTime">An optional date/time value that specifies the start of the occurrence period.</param>
         /// <returns>A collection of DateTime values representing the next occurrence dates, expressed in UTC.</returns>
-        private static List<DateTimeOffset> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false )
+        private static List<DateTimeOffset> GetOccurrenceDates( string iCalString, int returnCount, bool useEndDateTime = false, DateTimeOffset? startDateTime = null )
         {
             // Construct a calendar for the Rock timezone, and read the occurrence dates.
-            var startDate = RockDateTime.Now;
+            if ( startDateTime == null )
+            {
+                startDateTime = LavaDateTime.NowOffset;
+            }
+            else
+            {
+                startDateTime = LavaDateTime.ConvertToRockOffset( startDateTime.Value );
+            }
 
-            var endDate = startDate.AddYears( 1 );
+            var endDate = startDateTime.Value.AddYears( 1 );
 
             var calendar = Calendar.LoadFromStream( new StringReader( iCalString ) ).First() as Calendar;
 
@@ -1248,16 +1260,18 @@ namespace Rock.Lava
 
             List<DateTimeOffset> dates;
 
+            // To avoid any confusion where the local timezone, Rock timezone and calendar timezone are not the same,
+            // express the start and end dates for the occurrence period in UTC.
             if ( !useEndDateTime && calendarEvent.DtStart != null )
             {
-                dates = calendar.GetOccurrences( startDate, endDate )
+                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.StartTime.ToTimeZone( tzName ).Value ) )
                     .ToList();
             }
             else if ( useEndDateTime && calendarEvent.DtEnd != null )
             {
-                dates = calendar.GetOccurrences( startDate, endDate )
+                dates = calendar.GetOccurrences( startDateTime.Value.UtcDateTime, endDate.UtcDateTime )
                     .Take( returnCount )
                     .Select( d => new DateTimeOffset( d.Period.EndTime.ToTimeZone( tzName ).Value ) )
                     .ToList();

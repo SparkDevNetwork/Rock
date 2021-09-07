@@ -107,11 +107,13 @@ namespace Rock.Tests.UnitTests.Lava
 
             tz = TimeZoneInfo.FindSystemTimeZoneById( "AUS Eastern Standard Time" );
 
-            Assert.That.IsNotNull( tz, "Timezone is not available in this environment." );
+            Assert.That.IsNotNull( tz, "Timezone 'AEST' is not available in this environment." );
 
             if ( tz.Id == TimeZoneInfo.Local.Id )
             {
                 tz = TimeZoneInfo.FindSystemTimeZoneById( "US Mountain Standard Time" );
+
+                  Assert.That.IsNotNull( tz, "Timezone 'MST' is not available in this environment." );
             }
 
             RockDateTime.Initialize( tz );

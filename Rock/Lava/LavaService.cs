@@ -16,21 +16,27 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Web;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Lava
 {
     /// <summary>
-    /// Provides access to core functions for Rock Lava using the global instance of the Lava engine.
+    /// Provides access to core functions for Rock Lava using a global instance of the Lava engine in a web application context.
+    /// This service is a wrapper for the LavaEngine component, with the following extensions:
+    /// * Implements web-specific template caching, particularly to segregate the caching of assets for different Rock themes.
     /// </summary>
     public static class LavaService
     {
         private static LavaServiceProvider _serviceProvider = new LavaServiceProvider();
-        private static ILavaEngine _engine = null;        
+        private static ILavaEngine _engine = null;
 
         private static object _initializationLock = new object();
         private static bool _rockLiquidIsEnabled = true;
-        
+
         /// <summary>
         /// A flag indicating if RockLiquid Lava processing is enabled.
         /// RockLiquid is the Rock-specific fork of the DotLiquid framework that provides Lava rendering for Rock v12 or below.
@@ -477,7 +483,108 @@ namespace Rock.Lava
                 return null;
             }
 
+            // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference
+            // to the associated Rock theme. This is necessary because Lava templates that include references
+            // to theme assets may appear identical, but will render differently if the asset content is different for each theme.
+            // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output if the content
+            // of the "template.lava" file is different for each theme.
+            var page = HttpContext.Current?.Handler as RockPage;
+
+            if ( page != null )
+            {
+                string cacheKey;
+
+                if ( string.IsNullOrEmpty( parameters.CacheKey ) )
+                {
+                    cacheKey = _engine.TemplateCacheService.GetCacheKeyForTemplate( inputTemplate );
+                }
+                else
+                {
+                    cacheKey = parameters.CacheKey;
+                }
+
+                parameters.CacheKey = GetWebTemplateCacheKey( cacheKey, page.Site?.Theme );
+            }
+
             return _engine.RenderTemplate( inputTemplate, parameters );
+        }
+
+        /// <summary>
+        /// Removes an entry from the cache.
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        public static void RemoveTemplateCacheEntry( string cacheKey )
+        {
+            var cacheService = _engine?.TemplateCacheService;
+
+            if ( cacheService == null )
+            {
+                return;
+            }
+
+            // Remove the item associated with the specified cache key, if it exists.
+            cacheService.RemoveKey( cacheKey );
+
+            // If Lava is generated for a specific page it is cached according to the page theme,
+            // so remove instances of the template associated with any active theme.
+            var themes = SiteCache.All()
+                .Where( x => x.Theme != null )
+                .Select( x => x.Theme )
+                .Distinct()
+                .ToList();
+
+            foreach ( var theme in themes )
+            {
+                var internalKey = GetWebTemplateCacheKey( cacheKey, theme );
+
+                cacheService.RemoveKey( internalKey );
+            }
+        }
+
+        /// <summary>
+        /// Generates an internal cache key for a lava template that uniquely identifies it in the context of the Rock web application.
+        /// </summary>
+        /// <param name="baseCacheKey">The cache key used to identify the template in standard processing.</param>
+        /// <param name="themeName">The name of the theme with which the template is associated.</param>
+        /// <returns></returns>
+        private static string GetWebTemplateCacheKey( string baseCacheKey, string themeName )
+        {
+            if ( string.IsNullOrEmpty( baseCacheKey ) )
+            {
+                return null;
+            }
+
+            // If this template is being rendered as part of a web page handler, ensure that the cache key includes a reference
+            // to the associated Rock theme. This is needed because identical Lava templates that include references
+            // to theme assets should render different output according to the current theme.
+            // For example, the template "{% include '~~/Assets/Lava/template.lava' %} will produce different output when used
+            // on pages with different themes if the content of the "template.lava" file is not the identical for those themes.
+            if ( string.IsNullOrEmpty( themeName ) )
+            {
+                var page = HttpContext.Current?.Handler as RockPage;
+
+                if ( page == null )
+                {
+                    return baseCacheKey;
+                }
+
+                themeName = page?.Site?.Theme;
+            }
+
+            string internalCacheKey;
+
+            if ( string.IsNullOrEmpty( themeName ) )
+            {
+                internalCacheKey = "*";
+            }
+            else
+            {
+                internalCacheKey = themeName.Replace( " ", string.Empty );
+            }
+
+            internalCacheKey = $"{internalCacheKey}@{baseCacheKey}";
+
+            return internalCacheKey;
         }
 
         /// <summary>
@@ -500,24 +607,6 @@ namespace Rock.Lava
         /// Render the provided template in a new context with the specified parameters.
         /// </summary>
         /// <param name="inputTemplate"></param>
-        /// <param name="parameters">The settings applied to the rendering process.</param>
-        /// <returns>
-        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
-        /// </returns>
-        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
-        {
-            if ( _engine == null )
-            {
-                return null;
-            }
-
-            return _engine.RenderTemplate( inputTemplate, parameters );
-        }
-
-        /// <summary>
-        /// Render the provided template in a new context with the specified parameters.
-        /// </summary>
-        /// <param name="inputTemplate"></param>
         /// <param name="context">The settings applied to the rendering process.</param>
         /// <returns>
         /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
@@ -529,7 +618,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            return _engine.RenderTemplate( inputTemplate, context );
+            return RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( context ) );
         }
 
         /// <summary>
@@ -546,6 +635,24 @@ namespace Rock.Lava
             var result = RenderTemplate( inputTemplate, LavaRenderParameters.WithContext( _engine.NewRenderContext( mergeFields ) ) );
 
             return result;
+        }
+
+        /// <summary>
+        /// Render the provided template in a new context with the specified parameters.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <param name="parameters">The settings applied to the rendering process.</param>
+        /// <returns>
+        /// A LavaRenderResult object, containing the rendered output of the template or any errors encountered during the rendering process.
+        /// </returns>
+        public static LavaRenderResult RenderTemplate( ILavaTemplate inputTemplate, LavaRenderParameters parameters )
+        {
+            if ( _engine == null )
+            {
+                return null;
+            }
+
+            return _engine.RenderTemplate( inputTemplate, parameters );
         }
 
         /// <summary>

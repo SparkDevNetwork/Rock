@@ -24,10 +24,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
-using Rock.Tasks;
-using Rock.Transactions;
-using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -210,9 +209,9 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS )]
         public int? StructuredContentToolValueId { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.ContentChannelType">type</see> of the content channel.
@@ -251,14 +250,14 @@ namespace Rock.Model
         public virtual ICollection<ContentChannelItem> Items { get; set; }
 
         /*
-	        08/25/2020 - MSB
-	        We have added the JsonIgnore attribute to address in application crash issue
+            08/25/2020 - MSB
+            We have added the JsonIgnore attribute to address in application crash issue
             caused by a Content Channel referencing itself when the object is serialized
             to a JSON string.
 
             https://github.com/SparkDevNetwork/Rock/issues/4250
-	
-            Reason: Web Api Controller	
+
+            Reason: Web Api Controller
         */
 
         /// <summary>
@@ -273,6 +272,7 @@ namespace Rock.Model
             get { return _childContentChannels ?? ( _childContentChannels = new Collection<ContentChannel>() ); }
             set { _childContentChannels = value; }
         }
+
         private ICollection<ContentChannel> _childContentChannels;
 
         /// <summary>
@@ -286,6 +286,7 @@ namespace Rock.Model
             get { return _parentContentChannels ?? ( _parentContentChannels = new Collection<ContentChannel>() ); }
             set { _parentContentChannels = value; }
         }
+
         private ICollection<ContentChannel> _parentContentChannels;
 
         /// <summary>
@@ -301,6 +302,7 @@ namespace Rock.Model
             get { return _categories ?? ( _categories = new Collection<Category>() ); }
             set { _categories = value; }
         }
+
         private ICollection<Category> _categories;
 
         /// <summary>
@@ -316,27 +318,12 @@ namespace Rock.Model
             {
                 var supportedActions = base.SupportedActions;
                 supportedActions.AddOrReplace( Rock.Security.Authorization.APPROVE, "The roles and/or users that have access to approve channel items." );
-                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to intertact with the channel item." );
+                supportedActions.AddOrReplace( Rock.Security.Authorization.INTERACT, "The roles and/or users that have access to interact with the channel item." );
                 return supportedActions;
             }
         }
 
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        [NotMapped]
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
-            }
-        }
-
-        #endregion
+        #endregion Navigation Properties
 
         #region Constructors
 
@@ -348,7 +335,7 @@ namespace Rock.Model
             Items = new Collection<ContentChannelItem>();
         }
 
-        #endregion
+        #endregion Constructors
 
         #region Methods
 
@@ -404,48 +391,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion
-
-        /// <summary>
-        /// Pres the save.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                ChildContentChannels.Clear();
-            }
-
-            // clean up the index
-            if ( state == EntityState.Deleted && IsIndexEnabled )
-            {
-                this.DeleteIndexedDocumentsByContentChannel( Id );
-            }
-            else if ( state == EntityState.Modified )
-            {
-                // check if indexing is enabled
-                var changeEntry = dbContext.ChangeTracker.Entries<ContentChannel>().Where( a => a.Entity == this ).FirstOrDefault();
-                if ( changeEntry != null )
-                {
-                    var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
-
-                    if ( originalIndexState == true && IsIndexEnabled == false )
-                    {
-                        // clear out index items
-                        this.DeleteIndexedDocumentsByContentChannel( Id );
-                    }
-                    else if ( IsIndexEnabled == true )
-                    {
-                        // if indexing is enabled then bulk index - needed as an attribute could have changed from IsIndexed
-                        BulkIndexDocumentsByContentChannel( Id );
-                    }
-                }
-            }
-
-            base.PreSaveChanges( dbContext, state );
-        }
+        #endregion Index Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -457,7 +403,7 @@ namespace Rock.Model
         {
             return this.Name;
         }
-        #endregion
+        #endregion Methods
 
         #region ICacheable
 
@@ -480,7 +426,7 @@ namespace Rock.Model
             ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
 
-        #endregion
+        #endregion ICacheable
     }
 
     #region Entity Configuration
@@ -503,27 +449,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
-
-
-    #region Enumerations
-
-    /// <summary>
-    /// Represents the type of editor to use when editing content for channel item
-    /// </summary>
-    public enum ContentControlType
-    {
-        /// <summary>
-        /// Code Editor control
-        /// </summary>
-        CodeEditor = 0,
-
-        /// <summary>
-        /// HTML Editor control
-        /// </summary>
-        HtmlEditor = 1
-    }
-
-    #endregion
-
+    #endregion Entity Configuration
 }

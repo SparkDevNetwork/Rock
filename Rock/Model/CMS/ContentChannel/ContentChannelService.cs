@@ -163,39 +163,5 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
-
-    }
-
-    /// <summary>
-    /// Represents a ContentChannelPath object in Rock.
-    /// </summary>
-    public class ContentChannelPath
-    {
-        /// <summary>
-        /// Gets or sets the ID of the ContentChannel.
-        /// </summary>
-        /// <value>
-        /// ID of the ContentChannel.
-        /// </value>
-        public int ContentChannelId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the full associated ancestor path (of content channel type associations). 
-        /// </summary>
-        /// <value>
-        /// Full path of the ancestor content channel type associations. 
-        /// </value>
-        public string Path { get; set; }
-
-        /// <summary>
-        /// Returns the Path of the ContentChannelPath
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return this.Path;
-        }
     }
 }

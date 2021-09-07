@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,6 +32,8 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         internal class SaveHook : EntitySaveHook<Step>
         {
+            private History.HistoryChangeList PersonHistoryChangeList { get; set; }
+
             /// <summary>
             /// Called before the save operation is executed.
             /// </summary>
@@ -53,6 +57,95 @@ namespace Rock.Model
                     PreviousStepStatusId = previousStepStatusId
                 }.Send();
 
+                PersonHistoryChangeList = new History.HistoryChangeList();
+                var rockContext = ( RockContext ) this.RockContext;
+                if ( Entity.Caption.IsNullOrWhiteSpace() )
+                {
+                    Entity.Caption = new StepTypeService( rockContext ).Get( Entity.StepTypeId ).Name;
+                }
+
+                switch ( State )
+                {
+                    case EntityContextState.Added:
+                        {
+                            var historyChange = PersonHistoryChangeList.AddChange( History.HistoryVerb.StepAdded, History.HistoryChangeType.Record, Entity.Caption );
+                            var campusName = string.Empty;
+                            if ( Entity.Campus != null )
+                            {
+                                campusName = Entity.Campus.Name;
+                            }
+
+                            if ( Entity.CampusId.HasValue && campusName.IsNullOrWhiteSpace() )
+                            {
+                                var campus = CampusCache.Get( Entity.CampusId.Value );
+                                campusName = campus.Name;
+                            }
+
+                            if ( campusName.IsNotNullOrWhiteSpace() )
+                            {
+                                historyChange.SetRelatedData( campusName, null, null );
+                            }
+                            break;
+                        }
+
+                    case EntityContextState.Modified:
+                        {
+                            var originalStepStatusId = Entry.OriginalValues[nameof( Step.StepStatusId )].ToStringSafe().AsIntegerOrNull();
+                            var stepStatusId = Entity.StepStatus != null ? Entity.StepStatus.Id : Entity.StepStatusId;
+                            if ( !originalStepStatusId.Equals( stepStatusId ) )
+                            {
+                                string origStepStatus = History.GetValue<StepStatus>( null, originalStepStatusId, rockContext );
+                                string stepStatus = History.GetValue<StepStatus>( Entity.StepStatus, stepStatusId, rockContext );
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Step Status" )
+                                    .SetOldValue( origStepStatus )
+                                    .SetNewValue( stepStatus );
+                            }
+
+                            var originalCampusId = Entry.OriginalValues[nameof( Step.CampusId )].ToStringSafe().AsIntegerOrNull();
+                            var campusId = Entity.Campus != null ? Entity.Campus.Id : Entity.CampusId;
+                            if ( !originalCampusId.Equals( campusId ) )
+                            {
+                                string origCampus = History.GetValue<Campus>( null, originalCampusId, rockContext );
+                                string campus = History.GetValue<Campus>( Entity.Campus, campusId, rockContext );
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Campus" )
+                                .SetOldValue( origCampus )
+                                .SetNewValue( campus );
+                            }
+
+                            var originalStartDateTime = Entry.OriginalValues[nameof( Step.StartDateTime )].ToStringSafe().AsDateTime();
+                            if ( Entity.StartDateTime != originalStartDateTime )
+                            {
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Step Start" )
+                                .SetOldValue( originalStartDateTime.ToShortDateString() )
+                                .SetNewValue( Entity.StartDateTime.ToShortDateString() );
+                            }
+
+                            var originalEndDateTime = Entry.OriginalValues[nameof( Step.EndDateTime )].ToStringSafe().AsDateTime();
+                            if ( Entity.EndDateTime != originalEndDateTime )
+                            {
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Step End" )
+                                .SetOldValue( originalEndDateTime.ToShortDateString() )
+                                .SetNewValue( Entity.EndDateTime.ToShortDateString() );
+                            }
+
+                            var originalCompletedDateTime = Entry.OriginalValues[nameof( Step.CompletedDateTime )].ToStringSafe().AsDateTime();
+                            if ( Entity.CompletedDateTime != originalCompletedDateTime )
+                            {
+                                PersonHistoryChangeList.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, "Completed" )
+                                 .SetOldValue( originalCompletedDateTime.ToShortDateString() )
+                                 .SetNewValue( Entity.CompletedDateTime.ToShortDateString() );
+                            }
+
+                            break;
+                        }
+
+                    case EntityContextState.Deleted:
+                        {
+                            PersonHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Step Type" ).SetOldValue( Entity.Caption );
+                            break;
+                        }
+                }
+
                 base.PreSave();
             }
 
@@ -62,6 +155,24 @@ namespace Rock.Model
             protected override void PostSave()
             {
                 var rockContext = ( RockContext ) this.RockContext;
+
+                if ( PersonHistoryChangeList?.Any() == true )
+                {
+                    var personAlias = Entity.PersonAlias ?? new PersonAliasService( rockContext ).Get( Entity.PersonAliasId );
+                    HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Person ),
+                                Rock.SystemGuid.Category.HISTORY_PERSON_STEP.AsGuid(),
+                                personAlias.PersonId,
+                                PersonHistoryChangeList,
+                                Entity.Caption,
+                                typeof( Step ),
+                                Entity.Id,
+                                true,
+                                Entity.ModifiedByPersonAliasId,
+                                ( rockContext.SourceOfChange ) );
+                }
+
                 base.PostSave();
 
                 UpdateStepProgramCompletion( rockContext );

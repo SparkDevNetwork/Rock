@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -198,6 +199,7 @@ namespace RockWeb.Blocks.Steps
 
             gStepList.DataKeyNames = new[] { "id" };
             gStepList.GridRebind += gStepList_GridRebind;
+            gStepList.RowDataBound += gStepList_RowDataBound;
 
             var campusField = gStepList.ColumnsOfType<CampusField>().First();
             if ( campusField != null )
@@ -260,6 +262,29 @@ namespace RockWeb.Blocks.Steps
         private void gStepList_GridRebind( object sender, GridRebindEventArgs e )
         {
             RenderGridView();
+        }
+
+        /// <summary>
+        /// Handle the rebind event for the step list grid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void gStepList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
+
+            // Allow Edit if authorized to edit the block or the Step Type.
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteFieldColumn != null )
+            {
+                deleteFieldColumn.Visible = canEditBlock;
+            }
         }
 
         /// <summary>

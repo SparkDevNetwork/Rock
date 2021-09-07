@@ -104,7 +104,7 @@ TedDecker<br/>
         /// This behavior differs from the standard scoping behavior for Liquid blocks.
         /// </summary>
         [TestMethod]
-        public void Cache_InnerScopeAssign_DoesNotModifyOuterVariable()
+        public void CacheBlock_InnerScopeAssign_DoesNotModifyOuterVariable()
         {
             var input = @"
 {% assign color = 'blue' %}
@@ -117,6 +117,41 @@ Color 1: {{ color }}
 {% endcache %}
 
 Color 4: {{ color }}
+";
+
+            var expectedOutput = @"
+Color 1: blue
+Color 2: blue
+Color 3: red
+Color 4: blue
+";
+
+            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache" };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
+        }
+
+        /// <summary>
+        /// Verifies the variable scoping behavior of the Cache block.
+        /// Within the scope of a Cache block, an Assign statement should not affect the value of a same-named variable in the outer scope.
+        /// This behavior differs from the standard scoping behavior for Liquid blocks.
+        /// </summary>
+        [TestMethod]
+        public void CacheBlock_InsideNewScope_HasAccessToOuterVariable()
+        {
+            var input = @"
+{% if 1 == 1 %}
+    {% assign color = 'blue' %}
+    Color 1: {{ color }}
+
+    {% cache key:'fav-color' duration:'0' %}
+        Color 2: {{ color }}
+        {% assign color = 'red' %}
+        Color 3: {{color }}
+    {% endcache %}
+
+    Color 4: {{ color }}
+{% endif %}
 ";
 
             var expectedOutput = @"
