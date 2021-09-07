@@ -16,6 +16,8 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.DotLiquid;
+using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -56,9 +58,10 @@ Email: ted@rocksolidchurch.com
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                // Create a new engine instance of the same type, but with a test file system configuration.
+                var testEngine = LavaService.NewEngineInstance( engine.GetType(), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-                TestHelper.AssertTemplateOutput( testEngine.EngineType, expectedOutput, input, options );
+                TestHelper.AssertTemplateOutput( testEngine, expectedOutput, input, options );
             } );
         }
 
@@ -78,27 +81,33 @@ Outer 'a' = {{ a }}
 Outer 'a' =  {{ a }}
 ";
 
-            var expectedOutputLiquid = @"
+            if ( LavaIntegrationTestHelper.DotLiquidEngineIsEnabled )
+            {
+                var expectedOutputLiquid = @"
 Outer 'a' = a
 Included 'a' = b
 Outer 'a' = b
 ";
 
-            var testEngineDotLiquid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.DotLiquid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+	            var testEngineDotLiquid = LavaService.NewEngineInstance( typeof( DotLiquidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-            TestHelper.AssertTemplateOutput( testEngineDotLiquid, expectedOutputLiquid, input );
+                TestHelper.AssertTemplateOutput( testEngineDotLiquid, expectedOutputLiquid, input );
+            }
 
-            // The behavior in Fluid is different from standard Liquid.
-            // The include file maintains a local scope for new variables.
-            var expectedOutputFluid = @"
+            if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
+            {
+                // The behavior in Fluid is different from standard Liquid.
+                // The include file maintains a local scope for new variables.
+                var expectedOutputFluid = @"
 Outer 'a' = a
 Included 'a' = b
 Outer 'a' = a
 ";
 
-            var testEngineFluid = LavaService.NewEngineInstance( LavaEngineTypeSpecifier.Fluid, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+	            var testEngineFluid = LavaService.NewEngineInstance( typeof( FluidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
-            TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
+                TestHelper.AssertTemplateOutput( testEngineFluid, expectedOutputFluid, input );
+            }
         }
 
         [TestMethod]
@@ -112,11 +121,11 @@ Outer 'a' = a
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
+                var testEngine = LavaService.NewEngineInstance( engine.GetType(), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
 
                 var result = testEngine.RenderTemplate( input, new LavaRenderParameters { ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput } );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
+                TestHelper.DebugWriteRenderResult( engine, input, result.Text );
 
                 Assert.That.Contains( result.Error.Messages().JoinStrings( "//" ), "File Load Failed." );
             } );
@@ -131,7 +140,7 @@ Outer 'a' = a
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var testEngine = LavaService.NewEngineInstance( engine.EngineType, new LavaEngineConfigurationOptions() );
+                var testEngine = LavaService.NewEngineInstance( engine.GetType(), new LavaEngineConfigurationOptions() );
 
                 var result = testEngine.RenderTemplate( input );
 

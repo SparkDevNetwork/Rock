@@ -34,7 +34,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var mergeValues = new LavaDataDictionary { { "CurrentPerson", person } };
 
-            var personJson = person.ToJson( Formatting.Indented );
+            var personJson = person.ToJson( indentOutput: true );
 
             TestHelper.AssertTemplateOutput( personJson, "{{ CurrentPerson | ToJSON }}", mergeValues );
         }
@@ -49,7 +49,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var mergeValues = new LavaDataDictionary { { "Numbers", numbers } };
 
-            var numbersJson = numbers.ToJson( Formatting.Indented );
+            var numbersJson = numbers.ToJson( indentOutput: true );
 
             TestHelper.AssertTemplateOutput( numbersJson, "{{ Numbers | ToJSON }}", mergeValues );
         }
@@ -85,7 +85,7 @@ namespace Rock.Tests.UnitTests.Lava
 
             var mergeValues = new LavaDataDictionary { { "Dictionary", dictionary } };
 
-            var dictionaryJson = dictionary.ToJson( Formatting.Indented );
+            var dictionaryJson = dictionary.ToJson( indentOutput: true );
 
             TestHelper.AssertTemplateOutput( dictionaryJson, "{{ Dictionary | ToJSON }}", mergeValues );
         }

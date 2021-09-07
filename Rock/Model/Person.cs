@@ -32,11 +32,11 @@ using System.Text;
 using System.Web;
 
 using Rock.Data;
-using Rock.Tasks;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -548,6 +548,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Preferred Language for this person.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing DefinedValueId of the Preferred Language <see cref="Rock.Model.DefinedValue"/> for this person.
+        /// </value>
+        [DataMember]
+        public int? PreferredLanguageValueId { get; set; }
 
         #endregion
 
@@ -1105,6 +1114,15 @@ namespace Rock.Model
         /// </value>
         [LavaHidden]
         public virtual FinancialAccount ContributionFinancialAccount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the Person's preferred language.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> object representing the Person's preferred language.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue PreferredLanguageValue { get; set; }
 
         /// <summary>
         /// Gets the Person's birth date. Note: Use <see cref="SetBirthDate(DateTime?)"/> set the Birthdate
@@ -2081,13 +2099,7 @@ namespace Rock.Model
 
             if ( this.IsValid )
             {
-                var addNewMetaphonesMsg = new AddNewMetaphones.Message()
-                {
-                    FirstName = this.FirstName,
-                    LastName = this.LastName,
-                    NickName = this.NickName
-                };
-                addNewMetaphonesMsg.Send();
+                new SaveMetaphoneTransaction( this ).Enqueue();
             }
 
             HistoryChanges = new History.HistoryChangeList();
@@ -2263,17 +2275,17 @@ namespace Rock.Model
 
             base.PostSaveChanges( dbContext );
 
-            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
-            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
-            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
-            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
-            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
-
             // If the person was just added then update the GivingId to prevent "P0" values
             if ( this.GivingId == "P0" )
             {
                 PersonService.UpdateGivingId( this.Id, dbContext as RockContext );
             }
+
+            // NOTE: This is also done on GroupMember.PostSaveChanges in case Role or family membership changes
+            PersonService.UpdatePersonAgeClassification( this.Id, dbContext as RockContext );
+            PersonService.UpdatePrimaryFamily( this.Id, dbContext as RockContext );
+            PersonService.UpdateGivingLeaderId( this.Id, dbContext as RockContext );
+            PersonService.UpdateGroupSalutations( this.Id, dbContext as RockContext );
         }
 
         /// <summary>
@@ -2405,7 +2417,7 @@ namespace Rock.Model
         /// <param name="finalSeparator">The final separator.</param>
         /// <param name="separator">The separator.</param>
         /// <returns></returns>
-        [RockObsolete( "12.4" )]
+        [RockObsolete( "1.12.4" )]
         [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
         public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
         {
@@ -2561,10 +2573,10 @@ namespace Rock.Model
                 GroupRoleId = s.GroupRoleId
             } ).ToList();
 
-            //  There are a couple of cases where there would be no familyMembers
-            // 1) There are no adults in the family, and includeChildren=false .
+            // There are a couple of cases where there would be no familyMembers.
+            // 1) There are no adults in the family, and includeChildren=false.
             // 2) All the members of the family are deceased/inactive.
-            // 3) The person somehow isn't in a family [Group] (which shouldn't happen)
+            // 3) The person somehow isn't in a family [Group] (which shouldn't happen).
             if ( !familyMembersList.Any() )
             {
                 familyMembersList = familyMembersIncludingChildrenQry.Select( s => new
@@ -3158,27 +3170,76 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade abbreviation attribute based on graduation year.
+        /// </summary>
+        /// <param name="graduationYear">The graduation year.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGraduationYear( int? graduationYear )
+        {
+            return GradeAbbreviationFromGradeOffset( GradeOffsetFromGraduationYear( graduationYear ) );
+        }
+
+        /// <summary>
         /// Formats the grade based on grade offset
         /// </summary>
         /// <param name="gradeOffset">The grade offset.</param>
         /// <returns></returns>
         public static string GradeFormattedFromGradeOffset( int? gradeOffset )
         {
-            if ( gradeOffset.HasValue && gradeOffset >= 0 )
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
             {
-                var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
-                if ( schoolGrades != null )
-                {
-                    var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
-                    var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
-                    if ( schoolGradeValue != null )
-                    {
-                        return schoolGradeValue.Description;
-                    }
-                }
+                return string.Empty;
             }
 
-            return string.Empty;
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            return schoolGradeValue.Description;
+        }
+
+        /// <summary>
+        /// Gets the grade abbreviation attribute based on grade offset.
+        /// </summary>
+        /// <param name="gradeOffset">The grade offset.</param>
+        /// <returns>
+        /// Returns a string of the abbreviation attribute.
+        /// </returns>
+        internal static string GradeAbbreviationFromGradeOffset( int? gradeOffset )
+        {
+            // If the grade offset does not have a value or it is less than zero, return an empty string.
+            if ( !gradeOffset.HasValue || gradeOffset < 0 )
+            {
+                return string.Empty;
+            }
+
+            var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
+            if ( schoolGrades == null )
+            {
+                return string.Empty;
+            }
+
+            var sortedGradeValues = schoolGrades.DefinedValues.OrderBy( a => a.Value.AsInteger() );
+            var schoolGradeValue = sortedGradeValues.Where( a => a.Value.AsInteger() >= gradeOffset.Value ).FirstOrDefault();
+            if ( schoolGradeValue == null )
+            {
+                return string.Empty;
+            }
+
+            // If there is an abbreviation, return it.  Otherwise, return an empty string.
+            return schoolGradeValue.Attributes.ContainsKey( "Abbreviation" ) ? schoolGradeValue.GetAttributeValue( "Abbreviation" ) : string.Empty;
         }
 
         /// <summary>
@@ -3400,6 +3461,7 @@ namespace Rock.Model
             this.HasOptional( p => p.PrimaryFamily ).WithMany().HasForeignKey( p => p.PrimaryFamilyId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.PrimaryCampus ).WithMany().HasForeignKey( p => p.PrimaryCampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ContributionFinancialAccount ).WithMany().HasForeignKey( p => p.ContributionFinancialAccountId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.PreferredLanguageValue ).WithMany().HasForeignKey( a => a.PreferredLanguageValueId ).WillCascadeOnDelete( false );
         }
     }
 

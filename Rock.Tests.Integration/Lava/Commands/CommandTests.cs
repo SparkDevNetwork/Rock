@@ -17,6 +17,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Lava
@@ -196,14 +197,16 @@ Color 4: blue
 
                 context.SetEnabledCommands( "RockEntity" );
 
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, context );
+                var output = TestHelper.GetTemplateOutput( engine, input, context );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+                TestHelper.DebugWriteRenderResult( engine, input, output );
 
                 Assert.IsTrue( output.Contains( "Ted Decker" ), "Expected person not found." );
                 Assert.IsTrue( output.Contains( "Cindy Decker" ), "Expected person not found." );
             } );
         }
+
+        #region Cache
 
         [TestMethod]
         public void CacheBlock_WithTwoPassOptionEnabled_EmitsCorrectOutput()
@@ -228,15 +231,51 @@ Color 4: blue
 
             input = input.Replace( "`", "\"" );
 
-            var options = new LavaTestRenderOptions() { EnabledCommands = "Cache;RockEntity" };
+            var options = new LavaTestRenderOptions
+            {
+                EnabledCommands = "Cache,RockEntity",
+                OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains
+            };
+
+            var expectedOutput = @"
+<divid=`mbb-1`data-topbar-name=`dismiss1Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+<divid=`mbb-2`data-topbar-name=`dismiss2Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+<divid=`mbb-3`data-topbar-name=`dismiss3Topbar`data-topbar-value=`dismissed`class=`topbar`style=`background-color:;color:;`><ahref=``><spanclass=`topbar-text`></span></a><buttontype=`button`class=`close`data-dismiss=`alert`aria-label=`Close`><spanaria-hidden=`true`>&times;</span></button></div>
+";
+
+            expectedOutput = expectedOutput.Replace( "`", @"""" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine.EngineType, input, options );
-
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, output );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
             } );
         }
+
+        [TestMethod]
+        public void CacheBlock_MultipleRenderingPasses_ProducesSameOutput()
+        {
+            var input = @"
+{%- cache key:'duplicate-test' duration:'10' -%}
+This is the cache content.
+{%- endcache -%}
+";
+
+            input = input.Replace( "`", "\"" );
+
+            var options = new LavaTestRenderOptions { EnabledCommands = "Cache" };
+
+            var expectedOutput = @"This is the cache content.";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                // Render the template twice to ensure the result is the same.
+                // The result is rendered and cached on the first pass and the same result should be rendered from the cache on the second pass.
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
+        }
+
+        #endregion
 
         #endregion
 
@@ -570,13 +609,22 @@ Color 4: blue
             {
                 var result = engine.RenderTemplate( input );
 
-                TestHelper.DebugWriteRenderResult( engine.EngineType, input, result.Text );
+                TestHelper.DebugWriteRenderResult( engine, input, result.Text );
 
                 var output = result.Text.Replace( " ", string.Empty );
 
-                Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
-                Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );
-                Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
+                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
+                {
+                    Assert.IsTrue( output.Contains( "person-Rock.Lava.RockLiquid.Blocks.RockEntity" ), "Expected Entity Tag not found." );
+                    Assert.IsTrue( output.Contains( "cache-Rock.Lava.RockLiquid.Blocks.Cache" ), "Expected Command Block not found." );
+                    Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.RockLiquid.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
+                }
+                else
+                {
+                    Assert.IsTrue( output.Contains( "person-Rock.Lava.Blocks.RockEntity" ), "Expected Entity Tag not found." );
+                    Assert.IsTrue( output.Contains( "cache-Rock.Lava.Blocks.Cache" ), "Expected Command Block not found." );
+                    Assert.IsTrue( output.Contains( "interactionwrite-Rock.Lava.Blocks.InteractionWrite" ), "Expected Command Tag not found." );
+                }
             } );
         }
 

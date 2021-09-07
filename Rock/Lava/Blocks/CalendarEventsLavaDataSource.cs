@@ -57,6 +57,10 @@ namespace Rock.Lava.Blocks
         /// Parameter name for specifying a filter for the intended audiences of the Event Occurrences. If not specified, all audiences are considered.
         /// </summary>
         public static readonly string ParameterAudienceIds = "audienceids";
+        /// <summary>
+        /// Parameter name for specifying a filter for the campus of the Event Occurrences. If not specified, all campuses are considered.
+        /// </summary>
+        public static readonly string ParameterCampusIds = "campusids";
 
         #endregion
 
@@ -72,15 +76,34 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings )
         {
+            return this.GetEventOccurrencesForCalendar( settings, null );
+        }
+
+        /// <summary>
+        /// Gets the event occurrences for calendar.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\".
+        /// or
+        /// Invalid configuration setting \"maxoccurrences\".
+        /// </exception>
+        public List<EventOccurrenceSummary> GetEventOccurrencesForCalendar( LavaElementAttributes settings, RockContext rockContext )
+        {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCalendarId, ParameterAudienceIds, ParameterCampusIds, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
                 throw new Exception( $"Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\"." );
             }
 
-            var rockContext = new RockContext();
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
 
             // Get the Event Calendar.
             var calendar = ResolveCalendarSettingOrThrow( rockContext, settings.GetStringValue( ParameterCalendarId ) );
@@ -108,12 +131,15 @@ namespace Rock.Lava.Blocks
             // Get the Audiences.
             var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
+            // Get the Campuses.
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
+
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
 
             qryOccurrences = qryOccurrences.Where( m => m.EventItem.EventCalendarItems.Any( i => i.EventCalendarId == calendar.Id ) );
 
-            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, maxOccurrences, startDate, endDate );
+            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, campusIdList, maxOccurrences, startDate, endDate );
 
             return summaries;
         }
@@ -125,15 +151,34 @@ namespace Rock.Lava.Blocks
         /// <returns></returns>
         public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings )
         {
+            return this.GetEventOccurrencesForEvent( settings, null );
+        }
+
+        /// <summary>
+        /// Gets the event occurrences for event.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">
+        /// Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\".
+        /// or
+        /// Invalid configuration setting \"maxoccurrences\".
+        /// </exception>
+        public List<EventOccurrenceSummary> GetEventOccurrencesForEvent( LavaElementAttributes settings, RockContext rockContext )
+        {
             // Check for invalid parameters.
-            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
+            var unknownNames = settings.GetUnmatchedAttributes( new List<string> { ParameterCampusIds, ParameterEventId, ParameterDateRange, ParameterMaxOccurrences, ParameterStartDate } );
 
             if ( unknownNames.Any() )
             {
                 throw new Exception( $"Invalid configuration setting \"{unknownNames.AsDelimited( "," )}\"." );
             }
 
-            var rockContext = new RockContext();
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
 
             // Get the Event.
             var eventItem = ResolveEventSettingOrThrow( rockContext, settings.GetStringValue( ParameterEventId ) );
@@ -161,12 +206,15 @@ namespace Rock.Lava.Blocks
             // Get the Audiences.
             var audienceIdList = ResolveAudienceSettingOrThrow( settings.GetStringValue( ParameterAudienceIds, string.Empty ) );
 
+            // Get the Campuses.
+            var campusIdList = ResolveCampusSettingOrThrow( settings.GetStringValue( ParameterCampusIds, string.Empty ) );
+
             // Get the result set.
             var qryOccurrences = GetBaseEventOccurrenceQuery( rockContext );
 
             qryOccurrences = qryOccurrences.Where( m => m.EventItem.Id == eventItem.Id );
 
-            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, maxOccurrences, startDate, endDate );
+            var summaries = GetFilteredEventOccurrenceSummaries( qryOccurrences, audienceIdList, campusIdList, maxOccurrences, startDate, endDate );
 
             return summaries;
         }
@@ -281,6 +329,58 @@ namespace Rock.Lava.Blocks
             }
 
             return audienceIdList;
+        }
+
+        private List<int> ResolveCampusSettingOrThrow( string campuseSettingValue )
+        {
+            var campusIdList = new List<int>();
+
+            if ( !string.IsNullOrWhiteSpace( campuseSettingValue ) )
+            {
+                var campuses = campuseSettingValue.SplitDelimitedValues( "," );
+
+                foreach ( var campusFilterValue in campuses )
+                {
+                    CampusCache campus = null;
+
+                    // Get by ID.
+                    var campusId = campusFilterValue.AsIntegerOrNull();
+
+                    if ( campusId != null )
+                    {
+                        campus = CampusCache.Get( campusId.Value );
+                    }
+
+                    // Get by Guid.
+                    if ( campus == null )
+                    {
+                        var campusGuid = campusFilterValue.AsGuidOrNull();
+
+                        if ( campusGuid != null )
+                        {
+                            campus = CampusCache.Get( campusGuid.Value );
+                        }
+                    }
+
+                    // Get by Value.
+                    if ( campus == null )
+                    {
+                        var campusName = campusFilterValue.Trim();
+
+                        campus = CampusCache.All().FirstOrDefault( x => x.Name != null && x.Name.Equals( campusName, StringComparison.OrdinalIgnoreCase ) );
+                    }
+
+                    // Report an error if the campus is invalid.
+                    if ( campus == null )
+                    {
+                        throw new Exception( $"Cannot apply a campus filter for the reference \"{ campusFilterValue }\"." );
+                    }
+
+                    campusIdList.Add( campus.Id );
+                }
+            }
+
+            return campusIdList;
         }
 
         private EventCalendar ResolveCalendarSettingOrThrow( RockContext rockContext, string calendarSettingValue )
@@ -398,18 +498,23 @@ namespace Rock.Lava.Blocks
             return qryOccurrences;
         }
 
-        private List<EventOccurrenceSummary> GetFilteredEventOccurrenceSummaries( IQueryable<EventItemOccurrence> qryOccurrences, List<int> audienceIdList, int maxOccurrences, DateTime? startDate, DateTime? endDate )
+        private List<EventOccurrenceSummary> GetFilteredEventOccurrenceSummaries( IQueryable<EventItemOccurrence> qryOccurrences, List<int> audienceIdList, List<int> campusIdList, int maxOccurrences, DateTime? startDate, DateTime? endDate )
         {
             qryOccurrences = qryOccurrences.Where( x => x.EventItem.IsActive && x.EventItem.IsApproved );
 
-            // Filter by Audience
-            if ( audienceIdList != null
-                 && audienceIdList.Any() )
+            // Filter by Audience. Events with no specified audience are not included.
+            if ( audienceIdList != null && audienceIdList.Any() )
             {
                 qryOccurrences = qryOccurrences.Where( i => i.EventItem.EventItemAudiences.Any( c => audienceIdList.Contains( c.DefinedValueId ) ) );
             }
 
-            // Get the occurrences
+            // Filter by Campus. Events with no specified campus are included.
+            if ( campusIdList != null && campusIdList.Any() )
+            {
+                qryOccurrences = qryOccurrences.Where( i => i.CampusId == null || campusIdList.Contains( i.CampusId.Value ) );
+            }
+
+            // Determine the size of the result set.
             if ( maxOccurrences < 1 || maxOccurrences > MaximumResultSetSize )
             {
                 maxOccurrences = 100;
@@ -452,11 +557,12 @@ namespace Rock.Lava.Blocks
 
             var eventOccurrenceSummaries = new List<EventOccurrenceSummary>();
 
-            bool finished = false;
-
+            // Pass 1: Add a summary of each event occurrence that occurs within the period of interest.
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
+
+                var eventItemOccurrenceSummaries = new List<EventOccurrenceSummary>();
 
                 foreach ( var scheduleOccurrence in occurrenceDates.ScheduleOccurrences )
                 {
@@ -466,7 +572,7 @@ namespace Rock.Lava.Blocks
                     if ( datetime >= startDate
                          && ( endDate == null || datetime < endDate ) )
                     {
-                        eventOccurrenceSummaries.Add( new EventOccurrenceSummary
+                        eventItemOccurrenceSummaries.Add( new EventOccurrenceSummary
                         {
                             EventItemOccurrence = eventItemOccurrence,
                             Name = eventItemOccurrence.EventItem.Name,
@@ -486,20 +592,22 @@ namespace Rock.Lava.Blocks
                             AudienceNames = eventItemOccurrence.EventItem.EventItemAudiences.Select( x => x.DefinedValue.Value ).ToList(),
                         } );
 
-                        // Exit if the occurrence limit has been reached.
-                        if ( eventOccurrenceSummaries.Count >= maxOccurrences )
+                        // Exit if the number of instance of this specific event has exceeded the occurrence limit.
+                        if ( eventItemOccurrenceSummaries.Count >= maxOccurrences )
                         {
-                            finished = true;
                             break;
                         }
                     }
                 }
 
-                if ( finished )
-                {
-                    break;
-                }
+                eventOccurrenceSummaries.AddRange( eventItemOccurrenceSummaries );
             }
+
+            // Pass 2: Sort all of the event occurrences by date, and then apply the occurrence limit.
+            eventOccurrenceSummaries = eventOccurrenceSummaries
+                .OrderBy( x => x.DateTime )
+                .Take( maxOccurrences )
+                .ToList();
 
             return eventOccurrenceSummaries;
         }

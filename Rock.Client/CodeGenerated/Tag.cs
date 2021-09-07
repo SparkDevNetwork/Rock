@@ -35,7 +35,7 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public string BackgroundColor { get; set; } = @"#e0e0e0";
+        public string BackgroundColor { get; set; } = @"#BCBCBD";
 
         /// <summary />
         public int? CategoryId { get; set; }

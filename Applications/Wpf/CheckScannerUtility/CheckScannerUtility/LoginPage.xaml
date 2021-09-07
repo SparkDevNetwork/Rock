@@ -41,7 +41,7 @@
         <StackPanel Grid.Row="1" Grid.Column="1">
             <Label
                 Grid.Row="1"
-                Margin="30"
+                Margin="30,10,30,10"
                 HorizontalAlignment="Center"
                 Content="Check Scanning"
                 FontSize="32"

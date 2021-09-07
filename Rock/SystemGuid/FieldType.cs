@@ -106,6 +106,11 @@ namespace Rock.SystemGuid
         public const string CAMPUSES = "69254F91-C97F-4C2D-9ACB-1683B088097B";
 
         /// <summary>
+        /// <see cref="Rock.Field.Types.CaptchaFieldType">Captcha</see> field type.
+        /// </summary>
+        public const string CAPTCHA = "22F43337-7177-4064-9D4B-841EAD671678";
+
+        /// <summary>
         /// Categories field type
         /// </summary>
         public const string CATEGORIES = "775899FB-AC17-4C2C-B809-CF3A1D2AA4E1";
@@ -449,6 +454,16 @@ namespace Rock.SystemGuid
         /// Matrix field type
         /// </summary>
         public const string MATRIX = "F16FC460-DC1E-4821-9012-5F21F974C677";
+
+        /// <summary>
+        /// <see cref="Rock.Field.Types.MediaElementFieldType">Media Element</see> field type
+        /// </summary>
+        public const string MEDIA_ELEMENT = "A17D5AAC-B7AE-4587-B703-A0FC3625F0F8";
+
+        /// <summary>
+        /// <see cref="Rock.Field.Types.MediaWatchFieldType">Media Watch</see> field type
+        /// </summary>
+        public const string MEDIA_WATCH = "98180C6F-5167-45E1-8ADE-E1A31EC4930D";
 
         /// <summary>
         /// Memo field type

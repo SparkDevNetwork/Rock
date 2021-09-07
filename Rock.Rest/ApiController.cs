@@ -30,6 +30,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Rest
@@ -691,7 +692,7 @@ namespace Rock.Rest
 
             var contextCookie = httpContext.Request.Cookies[cookieName] ?? new System.Web.HttpCookie( cookieName );
             contextCookie.Values[typeName] = contextValue;
-            contextCookie.Expires = RockDateTime.Now.AddYears( 1 );
+            contextCookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
             Rock.Web.UI.RockPage.AddOrUpdateCookie( contextCookie );
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.OK );

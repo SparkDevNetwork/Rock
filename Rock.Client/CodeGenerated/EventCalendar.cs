@@ -49,6 +49,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsActive { get; set; } = true;
 
+        /// <summary />
+        public bool IsIndexEnabled { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -95,6 +98,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsActive = source.IsActive;
+            this.IsIndexEnabled = source.IsIndexEnabled;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.CreatedDateTime = source.CreatedDateTime;

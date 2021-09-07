@@ -1620,21 +1620,21 @@ namespace RockWeb.Blocks.Connection
             {
                 if ( workflowTypeStateObj.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
                 {
-                    qualifierValues = workflowTypeStateObj.QualifierValue.SplitDelimitedValues();
+                    qualifierValues = workflowTypeStateObj.QualifierValue.SplitDelimitedValues( "|" );
                     /*
                         3/31/2020 - SK 
                         Visible property of ddlPrimaryQualifier and ddlSecondaryQualifier don't reflect the new assigned value till the request complete.
                         That is the reason isPrimaryQualifierVisible & isSecondaryQualifierVisible are introduced to potentially fix the issue raised in #2029
                         https://github.com/SparkDevNetwork/Rock/issues/2029
                     */
-                    if ( isPrimaryQualifierVisible && qualifierValues.Length > 0 )
+                    if ( isPrimaryQualifierVisible && qualifierValues.Length > 1 )
                     {
-                        ddlPrimaryQualifier.SelectedValue = qualifierValues[0];
+                        ddlPrimaryQualifier.SelectedValue = qualifierValues[1];
                     }
 
-                    if ( isSecondaryQualifierVisible && qualifierValues.Length > 1 )
+                    if ( isSecondaryQualifierVisible && qualifierValues.Length > 2 )
                     {
-                        ddlSecondaryQualifier.SelectedValue = qualifierValues[1];
+                        ddlSecondaryQualifier.SelectedValue = qualifierValues[2];
                     }
                 }
             }

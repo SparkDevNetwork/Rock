@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
                 return rows;
             }
         }
-        
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -155,7 +155,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _lbAddGroupMember );
             _lbAddGroupMember.ID = this.ID + "_btnAddGroupMember";
             _lbAddGroupMember.Click += lbAddGroupMember_Click;
-            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-action pull-right" );
+            _lbAddGroupMember.AddCssClass( "add btn btn-xs btn-default pull-right" );
             _lbAddGroupMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -302,6 +302,6 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [add group member click].
         /// </summary>
         public event EventHandler AddGroupMemberClick;
-        
+
     }
 }

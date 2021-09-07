@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.ViewModel;
 
 namespace Rock.Web.Cache
 {
@@ -251,5 +252,65 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public AttributeValueViewModel ToViewModel( Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new ViewModelHelper<AttributeValueCache, AttributeValueViewModel>();
+            var viewModel = helper.CreateViewModel( this, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
+        #endregion Methods
+    }
+
+    /// <summary>
+    /// AttributeValueCache View Model Helper
+    /// </summary>
+    public partial class AttributeValueViewModelHelper : ViewModelHelper<AttributeValueCache, AttributeValueViewModel>
+    {
+        /// <summary>
+        /// Converts to viewmodel.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override AttributeValueViewModel CreateViewModel( AttributeValueCache model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new AttributeValueViewModel
+            {
+                AttributeId = model.AttributeId,
+                EntityId = model.EntityId,
+                Value = model.Value
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( AttributeValueCache model, AttributeValueViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            viewModel.Attribute = AttributeCache.Get( model.AttributeId ).ToViewModel();
+        }
     }
 }

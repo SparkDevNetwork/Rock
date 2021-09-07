@@ -16,6 +16,7 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
+using Rock.Lava.RockLiquid;
 
 namespace Rock.Tests.Integration.Lava
 {
@@ -54,29 +55,35 @@ Font Bold: true
 
             expectedOutput = expectedOutput.Replace( "``", @"""" );
 
-            var context = new LavaDataDictionary() { { "fontsize", 99 }  };
+            var context = new LavaDataDictionary() { { "fontsize", 99 } };
 
             var options = new LavaTestRenderOptions { MergeFields = context };
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
+                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
+                if ( engine.GetType() == typeof( RockLiquidEngine ) )
+                {
+                    return;
+                }
+
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
-                TestHelper.AssertTemplateOutput( engine.EngineType, expectedOutput, input, options );
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
             } );
         }
 
         #region Bootstrap Alert
 
         /// <summary>
-        /// Using the Scripturize shortcode produces the expected output.
+        /// Using the BootstrapAlert shortcode produces the expected output.
         /// </summary>
         [DataTestMethod]
         [DataRow( "{[ bootstrapalert type='info' ]}This is an information message.{[ endbootstrapalert ]}", "<div class='alert alert-info'>This is an information message.</div>" )]
 
         public void BootstrapAlertShortcode_VariousTypes_ProducesCorrectHtml( string input, string expectedResult )
         {
-            
+
             TestHelper.AssertTemplateOutput( expectedResult,
                                           input );
         }
@@ -108,8 +115,7 @@ ScheduleName:Saturday4:30pm<br>ScheduleLive:true<br>
         public void ScheduledContentShortcode_ContainedInCaptureBlock_EmitsCorrectOutput()
         {
             var input = @"
-{% capture isScheduleActive %}
-{[ scheduledcontent scheduleid:'6' ]}true{[ endscheduledcontent ]}
+{% capture isScheduleActive %}{[ scheduledcontent scheduleid:'6' ]}true{[ endscheduledcontent ]}
 {% endcapture %}
 Schedule Active = {{isScheduleActive}}
 ";

@@ -61,21 +61,8 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [Required]
-        [DataMember( IsRequired = true )]
-        public bool IsActive
-        {
-            get
-            {
-                return _isActive;
-            }
-
-            set
-            {
-                _isActive = value;
-            }
-        }
-
-        private bool _isActive = true;
+        [DataMember(IsRequired = true)]
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the minimum rows.
@@ -142,7 +129,7 @@ namespace Rock.Model
         /// The attribute matrices.
         /// </value>
         [DataMember]
-        public ICollection<AttributeMatrix> AttributeMatrices { get; set; }
+        public virtual ICollection<AttributeMatrix> AttributeMatrices { get; set; }
 
         #endregion 
     }

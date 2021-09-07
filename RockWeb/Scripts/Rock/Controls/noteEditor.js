@@ -143,8 +143,10 @@
                     e.preventDefault();
                     e.stopImmediatePropagation();
                     var postbackJs = $noteContainer.find(".js-delete-postback").attr('href');
-                    return Rock.dialogs.confirm('Are you sure you want to delete this note?', function () {
-                        window.location = postbackJs;
+                    return Rock.dialogs.confirm('Are you sure you want to delete this note?', function (result) {
+                        if (result) {
+                            window.location = postbackJs;
+                        }
                     });
                 });
 

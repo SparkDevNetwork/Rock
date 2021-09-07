@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -26,7 +21,7 @@ using Rock.Utility;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Sends a communication
+    /// Sends a <see cref="Rock.Model.Communication"/>
     /// </summary>
     public sealed class ProcessSendCommunication : BusStartedTask<ProcessSendCommunication.Message>
     {

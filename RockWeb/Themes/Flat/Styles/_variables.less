@@ -1,73 +1,73 @@
 
 // Theme Colors *show in editor*
-@theme-1: #2c3e50;  // blue header
-@theme-1-text: #fff;
+@theme-1: #2c3e50;  // blue header #color
+@theme-1-text: #fff; // #color
 //--
-@theme-2: #2c3e50; // blue
-@theme-2-text: #fff;
+@theme-2: #2c3e50; // blue #color
+@theme-2-text: #fff; // #color
 //--
-@theme-3: #ecf0f1; // gray
-@theme-3-text: #333;
+@theme-3: #ecf0f1; // gray #color
+@theme-3-text: #333; // #color
 //--
-@theme-4: #18bc9c; // seafoam green
-@theme-4-text: #fff;
+@theme-4: #18bc9c; // seafoam green #color
+@theme-4-text: #fff; // #color
 //--
-@theme-5: lighten(@theme-1, 40%);
-@theme-5-text: darken(@theme-5, 45%);
+@theme-5: lighten(@theme-1, 40%); // #color
+@theme-5-text: darken(@theme-5, 45%); // #color
 //--
-@theme-6: lighten(@theme-1, 45%);
-@theme-6-text: darken(@theme-6, 40%);
+@theme-6: lighten(@theme-1, 45%); // #color
+@theme-6-text: darken(@theme-6, 40%); // #color
 //--
-@theme-7: spin(@theme-1, -135);
-@theme-7-text: #fff;
+@theme-7: spin(@theme-1, -135); // #color
+@theme-7-text: #fff; // #color
 //--
-@theme-8: @gray-light;
-@theme-8-text: #fff;
+@theme-8: @gray-light; // #color
+@theme-8-text: #fff; // #color
 
-// Text *show in editor*
-@text-color:             #6a6a6a; // The default text color. #color
-@link-color:             @theme-4; // The color for all links.
-@link-hover-color:       lighten(@link-color, 15%); // The rollover color for all links.
-@text-muted:             lighten(@text-color, 30%); // The muted color for text #color
-@text-selection-bg:      #afd074; // Text selection background color (used when people select text with the mouse).
-@text-selection-color:   #fff;    // Text selection text color (used when people select text with the mouse).
-@font-family-sans-serif: "OpenSans", "Helvetica Neue", Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
-@headings-font-family:    "Montserrat", sans-serif; // Font used for headings.
-@font-size-base:          15px; // The default text size.
-@line-height-base:        1.428571429; // The default line height.
+// Text *show in editor* *advanced options*
+@text-color:                        #6a6a6a; // The default text color. #color
+@link-color:                        @theme-4; // The color for all links. #color
+@link-hover-color:                  lighten(@link-color, 15%); // The rollover color for all links. #color
+@text-muted:                        lighten(@text-color, 30%); // The muted color for text #color
+@text-selection-bg:                 #afd074; // Text selection background color (used when people select text with the mouse). #color
+@text-selection-color:              #fff;    // Text selection text color (used when people select text with the mouse). #color
+@font-family-sans-serif:            "OpenSans", "Helvetica Neue", Helvetica, Arial, sans-serif; // The base font to use for text. Be sure when defining this font that the various weights are configured.
+@headings-font-family:              "Montserrat", sans-serif; // Font used for headings.
+@font-size-base:                    15px; // The default text size.
+@line-height-base:                  1.428571429; // The default line height.
 //--
-@body-bg:           #fff; // The background color of the page.
+@body-bg:                           #fff; // The background color of the page. #color
 
 
 //// Heading Sizes
-@font-size-h1:            floor(@font-size-base * 2.6); // ~36px
-@font-size-h2:            floor(@font-size-base * 2.15); // ~30px
-@font-size-h3:            ceil(@font-size-base * 1.7); // ~24px
-@font-size-h4:            ceil(@font-size-base * 1.25); // ~18px
-@font-size-h5:            @font-size-base;
-@font-size-h6:            ceil(@font-size-base * .85); // ~12px
+@font-size-h1:                      floor(@font-size-base * 2.6); // ~36px
+@font-size-h2:                      floor(@font-size-base * 2.15); // ~30px
+@font-size-h3:                     ceil(@font-size-base * 1.7); // ~24px
+@font-size-h4:                      ceil(@font-size-base * 1.25); // ~18px
+@font-size-h5:                      @font-size-base;
+@font-size-h6:                      ceil(@font-size-base * .85); // ~12px
 
 // Bootstrap Colors
 
 //// Bootstrap Colors *show in editor* {The primary colors defined by the Bootstrap framework. [More Information](http://getbootstrap.com/customize/#colors)}
-@brand-primary:         @theme-2;
-@brand-success:         #18bc9c;
-@brand-info:            #3498db;
-@brand-warning:         #f39c12;
-@brand-danger:          #e74c3c;
+@brand-primary:                     @theme-2;  // #color
+@brand-success:                     #18bc9c; // #color
+@brand-info:                        #3498db; // #color
+@brand-warning:                     #f39c12; // #color
+@brand-danger:                      #e74c3c; // #color
 //--
-@gray-darker:            lighten(#000, 13.5%);
-@gray-dark:              lighten(#000, 20%);
-@gray:                   lighten(#000, 33.5%);
-@gray-light:             #f3f3f4;
-@gray-lighter:           #efefef;
+@gray-darker:                       lighten(#000, 13.5%); // #color
+@gray-dark:                         lighten(#000, 20%); // #color
+@gray:                              lighten(#000, 33.5%); // #color
+@gray-light:                        #f3f3f4; // #color
+@gray-lighter:                      #efefef; // #color
 
 // Page Areas *open*
 
 
 //// Header
-@header-bg:         @theme-1; // The header background color.
-@header-text-color: @theme-1-text; // The header text color.
+@header-bg:                         @theme-1; // The header background color.
+@header-text-color:                 @theme-1-text; // The header text color.
 
 //// Main Navigation
 @nav-bg: @theme-1;                                      // The background color of the main navigation.
@@ -118,23 +118,23 @@
 
 // Control Variables
 //// Inputs
-@input-bg:                       #fff;                      // The background color of input fields.
-@input-bg-disabled:              @gray-lighter;             // The background of inputs in a disabled state.
-@input-color:                    @gray;                     // The text color of inputs.
-@input-border:                   #ccc;                      // The border color of inputs.
+@input-bg:                       #fff;                      // The background color of input fields. #color
+@input-bg-disabled:              @gray-lighter;             // The background of inputs in a disabled state. #color
+@input-color:                    @gray;                     // The text color of inputs. #color
+@input-border:                   #ccc;                      // The border color of inputs. #color
 @input-border-radius:            @border-radius-base;       // The border radius of input fields.
-@input-border-focus:             #66afe9;                   // The border color of active inputs.
-@input-color-placeholder:        lighten(@text-color, 40%); // The text color of input placeholder text.
-@input-group-addon-bg:           #f0f0f0;                   // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds.
-@input-group-addon-border-color: @input-border;             // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border).
+@input-border-focus:             #66afe9;                   // The border color of active inputs. #color
+@input-color-placeholder:        lighten(@text-color, 40%); // The text color of input placeholder text. #color
+@input-group-addon-bg:           #f0f0f0;                   // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker backgrounds. #color
+@input-group-addon-border-color: @input-border;             // Used for pre (dollar signs, etc.) and post ( percent signs) input addons as well as picker borders (highly recommended that you use the same color as the input border). #color
 
 //// Picker
-@picker-action-bg: #e3ded7;     // The background color of the actions bar at the bottom of the picker dropdown.
+@picker-action-bg: #e3ded7;     // The background color of the actions bar at the bottom of the picker dropdown. #color
 
 
 //// Date Picker
-@datepicker-highlight-bg: @theme-2;         // Background color for highlighting dates and selector elements of the datepicker.
-@datepicker-highlight-color: @theme-2-text; // Text color for highlighting dates and selector elements of the datepicker.
+@datepicker-highlight-bg: @theme-2;         // Background color for highlighting dates and selector elements of the datepicker. #color
+@datepicker-highlight-color: @theme-2-text; // Text color for highlighting dates and selector elements of the datepicker. #color
 
 //// Image Editor
 @imageeditor-bg: @photo-border;              // The background for the image editor roll-over. This control is used to upload images.
@@ -142,29 +142,29 @@
 
 
 // Panel
-@panel-bg:                    #fff;                  // The background color of the panel body.
-@panel-text:                  @text-color; // The text color of the panel.
-@panel-border:                darken(@theme-3, 10%);                  // The panel's border color.
-@panel-top-border-color:      darken(@panel-border, 5%);           // Color of the panel's top border often used as an accent color.
+@panel-bg:                    #fff;                  // The background color of the panel body. #color
+@panel-text:                  @text-color; // The text color of the panel. #color
+@panel-border:                darken(@theme-3, 10%);                  // The panel's border color. #color
+@panel-top-border-color:      darken(@panel-border, 5%);           // Color of the panel's top border often used as an accent color. #color
 @panel-border-radius:         @border-radius-base;
 //--
-@panel-heading-bg:            @theme-3;                  // The background color of the panel's header.
-@panel-heading-text-color:    @theme-3-text;              // The heading's text color.
-@panel-heading-border:        darken(@panel-heading-bg, 30%); // The headings border color.
+@panel-heading-bg:            @theme-3;                  // The background color of the panel's header. #color
+@panel-heading-text-color:    @theme-3-text;              // The heading's text color. #color
+@panel-heading-border:        darken(@panel-heading-bg, 30%); // The headings border color. #color
 //--
-@panel-following-active-bg:   @panel-top-border-color;   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
+@panel-following-active-bg:   @panel-top-border-color;   // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block). #color
 //--
-@panel-footer-bg:             @panel-bg;                 // The background color of the panel's footer.
-@panel-footer-color:          @panel-text;              // The color text of the panel's footer.
+@panel-footer-bg:             @panel-bg;                 // The background color of the panel's footer. #color
+@panel-footer-color:          @panel-text;              // The color text of the panel's footer. #color
 
 
 // Grid
-@grid-border-color: @panel-border;   // The border color of the grids cells.
+@grid-border-color: @panel-border;   // The border color of the grids cells. #color
 @grid-padding: 8px;         // The default padding of the grid cells.
 
 //// Filter Section
-@grid-filter-bg: @panel-heading-bg;        // The background color of the filter section of the grid.
-@grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid.
+@grid-filter-bg: @panel-heading-bg;        // The background color of the filter section of the grid. #color
+@grid-filter-color: @panel-heading-text-color; // The text color of the filter section of the grid. #color
 
 //// Grid Header
 @grid-column-header-bg: @panel-heading-bg;                        // The background color of the grid header.

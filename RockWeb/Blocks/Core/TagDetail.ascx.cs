@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Core
         #region Fields
 
         private bool _canConfigure = false;
-
         #endregion
 
         #region Control Methods
@@ -58,6 +57,7 @@ namespace RockWeb.Blocks.Core
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Tag ) ).Id;
+            revTagName.ValidationExpression = Rock.Model.Tag.VALIDATOR_REGEX_BLACKLIST;
         }
 
         /// <summary>
@@ -79,9 +79,9 @@ namespace RockWeb.Blocks.Core
         public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )
         {
             var breadCrumbs = new List<BreadCrumb>();
-            
+
             string pageTitle = "New Tag";
-            
+
             int? tagId = PageParameter( "TagId" ).AsIntegerOrNull();
             if (tagId.HasValue)
             {
@@ -176,9 +176,9 @@ namespace RockWeb.Blocks.Core
                     .Where( t =>
                         t.Id != tagId &&
                         t.Name == name &&
-                        ( 
-                            ( t.OwnerPersonAlias == null && !ownerId.HasValue ) || 
-                            ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value ) 
+                        (
+                            ( t.OwnerPersonAlias == null && !ownerId.HasValue ) ||
+                            ( t.OwnerPersonAlias != null && ownerId.HasValue && t.OwnerPersonAlias.PersonId == ownerId.Value )
                         ) &&
                         ( !t.EntityTypeId.HasValue || (
                             t.EntityTypeId.Value == entityTypeId &&
@@ -310,7 +310,7 @@ namespace RockWeb.Blocks.Core
                 tag = new TagService( new RockContext() ).Get( tagId );
                 pdAuditDetails.SetEntity( tag, ResolveRockUrl( "~" ) );
             }
-            
+
             if ( tag == null )
             {
                 tag = new Tag {
@@ -440,11 +440,11 @@ namespace RockWeb.Blocks.Core
         {
             if ( ownerPersonAliasId.HasValue )
             {
-                cpBackground.Value = "#e0e0e0";
+                cpBackground.Value = "#BCBCBD";
             }
             else
             {
-                cpBackground.Value = "#bababa";
+                cpBackground.Value = "#9E9EA0";
             }
         }
 
@@ -470,7 +470,7 @@ namespace RockWeb.Blocks.Core
             }
 
             btnSecurity.Visible = !tag.OwnerPersonAliasId.HasValue && ( _canConfigure || tag.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) );
-            
+
             btnSecurity.EntityId = tag.Id;
         }
 

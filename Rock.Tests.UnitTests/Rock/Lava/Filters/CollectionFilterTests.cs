@@ -161,7 +161,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         #region Filter Tests: Dictionaries
 
         [TestMethod]
-        public void AddToDictionary_AddMultipleKeyValuePairs_ReturnsUpdatedDictionary()
+         public void AddToDictionary_AddMultipleKeyValuePairs_ReturnsUpdatedDictionary()
         {
             var lavaTemplate = @"
         {% assign dict = '' | AddToDictionary:'key1','value2' %}
@@ -358,13 +358,13 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
         {
             var orderedOutput = _TestOrderedList.JoinStrings( ";" ) + ";";
 
-            TestHelper.ExecuteTestAction( ( engine ) =>
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
                 // Add a copy of the test list to the context, as it will be modified during the rendering process.
                 var mergeValues = new LavaDataDictionary { { "OrderedList", new List<string>( _TestOrderedList ) } };
 
                 // First, verify that the unshuffled lists are equal.
-                var orderedResult = TestHelper.GetTemplateOutput( engine.EngineType, "{% assign items = OrderedList %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
+                var orderedResult = TestHelper.GetTemplateOutput( engine, "{% assign items = OrderedList %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
 
                 Assert.That.Equal( orderedOutput, orderedResult );
 
@@ -377,7 +377,7 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
                 string shuffledResult = string.Empty;
                 for ( int i = 0; i < 10; i++ )
                 {
-                    shuffledResult = TestHelper.GetTemplateOutput( engine.EngineType, "{% assign items = OrderedList | Shuffle %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
+                    shuffledResult = TestHelper.GetTemplateOutput( engine, "{% assign items = OrderedList | Shuffle %}{% for item in items %}{{ item }};{% endfor %}", mergeValues );
 
                     if ( orderedOutput != shuffledResult )
                     {

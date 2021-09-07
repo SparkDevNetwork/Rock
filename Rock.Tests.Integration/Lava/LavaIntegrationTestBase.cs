@@ -34,39 +34,39 @@ namespace Rock.Tests.Integration.Lava
             }
         }
 
-        protected bool AssertCurrentEngineIs( LavaEngineTypeSpecifier validEngine )
-        {
-            return AssertCurrentEngineIs( new LavaEngineTypeSpecifier[] { validEngine } );
-        }
+        //protected bool AssertCurrentEngineIs( LavaEngineTypeSpecifier validEngine )
+        //{
+        //    return AssertCurrentEngineIs( new LavaEngineTypeSpecifier[] { validEngine } );
+        //}
 
-        protected bool AssertCurrentEngineIsNot( LavaEngineTypeSpecifier invalidEngine )
-        {
-            return AssertCurrentEngineIsNot( new LavaEngineTypeSpecifier[] { invalidEngine } );
-        }
+        //protected bool AssertCurrentEngineIsNot( LavaEngineTypeSpecifier invalidEngine )
+        //{
+        //    return AssertCurrentEngineIsNot( new LavaEngineTypeSpecifier[] { invalidEngine } );
+        //}
 
-        protected bool AssertCurrentEngineIs( IEnumerable<LavaEngineTypeSpecifier> validEngines )
-        {
-            if ( validEngines == null
-                 || ( LavaService.CurrentEngineType != null && !validEngines.Contains( LavaService.CurrentEngineType.Value ) ) )
-            {
-                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
-                return false;
-            }
+        //protected bool AssertCurrentEngineIs( IEnumerable<LavaEngineTypeSpecifier> validEngines )
+        //{
+        //    if ( validEngines == null
+        //         || ( LavaService.CurrentEngineIdentifier != null && !validEngines.ToList().Contains( LavaService.CurrentEngineIdentifier.Value ) ) )
+        //    {
+        //        Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
+        //        return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        protected bool AssertCurrentEngineIsNot( IEnumerable<LavaEngineTypeSpecifier> invalidEngines )
-        {
-            if ( invalidEngines != null
-                 && LavaService.CurrentEngineType != null
-                 && invalidEngines.Contains( LavaService.CurrentEngineType.Value ) )
-            {
-                Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
-                return true;
-            }
+        //protected bool AssertCurrentEngineIsNot( IEnumerable<LavaEngineTypeSpecifier> invalidEngines )
+        //{
+        //    if ( invalidEngines != null
+        //         && LavaService.CurrentEngineIdentifier != null
+        //         && invalidEngines.Contains( LavaService.CurrentEngineIdentifier.Value ) )
+        //    {
+        //        Debug.Write( $"This test is not applicable for the current Lava Engine \"{ LavaService.CurrentEngineName }\".", "warning" );
+        //        return true;
+        //    }
 
-            return false;
-        }
+        //    return false;
+        //}
     }
 }

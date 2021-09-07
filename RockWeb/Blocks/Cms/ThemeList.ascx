@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-
+            <asp:HiddenField ID="hfClonedThemeName" runat="server" />
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-picture-o "></i> Themes</h1>
             </div>
@@ -24,7 +24,6 @@
                         </Columns>
                     </Rock:Grid>
                 </div>
-                <asp:HiddenField ID="hfClonedThemeName" runat="server" />
             </div>
 
             <Rock:ModalAlert ID="mdThemeCompile" runat="server" />

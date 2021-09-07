@@ -16,6 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -63,13 +65,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the report template.
@@ -161,6 +157,43 @@ namespace Rock.Model
         public virtual FinancialStatementTemplateHeaderFooterSettings FooterSettings { get; set; } = new FinancialStatementTemplateHeaderFooterSettings();
 
         #endregion Virtual Properties
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            if ( LogoBinaryFileId.HasValue )
+            {
+                BinaryFileService binaryFileService = new BinaryFileService( ( RockContext ) dbContext );
+                var binaryFile = binaryFileService.Get( LogoBinaryFileId.Value );
+                if ( binaryFile != null )
+                {
+
+                    switch ( entry.State )
+                    {
+                        case EntityState.Added:
+                        case EntityState.Modified:
+                            {
+
+                                binaryFile.IsTemporary = false;
+
+                                break;
+                            }
+
+                        case EntityState.Deleted:
+                            {
+                                binaryFile.IsTemporary = true;
+                                break;
+                            }
+                    }
+                }
+            }
+
+            base.PreSaveChanges( dbContext, entry );
+        }
     }
 
     #region Entity Configuration

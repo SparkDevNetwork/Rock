@@ -81,7 +81,7 @@
 // Text input groups
 // -------------------------
 .input-group-addon {
-  padding: @padding-base-vertical @padding-base-horizontal;
+  padding: @input-padding-y @input-padding-x;
   font-size: @font-size-base;
   font-weight: 400;
   line-height: 1;
@@ -93,12 +93,12 @@
 
   // Sizing
   &.input-sm {
-    padding: @padding-small-vertical @padding-small-horizontal;
+    padding: @input-padding-y-sm @input-padding-x-sm;
     font-size: @font-size-small;
     border-radius: @input-border-radius-small;
   }
   &.input-lg {
-    padding: @padding-large-vertical @padding-large-horizontal;
+    padding: @input-padding-y-lg @input-padding-x-lg;
     font-size: @font-size-large;
     border-radius: @input-border-radius-large;
   }
@@ -116,6 +116,7 @@
 .input-group-btn:first-child > .btn,
 .input-group-btn:first-child > .btn-group > .btn,
 .input-group-btn:first-child > .dropdown-toggle,
+.input-group-btn:last-child > .dropdown-toggle:nth-last-child(n+3),
 .input-group-btn:last-child > .btn:not(:last-child):not(.dropdown-toggle),
 .input-group-btn:last-child > .btn-group:not(:last-child) > .btn {
   .border-right-radius(0);

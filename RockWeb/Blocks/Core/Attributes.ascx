@@ -13,7 +13,7 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="fa fa-list-ul"></i> Attribute List</h1>
-                    <div class="form-inline pull-right clearfix">
+                    <div class="form-inline panel-labels">
                         <Rock:EntityTypePicker ID="ddlEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged"  />
                     </div>
                 </div>
@@ -32,7 +32,7 @@
                                 <asp:ListItem Text="No" Value="false" />
                             </Rock:RockDropDownList>
                         </Rock:GridFilter>
-                            <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" TooltipField="Description" OnRowSelected="rGrid_RowSelected">
+                            <Rock:Grid ID="rGrid" runat="server" RowItemText="setting" TooltipField="Description">
                             <Columns>
                                 <Rock:ReorderField />
                                 <Rock:RockBoundField
@@ -44,7 +44,7 @@
                                     HeaderStyle-HorizontalAlign="Right" />
                                 <Rock:RockLiteralField ItemStyle-Wrap="false" HeaderText="Qualifier" ID="lEntityQualifier" SortExpression="Qualifier"/>
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                                <Rock:RockTemplateField>
+                                <Rock:RockTemplateField ID="rtCategories">
                                     <HeaderTemplate>Categories</HeaderTemplate>
                                     <ItemTemplate>
                                         <asp:Literal ID="lCategories" runat="server"></asp:Literal>

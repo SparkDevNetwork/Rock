@@ -57,6 +57,13 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public void Execute( IJobExecutionContext context )
         {
+            /* MDP 07-22-2021
+
+               NOTE: We intentionally are excluding this from DataMigrationStartup and will just wait for it to run at 2am.
+               See https://app.asana.com/0/0/1199506067368201/f
+
+             */
+
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // get the configured timeout, or default if it is blank

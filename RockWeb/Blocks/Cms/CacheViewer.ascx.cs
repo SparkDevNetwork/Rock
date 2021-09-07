@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Cms
                 ShowInfo( string.Format( "The {0} with ID {1} was not found", modelType.Name, entityId ) );
             }
 
-            preResult.InnerText = cachedItem.ToJson( Newtonsoft.Json.Formatting.Indented );
+            preResult.InnerText = cachedItem.ToJson( indentOutput: true );
         }
 
         #endregion Events

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 
 namespace Rock.Lava
 {
@@ -26,6 +27,11 @@ namespace Rock.Lava
     public abstract class LavaEngineBase : ILavaEngine
     {
         private List<string> _defaultEnabledCommands = new List<string>();
+
+        void ILavaService.OnInitialize( object settings )
+        {
+            Initialize( settings as LavaEngineConfigurationOptions );
+        }
 
         /// <summary>
         /// Initializes the Lava engine with the specified options.
@@ -37,12 +43,12 @@ namespace Rock.Lava
                 options = new LavaEngineConfigurationOptions();
             }
 
-            // Connect the cache service to this Lava Engine instance.
+            // Initialize the cache service for the current Lava Engine type.
             _cacheService = options.CacheService;
 
             if ( _cacheService != null )
             {
-                _cacheService.LavaEngine = this;
+                _cacheService.Initialize( this.GetType().Name );
             }
 
             _defaultEnabledCommands = options.DefaultEnabledCommands;
@@ -96,16 +102,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaRenderContext NewRenderContext()
         {
-            var context = OnCreateRenderContext();
-
-            if ( context == null )
-            {
-                throw new LavaException( "Failed to create a new render context." );
-            }
-
-            context.SetEnabledCommands( this.DefaultEnabledCommands );
-
-            return context;
+            return NewRenderContextInternal( null, this.DefaultEnabledCommands );
         }
 
         /// <summary>
@@ -115,18 +112,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaRenderContext NewRenderContext( IEnumerable<string> enabledCommands )
         {
-            var context = OnCreateRenderContext();
-
-            if ( context == null )
-            {
-                throw new LavaException( "Failed to create a new render context." );
-            }
-
-            enabledCommands = enabledCommands ?? this.DefaultEnabledCommands;
-
-            context.SetEnabledCommands( enabledCommands );
-
-            return context;
+            return NewRenderContextInternal( null, enabledCommands );
         }
 
         /// <summary>
@@ -136,20 +122,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaRenderContext NewRenderContext( ILavaDataDictionary mergeFields, IEnumerable<string> enabledCommands = null )
         {
-            var context = OnCreateRenderContext();
-
-            if ( context == null )
-            {
-                throw new LavaException( "Failed to create a new render context." );
-            }
-
-            context.SetMergeFields( mergeFields );
-
-            enabledCommands = enabledCommands ?? this.DefaultEnabledCommands;
-
-            context.SetEnabledCommands( enabledCommands );
-
-            return context;
+            return NewRenderContextInternal( mergeFields, enabledCommands );
         }
 
         /// <summary>
@@ -159,6 +132,16 @@ namespace Rock.Lava
         /// <returns></returns>
         public ILavaRenderContext NewRenderContext( IDictionary<string, object> mergeFields, IEnumerable<string> enabledCommands = null )
         {
+            return NewRenderContextInternal( mergeFields, enabledCommands );
+        }
+
+        /// <summary>
+        /// Create a new template context and add the specified merge fields.
+        /// </summary>
+        /// <param name="mergeFields"></param>
+        /// <returns></returns>
+        private ILavaRenderContext NewRenderContextInternal( object mergeFields, IEnumerable<string> enabledCommands )
+        {
             var context = OnCreateRenderContext();
 
             if ( context == null )
@@ -166,11 +149,16 @@ namespace Rock.Lava
                 throw new LavaException( "Failed to create a new render context." );
             }
 
-            context.SetMergeFields( mergeFields );
+            if ( mergeFields is IDictionary<string, object> dictionary )
+            {
+                context.SetMergeFields( dictionary );
+            }
+            else if ( mergeFields is ILavaDataDictionary ldd )
+            {
+                context.SetMergeFields( ldd );
+            }
 
-            enabledCommands = enabledCommands ?? this.DefaultEnabledCommands;
-
-            context.SetEnabledCommands( enabledCommands );
+            InitializeRenderContext( context, enabledCommands ?? this.DefaultEnabledCommands );
 
             return context;
         }
@@ -184,7 +172,27 @@ namespace Rock.Lava
         {
             // This method exists as a convenience to disambiguate method calls using the LavaDataDictionary parameter, because
             //  it supports both the ILavaDataDictionary and IDictionary<string, object> interfaces.
-            return NewRenderContext( (ILavaDataDictionary)mergeFields, enabledCommands );
+            return NewRenderContext( ( ILavaDataDictionary ) mergeFields, enabledCommands );
+        }
+
+        /// <summary>
+        /// Initializes a new template context.
+        /// </summary>
+        /// <returns></returns>
+        protected void InitializeRenderContext( ILavaRenderContext context, IEnumerable<string> enabledCommands = null )
+        {
+            if ( context == null )
+            {
+                return;
+            }
+
+            if ( enabledCommands != null )
+            {
+                context.SetEnabledCommands( enabledCommands );
+            }
+
+            // Set a reference to the current Lava Engine.            
+            context.SetInternalField( LavaUtilityHelper.GetContextKeyFromType( typeof( ILavaEngine ) ), this );
         }
 
         /// <summary>
@@ -210,7 +218,7 @@ namespace Rock.Lava
         /// <summary>
         /// Gets the type of third-party framework used to render and parse Lava/Liquid documents.
         /// </summary>
-        public abstract LavaEngineTypeSpecifier EngineType { get; }
+        public abstract Guid EngineIdentifier { get; }
 
         /// <summary>
         /// Register a type that can be referenced in a template during the rendering process.
@@ -495,7 +503,7 @@ namespace Rock.Lava
             {
                 if ( _cacheService != null )
                 {
-                    template = _cacheService.GetOrAddTemplate( inputTemplate, parameters.CacheKey );
+                    template = _cacheService.GetOrAddTemplate( this, inputTemplate, parameters.CacheKey );
                 }
                 else
                 {
@@ -510,11 +518,7 @@ namespace Rock.Lava
 
                     if ( parseResult.HasErrors )
                     {
-                        if ( parseResult.Template == null
-                             || exceptionStrategy == ExceptionHandlingStrategySpecifier.Throw )
-                        {
-                            throw new LavaException( "Lava Template parse operation failed." );
-                        }
+                        throw parseResult.Error;
                     }
 
                     template = parseResult.Template;
@@ -527,16 +531,26 @@ namespace Rock.Lava
 
                 renderResult = RenderTemplate( template, parameters );
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
+            }
             catch ( Exception ex )
             {
-                if ( !( ex is LavaException ) )
-                {
-                    ex = new LavaRenderException( this.EngineName, inputTemplate, ex );
-                }
+                var lre = GetLavaRenderException( ex, inputTemplate );
 
                 string message;
 
-                ProcessException( ex, exceptionStrategy, out message );
+                if ( ex is System.Threading.ThreadAbortException )
+                {
+                    // If the requesting thread terminated unexpectedly, return an empty string.
+                    // This may happen, for example, when a Lava template triggers a page redirect in a web application.
+                    message = "{Request aborted}";
+                }
+                else
+                {
+                    ProcessException( lre, exceptionStrategy, out message );
+                }
 
                 renderResult.Error = ex;
                 renderResult.Text = message;
@@ -588,6 +602,11 @@ namespace Rock.Lava
                     result.Error = GetLavaRenderException( result.Error );
                 }
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating and no result is required.
+                result = null;
+            }
             catch ( Exception ex )
             {
                 result = new LavaRenderResult();
@@ -634,26 +653,17 @@ namespace Rock.Lava
             {
                 result.Template = OnParseTemplate( inputTemplate );
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
+            }
             catch ( Exception ex )
             {
-                var lpe = ex as LavaParseException ?? new LavaParseException( this.EngineName, inputTemplate, ex );
+                var lpe = ex as LavaParseException ?? new LavaParseException( this.EngineName, inputTemplate, ex.Message );
 
                 result.Error = lpe;
 
-                string message;
-
-                var exceptionStrategy = this.ExceptionHandlingStrategy;
-
-                ProcessException( lpe, exceptionStrategy, out message );
-
-                if ( !string.IsNullOrWhiteSpace( message ) )
-                {
-                    // Create a new template containing the error message.
-                    if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
-                    {
-                        result.Template = OnParseTemplate( message );
-                    }
-                }
+                ProcessException( lpe, null, out _ );
             }
 
             return result;
@@ -775,6 +785,10 @@ namespace Rock.Lava
 
                 OnRegisterFilter( filterMethod, filterName );
             }
+            catch ( ThreadAbortException )
+            {
+                // Ignore this exception, the calling thread is terminating.
+            }
             catch ( Exception ex )
             {
                 throw new LavaException( ex );
@@ -824,13 +838,33 @@ namespace Rock.Lava
 
             if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.RenderToOutput )
             {
-                var errorMessage = ex.Message.Length > 100 ? ex.Message.Substring( 0, 100 ) + "..." : ex.Message;
+                // [2021-06-04] DL
+                // Some Lava custom components have been designed to throw base Exceptions that contain important configuration instructions.
+                // However, there is currently no reliable method of identifying which exceptions in the stack offer an appropriate level of detail for display.
+                // To accomodate this design, we will display the message associated with the highest level Exception that is not a LavaException.
+                // In the future, this behavior could be more reliably implemented by defining a LavaConfigurationException that identifies
+                // an error message as being suitable for display in the render output.
+                var outputEx = ex;
 
-                message = $"Lava Error: {errorMessage}";
+                while ( outputEx is LavaException
+                        && outputEx.InnerException != null )
+                {
+                    outputEx = outputEx.InnerException;
+                }
+
+                if ( outputEx == null )
+                {
+                    message = $"Lava Error: { ex.Message }\n[Engine: { this.EngineName }]";
+                }
+                else
+                {
+                    message = outputEx.Message;
+                }
             }
             else if ( exceptionStrategy == ExceptionHandlingStrategySpecifier.Ignore )
             {
-                // We should probably log the message here rather than failing silently, but this preserves current behavior.
+                // Ignore the exception and return a null render result.
+                // The caller should subscribe to the ExceptionEncountered event in order to catch errors in the rendering process.
                 message = null;
             }
             else
@@ -852,15 +886,33 @@ namespace Rock.Lava
             }
         }
 
-        private LavaRenderException GetLavaRenderException( Exception ex )
+        private LavaRenderException GetLavaRenderException( Exception ex, string templateText = "{compiled}" )
         {
-            return ex as LavaRenderException ?? new LavaRenderException( this.EngineName, string.Empty, ex );
+            return ex as LavaRenderException ?? new LavaRenderException( this.EngineName, templateText, ex );
         }
 
         /// <summary>
         /// Gets or sets the strategy for handling exceptions encountered during the rendering process.
         /// </summary>
         public ExceptionHandlingStrategySpecifier ExceptionHandlingStrategy { get; set; } = ExceptionHandlingStrategySpecifier.RenderToOutput;
+
+        public string ServiceName
+        {
+            get
+            {
+                return this.EngineName;
+            }
+        }
+
+        public Guid ServiceIdentifier
+        {
+            get
+            {
+                return this.EngineIdentifier;
+            }
+        }
+
+        private static LavaToLiquidTemplateConverter _lavaToLiquidConverter = new LavaToLiquidTemplateConverter();
 
         /// <summary>
         /// Convert a Lava template to a Liquid-compatible template by replacing Lava-specific syntax and keywords.
@@ -869,9 +921,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public string ConvertToLiquid( string lavaTemplateText )
         {
-            var converter = new LavaToLiquidTemplateConverter();
-
-            return converter.ConvertToLiquid( lavaTemplateText );
+            return _lavaToLiquidConverter.ConvertToLiquid( lavaTemplateText );
         }
 
         /// <summary>

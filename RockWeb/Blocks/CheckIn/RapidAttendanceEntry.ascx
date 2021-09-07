@@ -86,8 +86,8 @@
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
                         <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />
+                        <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
                     </div>
-                    <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
                 </div>
                 <div>
                     <asp:HiddenField ID="hfPersonGuid" runat="server" />
@@ -95,8 +95,13 @@
                         <div class="row d-flex no-gutters">
                             <div class="col-md-3 d-flex align-items-center panel-sidebar">
                                 <div class="d-flex width-full padding-all-sm">
-                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
-                                    <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
+                                    <div class="resource-search js-resource-search flex-grow-1 input-group">
+                                        <span class="input-group-addon"><i class='fa fa-search'></i></span>
+                                        <Rock:RockTextBox ID="tbSearch" runat="server"  Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
+                                        <span class="input-group-btn">
+                                            <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-9">
@@ -204,7 +209,7 @@
                                         <div class="pull-left margin-b-md">
                                             <asp:Literal ID="lPreviousAddress" runat="server" />
                                         </div>
-                                        <div class="pull-right">
+                                        <div class="pull-right mb-2">
                                             <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
                                         </div>
                                     </div>

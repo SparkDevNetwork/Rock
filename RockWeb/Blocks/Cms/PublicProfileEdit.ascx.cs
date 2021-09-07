@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( personGuid == Guid.Empty )
             {
-                // When the personGuid is empty, then we check based on the given person's Id is in the group. 
+                // When the personGuid is empty, then we check based on the given person's Id is in the group.
                 return IsValidPersonForGroup( person, group );
             }
             else
@@ -982,7 +982,7 @@ namespace RockWeb.Blocks.Cms
                       we'll require an SMS number in these situations. The goal is to only enforce if they are able to do something about it.
                       1) The block is configured to show both 'Communication Preference' and 'Phone Numbers'.
                       2) Communication Preference is set to SMS
-                      
+
                      Edge cases
                        - Both #1 and #2 are true, but no Phone Types are selected in block settings. In this case, still enforce.
                          Think of this as a block configuration issue (they shouldn't have configured it that way)
@@ -1569,7 +1569,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Sets the visiblity of the controls for role.
+        /// Sets the visibility of the controls for role.
         /// </summary>
         /// <param name="roleTypeId">The role type identifier.</param>
         public void SetControlsForRoleType( int roleTypeId )

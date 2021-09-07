@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn
@@ -156,5 +157,20 @@ namespace Rock.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the successfully completed achievements prior to checkin.
+        /// </summary>
+        /// <value>
+        /// The successfully completed achievements prior to checkin.
+        /// </value>
+        public AchievementAttemptService.AchievementAttemptWithPersonAlias[] SuccessfullyCompletedAchievementsPriorToCheckin { get; internal set; }
+
+        /// <summary>
+        /// Gets the achievements state after checkin.
+        /// </summary>
+        /// <value>
+        /// The achievements state after checkin.
+        /// </value>
+        public AchievementAttemptService.AchievementAttemptWithPersonAlias[] AchievementsStateAfterCheckin { get; internal set; }
     }
 }

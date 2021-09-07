@@ -18,8 +18,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
-using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -141,171 +139,171 @@ namespace Rock.Lava.Blocks
              * persist throughout the rest of the workflow. */
             context.ExecuteInChildScope( (System.Action<ILavaRenderContext>)((newContext) =>
             {
-                using ( var rockContext = new RockContext() )
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                
+                WorkflowService workflowService = new WorkflowService( rockContext );
+                Rock.Model.Workflow workflow = null;
+                WorkflowActivity activity = null;
+
+                /* They provided a WorkflowType, so we need to kick off a new workflow. */
+                if ( parmWorkflowType != null )
                 {
-                    WorkflowService workflowService = new WorkflowService( rockContext );
-                    Rock.Model.Workflow workflow = null;
-                    WorkflowActivity activity = null;
+                    string type = parmWorkflowType;
+                    string name = parmWorkflowName ?? string.Empty;
+                    WorkflowTypeCache workflowType = null;
 
-                    /* They provided a WorkflowType, so we need to kick off a new workflow. */
-                    if ( parmWorkflowType != null )
+                    /* Get the type of workflow */
+                    if ( type.AsGuidOrNull() != null )
                     {
-                        string type = parmWorkflowType;
-                        string name = parmWorkflowName ?? string.Empty;
-                        WorkflowTypeCache workflowType = null;
-
-                        /* Get the type of workflow */
-                        if ( type.AsGuidOrNull() != null )
-                        {
-                            workflowType = WorkflowTypeCache.Get( type.AsGuid() );
-                        }
-                        else if ( type.AsIntegerOrNull() != null )
-                        {
-                            workflowType = WorkflowTypeCache.Get( type.AsInteger() );
-                        }
-
-                        /* Try to activate the workflow */
-                        if ( workflowType != null )
-                        {
-                            workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
-
-                            /* Set any workflow attributes that were specified. */
-                            foreach ( var attr in attributes )
-                            {
-                                if ( workflow.Attributes.ContainsKey( attr.Key ) )
-                                {
-                                    workflow.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                }
-                            }
-
-                            if ( workflow != null )
-                            {
-                                List<string> errorMessages;
-
-                                workflowService.Process( workflow, out errorMessages );
-
-                                if ( errorMessages.Any() )
-                                {
-                                    context["Error"] = string.Join( "; ", errorMessages.ToArray() );
-                                }
-
-                                context["Workflow"] = workflow;
-                            }
-                            else
-                            {
-                                context["Error"] = "Could not activate workflow.";
-                            }
-                        }
-                        else
-                        {
-                            context["Error"] = "Workflow type not found.";
-                        }
+                        workflowType = WorkflowTypeCache.Get( type.AsGuid() );
+                    }
+                    else if ( type.AsIntegerOrNull() != null )
+                    {
+                        workflowType = WorkflowTypeCache.Get( type.AsInteger() );
                     }
 
-                    /* They instead provided a WorkflowId, so we are working with an existing Workflow. */
-                    else if ( parmWorkflowId != null )
+                    /* Try to activate the workflow */
+                    if ( workflowType != null )
                     {
-                        string id = parmWorkflowId.ToString();
+                        workflow = Rock.Model.Workflow.Activate( ( WorkflowTypeCache ) workflowType, ( string ) parmWorkflowName );
 
-                        /* Get the workflow */
-                        if ( id.AsGuidOrNull() != null )
+                        /* Set any workflow attributes that were specified. */
+                        foreach ( var attr in attributes )
                         {
-                            workflow = workflowService.Get( id.AsGuid() );
-                        }
-                        else if ( id.AsIntegerOrNull() != null )
-                        {
-                            workflow = workflowService.Get( id.AsInteger() );
+                            if ( workflow.Attributes.ContainsKey( attr.Key ) )
+                            {
+                                workflow.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                            }
                         }
 
                         if ( workflow != null )
                         {
-                            if ( workflow.CompletedDateTime == null )
+                            List<string> errorMessages;
+
+                            workflowService.Process( workflow, out errorMessages );
+
+                            if ( errorMessages.Any() )
                             {
-                                /* Currently we cannot activate an activity in a workflow that is currently
-                                 * being processed. The workflow is held in-memory so the activity we would
-                                 * activate would not show up for the processor and probably never run.
-                                 */
-                                if ( !workflow.IsProcessing )
-                                {
-                                    bool hasError = false;
-
-                                    /* If they provided an ActivityType parameter then we need to activate
-                                     * a new activity in the workflow.
-                                     */
-                                    if ( parmActivityType != null )
-                                    {
-                                        string type = parmActivityType.ToString();
-                                        WorkflowActivityTypeCache activityType = null;
-
-                                        /* Get the type of activity */
-                                        if ( type.AsGuidOrNull() != null )
-                                        {
-                                            activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
-                                        }
-                                        else if ( type.AsIntegerOrNull() != null )
-                                        {
-                                            activityType = WorkflowActivityTypeCache.Get( type.AsInteger() );
-                                        }
-
-                                        if ( activityType != null )
-                                        {
-                                            activity = WorkflowActivity.Activate( activityType, workflow );
-
-                                            /* Set any workflow attributes that were specified. */
-                                            foreach ( var attr in attributes )
-                                            {
-                                                if ( activity.Attributes.ContainsKey( attr.Key ) )
-                                                {
-                                                    activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            context["Error"] = "Activity type was not found.";
-                                            hasError = true;
-                                        }
-                                    }
-
-                                    /* Process the existing Workflow. */
-                                    if ( !hasError )
-                                    {
-                                        List<string> errorMessages;
-                                        workflowService.Process( workflow, out errorMessages );
-
-                                        if ( errorMessages.Any() )
-                                        {
-                                            context["Error"] = string.Join( "; ", errorMessages.ToArray() );
-                                        }
-
-                                        context["Workflow"] = workflow;
-                                        context["Activity"] = activity;
-                                    }
-                                }
-                                else
-                                {
-                                    context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
-                                }
+                                context["Error"] = string.Join( "; ", errorMessages.ToArray() );
                             }
-                            else
-                            {
-                                context["Error"] = "Workflow has already been completed.";
-                            }
+
+                            context["Workflow"] = workflow;
                         }
                         else
                         {
-                            context["Error"] = "Workflow not found.";
+                            context["Error"] = "Could not activate workflow.";
                         }
                     }
                     else
                     {
-                        context["Error"] = "Must specify one of WorkflowType or WorkflowId.";
+                        context["Error"] = "Workflow type not found.";
+                    }
+                }
+
+                /* They instead provided a WorkflowId, so we are working with an existing Workflow. */
+                else if ( parmWorkflowId != null )
+                {
+                    string id = parmWorkflowId.ToString();
+
+                    /* Get the workflow */
+                    if ( id.AsGuidOrNull() != null )
+                    {
+                        workflow = workflowService.Get( id.AsGuid() );
+                    }
+                    else if ( id.AsIntegerOrNull() != null )
+                    {
+                        workflow = workflowService.Get( id.AsInteger() );
                     }
 
-                    base.OnRender( context, result );
-                    //RenderAll( NodeList, context, result );
-                    // TODO: Test this! - NodeList is empty here, so the call to RenderAll seems unnecessary?
+                    if ( workflow != null )
+                    {
+                        if ( workflow.CompletedDateTime == null )
+                        {
+                            /* Currently we cannot activate an activity in a workflow that is currently
+                                * being processed. The workflow is held in-memory so the activity we would
+                                * activate would not show up for the processor and probably never run.
+                                */
+                            if ( !workflow.IsProcessing )
+                            {
+                                bool hasError = false;
+
+                                /* If they provided an ActivityType parameter then we need to activate
+                                    * a new activity in the workflow.
+                                    */
+                                if ( parmActivityType != null )
+                                {
+                                    string type = parmActivityType.ToString();
+                                    WorkflowActivityTypeCache activityType = null;
+
+                                    /* Get the type of activity */
+                                    if ( type.AsGuidOrNull() != null )
+                                    {
+                                        activityType = WorkflowActivityTypeCache.Get( type.AsGuid() );
+                                    }
+                                    else if ( type.AsIntegerOrNull() != null )
+                                    {
+                                        activityType = WorkflowActivityTypeCache.Get( type.AsInteger() );
+                                    }
+
+                                    if ( activityType != null )
+                                    {
+                                        activity = WorkflowActivity.Activate( activityType, workflow );
+
+                                        /* Set any workflow attributes that were specified. */
+                                        foreach ( var attr in attributes )
+                                        {
+                                            if ( activity.Attributes.ContainsKey( attr.Key ) )
+                                            {
+                                                activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        context["Error"] = "Activity type was not found.";
+                                        hasError = true;
+                                    }
+                                }
+
+                                /* Process the existing Workflow. */
+                                if ( !hasError )
+                                {
+                                    List<string> errorMessages;
+                                    workflowService.Process( workflow, out errorMessages );
+
+                                    if ( errorMessages.Any() )
+                                    {
+                                        context["Error"] = string.Join( "; ", errorMessages.ToArray() );
+                                    }
+
+                                    context["Workflow"] = workflow;
+                                    context["Activity"] = activity;
+                                }
+                            }
+                            else
+                            {
+                                context["Error"] = "Cannot activate activity on workflow that is currently being processed.";
+                            }
+                        }
+                        else
+                        {
+                            context["Error"] = "Workflow has already been completed.";
+                        }
+                    }
+                    else
+                    {
+                        context["Error"] = "Workflow not found.";
+                    }
                 }
+                else
+                {
+                    context["Error"] = "Must specify one of WorkflowType or WorkflowId.";
+                }
+
+                base.OnRender( context, result );
+                //RenderAll( NodeList, context, result );
+                // TODO: Test this! - NodeList is empty here, so the call to RenderAll seems unnecessary?
+                
             }) );
         }
 

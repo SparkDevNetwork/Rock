@@ -81,7 +81,7 @@ namespace Rock.Field.Types
             configurationValues.Add( "valueprompt", new ConfigurationValue( "Label Prompt", "The text to display as a prompt in the label textbox.", "" ) );
             configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "Optional Defined Type to select values from, otherwise values will be free-form text fields", "" ) );
             configurationValues.Add( "customvalues", new ConfigurationValue( "Custom Values", "Optional list of options to use for the values.  Format is either 'value1,value2,value3,...', or 'value1^text1,value2^text2,value3^text3,...'.", "" ) );
-            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow Html", "Allow Html content in values", "" ) );
+            configurationValues.Add( "allowhtml", new ConfigurationValue( "Allow HTML", "Allow HTML content in values", "" ) );
             configurationValues.Add( "displayvaluefirst", new ConfigurationValue( "Display Value First", "Reverses the display order of the key and the value.", "" ) );
 
             if ( controls != null )

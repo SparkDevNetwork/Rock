@@ -295,7 +295,6 @@ namespace Rock.Communication.Transport
                         {
                             var startMutexWait = System.Diagnostics.Stopwatch.StartNew();
                             await mutex.WaitAsync().ConfigureAwait( false );
-
                             sendingTask.Add( ThrottleHelper.ThrottledExecute( () => SendToRecipientAsync( recipient, mergeFields, smsMessage, attachmentMediaUrls, mediumEntityTypeId, mediumAttributes ), mutex ) );
                         }
 
@@ -414,7 +413,18 @@ namespace Rock.Communication.Transport
                     {
                         var communicationService = new CommunicationService( rockContext );
 
-                        var communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+                        var createSMSCommunicationArgs = new CommunicationService.CreateSMSCommunicationArgs
+                        {
+                            FromPerson = smsMessage.CurrentPerson,
+                            ToPersonAliasId = recipientPerson?.PrimaryAliasId,
+                            Message = message,
+                            FromPhone = smsMessage.FromNumber,
+                            CommunicationName = smsMessage.CommunicationName,
+                            ResponseCode = string.Empty,
+                            SystemCommunicationId = smsMessage.SystemCommunicationId
+                        };
+
+                        Rock.Model.Communication communication = communicationService.CreateSMSCommunication( createSMSCommunicationArgs );
 
                         if ( smsMessage?.CurrentPerson != null )
                         {

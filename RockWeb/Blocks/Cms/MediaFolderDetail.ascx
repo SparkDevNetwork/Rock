@@ -5,6 +5,8 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
+            <Rock:ModalAlert ID="mdSyncMessage" runat="server" />
+
             <div class="panel-heading ">
                 <h1 class="panel-title"><i class="fa fa-play-circle"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
@@ -32,8 +34,6 @@
                             <asp:Literal ID="lMetricData" runat="server" />
                         </div>
                     </div>
-
-                    <Rock:NotificationBox ID="nbActionResult" runat="server" NotificationBoxType="Info" Dismissable="true" />
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
@@ -79,7 +79,7 @@
                         </div>
                     </asp:Panel>
 
-                    <div class="actions margin-t-lg">
+                    <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>

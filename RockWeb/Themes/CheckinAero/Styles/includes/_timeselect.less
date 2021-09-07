@@ -18,7 +18,7 @@
   margin: 0 -5px;
 
 
-  @media (min-width: @screen-xs-min) {
+  @media (min-width: @screen-sm-min) {
     flex-direction: row;
   }
 
@@ -26,6 +26,7 @@
     display: flex;
     flex-basis: 0;
     flex-grow: 1;
+    float: none;
     max-width: 100%;
     min-height: 88px;
     padding: 10px;
@@ -37,25 +38,23 @@
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
 
-    @media (min-width: @screen-xs-min) {
-      margin: 0 5px;
+    @media (min-width: @screen-sm-min) {
+      flex-basis: 30%;
+      max-width: 32%;
+      margin: 1.5%;
       font-size: 160px;
       border-radius: 50% !important;
-    }
 
-
-    @media (min-width: @screen-sm-min) {
-      min-width: 22%;
-      max-width: 310px;
-      margin: 10px;
-    }
-
-    @media (min-width: @screen-xs-min) {
       &::after {
         display: block;
         padding-bottom: 100%;
         content: "";
       }
+    }
+
+    @media (min-width: @screen-md-min) {
+      flex-basis: 22%;
+      max-width: 310px;
     }
   }
 }
@@ -93,7 +92,11 @@
       opacity: 0;
 
       @media (min-width: @screen-sm-min) {
-        font-size: 1.5em;
+        font-size: .95em;
+      }
+
+      @media (min-width: @screen-md-min) {
+        font-size: 1.25em;
       }
 
       &::before {

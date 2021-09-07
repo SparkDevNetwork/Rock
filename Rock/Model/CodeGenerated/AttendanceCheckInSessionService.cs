@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,8 +54,8 @@ namespace Rock.Model
         public bool CanDelete( AttendanceCheckInSession item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Attendance,AttendanceCheckInSessionId 
+
+            // ignoring Attendance,AttendanceCheckInSessionId
             return true;
         }
     }
@@ -109,7 +112,6 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this AttendanceCheckInSession target, AttendanceCheckInSession source )
         {
             target.Id = source.Id;
-            target.Attendances = source.Attendances;
             target.ClientIpAddress = source.ClientIpAddress;
             target.DeviceId = source.DeviceId;
             target.ForeignGuid = source.ForeignGuid;
@@ -118,5 +120,7 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
     }
+
 }

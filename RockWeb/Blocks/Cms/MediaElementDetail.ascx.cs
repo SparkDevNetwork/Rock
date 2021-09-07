@@ -236,7 +236,10 @@ namespace RockWeb.Blocks.Cms
             mediaElement.FileDataJson = FileDataState.ToJson();
             rockContext.SaveChanges();
 
-            ShowDetail( mediaElement.Id );
+            NavigateToCurrentPageReference( new Dictionary<string, string>
+            {
+                { PageParameterKey.MediaElementId, mediaElement.Id.ToString() }
+            } );
         }
 
         /// <summary>
@@ -429,6 +432,12 @@ namespace RockWeb.Blocks.Cms
             pnlView.Visible = true;
 
             bool readOnly = false;
+
+            var mediaComponent = mediaElement.MediaFolder?.MediaAccount?.GetMediaAccountComponent();
+            if ( mediaComponent != null && !mediaComponent.AllowsManualEntry )
+            {
+                readOnly = true;
+            }
 
             nbEditModeMessage.Text = string.Empty;
             if ( !IsUserAuthorized( Authorization.EDIT ) )

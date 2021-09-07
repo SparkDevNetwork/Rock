@@ -1,13 +1,25 @@
 <div class="scheduledtransaction-summary">
-  {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
-  {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
-  {{ ScheduledTransaction.CurrencyType }}
-  {% else %}
-  {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
+    {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
+    {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
+    {{ ScheduledTransaction.CurrencyType }}
+    {% else %}
+    {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}{% if ScheduledTransaction.CardExpirationDate and ScheduledTransaction.CardExpirationDate != empty %} Expires: {{ ScheduledTransaction.CardExpirationDate }} {% endif %}
+    {% if ScheduledTransaction.CardIsExpired %}
+    <span class='label label-warning'>Card Expired</span>
+    {% elseif ScheduledTransaction.Status and ScheduledTransaction.Status != 'Active' %}
+      <span class='label label-warning'>{{ ScheduledTransaction.Status }}</span>
+    {% endif %}
+
   {% endif %}<br>
   {{ ScheduledTransaction.FrequencyDescription | downcase }}.
 
   {% if ScheduledTransaction.NextPaymentDate != null %}
   Next gift will be on {{ ScheduledTransaction.NextPaymentDate | Date:"MMMM d, yyyy" }}.
   {% endif %}
+
+  {% if ScheduledTransaction.EditPage == null %}
+    <p>Please contact us to if you need to change this scheduled transaction.</p>
+  {% endif %}
+
 </div>

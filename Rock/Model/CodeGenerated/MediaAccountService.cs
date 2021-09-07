@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -54,6 +57,49 @@ namespace Rock.Model
             return true;
         }
     }
+
+    /// <summary>
+    /// MediaAccount View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( MediaAccount ) )]
+    public partial class MediaAccountViewModelHelper : ViewModelHelper<MediaAccount, Rock.ViewModel.MediaAccountViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.MediaAccountViewModel CreateViewModel( MediaAccount model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.MediaAccountViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                ComponentEntityTypeId = model.ComponentEntityTypeId,
+                IsActive = model.IsActive,
+                LastRefreshDateTime = model.LastRefreshDateTime,
+                MetricData = model.MetricData,
+                Name = model.Name,
+                SourceData = model.SourceData,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -127,5 +173,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.MediaAccountViewModel ToViewModel( this MediaAccount model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new MediaAccountViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

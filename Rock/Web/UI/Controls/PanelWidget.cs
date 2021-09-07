@@ -190,6 +190,7 @@ namespace Rock.Web.UI.Controls
 // activity animation
 $('.rock-panel-widget > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
+    $(this).parent().toggleClass('collapsed')
 
     if ( $(this).find('.js-header-controls').length ) {
         $(this).find('.js-header-title').slideToggle();
@@ -270,6 +271,10 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
         {
             if ( this.Visible )
             {
+                if ( !Expanded )
+                {
+                    CssClass += " collapsed";
+                }
                 // Section
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget rock-panel-widget " + CssClass );
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );

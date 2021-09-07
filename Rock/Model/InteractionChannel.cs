@@ -27,7 +27,7 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents a Interaction Channel.
+    /// Represents a Interaction Channel. See notes on <seealso cref="ChannelEntityId"/>
     /// </summary>
     [RockDomain( "Core" )]
     [NotAudited]
@@ -67,16 +67,43 @@ namespace Rock.Model
         public int? EngagementStrength { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> for each of this channel's <see cref="Rock.Model.InteractionComponent">components</see>.
+        /// The Id of the <see cref="ComponentEntityTypeId"/> is stored in down in <see cref="Rock.Model.InteractionComponent.EntityId" />.
+        /// For example:
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>PageView</term>
+        ///     <description>EntityType is <see cref="Rock.Model.Page" />. Page.Id is stored down in <see cref="Rock.Model.InteractionComponent.EntityId" /></description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description>EntityType is <see cref="Rock.Model.Communication" />. Communication.Id is stored down in <see cref="Rock.Model.InteractionComponent.EntityId" /> </description></item>
+        /// <item>
+        ///     <term>Workflow Entry Form</term>
+        ///     <description>EntityType is <see cref="Rock.Model.WorkflowType" />. WorkflowType.Id is stored down in <see cref="Rock.Model.InteractionComponent.EntityId" /></description></item>
+        /// </list>
         /// </summary>
+        /// <remarks>
+        /// <see cref="Rock.Model.InteractionChannel.ComponentEntityTypeId"/>
+        /// </remarks>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/>
         /// </value>
         [DataMember]
         public int? ComponentEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified. For example:
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>PageView</term>
+        ///     <description>null</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity</term>
+        ///     <description><see cref="Rock.Model.CommunicationRecipient" /></description></item>
+        /// <item>
+        ///     <term>Workflow Entry Form</term>
+        ///     <description><see cref="Rock.Model.Workflow" /></description></item>
+        /// </list>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
@@ -86,11 +113,24 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the channel entity identifier.
-        /// Note, the ChannelEntityType is inferred based on what the ChannelTypeMediumValue is 
-        /// INTERACTIONCHANNELTYPE_WEBSITE = Rock.Model.Site
-        /// INTERACTIONCHANNELTYPE_COMMUNICATION = Rock.Model.Communication
-        /// INTERACTIONCHANNELTYPE_CONTENTCHANNEL = Rock.Model.ContentChannel
+        /// Note, the ChannelEntityType is inferred based on what the ChannelTypeMediumValue is:
+        /// <list type="bullet">
+        /// <item>
+        ///     <term>Page Views (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE"/>)</term>
+        ///     <description><see cref="Rock.Model.Site" /> Id</description></item>
+        /// <item>
+        ///     <term>Communication Recipient Activity (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_COMMUNICATION"/>)</term>
+        ///     <description><see cref="Rock.Model.Communication" /> Id</description></item>
+        /// <item>
+        ///     <term>Content Channel Activity (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL" />)</term>
+        ///     <description><see cref="Rock.Model.ContentChannel" /> Id</description></item>
+        /// <item>
+        ///     <term>System Events, like Workflow Form Entry (<see cref="Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS" />)</term>
+        ///     <description>null, only one Channel</description></item>
+        /// </list>
         /// </summary>
+        /// <remarks>
+        /// </remarks>
         /// <value>
         /// The channel entity identifier.
         /// </value>
@@ -99,6 +139,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Id of the Channel Type <see cref="Rock.Model.DefinedValue" /> representing what type of Interaction Channel this is.
+        /// This helps determine the <seealso cref="ChannelEntityId"/>
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.DefinedValue"/> identifying the interaction channel type. If no value is selected this can be null.
@@ -218,13 +259,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
-        public bool IsActive
-        {
-            get { return _isActive; }
-            set { _isActive = value; }
-        }
-
-        private bool _isActive = true;
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the interaction custom 1 label.
@@ -289,31 +324,16 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the type of the Component Entity.
-        /// </summary>
-        /// <value>
-        /// The type of the component entity.
-        /// </value>
+        
+        /// <inheritdoc cref="ComponentEntityTypeId"/>
         [DataMember]
         public virtual Model.EntityType ComponentEntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of the interaction Entity.
-        /// </summary>
-        /// <value>
-        /// The type of the interaction entity.
-        /// </value>
+        /// <inheritdoc cref="InteractionEntityTypeId"/>
         [DataMember]
         public virtual Model.EntityType InteractionEntityType { get; set; }
 
-        /// <summary>
-        /// Gets or sets the channel medium value.
-        /// </summary>
-        /// <value>
-        /// The channel medium value.
-        /// </value>
+        /// <inheritdoc cref="ChannelTypeMediumValueId"/>
         [DataMember]
         public virtual DefinedValue ChannelTypeMediumValue { get; set; }
 

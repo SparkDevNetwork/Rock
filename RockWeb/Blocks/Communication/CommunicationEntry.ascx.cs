@@ -1187,8 +1187,14 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( mediumControl is Rock.Web.UI.Controls.Communication.Sms )
                 {
-                    ( ( Rock.Web.UI.Controls.Communication.Sms )mediumControl ).SelectedNumbers = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+                    var allowedSmsNumbersGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
+
+                    ( ( Sms ) mediumControl ).SelectedNumbers = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM.AsGuid() ).DefinedValues
+                        .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && allowedSmsNumbersGuids.ContainsOrEmpty( v.Guid ) )
+                        .Select( v => v.Guid )
+                        .ToList();
                 }
+
                 mediumControl.ID = "commControl";
                 mediumControl.IsTemplate = false;
                 mediumControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();

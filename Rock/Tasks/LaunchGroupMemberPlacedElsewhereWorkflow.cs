@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -26,8 +24,11 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Launches a Group Member PlacedElsewhere workflow
-    /// </summary>-
+    /// Launches a Group Member PlacedElsewhere workflow using the message bus.
+    /// Note: This might not work if a group member has a large amount of Attribute data, so use <see cref="Rock.Transactions.GroupMemberPlacedElsewhereTransaction"/> instead.
+    /// </summary>
+    [Obsolete( "This might not work if a group member has a large amount of Attribute data. Use GroupMemberPlacedElsewhereTransaction instead." )]
+    [RockObsolete( "1.13.0" )]
     public sealed class LaunchGroupMemberPlacedElsewhereWorkflow : BusStartedTask<LaunchGroupMemberPlacedElsewhereWorkflow.Message>
     {
         /// <summary>

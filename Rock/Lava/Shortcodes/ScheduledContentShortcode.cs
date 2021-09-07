@@ -107,9 +107,8 @@ namespace Rock.Lava.Shortcodes
             // the end of the template. This will pull out just the internals of the block.
 
             // We must take into consideration nested tags of the same type
-
-            var startTag = $@"{{\%\s*{ this.InternalElementName }\s*\%}}";
-            var endTag = $@"{{\%\s*end{ this.InternalElementName }\s*\%}}";
+            var startTag = $@"{{\[\s*{ this.SourceElementName }\s*\]}}";
+            var endTag = $@"{{\[\s*end{ this.SourceElementName }\s*\]}}";
 
             var childTags = 0;
 
@@ -162,7 +161,7 @@ namespace Rock.Lava.Shortcodes
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
-            var rockContext = new RockContext();
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
             // Get enabled security commands
             _enabledSecurityCommands = context.GetEnabledCommands().JoinStrings( "," );
@@ -271,8 +270,13 @@ namespace Rock.Lava.Shortcodes
                 mergeFields.Add( "Schedule", nextSchedule );
                 mergeFields.Add( "IsLive", isLive );
 
-                var results = _blockMarkup.ToString().ResolveMergeFields( mergeFields, _enabledSecurityCommands );
-                result.Write( results.Trim() );
+                var engine = context.GetService<ILavaEngine>();
+
+                var renderContext = engine.NewRenderContext( mergeFields, _enabledSecurityCommands.SplitDelimitedValues() );
+
+                var results = engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( renderContext ) );
+
+                result.Write( results.Text.Trim() );
             }
         }
 

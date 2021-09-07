@@ -22,8 +22,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Rock.Common;
-
 namespace Rock.Lava
 {
     /// <summary>
@@ -109,8 +107,8 @@ namespace Rock.Lava
             // Create regular expressions for start and end tags.
             // In the source document, the Lava Shortcode element tag format is "{[ tagname ]}".
             // However, our pre-processing of the document substitutes the Lava-specific tag format for the Liquid-compatible tag format "{% tagname@ %}"
-            var startTag = $@"{{\%\s*{ _tagName }\s*(.*?)\%}}";
-            var endTag = $@"{{\%\s*end{ _tagName }\s*\%}}";
+            var startTag = $@"{{\[\s*{ _tagName }\s*(.*?)\]}}";
+            var endTag = $@"{{\[\s*end{ _tagName }\s*\]}}";
 
             var startTags = 0;
 

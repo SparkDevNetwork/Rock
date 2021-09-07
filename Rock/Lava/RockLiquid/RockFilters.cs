@@ -460,13 +460,13 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToCssClass( string input )
         {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return string.Empty;
+            }
+
             // list from: https://mathiasbynens.be/notes/css-escapes
             Regex ex = new Regex( @"[&*!""#$%'()+,.\/:;<=>?@\[\]\^`{\|}~\s]" );
-
-            if ( input == null )
-            {
-                return input;
-            }
 
             // replace unsupported characters
             input = ex.Replace( input, "-" ).ToLower();
@@ -2253,9 +2253,17 @@ namespace Rock.Lava
             }
         }
 
+        /// <inheritdoc cref="Rock.Lava.Filters.TemplateFilters.RandomNumber(object)"/>
+        public static int RandomNumber( object input )
+        {
+            return Rock.Lava.Filters.TemplateFilters.RandomNumber( input );
+        }
+
         #endregion Number Filters
 
         #region Attribute Filters
+
+        private const int _maxRecursionDepth = 10;
 
         /// <summary>
         /// DotLiquid Attribute Filter
@@ -2279,7 +2287,7 @@ namespace Rock.Lava
             int? entityId = null;
 
             // If Input is "Global" then look for a global attribute with key
-            if ( input.ToString().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
+            if ( ( input is string ) && input.ToStringSafe().Equals( "Global", StringComparison.OrdinalIgnoreCase ) )
             {
                 var globalAttributeCache = GlobalAttributesCache.Get();
                 attribute = globalAttributeCache.Attributes
@@ -2299,6 +2307,13 @@ namespace Rock.Lava
                                 mergeFields.Add( keyVal.Key, keyVal.Value );
                             }
                         }
+
+                        // Verify that the recursion depth is not exceeded.
+                        if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                        {
+                            return "## Lava Error: Recursive reference ##";
+                        }
+
                         rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
@@ -2311,12 +2326,12 @@ namespace Rock.Lava
             /*
                 04/28/2020 - Shaun
                 The "SystemSetting" filter argument does not retrieve the Attribute from the database
-                or perform any authorization checks.  It simply returns the value of the of the specified
+                or perform any authorization checks.  It simply returns the value of the specified
                 SystemSetting attribute (with any merge fields evaluated).  This is intentional.
             */
 
             // If Input is "SystemSetting" then look for a SystemSetting attribute with key
-            else if ( input.ToString().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
+            else if ( ( input is string ) && input.ToStringSafe().Equals( "SystemSetting", StringComparison.OrdinalIgnoreCase ) )
             {
                 string theValue = Rock.Web.SystemSettings.GetValue( attributeKey );
                 if ( theValue.HasMergeFields() )
@@ -2331,6 +2346,12 @@ namespace Rock.Lava
                         }
                     }
 
+                    // Verify that the recursion depth has not been exceeded.
+                    if ( !IncrementRecursionTracker( "internal.AttributeFilterRecursionDepth", mergeFields ) )
+                    {
+                        return "## Lava Error: Recursive reference ##";
+                    }
+
                     rawValue = theValue.ResolveMergeFields( mergeFields );
                 }
                 else
@@ -2340,7 +2361,6 @@ namespace Rock.Lava
 
                 return rawValue;
             }
-
             // If input is an object that has attributes, find its attribute value
             else
             {
@@ -2441,6 +2461,29 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Increment the specified recursion tracking key in the supplied Lava context
+        /// and verify that the recursion limit has not been exceeded.
+        /// </summary>
+        /// <param name="recursionDepthKey"></param>
+        /// <param name="mergeFields"></param>
+        /// <returns></returns>
+        private static bool IncrementRecursionTracker( string recursionDepthKey, IDictionary<string, object> mergeFields )
+        {
+            int currentRecursionDepth = mergeFields.GetValueOrDefault( recursionDepthKey, 0 ).ToStringSafe().AsInteger();
+
+            currentRecursionDepth++;
+
+            if ( currentRecursionDepth > _maxRecursionDepth )
+            {
+                return false;
+            }
+
+            mergeFields[recursionDepthKey] = currentRecursionDepth.ToString();
+
+            return true;
         }
 
         /// <summary>
@@ -2894,6 +2937,9 @@ namespace Rock.Lava
                                 case "FormattedHtmlAddress":
                                     qualifier = qualifier.Replace( match.ToString(), location.FormattedHtmlAddress );
                                     break;
+                                case "Guid":
+                                    qualifier = qualifier.Replace( match.ToString(), location.Guid.ToString() );
+                                    break;
                                 default:
                                     qualifier = qualifier.Replace( match.ToString(), "" );
                                     break;
@@ -3064,7 +3110,7 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( Context context, object input, string size )
         {
-            return ZebraPhoto( context, input, size, 1.0, 1.0 );
+            return ZebraPhoto( context, input, size, 1.0M, 1.0M, "LOGO", 0 );
         }
 
         /// <summary>
@@ -3081,9 +3127,9 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast )
         {
-            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO" );
+            return ZebraPhoto( context, input, size, brightness, contrast, "LOGO", 0 );
         }
 
         /// <summary>
@@ -3101,7 +3147,7 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast, string fileName )
         {
             return ZebraPhoto( context, input, size, brightness, contrast, fileName, 0 );
         }
@@ -3122,7 +3168,7 @@ namespace Rock.Lava
         /// <returns>
         /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
         /// </returns>
-        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        public static string ZebraPhoto( Context context, object input, string size, decimal brightness, decimal contrast, string fileName, int rotationDegree )
         {
             var person = GetPerson( input );
             try
@@ -3170,7 +3216,7 @@ namespace Rock.Lava
                     Bitmap initialBitmap = new Bitmap( initialPhotoStream );
 
                     // Adjust the image if any of the parameters not default
-                    if ( brightness != 1.0 || contrast != 1.0 )
+                    if ( brightness != 1.0M || contrast != 1.0M )
                     {
                         initialBitmap = ImageAdjust( initialBitmap, (float)brightness, (float)contrast );
                     }
@@ -3304,6 +3350,72 @@ namespace Rock.Lava
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="rotationDegree">The degree of rotation to apply to the image (0, 90, 180, 270).</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal, string, int ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName, int rotationDegree )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, fileName, rotationDegree );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input, which is the person.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness adjustment (-1.0 to 1.0).</param>
+        /// <param name="contrast">The contrast adjustment (-1.0 to 1.0).</param>
+        /// <param name="fileName">Name of the file.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal, string ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast, string fileName )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, fileName, 0 );
+        }
+
+        /// <summary>
+        /// Gets the profile photo for a person object in a string that zebra printers can use.
+        /// If the person has no photo, a default silhouette photo (adult/child, male/female)
+        /// photo is used.
+        /// See http://www.rockrms.com/lava/person#ZebraPhoto for details.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="size">The size.</param>
+        /// <param name="brightness">The brightness.</param>
+        /// <param name="contrast">The contrast.</param>
+        /// <returns>
+        /// A ZPL field containing the photo data with a label of LOGO (^FS ~DYE:{fileName},P,P,{contentLength},,{zplImageData} ^FD").
+        /// </returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use ZebraPhoto( Context, object, string, decimal, decimal ) instead." )]
+        public static string ZebraPhoto( Context context, object input, string size, double brightness, double contrast )
+        {
+            return ZebraPhoto( context, input, size, ( decimal ) brightness, ( decimal ) contrast, "LOGO", 0 );
         }
 
         /// <summary>
@@ -3552,7 +3664,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returnes the nearest group of a specific type.
+        /// Returns the nearest group of a specific type.
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="input">The input.</param>
@@ -4137,7 +4249,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson( Formatting.Indented, ignoreErrors: true );
+            return input.ToJson( indentOutput: true, ignoreErrors: true );
         }
 
         /// <summary>
@@ -4651,7 +4763,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = RockDateTime.Now.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -5238,7 +5350,7 @@ namespace Rock.Lava
         /// <param name="input">The lava source to process.</param>
         /// <example><![CDATA[
         /// {% capture lava %}{% raw %}{% assign test = "hello" %}{{ test }}{% endraw %}{% endcapture %}
-        /// {{ lava | BBM_RunLava }}
+        /// {{ lava | RunLava }}
         /// ]]></example>
         public static string RunLava( Context context, object input )
         {
@@ -5262,6 +5374,31 @@ namespace Rock.Lava
             System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
 
             return template.Render( Hash.FromDictionary( mergeFields ) );
+        }
+
+        /// <summary>
+        /// Adds a QuickReturn to PersonalLinks.
+        /// Note that this is only supported for pages that have the PersonalLinks block on it.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="typeName">Name of the type.</param>
+        /// <param name="typeOrder">The type order.</param>
+        public static void AddQuickReturn( string input, string typeName, int typeOrder = 0 )
+        {
+            RockPage rockPage = HttpContext.Current.Handler as RockPage;
+
+            if ( input.IsNotNullOrWhiteSpace() )
+            {
+
+                /*  08-16-2021 MDP
+                  This is only supported for pages that have the PersonalLinks block on it.
+                */
+                
+                RockPage.AddScriptToHead( rockPage, string.Format( @"$( document ).ready(function () {{ Rock.personalLinks.addQuickReturn( '{0}', {1}, '{2}' ) }});",
+                typeName,
+                typeOrder,
+                input.ToString().EscapeQuotes() ), true );
+            }
         }
 
         #endregion Misc Filters
@@ -5450,6 +5587,14 @@ namespace Rock.Lava
                     {
                         var dictionaryObject = value as IDictionary<string, object>;
                         if ( dictionaryObject.ContainsKey( selectKey ) )
+                        {
+                            result.Add( dictionaryObject[selectKey] );
+                        }
+                    }
+                    else if ( value is IDictionary )
+                    {
+                        var dictionaryObject = value as IDictionary;
+                        if ( dictionaryObject.Contains( selectKey ) )
                         {
                             result.Add( dictionaryObject[selectKey] );
                         }
@@ -6250,6 +6395,121 @@ namespace Rock.Lava
         }
 
         #endregion Color Filters
+
+        /// <summary>
+        /// Get the page route for the specified page Id or Guid.
+        /// </summary>
+        /// <param name="input">The page (and optional route) we are interested in.</param>
+        /// <param name="parameters">Any parameters that should be included in the route URL.</param>
+        /// <example><![CDATA[
+        /// {{ 12 | PageRoute }}
+        /// {{ '12' | PageRoute:'PersonID=10^GroupId=20' }}
+        /// {{ 'Global' | Attribute:'PageAttrib','RawValue' | Pageroute:'PersonId=10' }}
+        /// ]]></example>
+        public static string PageRoute( object input, object parameters = null )
+        {
+            int pageId = 0;
+            int routeId = 0;
+            var parms = new Dictionary<string, string>();
+
+            if ( input is int )
+            {
+                //
+                // We were given a simple page Id number.
+                //
+                pageId = ( int ) input;
+            }
+            else
+            {
+                //
+                // We have a string, it could be a page Id number as a string or a "Guid[,Guid]"
+                // style page reference.
+                //
+                var pageString = input.ToString();
+
+                if ( pageString.Contains( "," ) )
+                {
+                    //
+                    // "Guid,Guid" style page reference.
+                    //
+                    var segments = pageString.Split( ',' );
+
+                    var page = Rock.Web.Cache.PageCache.Get( segments[0].AsGuid() );
+
+                    if ( page == null )
+                    {
+                        throw new Exception( "Page not found." );
+                    }
+
+                    pageId = page.Id;
+
+                    var routeGuid = segments[1].AsGuid();
+                    var route = page.PageRoutes.Where( r => r.Guid == routeGuid ).FirstOrDefault();
+
+                    if ( route != null )
+                    {
+                        routeId = route.Id;
+                    }
+                }
+                else
+                {
+                    //
+                    // "Guid" or "int" style page reference.
+                    //
+                    var pageGuid = pageString.AsGuidOrNull();
+
+                    if ( pageGuid.HasValue )
+                    {
+                        var page = Rock.Web.Cache.PageCache.Get( pageGuid.Value );
+
+                        if ( page == null )
+                        {
+                            throw new Exception( "Page not found." );
+                        }
+
+                        pageId = page.Id;
+                    }
+                    else
+                    {
+                        pageId = pageString.AsInteger();
+                    }
+                }
+            }
+
+            //
+            // Parse the parameters. They will either be a "key=value^key2=value2" style string
+            // or a dictionary collection of key value pairs.
+            //
+            if ( parameters is string && !string.IsNullOrEmpty( ( string ) parameters ) )
+            {
+                var segments = parameters.ToString().Split( '^' );
+
+                foreach ( string segment in segments )
+                {
+                    var kv = segment.Split( '=' );
+
+                    if ( kv.Length == 2 )
+                    {
+                        parms.Add( kv[0], kv[1] );
+                    }
+                    else
+                    {
+                        throw new Exception( "Invalid page parameter specified." );
+                    }
+                }
+            }
+            else if ( parameters is IDictionary )
+            {
+                foreach ( DictionaryEntry kvp in ( IDictionary ) parameters )
+                {
+                    parms.Add( kvp.Key.ToString(), kvp.Value.ToString() );
+                }
+            }
+
+            var pageReference = new Rock.Web.PageReference( pageId, routeId, parms );
+
+            return pageReference.BuildUrl();
+        }
 
         #region POCOs
 

@@ -23,7 +23,10 @@
 using System;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.ViewModel;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -51,63 +54,116 @@ namespace Rock.Model
         public bool CanDelete( WorkflowType item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
+
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementFailureWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementStartWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.AchievementSuccessWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, AchievementType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, FinancialTransactionAlertType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleCancellationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, GroupType.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<MediaFolder>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, MediaFolder.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationInstance>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationInstance.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<RegistrationTemplate>( Context ).Queryable().Any( a => a.RegistrationWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
-            }  
- 
+            }
+
             if ( new Service<StepWorkflowTrigger>( Context ).Queryable().Any( a => a.WorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StepWorkflowTrigger.FriendlyTypeName );
                 return false;
-            }  
+            }
             return true;
         }
     }
+
+    /// <summary>
+    /// WorkflowType View Model Helper
+    /// </summary>
+    [DefaultViewModelHelper( typeof( WorkflowType ) )]
+    public partial class WorkflowTypeViewModelHelper : ViewModelHelper<WorkflowType, Rock.ViewModel.WorkflowTypeViewModel>
+    {
+        /// <summary>
+        /// Converts the model to a view model.
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        /// <returns></returns>
+        public override Rock.ViewModel.WorkflowTypeViewModel CreateViewModel( WorkflowType model, Person currentPerson = null, bool loadAttributes = true )
+        {
+            if ( model == null )
+            {
+                return default;
+            }
+
+            var viewModel = new Rock.ViewModel.WorkflowTypeViewModel
+            {
+                Id = model.Id,
+                Guid = model.Guid,
+                CategoryId = model.CategoryId,
+                CompletedWorkflowRetentionPeriod = model.CompletedWorkflowRetentionPeriod,
+                Description = model.Description,
+                IconCssClass = model.IconCssClass,
+                IsActive = model.IsActive,
+                IsPersisted = model.IsPersisted,
+                IsSystem = model.IsSystem,
+                LoggingLevel = ( int ) model.LoggingLevel,
+                LogRetentionPeriod = model.LogRetentionPeriod,
+                Name = model.Name,
+                NoActionMessage = model.NoActionMessage,
+                Order = model.Order,
+                ProcessingIntervalSeconds = model.ProcessingIntervalSeconds,
+                SummaryViewText = model.SummaryViewText,
+                WorkflowIdPrefix = model.WorkflowIdPrefix,
+                WorkTerm = model.WorkTerm,
+                CreatedDateTime = model.CreatedDateTime,
+                ModifiedDateTime = model.ModifiedDateTime,
+                CreatedByPersonAliasId = model.CreatedByPersonAliasId,
+                ModifiedByPersonAliasId = model.ModifiedByPersonAliasId,
+            };
+
+            AddAttributesToViewModel( model, viewModel, currentPerson, loadAttributes );
+            ApplyAdditionalPropertiesAndSecurityToViewModel( model, viewModel, currentPerson, loadAttributes );
+            return viewModel;
+        }
+    }
+
 
     /// <summary>
     /// Generated Extension Methods
@@ -191,5 +247,20 @@ namespace Rock.Model
             target.ForeignId = source.ForeignId;
 
         }
+
+        /// <summary>
+        /// Creates a view model from this entity
+        /// </summary>
+        /// <param name="model">The entity.</param>
+        /// <param name="currentPerson" >The currentPerson.</param>
+        /// <param name="loadAttributes" >Load attributes?</param>
+        public static Rock.ViewModel.WorkflowTypeViewModel ToViewModel( this WorkflowType model, Person currentPerson = null, bool loadAttributes = false )
+        {
+            var helper = new WorkflowTypeViewModelHelper();
+            var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
+            return viewModel;
+        }
+
     }
+
 }

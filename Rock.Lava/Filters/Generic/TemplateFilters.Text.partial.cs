@@ -16,13 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using Humanizer;
-
-using Rock.Common;
 
 namespace Rock.Lava.Filters
 {
@@ -40,60 +37,6 @@ namespace Rock.Lava.Filters
         {
             return input.ToStringSafe();
         }
-
-        /// <summary>
-        /// Base64 encodes a binary file
-        /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="input">The input.</param>
-        /// <param name="resizeSettings">The resize settings.</param>
-        /// <returns></returns>
-        //public static string Base64Encode( object input, string resizeSettings )
-        //{
-        //    BinaryFile binaryFile = null;
-
-        //    if ( input is int )
-        //    {
-        //        binaryFile = new BinaryFileService( new RockContext() ).Get( ( int ) input );
-        //    }
-        //    else if ( input is BinaryFile )
-        //    {
-        //        binaryFile = ( BinaryFile ) input;
-        //    }
-
-        //    if ( binaryFile != null )
-        //    {
-        //        using ( var stream = GetResized( resizeSettings, binaryFile.ContentStream ) )
-        //        {
-        //            byte[] imageBytes = stream.ReadBytesToEnd();
-        //            return Convert.ToBase64String( imageBytes );
-        //        }
-        //    }
-
-        //    return string.Empty;
-        //}
-
-        //private static Stream GetResized( string resizeSettings, Stream fileContent )
-        //{
-        //    try
-        //    {
-        //        if ( resizeSettings.IsNullOrWhiteSpace() )
-        //        {
-        //            return fileContent;
-        //        }
-
-        //        ResizeSettings settings = new ResizeSettings( HttpUtility.ParseQueryString( resizeSettings ) );
-        //        MemoryStream resizedStream = new MemoryStream();
-
-        //        ImageBuilder.Current.Build( fileContent, resizedStream, settings );
-        //        return resizedStream;
-        //    }
-        //    catch
-        //    {
-        //        // if resize failed, just return original content
-        //        return fileContent;
-        //    }
-        //}
 
         /// <summary>
         /// returns sentence in 'Title Case'
@@ -353,15 +296,32 @@ namespace Rock.Lava.Filters
         /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="expression">The regex expression.</param>
+        /// <param name="options">Option flags that affect the match type. [m=multiline, i=ignore case]</param>
         /// <returns></returns>
-        public static List<string> RegExMatchValues( string input, string expression )
+        public static List<string> RegExMatchValues( string input, string expression, string options = null )
         {
             if ( input == null )
             {
                 return null;
             }
 
-            Regex regex = new Regex( expression );
+            RegexOptions regexOptions = RegexOptions.None;
+            var inputString = input.ToString();
+
+            options = options ?? string.Empty;
+
+            if ( options.Contains( 'm' ) )
+            {
+                regexOptions |= RegexOptions.Multiline;
+            }
+
+            if ( options.Contains( 'i' ) )
+            {
+                regexOptions |= RegexOptions.IgnoreCase;
+            }
+
+            var regex = new Regex( expression, regexOptions );
+
             var matches = regex.Matches( input );
 
             // Flatten all matches to single list
@@ -376,6 +336,37 @@ namespace Rock.Lava.Filters
         }
 
         /// <summary>
+        /// Run RegEx replacing on a string.
+        /// </summary>
+        /// <param name="input">The lava source to process.</param>
+        /// <param name="pattern">The regex pattern to use when matching.</param>
+        /// <param name="replacement">The string to use when doing replacement.</param>
+        /// <param name="options">The regex options to modify the matching.</param>
+        /// <example><![CDATA[
+        /// {{ 'The Rock is awesome.' | RegExReplace:'the rock','Rock','i' }}
+        /// {{ 'Hello Ted, how are you?' | RegExReplace:'[Hh]ello (\w+)','Greetings $1' }}
+        /// ]]></example>
+        public static object RegExReplace( object input, object pattern, object replacement, string options = null )
+        {
+            RegexOptions regexOptions = RegexOptions.None;
+            var inputString = input.ToString();
+
+            options = options ?? string.Empty;
+
+            if ( options.Contains( 'm' ) )
+            {
+                regexOptions |= RegexOptions.Multiline;
+            }
+
+            if ( options.Contains( 'i' ) )
+            {
+                regexOptions |= RegexOptions.IgnoreCase;
+            }
+
+            return Regex.Replace( inputString, pattern.ToString(), replacement.ToString(), regexOptions );
+        }
+
+        /// <summary>
         /// Searches the input string and replaces the last occurrence of the search string with the replacement string.
         /// </summary>
         /// <param name="source">The string.</param>
@@ -384,7 +375,7 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static string ReplaceLast( this string source, string find, string replace )
         {
-            return ExtensionMethods.ReplaceLastOccurrence( source, find, replace );
+            return source.ReplaceLastOccurrence( find, replace );
         }
 
         /// <summary>

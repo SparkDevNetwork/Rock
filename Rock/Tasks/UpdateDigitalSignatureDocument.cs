@@ -14,18 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Writes entity audits 
+    /// Updates the <see cref="SignatureDocument.Status"/> of a <see cref="SignatureDocument"/>
     /// </summary>
     public sealed class UpdateDigitalSignatureDocument : BusStartedTask<UpdateDigitalSignatureDocument.Message>
     {

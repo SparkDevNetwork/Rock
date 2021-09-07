@@ -34,8 +34,8 @@ legend {
 label {
   display: inline-block;
   max-width: 100%; // Force IE8 to wrap long content (see https://github.com/twbs/bootstrap/issues/13141)
-  margin-bottom: 5px;
-  font-weight: 700;
+  margin-bottom: @form-label-margin-bottom;
+  font-weight: @form-label-font-weight;
 }
 
 
@@ -157,12 +157,6 @@ output {
   &::-ms-expand {
     background-color: transparent;
     border: 0;
-  }
-
-  // Remove select outline from select box in FF
-  &:-moz-focusring {
-    color: transparent;
-    text-shadow: 0 0 0 @input-color;
   }
 
   // Disabled and read-only inputs

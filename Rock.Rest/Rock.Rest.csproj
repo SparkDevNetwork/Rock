@@ -130,6 +130,7 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controls\CommonEntitiesController.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
     <Compile Include="Controllers\CheckinController.cs" />
@@ -146,6 +147,7 @@
     <Compile Include="Controllers\CodeGenerated\AuthClaimsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthClientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthScopesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CampusSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponseAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
@@ -177,6 +179,9 @@
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersistedDatasetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinkSectionOrdersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinkSectionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
@@ -186,6 +191,7 @@
     <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepProgramCompletionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
@@ -209,11 +215,14 @@
     <Compile Include="Controllers\CodeGenerated\WebFarmNodesController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controls\ControlsControllerBase.cs" />
+    <Compile Include="Controls\DefinedValuePickersController.cs" />
     <Compile Include="Controllers\DocumentsController.partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\InteractionsController.Partial.cs" />
     <Compile Include="Controllers\MediaElementsController.Partial.cs" />
+    <Compile Include="Controllers\PersonalLinksController.Partial.cs" />
     <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
@@ -226,6 +235,7 @@
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="Controls\SaveFinancialAccountFormsController.cs" />
     <Compile Include="Filters\RockCacheabilityAttribute.cs" />
     <Compile Include="Handler\RockAssembliesResolver.cs" />
     <Compile Include="HeaderTokens.cs" />
@@ -451,11 +461,24 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Swagger\SwaggerExtensions.cs" />
     <Compile Include="Utility\HttpRequestMessageExtensions.cs" />
+    <Compile Include="Utility\ApiPickerJsonMediaTypeFormatter.cs" />
+    <Compile Include="Utility\RockActionValueBinder.cs" />
+    <Compile Include="Utility\RockFormatterParameterBinding.cs" />
+    <Compile Include="Utility\RockOrganizationDateTimeJsonConverter.cs" />
+    <Compile Include="Utility\ValueProviders\RockApiV2ValueProviderResult.cs" />
+    <Compile Include="Utility\ValueProviders\RockQueryStringValueProvider.cs" />
+    <Compile Include="Utility\ValueProviders\RockQueryStringValueProviderFactory.cs" />
+    <Compile Include="Utility\ValueProviders\RockRouteDataValueProvider.cs" />
+    <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
       <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
       <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
+      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
+      <Name>Rock.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820cd93-70ee-496d-b17b-0c4c68dd4957}</Project>

@@ -61,8 +61,7 @@ namespace Rock.Model
         public int PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets an alias person Id.  In the case of a merged person record, the AliasPersonId is the previous person id that was merged into
-        /// a new person. This property is required.
+        /// Gets or sets an alias person Id.  If <see cref="AliasPersonId"/> equals <see cref="PersonId"/>, this is the PrimaryAlias. Otherwise, the AliasPersonId is the previous person id that was merged into a new person record.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.

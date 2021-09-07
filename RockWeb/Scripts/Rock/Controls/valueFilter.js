@@ -143,11 +143,11 @@
             //
             // Create the drop down that indicates what type of filter row this is.
             //
-            var $fieldTypeContainer = $('<span class="input-group-btn" />').appendTo($row);
+            var $inputGroupBtns = $('<span class="input-group-btn" />').appendTo($row);
             var $fieldTypeBtn = $('<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span /> <span class="caret" /></button>')
-                .appendTo($fieldTypeContainer);
+                .appendTo($inputGroupBtns);
             var $fieldTypeOptions = $('<ul class="dropdown-menu dropdown-menu-right"></ul>')
-                .appendTo($fieldTypeContainer);
+                .appendTo($inputGroupBtns);
             for (var i in options.comparisonTypes) {
                 var $btn = $('<li><a href="#" data-value="' + options.comparisonTypes[i].Value + '">' + options.comparisonTypes[i].Text + '</a></li>').appendTo($fieldTypeOptions);
                 if (type === options.comparisonTypes[i].Value) {
@@ -159,9 +159,8 @@
             //
             // Create the delete button.
             //
-            var $btnDeleteContainer = $('<span class="input-group-btn" />').appendTo($row);
             $('<button type="button" class="btn btn-danger btn-square"><i class="fa fa-times"></i></button>')
-                .appendTo($btnDeleteContainer);
+                .appendTo($inputGroupBtns);
 
             //
             // Set default values.

@@ -160,6 +160,9 @@ namespace Rock.Client
         public Location BillingLocation { get; set; }
 
         /// <summary />
+        public DateTime? CardExpirationDate { get; set; }
+
+        /// <summary />
         public DefinedValue CreditCardTypeValue { get; set; }
 
         /// <summary />

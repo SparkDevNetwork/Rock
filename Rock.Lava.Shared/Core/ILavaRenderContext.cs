@@ -36,6 +36,21 @@ namespace Rock.Lava
     public interface ILavaRenderContext
     {
         /// <summary>
+        /// Get an instance of a Lava service component of the specified type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        TService GetService<TService>()
+            where TService : class, ILavaService;
+
+        /// <summary>
+        /// Get an instance of a Lava service component of the specified type.
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
+        ILavaService GetService( Type serviceType );
+
+        /// <summary>
         /// Gets a named value that is for internal use only, by other components of the Lava engine.
         /// Internal values are not available to be resolved in the Lava Template.
         /// </summary>

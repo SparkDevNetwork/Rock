@@ -94,6 +94,8 @@
                                                 <Rock:RockCheckBox ID="cbShowCommunicate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Communicate" />
                                                 <Rock:RockCheckBox ID="cbShowMergePerson" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Merge Person" />
                                                 <Rock:RockCheckBox ID="cbShowBulkUpdate" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Bulk Update" />
+                                                <Rock:RockCheckBox ID="cbShowLaunchWorkflow" runat="server" ContainerCssClass="js-checkbox-person-grid-action" Text="Launch Workflow" />
+
                                                 <Rock:RockCheckBox ID="cbShowExcelExport" runat="server" Text="Excel Export" />
                                                 <Rock:RockCheckBox ID="cbShowMergeTemplate" runat="server" Text="Merge Template" />
                                             </div>
@@ -148,6 +150,10 @@
                                     <div class="col-md-12">
                                         <Rock:CodeEditor ID="cePageTitleLava" runat="server" Label="Page Title Lava" EditorMode="Lava" CssClass="input-large" EditorHeight="200"
                                             Help="Optional Lava for setting the page title. If nothing is provided then the page's title will be used. Example '{{rows[0].FullName}}' or if the query returns multiple result sets '{{table1.rows[0].FullName}}'." />
+                                        <Rock:CodeEditor ID="ceGridHeaderLava" runat="server" Label="Grid Header Content" EditorMode="Lava" CssClass="input-large" EditorHeight="200"
+                                            Help="This Lava template will be rendered above the grid. It will have access to the same dataset as the grid." />
+                                        <Rock:CodeEditor ID="ceGridFooterLava" runat="server" Label="Grid Footer Content" EditorMode="Lava" CssClass="input-large" EditorHeight="200"
+                                            Help="This Lava template will be rendered below the grid (best used for custom totaling). It will have access to the same dataset as the grid." />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

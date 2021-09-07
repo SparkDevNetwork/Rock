@@ -16,11 +16,9 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Tasks
 {
     /// <summary>
-    /// Transaction to process changes that occur to an attempt
+    /// Task to process actions that should occur after adding/updating an <see cref="AchievementAttempt" />.
     /// </summary>
     public sealed class UpdateAchievementAttempt : BusStartedTask<UpdateAchievementAttempt.Message>
     {

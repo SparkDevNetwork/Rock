@@ -27,7 +27,7 @@ using System.Web.Http.Controllers;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-
+using Rock.Blocks;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -96,7 +96,7 @@ namespace Rock.Rest.Controllers
 
             if ( model.IsValid )
             {
-                model.Order = ( (BlockService)Service ).GetMaxOrder( model );
+                model.Order = ( ( BlockService ) Service ).GetMaxOrder( model );
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
@@ -165,7 +165,7 @@ namespace Rock.Rest.Controllers
         /// <remarks>Use api/blocks/action/{blockGuid}/{actionName} instead, used by Rock Mobile shell v1 only.</remarks>
         [Authenticate]
         [HttpGet]
-        [Route( "api/blocks/action/{page}/{block}/{actionName}")]
+        [Route( "api/blocks/action/{page}/{block}/{actionName}" )]
         [RockObsolete( "1.12" )]
         public IHttpActionResult BlockAction( string page, string block, string actionName )
         {
@@ -284,6 +284,40 @@ namespace Rock.Rest.Controllers
                 var actionParameters = new Dictionary<string, JToken>( StringComparer.InvariantCultureIgnoreCase );
 
                 //
+                // Parse any posted parameter data.
+                //
+                if ( parameters != null )
+                {
+                    try
+                    {
+                        foreach ( var kvp in parameters.ToObject<Dictionary<string, JToken>>() )
+                        {
+                            if ( kvp.Key == "__context" )
+                            {
+                                // If we are given any page parameters then
+                                // override the query string parameters. This
+                                // is what allows mobile and obsidian blocks to
+                                // pass in the original page parameters.
+                                if ( kvp.Value["pageParameters"] != null )
+                                {
+                                    var pageParameters = kvp.Value["pageParameters"].ToObject<Dictionary<string, string>>();
+
+                                    rockBlock.RequestContext.SetPageParameters( pageParameters );
+                                }
+                            }
+                            else
+                            {
+                                actionParameters.AddOrReplace( kvp.Key, kvp.Value );
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        return BadRequest( "Invalid parameter data." );
+                    }
+                }
+
+                //
                 // Parse any query string parameter data.
                 //
                 foreach ( var q in Request.GetQueryNameValuePairs() )
@@ -313,54 +347,47 @@ namespace Rock.Rest.Controllers
         /// actionData</exception>
         private IHttpActionResult InvokeAction( Blocks.IRockBlockType block, HttpMethod method, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
         {
-            MethodInfo action;
+            // Parse the body content into our normal parameters.
+            if ( bodyParameters != null )
+            {
+                try
+                {
+                    // Parse any posted parameter data, existing query string
+                    // parameters take precedence.
+                    foreach ( var kvp in bodyParameters.ToObject<Dictionary<string, JToken>>() )
+                    {
+                        actionParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                    }
+                }
+                catch
+                {
+                    return BadRequest( "Invalid parameter data." );
+                }
+            }
 
             //
             // Find the action they requested. First search by name
             // and then further filter by any method constraint attributes.
             //
-            action = block.GetType().GetMethods( BindingFlags.Instance | BindingFlags.Public )
+            var actions = block.GetType().GetMethods( BindingFlags.Instance | BindingFlags.Public )
                 .Where( m => m.GetCustomAttribute<Blocks.BlockActionAttribute>()?.ActionName == actionName )
-                .Where( m =>
-                {
-                    var attribs = m.GetCustomAttributes()
-                        .Where( a => a is IActionHttpMethodProvider )
-                        .Cast<IActionHttpMethodProvider>();
+                .ToList();
 
-                    return !attribs.Any() || attribs.Any( a => a.HttpMethods.Contains( method ) );
-                } )
-                .SingleOrDefault();
-
-            if ( action == null )
+            if ( actions.Count == 0 )
             {
                 return NotFound();
             }
 
+            var action = FindBestActionForParameters( actions, actionParameters );
+
+            if ( action == null )
+            {
+                // This is an actual configuration error, so throw an error.
+                throw new AmbiguousMatchException( "The request matched multiple actions." );
+            }
+
             var methodParameters = action.GetParameters();
             var parameters = new List<object>();
-
-            // If we have posted body content then check if we have any
-            // FromBody parameters, if not then parse the body content
-            // into our normal parameters.
-            if ( bodyParameters != null )
-            {
-                if ( !methodParameters.Any( a => a.GetCustomAttribute<FromBodyAttribute>() != null ) )
-                {
-                    try
-                    {
-                        // Parse any posted parameter data, existing query string
-                        // parameters take precedence.
-                        foreach ( var kvp in bodyParameters.ToObject<Dictionary<string, JToken>>() )
-                        {
-                            actionParameters.AddOrIgnore( kvp.Key, kvp.Value );
-                        }
-                    }
-                    catch
-                    {
-                        return BadRequest( "Invalid parameter data." );
-                    }
-                }
-            }
 
             //
             // Go through each parameter and convert it to the proper type.
@@ -431,12 +458,12 @@ namespace Rock.Rest.Controllers
             catch ( TargetInvocationException ex )
             {
                 ExceptionLogService.LogApiException( ex.InnerException, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
             {
                 ExceptionLogService.LogApiException( ex, Request, GetPersonAlias() );
-                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+                result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
             //
@@ -446,9 +473,15 @@ namespace Rock.Rest.Controllers
             {
                 return ( IHttpActionResult ) result;
             }
-            else if ( result is Rock.Blocks.BlockActionResult actionResult )
+            else if ( result is BlockActionResult actionResult )
             {
-                if ( actionResult.Error != null )
+                var isErrorStatusCode = ( int ) actionResult.StatusCode >= 400;
+
+                if ( isErrorStatusCode && actionResult.Content is string )
+                {
+                    return Content( actionResult.StatusCode, new HttpError( actionResult.Content.ToString() ) );
+                }
+                else if ( actionResult.Error != null )
                 {
                     return Content( actionResult.StatusCode, new HttpError( actionResult.Error ) );
                 }
@@ -468,7 +501,7 @@ namespace Rock.Rest.Controllers
                     return StatusCode( actionResult.StatusCode );
                 }
             }
-            else if ( action.ReturnType == typeof(void))
+            else if ( action.ReturnType == typeof( void ) )
             {
                 return Ok();
             }
@@ -476,6 +509,91 @@ namespace Rock.Rest.Controllers
             {
                 return Ok( result );
             }
+        }
+
+        /// <summary>
+        /// Gets the message for client.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns></returns>
+        private string GetMessageForClient( Exception exception )
+        {
+            if ( exception is null )
+            {
+                return "An unknown error occurred";
+            }
+
+            if ( exception.InnerException != null )
+            {
+                return GetMessageForClient( exception.InnerException );
+            }
+
+            if ( exception.Message.IsNullOrWhiteSpace() )
+            {
+                return "An unknown error occurred";
+            }
+
+            return exception.Message;
+        }
+
+        /// <summary>
+        /// Finds the best action that matches the parameters we have.
+        /// </summary>
+        /// <param name="actions">The actions to be checked.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns>The single best match or <c>null</c> if it could not be determined.</returns>
+        private MethodInfo FindBestActionForParameters( IList<MethodInfo> actions, Dictionary<string, JToken> parameters )
+        {
+            if ( actions.Count == 0 )
+            {
+                return null;
+            }
+
+            // If we have just one action then return it as further error
+            // checking will be performed to make sure we are not missing
+            // any method parameters later.
+            if ( actions.Count == 1 )
+            {
+                return actions[0];
+            }
+
+            // We have multiple actions that pass the initial screening.
+            // Determine the best match based on parameters we are given
+            // by the request.
+            var methodActions = actions
+                .Select( a => new
+                {
+                    Method = a,
+                    Parameters = a.GetParameters()
+                } )
+                .ToList();
+
+            var matchedActions = new List<MethodInfo>();
+            var parameterNames = parameters.Keys.Select( k => k.ToLowerInvariant() ).ToList();
+
+            // Look for all methods that we have enough parameters to
+            // properly call.
+            foreach ( var action in methodActions )
+            {
+                var matchedParameterCount = action.Parameters
+                    .Where( p => parameterNames.Contains( p.Name.ToLowerInvariant() ) || p.IsOptional )
+                    .Count();
+
+                if ( matchedParameterCount == action.Parameters.Length )
+                {
+                    matchedActions.Add( action.Method );
+                }
+            }
+
+            // If we are left with exactly one method that matches then return
+            // it to the caller. Otherwise return null to indicate we could
+            // not determine a good match.
+            if ( matchedActions.Count == 1 )
+            {
+                return matchedActions[0];
+            }
+
+            return null;
         }
     }
 }

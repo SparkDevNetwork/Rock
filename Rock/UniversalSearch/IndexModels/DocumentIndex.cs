@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.UniversalSearch.IndexModels.Attributes;
 
 namespace Rock.UniversalSearch.IndexModels
@@ -103,6 +104,30 @@ namespace Rock.UniversalSearch.IndexModels
             AddIndexableAttributes( documentIndex, document );
 
             return documentIndex;
+        }
+
+        /// <summary>
+        /// Formats the search result.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="displayOptions">The display options.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns></returns>
+        public override FormattedSearchResult FormatSearchResult( Person person, Dictionary<string, object> displayOptions = null, Dictionary<string, object> mergeFields = null )
+        {
+            var result = base.FormatSearchResult( person, displayOptions );
+            result.IsViewAllowed = false;
+
+            bool isSecurityDisabled = displayOptions != null && displayOptions.ContainsKey( "Document-IsSecurityDisabled" ) && displayOptions["Document-IsSecurityDisabled"].ToString().AsBoolean();
+
+            // Check security on the document if security is enabled
+            var document = new DocumentService( new RockContext() ).Get( ( int ) this.Id );
+            if ( document != null )
+            {
+                result.IsViewAllowed = document.IsAuthorized( Authorization.VIEW, person ) || isSecurityDisabled;
+            }
+
+            return result;
         }
     }
 }

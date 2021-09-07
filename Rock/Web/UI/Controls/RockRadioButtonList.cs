@@ -118,18 +118,52 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show the none option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show none option]; otherwise, <c>false</c>.
+        /// </value>
+        [Bindable( true )]
+        [Category( "Behavior" )]
+        [DefaultValue( "true" )]
+        [Description( "If a selection is not required should a 'None' option should be shown? This setting will not affect the control if it is required." )]
+        public bool ShowNoneOption
+        {
+            get
+            {
+                return ViewState["ShowNoneOption"] as bool? ?? true;
+            }
+
+            set
+            {
+                ViewState["ShowNoneOption"] = value;
+                if ( value && Required == false )
+                {
+                    this.Items.Insert( 0, new ListItem( "None", string.Empty ) );
+                }
+                else
+                {
+                    var li = this.Items.FindByValue( string.Empty );
+                    if ( li != null )
+                    {
+                        this.Items.Remove( li );
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
+        [Bindable( true )]
+        [Category( "Behavior" )]
+        [DefaultValue( "false" )]
+        [Description( "Is the value required?" )]
         public bool Required
         {
             get { return ViewState["Required"] as bool? ?? false; }
@@ -147,7 +181,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    if ( li == null )
+                    if ( li == null && ShowNoneOption == true )
                     {
                         this.Items.Insert( 0, new ListItem( "None", string.Empty ) );
                     }

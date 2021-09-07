@@ -2612,7 +2612,9 @@ namespace RockWeb.Blocks.Event
                 var family = registrar.GetFamily( rockContext );
                 if ( family != null )
                 {
-                    multipleFamilyGroupIds.AddOrIgnore( RegistrationState.FamilyGuid, family.Id );
+                    // This is the registrar's entry into the dictionary.
+                    multipleFamilyGroupIds.AddOrIgnore( family.Guid, family.Id );
+
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
@@ -3835,12 +3837,16 @@ namespace RockWeb.Blocks.Event
                 RegistrationInstanceState.RegistrationInstructions;
 
             // Sanitize for empty check catches things like empty paragraph tags.
-            if ( !string.IsNullOrEmpty( instructions.SanitizeHtml() ) )
+            // ...But don't sanitize if the instructions contains an img tag.
+            if ( instructions.ToLower().Contains( "<img " ) || instructions.SanitizeHtml().IsNotNullOrWhiteSpace() )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
+                return true;
             }
-
-            return instructions.SanitizeHtml().IsNotNullOrWhiteSpace();
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -4552,9 +4558,9 @@ namespace RockWeb.Blocks.Event
     }});
 
     $('#{0}').on('change', function() {{
-        var totalCost = Number($('#{1}').val());
-        var minDue = Number($('#{2}').val());
-        var previouslyPaid = Number($('#{3}').val());
+        var totalCost = parseFloat($('#{1}').val());
+        var minDue = parseFloat($('#{2}').val());
+        var previouslyPaid = parseFloat($('#{3}').val());
         var balanceDue = totalCost - previouslyPaid;
 
         // Format and validate the amount entered
@@ -4572,7 +4578,7 @@ namespace RockWeb.Blocks.Event
         $(this).val(amountPaid.toFixed({16}));
 
         var amountRemaining = totalCost - ( previouslyPaid + amountPaid );
-        $('#{4}').text( '{6}' + amountRemaining.toFixed({16}) );
+        $('#{4}').text( '{6}' + amountRemaining.toLocaleString(undefined, {{ minimumFractionDigits: {16}, maximumFractionDigits: {16} }}));
     }});
 
     // Detect credit card type
@@ -4797,7 +4803,7 @@ namespace RockWeb.Blocks.Event
                         value = firstRegistrant.FieldValues[field.Id].FieldValue;
                     }
 
-                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
+                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == field.Guid ) );
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
@@ -4859,7 +4865,7 @@ namespace RockWeb.Blocks.Event
                 var fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
-                    RegistrationTemplateFormFieldId = field.Id,
+                    FormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
@@ -4923,7 +4929,7 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                    RegistrationTemplateFormFieldId = field.Id,
+                    FormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 

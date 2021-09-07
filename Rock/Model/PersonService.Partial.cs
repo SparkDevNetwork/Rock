@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.BulkExport;
 using Rock.Data;
+using Rock.ViewModel;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -4442,7 +4443,7 @@ FROM (
 
             if ( personId.HasValue )
             {
-                sqlUpdateBuilder.Append( $" AND ( p.Id = @personId) " );
+                sqlUpdateBuilder.Append( $" AND ( p.GivingId in (select GivingId from Person where Id = @personId ) ) " );
             }
 
             sqlUpdateBuilder.Append( @"    ) x " );
@@ -4467,41 +4468,48 @@ FROM (
         /// <returns></returns>
         public static int UpdateGroupSalutations( int personId, RockContext rockContext )
         {
-            // use specified rockContext to get Person and Family because rockContext might
-            // might be in a transaction that hasn't been committed yet
             var person = new PersonService( rockContext ).GetInclude( personId, s => s.PrimaryFamily );
 
-            if ( !person.PrimaryFamilyId.HasValue )
+            try
             {
+                // use specified rockContext to get Person and Family because rockContext might
+                // might be in a transaction that hasn't been committed yet
 
-                // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
-                // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
-                return 0;
+                if ( !person.PrimaryFamilyId.HasValue )
+                {
 
+                    // if this is a new person, and the GroupMember record for the Family hasn't been saved to the database this could happen.
+                    // If so, the GroupMember.PostSaveChanges will call this and that should take care of it
+                    return 0;
+
+                }
+
+                var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
+
+                if ( primaryFamily == null )
+                {
+                    // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
+                    return 0;
+                }
+
+                var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
+                var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
+                if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
+                {
+                    primaryFamily.GroupSalutation = groupSalutation;
+                    primaryFamily.GroupSalutationFull = groupSalutationFull;
+
+                    // save changes without pre/post processing so we don't get stuck in recursion
+                    rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
+                    return 1;
+                }
             }
-
-            var primaryFamily = person.PrimaryFamily ?? new GroupService( rockContext ).Get( person.PrimaryFamilyId.Value );
-
-            if ( primaryFamily == null )
+            catch ( Exception ex )
             {
-                // if this is a new person, with a new family, the family might not be saved in the database yet. If so, the GroupMember.PostSaveChanges will take care of this instead.
-                return 0;
-            }
-
-            var groupSalutation = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( false ) { RockContext = rockContext } ).Truncate( 250 );
-            var groupSalutationFull = Person.CalculateFamilySalutation( person, new Person.CalculateFamilySalutationArgs( true ) { RockContext = rockContext } ).Truncate( 250 );
-            if ( ( primaryFamily.GroupSalutation != groupSalutation ) || ( primaryFamily.GroupSalutationFull != groupSalutationFull ) )
-            {
-                primaryFamily.GroupSalutation = groupSalutation;
-                primaryFamily.GroupSalutationFull = groupSalutationFull;
-
-                // save changes without pre/post processing so we don't get stuck in recursion
-                rockContext.SaveChanges( new SaveChangesArgs { DisablePrePostProcessing = true } );
-                return 1;
+                ExceptionLogService.LogException( new Exception( $"Error running UpdateGroupSalutations for person {person.FullName}. Check that the Family group has a name.", ex ) );
             }
 
             return 0;
-
         }
 
         #endregion
@@ -4593,6 +4601,28 @@ FROM (
                 .Where( es => es.ExpireDateTime == null || es.ExpireDateTime > expirationDate );
 
             return mergeRequestQry;
+        }
+    }
+
+    /// <summary>
+    /// Person View Model Helper
+    /// </summary>
+    public partial class PersonViewModelHelper
+    {
+        /// <summary>
+        /// Applies the additional properties and security to view model.
+        /// </summary>
+        /// <param name="model">The model.</param>
+        /// <param name="viewModel">The view model.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
+        public override void ApplyAdditionalPropertiesAndSecurityToViewModel( Person model, PersonViewModel viewModel, Person currentPerson = null, bool loadAttributes = true )
+        {
+            model.PrimaryFamily = model.GetFamily();
+
+            viewModel.FullName = model.FullName;
+            viewModel.PhotoUrl = model.PhotoUrl;
+            viewModel.PrimaryFamilyGuid = model.PrimaryFamily?.Guid;
         }
     }
 }
