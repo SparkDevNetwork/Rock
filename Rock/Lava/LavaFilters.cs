@@ -4645,7 +4645,7 @@ namespace Rock.Lava
 
                     case "Url":
                         {
-                            return HttpContext.Current.Request.Url.AbsoluteUri;
+                            return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
                         }
 
                     case "Id":
@@ -4661,7 +4661,7 @@ namespace Rock.Lava
 
                     case "Path":
                         {
-                            return HttpContext.Current.Request.Url.AbsolutePath;
+                            return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
                         }
 
                     case "SiteName":
@@ -4696,7 +4696,7 @@ namespace Rock.Lava
 
                     case "Scheme":
                         {
-                            return HttpContext.Current.Request.Url.Scheme;
+                            return HttpContext.Current.Request.UrlProxySafe().Scheme;
                         }
 
                     case "QueryString":

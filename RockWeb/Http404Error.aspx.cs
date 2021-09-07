@@ -36,14 +36,16 @@ public partial class Http404Error : System.Web.UI.Page
     /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void Page_Init(object sender, EventArgs e)
     {
+        var proxySafeUri = Request.UrlProxySafe();
+
         // Check to see if exception should be logged
         if ( GlobalAttributesCache.Get().GetValue( "Log404AsException" ).AsBoolean(true) )
         {
-            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", Request.Url.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
+            ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", proxySafeUri.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
         }
         
         // If this is an API call, set status code and exit
-        if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
+        if ( proxySafeUri.Query.Contains( proxySafeUri.Authority + ResolveUrl( "~/api/" ) ) )
         {
             Response.StatusCode = 404;
             Response.Flush();

@@ -173,12 +173,14 @@ Path: {2}",
                 try
                 {
                     System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    var proxySafeUri = Request.UrlProxySafe();
+                    url = $"{proxySafeUri.Scheme}://{WebRequestHelper.GetHostNameFromRequest( HttpContext.Current )}:{proxySafeUri.Port}{ResolveRockUrl( new PageReference( page.Id ).BuildUrl() )}";
 
-                    url = string.Format( "http{0}://{1}:{2}{3}",
-                        ( Request.IsSecureConnection ) ? "s" : "",
-                        WebRequestHelper.GetHostNameFromRequest( HttpContext.Current ),
-                        Request.Url.Port,
-                        ResolveRockUrl( new PageReference( page.Id ).BuildUrl() ) );
+                    //url = string.Format( "http{0}://{1}:{2}{3}",
+                    //    ( Request.IsSecureConnection ) ? "s" : "",
+                    //    WebRequestHelper.GetHostNameFromRequest( HttpContext.Current ),
+                    //    Request.UrlProxySafe().Port,
+                    //    ResolveRockUrl( new PageReference( page.Id ).BuildUrl() ) );
 
                     WebRequest request = WebRequest.Create( url );
                     request.Timeout = 10000;

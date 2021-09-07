@@ -690,7 +690,7 @@ function(item) {
                 pageReference.Parameters.AddOrReplace( key, setting.Value );
             }
 
-            Uri uri = new Uri( Request.Url.ToString() );
+            Uri uri = new Uri( Request.UrlProxySafe().ToString() );
             btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
             btnCopyToClipboard.Disabled = false;
         }

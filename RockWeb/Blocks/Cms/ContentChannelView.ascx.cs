@@ -787,14 +787,12 @@ $(document).ready(function() {
                     rssLink.Attributes.Add( "title", contentItemList.Select( c => c.ContentChannel.Name ).FirstOrDefault() );
 
                     var context = HttpContext.Current;
-                    string channelRssUrl = string.Format( "{0}://{1}{2}{3}{4}",
-                                        context.Request.Url.Scheme,
-                                        WebRequestHelper.GetHostNameFromRequest( context ),
-                                        context.Request.Url.Port == 80
-                                            ? string.Empty
-                                            : ":" + context.Request.Url.Port,
-                                        RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId=" ),
-                                        contentItemList.Select( c => c.ContentChannelId ).FirstOrDefault() );
+                    var proxySafeUrl = context.Request.UrlProxySafe();
+                    var proxySafeHostName = WebRequestHelper.GetHostNameFromRequest( context );
+                    var proxySafePort = proxySafeUrl.Port == 80 ? string.Empty : ":" + proxySafeUrl.Port;
+                    var resolvedRockUrl = RockPage.ResolveRockUrl( "~/GetChannelFeed.ashx?ChannelId=" );
+                    var contentChannelItem = contentItemList.Select( c => c.ContentChannelId ).FirstOrDefault();
+                    var channelRssUrl = $"{proxySafeUrl.Scheme}://{proxySafeHostName}{proxySafePort}{resolvedRockUrl}{contentChannelItem}";
 
                     rssLink.Attributes.Add( "href", channelRssUrl );
                     RockPage.Header.Controls.Add( rssLink );
@@ -819,14 +817,16 @@ $(document).ready(function() {
 
                     if ( !string.IsNullOrWhiteSpace( attributeValue ) )
                     {
+                        var proxySafeUri = Request.UrlProxySafe();
+
                         HtmlMeta metaDescription = new HtmlMeta();
                         metaDescription.Name = "og:image";
-                        metaDescription.Content = string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority, attributeValue );
+                        metaDescription.Content = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}";
                         RockPage.Header.Controls.Add( metaDescription );
 
                         HtmlLink imageLink = new HtmlLink();
                         imageLink.Attributes.Add( "rel", "image_src" );
-                        imageLink.Attributes.Add( "href", string.Format( "{0}://{1}/GetImage.ashx?guid={2}", Request.Url.Scheme, Request.Url.Authority, attributeValue ) );
+                        imageLink.Attributes.Add( "href", $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}" );
                         RockPage.Header.Controls.Add( imageLink );
                     }
                 }

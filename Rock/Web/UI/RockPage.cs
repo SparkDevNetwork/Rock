@@ -925,7 +925,7 @@ namespace Rock.Web.UI
                 Page.Trace.Warn( "Checking for SSL request" );
                 if ( !WebRequestHelper.IsSecureConnection( HttpContext.Current ) && ( _pageCache.RequiresEncryption || Site.RequiresEncryption ) )
                 {
-                    string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
+                    string redirectUrl = Request.UrlProxySafe().ToString().Replace( "http:", "https:" );
 
                     // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
@@ -1533,7 +1533,7 @@ Obsidian.onReady(() => {{
                             aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                             aShortLink.Attributes.Add( "class", "btn properties" );
                             aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) )
+                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )
                                 + "')" );
                             aShortLink.Attributes.Add( "Title", "Add Short Link" );
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
@@ -2235,7 +2235,7 @@ Sys.Application.add_load(function () {
         public string ResolveRockUrlIncludeRoot( string url )
         {
             string virtualPath = this.ResolveRockUrl( url );
-            if ( Context.Request != null && Context.Request.Url != null )
+            if ( Context.Request != null && Context.Request.UrlProxySafe() != null )
             {
                 /*
                      4/30/2021 - NA
@@ -2247,7 +2247,7 @@ Sys.Application.add_load(function () {
                      Reason: CDN and Payment Gateways
                 */
 
-                string protocol = WebRequestHelper.IsSecureConnection( Context ) ? "https" : Context.Request.Url.Scheme;
+                string protocol = WebRequestHelper.IsSecureConnection( Context ) ? "https" : Context.Request.UrlProxySafe().Scheme;
                 return string.Format( "{0}://{1}{2}", protocol, Context.Request.UrlProxySafe().Authority, virtualPath );
             }
 
@@ -2618,7 +2618,7 @@ Sys.Application.add_load(function () {
 
                 // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
                 // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-                var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.Url.Scheme == "https" ? ";Secure" : string.Empty;
+                var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
 
                 // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
                 string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";

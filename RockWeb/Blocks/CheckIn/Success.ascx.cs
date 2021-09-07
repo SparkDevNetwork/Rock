@@ -216,7 +216,8 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( printFromClient.Any() )
             {
-                var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                var proxySafeUrl = Request.UrlProxySafe();
+                var urlRoot = $"{proxySafeUrl.Scheme}://{proxySafeUrl.Authority}";
 
                 /*
                 // This is extremely useful when debugging with ngrok and an iPad on the local network.

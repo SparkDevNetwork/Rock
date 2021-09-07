@@ -420,7 +420,7 @@ var barChart = new Chart(barCtx, {{
                 pageReference.Parameters.AddOrReplace( setting.Key, setting.Value );
             }
 
-            Uri uri = new Uri( Request.Url.ToString() );
+            Uri uri = new Uri( Request.UrlProxySafe().ToString() );
             btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
             btnCopyToClipboard.Disabled = false;
 
