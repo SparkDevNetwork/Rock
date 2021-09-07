@@ -1556,6 +1556,13 @@ namespace RockWeb.Blocks.Groups
                     nbNotFoundOrArchived.Visible = true;
                     return;
                 }
+                else
+                {
+                    string lava = "{{ Group.Name | AddQuickReturn:'Groups', 20 }}";
+                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                    mergeFields.Add( "Group", group );
+                    lava.ResolveMergeFields( mergeFields );
+                }
             }
 
             if ( group == null )

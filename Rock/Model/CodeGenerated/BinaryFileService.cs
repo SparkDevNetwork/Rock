@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<AchievementType>( Context ).Queryable().Any( a => a.ImageBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, AchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BackgroundCheck>( Context ).Queryable().Any( a => a.ResponseDocumentId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, BackgroundCheck.FriendlyTypeName );

@@ -1,12 +1,12 @@
 ﻿<div class="panel panel-block store-categories">
-   
+
     <div class="panel-body" style="margin-bottom: -6px;">
         <ul class="nav nav-pills">
-          {% for category in Categories %}
-          <li class="active">
-            <a href="{{ LinkedPages.DetailPage }}?CategoryId={{ category.Id }}&CategoryName={{ category.Name | Replace:' ','%20'}}" style="margin-bottom: 6px;">{{ category.Name }}</a>
-          </li>
-          {% endfor %}
+            {% for category in Categories %}
+            <li class="active">
+                <a href="{{ LinkedPages.DetailPage }}?CategoryId={{ category.Id }}&CategoryName={{ category.Name | Replace:' ','%20'}}" style="margin-bottom: 6px;">{{ category.Name }}</a>
+            </li>
+            {% endfor %}
         </ul>
     </div>
 </div>

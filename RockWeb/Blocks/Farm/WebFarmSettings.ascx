@@ -22,8 +22,9 @@
     .card-node .card-header {
         display: flex;
         justify-content: space-between;
-        padding: 8px;
+        padding: 0 8px;
         background: transparent;
+        align-items: center;
     }
 
     .server-meta {
@@ -33,7 +34,7 @@
         align-items: center;
         overflow: hidden;
         font-size: 20px;
-        line-height: 1;
+        line-height: 36px;
     }
 
     .node-name {

@@ -97,6 +97,7 @@ namespace Rock.Model
             target.Order = source.Order;
             target.PersonAliasId = source.PersonAliasId;
             target.StartDateTime = source.StartDateTime;
+            target.StepProgramCompletionId = source.StepProgramCompletionId;
             target.StepStatusId = source.StepStatusId;
             target.StepTypeId = source.StepTypeId;
             target.CreatedDateTime = source.CreatedDateTime;

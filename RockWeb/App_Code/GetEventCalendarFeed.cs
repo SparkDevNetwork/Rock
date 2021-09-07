@@ -109,9 +109,15 @@ namespace RockWeb
             // Get a list of Rock Calendar Events filtered by calendarProps
             List<EventItem> eventItems = GetEventItems( calendarProps );
 
-            // Create the iCalendar
+            // Create the iCalendar.
+            // Allow ICal to create the VTimeZone object from the local time zone to ensure that we get the correct name and daylight saving offset.
             var icalendar = new Calendar();
-            icalendar.AddTimeZone( TimeZoneInfo.Local );
+
+            var vtz = VTimeZone.FromLocalTimeZone();
+
+            icalendar.AddTimeZone( vtz );
+
+            var timeZoneId = vtz.TzId;
 
             // Create each of the events for the calendar(s)
             foreach ( EventItem eventItem in eventItems )
@@ -134,10 +140,42 @@ namespace RockWeb
                         ievent.Summary = !string.IsNullOrEmpty( eventItem.Name ) ? eventItem.Name : string.Empty;
                         ievent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
 
-                        /* [2020-06-22] DJL
-                         * Removed a ToTimeZone() conversion that was previously implemented here when using the DDay.iCal library.
-                         * The Ical.Net library does not support this method, and as best I can determine it is no longer needed.
-                         */
+                        // Create the list of exceptions.
+                        // Exceptions must meet RFC 5545 iCalendar specifications to be correctly processed by third-party calendar applications
+                        // such as Microsoft Outlook and Google Calendar. Specifically, an exception must have exactly the same start time
+                        // and time zone as the template event, and the time zone must be expressed as an IANA name.
+                        // The most recent version of iCal.Net (v2.3.5) that supports .NET framework v4.5.2 has some inconsistencies in the
+                        // iCalendar serialization process, so we need to force the Start, End and Exception dates to render in exactly the same format.
+                        ievent.Start = new CalDateTime( icalEvent.Start.Value, timeZoneId );
+                        ievent.Start.IsUniversalTime = false;
+
+                        ievent.End = new CalDateTime( icalEvent.End.Value, timeZoneId );
+                        ievent.End.IsUniversalTime = false;
+
+                        var eventStartTime = new TimeSpan( ievent.DtStart.Hour, ievent.DtStart.Minute, ievent.DtStart.Second );
+
+                        var newExceptionDatesList = new List<Ical.Net.Interfaces.DataTypes.IPeriodList>();
+
+                        foreach ( var exceptionDateList in ievent.ExceptionDates )
+                        {
+                            var newDateList = new PeriodList() { TzId = timeZoneId };
+
+                            foreach ( var exceptionDate in exceptionDateList )
+                            {
+                                var newDateTime = exceptionDate.StartTime.HasTime ? exceptionDate.StartTime.Value : exceptionDate.StartTime.Value.Add( eventStartTime );
+
+                                newDateTime = new DateTime( newDateTime.Year, newDateTime.Month, newDateTime.Day, newDateTime.Hour, newDateTime.Minute, newDateTime.Second, newDateTime.Millisecond, DateTimeKind.Local );
+
+                                var newDate = new CalDateTime( newDateTime );
+                                newDate.IsUniversalTime = false;
+
+                                newDateList.Add( newDate );
+                            }
+
+                            newExceptionDatesList.Add( newDateList );
+                        }
+
+                        ievent.ExceptionDates = newExceptionDatesList;
 
                         // Rock has more descriptions than iCal so lets concatenate them
                         string description = CreateEventDescription( eventItem, occurrence );
@@ -258,7 +296,7 @@ namespace RockWeb
             var eventQueryable = eventItemService
                 .Queryable( "EventItemAudiences, EventItemOccurrences.Schedule" )
                 .Where( e => eventIdsForCalendar.Contains( e.Id ) )
-                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= o.Schedule.EffectiveEndDate ) )
+                .Where( e => e.EventItemOccurrences.Any( o => o.Schedule.EffectiveStartDate <= calendarProps.EndDate && calendarProps.StartDate <= ( o.Schedule.EffectiveEndDate == null ? o.Schedule.EffectiveStartDate : o.Schedule.EffectiveEndDate ) ) )
                 .Where( e => e.IsActive == true )
                 .Where( e => e.IsApproved );
 

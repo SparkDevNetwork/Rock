@@ -176,6 +176,24 @@ namespace Rock.Web.UI.Controls
             if ( Click != null )
                 Click( this, e );
         }
+
+        /// <summary>
+        /// Occurs when [on data bound].
+        /// </summary>
+        public event EventHandler<RowEventArgs> DataBound;
+
+        /// <summary>
+        /// Handles the on data bound.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        internal void HandleOnDataBound( object sender, RowEventArgs e )
+        {
+            if ( this.DataBound != null )
+            {
+                this.DataBound( sender, e );
+            }
+        }
     }
 
     /// <summary>

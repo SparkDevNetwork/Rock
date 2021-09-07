@@ -72,11 +72,8 @@
                 </Rock:Lava>
 
                 <div id="fixed-header" class="header-content" role="navigation">
-                    <div class="clearfix">
-                        <!-- bookmark markup goes here -->
-                        <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
-                        <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
-                    </div>
+                    <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                    <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
             </nav>
 

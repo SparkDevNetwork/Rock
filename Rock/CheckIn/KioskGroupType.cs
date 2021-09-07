@@ -37,7 +37,15 @@ namespace Rock.CheckIn
         /// The type of the group.
         /// </value>
         [DataMember]
-        public GroupTypeCache GroupType { get; set; }
+        public GroupTypeCache GroupType => GroupTypeCache.Get( GroupTypeId );
+
+        /// <summary>
+        /// Gets or sets the group type identifier.
+        /// </summary>
+        /// <value>
+        /// The group type identifier.
+        /// </value>
+        public int GroupTypeId { get; set; }
 
         /// <summary>
         /// All groups with active schedules
@@ -109,7 +117,7 @@ namespace Rock.CheckIn
         public KioskGroupType( int groupTypeid )
             : base()
         {
-            GroupType = GroupTypeCache.Get( groupTypeid );
+            GroupTypeId = groupTypeid;
             KioskGroups = new List<KioskGroup>();
         }
 

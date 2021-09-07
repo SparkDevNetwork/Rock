@@ -352,7 +352,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         private GroupMember AddPrimaryPersonToGroup( JoinGroupParameters parameters, Group group, RockContext rockContext )
         {
             var personService = new PersonService( rockContext );
-            var person = RequestContext.CurrentPerson;
+            Person person = null;
+
+            // Need to re-load the person since we are going to modify and we
+            // need control of the context the person is in.
+            if ( RequestContext.CurrentPerson != null )
+            {
+                person = personService.Get( RequestContext.CurrentPerson.Id );
+            }
 
             // If we have a logged in person, update their personal information.
             if ( person != null )

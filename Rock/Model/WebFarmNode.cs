@@ -192,6 +192,21 @@ namespace Rock.Model
 
         #endregion Virtual Properties
 
+        #region Methods
+
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return NodeName.IsNullOrWhiteSpace() ? base.ToString() : NodeName;
+        }
+
+        #endregion Methods
+
         #region Entity Configuration
 
         /// <summary>

@@ -3,7 +3,6 @@
 // http://192.241.236.31/test4.smartadmin/#ajax/dashboard.html
 // http://webapplayers.com/inspinia_admin-v1.2/form_basic.html
 
-
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/Bootstrap/variables.less";
@@ -89,6 +88,8 @@ textarea,
   color: @text-selection-color;
   background: @text-selection-bg;
 }
+
+.text-xs { font-size: 12px; }
 
 /* #endregion */
 
@@ -448,7 +449,7 @@ textarea,
 
 .badge-circle {
   width: @line-height-computed;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .grid-select-cell .status-list .badge {
@@ -552,10 +553,6 @@ textarea,
   min-width: 0;
 
   > .panel-heading {
-    border-bottom: 1px solid @panel-border;
-  }
-
-  > .panel-heading {
     display: -ms-flexbox;
     display: flex;
     align-content: center;
@@ -577,6 +574,15 @@ textarea,
     > .pull-right {
       margin-left: auto;
       text-align: right;
+    }
+
+    > .panel-labels {
+      margin-top: -8px;
+      margin-bottom: -8px;
+
+      .btn {
+        vertical-align: baseline;
+      }
     }
 
     > .description {
@@ -611,9 +617,6 @@ textarea,
 }
 
 .panel-follow-status {
-  width: 50px;
-  padding: 0;
-
   &::before {
     display: grid;
     place-items: center;
@@ -621,13 +624,7 @@ textarea,
   }
 }
 
-.panel .panel-heading.panel-follow {
-  padding-right: 60px;
-}
-
 .panel .panel-heading .panel-options {
-  margin: -15px -15px -15px 10px;
-
   button {
     padding: 13px 12px 12px;
     background-color: transparent;
@@ -645,8 +642,6 @@ td.grid-actions {
   .btn-grid-action {
     padding: 5px 7px;
     font-size: 1.125em;
-    color: @ui-5;
-    background-color: transparent;
     border: 0;
     transition: color 250ms;
 
@@ -688,6 +683,7 @@ body.nav-open {
 }
 
 .rock-top-header {
+  display: flex;
   margin-bottom: 0;
   background-color: @brand-primary;
   background-color: var(--brand-primary, @brand-primary);
@@ -714,6 +710,23 @@ body.nav-open {
   }
 
   .navbar-zone-header {
+    flex-grow: 1;
+
+    .zone-content {
+      display: flex;
+      justify-content: flex-end;
+
+      .smart-search {
+        flex: 1 1 auto;
+      }
+
+      @media @sm {
+        .smart-search {
+          flex: none;
+        }
+      }
+    }
+
     .zone-content > .block-instance {
       display: none;
 
@@ -723,6 +736,7 @@ body.nav-open {
       }
     }
 
+    .zone-content > .personal-links,
     .zone-content > .smart-search {
       display: block;
       @media @sm {
@@ -734,7 +748,7 @@ body.nav-open {
   }
 
   .navbar-toggle {
-    float: left;
+    position: absolute;
     width: @navbarside-width;
     height: @navbar-top-height;
     padding: 0 28px;
@@ -801,42 +815,8 @@ body.nav-open {
     }
   }
 
-  // Bookmarks
-  //
-  // .bookmarks {
-  //   margin: 0;
-
-  //   & > li {
-  //     padding-bottom: 12px;
-  //   }
-
-  //   a {
-  //     padding: 0 16px;
-  //     font-size: 1em;
-  //     line-height: 14px;
-  //     color: @navbartop-color;
-
-  //     &:hover,
-  //     &:focus {
-  //       background-color: transparent;
-  //       opacity: .8;
-  //     }
-
-  //     @media (min-width: @screen-sm-min) {
-  //       margin-left: 24px;
-  //       line-height: @navbar-top-height;
-
-  //       & > li {
-  //         float: left;
-  //         padding-bottom: 24px;
-  //       }
-  //     }
-  //   }
-  // }
-
   .smartsearch {
-    float: right;
-    width: ~"calc(100% - 160px)";
+    width: 100%;
     height: 50px;
     padding: 0;
     margin: 15px 0;
@@ -906,6 +886,7 @@ body.nav-open {
         color: @navbartop-color;
 
         @media (max-width: @screen-sm-max) {
+          padding: 0 12px;
           .fa-caret-down {
             display: none;
           }
@@ -913,13 +894,16 @@ body.nav-open {
 
         .profile-photo {
           float: left;
-          width: 43px;
-          height: 43px;
-          margin-top: 17px;
+          width: 36px;
+          height: 36px;
+          margin-top: 22px;
           background-repeat: no-repeat;
           background-size: cover;
           border-radius: 50%;
           @media (min-width: @screen-sm-min) {
+            width: 43px;
+            height: 43px;
+            margin-top: 17px;
             margin-right: 12px;
           }
 
@@ -962,16 +946,6 @@ body.nav-open {
     }
   }
 
-  .dropdown {
-    a {
-      float: left;
-
-      i {
-        margin-left: 8px;
-      }
-    }
-  }
-
   .dropdown-menu {
     border: 0;
 
@@ -1002,6 +976,13 @@ body.nav-open {
     }
   }
 
+  .header-content {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 100%;
+    margin-left: @navbarside-width;
+
+  }
 }
 
 .navbar-brand-side {
@@ -1178,6 +1159,14 @@ body.nav-open {
             content: " ";
           }
         }
+
+        .nav-childpages {
+          display: inline-block;
+
+          li.header {
+            padding-left: 0;
+          }
+        }
       }
 
       &.current,
@@ -1299,16 +1288,6 @@ body.nav-open {
           width: 10px;
           background-color: rgba(0,0,0, .2);
           border-radius: 10px;
-        }
-      }
-    }
-
-    > li.open {
-      .nav-childpages {
-        display: inline-block;
-
-        li.header {
-          padding-left: 0;
         }
       }
     }
@@ -1513,11 +1492,6 @@ body.navbar-side-open {
     font-weight: 700;
   }
 
-  .name .firstname {
-    font-size: .488em;
-    font-weight: @font-weight-light;
-  }
-
   .previous-names {
     font-weight: @font-weight-light;
   }
@@ -1600,6 +1574,20 @@ body.navbar-side-open {
   }
 }
 
+.rock-bookmark {
+  display: inline-block;
+  padding: 10px 15px;
+  margin: 15px 2px 15px 0;
+  font-size: 20px;
+  color: #fff !important;
+  opacity: .75;
+
+  &:hover,
+  &:active {
+    color: #fff;
+    opacity: .5;
+  }
+}
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {

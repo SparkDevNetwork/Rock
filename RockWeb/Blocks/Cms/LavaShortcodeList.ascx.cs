@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Cms
 
                     if (lMessages != null )
                     {
-                        lMessages.Text = "<div class='margin-t-md alert alert-info'>This shortcode is defined in code (verses being stored in the database) and therefore can not be modified.</div>";
+                        lMessages.Text = "<div class='margin-t-md alert alert-info'>This shortcode is defined in code (versus being stored in the database) and therefore can not be modified.</div>";
                     }
                 }
             }

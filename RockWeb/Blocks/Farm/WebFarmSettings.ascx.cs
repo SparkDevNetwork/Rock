@@ -431,7 +431,7 @@ namespace RockWeb.Blocks.Farm
                     } )
                     .ToList();
 
-                rNodes.DataSource = viewModels;
+                rNodes.DataSource = viewModels.OrderBy( n => n.NodeName );
                 rNodes.DataBind();
             }
 

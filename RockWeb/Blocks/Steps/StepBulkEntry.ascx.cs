@@ -461,8 +461,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BuildBulkDynamicControls()
         {
-            var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
-            var stepAttributes = AttributeCache.All().Where( a => a.EntityTypeId == stepEntityTypeId );
+            var stepAttributes = AttributeCache.AllForEntityType<Step>();
 
             avcBulkAttributes.ExcludedAttributes = stepAttributes
                 .Where( a =>
@@ -490,8 +489,7 @@ namespace RockWeb.Blocks.Steps
         /// </summary>
         private void BuildNonBulkDynamicControls()
         {
-            var stepEntityTypeId = EntityTypeCache.GetId( typeof( Step ) );
-            var stepAttributes = AttributeCache.All().Where( a => a.EntityTypeId == stepEntityTypeId );
+            var stepAttributes = AttributeCache.AllForEntityType<Step>();
 
             avcNonBulkAttributes.ExcludedAttributes = stepAttributes
                 .Where( a =>

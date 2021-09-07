@@ -571,6 +571,9 @@ namespace Rock.Model
                 DataViewService.AddRunDataViewTransaction( Id );
             }
 
+            // We need to call GetExpression regardless of whether or not usePresistedValues is true so the child queries get their stats updated.
+            var filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( dataViewEntityTypeType, serviceInstance, paramExpression, dataViewFilterOverrides ) : null;
+
             if ( usePersistedValues )
             {
                 // If this is a persisted DataView, get the ids for the expression by querying DataViewPersistedValue instead of evaluating all the filters
@@ -597,7 +600,6 @@ namespace Rock.Model
             }
             else
             {
-                Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( dataViewEntityTypeType, serviceInstance, paramExpression, dataViewFilterOverrides ) : null;
                 if ( dataViewEntityTypeCache.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id )
                 {
                     var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable( this.IncludeDeceased );

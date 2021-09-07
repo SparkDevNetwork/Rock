@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.UniversalSearch;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -300,6 +301,7 @@ namespace RockWeb.Blocks.Event
                 eventCalendar.Name = tbName.Text;
                 eventCalendar.Description = tbDescription.Text;
                 eventCalendar.IconCssClass = tbIconCssClass.Text;
+                eventCalendar.IsIndexEnabled = cbIndexCalendar.Checked;
 
                 eventCalendar.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( phAttributes, eventCalendar );
@@ -617,6 +619,11 @@ namespace RockWeb.Blocks.Event
             EventCalendar eventCalendar = null;
             var rockContext = new RockContext();
 
+            cbIndexCalendar.Visible = IndexContainer.IndexingEnabled;
+            var descriptionListLeft = new DescriptionList();
+
+            
+
             if ( !eventCalendarId.Equals( 0 ) )
             {
                 eventCalendar = GetEventCalendar( eventCalendarId, rockContext );
@@ -675,6 +682,13 @@ namespace RockWeb.Blocks.Event
                     ShowEditDetails( eventCalendar, rockContext );
                 }
             }
+
+            if ( IndexContainer.IndexingEnabled )
+            {
+                descriptionListLeft.Add( "Is Indexed", eventCalendar.IsIndexEnabled.ToYesNo() );
+            }
+
+            lDetailsLeft.Text = descriptionListLeft.Html;
         }
 
         /// <summary>
@@ -706,6 +720,7 @@ namespace RockWeb.Blocks.Event
             tbName.Text = eventCalendar.Name;
             tbDescription.Text = eventCalendar.Description;
             tbIconCssClass.Text = eventCalendar.IconCssClass;
+            cbIndexCalendar.Checked = eventCalendar.IsIndexEnabled;
 
             BindEventAttributesGrid();
 

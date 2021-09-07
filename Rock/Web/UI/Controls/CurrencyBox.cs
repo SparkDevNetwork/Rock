@@ -84,6 +84,8 @@ namespace Rock.Web.UI.Controls
                     _organizationCurrencyCodeInfo = new RockCurrencyCodeInfo( organizationCurrencyCode.Id );
                 }
             }
+
+            UpdateCurrencyCode( 0 );
         }
 
         /// <summary>
@@ -122,10 +124,14 @@ namespace Rock.Web.UI.Controls
             if ( _currencyDecimalPlaces == 0 )
             {
                 this.NumberType = ValidationDataType.Integer;
+                this.Placeholder = "0";
                 this.Attributes.Remove( "step" );
             }
             else
             {
+                var decimalSeperator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+                this.Placeholder = $"0{decimalSeperator}{ new string( '0', _currencyDecimalPlaces ) }";
+
                 var step = $"0.{ new string( '0', _currencyDecimalPlaces - 1 ) }1";
                 this.Attributes["step"] = step;
             }
@@ -143,12 +149,12 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.Text.AsDecimalOrNull();
+                return this.Text.AsDecimalInvariantCultureOrNull();
             }
 
             set
             {
-                this.Text = value?.ToString( $"F{_currencyDecimalPlaces}" );
+                this.Text = value?.ToString( $"F{_currencyDecimalPlaces}", System.Globalization.CultureInfo.InvariantCulture );
             }
         }
     }

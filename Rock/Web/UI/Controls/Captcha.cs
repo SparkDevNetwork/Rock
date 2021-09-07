@@ -46,7 +46,24 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Cached value to contain if the user response is valid.
         /// </summary>
+        [Obsolete( "Use ValidatedResult instead." )]
+        [RockObsolete( "1.12.5" )]
         protected bool? _isResponseValid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cached response result.
+        /// </summary>
+        /// <value>
+        /// The cached response result.
+        /// </value>
+        protected bool? ValidatedResult
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            // When _isResponseValid is removed, this can be changed to a simple get;set;
+            get => _isResponseValid;
+            set => _isResponseValid = value;
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
 
         #endregion
 
@@ -339,7 +356,8 @@ namespace Rock.Web.UI.Controls
 
             if ( rockPage != null )
             {
-                rockPage.AddScriptLink( "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize", false );
+                // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
+                rockPage.AddScriptSrcToHead( "captchaScriptId", "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize" );
             }
 
             string script = string.Format( @"
@@ -379,9 +397,9 @@ namespace Rock.Web.UI.Controls
             var userResponse = HttpContext.Current.Request.Params["g-recaptcha-response"];
             string remoteIp = HttpContext.Current.Request.UserHostAddress;
 
-            if ( _isResponseValid.HasValue )
+            if ( ValidatedResult.HasValue )
             {
-                return _isResponseValid.Value;
+                return ValidatedResult.Value;
             }
 
             if ( string.IsNullOrWhiteSpace( userResponse ) )
@@ -406,15 +424,15 @@ namespace Rock.Web.UI.Controls
 
                 var response = client.Execute<ReCaptchaResponse>( request );
 
-                _isResponseValid = JsonConvert.DeserializeObject<ReCaptchaResponse>( response.Content ).Success;
+                ValidatedResult = JsonConvert.DeserializeObject<ReCaptchaResponse>( response.Content ).Success;
             }
             catch (Exception e)
             {
                 Rock.Model.ExceptionLogService.LogException( e );
-                _isResponseValid = false;
+                ValidatedResult = false;
             }
 
-            return _isResponseValid.Value;
+            return ValidatedResult.Value;
         }
 
         /// <summary>

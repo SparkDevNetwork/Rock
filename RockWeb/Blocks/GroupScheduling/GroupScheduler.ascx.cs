@@ -450,7 +450,6 @@ btnCopyToClipboard.ClientID );
                 }
 
                 pickerGroupIds = pageParameterGroupIds;
-                gpPickedGroups.Enabled = false;
                 btnShowChildGroups.Enabled = false;
                 showChildGroups = this.PageParameter( PageParameterKey.ShowChildGroups ).AsBoolean();
             }

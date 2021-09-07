@@ -69,6 +69,9 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class Success : CheckInBlock
     {
+        /* 2021-05/07 ETD
+         * Use new here because the parent CheckInBlock also has inherited class AttributeKey.
+         */
         private new static class AttributeKey
         {
             public const string PersonSelectPage = "PersonSelectPage";

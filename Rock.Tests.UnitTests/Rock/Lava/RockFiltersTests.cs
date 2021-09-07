@@ -1782,17 +1782,19 @@ a comment --> sit amet</p>";
         [TestMethod]
         public void DatesFromICal_NextYearsEndOccurrenceSaturday()
         {
-            // Next year's Saturday (from right now)
-            DateTime today = RockDateTime.Today;
-            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) today.DayOfWeek + 7 ) % 7;
-            DateTime firstSaturdayThisMonth = today.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
-            DateTime nextYearSaturday = firstSaturdayThisMonth.AddDays( 7 * 52 );
+            // Get the first Saturday of the current month one year from now.
+            var today = RockDateTime.Today;
 
-            DateTime expected = nextYearSaturday.AddHours( 10 );
+            var nextYearDate = new DateTime( today.Year + 1, today.Month, 1 );
+            int daysUntilSaturday = ( ( int ) DayOfWeek.Saturday - ( int ) nextYearDate.DayOfWeek + 7 ) % 7;
+            nextYearDate = nextYearDate.AddDays( daysUntilSaturday - ( ( ( today.Day - 1 ) / 7 ) * 7 ) );
+
+            var expected = nextYearDate.AddHours( 10 );
 
             // Get the end datetime of the 13th event in the "First Saturday of the Month" schedule.
-            var output = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" ).LastOrDefault();
-            Assert.That.AreEqual( expected, output );
+            var events = RockFilters.DatesFromICal( iCalStringFirstSaturdayOfMonth, 13, "enddatetime" );
+
+            Assert.That.AreEqual( expected, events.LastOrDefault() );
         }
 
         #endregion

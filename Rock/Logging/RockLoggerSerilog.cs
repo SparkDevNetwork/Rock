@@ -118,6 +118,18 @@ namespace Rock.Logging
             }
         }
 
+        /// <summary>
+        /// Reloads the configuration.
+        /// </summary>
+        public void ReloadConfiguration()
+        {
+            Close();
+
+            // The ctor loads up all the settings from the DB.
+            LogConfiguration = new RockLogConfiguration();
+            LoadConfiguration( LogConfiguration );
+        }
+
         #region WriteToLog Methods
         /// <summary>
         /// Writes to log.

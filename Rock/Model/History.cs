@@ -85,7 +85,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the verb of the History.
         /// </value>
-        [MaxLength( 20 )]
+        [MaxLength( 50 )]
         [DataMember]
         public string Verb { get; set; }
 
@@ -428,6 +428,135 @@ namespace Rock.Model
                                     var sentSummary = sentSummaryBuilder.ToString();
                                     return sentSummary;
                                 }
+                            case HistoryVerb.ConnectionRequestAdded:
+                                {
+                                    var strBuilder = new StringBuilder();
+                                    strBuilder.Append( "A connection request was added" );
+
+                                    if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
+                                    {
+                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        if ( person != null )
+                                        {
+                                            strBuilder.Append( $" for {person.FullName}" );
+                                        }
+                                    }
+
+                                    strBuilder.Append( $" for the {this.ValueName} opportunity" );
+
+                                    var connectionRequestSummary = strBuilder.ToString();
+                                    return connectionRequestSummary;
+                                }
+                            case HistoryVerb.ConnectionRequestConnected:
+                                {
+                                    var strBuilder = new StringBuilder();
+
+                                    if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
+                                    {
+                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        if ( person != null )
+                                        {
+                                            strBuilder.Append( $"{person.NickName}'s " );
+                                        }
+                                    }
+
+                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was connected." );
+
+                                    var connectionRequestSummary = strBuilder.ToString();
+                                    return connectionRequestSummary;
+                                }
+                            case HistoryVerb.ConnectionRequestStatusModify:
+                                {
+                                    var strBuilder = new StringBuilder();
+                                    strBuilder.Append( "The status of " );
+
+                                    if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
+                                    {
+                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        if ( person != null )
+                                        {
+                                            strBuilder.Append( $"{person.NickName}'s " );
+                                        }
+                                    }
+
+                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was changed" );
+
+                                    var createdByPersonAlias = CreatedByPersonAlias;
+                                    if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
+                                    {
+                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+
+                                    }
+
+                                    if ( createdByPersonAlias != null )
+                                    {
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                    }
+
+                                    var connectionRequestSummary = strBuilder.ToString();
+                                    return connectionRequestSummary;
+                                }
+                            case HistoryVerb.ConnectionRequestStateModify:
+                                {
+                                    var strBuilder = new StringBuilder();
+                                    strBuilder.Append( "The state of " );
+
+                                    if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
+                                    {
+                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        if ( person != null )
+                                        {
+                                            strBuilder.Append( $"{person.NickName}'s " );
+                                        }
+                                    }
+
+                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was changed" );
+
+                                    var createdByPersonAlias = CreatedByPersonAlias;
+                                    if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
+                                    {
+                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+
+                                    }
+
+                                    if ( createdByPersonAlias != null )
+                                    {
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                    }
+
+                                    var connectionRequestSummary = strBuilder.ToString();
+                                    return connectionRequestSummary;
+                                }
+                            case HistoryVerb.ConnectionRequestDelete:
+                                {
+                                    var strBuilder = new StringBuilder();
+
+                                    if ( this.EntityTypeId == EntityTypeCache.GetId<Person>() )
+                                    {
+                                        var person = new PersonService( new RockContext() ).Get( this.EntityId );
+                                        if ( person != null )
+                                        {
+                                            strBuilder.Append( $"{person.NickName}'s " );
+                                        }
+                                    }
+
+                                    strBuilder.Append( $"connection request for the {this.ValueName} opportunity was deleted" );
+
+                                    var createdByPersonAlias = CreatedByPersonAlias;
+                                    if ( this.CreatedByPersonAliasId.HasValue && createdByPersonAlias == null )
+                                    {
+                                        createdByPersonAlias = new PersonAliasService( new RockContext() ).Get( this.CreatedByPersonAliasId.Value );
+
+                                    }
+
+                                    if ( createdByPersonAlias != null )
+                                    {
+                                        strBuilder.Append( $" by {createdByPersonAlias.Person.FullName}." );
+                                    }
+
+                                    var connectionRequestSummary = strBuilder.ToString();
+                                    return connectionRequestSummary;
+                                }
                         }
                     }
 
@@ -536,6 +665,31 @@ namespace Rock.Model
             /// a person/groupmember was removed (or archived) from a group
             /// </summary>
             RemovedFromGroup,
+
+            /// <summary>
+            /// Connection Request was Added.
+            /// </summary>
+            ConnectionRequestAdded,
+
+            /// <summary>
+            /// Connection Request was Connected to Connector.
+            /// </summary>
+            ConnectionRequestConnected,
+
+            /// <summary>
+            /// The Status of Connection Request is modified.
+            /// </summary>
+            ConnectionRequestStatusModify,
+
+            /// <summary>
+            /// The state of Connection Request is modified.
+            /// </summary>
+            ConnectionRequestStateModify,
+
+            /// <summary>
+            /// Connection Request was Deleted.
+            /// </summary>
+            ConnectionRequestDelete,
         }
 
         /// <summary>
@@ -1680,7 +1834,7 @@ namespace Rock.Model
 
             if ( groupTypeRoleId.HasValue )
             {
-                var roleName = new GroupTypeRoleService( rockContext ).GetSelect( groupTypeRoleId.Value, a=> a.Name );
+                var roleName = new GroupTypeRoleService( rockContext ).GetSelect( groupTypeRoleId.Value, a => a.Name );
                 if ( roleName != null )
                 {
                     return roleName;
@@ -1758,7 +1912,7 @@ namespace Rock.Model
             /// </summary>
             /// <param name="summary">The summary.</param>
             [RockObsolete( "1.8" )]
-            [Obsolete("", true)]
+            [Obsolete( "", true )]
             public HistoryChange( string summary )
             {
                 this.Summary = summary;
@@ -1919,7 +2073,7 @@ namespace Rock.Model
             /// The summary.
             /// </value>
             [RockObsolete( "1.8" )]
-            [Obsolete("", true)]
+            [Obsolete( "", true )]
             public string Summary { get; set; }
 
             /// <summary>

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 
@@ -127,6 +128,15 @@ namespace Rock.Web.Cache
         public int? CampusTypeValueId { get; private set; }
 
         /// <summary>
+        /// Gets or sets the team group identifier.
+        /// </summary>
+        /// <value>
+        /// The team group identifier.
+        /// </value>
+        [DataMember]
+        public int? TeamGroupId { get; set; }
+
+        /// <summary>
         /// Gets or sets the location.
         /// </summary>
         /// <value>
@@ -191,6 +201,14 @@ namespace Rock.Web.Cache
                 return serviceTimes;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
+        /// </value>
+        public virtual List<int> CampusScheduleIds { get; set; } = new List<int>();
 
         /// <summary>
         /// Gets the order.
@@ -274,9 +292,11 @@ namespace Rock.Web.Cache
             TimeZoneId = campus.TimeZoneId;
             CampusStatusValueId = campus.CampusStatusValueId;
             CampusTypeValueId = campus.CampusTypeValueId;
+            TeamGroupId = campus.TeamGroupId;
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
+            CampusScheduleIds = campus.CampusSchedules.Select( s => s.ScheduleId ).ToList();
             Order = campus.Order;
 
             Location = new CampusLocation( campus.Location );

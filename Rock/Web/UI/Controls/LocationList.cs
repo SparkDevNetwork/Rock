@@ -219,11 +219,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "d-flex" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _ddlLocations.RenderControl( writer );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
             _btnShowAddAddressForm.RenderControl( writer );
+            writer.RenderEndTag();
 
             writer.RenderEndTag();
 

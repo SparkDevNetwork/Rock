@@ -15,6 +15,15 @@
 
                 $('#' + options.id).data('key', options.key);
 
+                // Ensure that js for recaptcha is added to page.
+                // If the Captcha control was added in a partial postback, we'll have to add it manually here
+                if (!$('#captchaScriptId').length) {
+                    // by default, jquery adds a cache-busting parameter on dynamically added script tags. set the ajaxSetup cache:true to prevent this
+                    $.ajaxSetup({ cache: true });
+                    var apiSource = "https://www.google.com/recaptcha/api.js?render=explicit&onload=Rock_controls_captcha_onloadInitialize";
+                    $('head').prepend("<script id='captchaScriptId' src='" + apiSource + "' />");
+                }
+
                 // For some reason the reCaptcha library cannot call the onloadInitialize function
                 // directly, I suspect because it is in a class. Put a chain function in the global
                 // namespace to help us out.
@@ -33,17 +42,17 @@
             },
             onloadInitialize: function () {
                 // Perform final initialization on all captchas.
-                if (typeof (grecaptcha) != 'undefined') {
+                if (typeof (grecaptcha) !== 'undefined' && typeof (grecaptcha.render) !== 'undefined') {
                     $('.js-captcha').each(function () {
                         var $captcha = $(this);
                         var $validator = $captcha.closest('.form-group').find('.js-captcha-validator');
 
                         if ($captcha.data('captcha-id') == undefined) {
                             var verifyCallback = function (response) {
-                                ValidatorValidate(window[$validator.prop('id')]);
+                                ValidatorValidate(window[ $validator.prop('id') ]);
                             };
                             var expiredCallback = function (response) {
-                                ValidatorValidate(window[$validator.prop('id')]);
+                                ValidatorValidate(window[ $validator.prop('id') ]);
                             };
 
                             var id = grecaptcha.render($captcha.prop('id'), {

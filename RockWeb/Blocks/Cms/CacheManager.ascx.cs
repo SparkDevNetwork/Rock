@@ -653,7 +653,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Updates and exsiting tag.
+        /// Updates and existing tag.
         /// </summary>
         /// <param name="cacheTagId">The Id of the tag.</param>
         private void UpdateExistingTag(int cacheTagId )

@@ -41,6 +41,11 @@ namespace Rock.Logging
         List<string> LogFiles { get; }
 
         /// <summary>
+        /// Ensures the logger exists and updated.
+        /// </summary>
+        void ReloadConfiguration();
+
+        /// <summary>
         /// Closes this instance and releases file locks.
         /// </summary>
         void Close();

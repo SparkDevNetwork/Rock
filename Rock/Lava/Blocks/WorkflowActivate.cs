@@ -262,12 +262,15 @@ namespace Rock.Lava.Blocks
                                         {
                                             activity = WorkflowActivity.Activate( activityType, workflow );
 
-                                            /* Set any workflow attributes that were specified. */
-                                            foreach ( var attr in attributes )
+                                            if ( activity != null )
                                             {
-                                                if ( activity.Attributes.ContainsKey( attr.Key ) )
+                                                /* Set any workflow attributes that were specified. */
+                                                foreach ( var attr in attributes )
                                                 {
-                                                    activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                                                    if ( activity.Attributes.ContainsKey( attr.Key ) )
+                                                    {
+                                                        activity.SetAttributeValue( attr.Key, attr.Value.ToString() );
+                                                    }
                                                 }
                                             }
                                         }

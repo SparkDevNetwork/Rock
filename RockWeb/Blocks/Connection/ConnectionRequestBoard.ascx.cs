@@ -150,6 +150,14 @@ namespace RockWeb.Blocks.Connection
         IsRequired = true,
         Order = 14 )]
 
+    [LinkedPage(
+        "Connection Request History Page",
+        Description = "Page used to display history details.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
+        Order = 15,
+        Key = AttributeKey.ConnectionRequestHistoryPage )]
+
     #endregion Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
@@ -219,6 +227,7 @@ namespace RockWeb.Blocks.Connection
         {
             public const string WorkflowId = "WorkflowId";
             public const string ConnectionRequestId = "ConnectionRequestId";
+            public const string ConnectionRequestGuid = "ConnectionRequestGuid";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
         }
 
@@ -240,6 +249,8 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowDetailPage = "WorkflowDetailPage";
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
+            public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
+
         }
 
         /// <summary>
@@ -2960,6 +2971,28 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the Click event of the btnRequestViewModeViewHistory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnRequestViewModeViewHistory_Click( object sender, EventArgs e )
+        {
+            if ( !ConnectionRequestId.HasValue )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var connectionRequestService = new ConnectionRequestService( rockContext );
+            var connectionRequest = connectionRequestService.Get( ConnectionRequestId.Value );
+
+            if ( connectionRequest != null )
+            {
+                NavigateToLinkedPage( AttributeKey.ConnectionRequestHistoryPage, new Dictionary<string, string> { { PageParameterKey.ConnectionRequestGuid, connectionRequest.Guid.ToString() } } );
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnModalConnect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -4665,6 +4698,7 @@ namespace RockWeb.Blocks.Connection
                         Name = ct.Name,
                         IconCssClass = ct.IconCssClass,
                         DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
+                        Order = ct.Order,
                         ConnectionOpportunities = ct.ConnectionOpportunities
                             .Where( co => co.IsActive )
                             .Select( co => new ConnectionOpportunityViewModel
@@ -4684,7 +4718,8 @@ namespace RockWeb.Blocks.Connection
                             .ToList()
                     } )
                     .ToList()
-                    .OrderBy( ct => ct.Name )
+                    .OrderBy( ct => ct.Order )
+                    .ThenBy( ct => ct.Name )
                     .ThenBy( ct => ct.Id )
                     .ToList();
 
@@ -5010,10 +5045,7 @@ namespace RockWeb.Blocks.Connection
 
             return service.Queryable()
                 .AsNoTracking()
-                .Where( at =>
-                    ( !at.ConnectionTypeId.HasValue ||
-                    at.ConnectionTypeId == connectionType.Id ) &&
-                    at.IsActive );
+                .Where( at => at.ConnectionTypeId == connectionType.Id && at.IsActive );
         }
 
         /// <summary>
@@ -5277,6 +5309,11 @@ namespace RockWeb.Blocks.Connection
             /// Gets or sets the icon CSS class.
             /// </summary>
             public string IconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the order.
+            /// </summary>
+            public int Order { get; set; }
 
             /// <summary>
             /// Gets or sets the days until request idle.

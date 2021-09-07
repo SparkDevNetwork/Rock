@@ -75,93 +75,89 @@
       {{ EventItemOccurrence.Note }}
       {% endif %}
 
-      {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
+        {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
 
-      {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
-      {% if eventItemOccurrenceLinkagesCount > 0 %}
-        {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
-            {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
-            {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
-            {% assign showRegistration = true %}
-            {% assign registrationMessage = '' %}
+        {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+        {% if eventItemOccurrenceLinkagesCount > 0 %}
+            {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+                {% if eventItemOccurrenceLinkage.RegistrationInstance != null and eventItemOccurrenceLinkage.RegistrationInstance.IsActive == true %}
+                    {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+                    {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+                    {% assign showRegistration = true %}
+                    {% assign registrationMessage = '' %}
 
-            {% if daysTillStartDate and daysTillStartDate > 0 %}
-                {% assign showRegistration = false %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
-                  {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
-                {% else %}
-                  {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
-                {% endif %}
-            {% endif %}
-
-            {% if daysTillEndDate and daysTillEndDate < 0 %}
-                {% assign showRegistration = false %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
-                  {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
-                {% else %}
-                  {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
-                {% endif %}
-            {% endif %}
-
-            {% if showRegistration == true %}
-                {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
-                {% if eventItemOccurrenceLinkagesCount == 1 %}
-                  {% assign registrationButtonText = statusLabel %}
-                {% else %}
-                  {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
-                {% endif %}
-
-                {% if statusLabel == 'Full' %}
-                    {% if eventItemOccurrenceLinkagesCount == 1 %}
-                      {% assign registrationButtonText = 'Registration Full' %}
-                    {% else %}
-                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Append:' (Registration Full) ' %}
+                    {% if daysTillStartDate and daysTillStartDate > 0 %}
+                        {% assign showRegistration = false %}
+                        {% if eventItemOccurrenceLinkagesCount == 1 %}
+                        {% capture registrationMessage %}<p>Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                        {% else %}
+                        {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                        {% endif %}
                     {% endif %}
-                    <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
-                {% else %}
-                    {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
-                        <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+
+                    {% if daysTillEndDate and daysTillEndDate < 0 %}
+                        {% assign showRegistration = false %}
+                        {% if eventItemOccurrenceLinkagesCount == 1 %}
+                        {% capture registrationMessage %}<p>Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                        {% else %}
+                        {% capture registrationMessage %}<p>Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}</p>{% endcapture %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if showRegistration == true %}
+                        {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
+                        {% if eventItemOccurrenceLinkagesCount == 1 %}
+                        {% assign registrationButtonText = statusLabel %}
+                        {% else %}
+                        {% assign registrationButtonText = statusLabel | Append:' for ' | Append:eventItemOccurrenceLinkage.PublicName %}
+                        {% endif %}
+
+                        {% if statusLabel == 'Full' %}
+                            {% if eventItemOccurrenceLinkagesCount == 1 %}
+                            {% assign registrationButtonText = 'Registration Full' %}
+                            {% else %}
+                            {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Append:' (Registration Full) ' %}
+                            {% endif %}
+                            <div class='label label-default text-center margin-t-md' style='display: block; padding: 8px;'>{{ registrationButtonText }}</div>
+                        {% else %}
+                            {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                                <a href='{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&Slug={{eventItemOccurrenceLinkage.UrlSlug}}' class='btn btn-primary btn-block margin-t-md'>{{ registrationButtonText }}</a>
+                            {% else %}
+                                <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                            {% endif %}
+                        {% endif %}
                     {% else %}
-                        <a href="{{ RegistrationPage }}?RegistrationInstanceId={{ eventItemOccurrenceLinkage.RegistrationInstanceId }}&EventOccurrenceID={{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}" class="btn btn-primary btn-block margin-t-md">{{ registrationButtonText }}</a>
+                    <p>{{ registrationMessage }}</p>
                     {% endif %}
                 {% endif %}
-            {% else %}
-              <p>{{ registrationMessage }}</p>
-            {% endif %}
-        {% endfor %}
-      {% endif %}
+            {% endfor %}
+        {% endif %}
     </div>
 
-		<script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
+	<script>function fbs_click() { u = location.href; t = document.title; window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(u) + '&t=' + encodeURIComponent(t), 'sharer', 'toolbar=0,status=0,width=626,height=436'); return false; }</script>
     <script>function ics_click(e) { e.preventDefault(); text = `{{ EventItemOccurrence.Schedule.iCalendarContent }}`.replace('END:VEVENT', 'SUMMARY: {{ Event.Name }}\r\nLOCATION: {{ EventItemOccurrence.Location }}\r\nEND:VEVENT'); var element = document.createElement('a'); element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text)); element.setAttribute('download', '{{ Event.Name }}.ics'); element.style.display = 'none'; document.body.appendChild(element); element.click(); document.body.removeChild(element); }</script>
-		<ul class="socialsharing">
-			<li>
-				<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
-					<i class="fa fa-fw fa-facebook"></i>
-				</a>
-			</li>
-			<li>
-				<a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
-					<i class="fa fa-fw fa-twitter"></i>
-				</a>
-			</li>
-			<li>
-				<a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
-					<i class="fa fa-fw fa-envelope-o"></i>
-				</a>
-			</li>
-      <li>
-        <a href="" onclick="return ics_click(event);" class="socialicon socialicon-calendar" title="" data-original-title="Download Event">
-          <i class="fa fa-fw fa-calendar"></i>
-        </a>
-      </li>
-		</ul>
+	<ul class="socialsharing">
+        <li>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
+                <i class="fa fa-fw fa-facebook"></i>
+            </a>
+        </li>
+        <li>
+            <a href="https://twitter.com/intent/tweet?text={{ 'Global' | Page:'Url' | EscapeDataString }}" class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
+                <i class="fa fa-fw fa-twitter"></i>
+            </a>
+        </li>
+        <li>
+            <a href="mailto:?Subject={{ Event.Name | EscapeDataString }}&Body={{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
+                <i class="fa fa-fw fa-envelope-o"></i>
+            </a>
+        </li>
+        <li>
+            <a href="" onclick="return ics_click(event);" class="socialicon socialicon-calendar" title="" data-original-title="Download Event">
+            <i class="fa fa-fw fa-calendar"></i>
+            </a>
+        </li>
+	</ul>
 
   </div>
 </div>
-
-
-
-
-
-

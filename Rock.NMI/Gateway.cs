@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -770,7 +771,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 if ( response.StatusCode == HttpStatusCode.OK )
                 {
-                    var xdocResult = GetXmlResponse( response );
+                    var xdocResult = GetXmlResponse( response, true );
                     var subscriptionNode = xdocResult.Root.Element( "subscription" );
                     if ( subscriptionNode == null )
                     {
@@ -807,6 +808,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     transaction.NextPaymentDate = subscription.NextChargeDate;
                     transaction.LastStatusUpdateDateTime = RockDateTime.Now;
 
+                    // NMI doesn't have a field that has the status of a scheduled transaction
+                    transaction.Status = null;
+                    transaction.StatusMessage = null;
+
                     return true;
                 }
             }
@@ -830,6 +835,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var paymentList = new List<Payment>();
 
             var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
+
+            // set timeout to 10 minutes (default is 100 seconds). This will help in situations where a large number of payments are returned from the gateway.
+            restClient.Timeout = ( int ) new TimeSpan( 0, 10, 0 ).TotalMilliseconds;
+
             var restRequest = new RestRequest( Method.GET );
 
             restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
@@ -839,16 +848,33 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
             try
             {
+                var stopwatchRequest = Stopwatch.StartNew();
                 var response = restClient.Execute( restRequest );
+                stopwatchRequest.Stop();
+
                 if ( response == null )
                 {
                     errorMessage = "Empty response returned From gateway.";
                     return paymentList;
                 }
 
+                if ( response.ResponseStatus == ResponseStatus.TimedOut )
+                {
+                    errorMessage = $"Request Timed Out after { Math.Round( stopwatchRequest.Elapsed.TotalSeconds, 2 )} seconds.";
+                    return paymentList;
+                }
+
                 if ( response.StatusCode != HttpStatusCode.OK )
                 {
-                    errorMessage = $"Status code of {response.StatusCode} returned From gateway.";
+                    if ( response.ResponseStatus != ResponseStatus.Completed )
+                    {
+                        errorMessage = $"Response Status code {response.ResponseStatus.ConvertToString()} returned From gateway request. Status Code: {response.StatusCode}. ";
+                    }
+                    else
+                    {
+                        errorMessage = $"Status code of {response.StatusCode} returned From gateway. ";
+                    }
+
                     return paymentList;
                 }
 
@@ -1116,7 +1142,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             try
             {
                 var response = restClient.Execute( restRequest );
-                var xdocResult = GetXmlResponse( response );
+                var xdocResult = GetXmlResponse( response, true );
                 if ( xdocResult == null )
                 {
                     return null;
@@ -1198,17 +1224,50 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// Gets the response as an XDocument
         /// </summary>
         /// <param name="response">The response.</param>
+        /// <param name="logErrors">Flag indicating whether to log errors (default = false).</param>
         /// <returns></returns>
-        private XDocument GetXmlResponse( IRestResponse response )
+        private XDocument GetXmlResponse( IRestResponse response, bool logErrors = false )
         {
-            if ( response.StatusCode == HttpStatusCode.OK &&
-                response.Content.Trim().Length > 0 &&
-                response.Content.Contains( "<?xml" ) )
+            if ( response.StatusCode != HttpStatusCode.OK )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  HTTP Status Code {response.StatusCode}" );
+                }
+                return null;
+            }
+
+            var responseContent = response.Content.Trim();
+            if ( responseContent.Length <= 0 )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  No content." );
+                }
+                return null;
+            }
+
+            if ( !responseContent.Contains( "<?xml" ) )
+            {
+                if ( logErrors )
+                {
+                    ExceptionLogService.LogException( $"Invalid Response From NMI Gateway:  Content is not XML." );
+                }
+                return null;
+            }
+
+            try
             {
                 return XDocument.Parse( response.Content );
             }
-
-            return null;
+            catch ( Exception ex )
+            {
+                // This error condition is always logged, regardless of the logErrors flag, because it indicates something
+                // went wrong while converting what appears to be an XML response, which shoud never happen.
+                var loggedException = new Exception( "Invalid Response From NMI Gateway:  Unknown error.", ex );
+                ExceptionLogService.LogException( loggedException );
+                return null;
+            }
         }
 
         /// <summary>
@@ -1979,7 +2038,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
-                if ( tokenResponse?.HasValidationError() == true)
+                if ( tokenResponse?.HasValidationError() == true )
                 {
                     errorMessage = tokenResponse.ValidationMessage;
                 }

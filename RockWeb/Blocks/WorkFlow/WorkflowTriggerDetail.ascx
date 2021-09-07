@@ -29,7 +29,7 @@
                             <Rock:RockRadioButtonList ID="rblTriggerType" runat="server" RepeatDirection="Horizontal" Label="Trigger Type" AutoPostBack="true" OnSelectedIndexChanged="rblTriggerType_SelectedIndexChanged" Help="Determines when the trigger should be fired. 'Pre' events allow the workflow to cancel the action and notify the user. They should be used when the entity's original and new values need to be compared. 'Post' events are more efficient because they prevent the user interface from being blocked. 'Immediate Post Save' events are used when the workflow should run immediately and the entity ID is required." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                         </div>
                     </div>
 

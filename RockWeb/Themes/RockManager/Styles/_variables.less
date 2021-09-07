@@ -27,28 +27,45 @@
 @ui-4:                        @gray-300;                        // Table, panel, well, and hr border color. #color
 @ui-5:                        @gray-400;
 
-@brand-primary:         #ee7725;
-@brand-success:         #28a745;
-@brand-info:            #009ce3;
-@brand-warning:         #ffc107;
-@brand-danger:          #dc3545;
+// Theme Colors *show in editor*
+@brand-color:                       #ee7725;  // This is the primary brand color that will be used for the header, primary buttons and other accents. #color
+@body-background:                   #f4f5f7;  // The page background color. #color
+@text-color:                        #343a40;  // The default text color. #color
+@text-muted:                        #6c757d;  // The muted color for text #color
+
+@link-color:                        #007acc;  // The color for all links. #color
+@link-hover-color:                  #009ce3;  // The rollover color for all links. #color
+
+// Bootstrap Colors *show in editor* *advanced options*
+
+//// Bootstrap Colors {The primary colors defined by the Bootstrap framework.
+@brand-success:                     #28a745;  // #color
+@brand-warning:                     #ffc107;  // #color
+@brand-danger:                      #dc3545;  // #color
+@brand-info:                        #009ce3;  // #color
+@brand-critical:                    #ee7624;  // #color
 
 
-@body-bg: @gray-100;
-@text-color: @gray-900;
-@text-muted: @gray-600;
+// Side Navigation *show in editor* *advanced options*
+@side-navigation-background-color:        #3d3d3d;            // This is the background color for the right-hand menu. #color
+@side-navigation-open-background-color:   #484848;            // #color
+@side-navigation-text-color:              @gray-100;            // #color
 
-@adminbar-bg:                 @gray-900;
-@adminbar-text-color:         @gray-200;
+// More Variables
+@brand-primary:                     @brand-color;
+@body-bg:                           @body-background;
+
+@adminbar-bg:                       @gray-900;
+@adminbar-text-color:               @gray-200;
 
 
-@font-weight-normal: 400;
-@font-weight-bold: 600;
-@font-weight-bolder: 700;
+@font-weight-normal:                400;
+@font-weight-bold:                  600;
+@font-weight-bolder:                700;
 
-@headings-font-weight:    700;
+@headings-font-weight:              700;
 
-@grid-gutter-width:         16px;
+@grid-gutter-width:                 16px;
 
 // DARK MODE TEST
 
@@ -66,51 +83,50 @@
 
 /////////
 
-@font-size-h5:            20px;
-@font-size-h6:            @font-size-base; // ~12px
+@font-size-h5:                      20px;
+@font-size-h6:                      @font-size-base; // ~12px
 
 
-@link-color:                  #007acc;                      // The color for all links. #color
-@link-hover-color:            #009ce3;
-
-@font-family-sans-serif:      system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"; // The base font to use for text. Be sure when defining this font that the various weights are configured.
-@font-family-monospace: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-
-@shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.05);
-@shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-@shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-@shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-@shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-@shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-@shadow-2xl:  0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 
-@shadow-raised:               @shadow;
-@shadow-overlay:              @shadow-md;
-@shadow-sticky-nav:           0 6px 12px 0 rgba(0,0,0,.1);
-@shadow-temporary-nav:        0 8px 16px 0 rgba(0,0,0,.1);
-@shadow-modal:                @shadow-2xl;
+@font-family-sans-serif:            system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"; // The base font to use for text. Be sure when defining this font that the various weights are configured.
+@font-family-monospace:             SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+
+@shadow-xs:                         0 0 0 1px rgba(0, 0, 0, 0.05);
+@shadow-sm:                         0 1px 2px 0 rgba(0, 0, 0, 0.05);
+@shadow:                            0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+@shadow-md:                         0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+@shadow-lg:                         0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+@shadow-xl:                         0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+@shadow-2xl:                        0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
 
-@help-color:                  #76a9fa; // The color of the help icon used in Rock.
-@required-field-color:        #f98080; // Color of the small dot that denotes required fields.
-@control-label-weight: 500;
+@shadow-raised:                     @shadow;
+@shadow-overlay:                    @shadow-md;
+@shadow-sticky-nav:                 0 6px 12px 0 rgba(0,0,0,.1);
+@shadow-temporary-nav:              0 8px 16px 0 rgba(0,0,0,.1);
+@shadow-modal:                      @shadow-2xl;
 
-@label-campus-bg: #E4ECFE;
-@label-campus-color: #473B9F;
-@label-type-bg: #567d8c;
 
-@badge-danger-bg:             #FDE8E7;
-@badge-warning-bg:            #FDF6B2;
-@badge-success-bg:            #DEF7EC;
-@badge-info-bg:               #E1EFFE;
-@badge-critical-bg:           #FEECDC;
+@help-color:                        #76a9fa; // The color of the help icon used in Rock.
+@required-field-color:              #f98080; // Color of the small dot that denotes required fields.
+@control-label-weight:              500;
 
-@badge-danger-color:          #9A1D1D;
-@badge-warning-color:         #79451C;
-@badge-success-color:         #04543F;
-@badge-info-color:            #294DA4;
-@badge-critical-color:        #974225;
+@label-campus-bg:                   #E4ECFE;
+@label-campus-color:                #473B9F;
+@label-type-bg:                     #567d8c;
+
+@badge-danger-bg:                   #FDE8E7;
+@badge-warning-bg:                  #FDF6B2;
+@badge-success-bg:                  #DEF7EC;
+@badge-info-bg:                     #E1EFFE;
+@badge-critical-bg:                 #FEECDC;
+
+@badge-danger-color:                #9A1D1D;
+@badge-warning-color:               #79451C;
+@badge-success-color:               #04543F;
+@badge-info-color:                  #294DA4;
+@badge-critical-color:              #974225;
 
 
 // Buttons
@@ -520,10 +536,7 @@
 
 @pagetitle-background: @white;
 
-// Side Navigation *show in editor*
-@side-navigation-background-color:      #3d3d3d;            // This is the background color for the right-hand menu. #color
-@side-navigation-open-background-color: #484848;            // #color
-@side-navigation-text-color:            @gray-100;            // #color
+
 
 // Side Navigation Conversions
 @side-navigation-width:       194px;

@@ -5,8 +5,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:rockWpfControls="clr-namespace:Rock.Wpf.Controls;assembly=Rock.Wpf"
-    Width="480"
-    Height="560"
+    Width="550"
+    Height="600"
     AllowsTransparency="True"
     Background="Transparent"
     FontSize="14"
@@ -124,18 +124,20 @@
                     Margin="4,10,0,0"
                     Content="Include International Addresses"
                     Style="{StaticResource checkboxStyle}" />
+
+                <CheckBox
+                    x:Name="cbDoNotIncludeIncompleteAddresses"
+                    Margin="4,10,0,0"
+                    Content="Do not include incomplete addresses (address line and zip code required)"
+                    Style="{StaticResource checkboxStyle}" />
+
                 <CheckBox
                     x:Name="cbDoNotIncludeStatementsForThoseWhoHaveOptedOut"
                     Margin="4,10,0,0"
-                    Content="Do not included statements for those who have opted out."
+                    Content="Do not include statements for families with an individual who has opted out"
                     Style="{StaticResource checkboxStyle}" />
 
             </StackPanel>
-
-
-
-
-
 
             <StackPanel
                 Grid.Row="2"

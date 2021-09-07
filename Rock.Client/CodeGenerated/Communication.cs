@@ -153,6 +153,9 @@ namespace Rock.Client
         public string Subject { get; set; }
 
         /// <summary />
+        public int? SystemCommunicationId { get; set; }
+
+        /// <summary />
         public string UrlReferrer { get; set; }
 
         /// <summary>
@@ -225,6 +228,7 @@ namespace Rock.Client
             this.SMSMessage = source.SMSMessage;
             this.Status = source.Status;
             this.Subject = source.Subject;
+            this.SystemCommunicationId = source.SystemCommunicationId;
             this.UrlReferrer = source.UrlReferrer;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -270,6 +274,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue SMSFromDefinedValue { get; set; }
+
+        /// <summary />
+        public SystemCommunication SystemCommunication { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

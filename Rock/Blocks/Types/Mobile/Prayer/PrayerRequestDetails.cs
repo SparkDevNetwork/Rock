@@ -608,7 +608,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
             // Allow editing primary fields if this is a new request or
             // if they have Edit access to the block.
-            var allowFullEditing = request.Id == 0 || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var allowFullEditing = request == null || request.Id == 0 || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             if ( allowFullEditing )
             {

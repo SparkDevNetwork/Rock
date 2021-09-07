@@ -297,11 +297,23 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum FinancialScheduledTransactionStatus
+    {
+        Active = 0x0,
+        Completed = 0x1,
+        Paused = 0x2,
+        Canceled = 0x3,
+        Failed = 0x4,
+        PastDue = 0x5,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum FinancialStatementIndividualSaveOptionsSaveFor
     {
-        AllActiveAdults = 0x0,
+        AllActiveAdultsInGivingGroup = 0x0,
         PrimaryGiver = 0x1,
-        AllActiveFamilyMembers = 0x2,
+        AllActiveFamilyMembersInGivingGroup = 0x2,
     }
 
     /// <summary>
@@ -435,6 +447,11 @@ namespace Rock.Client.Enums
         Merge = 0x9,
         AddedToGroup = 0xa,
         RemovedFromGroup = 0xb,
+        ConnectionRequestAdded = 0xc,
+        ConnectionRequestConnected = 0xd,
+        ConnectionRequestStatusModify = 0xe,
+        ConnectionRequestStateModify = 0xf,
+        ConnectionRequestDelete = 0x10,
     }
 
     /// <summary>
@@ -829,6 +846,14 @@ namespace Rock.Client.Enums
         Signed = 0x2,
         Cancelled = 0x3,
         Expired = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SignatureType
+    {
+        Drawn = 0x0,
+        Typed = 0x1,
     }
 
     /// <summary>

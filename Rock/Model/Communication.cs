@@ -423,6 +423,16 @@ namespace Rock.Model
         [DataMember]
         public bool ExcludeDuplicateRecipientAddress { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="SystemCommunication"/> that this communication is associated with.
+        /// </summary>
+        /// <value>
+        /// The system communication.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        public int? SystemCommunicationId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -555,6 +565,11 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate SendSourceDate { get; set; }
+
+        /// <inheritdoc cref="SystemCommunicationId"/>
+        [DataMember]
+        public virtual SystemCommunication SystemCommunication { get; set;  }
+
         #endregion
 
         #region ISecured
@@ -568,7 +583,17 @@ namespace Rock.Model
         {
             get
             {
-                return this.CommunicationTemplate ?? base.ParentAuthority;
+                if ( this.CommunicationTemplate != null )
+                {
+                    return this.CommunicationTemplate;
+                }
+
+                if ( this.SystemCommunication != null )
+                {
+                    return this.SystemCommunication;
+                }
+
+                return base.ParentAuthority;
             }
         }
 
@@ -1043,6 +1068,9 @@ namespace Rock.Model
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             this.HasOptional( r => r.SendSourceDate ).WithMany().HasForeignKey( r => r.SendDateKey ).WillCascadeOnDelete( false );
+
+            // the Migration will manually add a ON DELETE SET NULL for SystemCommunicationId
+            this.HasOptional( r => r.SystemCommunication ).WithMany().HasForeignKey( r => r.SystemCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 

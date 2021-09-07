@@ -52,6 +52,10 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.EnabledLavaCommands )]
+    [BooleanField( "Enable Quick Return",
+        Description = "When enabled, viewing the block will cause it to be added to the Quick Return list in the bookmarks feature.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.EnableQuickReturn )]
 
     // Custom Settings
     [CodeEditorField( "Query",
@@ -138,6 +142,12 @@ namespace RockWeb.Blocks.Reporting
         Category = "CustomSetting",
         Key = AttributeKey.ShowMergeTemplate )]
 
+    [BooleanField( "Show Launch Workflow",
+        Description = "Show Launch Workflow button in grid footer?",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.ShowLaunchWorkflow )]
+
     [IntegerField( "Timeout",
         Description = "The amount of time in seconds to allow the query to run before timing out.",
         IsRequired = false,
@@ -199,6 +209,7 @@ namespace RockWeb.Blocks.Reporting
         Description = "The CSS Class to use in the panel title.",
         Category = "CustomSetting",
         Key = AttributeKey.PanelTitleCssClass )]
+
     #endregion
     public partial class DynamicData : RockBlockCustomSettings
     {
@@ -234,6 +245,8 @@ namespace RockWeb.Blocks.Reporting
             public const string WrapInPanel = "WrapInPanel";
             public const string PanelTitle = "PanelTitle";
             public const string PanelTitleCssClass = "PanelTitleCssClass";
+            public const string ShowLaunchWorkflow = "ShowLaunchWorkflow";
+            public const string EnableQuickReturn = "EnableQuickReturn";
         }
 
         #endregion Keys
@@ -409,6 +422,7 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( AttributeKey.ShowBulkUpdate, ( cbPersonReport.Checked && cbShowBulkUpdate.Checked ).ToString() );
             SetAttributeValue( AttributeKey.ShowExcelExport, cbShowExcelExport.Checked.ToString() );
             SetAttributeValue( AttributeKey.ShowMergeTemplate, cbShowMergeTemplate.Checked.ToString() );
+            SetAttributeValue( AttributeKey.ShowLaunchWorkflow, ( cbPersonReport.Checked && cbShowLaunchWorkflow.Checked ).ToString() );
             SetAttributeValue( AttributeKey.ShowGridFilter, cbShowGridFilter.Checked.ToString() );
             SetAttributeValue( AttributeKey.MergeFields, tbMergeFields.Text );
             SetAttributeValue( AttributeKey.EncryptedFields, tbEncryptedFields.Text );
@@ -458,7 +472,7 @@ namespace RockWeb.Blocks.Reporting
                 int i = 0;
                 foreach ( Control div in phContent.Controls )
                 {
-                    foreach ( var grid in div.Controls.OfType<Grid>() )
+                    foreach ( var grid in div.ControlsOfTypeRecursive<Grid>() )
                     {
                         if ( ds.Tables.Count > i )
                         {
@@ -577,6 +591,7 @@ namespace RockWeb.Blocks.Reporting
             cbShowBulkUpdate.Checked = GetAttributeValue( AttributeKey.ShowBulkUpdate ).AsBoolean();
             cbShowExcelExport.Checked = GetAttributeValue( AttributeKey.ShowExcelExport ).AsBoolean();
             cbShowMergeTemplate.Checked = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
+            cbShowLaunchWorkflow.Checked = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
             cbShowGridFilter.Checked = GetAttributeValue( AttributeKey.ShowGridFilter ).AsBoolean();
             tbMergeFields.Text = GetAttributeValue( AttributeKey.MergeFields );
             tbEncryptedFields.Text = GetAttributeValue( AttributeKey.EncryptedFields );
@@ -684,6 +699,14 @@ namespace RockWeb.Blocks.Reporting
                         RockPage.Header.Title = title;
                     }
 
+                    if ( GetAttributeValue( AttributeKey.EnableQuickReturn ).AsBoolean() && setData && RockPage.PageTitle.IsNotNullOrWhiteSpace() )
+                    {
+                        string quickReturnLava = "{{ Title | AddQuickReturn:'Dynamic Data', 80 }}";
+                        var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                        quickReturnMergeFields.Add( "Title", RockPage.PageTitle );
+                        quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+                    }
+
                     if ( string.IsNullOrWhiteSpace( formattedOutput ) )
                     {
                         bool personReport = GetAttributeValue( AttributeKey.PersonReport ).AsBoolean();
@@ -736,7 +759,7 @@ namespace RockWeb.Blocks.Reporting
                                 hPanelTitle.Controls.Add( iPanelHeaderIcon );
                                 hPanelTitle.Controls.Add( spanPanelHeaderText );
                             }
-                            
+
 
                             divPanelBody = new HtmlGenericControl( "div" );
                             divPanelBody.AddCssClass( "panel-body" );
@@ -786,6 +809,7 @@ namespace RockWeb.Blocks.Reporting
                             grid.Actions.ShowBulkUpdate = GetAttributeValue( AttributeKey.ShowBulkUpdate ).AsBoolean();
                             grid.Actions.ShowExcelExport = GetAttributeValue( AttributeKey.ShowExcelExport ).AsBoolean();
                             grid.Actions.ShowMergeTemplate = GetAttributeValue( AttributeKey.ShowMergeTemplate ).AsBoolean();
+                            grid.ShowWorkflowOrCustomActionButtons = GetAttributeValue( AttributeKey.ShowLaunchWorkflow ).AsBoolean();
 
                             grid.GridRebind += gReport_GridRebind;
                             grid.RowSelected += gReport_RowSelected;

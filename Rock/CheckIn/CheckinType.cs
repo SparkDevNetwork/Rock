@@ -239,6 +239,15 @@ namespace Rock.CheckIn
         public bool PreventInactivePeople => GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false );
 
         /// <summary>
+        /// Gets a value indicating the ability level determination if the AbilityLevelSelect checking block should be skipped or not.
+        /// 0 = (Ask) show the ability level, 1 = (Don't Ask) Do not show the ability level
+        /// </summary>
+        /// <value>
+        /// The ability level determination.
+        /// </value>
+        public AbilityLevelDeterminationOptions AbilityLevelDetermination => ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+
+        /// <summary>
         /// Gets a value indicating whether [display location count].
         /// </summary>
         /// <value>
@@ -742,5 +751,21 @@ namespace Rock.CheckIn
         /// The contains
         /// </summary>
         Contains = 1
+    }
+
+    /// <summary>
+    /// Available options to determine how check-in should gather the individuals current ability level.
+    /// </summary>
+    public enum AbilityLevelDeterminationOptions
+    {
+        /// <summary>
+        /// The individual will be asked as a part of each check-in
+        /// </summary>
+        Ask = 0,
+
+        /// <summary>
+        /// Trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
+        /// </summary>
+        DoNotAsk = 1
     }
 }

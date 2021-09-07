@@ -559,6 +559,10 @@ namespace RockWeb.Blocks.Finance
                 registationListForInstance = registationListForInstance.Where( a => a.BalanceDue > 0 );
             }
 
+            /*
+             * 2021-05-20 ETD
+             * Run the query now to prevent EF from hitting the DB every interation to get the includes.
+            */
             var registationListForInstanceFiltered = registationListForInstance.ToList();
 
             foreach ( var ddlRegistration in phTableRows.ControlsOfTypeRecursive<RockDropDownList>().Where( a => a.ID.StartsWith( "ddlRegistration_" ) ) )
