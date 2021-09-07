@@ -364,8 +364,9 @@ dl:not(.dl-horizontal) {
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     height: @input-height-base;
-    margin: -(@padding-base-vertical + 1) -(@padding-base-horizontal + 1);
+    margin: -(@input-padding-y + 1) -(@input-padding-x + 1);
     border-radius: @input-border-radius;
 
     &:focus {
