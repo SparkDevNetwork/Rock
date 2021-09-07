@@ -182,6 +182,11 @@ namespace Rock.Lava
             WebsiteLavaTemplateCache.Remove( key );
         }
 
+        void ILavaTemplateCacheService.RemoveKey( string key )
+        {
+            WebsiteLavaTemplateCache.Remove( key );
+        }
+
         ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
         {
             if ( string.IsNullOrWhiteSpace( cacheKey ) )
