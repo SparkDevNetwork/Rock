@@ -81,6 +81,7 @@
                                     <asp:LinkButton ID="lbCancel" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="lbCancel_Click" CausesValidation="false" AccessKey="c" ToolTip="Alt+c" />
                                     <div class="pull-right">
                                         <asp:LinkButton ID="lbDeploy" runat="server" CssClass="btn btn-default" OnClick="lbDeploy_Click" OnClientClick="Rock.dialogs.confirmPreventOnCancel( event, 'Are you sure you wish to replace the current package and deploy a new one?');"><i class="fa fa-upload"></i> Deploy</asp:LinkButton>
+                                        <asp:LinkButton ID="lbExport" runat="server" CssClass="btn btn-default" OnClick="lbExport_Click"><i class="fa fa-export"></i> Export</asp:LinkButton>
                                     </div>
                                 </div>
 

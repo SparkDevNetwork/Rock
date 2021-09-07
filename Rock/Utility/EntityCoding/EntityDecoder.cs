@@ -388,12 +388,25 @@ namespace Rock.Utility.EntityCoding
                     var list = ( List<object> ) keyValuePair.Value;
                     for ( int i = 0; i < list.Count; i++ )
                     {
-                        var expando = list[i];
-                        expando = ReplaceGuidInExpandoObject( ( ExpandoObject ) expando );
-                        list[i] = expando;
+                        var listItem = list[i];
+
+                        if ( listItem is ExpandoObject listExpando )
+                        {
+                            listItem = ReplaceGuidInExpandoObject( listExpando );
+                        }
+                        else if ( listItem is string listString )
+                        {
+                            var guid = listString.AsGuidOrNull();
+                            if ( guid != null )
+                            {
+                                listItem = FindMappedGuid( guid.Value ).ToString();
+                            }
+                        }
+
+                        list[i] = listItem;
                     }
                 }
-                else
+                else if ( keyValuePair.Value != null )
                 {
                     var guid = keyValuePair.Value.ToString().AsGuidOrNull();
                     if ( guid != null )

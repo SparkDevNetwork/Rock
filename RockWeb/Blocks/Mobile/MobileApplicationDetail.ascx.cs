@@ -34,6 +34,7 @@ using Rock.DownhillCss;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility.EntityCoding;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -1097,6 +1098,385 @@ namespace RockWeb.Blocks.Mobile
                 rockContext.SaveChanges();
 
                 ShowDetail( applicationId );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbExport_Click( object sender, EventArgs e )
+        {
+            var applicationId = PageParameter( "SiteId" ).AsInteger();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var coder = new EntityCoder( rockContext );
+
+                var site = new SiteService( rockContext ).Get( applicationId );
+                var layouts = new LayoutService( rockContext ).Queryable()
+                    .Where( l => l.SiteId == site.Id )
+                    .ToList();
+                var pages = new PageService( rockContext ).Queryable()
+                    .Where( p => p.Layout.SiteId == site.Id )
+                    .ToList();
+
+                coder.EnqueueEntity( site, new MobileAppExporter() );
+
+                foreach ( var layout in layouts )
+                {
+                    coder.EnqueueEntity( layout, new MobileAppLayoutExporter() );
+                }
+
+                foreach ( var page in pages )
+                {
+                    coder.EnqueueEntity( page, new MobileAppPageExporter() );
+                }
+
+
+                var container = coder.GetExportedEntities();
+
+                List<string> messages;
+                var decoder = new EntityDecoder( rockContext );
+                var success = decoder.Import( container, true, out messages );
+             }
+        }
+
+        /// <summary>
+        /// Defines the rules for exporting a mobile application (site) out of Rock.
+        /// </summary>
+        /// <seealso cref="Rock.Utility.EntityCoding.IExporter" />
+        public class MobileAppExporter : IExporter
+        {
+            /// <summary>
+            /// Determines if the entity at the given path requires a new Guid value when it's imported
+            /// onto the target system. On import, if an entity of that type and Guid already exists then
+            /// it is not imported and a reference to the existing entity is used instead.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path requires a new Guid value; otherwise, <c>false</c>
+            /// </returns>
+            public bool DoesPathNeedNewGuid( EntityPath path )
+            {
+                System.Diagnostics.Debug.WriteLine( string.Format( "Site DoesPathNeedNewGuid({0})", path.ToString() ) );
+
+                return path == "" || path == "AttributeValues";
+            }
+
+            /// <summary>
+            /// Gets any custom references for the entity at the given path.
+            /// </summary>
+            /// <param name="parentEntity">The entity that will later be encoded.</param>
+            /// <param name="path">The path to the parent entity.</param>
+            /// <returns>
+            /// A collection of references that should be applied to the encoded entity.
+            /// </returns>
+            public ICollection<Reference> GetUserReferencesForPath( IEntity parentEntity, EntityPath path )
+            {
+                return null;
+            }
+
+            /// <summary>
+            /// Determines whether the path to an entity should be considered critical. A critical
+            /// entity is one that MUST exist on the target system in order for the export/import to
+            /// succeed, as such a critical entity is always included.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path is critical; otherwise, <c>false</c>.
+            /// </returns>
+            public bool IsPathCritical( EntityPath path )
+            {
+                return DoesPathNeedNewGuid( path );
+            }
+
+            /// <summary>
+            /// Determines if the property at the given path should be followed to it's referenced entity.
+            /// This is called for both referenced entities and child entities.
+            /// </summary>
+            /// <param name="path">The path.</param>
+            /// <returns></returns>
+            public bool ShouldFollowPathProperty( EntityPath path )
+            {
+                if ( path.Count == 1 && path[0].PropertyName.EndsWith( "BinaryFileId" ) )
+                {
+                    return false;
+                }
+
+                if ( path.Count == 1 && path[0].PropertyName.EndsWith( "PageRouteId" ) )
+                {
+                    return false;
+                }
+
+                if ( path.Count == 1 && path[0].PropertyName.EndsWith( "PageId" ) )
+                {
+                    return false;
+                }
+
+                if ( path == "Layouts" || path == "Blocks" || path == "SiteDomains" )
+                {
+                    return false;
+                }
+
+                System.Diagnostics.Debug.WriteLine( string.Format( "ShouldFollowPathProperty({0})", path.ToString() ) );
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Defines the rules for exporting a mobile layouts out of Rock.
+        /// </summary>
+        /// <seealso cref="Rock.Utility.EntityCoding.IExporter" />
+        public class MobileAppLayoutExporter : IExporter
+        {
+            /// <summary>
+            /// Determines if the entity at the given path requires a new Guid value when it's imported
+            /// onto the target system. On import, if an entity of that type and Guid already exists then
+            /// it is not imported and a reference to the existing entity is used instead.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path requires a new Guid value; otherwise, <c>false</c>
+            /// </returns>
+            public bool DoesPathNeedNewGuid( EntityPath path )
+            {
+                System.Diagnostics.Debug.WriteLine( string.Format( "Layout DoesPathNeedNewGuid({0})", path.ToString() ) );
+
+                if ( path.Count == 0 )
+                {
+                    return true;
+                }
+
+                if ( path == "AttributeValues" )
+                {
+                    return true;
+                }
+
+                if ( path.Count >= 1 )
+                {
+                    var last = path.Last();
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// Gets any custom references for the entity at the given path.
+            /// </summary>
+            /// <param name="parentEntity">The entity that will later be encoded.</param>
+            /// <param name="path">The path to the parent entity.</param>
+            /// <returns>
+            /// A collection of references that should be applied to the encoded entity.
+            /// </returns>
+            public ICollection<Reference> GetUserReferencesForPath( IEntity parentEntity, EntityPath path )
+            {
+                return null;
+            }
+
+            /// <summary>
+            /// Determines whether the path to an entity should be considered critical. A critical
+            /// entity is one that MUST exist on the target system in order for the export/import to
+            /// succeed, as such a critical entity is always included.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path is critical; otherwise, <c>false</c>.
+            /// </returns>
+            public bool IsPathCritical( EntityPath path )
+            {
+                return DoesPathNeedNewGuid( path );
+            }
+
+            /// <summary>
+            /// Determines if the property at the given path should be followed to it's referenced entity.
+            /// This is called for both referenced entities and child entities.
+            /// </summary>
+            /// <param name="path">The path.</param>
+            /// <returns></returns>
+            public bool ShouldFollowPathProperty( EntityPath path )
+            {
+                // If this is a child page, include a reference to the parent page.
+                //if ( path.Count >= 1 && path[path.Count - 1].Entity is Page && path[path.Count - 1].PropertyName == "ParentPageId" )
+                //{
+                //    return true;
+                //}
+
+                //// If this is a page, include a reference to the blocks.
+                //if ( path.Count >= 1 && path[path.Count - 1].Entity is Page && path[path.Count - 1].PropertyName == "Blocks" )
+                //{
+                //    return true;
+                //}
+
+                //if ( path.Count >= 2 && path[path.Count - 1].Entity is Block && path[path.Count - 1].PropertyName == "BlockTypeId" )
+                //{
+                //    return true;
+                //}
+
+                // Follow the site since we need that.
+                if ( path == "SiteId" )
+                {
+                    return true;
+                }
+
+                // Follow the site, it won't be added but we need the reference.
+                //if ( path.ToString().EndsWith( "LayoutId.SiteId" ) )
+                //{
+                //    return true;
+                //}
+
+                //// Do not traverse to the parent page on a root page export.
+                //if ( path == "ParentPageId" )
+                //{
+                //    return false;
+                //}
+
+                System.Diagnostics.Debug.WriteLine( string.Format( "Layout ShouldFollowPathProperty({0})", path.ToString() ) );
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Defines the rules for exporting a mobile pages out of Rock.
+        /// </summary>
+        /// <seealso cref="Rock.Utility.EntityCoding.IExporter" />
+        public class MobileAppPageExporter : IExporter
+        {
+            /// <summary>
+            /// Determines if the entity at the given path requires a new Guid value when it's imported
+            /// onto the target system. On import, if an entity of that type and Guid already exists then
+            /// it is not imported and a reference to the existing entity is used instead.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path requires a new Guid value; otherwise, <c>false</c>
+            /// </returns>
+            public bool DoesPathNeedNewGuid( EntityPath path )
+            {
+                System.Diagnostics.Debug.WriteLine( string.Format( "Page DoesPathNeedNewGuid({0})", path.ToString() ) );
+
+                if ( path.Count == 0 )
+                {
+                    return true;
+                }
+
+                if ( path.Count >= 1 )
+                {
+                    var last = path.Last();
+
+                    if ( last.Entity is Page && last.PropertyName == "Pages" )
+                    {
+                        return true;
+                    }
+                    else if ( last.Entity is Page && last.PropertyName == "Blocks" )
+                    {
+                        return true;
+                    }
+                    else if ( last.PropertyName == "AttributeValues" )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// Gets any custom references for the entity at the given path.
+            /// </summary>
+            /// <param name="parentEntity">The entity that will later be encoded.</param>
+            /// <param name="path">The path to the parent entity.</param>
+            /// <returns>
+            /// A collection of references that should be applied to the encoded entity.
+            /// </returns>
+            public ICollection<Reference> GetUserReferencesForPath( IEntity parentEntity, EntityPath path )
+            {
+                return null;
+            }
+
+            /// <summary>
+            /// Determines whether the path to an entity should be considered critical. A critical
+            /// entity is one that MUST exist on the target system in order for the export/import to
+            /// succeed, as such a critical entity is always included.
+            /// </summary>
+            /// <param name="path">The path to the queued entity object that is being checked.</param>
+            /// <returns>
+            ///   <c>true</c> if the path is critical; otherwise, <c>false</c>.
+            /// </returns>
+            public bool IsPathCritical( EntityPath path )
+            {
+                return DoesPathNeedNewGuid( path );
+            }
+
+            /// <summary>
+            /// Determines if the property at the given path should be followed to it's referenced entity.
+            /// This is called for both referenced entities and child entities.
+            /// </summary>
+            /// <param name="path">The path.</param>
+            /// <returns></returns>
+            public bool ShouldFollowPathProperty( EntityPath path )
+            {
+                var pathStr = path.ToString();
+
+                // Don't descend past the site since it has already been queued.
+                if ( path.Count >= 2 && path[path.Count - 2].Entity is Page && path[path.Count - 2].PropertyName == nameof( Rock.Model.Page.SiteId ) )
+                {
+                    return false;
+                }
+
+                if ( path.Count >= 2 && path[path.Count - 2].Entity is Layout && path[path.Count - 2].PropertyName == nameof( Layout.SiteId ) )
+                {
+                    return false;
+                }
+
+                // Don't include the icon binary file id.
+                if ( path.Count >= 1 && path[path.Count - 1].Entity is Page && path[path.Count - 1].PropertyName == nameof( Rock.Model.Page.IconBinaryFileId ) )
+                {
+                    return false;
+                }
+
+
+                // If this is a child page, include a reference to the parent page.
+                //if ( path.Count >= 1 && path[path.Count - 1].Entity is Page && path[path.Count - 1].PropertyName == "ParentPageId" )
+                //{
+                //    return true;
+                //}
+
+                //// If this is a page, include a reference to the blocks.
+                //if ( path.Count >= 1 && path[path.Count - 1].Entity is Page && path[path.Count - 1].PropertyName == "Blocks" )
+                //{
+                //    return true;
+                //}
+
+                //if ( path.Count >= 2 && path[path.Count - 1].Entity is Block && path[path.Count - 1].PropertyName == "BlockTypeId" )
+                //{
+                //    return true;
+                //}
+
+                //// Follow the layout since we need that.
+                //if ( path == "LayoutId" )
+                //{
+                //    return true;
+                //}
+
+                //// Follow the site, it won't be added but we need the reference.
+                //if ( path.ToString().EndsWith( "LayoutId.SiteId" ) )
+                //{
+                //    return true;
+                //}
+
+                //// Attribute values need to know their attributes.
+                //if ( path.ToString().EndsWith( "AttributeValues.AttributeId" ) )
+                //{
+                //    return true;
+                //}
+
+                System.Diagnostics.Debug.WriteLine( string.Format( "Page ShouldFollowPathProperty({0})", path.ToString() ) );
+
+                return true;
             }
         }
 
