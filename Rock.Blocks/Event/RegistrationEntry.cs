@@ -2661,7 +2661,7 @@ namespace Rock.Blocks.Event
                 {
                     foreach ( var workflowTypeId in settings.WorkflowTypeIds )
                     {
-                        newRegistration.LaunchWorkflow( workflowTypeId, newRegistration.ToString() );
+                        newRegistration.LaunchWorkflow( workflowTypeId, newRegistration.ToString(), null, null );
                     }
                 }
             }

@@ -515,7 +515,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues );
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
             }
             else
             {
@@ -548,7 +548,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues );
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
             }
             else
             {
