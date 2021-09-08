@@ -18,6 +18,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Lava.RockLiquid;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -28,6 +29,19 @@ namespace Rock.Tests.UnitTests.Lava
     [TestClass]
     public class LiquidOperatorTests : LavaUnitTestBase
     {
+        [ClassInitialize]
+        public static void Initialize( TestContext context )
+        {
+            LavaTestHelper.SetRockDateTimeToAlternateTimezone();
+        }
+
+        [ClassCleanup]
+        public static void Cleanup()
+        {
+            // Reset the timezone to avoid problems with other tests.
+            LavaTestHelper.SetRockDateTimeToLocalTimezone();
+        }
+
         #region Operators: <
 
         /// <summary>

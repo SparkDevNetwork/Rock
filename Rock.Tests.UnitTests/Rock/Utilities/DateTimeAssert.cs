@@ -60,7 +60,42 @@ namespace Rock.Tests.UnitTests.Lava
 
             if ( totalSecondsDifference > maximumDelta.TotalSeconds )
             {
-                //throw new Xunit.Sdk.EqualException( string.Format( "{0}", expectedDate ), string.Format( "{0}", actualDate ) );
+                throw new Exception( string.Format( "\nExpected Date: {0}\nActual Date: {1}\nExpected Delta: {2}\nActual Delta in seconds: {3}",
+                                                expectedDate,
+                                                actualDate,
+                                                maximumDelta,
+                                                totalSecondsDifference ) );
+            }
+        }
+
+        /// <summary>
+        /// Asserts that the two dates are equal within what ever timespan you deem is sufficient.
+        /// </summary>
+        /// <param name="expectedDate">The expected date.</param>
+        /// <param name="actualDate">The actual date.</param>
+        /// <param name="maximumDelta">The maximum delta.</param>
+        /// <exception cref="Xunit.Sdk.EqualException">Thrown if the two dates are not equal enough.</exception>
+        public static void AreEqual( DateTimeOffset? expectedDate, DateTimeOffset? actualDate, TimeSpan? maximumDelta = null )
+        {
+            if ( expectedDate == null && actualDate == null )
+            {
+                return;
+            }
+            else if ( expectedDate == null )
+            {
+                throw new NullReferenceException( "The expected date was null" );
+            }
+            else if ( actualDate == null )
+            {
+                throw new NullReferenceException( "The actual date was null" );
+            }
+
+            double totalSecondsDifference = Math.Abs( actualDate.Value.Subtract( expectedDate.Value ).TotalSeconds );
+
+            maximumDelta = maximumDelta ?? TimeSpan.FromMilliseconds( 500 );
+
+            if ( totalSecondsDifference > maximumDelta.Value.TotalSeconds )
+            {
                 throw new Exception( string.Format( "\nExpected Date: {0}\nActual Date: {1}\nExpected Delta: {2}\nActual Delta in seconds: {3}",
                                                 expectedDate,
                                                 actualDate,

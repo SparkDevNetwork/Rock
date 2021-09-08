@@ -80,16 +80,18 @@
                     <div class="panel-body">
 
                         <fieldset>
-                            <div class="text-right">
-                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+                            <div class="clearfix">
+                                <div class="pull-right ml-1 mb-1">
+                                    <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
 
-                                <Rock:HighlightLabel runat="server" ID="hlRunSince" /><Rock:BootstrapButton CssClass="label btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
+                                    <Rock:HighlightLabel runat="server" ID="hlRunSince" /><Rock:BootstrapButton CssClass="label btn-label" ID="lbResetRunCount" runat="server" OnClick="lbResetRunCount_Click" ToolTip="Reset Counter" ><i class="fa fa-undo"></i></Rock:BootstrapButton>
 
-                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
-                            </div>
+                                    <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                                </div>
 
-                            <div class="description">
-                                <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                                <div class="description">
+                                    <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                                </div>
                             </div>
 
                             <div class="row">

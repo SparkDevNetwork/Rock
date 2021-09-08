@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +24,10 @@ namespace DotLiquid
 			{ "==", (left, right) => EqualVariables(left, right) },
 			{ "!=", (left, right) => !EqualVariables(left, right) },
 			{ "<>", (left, right) => !EqualVariables(left, right) },
-			{ "<", (left, right) => left != null && right != null && Comparer.Default.Compare(left, Convert.ChangeType(right, left.GetType())) == -1 },
-			{ ">", (left, right) => left != null && right != null && Comparer.Default.Compare(left, Convert.ChangeType(right, left.GetType())) == 1 },
-			{ "<=", (left, right) => left != null && right != null && Comparer.Default.Compare(left, Convert.ChangeType(right, left.GetType())) <= 0 },
-			{ ">=", (left, right) => left != null && right != null && Comparer.Default.Compare(left, Convert.ChangeType(right, left.GetType())) >= 0 },
+			{ "<", (left, right) => left != null && right != null && GetCompareResult( left, right ) == -1 },
+			{ ">", (left, right) => left != null && right != null && GetCompareResult( left, right ) == 1 },
+			{ "<=", (left, right) => left != null && right != null && GetCompareResult( left, right ) <= 0 },
+			{ ">=", (left, right) => left != null && right != null && GetCompareResult( left, right ) >= 0 },
 			{ "contains", (left, right) => (left is IList) ? ((IList) left).Contains(right) : ((left is string) ? ((string) left).Contains((string) right) : false) },
             { "startswith", (left, right) => (left is IList) ? EqualVariables(((IList) left).OfType<object>().FirstOrDefault(), right) : ((left is string) ? ((string)left).StartsWith((string) right) : false) },
             { "endswith", (left, right) => (left is IList) ? EqualVariables(((IList) left).OfType<object>().LastOrDefault(), right) : ((left is string) ? ((string)left).EndsWith((string) right) : false) },
@@ -35,9 +35,39 @@ namespace DotLiquid
 			{ "hasValue", (left, right) => (left is IDictionary) ? ((IDictionary) left).OfType<object>().Contains(right) : false }
 		};
 
-		#endregion
+        #endregion
 
-		public string Left { get; set; }
+        /// <summary>
+        /// Returns the result of a comparison between two values, indicating if the left value is less than, greater than or equal to the right value.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        private static int GetCompareResult( object left, object right )
+        {
+            if ( left == null || right == null )
+            {
+                // Return an invalid result.
+                return -2;
+            }
+
+            // Compare DateTimeOffset values by converting to DateTime to ignore differences in offset.
+            if ( right is DateTimeOffset rightDto )
+            {
+                right = rightDto.DateTime;
+            }
+
+            if ( left is DateTimeOffset leftDto )
+            {
+                left = leftDto.DateTime;
+            }
+
+            var compareResult = Comparer.Default.Compare( left, Convert.ChangeType( right, left.GetType() ) );
+
+            return compareResult;
+        }
+
+        public string Left { get; set; }
 		public string Operator { get; set; }
 		public string Right { get; set; }
 
@@ -116,6 +146,24 @@ namespace DotLiquid
                     if ( right is string && left.GetType().IsEnum )
                     {
                         left = left.ToString();
+                    }
+                    // Compare DateTimeOffset values by converting to DateTime to ignore differences in offset.
+                    else if ( right is DateTimeOffset rightDto1 && left is string leftString )
+                    {
+                        if ( DateTimeOffset.TryParse( leftString, out var leftDto1 ) )
+                        {
+                            left = leftDto1.DateTime;
+                            right = rightDto1.DateTime;
+                        }
+                    }
+                    else if ( right is string rightString && left is DateTimeOffset leftDto2 )
+                    {
+                        if ( DateTimeOffset.TryParse( rightString, out var rightDto2 ) )
+                        {
+                            left = leftDto2.DateTime;
+                            right = rightDto2.DateTime;
+
+                        }
                     }
                     else
                     {

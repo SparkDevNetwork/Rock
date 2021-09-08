@@ -1654,7 +1654,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 foreach ( var workflowType in workflowTypes )
                 {
-                    schedule.LaunchWorkflow( workflowType.Guid );
+                    schedule.LaunchWorkflow( workflowType.Guid, string.Empty, null, null );
                 }
             }
         }

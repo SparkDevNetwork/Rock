@@ -1,9 +1,9 @@
 {% if JustCompleted == true  %}
-    <div class="left-icon">
-        {% if AchievementType.ImageBinaryFileId %}
+    {% if AchievementType.ImageBinaryFileId %}
+        <div class="left-icon">
             <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 
     <div class="checkin-details">
         <span class="person-name">{{ Person.FullName }}</span>
@@ -20,12 +20,12 @@
     </div>
 {% else %}
     <div class="celebration-progress">
-        <div class="d-flex">
-            <div class="left-icon">
-                {% if AchievementType.ImageBinaryFileId %}
+        <div class="d-flex align-items-center">
+            {% if AchievementType.ImageBinaryFileId %}
+                <div class="left-icon">
                     <img src="/GetImage.ashx?id={{AchievementType.ImageBinaryFileId}}&width=40" />
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
 
             <div>
                 <span class="celebration-progress-name">{{ AchievementType.Name }}</span>
@@ -46,7 +46,6 @@
                             <path d="M 28.465264,10.0483 20.272257,8.80044 16.610331,1.04358 c -0.656041,-1.382639 -2.557158,-1.400215 -3.218799,0 L 9.729606,8.80044 1.5365986,10.0483 c -1.46929092,0.2227 -2.0581273,2.115 -0.99256132,3.1989 L 6.4714037,19.2816 5.069517,27.8059 c -0.2524155,1.5408 1.3009805,2.695 2.6019608,1.9744 l 7.3294532,-4.0249 7.329454,4.0249 c 1.30098,0.7147 2.854376,-0.4336 2.60196,-1.9744 l -1.401886,-8.5243 5.927466,-6.0344 c 1.065466,-1.0839 0.476629,-2.9762 -0.992661,-3.1989 z m -7.822884,8.249 1.329082,8.1084 -6.970531,-3.8257 -6.9705309,3.8257 1.3290819,-8.1084 -5.6414485,-5.7415 7.7948815,-1.1834 3.488016,-7.38192 3.488016,7.38192 7.794882,1.1834 z"  fill="#d8d8d8"></path>
                         </svg>
                     {% endif %}
-
                 </div>
 
             </div>

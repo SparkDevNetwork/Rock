@@ -504,8 +504,22 @@ namespace Rock.Data
         /// </summary>
         /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
         /// <param name="workflowName">Name of the workflow.</param>
-        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        /// <param name="workflowAttributeValues">The workflow attribute values.</param>
+        [Obsolete( "Use the override that does not provide the default values instead." )]
+        [RockObsolete( "1.13" )]
         public void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        {
+            LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
+        }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        /// <param name="initiatorPersonAliasId">The Initiator Person Alias Identifier.</param>
+        public void LaunchWorkflow( Guid? workflowTypeGuid, string workflowName, Dictionary<string, string> workflowAttributeValues, int? initiatorPersonAliasId )
         {
             if ( workflowTypeGuid.HasValue )
             {
@@ -515,7 +529,8 @@ namespace Rock.Data
                     WorkflowName = workflowName,
                     EntityId = Id,
                     EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues
+                    WorkflowAttributeValues = workflowAttributeValues,
+                    InitiatorPersonAliasId = initiatorPersonAliasId
                 }.Send();
             }
         }
@@ -525,8 +540,22 @@ namespace Rock.Data
         /// </summary>
         /// <param name="workflowTypeId">The workflow type identifier.</param>
         /// <param name="workflowName">Name of the workflow.</param>
-        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        /// <param name="workflowAttributeValues">The workflow attribute values.</param>
+        [Obsolete( "Use the override that does not provide the default values instead." )]
+        [RockObsolete( "1.13" )]
         public void LaunchWorkflow( int? workflowTypeId, string workflowName = "", Dictionary<string, string> workflowAttributeValues = null )
+        {
+            LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
+        }
+
+        /// <summary>
+        /// Creates a transaction to launch a workflow for this entity.
+        /// </summary>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        /// <param name="workflowName">Name of the workflow.</param>
+        /// <param name="workflowAttributeValues">Any workflow attribute values that should be set.</param>
+        /// <param name="initiatorPersonAliasId">The Initiator Person Alias Identifier.</param>
+        public void LaunchWorkflow( int? workflowTypeId, string workflowName, Dictionary<string, string> workflowAttributeValues, int? initiatorPersonAliasId )
         {
             if ( workflowTypeId.HasValue )
             {
@@ -536,7 +565,8 @@ namespace Rock.Data
                     WorkflowName = workflowName,
                     EntityId = Id,
                     EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues
+                    WorkflowAttributeValues = workflowAttributeValues,
+                    InitiatorPersonAliasId = initiatorPersonAliasId
                 }.Send();
             }
         }

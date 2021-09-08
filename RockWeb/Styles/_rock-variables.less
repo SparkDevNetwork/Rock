@@ -200,6 +200,7 @@
 @panel-following-padding:           10px 0 0;
 //--
 @panel-options-margin:              -10px -15px -10px 10px;
+@panel-options-button-padding:      9px 12px 10px;
 @panel-following-active-color:    #fff;
 @panel-following-active-bg:         @panel-top-border-color; // The background color of the following square when it's active at the top of panels that support the following feature (e.g. Group Details block).
 //--
@@ -314,7 +315,9 @@
 
 //// Badge Bar
 @persondetails-badge-bg:                  @theme-5;
+@persondetails-badge-color-light:         @ui-4;
 @persondetails-badge-color:               @theme-5-text;
+@persondetails-badge-color-emphasis:      @ui-5;
 @badge-grid-width:                        86px;
 
 //// Family Bar
@@ -391,6 +394,8 @@
 @smartsearch-input-selection-text-color:  #fff;
 @smartsearch-text-color:                  @header-text-color;
 
+
+// Forms
 @control-label-weight:              @font-weight-bold;
 @input-focus-rgba:                  fade(@input-border-focus, 60%);
 @input-focus-box-shadow:            ~"0 0 0 3px @{input-focus-rgba}";
@@ -408,6 +413,9 @@
 
 //** Small `.form-control` height
 @input-height-xs:                   (floor(@font-size-small * @line-height-small) + (@padding-xs-vertical * 2) + 2);
+
+@description-term-margin-top:             16px;
+@description-term-margin-bottom:          2px;
 
 // Wizard Styles { Used on pages like 'Calendar' and 'Event Registration' to help guide the user through a complex series of screens. }
 @wizard-bg:                               @gray-lighter;

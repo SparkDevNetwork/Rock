@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
@@ -266,7 +267,7 @@ namespace Rock.Model
         private int? _expirationYear = null;
 
         /// <summary>
-        /// Gets the expiration month by decrypting ExpirationMonthEncrypted
+        /// Gets the expiration month
         /// </summary>
         /// <value>
         /// The expiration month.
@@ -290,7 +291,14 @@ namespace Rock.Model
 
                     */
 
-                    return Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull() ?? 01;
+                    _expirationMonth = Encryption.DecryptString( _expirationMonthEncrypted ).AsIntegerOrNull() ?? 01;
+                }
+
+                // check if month is between 1 and 12
+                if ( _expirationMonth.HasValue && ( _expirationMonth < 0 || _expirationMonth > 12 ) )
+                {
+                    // invalid month
+                    return null;
                 }
 
                 return _expirationMonth;
@@ -302,7 +310,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the 4 digit year by decrypting ExpirationYearEncrypted and correcting to a 4 digit year if ExpirationYearEncrypted is just a 2 digit year
+        /// Gets the 4 digit year
         /// </summary>
         /// <value>
         /// The expiration year.
@@ -321,12 +329,11 @@ namespace Rock.Model
                 {
                     /* MDP 07-20-2021
 
-                     If Decryption Fails, just set Month Year to 01/99 (which would mean a 4 digit year of 1999, depending on Calendar.TwoDigitYearMax)
+                     If Decryption Fails, just set Month Year to 01/99 (which would mean a 4 digit year of 1999)
                      This will help prevent endlessly trying to decrypt it 
-
                     */
 
-                    return ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() ) ?? 99;
+                    _expirationYear = ToFourDigitYear( Encryption.DecryptString( _expirationYearEncrypted ).AsIntegerOrNull() ) ?? 1999;
                 }
 
                 return _expirationYear;
@@ -340,13 +347,25 @@ namespace Rock.Model
 
         private int? ToFourDigitYear( int? year )
         {
+            int? fourDigitYear;
             if ( year == null || year >= 100 )
             {
-                return year;
+                fourDigitYear = year;
             }
             else
             {
-                return System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                fourDigitYear = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+            }
+
+            // make sure it is a valid year (between 1753 and 9999)
+            if ( fourDigitYear.HasValue && fourDigitYear >= SqlDateTime.MinValue.Value.Year && fourDigitYear <= SqlDateTime.MaxValue.Value.Year )
+            {
+                return fourDigitYear;
+            }
+            else
+            {
+                // invalid year
+                return null;
             }
         }
 
@@ -366,7 +385,7 @@ namespace Rock.Model
                 int? expYear = ExpirationYear;
                 if ( expMonth.HasValue && expYear.HasValue )
                 {
-                    // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
+                    // ExpirationYear returns 4 digits, but just in case, check if it is 4 digits before just getting the last 2
                     string expireYY = expYear.Value.ToString();
                     if ( expireYY.Length == 4 )
                     {

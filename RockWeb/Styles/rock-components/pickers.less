@@ -82,6 +82,9 @@
   }
 
   .input-group-sm {
+    // Always display 100% width. Override for when displaying picker in .inline-form
+    width: 100%;
+
     > .form-control,
     > .input-group-addon {
       height: (@input-height-xs + 4px);
@@ -184,11 +187,11 @@
 
   .personpicker-search-panel {
     .input-group {
-      margin-bottom: 4px;
+      margin: 0 0 4px;
     }
 
     .input-group-addon {
-      min-width: 85px;
+      width: 85px;
       text-align: left;
     }
   }

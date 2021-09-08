@@ -685,41 +685,6 @@ namespace Rock.Tests.Rock.Lava
 
         #endregion
 
-        #region AsDateTime
-
-        /// <summary>
-        /// For use in Lava -- should not cast the null to an datetime.
-        /// </summary>
-        [TestMethod]
-        public void AsDateTime_Null()
-        {
-            var output = RockFilters.AsDateTime( null );
-            Assert.That.IsNull( output );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should not cast the string to an datetime.
-        /// </summary>
-        [TestMethod]
-        public void AsDateTime_InvalidString()
-        {
-            var output = RockFilters.AsDateTime( "1/1/1 50:00" );
-            Assert.That.IsNull( output );
-        }
-
-        /// <summary>
-        /// For use in Lava -- should cast the string to an datetime.
-        /// </summary>
-        [TestMethod]
-        public void AsDateTime_ValidString()
-        {
-            DateTime dt = new DateTime( 2017, 3, 7, 15, 4, 33 );
-            var output = RockFilters.AsDateTime( dt.ToString() );
-            Assert.That.AreEqual( dt, output );
-        }
-
-        #endregion
-
         /// <summary>
         /// For use in Lava -- should return the IP address of the Client
         /// </summary>
@@ -1095,117 +1060,6 @@ namespace Rock.Tests.Rock.Lava
         #region Date Filters
 
         /// <summary>
-        /// For use in Lava -- adding default days to 'Now' should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddDaysDefaultViaNow()
-        {
-            var output = RockFilters.DateAdd( "Now", 5 );
-            DateTimeAssert.AreEqual( output, RockDateTime.Now.AddDays( 5 ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding days (default) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddDaysDefaultToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1", 3 );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-4" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding days (d parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddDaysIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1", 3, "d" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-4" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding hours (h parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddHoursIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 1, "h" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-1 4:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding minutes (m parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddMinutesIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 120, "m" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-1 5:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding seconds (s parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddSecondsIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 300, "s" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-1 3:05 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding years (y parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddYearsIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 2, "y" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2020-5-1 3:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding years (y parameter) to a given leap-year date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddYearsIntervalToGivenLeapDate()
-        {
-            var output = RockFilters.DateAdd( "2016-2-29 3:00 PM", 1, "y" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2017-2-28 3:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding months (M parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddMonthsIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 1, "M" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-6-1 3:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding months (M parameter) to a given date with more days in the month
-        /// should be equal to the month's last day.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddMonthsIntervalToGivenLongerMonthDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-31 3:00 PM", 1, "M" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-6-30 3:00 PM" ) );
-        }
-
-        /// <summary>
-        /// For use in Lava -- adding weeks (w parameter) to a given date should be equal.
-        /// </summary>
-        [TestMethod]
-        public void DateAdd_AddWeeksIntervalToGivenDate()
-        {
-            var output = RockFilters.DateAdd( "2018-5-1 3:00 PM", 2, "w" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-15 3:00 PM" ) );
-        }
-
-        /// <summary>
         /// Tests the next day of the week using the simplest format.
         /// Uses May 1, 2018 which was a Tuesday.
         /// </summary>
@@ -1321,36 +1175,6 @@ namespace Rock.Tests.Rock.Lava
             // Since Monday has just passed, we get this past Monday, 4/30
             output = RockFilters.NextDayOfTheWeek( "2018-5-1 3:00 PM", "Monday", false, -1 );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-4-30 3:00 PM" ) );
-        }
-
-        /// <summary>
-        /// Tests the To Midnight using a string.
-        /// </summary>
-        [TestMethod]
-        public void ToMidnight_TextString()
-        {
-            var output = RockFilters.ToMidnight( "2018-5-1 3:00 PM" );
-            DateTimeAssert.AreEqual( output, DateTime.Parse( "2018-5-1 12:00 AM" ) );
-        }
-
-        /// <summary>
-        /// Tests the To Midnight using a string of "Now".
-        /// </summary>
-        [TestMethod]
-        public void ToMidnight_Now()
-        {
-            var output = RockFilters.ToMidnight( "Now" );
-            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
-        }
-
-        /// <summary>
-        /// Tests the To Midnight using a datetime.
-        /// </summary>
-        [TestMethod]
-        public void ToMidnight_DateTime()
-        {
-            var output = RockFilters.ToMidnight( RockDateTime.Now );
-            DateTimeAssert.AreEqual( output, RockDateTime.Now.Date );
         }
 
         #endregion

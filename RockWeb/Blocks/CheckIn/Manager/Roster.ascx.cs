@@ -1286,9 +1286,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
             bool anyRoomHasEnablePresence = attendees.Any( a => a.RoomHasEnablePresence );
 
             // StatusFilter.All:
-            var mobileIconField = gAttendees.ColumnsOfType<RockLiteralField>().First( c => c.ID == "lMobileIcon" );
             var serviceTimesField = gAttendees.ColumnsOfType<RockBoundField>().First( c => c.DataField == "ServiceTimes" );
-            var statusTagField = gAttendees.ColumnsOfType<RockLiteralField>().First( c => c.ID == "lStatusTag" );
             var btnCancelField = gAttendees.ColumnsOfType<LinkButtonField>().First( c => c.ID == "btnCancel" );
 
             // StatusFilter.Checked-in:
@@ -1303,9 +1301,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 && anyRoomHasAllowCheckout
                 && rosterStatusFilter == RosterStatusFilter.Present;
 
-            mobileIconField.Visible = rosterStatusFilter == RosterStatusFilter.All;
             serviceTimesField.Visible = true;
-            statusTagField.Visible = rosterStatusFilter == RosterStatusFilter.All;
 
             lElapsedCheckInTimeField.Visible = rosterStatusFilter == RosterStatusFilter.CheckedIn;
 

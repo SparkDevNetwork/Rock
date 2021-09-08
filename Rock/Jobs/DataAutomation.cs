@@ -1142,7 +1142,7 @@ Update Family Status: {updateFamilyStatus}
                                 // Launch all the workflows
                                 foreach ( var wfId in settings.WorkflowTypeIds )
                                 {
-                                    person.LaunchWorkflow( wfId, person.FullName, workflowParameters );
+                                    person.LaunchWorkflow( wfId, person.FullName, workflowParameters, null );
                                 }
                             }
                         }

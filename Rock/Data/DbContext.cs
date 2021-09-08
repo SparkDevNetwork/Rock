@@ -24,12 +24,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
+
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 using Audit = Rock.Model.Audit;
@@ -1173,7 +1175,8 @@ namespace Rock.Data
 
             /// <summary>
             /// Gets or sets the collection of original entity values before the save occurs,
-            /// only valid when the entity-state is Modified.
+            /// only valid when the entity-state is <seealso cref="EntityState.Modified"/>
+            /// or <seealso cref="EntityState.Deleted"/>.
             /// </summary>
             /// <value>
             /// The original entity values.
@@ -1221,7 +1224,7 @@ namespace Rock.Data
                 PreSaveState = dbEntityEntry.State.ToEntityContextState();
                 PreSaveStateLegacy = dbEntityEntry.State;
 
-                if ( dbEntityEntry.State == EntityState.Modified )
+                if ( dbEntityEntry.State == EntityState.Modified || dbEntityEntry.State == EntityState.Deleted )
                 {
                     var originalValues = new Dictionary<string, object>();
                     foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )

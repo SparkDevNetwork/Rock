@@ -826,5 +826,38 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202108031829239_Rollup_0803_LavaDocumentationUpdates", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Documentation]=N&apos;&lt;p&gt;Basic Usage:&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code&gt;{[kpis]}
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-highlighter&apos;&apos; value:&apos;&apos;4&apos;&apos; label:&apos;&apos;Highlighters&apos;&apos; color:&apos;&apos;yellow-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pen-fancy&apos;&apos; value:&apos;&apos;8&apos;&apos; label:&apos;&apos;Pens&apos;&apos; color:&apos;&apos;indigo-700&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///  [&lt;span class=&quot;hljs-string&quot;&gt;[ kpi icon:&apos;&apos;fa-pencil-alt&apos;&apos; value:&apos;&apos;15&apos;&apos; label:&apos;&apos;Pencils&apos;&apos; color:&apos;&apos;green-600&apos;&apos;&lt;/span&gt;]][[ endkpi ]]
+        ///{[endkpis]}
+        ///&lt;/code&gt;&lt;/pre&gt;
+        ///&lt;h [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202108251744427_Rollups_20210825_kpilinkshortcode {
+            get {
+                return ResourceManager.GetString("_202108251744427_Rollups_20210825_kpilinkshortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///-- Update Capitalization on Routes
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/steps/{StepTypeId}/{StepId}&apos; WHERE ([Guid]=&apos;6BA3B394-C827-4548-94AE-CA9AD585CF3A&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/steps&apos; WHERE ([Guid]=&apos;181A8246-0F80-44BE-A448-DADF680E6F73&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/security&apos; WHERE ([Guid]=&apos;3F1A5C3F-53B6-46CA-AA66-6587C8FC56BC&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/persondocs&apos; WHERE ([Guid]=&apos;AF2B7CB5-9CBA-41C4-A2DE-AB84FB5C35 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202109081805229_Rollup_20210908_routemigration {
+            get {
+                return ResourceManager.GetString("_202109081805229_Rollup_20210908_routemigration", resourceCulture);
+            }
+        }
     }
 }

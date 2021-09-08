@@ -487,6 +487,7 @@ namespace Rock.WebStartup
 
                 // NOTE: we need to specify the last migration vs null so it won't detect/complain about pending changes
                 migratorLoggingDecorator.Update( lastMigration );
+                migrationLogger.LogCompletedMigration();
                 return true;
             }
 

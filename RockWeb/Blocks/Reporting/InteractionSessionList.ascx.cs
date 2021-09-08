@@ -44,11 +44,11 @@ namespace RockWeb.Blocks.Reporting
 {% if InteractionChannel != null and InteractionChannel != '' %}
     {% for session in WebSessions %}
         <div class='panel panel-widget pageviewsession'>
-	        <header class='panel-heading clearfix'>
+	        <header class='panel-heading'>
 	        <div class='pull-left'>
 		        <h4 class='panel-title'>
 		            {{ session.PersonAlias.Person.FullName }}
-			        <small>
+			        <small class='d-block d-sm-inline mt-1 mb-2 my-sm-0'>
 			            Started {{ session.StartDateTime }} /
 			            Duration: {{ session.StartDateTime | HumanizeTimeSpan:session.EndDateTime, 1 }}
 			        </small>
@@ -64,12 +64,12 @@ namespace RockWeb.Blocks.Reporting
 			        {% else %}{% assign icon = '' %}
 		        {% endcase %}
 		        {% if icon != '' %}
-    		        <div class='pageviewsession-client pull-right'>
-                        <div class='pull-left margin-r-sm'>
+    		        <div class='pageviewsession-client d-flex align-items-center ml-2 ml-sm-auto'>
+                        <div class='pull-left'>
                             <small>{{ session.InteractionSession.DeviceType.Application }} <br>
                             {{ session.InteractionSession.DeviceType.OperatingSystem }} </small>
                         </div>
-                        <i class='fa {{ icon }} fa-2x pull-right'></i>
+                        <i class='fa {{ icon }} fa-2x pull-left d-none d-sm-block margin-l-sm'></i>
                     </div>
                 {% endif %}
 	        </header>

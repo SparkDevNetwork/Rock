@@ -83,16 +83,15 @@
                         </div>
                         <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                         <div class="panel-body">
-                            <div class="pull-right">
-                                <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
-
-                                <Rock:HighlightLabel runat="server" ID="hlRunSince" />
-
-                                <Rock:HighlightLabel runat="server" ID="hlLastRun" />
-                            </div>
-
-                            <div class="description">
-                                <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
+                            <div class="clearfix">
+                                <div class="pull-right ml-1 mb-1">
+                                    <Rock:HighlightLabel runat="server" ID="hlTimeToRun" />
+                                    <Rock:HighlightLabel runat="server" ID="hlRunSince" />
+                                    <Rock:HighlightLabel runat="server" ID="hlLastRun" />
+                                </div>
+                                <div class="description">
+                                    <asp:Literal ID="lReportDescription" runat="server"></asp:Literal>
+                                </div>
                             </div>
 
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />

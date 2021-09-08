@@ -242,6 +242,22 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum ConnectionWorkflowTriggerType
+    {
+        RequestStarted = 0x0,
+        RequestConnected = 0x1,
+        StatusChanged = 0x2,
+        StateChanged = 0x3,
+        ActivityAdded = 0x4,
+        PlacementGroupAssigned = 0x5,
+        Manual = 0x6,
+        RequestTransferred = 0x7,
+        RequestAssigned = 0x8,
+        FutureFollowupDateReached = 0x9,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ContentChannelDateType
     {
         SingleDate = 0x1,
@@ -452,6 +468,9 @@ namespace Rock.Client.Enums
         ConnectionRequestStatusModify = 0xe,
         ConnectionRequestStateModify = 0xf,
         ConnectionRequestDelete = 0x10,
+        StepAdded = 0x11,
+        StepStatusModify = 0x12,
+        StepCampusModify = 0x13,
     }
 
     /// <summary>

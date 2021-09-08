@@ -25,7 +25,7 @@
                     <%-- Exceptions List --%>
                     <h4>Exception List</h4>
 
-                    <div class="grid margin-t-md">
+                    <div class="grid grid-panel border-top border-panel">
                         <Rock:GridFilter ID="fExceptionList" runat="server">
                             <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
                             <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />

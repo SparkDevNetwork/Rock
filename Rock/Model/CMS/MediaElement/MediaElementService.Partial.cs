@@ -50,7 +50,7 @@ namespace Rock.Model
 
                 if ( mediaElement.MediaFolder.WorkflowTypeId.HasValue )
                 {
-                    mediaElement.LaunchWorkflow( mediaElement.MediaFolder.WorkflowTypeId );
+                    mediaElement.LaunchWorkflow( mediaElement.MediaFolder.WorkflowTypeId, string.Empty, null, null );
                 }
             }
         }
