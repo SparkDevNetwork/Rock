@@ -13,20 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Humanizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +36,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// </summary>
     [DisplayName( "Giving Configuration" )]
     [Category( "CRM > Person Detail" )]
-    [Description( "Block used to view the giving." )]
+    [Description( "Block used to view the scheduled transactions, saved accounts and pledges of a person." )]
 
     [LinkedPage(
         "Add Transaction Page",
@@ -117,7 +116,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnLoad( e );
 
-            var isVisible = ( Person != null && Person.Id != 0 );
+            var isVisible = Person != null && Person.Id != 0;
             pnlContent.Visible = isVisible;
             if ( isVisible )
             {
@@ -139,7 +138,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( AttributeKey.PersonTokenExpireMinutes ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( AttributeKey.PersonTokenUsageLimit ).AsIntegerOrNull(), addTransactionPage.PageId );
                 addTransactionPage.QueryString["Person"] = personKey;
                 Response.Redirect( addTransactionPage.BuildUrl() );
-
             }
         }
 
@@ -162,28 +160,41 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void rptPledges_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var financialPledge = e.Item.DataItem as FinancialPledge;
-            if ( financialPledge != null )
+            if ( financialPledge == null )
             {
-                var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
-                if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
-                {
-                    lPledgeDate.Text = string.Format(
-                        "{0} {1}",
-                        financialPledge.StartDate.ToShortDateString(),
-                        financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
-                }
-                else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
-                {
-                    lPledgeDate.Text = string.Format( "Till {0}", financialPledge.EndDate.ToShortDateString() );
-                }
-                else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
-                {
-                    lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
-                }
-                else
-                {
-                    lPledgeDate.Text = "No Dates Provided";
-                }
+                return;
+            }
+
+            var lPledgeAccountName = e.Item.FindControl( "lPledgeAccountName" ) as Literal;
+            var lPledgeTotalAmount = e.Item.FindControl( "lPledgeTotalAmount" ) as Literal;
+            var btnPledgeEdit = e.Item.FindControl( "btnPledgeEdit" ) as LinkButton;
+            var btnPledgeDelete = e.Item.FindControl( "btnPledgeDelete" ) as LinkButton;
+
+            lPledgeAccountName.Text = financialPledge.Account?.Name;
+            lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
+            btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
+            btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
+
+            /* Show Text for Pledge StartDate, etc */
+            var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
+            if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+            {
+                lPledgeDate.Text = string.Format(
+                    "{0} {1}",
+                    financialPledge.StartDate.ToShortDateString(),
+                    financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
+            }
+            else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
+            {
+                lPledgeDate.Text = string.Format( "Till {0}", financialPledge.EndDate.ToShortDateString() );
+            }
+            else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
+            {
+                lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+            }
+            else
+            {
+                lPledgeDate.Text = "No Dates Provided";
             }
         }
 
@@ -195,64 +206,159 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void rptScheduledTransaction_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var financialScheduledTransaction = e.Item.DataItem as FinancialScheduledTransaction;
-            if ( financialScheduledTransaction != null )
+            if ( financialScheduledTransaction == null )
             {
-                var lAccounts = e.Item.FindControl( "lAccounts" ) as Literal;
-                var lNextPaymentDate = e.Item.FindControl( "lNextPaymentDate" ) as Literal;
+                return;
+            }
 
-                if ( lAccounts != null && lNextPaymentDate != null && financialScheduledTransaction != null )
+            var financialPaymentDetail = financialScheduledTransaction.FinancialPaymentDetail;
+
+            var btnScheduledTransactionEdit = e.Item.FindControl( "btnScheduledTransactionEdit" ) as LinkButton;
+            btnScheduledTransactionEdit.CommandArgument = financialScheduledTransaction.Guid.ToString();
+
+            var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
+            btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
+
+            var btnScheduledTransactionDelete = e.Item.FindControl( "btnScheduledTransactionDelete" ) as LinkButton;
+            btnScheduledTransactionDelete.CommandArgument = financialScheduledTransaction.Guid.ToString();
+
+            if ( financialScheduledTransaction.IsActive )
+            {
+                /* 09-07-2021 MDP
+
+                If the scheduled transaction is active but doesn't currently have any FinancialTransactions,
+                we'll have the confirmation message say "Are you sure you want to delete...'.
+                However, we are really just going to inactivate it regardless of if the Delete or Inactivate button
+                is clicked.
+                 
+                */
+
+                var financialTransactionService = new FinancialTransactionService( new RockContext() );
+                var hasFinancialTransactions = financialTransactionService.Queryable()
+                    .Any( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId.Value == financialScheduledTransaction.Id );
+
+                btnScheduledTransactionDelete.Visible = !hasFinancialTransactions;
+                btnScheduledTransactionInactivate.Visible = hasFinancialTransactions;
+            }
+            else
+            {
+                btnScheduledTransactionEdit.Visible = false;
+                btnScheduledTransactionDelete.Visible = false;
+                btnScheduledTransactionInactivate.Visible = false;
+            }
+
+            var lScheduledTransactionAccountName = e.Item.FindControl( "lScheduledTransactionAccountName" ) as Literal;
+            var lScheduledTransactionFrequencyAndNextPaymentDate = e.Item.FindControl( "lScheduledTransactionFrequencyAndNextPaymentDate" ) as Literal;
+            var lScheduledTransactionTotalAmount = e.Item.FindControl( "lScheduledTransactionTotalAmount" ) as Literal;
+
+            var lScheduledTransactionCardTypeLast4 = e.Item.FindControl( "lScheduledTransactionCardTypeLast4" ) as Literal;
+            var lScheduledTransactionExpiration = e.Item.FindControl( "lScheduledTransactionExpiration" ) as Literal;
+            var lScheduledTransactionSavedAccountName = e.Item.FindControl( "lScheduledTransactionSavedAccountName" ) as Literal;
+
+            string creditCardType = null;
+            string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
+            if ( financialPaymentDetail?.CreditCardTypeValueId != null )
+            {
+                creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
+            }
+
+            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            {
+                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
+            }
+            else
+            {
+                lScheduledTransactionCardTypeLast4.Text = creditCardType;
+            }
+
+            lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
+
+            if ( financialPaymentDetail?.FinancialPersonSavedAccount != null )
+            {
+                lScheduledTransactionSavedAccountName.Text = financialPaymentDetail?.FinancialPersonSavedAccount.Name;
+            }
+
+            var frequencyText = DefinedValueCache.GetValue( financialScheduledTransaction.TransactionFrequencyValueId );
+            var nextPaymentDate = financialScheduledTransaction.NextPaymentDate;
+
+            if ( financialScheduledTransaction.IsActive )
+            {
+                if ( nextPaymentDate.HasValue )
                 {
-                    lNextPaymentDate.Text = financialScheduledTransaction.NextPaymentDate.ToShortDateString();
-
-                    var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                    var summary = financialScheduledTransaction.ScheduledTransactionDetails
-                        .Select( d => new
-                        {
-                            IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
-                            Order = d.Account.Order,
-                            Name = d.Account.Name,
-                        } )
-                        .OrderBy( d => d.IsOther )
-                        .ThenBy( d => d.Order )
-                        .Select( d => string.Format( "{0}",
-                            !d.IsOther ? d.Name : "Other" ) )
-                        .ToList();
-
-                    if ( summary.Any() )
-                    {
-                        lAccounts.Text = summary.AsDelimited( ", " );
-                    }
+                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}: : Next Gift {nextPaymentDate.ToShortDateString()}";
                 }
+                else
+                {
+                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}";
+                }
+            }
+            else
+            {
+                var trScheduledTransaction = e.Item.FindControl( "trScheduledTransaction" ) as System.Web.UI.HtmlControls.HtmlControl;
+                if ( trScheduledTransaction != null )
+                {
+                    trScheduledTransaction.AddCssClass( "is-inactive" );
+                }
+
+                lScheduledTransactionFrequencyAndNextPaymentDate.Text = "Inactive";
+            }
+
+            if ( lScheduledTransactionAccountName != null )
+            {
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+                var summary = financialScheduledTransaction.ScheduledTransactionDetails
+                    .Select( d => new
+                    {
+                        IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
+                        Order = d.Account.Order,
+                        Name = d.Account.Name,
+                    } )
+                    .OrderBy( d => d.IsOther )
+                    .ThenBy( d => d.Order )
+                    .Select( d => string.Format( "{0}", !d.IsOther ? d.Name : "Other" ) )
+                    .ToList();
+
+                if ( summary.Any() )
+                {
+                    lScheduledTransactionAccountName.Text = summary.AsDelimited( ", " );
+                }
+            }
+
+            if ( lScheduledTransactionTotalAmount != null )
+            {
+                lScheduledTransactionTotalAmount.Text = financialScheduledTransaction.TotalAmount.FormatAsCurrency();
             }
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rStatements control.
+        /// Handles the ItemDataBound event of the rptContributionStatementsYYYY control.
         /// </summary>
         /// <param name="Sender"></param>
         /// <param name="e"></param>
-        protected void rStatements_ItemDataBound( Object Sender, RepeaterItemEventArgs e )
+        protected void rptContributionStatementsYYYY_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var year = e.Item.DataItem as int?;
-            var lbYear = e.Item.FindControl( "lbYear" ) as LinkButton;
+            var btnContributionStatementYYYY = e.Item.FindControl( "btnContributionStatementYYYY" ) as LinkButton;
 
-            if ( year.HasValue && lbYear != null )
+            if ( year.HasValue && btnContributionStatementYYYY != null )
             {
                 string yearStr = year.ToStringSafe();
                 if ( year == RockDateTime.Now.Year )
                 {
                     yearStr = yearStr + " <small>YTD</small>";
                 }
-                lbYear.Text = yearStr;
+
+                btnContributionStatementYYYY.Text = yearStr;
             }
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the rStatements control.
+        /// Handles the ItemCommand event of the rptContributionStatementsYYYY control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rStatements_ItemCommand( object sender, RepeaterCommandEventArgs e )
+        protected void rptContributionStatementsYYYY_ItemCommand( object sender, RepeaterCommandEventArgs e )
         {
             if ( e.CommandName == "Select" )
             {
@@ -292,6 +398,71 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ShowDetail();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSavedAccounts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSavedAccounts_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var financialPersonSavedAccount = e.Item.DataItem as FinancialPersonSavedAccount;
+            if ( financialPersonSavedAccount == null )
+            {
+                return;
+            }
+
+            var lSavedAccountName = e.Item.FindControl( "lSavedAccountName" ) as Literal;
+            var lSavedAccountCardTypeLast4 = e.Item.FindControl( "lSavedAccountCardTypeLast4" ) as Literal;
+            var lSavedAccountExpiration = e.Item.FindControl( "lSavedAccountExpiration" ) as Literal;
+            var lSavedAccountInUseStatusHtml = e.Item.FindControl( "lSavedAccountInUseStatusHtml" ) as Literal;
+            var btnSavedAccountDelete = e.Item.FindControl( "btnSavedAccountDelete" ) as LinkButton;
+
+            lSavedAccountName.Text = financialPersonSavedAccount.Name;
+            var financialPaymentDetail = financialPersonSavedAccount.FinancialPaymentDetail;
+
+            string creditCardType = null;
+            string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
+            if ( financialPaymentDetail?.CreditCardTypeValueId != null )
+            {
+                creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
+            }
+
+            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            {
+                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
+            }
+            else
+            {
+                lSavedAccountCardTypeLast4.Text = creditCardType;
+            }
+
+            lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
+
+            var cardIsExpired = financialPaymentDetail.CardExpirationDate.HasValue && financialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now;
+
+            var cardInUse = new FinancialScheduledTransactionService( new RockContext() ).Queryable().Where( a => a.FinancialPaymentDetailId.HasValue
+                && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.HasValue
+                && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.Value == financialPersonSavedAccount.Id ).Any();
+
+            btnSavedAccountDelete.Visible = !cardInUse;
+
+            if ( cardIsExpired )
+            {
+                lSavedAccountInUseStatusHtml.Text = "<span class='label label-danger'>Expired</span>";
+            }
+            else
+            {
+                if ( cardInUse )
+                {
+                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-success'>In Use</span>";
+                }
+                else
+                {
+                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-default'>Not In Use</span>";
+                }
+            }
+        }
 
         /// <summary>
         /// Handles the Click event of the lbAddScheduledTransaction control.
@@ -317,32 +488,79 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
+        protected void rptScheduledTransaction_Delete( object sender, CommandEventArgs e )
+        {
+            rptScheduledTransaction_Inactivate( sender, e );
+        }
+
         /// <summary>
-        /// Event when the user clicks to delete the scheduled transaction
+        /// Event when the user clicks to delete (but really inactivates) the scheduled transaction
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void rptScheduledTransaction_Delete( object sender, CommandEventArgs e )
+        protected void rptScheduledTransaction_Inactivate( object sender, CommandEventArgs e )
         {
             var scheduledTransactionGuid = e.CommandArgument.ToStringSafe().AsGuid();
             var rockContext = new RockContext();
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
-
-            if ( financialScheduledTransaction != null )
+            if ( financialScheduledTransaction?.FinancialGateway == null )
             {
-                string errorMessage;
-                if ( !financialScheduledTransactionService.CanDelete( financialScheduledTransaction, out errorMessage ) )
+                return;
+            }
+
+            string errorMessage;
+
+            /* 2021-08-27 MDP
+
+            We really don't want to actually delete a FinancialScheduledTransaction.
+            Just inactivate it, even if there aren't FinancialTransactions associated with it.
+            It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
+            If that happens, Rock won't be able to match a record for that downloaded transaction! 
+            We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
+            so we'll need the ScheduledTransaction to do that.
+
+            So, don't delete ScheduledTransactions.
+
+            However, if ScheduledTransaction does not currently have any FinancialTransactions associated with it,
+            we can *say* we are deleting it in the messages. Also, when doing a 'Show Inactive Scheduled Transactions'
+            we won't list Scheduled Transactions that are Inactive AND don't currently have financial transactions
+            associated with it. If a transactions come in later, then we'll end up showing it as an inactive scheduled
+            transaction again.
+
+            */
+
+            if ( financialScheduledTransactionService.Cancel( financialScheduledTransaction, out errorMessage ) )
+            {
+                try
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
+                    financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out errorMessage );
+                }
+                catch
+                {
+                    // Ignore
                 }
 
-                financialScheduledTransactionService.Delete( financialScheduledTransaction );
                 rockContext.SaveChanges();
+            }
+            else
+            {
+                mdGridWarning.Show( errorMessage, ModalAlertType.Information );
             }
 
             ShowDetail();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnShowInactiveScheduledTransactions_Click( object sender, EventArgs e )
+        {
+            // toggle showing Inactive scheduled transactions
+            hfShowInactiveScheduledTransactions.Value = ( !hfShowInactiveScheduledTransactions.Value.AsBoolean() ).ToTrueFalse();
+            BindScheduledTransactions();
         }
 
         /// <summary>
@@ -427,15 +645,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void ShowDetail()
         {
             BindSavedAccountList();
-            BindContributionStatement();
+            BindContributionStatements();
             BindScheduledTransactions();
             BindPledgeList();
         }
 
+        /// <summary>
+        /// Binds the scheduled transactions.
+        /// </summary>
         private void BindScheduledTransactions()
         {
             var rockContext = new RockContext();
-            var qry = new FinancialScheduledTransactionService( rockContext )
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var qry = financialScheduledTransactionService
                 .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
                 .AsNoTracking();
 
@@ -446,11 +668,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            qry = qry.Where( t => t.IsActive );
+            var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
+
+            if ( !includeInactive )
+            {
+                btnShowInactiveScheduledTransactions.Text = "Show Inactive";
+                qry = qry.Where( t => t.IsActive );
+            }
+            else
+            {
+               // if including Inactive, only include inactive ones if they currently have transactions associated with it
+                qry = qry.Where( t => t.IsActive || t.Transactions.Any() );
+                btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
+            }
 
             if ( Person.GivingGroupId.HasValue )
             {
-                //  Person contributes with family
+                // Person contributes with family
                 qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == Person.GivingGroupId );
             }
             else
@@ -467,10 +701,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var scheduledTransactionList = qry.ToList();
 
+            foreach ( var schedule in scheduledTransactionList )
+            {
+                try
+                {
+                    // This will ensure we have the most recent status, even if the schedule hasn't been making payments.
+                    string errorMessage;
+                    financialScheduledTransactionService.GetStatus( schedule, out errorMessage );
+                }
+                catch ( Exception ex )
+                {
+                    // log and ignore
+                    LogException( ex );
+                }
+            }
+
             rptScheduledTransaction.DataSource = scheduledTransactionList;
             rptScheduledTransaction.DataBind();
         }
 
+        /// <summary>
+        /// Binds the saved account list.
+        /// </summary>
         private void BindSavedAccountList()
         {
             var rockContext = new RockContext();
@@ -486,6 +738,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             pnlSavedAccounts.Visible = savedAccountList.Any();
         }
 
+        /// <summary>
+        /// Binds the pledge list.
+        /// </summary>
         private void BindPledgeList()
         {
             var rockContext = new RockContext();
@@ -505,7 +760,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptPledges.DataBind();
         }
 
-        private void BindContributionStatement()
+        /// <summary>
+        /// Binds the contribution statements.
+        /// </summary>
+        private void BindContributionStatements()
         {
             var numberOfYears = GetAttributeValue( AttributeKey.MaxYearsToDisplay ).AsInteger();
 
@@ -535,13 +793,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var statementYears = yearQry.Take( numberOfYears ).ToList();
 
-            rStatements.DataSource = statementYears;
-            rStatements.DataBind();
+            rptContributionStatementsYYYY.DataSource = statementYears;
+            rptContributionStatementsYYYY.DataBind();
 
             pnlStatement.Visible = statementYears.Any();
         }
 
         #endregion Methods
     }
-
 }
