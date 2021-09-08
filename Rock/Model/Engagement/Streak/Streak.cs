@@ -67,8 +67,6 @@ namespace Rock.Model
 
         private DateTime _enrollmentDate = RockDateTime.Today;
 
-        private bool _isDeleted = false;
-
         /// <summary>
         /// Gets or sets the <see cref="DateTime"/> when the person deactivated their Streak. If null, the Streak is active.
         /// </summary>
