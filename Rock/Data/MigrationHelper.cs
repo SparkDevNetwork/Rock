@@ -417,7 +417,7 @@ namespace Rock.Data
         public void UpdateBlockTypeByGuid( string name, string description, string path, string category, string guid )
         {
             Migration.Sql( $@"
-                -- delete just in case Rock added it automatically before it was migrated
+                -- delete just in case Rock added it automatically (with a different guid) before it was migrated
                 DELETE FROM [BlockType] 
 	            WHERE [Path] = '{path}' AND [Guid] != '{guid}';
 

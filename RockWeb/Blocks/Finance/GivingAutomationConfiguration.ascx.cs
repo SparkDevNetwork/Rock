@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,25 +20,24 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.SystemKey;
 using Rock.Utility.Enums;
-using Rock.Utility.Settings.GivingAnalytics;
+using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Block used to view and create new alert types for the giving analytics system.
     /// </summary>
-    [DisplayName( "Giving Analytics Configuration" )]
+    [DisplayName( "Giving Automation Configuration" )]
     [Category( "Finance" )]
-    [Description( " Block used to view and create new alert types for the giving analytics system." )]
+    [Description( "Block used to view and create new alert types for the giving automation system." )]
 
-    public partial class GivingAnalyticsConfiguration : Rock.Web.UI.RockBlock
+    public partial class GivingAutomationConfiguration : Rock.Web.UI.RockBlock
     {
         #region Constants
 
@@ -55,15 +53,7 @@ namespace RockWeb.Blocks.Finance
 
         #endregion Constants
 
-        #region Fields
-
-        private GivingAnalyticsSetting _givingAnalyticsSetting = new GivingAnalyticsSetting();
-
-        #endregion
-
         #region Properties
-
-        // used for public / protected properties
 
         #endregion
 
@@ -201,6 +191,7 @@ namespace RockWeb.Blocks.Finance
             {
                 return;
             }
+
             // Status icons
             var lStatusIcons = e.Row.FindControl( "lStatusIcons" ) as Literal;
 
@@ -255,7 +246,6 @@ namespace RockWeb.Blocks.Finance
 
             BindAlerts();
         }
-
 
         /// <summary>
         /// Handles the SaveClick event of the modalDetails control.
@@ -342,24 +332,42 @@ namespace RockWeb.Blocks.Finance
 
             var isCustomAccounts = rblAccountTypes.SelectedValue == AccountTypes_Custom;
 
-            var givingAnalytics = _givingAnalyticsSetting.GivingAnalytics ?? new Rock.Utility.Settings.GivingAnalytics.GivingAnalytics();
-            _givingAnalyticsSetting.GivingAnalytics = givingAnalytics;
+            var givingAutomationSettings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
-            var alerting = _givingAnalyticsSetting.Alerting ?? new Alerting();
-            _givingAnalyticsSetting.Alerting = alerting;
+            givingAutomationSettings.FinancialAccountGuids = isCustomAccounts ? accountGuids : null;
+            givingAutomationSettings.AreChildAccountsIncluded = isCustomAccounts ? cbIncludeChildAccounts.Checked : ( bool? ) null;
+            givingAutomationSettings.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
 
-            _givingAnalyticsSetting.FinancialAccountGuids = isCustomAccounts ? accountGuids : null;
-            _givingAnalyticsSetting.AreChildAccountsIncluded = isCustomAccounts ? cbIncludeChildAccounts.Checked : ( bool? ) null;
-            _givingAnalyticsSetting.TransactionTypeGuids = cblTransactionTypes.SelectedValues.AsGuidList();
-            _givingAnalyticsSetting.GivingAnalytics.IsEnabled = cbEnableGivingAnalytics.Checked;
-            _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays = dwpDaysToUpdateAnalytics.SelectedDaysOfWeek;
-            _givingAnalyticsSetting.Alerting.GlobalRepeatPreventionDurationDays = nbGlobalRepeatPreventionDuration.Text.AsIntegerOrNull();
-            _givingAnalyticsSetting.Alerting.GratitudeRepeatPreventionDurationDays = nbGratitudeRepeatPreventionDuration.Text.AsIntegerOrNull();
-            _givingAnalyticsSetting.Alerting.FollowupRepeatPreventionDurationDays = nbFollowupRepeatPreventionDuration.Text.AsIntegerOrNull();
+            // Main Giving Automation Settings
+            givingAutomationSettings.GivingAutomationJobSettings.IsEnabled = cbEnableGivingAutomation.Checked;
+            givingAutomationSettings.GivingClassificationSettings.RunDays = dwpDaysToUpdateClassifications.SelectedDaysOfWeek?.ToArray();
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION, _givingAnalyticsSetting.ToJson() );
+            // Giving Journey Settings
+            givingAutomationSettings.GivingJourneySettings.DaysToUpdateGivingJourneys = dwpDaysToUpdateGivingJourneys.SelectedDaysOfWeek?.ToArray();
 
-            this.NavigateToCurrentPageReference();
+            givingAutomationSettings.GivingJourneySettings.FormerGiverNoContributionInTheLastDays = nbFormerGiverNoContributionInTheLastDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.FormerGiverMedianFrequencyLessThanDays = nbFormerGiverMedianFrequencyLessThanDays.IntegerValue;
+
+            givingAutomationSettings.GivingJourneySettings.LapsedGiverNoContributionInTheLastDays = nbLapsedGiverNoContributionInTheLastDays.IntegerValue;
+            givingAutomationSettings.GivingJourneySettings.LapsedGiverMedianFrequencyLessThanDays = nbLapsedGiverMedianFrequencyLessThanDays.IntegerValue;
+
+            givingAutomationSettings.GivingJourneySettings.NewGiverContributionCountBetweenMinimum = ( int? ) nreNewGiverContributionCountBetween.LowerValue;
+            givingAutomationSettings.GivingJourneySettings.NewGiverContributionCountBetweenMaximum = ( int? ) nreNewGiverContributionCountBetween.UpperValue;
+            givingAutomationSettings.GivingJourneySettings.NewGiverFirstGiftInTheLastDays = nbNewGiverFirstGiftInLastDays.IntegerValue;
+
+            givingAutomationSettings.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum = ( int? ) nreOccasionalGiverMedianFrequencyDays.LowerValue;
+            givingAutomationSettings.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum = ( int? ) nreOccasionalGiverMedianFrequencyDays.UpperValue;
+
+            givingAutomationSettings.GivingJourneySettings.ConsistentGiverMedianLessThanDays = nbConsistentGiverMedianLessThanDays.IntegerValue;
+
+            // Alerting Settings
+            givingAutomationSettings.GivingAlertingSettings.GlobalRepeatPreventionDurationDays = nbGlobalRepeatPreventionDuration.Text.AsIntegerOrNull();
+            givingAutomationSettings.GivingAlertingSettings.GratitudeRepeatPreventionDurationDays = nbGratitudeRepeatPreventionDuration.Text.AsIntegerOrNull();
+            givingAutomationSettings.GivingAlertingSettings.FollowupRepeatPreventionDurationDays = nbFollowupRepeatPreventionDuration.Text.AsIntegerOrNull();
+
+            GivingAutomationSettings.SaveGivingAutomationSettings( givingAutomationSettings );
+
+            this.NavigateToParentPage();
         }
 
         /// <summary>
@@ -371,7 +379,6 @@ namespace RockWeb.Blocks.Finance
         {
             NavigateToParentPage();
         }
-
 
         #endregion Events
 
@@ -386,25 +393,18 @@ namespace RockWeb.Blocks.Finance
             BindAccounts();
 
             // Load values from the system settings
-            _givingAnalyticsSetting = Rock.Web.SystemSettings.GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION ).FromJsonOrNull<GivingAnalyticsSetting>() ?? new GivingAnalyticsSetting();
+            var givingAutomationSetting = GivingAutomationSettings.LoadGivingAutomationSettings();
 
-            var givingAnalytics = _givingAnalyticsSetting.GivingAnalytics ?? new Rock.Utility.Settings.GivingAnalytics.GivingAnalytics();
-            _givingAnalyticsSetting.GivingAnalytics = givingAnalytics;
+            var savedTransactionTypeGuids = givingAutomationSetting.TransactionTypeGuids ?? new List<Guid> { Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
 
-            var alerting = _givingAnalyticsSetting.Alerting ?? new Rock.Utility.Settings.GivingAnalytics.Alerting();
-            _givingAnalyticsSetting.Alerting = alerting;
-
-            var savedTransactionTypeGuids =
-                _givingAnalyticsSetting.TransactionTypeGuids ??
-                new List<Guid> { Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
             var savedTransactionTypeGuidStrings = savedTransactionTypeGuids.Select( g => g.ToString() )
                 .Intersect( transactionTypes.Select( dv => dv.Guid.ToString() ) );
 
-            var savedAccountGuids = _givingAnalyticsSetting.FinancialAccountGuids ?? new List<Guid>();
+            var savedAccountGuids = givingAutomationSetting.FinancialAccountGuids ?? new List<Guid>();
             var accounts = new List<FinancialAccount>();
-            var areChildAccountsIncluded = _givingAnalyticsSetting.AreChildAccountsIncluded ?? false;
+            var areChildAccountsIncluded = givingAutomationSetting.AreChildAccountsIncluded ?? false;
 
-            if (savedAccountGuids.Any())
+            if ( savedAccountGuids.Any() )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -422,11 +422,32 @@ namespace RockWeb.Blocks.Finance
             rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductible );
             cbIncludeChildAccounts.Checked = areChildAccountsIncluded;
             cblTransactionTypes.SetValues( savedTransactionTypeGuidStrings );
-            cbEnableGivingAnalytics.Checked = _givingAnalyticsSetting.GivingAnalytics.IsEnabled;
-            dwpDaysToUpdateAnalytics.SelectedDaysOfWeek = _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays ?? DayOfWeekFlag.All.AsDayOfWeekList();
-            nbGlobalRepeatPreventionDuration.Text = alerting.GlobalRepeatPreventionDurationDays.ToStringSafe();
-            nbGratitudeRepeatPreventionDuration.Text = alerting.GratitudeRepeatPreventionDurationDays.ToStringSafe();
-            nbFollowupRepeatPreventionDuration.Text = alerting.FollowupRepeatPreventionDurationDays.ToStringSafe();
+
+            // Main Giving Automation Settings
+            cbEnableGivingAutomation.Checked = givingAutomationSetting.GivingAutomationJobSettings.IsEnabled;
+            dwpDaysToUpdateClassifications.SelectedDaysOfWeek = givingAutomationSetting.GivingClassificationSettings.RunDays?.ToList();
+
+            // Giving Journey Settings
+            dwpDaysToUpdateGivingJourneys.SelectedDaysOfWeek = givingAutomationSetting.GivingJourneySettings.DaysToUpdateGivingJourneys?.ToList();
+
+            nbFormerGiverNoContributionInTheLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.FormerGiverNoContributionInTheLastDays;
+            nbFormerGiverMedianFrequencyLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.FormerGiverMedianFrequencyLessThanDays;
+
+            nbLapsedGiverNoContributionInTheLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverNoContributionInTheLastDays;
+            nbLapsedGiverMedianFrequencyLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.LapsedGiverMedianFrequencyLessThanDays;
+
+            nreNewGiverContributionCountBetween.LowerValue = givingAutomationSetting.GivingJourneySettings.NewGiverContributionCountBetweenMinimum;
+            nreNewGiverContributionCountBetween.UpperValue = givingAutomationSetting.GivingJourneySettings.NewGiverContributionCountBetweenMaximum;
+            nbNewGiverFirstGiftInLastDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.NewGiverFirstGiftInTheLastDays;
+
+            nreOccasionalGiverMedianFrequencyDays.LowerValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMinimum;
+            nreOccasionalGiverMedianFrequencyDays.UpperValue = givingAutomationSetting.GivingJourneySettings.OccasionalGiverMedianFrequencyDaysMaximum;
+
+            nbConsistentGiverMedianLessThanDays.IntegerValue = givingAutomationSetting.GivingJourneySettings.ConsistentGiverMedianLessThanDays;
+
+            nbGlobalRepeatPreventionDuration.Text = givingAutomationSetting.GivingAlertingSettings.GlobalRepeatPreventionDurationDays.ToStringSafe();
+            nbGratitudeRepeatPreventionDuration.Text = givingAutomationSetting.GivingAlertingSettings.GratitudeRepeatPreventionDurationDays.ToStringSafe();
+            nbFollowupRepeatPreventionDuration.Text = givingAutomationSetting.GivingAlertingSettings.FollowupRepeatPreventionDurationDays.ToStringSafe();
 
             BindAlerts();
         }
@@ -570,12 +591,12 @@ namespace RockWeb.Blocks.Finance
 
             dvpPersonDataView.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
-            var SystemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
+            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( e => e.Title );
             ddlSystemCommunication.Items.Clear();
             ddlSystemCommunication.Items.Add( new ListItem() );
-            if ( SystemCommunications.Any() )
+            if ( systemCommunications.Any() )
             {
-                ddlSystemCommunication.Items.AddRange( SystemCommunications.Select( x => new ListItem { Text = x.Title, Value = x.Id.ToString() } ).ToArray() );
+                ddlSystemCommunication.Items.AddRange( systemCommunications.Select( x => new ListItem { Text = x.Title, Value = x.Id.ToString() } ).ToArray() );
             }
         }
 

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingAnalyticsAlerts.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingAnalyticsAlerts" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingAutomationAlerts.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingAutomationAlerts" %>
 
 <asp:UpdatePanel ID="upnlAlerts" runat="server">
     <ContentTemplate>
@@ -8,7 +8,9 @@
         <asp:Panel ID="pnlAlertList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comment-alt"></i> Giving Alerts</h1>
+                <h1 class="panel-title">
+                    <i class="fa fa-comment-alt"></i>
+                    Giving Alerts</h1>
                 <div class="pull-right d-flex align-items-center">
                     <asp:LinkButton ID="lbConfig" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConfig_Click" CausesValidation="false">
                         <i title="Options" class="fa fa-gear"></i>

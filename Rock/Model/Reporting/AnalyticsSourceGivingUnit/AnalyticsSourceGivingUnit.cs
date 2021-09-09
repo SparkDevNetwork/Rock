@@ -23,7 +23,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Analytics table for the Giving Units involved in <see cref="Rock.Jobs.GivingAnalytics"/>. 
+    /// Analytics table for the Giving Units involved in <see cref="Rock.Jobs.GivingAutomation"/>. 
     /// </summary>
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceGivingUnit" )]
@@ -66,7 +66,7 @@ namespace Rock.Model
 
         /// <summary>
         /// The bin that this person's giving habits fall within.
-        /// The logic for this is in <see cref="Rock.Jobs.GivingAnalytics" />
+        /// The logic for this is in <see cref="Rock.Jobs.GivingAutomation" />
         /// </summary>
         /// <value>
         /// The giving bin.

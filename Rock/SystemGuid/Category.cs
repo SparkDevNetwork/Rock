@@ -177,9 +177,16 @@ namespace Rock.SystemGuid
         public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
         /// <summary>
-        /// The person attributes giving analytics
+        /// Obsolete. Use <see cref="PERSON_ATTRIBUTES_GIVING_OVERVIEW"/> instead
         /// </summary>
-        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = "61823196-8EA1-4C2B-A7DF-1654BD085667";
+        [RockObsolete("1.13")]
+        [Obsolete( "Use PERSON_ATTRIBUTES_GIVING_OVERVIEW instead" )]
+        public const string PERSON_ATTRIBUTES_GIVING_ANALYTICS = PERSON_ATTRIBUTES_GIVING_OVERVIEW;
+
+        /// <summary>
+        /// Person Attribute Category for Giving Overview
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_GIVING_OVERVIEW = "61823196-8EA1-4C2B-A7DF-1654BD085667";
 
         #endregion
 

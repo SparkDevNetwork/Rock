@@ -48,10 +48,12 @@ namespace Rock.Migrations
         /// </summary>
         private void AttributesUp()
         {
+            // Since this is a migration. Don't change this to the PERSON_ATTRIBUTES_GIVING_OVERVIEW. We can suppress this warning.
+#pragma warning disable CS0618 // Type or member is obsolete
             var givingAnalyticsCategory = new List<string>() { SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_ANALYTICS };
             var givingAnalyticsAndEraCategory = new List<string>() { SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_ANALYTICS, SystemGuid.Category.PERSON_ATTRIBUTES_ERA };
-
             RockMigrationHelper.UpdatePersonAttributeCategory( "Giving Analytics", "fas fa-hand-holding-usd", "Attributes that describe the most recent classification of this person's giving habits", SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_ANALYTICS );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Person Attribute "Last Gave"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid( @"6B6AA175-4758-453F-8D83-FCD8044B5F36", givingAnalyticsAndEraCategory, @"Last Gave", @"", @"core_EraLastGave", @"", @"", 6, @"", @"02F64263-E290-399E-4487-FC236F4DE81F" );
