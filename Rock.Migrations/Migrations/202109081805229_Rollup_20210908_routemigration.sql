@@ -41,7 +41,7 @@ DECLARE @PageId int
 
 -- Page: Intranet
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0C4B3F4D-53FD-4A65-8C93-3868CE4DA137')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -49,7 +49,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Shared Documents
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FBC16153-897B-457C-A35F-28FDFDC466B6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/shared-documents')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/shared-documents')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -57,7 +57,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Employee Resources
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '895F58FB-C1C4-4399-A4D8-A9A10225EA09')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/employee-resources')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/employee-resources')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -65,7 +65,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Org Chart
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C3909F1A-6908-4035-BB93-EC4FBFDCC536')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/org-chart')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/org-chart')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -73,7 +73,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Employee Details
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DA8E33F3-2EEF-4C4B-87F3-715C3F107CAF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/org-chart/{GroupId}/member/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/org-chart/{GroupId}/member/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -81,7 +81,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tools
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '164C7A7F-8C55-4E20-B582-D84D83174F2C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/tools')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/tools')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -89,7 +89,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Weekly Metrics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6E1DDCE6-F941-4AA9-8514-942E76AE3081')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/tools/weekly-metrics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'intranet/tools/weekly-metrics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -97,7 +97,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: People
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '97ECDC48-6DF6-492E-8C72-161F76AE111B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -105,7 +105,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Manage
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0F4B33D-DD11-4CCC-B79D-9342831B8701')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/manage')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/manage')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -113,7 +113,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Directory
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '215932E5-0FFB-48A4-B867-5DD7AD71216A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/directory')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/directory')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -121,7 +121,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: New Family
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6A11A13D-05AB-4982-A4C2-67A8B1950C74')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/new-family')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/new-family')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -129,7 +129,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Viewer
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4E237286-B715-4109-A578-C1445EC02707')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -137,7 +137,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3905C63F-4D57-40F0-9721-C60A2F681911')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/member/{Id}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/member/{Id}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -145,7 +145,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Map
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '60995C8C-862F-40F5-AFBB-13B49CDA77EB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/map')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/map')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -153,7 +153,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Attendance
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7EA94B4F-013B-4A79-8D01-86994EB04604')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/attendance')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/attendance')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -161,7 +161,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attendance
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D2A75147-B031-4DF7-8E04-FDDEAE2575F1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/attendance/{xxx}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/attendance/{xxx}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -169,7 +169,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Fundraising
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3E0F2EF9-DC32-4DFD-B213-A410AE5B6AB7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/fundraising')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/fundraising')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -177,7 +177,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group History
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FCCF2570-DC09-4129-87BE-F1CAE25F1B9D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -185,7 +185,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group History Grid
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FB9A6BC0-0B51-4A92-A32C-58AC822CD2D0')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history/grid')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history/grid')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -193,7 +193,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member History
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EAAB757E-524F-4DB9-A124-D5EFBCDCA63B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history/member/{id}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/history/member/{id}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -201,7 +201,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group RSVP List
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '69285A6B-4DBB-43BB-8B0D-08DEBB860AEA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/rsvp')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/rsvp')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -209,7 +209,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group RSVP Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '40E60703-CF52-4742-BDA6-65FB0CF198CB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/rsvp/{id}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/groups/{GroupId}/rsvp/{id}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -217,7 +217,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tags
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2654EBE9-F585-4E64-93F3-102357F89660')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/tags')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/tags')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -225,7 +225,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1A3437C8-D4CB-4329-A366-8D6A4CBF79BF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -233,7 +233,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tag Details
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D258BF5B-B585-4C5B-BDCD-99F7519D45E2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/tags/{TagId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/tags/{TagId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -241,7 +241,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Add Prayer Request
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '36E22C5D-FC31-4754-8583-B63079217528')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/add')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/add')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -249,7 +249,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer Requests
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3149959B-EFAC-4C2D-B0E8-8CF4FA1BB2FF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/list')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/list')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -257,7 +257,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer Request Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '89C3DB4A-BAFD-45C8-88C6-45D8FEC48B48')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/list/{PrayerRequestId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/list/{PrayerRequestId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -265,7 +265,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer Comments
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D10364AD-5E65-484B-967C-B52475E91B4C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/comments')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/comments')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -273,7 +273,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer Request Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C39C3E88-F423-424D-AA21-EB5CA7871A7B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/prayer/attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -281,7 +281,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge People
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F0C4E25F-83DF-44FF-AB5A-EF6C3044FAD3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/merge')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/merge')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -289,7 +289,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Rapid Attendance Entry
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '78B79290-3234-4D8C-96D3-1901901BA1DD')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/rapid-attendance')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/rapid-attendance')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -297,7 +297,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attendance List
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D56CD916-C3C7-4277-BEBA-0FA4C21A758D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/rapid-attendance/list')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/rapid-attendance/list')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -305,7 +305,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Scheduling
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '896ED8DA-46A5-440B-92A0-76459869D921')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -313,7 +313,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Scheduler
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1815D8C6-7C4A-4C05-A810-CF23BA937477')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/scheduler')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/scheduler')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -321,7 +321,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Schedule Status Board
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '31576E5D-7B6C-46D1-89F4-A14F4F8095D1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/status-board')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/status-board')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -329,7 +329,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Scheduler Analytics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1E031B86-1476-4C72-9115-F94056398444')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/analytics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/analytics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -337,7 +337,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Schedule Roster
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '37AE5C9E-7075-4F22-BDC6-189FA2584183')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/roster')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/roster')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -345,7 +345,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Schedule Communication
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AFC2DA5B-B1D0-408C-ADBD-23E5D7A7AC67')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/communication')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/group-scheduling/communication')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -353,7 +353,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Achievements
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FCE0D006-F854-4107-9298-667563FA8D77')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -361,7 +361,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Achievement Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1C378B3C-9721-4A9B-857A-E3C5188C5BF8')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements/type/{AchievementTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements/type/{AchievementTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -369,7 +369,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attempt
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '75CDD408-3E1B-4EF3-9A6F-4DC76B92A80F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements/attempt/{AchievementAttemptId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/achievements/attempt/{AchievementAttemptId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -377,7 +377,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Streaks
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -385,7 +385,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Streak Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CA566B33-0265-45C5-B1B2-6FFA6D4743F4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -393,7 +393,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Map Editor
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E7D5B636-5F44-46D3-AE9F-E2681ACC7039')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/map-editor')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/map-editor')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -401,7 +401,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Exclusions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1EEDBA14-0EE1-43F7-BB8D-70455FD425E5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/exclusions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/exclusions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -409,7 +409,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Exclusion
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '68EF459F-5D23-4930-8EA8-80CDF986BB94')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/exclusions/{StreakTypeExclusionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/exclusions/{StreakTypeExclusionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -417,7 +417,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Enrollment
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '488BE67C-EDA0-489E-8D80-8CC67F5854D4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/enrollment/{StreakId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/enrollment/{StreakId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -425,7 +425,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Achievement Attempts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4AC3D8B7-1A8A-40F9-8F51-8E09B863BA40')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/enrollment/{StreakId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/streaks/type/{StreakTypeId}/enrollment/{StreakId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -433,7 +433,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Steps
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F5E8A369-4856-42E5-B187-276DFCEB1F3F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -441,7 +441,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Step Program
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6E46BC35-1FCB-4619-84F0-BB6926D2DDD5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/program/{ProgramId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/program/{ProgramId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -449,7 +449,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Step Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8E78F9DC-657D-41BF-BE0F-56916B6BF92F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/type/{StepTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/type/{StepTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -457,7 +457,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Step Entry
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2109228C-D828-4B58-9310-8D93D10B846E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/record/{StepId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/record/{StepId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -465,7 +465,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Bulk Entry
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8224D858-04B3-4DCD-9C73-F9868DF29C95')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/type/{StepTypeId}/bulk-entry')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/steps/type/{StepTypeId}/bulk-entry')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -473,7 +473,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connections
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2A0C135A-8421-4125-A484-83C8B4FB3D34')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -481,7 +481,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Board
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4FBCEB52-8892-4035-BDEA-112A494BE81F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/board')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/board')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -489,7 +489,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -497,7 +497,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DEFF1AFE-2C33-4E56-B0F5-BE3B75224186')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types/{ConnectionTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types/{ConnectionTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -505,7 +505,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Opportunity Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0E5797FF-A507-4E02-891F-B80AF353E585')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types/{ConnectionTypeId}/opportunity/{ConnectionOpportunityId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/types/{ConnectionTypeId}/opportunity/{ConnectionOpportunityId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -513,7 +513,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Campaigns
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B252FAA6-0E9D-41CD-A00D-E7159E881714')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/campaigns')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/campaigns')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -521,7 +521,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Campaign Configuration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A22133B5-B5C6-455A-A300-690F7926356D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/campaigns/{ConnectionCampaignGuid}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'people/connections/campaigns/{ConnectionCampaignGuid}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -529,7 +529,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2A22D08D-73A8-4AAF-AC7E-220E8B2E7857')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/{CommunicationId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/{CommunicationId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -537,7 +537,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: New Communication
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2A22D08D-73A8-4AAF-AC7E-220E8B2E7857')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/new')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/new')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -545,7 +545,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Simple Communication
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7E8408B2-354C-4A5A-8707-36754AE80B9A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/new/simple')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/new/simple')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -553,7 +553,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication History
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CADB44F2-2453-4DB5-AB11-DADA5162AB79')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -561,7 +561,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: SMS Conversations
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '275A5175-60E0-40A2-8C63-4E9D9CD39036')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/sms-conversations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/sms-conversations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -569,7 +569,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Mass Push Notification
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3D97725E-5E17-411F-856C-F4B79B9BFF15')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/push-notification')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/push-notification')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -577,7 +577,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Email Analytics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DF014200-72A3-48A0-A953-E594E5410E36')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/email-analytics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'communications/email-analytics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -585,7 +585,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Person Profile
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '08DBD8A5-2C35-4146-B4A8-0F7652348B25')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -593,7 +593,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Edit Person
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AD899394-13AD-4CAB-BCB3-CFFD79C9ADCC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/edit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/edit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -601,7 +601,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Edit Family
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/editfamily/{GroupId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/editfamily/{GroupId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -609,7 +609,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Extended Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1C737278-4CBA-404B-B6B3-E3F0E05AB5FE')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/extended-attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/extended-attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -617,7 +617,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Steps
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CB9ABA3B-6962-4A42-BDA1-EA71B7309232')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/steps')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/steps')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -625,7 +625,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Groups
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/groups')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/groups')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -633,7 +633,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Documents
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6155FBC2-03E9-48C1-B2E7-554CBB7589A5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/documents')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/documents')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -641,7 +641,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Contributions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '53CF4CBE-85F9-4A50-87D7-0D72A3FB2892')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/contributions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/contributions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -649,7 +649,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Benevolence
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '15FA4176-1C8E-409D-8B47-85ADA35DE5D2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/benevolence')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/benevolence')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -657,7 +657,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Benevolence Request Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '648CA58C-EB12-4479-9994-F064070E3A32')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/benevolence/{BenevolenceRequestId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/benevolence/{BenevolenceRequestId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -665,7 +665,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Security
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0E56F56E-FB32-4827-A69A-B90D43CB47F5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/security')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/security')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -673,7 +673,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Person Viewed Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '48A9DF54-CC19-42FA-BDC6-97AF3E63029D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{TargetId}/security/viewed-by/{ViewerId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{TargetId}/security/viewed-by/{ViewerId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -681,7 +681,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: History
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/history')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/history')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -689,7 +689,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Document
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C6503D6B-F61A-4A8A-BDD1-11F9FB65B66F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/history/documents/{SignatureDocumentId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'person/{PersonId}/history/documents/{SignatureDocumentId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -697,7 +697,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Finance
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7BEB7569-C485-40A0-A609-B0678F6F7240')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -705,7 +705,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Functions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '142627AE-6590-48E3-BFCA-3669260B8CF2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/functions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/functions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -713,7 +713,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transactions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7CA317B5-5C47-465D-B407-7D614F2A568F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/transactions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/transactions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -721,7 +721,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transaction Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B67E38CB-2EF1-43EA-863A-37DAA1C7340F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/transactions/{TransactionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/transactions/{TransactionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -729,7 +729,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pledges
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1570D2AF-4FE2-4FC7-BED9-F20EBCBE9867')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledges')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledges')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -737,7 +737,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pledge Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EF7AA296-CA69-49BC-A28B-901A8AAA9466')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledges/{pledgeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledges/{pledgeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -745,7 +745,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Scheduled Transactions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F23C5BF7-4F52-448F-8445-6BAEEE3030AB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -753,7 +753,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Scheduled Transaction
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '996F5541-D2E1-47E4-8078-80A388203CEC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions/{ScheduledTransactionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions/{ScheduledTransactionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -761,7 +761,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Edit Scheduled Transaction
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F1C3BBD3-EE91-4DDD-8880-1542EBCD8041')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions/{ScheduledTransactionId}/edit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/scheduled-transactions/{ScheduledTransactionId}/edit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -769,7 +769,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Batches
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EF65EFF2-99AC-4081-8E09-32A04518683A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -777,7 +777,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Financial Batch Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '606BDA31-A8FE-473A-B3F8-A00ECF7E06EC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -785,7 +785,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transaction Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '97716641-D003-4663-9EA2-D9BB94E7955B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}/transaction/{transactionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}/transaction/{transactionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -793,7 +793,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transaction Matching
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CD18FE52-8D6A-49C9-81BF-DF97C5BA0302')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}/matching')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{batchId}/matching')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -801,7 +801,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Audit Log
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CBE0C5ED-744E-4392-A9D4-0DC57AF11D33')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{BatchId}/audit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/batches/{BatchId}/audit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -809,7 +809,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Benevolence
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D893CCCC-368A-42CF-B36E-69991128F016')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -817,7 +817,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Benevolence Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6DC7BAED-CA01-4703-B679-EC81143CDEDD')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence/{BenevolenceRequestId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence/{BenevolenceRequestId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -825,7 +825,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Benevolence Request Summary
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D676A464-29A0-49F1-BA8C-752D9FE21026')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence/{benevolencerequestid}/summary')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/benevolence/{benevolencerequestid}/summary')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -833,7 +833,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Fundraising Matching
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A3EF32AC-B0FE-4140-A6F4-134FDD247CBD')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/fundraising-matching')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/fundraising-matching')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -841,7 +841,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Registration Matching
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '507F7AC2-75A2-49AA-9EE4-F6DFCD34A3DC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/event-registration-matching')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/event-registration-matching')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -849,7 +849,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transaction Fee Report
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A3E321E9-2FBB-4BB9-8AEE-E810B7CC5914')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/fee-report')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/fee-report')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -857,7 +857,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Administration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '18C9E5C3-3E28-4AA3-84F6-78CD4EA2DD3C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/administration')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/administration')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -865,7 +865,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Accounts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2B630A3B-E081-4204-A3E4-17BB3A5F063D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/accounts')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/accounts')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -873,7 +873,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Order Top-Level Accounts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AD1ED5A5-2E43-433F-B1C3-E6052213EF71')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/accounts/order')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/accounts/order')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -881,7 +881,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Businesses
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F4DF4899-2D44-4997-BA9B-9D2C64958A20')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/businesses')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/businesses')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -889,7 +889,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Business Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D2B43273-C64F-4F57-9AAE-9571E1982BAC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/business/{BusinessId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/business/{BusinessId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -897,7 +897,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transaction Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CC7BE14E-3680-4E78-AACC-A57A8D42350F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/business/{PersonId}/transaction/{TransactionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/business/{PersonId}/transaction/{TransactionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -905,7 +905,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Business Conversion
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '94B07FB1-41C1-4755-87E4-0892406D1F3D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/convert-business')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/convert-business')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -913,7 +913,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Business Merge
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0B863363-CCA3-4EDE-9ABA-7ED22A88F503')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/businesses/merge/{Set}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/businesses/merge/{Set}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -921,7 +921,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Giving Analytics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D34B3916-1ABD-4F16-B820-5AAAA761F77F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/giving-analytics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/giving-analytics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -929,7 +929,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Download Payments
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '720819FC-1730-444A-9DE8-C98D29954170')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/download-payments')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/download-payments')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -937,7 +937,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pledge Analytics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FEB2332D-4605-4E2B-8EF2-2C6B1A9612C3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledge-analytics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/pledge-analytics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -945,7 +945,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Financial Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '90723727-56EC-494D-9708-E188869D900C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -953,7 +953,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Contribution Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D5269942-0B3B-4447-8EE9-F5DEB7657003')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings/contribution-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings/contribution-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -961,7 +961,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Contribution Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D4CB4CE6-FBF9-4FBD-B8C4-08BE022F97D7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings/contribution-templatess/{StatementTemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'finance/settings/contribution-templatess/{StatementTemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -969,7 +969,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Reporting
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BB0ACD18-24FB-42BA-B89A-2FFD80472F5B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -977,7 +977,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Views
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4011CB37-28AA-46C4-99D5-826F4A9CADF5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/dataviews')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/dataviews')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -985,7 +985,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Reports
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0FDF1F63-CFB3-4F8E-AC5D-A5312B522D6D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/reports')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/reports')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -993,7 +993,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Metrics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '78D84825-EB1A-43C6-9AD5-5F0F84CC9A53')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/metrics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/metrics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1001,7 +1001,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Metrics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '78D84825-EB1A-43C6-9AD5-5F0F84CC9A53')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/metrics/{MetricCategoryId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/metrics/{MetricCategoryId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1009,7 +1009,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attendance Analytics
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7A3CF259-1090-403C-83B7-2DB3A53DEE26')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/attendance-analytics')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/attendance-analytics')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1017,7 +1017,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Integrity
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '84FD84DF-F58B-4B9D-A407-96276C40AB7E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1025,7 +1025,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Duplicate Finder
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '21E94BF1-C594-44B6-AD91-939ABD04D36E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/duplicate-finder')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/duplicate-finder')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1033,7 +1033,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Duplicate Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6F9CE971-75DF-4F2A-BD5E-A12B149A442E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/duplicate-finder/{PersonId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/duplicate-finder/{PersonId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1041,7 +1041,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Reports
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '134D8730-6AF5-4518-89EE-7370FA78676E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/reports')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/reports')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1049,7 +1049,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Report Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DB58BC69-01FA-4F3E-832B-B1D0DE915C21')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/reports/{ReportId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/reports/{ReportId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1057,7 +1057,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Workflows
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '90C32D5E-A5D5-4CE4-AAB0-E31B43B585E4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/workflows')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/workflows')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1065,7 +1065,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Location Editor
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '47BFA50A-68D8-4841-849B-75AB3E5BCD6D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/locations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/locations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1073,7 +1073,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Location Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1602C1CA-2EC7-4163-B0E1-1FE7306AC2B4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/locations/{LocationId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/locations/{LocationId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1081,7 +1081,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Photo Requests
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '325B50D6-545D-461A-9CB7-72B001E82F21')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1089,7 +1089,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Verify Photos
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '07E4BA19-614A-42D0-9D75-DFB31374844D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/verify')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/verify')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1097,7 +1097,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Photo Request Application Group
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '372BAF1A-F619-46FC-A69A-61E2A0A82F0E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/list')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/list')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1105,7 +1105,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '34491B77-E94D-4DA6-9E74-0F6086522E4C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/list/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/photo-requests/list/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1113,7 +1113,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge Requests
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5180AE8E-BF1C-444F-A154-14E5A8A4ACC9')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/merge-requests')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/merge-requests')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1121,7 +1121,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Automation
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A2D5F989-1E30-47B9-AAFC-F7EC627AFF21')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/data-automation')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/data-automation')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1129,7 +1129,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: NCOA Results
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0C9AF70-752E-0F9A-4BA5-29B2E4C69B11')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/ncoa-results')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/ncoa-results')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1137,7 +1137,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Connection Status Changes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '97624123-900C-4442-B42E-19CF95877E04')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/connection-status-changes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/data-integrity/connection-status-changes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1145,7 +1145,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Interactions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A9661D86-83B6-4AC1-B988-B5CC942A9ED6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1153,7 +1153,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Sessions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '756D37B7-7BE2-497D-8D37-CC273FE29659')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/sessions/{ChannelId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/sessions/{ChannelId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1161,7 +1161,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Channel Details
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AF2FBEB8-1E47-4F51-A503-3D73C0D66B4E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/channels/{ChannelId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/channels/{ChannelId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1169,7 +1169,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Component Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9043D8F9-F9FD-4BE6-A50B-ABF9821EC0CD')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/components/{ComponentId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/components/{ComponentId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1177,7 +1177,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Interaction Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B6F6AB6F-A572-45FE-A143-2E4B8F192C8D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/interactions/{InteractionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'reporting/interactions/interactions/{InteractionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1185,7 +1185,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: HTML Content Approval
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9DF95EFF-88B4-401A-8F5F-E3B8DB02A308')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/html-content-approval')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/html-content-approval')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1193,7 +1193,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '117B547B-9D71-4EE9-8047-176676F5DC8C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/content')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/content')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1201,7 +1201,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Calendars
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '63990874-0DFF-45FC-9F09-81B0B0D375B4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1209,7 +1209,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Calendar
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B54725E1-3640-4419-B580-2AF77DAF6568')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1217,7 +1217,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7FB33834-F40A-4221-8849-BB8C06903B04')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1225,7 +1225,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Occurrence
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4B0C44EE-28E3-4753-A95B-8C57CD958FD1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}/occurrence/{EventItemOccurrenceId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}/occurrence/{EventItemOccurrenceId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1233,7 +1233,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channel Item
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6DFA80C3-E2A4-479F-ADDF-98EAC31169E0')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}/occurrence/{EventItemOccurrenceId}/contentchannelitem/{ContentChannelId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/{EventCalendarId}/event/{EventItemId}/occurrence/{EventItemOccurrenceId}/contentchannelitem/{ContentChannelId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1241,7 +1241,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Calendar Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9C610805-BE44-42DF-A73F-2C6D0014AD49')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/calendars/attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1249,7 +1249,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Registration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '614AF351-6C48-4B6B-B50E-9F7E03BC00A4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1257,7 +1257,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Registrations
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '844DC54B-DAEC-47B3-A63A-712DD6D57793')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1265,7 +1265,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Registration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FC81099A-2F98-4EBA-AC5A-8300B2FE46C4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registration/{RegistrationId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registration/{RegistrationId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1273,7 +1273,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Registrant
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '52CA0336-FC25-4131-BB5A-94A628C0EE77')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationId}/registrant/{RegistrantId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationId}/registrant/{RegistrantId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1281,7 +1281,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Registration Audit Log
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '747C1DAA-1E77-45CB-99C5-7F4D030F824E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registration/{RegistrationId}/audit-log')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registration/{RegistrationId}/audit-log')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1289,7 +1289,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Payment Reminders
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2828BBCF-B3FC-4707-B063-086748853978')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/reminders')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/reminders')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1297,7 +1297,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Registrants
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6138DA76-BD9A-4373-A55C-F88F155E1B13')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registrants')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/registrants')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1305,7 +1305,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Payments
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '562D6252-D614-4ED4-B602-D8160066611D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/payments')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/payments')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1313,7 +1313,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Fees
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0576A70-CCB3-4E98-B6C4-3D758DD5F609')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/fees')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/fees')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1321,7 +1321,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Discounts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6EE74759-D11B-4911-9BC8-CF23DE5534B2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/discounts')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/discounts')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1329,7 +1329,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Linkages
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/linkages')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/linkages')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1337,7 +1337,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Linkage
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/linkages/{LinkageId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/linkages/{LinkageId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1345,7 +1345,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Wait List
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E17883C2-6442-4AE5-B561-2C783F7F89C9')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/wait-list')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/wait-list')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1353,7 +1353,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Placement Groups
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0CD950D7-033D-42B1-A53E-108F311DC5BF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/placements/{RegistrationTemplatePlacementId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-registrations/{RegistrationInstanceId}/placements/{RegistrationTemplatePlacementId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1361,7 +1361,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Event Wizard
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7F889C16-0656-4015-8A90-B43D3BD2467E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-wizard')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'web/event-wizard')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1369,7 +1369,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: General Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0B213645-FA4E-44A5-8E4C-B2D8EF054985')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1377,7 +1377,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Rock Update
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A3990266-CB0D-4FB5-882C-3852ED5D96AB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/update')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/update')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1385,7 +1385,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Global Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A2753E03-96B1-4C83-AA11-FCD68C631571')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/global-attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/global-attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1393,7 +1393,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Defined Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E0E1DE66-B825-4BFB-A0B3-6E069AA9AA40')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/defined-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/defined-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1401,7 +1401,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Defined Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '60C0C193-61CF-4B34-A0ED-67EF8FD44867')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/defined-types/{definedTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/defined-types/{definedTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1409,7 +1409,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '40899BCD-82B0-47F2-8F2A-B6AA3877B445')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1417,7 +1417,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5CD8E024-710B-4EDE-8C8C-4C9E15E6AFAB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-types/{groupTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-types/{groupTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1425,7 +1425,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Campuses
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5EE91A54-C750-48DC-9392-F1F0F0581C3A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1433,7 +1433,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Campus Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BDD7B906-4D42-43C0-8DBB-B89A566734D8')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses/{campusId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses/{campusId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1441,7 +1441,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EB135AE0-5BAC-458B-AD5B-47460C2BFD31')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses/{campusId}/members/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/campuses/{campusId}/members/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1449,7 +1449,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tags
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F111791B-6A58-4388-8533-00E913F48F41')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tags')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tags')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1457,7 +1457,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tag
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F3BD2F37-F16A-4C98-8A4C-C14A16AAFA3A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tags/{TagId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tags/{TagId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1465,7 +1465,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Workflow Configuration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'DCB18A76-6DFF-48A5-A66E-2CAA10D2CA1A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflows')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflows')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1473,7 +1473,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Workflow Triggers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1A233978-5BF4-4A09-9B86-6CC4C081F48B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflow-triggers')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflow-triggers')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1481,7 +1481,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Workflow Trigger
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '04D844EA-7780-427B-8912-FA5EB7C74439')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflow-triggers/{WorkflowTriggerId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/workflow-triggers/{WorkflowTriggerId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1489,7 +1489,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: File Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '66031C31-B397-4F78-8AB2-389B7D8731AA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/file-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/file-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1497,7 +1497,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: File Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '19CAC4D5-FE82-4AE0-BFD3-3C12E3024574')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/file-types/{BinaryFileTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/file-types/{BinaryFileTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1505,7 +1505,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Named Locations
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2BECFB85-D566-464F-B6AC-0BE90189A418')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/locations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/locations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1513,7 +1513,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Devices
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7E660A4D-72C5-4CF8-B144-16CFC2ADD4D7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/devices')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/devices')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1521,7 +1521,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Device Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EE0CC3F3-50FD-4161-BA5C-A852D4A10E7B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/devices/{DeviceId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/devices/{DeviceId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1529,7 +1529,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Schedules
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F5D6D7DD-FD5F-494C-83DC-E2AF63C705D1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedules')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedules')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1537,7 +1537,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attribute Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '220D72F5-B589-4378-9852-BBB6F145AD7F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1545,7 +1545,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Prayer Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FA2A1171-9308-41C7-948C-C9EBEA5BD668')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/prayer-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/prayer-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1553,7 +1553,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Person Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7BA1FAF4-B63C-4423-A818-CC794DDB14E3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/person-attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/person-attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1561,7 +1561,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Badges
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '26547B83-A92D-4D7E-82ED-691F403F16B6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/badges')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/badges')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1569,7 +1569,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Badge
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D376EFD7-5B0D-44BF-A44D-03C466D2D30D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/badges/{BadgeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/badges/{BadgeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1577,7 +1577,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '679AF013-0093-435E-AA49-E73B99EB9710')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/merge-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/merge-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1585,7 +1585,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Requirement Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0EFB7285-5D70-4798-ADE9-908311ECC074')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-requirement-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-requirement-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1593,7 +1593,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Requirement Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E64270AA-9246-4BA4-B1A9-EC2212F586DC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-requirement-types/{GroupRequirementTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/group-requirement-types/{GroupRequirementTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1601,7 +1601,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Signature Documents
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CB1C42A2-285C-4BC5-BB2C-DC442C8A97C2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/signature-documents')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/signature-documents')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1609,7 +1609,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Document Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7096FA12-07A5-489C-83B0-EE55494A3484')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/signature-documents/{SignatureDocumentTemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/signature-documents/{SignatureDocumentTemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1617,7 +1617,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Universal Search Control Panel
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7AE403F2-4328-4168-A941-0A506F1AAE14')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/universal-search')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/universal-search')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1625,7 +1625,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attribute Matrix Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6C43A9B6-EADC-4E32-854A-B40376CF8CAF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-matrix')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-matrix')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1633,7 +1633,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Attribute Matrix Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '601DE4F6-2290-4A5A-AC96-32FB6A133C28')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-matrix/{AttributeMatrixTemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/attribute-matrix/{AttributeMatrixTemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1641,7 +1641,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Tag Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '86C9ECAC-3EC2-4588-AF1B-E94F0428EA1F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tag-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/tag-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1649,7 +1649,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Archived Groups
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '93C79597-2274-4291-BE4F-E84569BB9B27')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/archived-groups')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/archived-groups')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1657,7 +1657,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Schedule Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1F50B5C5-2486-4D8F-9435-27BDF8302683')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedule-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedule-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1665,7 +1665,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Schedule Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B7B0864D-91F2-4B24-A7B0-FC7BEE769FA0')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedule-templates/{GroupMemberScheduleTemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/schedule-templates/{GroupMemberScheduleTemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1673,7 +1673,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Document Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8C199C6C-7457-4256-9ABB-83DABD2E6282')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/document-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/document-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1681,7 +1681,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Document Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FF0A71AD-6282-49E4-BD35-E84369E0D94A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/document-types/{DocumentTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/document-types/{DocumentTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1689,7 +1689,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Legacy Rock Updater
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EA9AE18F-3DBF-494D-947D-31BCE363DF39')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/update/legacy')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/general/update/legacy')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1697,7 +1697,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: CMS Configuration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B4A24AB7-9369-4055-883F-4F4892C39AE3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1705,7 +1705,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Routes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4A833BE3-7D5E-4C38-AF60-5706260015EA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/routes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/routes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1713,7 +1713,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Page Route Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '649A2B1E-7A15-4DA8-AF67-17874B6FE98F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/routes/{pageRouteId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/routes/{pageRouteId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1721,7 +1721,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Sites
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7596D389-4EAB-4535-8BEE-229737F46F44')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1729,7 +1729,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Site Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A2991117-0B85-4209-9008-254929C6E00F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/{SiteId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/{SiteId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1737,7 +1737,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Layout Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E6217A2B-B16F-4E84-BF67-795CA7F5F9AA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/layouts/{LayoutId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/layouts/{LayoutId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1745,7 +1745,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pages
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1C763885-291F-44B7-A5E3-539584E07085')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/{SiteId}/pages')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/sites/{SiteId}/pages')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1753,7 +1753,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Block Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5FBE9019-862A-41C6-ACDC-287D7934757D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/block-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/block-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1761,7 +1761,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Block Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C694AD7C-46DD-47FE-B2AC-1CF158FA6504')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/block-types/{blockTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/block-types/{blockTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1769,7 +1769,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pages
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EC7A06CD-AAB5-4455-962E-B4043EA2440E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/pages')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/pages')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1777,7 +1777,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Page Views
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E556D6C5-E2DB-4041-81AB-4F582008155C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/pages/{Page}/views')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/pages/{Page}/views')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1785,7 +1785,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channel Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '37E3D602-5D7D-4818-BCAA-C67EBB301E55')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-type')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-type')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1793,7 +1793,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '91EAB2A2-4D44-4701-9ABE-37AE3E7A1B8F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-type/{typeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-type/{typeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1801,7 +1801,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channels
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8ADCE4B2-8E95-4FA3-89C4-06A883E8145E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1809,7 +1809,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channel Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4AE244F5-A5BF-48CF-B53B-785148EC367D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels/{contentChannelId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels/{contentChannelId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1817,7 +1817,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Item Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'ABF26679-1051-4F4F-8A67-5958E5BF71F8')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels/items/{ContentItemId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channels/items/{ContentItemId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1825,7 +1825,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: File Manager
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6F074DAA-BDCC-44C5-BB89-B899C1AAC6C1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/file-manager')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/file-manager')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1833,7 +1833,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: File Editor
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '053C3F1D-8BF2-48B2-A8E6-55184F8A87F4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/file-manager/edit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/file-manager/edit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1841,7 +1841,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Themes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BC2AFAEF-712C-4173-895E-81347F6B0B1C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/themes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/themes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1849,7 +1849,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Theme Styler
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A74EEC7C-4F9E-48F5-A996-74A856981B4C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/themes/{EditTheme}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/themes/{EditTheme}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1857,7 +1857,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Short Links
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8C0114FF-31CF-443E-9278-3F9E6087140C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/short-links')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/short-links')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1865,7 +1865,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Link
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '47D5293B-A041-43A4-915A-FB1D156F265E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/short-links/{ShortLinkId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/short-links/{ShortLinkId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1873,7 +1873,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Lava Shortcodes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6CFF2C81-6303-4477-A7EC-156DDBF8BE64')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/lava-shortcodes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/lava-shortcodes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1881,7 +1881,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Lava Shortcode Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1E30B9E7-0951-45FC-8637-8ADCBE782A30')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/lava-shortcodes/{LavaShortcodeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/lava-shortcodes/{LavaShortcodeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1889,7 +1889,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Control Gallery
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '706C0584-285F-4014-BA61-EC42C8F6F76B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/control-gallery')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/control-gallery')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1897,7 +1897,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Font Awesome Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BB2AF2B3-6D06-48C6-9895-EDF2BA254533')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/font-awesome')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/font-awesome')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1905,7 +1905,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: HTTP Modules
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '39F928A5-1374-4380-B807-EADF145F18A1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/http-modules')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/http-modules')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1913,7 +1913,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Cache Manager
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4B8691C7-537F-4B6E-9ED1-E3BA3FA0051E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/cache-manager')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/cache-manager')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1921,7 +1921,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Asset Manager
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D2B919E2-3725-438F-8A86-AC87F81A72EB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/asset-manager')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/asset-manager')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1929,7 +1929,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Component Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F1ED10C2-A17D-4310-9F86-76E11A4A7ED2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-components')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-components')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1937,7 +1937,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channel Item Attribute Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BBDE39C3-01C9-4C9E-9506-C2205508BC77')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-item-attribute-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-item-attribute-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1945,7 +1945,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Mobile Applications
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '784259EC-46B7-4DE3-AC37-E8BFDB0B90A6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1953,7 +1953,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Application Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A4B0BCBB-721D-439C-8566-24F604DD4A1C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1961,7 +1961,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Layouts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5583A55D-7398-48E9-971F-6A1EF8158943')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}/layouts/{LayoutId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}/layouts/{LayoutId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1969,7 +1969,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Pages
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '37E21200-DF91-4426-89CC-7D067237A037')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}/layouts/{Page}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/mobile-applications/{SiteId}/layouts/{Page}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1977,7 +1977,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Persisted Datasets
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '37C20B91-737B-42D1-907D-9868104DBA7B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/persisted-datasets')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/persisted-datasets')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1985,7 +1985,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Persisted Dataset Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0ED8A471-B177-4AC3-933E-DFAB965E2E0D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/persisted-datasets/{PersistedDatasetId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/persisted-datasets/{PersistedDatasetId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -1993,7 +1993,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Content Channel Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0F1B45B8-032D-4306-834D-670FA3933589')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/content-channel-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2001,7 +2001,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Media Accounts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '07CB7BB5-1465-4E75-8DD4-28FA6EA48222')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2009,7 +2009,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Media Account
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '52548B49-6D09-467E-BEA9-04DD6F51637D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/{MediaAccountId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/{MediaAccountId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2017,7 +2017,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Media Folder
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '65DE6218-2850-4924-AA55-6F6FB572E9A3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/folders/{MediaFolderId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/folders/{MediaFolderId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2025,7 +2025,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Media Element
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F1AB34EE-941F-41D6-9BA1-22348D09724C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/items/{MediaElementId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/media-accounts/items/{MediaElementId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2033,7 +2033,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Shared Links
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C206A96E-6926-4EB9-A30F-E5FCE559D180')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/shared-links')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/shared-links')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2041,7 +2041,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Shared Links Section Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '776704b9-17f8-467e-aabc-b4e19ff28960')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/shared-links/{SectionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/cms/shared-links/{SectionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2049,7 +2049,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Security
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '91CCB1C9-5F9F-44F5-8BE2-9EC3A3CFD46F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2057,7 +2057,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: User Accounts
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '306BFEF8-596C-482A-8DEC-34A7B622E688')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/accounts')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/accounts')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2065,7 +2065,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Security Roles
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D9678FEF-C086-4232-972C-5DBAC14BFEE6')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2073,7 +2073,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Security Roles Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '48AAD428-A9C9-4BBB-A80F-B85F28D31240')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles/{GroupId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles/{GroupId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2081,7 +2081,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '45899E6A-7CEC-44EC-8DBA-BD8850262C04')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles/{GroupId}/members/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/roles/{GroupId}/members/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2089,7 +2089,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: REST Controllers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0D51F443-1C0D-4C71-8BAE-E5F5A35E8B79')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2097,7 +2097,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: REST Controller Actions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7F5EF1AA-0E27-4AA1-A5E1-1CD6DDDCDDC5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest/{controller}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest/{controller}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2105,7 +2105,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Audit Information
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4D7F3953-0BD9-4B4B-83F9-5FCC6B2BBE30')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/audit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/audit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2113,7 +2113,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Entity Administration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F7F41856-F7EA-49A8-9D9B-917AC1964602')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/entity')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/entity')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2121,7 +2121,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Authentication Services
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CE2170A9-2C8E-40B1-A42E-DFA73762D01D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/authentication')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/authentication')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2129,7 +2129,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: REST Keys
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '881AB1C2-4E00-4A73-80CC-9886B3717A20')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-keys')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-keys')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2137,7 +2137,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: REST Key Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '594692AA-5647-4F9A-9488-AADB990FDE56')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-keys/{restUserId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-keys/{restUserId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2145,7 +2145,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: REST CORS Domains
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B03A8C4E-E394-44B0-B7CC-89B74C79C325')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-cors')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/rest-cors')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2153,7 +2153,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Inspect Security
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B8CACE4E-1B10-46F4-B147-31F32B442915')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/inspect')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/inspect')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2161,7 +2161,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Person Signal Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EA6B3CF2-9DE2-4CF0-8EFA-01B76B51C329')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/signals')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/signals')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2169,7 +2169,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Person Signal Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '67AF60BC-D814-4DBC-BA64-D12128CCF52C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/signals/{SignalTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/signals/{SignalTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2177,7 +2177,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: OpenID Connect Clients
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0A18B520-915E-429B-AC49-7A7F73B19BAA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2185,7 +2185,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: OpenID Connect Scopes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '06FA872A-18B0-431A-917E-6F7B2EA8ED95')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/scopes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/scopes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2193,7 +2193,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: OpenID Connect Scope Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '55E70873-B882-4864-8B97-66F8ED3588C7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/scopes/{ScopeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/scopes/{ScopeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2201,7 +2201,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: OpenID Connect Client Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '41E6A833-1697-4463-9962-01DFD123D4C9')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/clients/{AuthClientId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/security/openid/clients/{AuthClientId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2209,7 +2209,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communications
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '199DC522-F4D6-4D82-AF44-3C16EE9D2CDA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2217,7 +2217,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '39F75137-90D2-4E6F-8613-F19344767594')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2225,7 +2225,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '924036BE-6B89-4C60-96ED-0A9AF1201CC4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/templates/{TemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/templates/{TemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2233,7 +2233,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Communications
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '14D8F894-F70F-44F7-9F0C-2545F87256FF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2241,7 +2241,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Communication Details
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2FE2D59E-2737-49C8-AF1B-4366A8371A8E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system/{CommunicationId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system/{CommunicationId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2249,7 +2249,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Emails (Legacy)
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '89B7A631-EA6F-4DA3-9380-04EE67B63E9E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/email-legacy')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/email-legacy')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2257,7 +2257,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Email Details (Legacy)
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '588C72A8-7DEC-405F-BA4A-FE64F87CB817')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/email-legacy/{emailId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/email-legacy/{emailId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2265,7 +2265,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Mediums
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6FF35C53-F89F-4601-8543-2E2328C623F8')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/mediums')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/mediums')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2273,7 +2273,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Transports
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '29CC8A0B-6476-4200-8B93-DC9BA8767D59')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/transports')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/transports')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2281,7 +2281,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: SMS Phone Numbers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3F1EA6E5-6C61-444A-A80E-5B66F96F521B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-numbers')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-numbers')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2289,7 +2289,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Safe Sender Domains
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B90576B0-110E-4DC0-8EB8-4668C5238508')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/safe-sender')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/safe-sender')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2297,7 +2297,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Send Photo Requests
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B64D0429-488C-430E-8C32-5C7F32589F73')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/send-photo-requests')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/send-photo-requests')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2305,7 +2305,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Communication Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B55323CD-F494-43E7-97BF-4E13DAB58E0B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system-communication-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/system-communication-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2313,7 +2313,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Queue
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '285ED8C0-0471-4503-95DE-A8E3F179206C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/queue')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/queue')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2321,7 +2321,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication List Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '307570FD-9472-48D5-A67F-80B2056C5308')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-list-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-list-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2329,7 +2329,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Lists
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '002C9991-523A-478C-B19B-E9DF2B977481')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2337,7 +2337,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication List Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '60216406-5BD6-4253-B891-262717C07A00')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists/{GroupId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists/{GroupId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2345,7 +2345,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FB3FCA8D-2011-42B5-A9F4-2657C4F856AC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists/{GroupId}/member/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-lists/{GroupId}/member/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2353,7 +2353,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Template Categories
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4D6DEAB3-46A0-4B27-B67B-71383EFE1171')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-template-categories')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/communication-template-categories')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2361,7 +2361,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: SMS Pipeline
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2277986A-F53D-4E46-B6EC-6BAD1111DA39')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-pipeline')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-pipeline')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2369,7 +2369,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: SMS Pipeline Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FCE39659-4D86-48D7-9C48-D837D3588C42')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-pipeline/{SmsPipelineId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/sms-pipeline/{SmsPipelineId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2377,7 +2377,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Nameless People
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '62F18233-0395-4BEA-ADC7-BC08271EDAF1')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/nameless-people')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/nameless-people')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2385,7 +2385,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communications Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '436D1D6F-2EB9-43F3-8EEE-359DC0B09360')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/settings')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/communications/settings')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2393,7 +2393,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Check-in
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '66C5DD58-094C-4FF9-9AFB-44801FCFCC2D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2401,7 +2401,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Check-in Configuration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C646A95A-D12D-4A67-9BE6-C9695C0267ED')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/configuration')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/configuration')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2409,7 +2409,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Named Locations
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '96501070-BB46-4432-AA3C-A8C496691629')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/named-locations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/named-locations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2417,7 +2417,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Schedules
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AFFFB245-A0EB-4002-B736-A2D52DD692CF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/schedules')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/schedules')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2425,7 +2425,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Devices
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5A06C807-251C-4155-BBE7-AAC73D0745E3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/devices')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/devices')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2433,7 +2433,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Device Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7D5311B3-F526-4E22-8153-EA1799467886')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/devices/{DeviceId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/devices/{DeviceId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2441,7 +2441,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Check-in Labels
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7C093A63-F2AC-4FE3-A826-8BF06D204EA2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2449,7 +2449,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Check-in Label
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B565FDF8-959F-4AC8-ACDF-3B1B5CFE79F5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels/{BinaryFileId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels/{BinaryFileId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2457,7 +2457,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Edit Label
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '15D3766A-6026-4F29-B5C6-5944204642F3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels/{BinaryFileId}/edit')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/labels/{BinaryFileId}/edit')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2465,7 +2465,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Ability Levels
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9DD78A23-BE4B-474E-BCBC-F06AAABB67FA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/ability-levels')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/ability-levels')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2473,7 +2473,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Label Merge Fields
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1DED4B72-1784-4781-A836-83D705B153FC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/label-merge-fields')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/label-merge-fields')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2481,7 +2481,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Search Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3E0327B1-EE0E-41DC-87DB-C4C14922A7CA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/search-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/checkin/search-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2489,7 +2489,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Power Tools
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7F1F4130-CB98-473B-9DE1-7A886D2283ED')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2497,7 +2497,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: SQL Command
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '03C49950-9C4C-4668-9C65-9A0DF43D1B33')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/sql')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/sql')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2505,7 +2505,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: External Applications
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5A676DCC-37F0-4624-8CCD-408A5A471D8A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/apps')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/apps')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2513,7 +2513,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Sample Data
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '844ABF2A-D085-4370-945B-86C89580C6D5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/sample-data')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/sample-data')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2521,7 +2521,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Model Map
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '67DBC902-BCD5-449E-8A1F-888A3CF9875E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/model-map')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/model-map')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2529,7 +2529,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Power BI Registration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BB65848A-3EBD-D181-4150-956A39FFE57E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/power-bi')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/power-bi')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2537,7 +2537,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Workflow Import/Export
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B6096C72-FE05-472F-B668-B31253DD5E25')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/workflow-import')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/workflow-import')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2545,7 +2545,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C831428A-6ACD-4D49-9B2D-046D399E3123')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2553,7 +2553,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Location Services
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1FD5698F-7279-463F-9637-9A80DB86BB86')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/location-services')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/location-services')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2561,7 +2561,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Entity Attributes
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '23507C90-3F78-40D4-B847-6FE8941FCD32')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/entity-attributes')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/entity-attributes')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2569,7 +2569,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Search Services
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1719F597-5BA9-458D-9362-9C3E558E5C82')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/search-services')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/search-services')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2577,7 +2577,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Jobs Administration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C58ADA1A-6322-4998-8FED-C3565DE87EFA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2585,7 +2585,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Scheduled Job Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E18AC09D-45CD-49CF-8874-157B32556B7D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs/{ServiceJobId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs/{ServiceJobId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2593,7 +2593,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Scheduled Job History
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B388793F-077C-4E5C-95CA-C331B00DF986')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs/{ServiceJobId}/history')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/jobs/{ServiceJobId}/history')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2601,7 +2601,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Filters
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5537F375-B652-4603-8E04-119C74414CD7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-filters')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-filters')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2609,7 +2609,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Transformations
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9C569E6B-F745-40E4-B91B-A518CD6C2922')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-transformations')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-transformations')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2617,7 +2617,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Data Selects
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '227FDFB9-8C29-4B34-ABE5-E0579A3A6018')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-selects')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/data-selects')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2625,7 +2625,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: File Storage Providers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FEA8D6FC-B26F-48D5-BE69-6BCEF7CDC4E5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/file-storage')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/file-storage')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2633,7 +2633,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Exception List
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '21DA6141-0A03-4F00-B0A8-3B110FBE2438')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2641,7 +2641,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Exception Occurrences
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F95539C3-03C8-422B-B586-EF4C2FE91CF4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions/{ExceptionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions/{ExceptionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2649,7 +2649,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Exception Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F1F58172-E03E-4299-910A-ED34F857DAFB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions/detail/{ExceptionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/exceptions/detail/{ExceptionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2657,7 +2657,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Protect My Ministry
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E7F4B733-60FF-4FA3-AB17-0832E123F6F2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/protect-my-ministry')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/protect-my-ministry')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2665,7 +2665,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Checkr
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6076DB93-7C1A-44F3-BE40-5E517B59ABD0')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/checkr')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/checkr')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2673,7 +2673,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Financial Gateways
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F65AA215-8B46-4E34-B709-FA956BF62C30')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/gateways')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/gateways')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2681,7 +2681,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Gateway Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '24DE6092-CE91-468C-8E49-94DB3875B9B7')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/gateways/{GatewayId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/gateways/{GatewayId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2689,7 +2689,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Background Check Providers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '53F1B7D9-806A-4541-93BC-4CCF5DFF90B3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/background-check-providers')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/background-check-providers')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2697,7 +2697,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Signature Document Providers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FAA6A2F2-4CFD-4B97-A0C2-8F4F9CE841F3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/signature-documents')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/signature-documents')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2705,7 +2705,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Category Manager
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '95ACFF8C-B9EE-41C6-BAC0-D117D6E1FADC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/category-manager')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/category-manager')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2713,7 +2713,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: System Configuration
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '7BFD28F2-6B90-4191-B7C1-2CDBFA23C3FA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/configuration')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/configuration')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2721,7 +2721,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Application Groups
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'BA078BB8-7205-46F4-9530-B2FB9EAD3E57')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2729,7 +2729,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Application Group Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'E9737442-E6A9-47D5-A842-11C1AE1CF43F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups/{GroupId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups/{GroupId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2737,7 +2737,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Group Member Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C920AA8F-A8CA-4984-95EC-58B7309E670E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups/members/{GroupMemberId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/application-groups/members/{GroupMemberId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2745,7 +2745,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge Template Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '42717D07-3744-4187-89EC-F01EDD0FF5AD')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/merge-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/merge-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2753,7 +2753,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Note Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0E5876F-E29E-477B-8874-482DEDD3A6C5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-types')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-types')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2761,7 +2761,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Note Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '421C838D-F6BA-46C5-8DBF-36CA0CC17B77')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-types/{NoteTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-types/{NoteTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2769,7 +2769,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Events
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '283D2756-7686-4ED5-AE44-4B8811E3956F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-events')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-events')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2777,7 +2777,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Event
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C68D4CA0-9B2D-4B85-AC5B-361126E787CC')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-events/{eventId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-events/{eventId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2785,7 +2785,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Suggestions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '3FD46CEF-113E-4A19-B9B7-D9A1BCA9C043')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-suggestions')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-suggestions')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2793,7 +2793,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Suggestion
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '9593F41C-23A2-4F65-BBD4-634A06380E2E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-suggestions/{eventId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/following-suggestions/{eventId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2801,7 +2801,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Universal Search Index Components
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'FF26DBAC-7E4B-4C55-8EE0-2277187D06F3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/universal-search')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/universal-search')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2809,7 +2809,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Calendar Dimension Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2660D554-D161-44A1-9763-A73C60559B50')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/calendar-dimension')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/calendar-dimension')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2817,7 +2817,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Phone Systems
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A33C221B-F361-437A-BDC1-E46BB3B532EF')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/phone-systems')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/phone-systems')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2825,7 +2825,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Note Watches
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '74FB3214-8F11-4D40-A0E9-1AEA377E9217')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-watches')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-watches')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2833,7 +2833,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Note Watch Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6717F2F8-85C8-404A-B4CD-683379A2A487')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-watches/{NoteWatchId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/note-watches/{NoteWatchId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2841,7 +2841,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Spark Data Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0591E498-0AD6-45A5-B8CA-9BCA5C771F03')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/spark-data')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/spark-data')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2849,7 +2849,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Asset Storage Providers
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '1F5D5991-C586-45FC-A5AC-B7CD4D533990')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/asset-storage')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/asset-storage')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2857,7 +2857,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Asset Storage Provider Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '299751A1-EBE2-467C-8271-44BA13278331')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/asset-storage/{assetStorageProviderId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/asset-storage/{assetStorageProviderId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2865,7 +2865,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Assessment Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CC59F2B4-16B4-47BE-B8A0-E417EABA068F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/assessments')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/assessments')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2873,7 +2873,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Assessment Type Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F3C96663-1079-4F20-BABA-3F3203AFCFF3')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/assessments/{AssessmentTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/assessments/{AssessmentTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2881,7 +2881,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Rock Logs
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '82EC7718-6549-4531-A0AB-7957919AE71C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/rock-logs')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/rock-logs')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2889,7 +2889,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Message Bus
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '0FF43CC8-1C29-4882-B2F6-7B6F4C25FE41')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2897,7 +2897,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Transport
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '10E34A5D-D967-457D-9DF1-A1D33DA9D100')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus/transports')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus/transports')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2905,7 +2905,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Queue
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '45E865C0-CD2D-43CD-AA8A-BF5DBF537587')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus/queue/{QueueKey}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/message-bus/queue/{QueueKey}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2913,7 +2913,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Web Farm
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '249BE98D-9DDE-4B19-9D97-9C76D9EA3056')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/web-farm')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/web-farm')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2921,7 +2921,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Web Farm Node
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '63698D5C-7C73-44A4-A27D-A7EB777EB2A2')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/web-farm/{WebFarmNodeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/system/web-farm/{WebFarmNodeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2929,7 +2929,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Installed Plugins
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5B6DBC42-8B03-4D15-8D92-AAFA28FD8616')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/plugins')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/plugins')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2937,7 +2937,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: My Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CF54E680-2E02-4F16-B54B-A2F2D29CD932')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2945,7 +2945,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Change Password
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '4508223C-2989-4592-B764-B3F372B6051B')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/password')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/password')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2953,7 +2953,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Communication Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'EA611245-7A5E-4995-A3C6-EB97C6FD7C8D')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/communication-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/communication-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2961,7 +2961,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '753D62FD-A06F-43A3-B9D2-0A728FF2809A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/communication-templates/{TemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/communication-templates/{TemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2969,7 +2969,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge Templates
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '23F81A62-617A-498B-AAAC-D748F721176A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/merge-templates')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/merge-templates')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2977,7 +2977,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Merge Template Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F29C7AF7-6436-4C4B-BD17-330A487A4BF4')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/merge-templates/{MergeTemplateId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/merge-templates/{MergeTemplateId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2985,7 +2985,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Settings
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '18B8EB25-B9F2-48C6-B047-51A512A8F1C9')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following-settings')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following-settings')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -2993,7 +2993,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'A6AE67F7-0B46-4F9A-9C96-054E1E82F784')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3001,7 +3001,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Personal Links
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'ED1B85B7-C76A-4624-B644-ABC1CD4BDEAE')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/personal-links')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/personal-links')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3009,7 +3009,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Section Detail
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'B0866B52-290B-4623-A123-2AD913BB905C')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/personal-links/{SectionId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/personal-links/{SectionId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3017,7 +3017,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: My Dashboard
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'AE1818D8-581C-4599-97B9-509EA450376A')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/dashboard')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/dashboard')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3025,7 +3025,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: Following Suggestions
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '50BAAD66-46AB-4968-AFD6-254C536ACEC8')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'my/following')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3034,7 +3034,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- Page: API Docs
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'C132F1D5-9F43-4AEB-9172-CD45138B4CEA')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/api-docs')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'admin/power-tools/api-docs')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3044,7 +3044,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- READD Page: Group Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '2109228C-D828-4B58-9310-8D93D10B846E')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/record/{StepId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/record/{StepId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3052,7 +3052,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- READD Page: Step Type
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '8E78F9DC-657D-41BF-BE0F-56916B6BF92F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/type/{StepTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/type/{StepTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3060,7 +3060,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- READD Page: Step Program
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '6E46BC35-1FCB-4619-84F0-BB6926D2DDD5')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/program/{ProgramId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps/program/{ProgramId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3068,7 +3068,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- READD Page: Group Types
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '5CD8E024-710B-4EDE-8C8C-4C9E15E6AFAB')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'GroupType/{GroupTypeId}')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'GroupType/{GroupTypeId}')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
@@ -3076,7 +3076,7 @@ IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] 
 
 -- READD Page: Steps
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'F5E8A369-4856-42E5-B187-276DFCEB1F3F')
-IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps')
+IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = 'steps')
                     INSERT INTO [PageRoute] (
                         [IsSystem],[PageId],[Route],[Guid])
                     VALUES(
