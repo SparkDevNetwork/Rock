@@ -879,19 +879,19 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void AddPageRoute( string pageGuid, string route, string guid )
         {
-            guid = guid != null ? string.Format( "'{0}'", guid ) : "NEWID()";
+            // Known GUID or create one. This is needed because we don't want ticks around the NEWID function.
+            guid = guid != null ? $"'{guid}'" : "NEWID()";
 
-            Migration.Sql( string.Format( @"
-
+            Migration.Sql( $@"
                 DECLARE @PageId int
-                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{pageGuid}')
 
-                IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = '{1}')
-                    INSERT INTO [PageRoute] (
-                        [IsSystem],[PageId],[Route],[Guid])
-                    VALUES(
-                        1, @PageId, '{1}', {2} )
-", pageGuid, route, guid ) );
+                IF @PageId IS NOT NULL AND NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = '{route}')
+                BEGIN
+                    INSERT INTO [PageRoute] ([IsSystem],[PageId],[Route],[Guid])
+                    VALUES(1, @PageId, '{route}', {guid} )
+                END" );
+                
         }
 
         /// <summary>
