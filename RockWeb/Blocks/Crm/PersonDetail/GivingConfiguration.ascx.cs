@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( nextPaymentDate.HasValue )
                 {
-                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}: : Next Gift {nextPaymentDate.ToShortDateString()}";
+                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText} <span class='o-30'>|</span> Next Gift {nextPaymentDate.ToShortDateString()}";
                 }
                 else
                 {
@@ -449,17 +449,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( cardIsExpired )
             {
-                lSavedAccountInUseStatusHtml.Text = "<span class='label label-danger'>Expired</span>";
+                lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-danger text-nowrap'>Expired</span>";
             }
             else
             {
                 if ( cardInUse )
                 {
-                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-success'>In Use</span>";
+                    lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-success text-nowrap'>In Use</span>";
                 }
                 else
                 {
-                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-default'>Not In Use</span>";
+                    lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-muted text-nowrap'>Not In Use</span>";
                 }
             }
         }
