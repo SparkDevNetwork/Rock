@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 var locationGroup = groupLocations.Group;
                 var groupType = GroupTypeCache.Get( groupLocations.Group.GroupTypeId );
                 StringBuilder sbGroupLocations = new StringBuilder();
-                sbGroupLocations.AppendLine( string.Format( "<tbody class='group-locations js-group-locations' data-group-id='{0}' data-locations-expanded='1'>", group.Id ) );
+                sbGroupLocations.AppendLine( string.Format( "<tbody class='group-locations js-group-locations' data-group-id='{0}' data-locations-expanded='1'>", locationGroup.Id ) );
 
                 var groupSchedulingUrl = ResolveRockUrl( string.Format( "~/GroupScheduler/{0}", locationGroup.Id ) );
 
@@ -371,7 +371,7 @@ namespace RockWeb.Blocks.GroupScheduling
     <a href='{2}' class='ml-1 text-color js-group-scheduler-link'><i class='{3}'></i></a>
 </th>",
                         columnsCount - 1, // {0}
-                        group.Name, // {1}
+                        locationGroup.Name, // {1}
                         groupSchedulingUrl,  // {2}
                         "fa fa-calendar-check-o" )  // {3}
                     );
