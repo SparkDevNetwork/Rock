@@ -1427,7 +1427,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 Order = item.Order;
                 ChallengeItems = item.ChildItems
                     .OrderBy( i => i.Order )
-                    .Select( i => new CachedChallengeItem( i.ChildContentChannelItem ) )
+                    .Select( i => new CachedChallengeItem( i.ChildContentChannelItem, i.Order ) )
                     .ToList();
 
                 if ( item.Attributes == null )
@@ -1498,13 +1498,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// Initializes a new instance of the <see cref="CachedChallengeItem"/> class.
             /// </summary>
             /// <param name="item">The item.</param>
-            public CachedChallengeItem( ContentChannelItem item )
+            /// <param name="order">Overrides the order for this item.</param>
+            public CachedChallengeItem( ContentChannelItem item, int? order = null )
             {
                 Id = item.Id;
                 Guid = item.Guid;
                 Title = item.Title;
                 Content = item.Content;
-                Order = item.Order;
+                Order = order ?? item.Order;
 
                 if ( item.Attributes == null )
                 {
