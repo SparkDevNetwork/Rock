@@ -69,6 +69,16 @@ td.wrap-contents {
   margin-bottom: 0;
 }
 
+// Add Border to last row
+.table-inline:not(.table-hide-last-border) > tbody > tr:last-child > td {
+  border-bottom: 1px solid @table-border-color;
+}
+
+// No Border on First row
+.table-inline > tbody > tr:first-child > td {
+  border-top: 0;
+}
+
 .grid {
   margin-bottom: 15px;
 

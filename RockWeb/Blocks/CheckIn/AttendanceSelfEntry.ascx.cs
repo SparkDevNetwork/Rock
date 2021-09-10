@@ -1007,7 +1007,7 @@ ORDER BY [Text]",
                             }
                             parameters.Add( "CheckedInPersonIds", personIds.AsDelimited( "," ) );
 
-                            primaryPerson.LaunchWorkflow( workflowTypeGuid, primaryPerson.FullName, parameters );
+                            primaryPerson.LaunchWorkflow( workflowTypeGuid, primaryPerson.FullName, parameters, null );
 
                         }
                         catch ( Exception ex )

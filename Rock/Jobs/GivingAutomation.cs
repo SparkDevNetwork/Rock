@@ -16,12 +16,12 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Dynamic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,33 +30,43 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
-using Rock.SystemKey;
 using Rock.Tasks;
 using Rock.Utility.Enums;
-using Rock.Utility.Settings.GivingAnalytics;
+using Rock.Utility.Settings.Giving;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job that serves two purposes:
-    ///   1.) Update Classification Attributes. This will be done no more than once a day and only on the days of week
-    ///       configured in the analytics settings.
-    ///   2.) Send Alerts - Sends alerts for gifts since the last run date and determines ‘Follow-up Alerts’ (alerts
+    /// Job that serves three purposes:
+    ///   1) Update Classification Attributes. This will be done no more than once a day and only on the days of week
+    ///       configured in the automation settings.
+    ///   2) Update Giving Journey Stage Attributes.    
+    ///   3) Send Alerts - Sends alerts for gifts since the last run date and determines ‘Follow-up Alerts’ (alerts
     ///       triggered from gifts expected but not given) once a day.
     /// </summary>
-    [DisplayName( "Giving Analytics" )]
-    [Description( "Job that updates giving classification attributes as well as creating giving alerts." )]
+    [DisplayName( "Giving Automation" )]
+    [Description( "Job that updates giving classifications and journey stages, and send any giving alerts." )]
     [DisallowConcurrentExecution]
 
-    [IntegerField( "Max Days Since Last Gift",
+    [IntegerField( "Max Days Since Last Gift for Alerts",
         Description = "The maximum number of days since a giving group last gave where alerts can be made. If the last gift was earlier than this maximum, then alerts are not relevant.",
         DefaultIntegerValue = AttributeDefaultValue.MaxDaysSinceLastGift,
         Key = AttributeKey.MaxDaysSinceLastGift,
         Order = 1 )]
 
-    public class GivingAnalytics : IJob
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (180).",
+        IsRequired = false,
+        DefaultIntegerValue = AttributeDefaultValue.CommandTimeout,
+        Category = "General",
+        Order = 7 )]
+
+    public class GivingAutomation : IJob
     {
         #region Keys
 
@@ -66,6 +76,7 @@ namespace Rock.Jobs
         private static class AttributeKey
         {
             public const string MaxDaysSinceLastGift = "MaxDaysSinceLastGift";
+            public const string CommandTimeout = "CommandTimeout";
         }
 
         /// <summary>
@@ -74,6 +85,7 @@ namespace Rock.Jobs
         private static class AttributeDefaultValue
         {
             public const int MaxDaysSinceLastGift = 548;
+            public const int CommandTimeout = 180;
         }
 
         /// <summary>
@@ -97,7 +109,7 @@ namespace Rock.Jobs
         /// scheduler can instantiate the class whenever it needs.
         /// </para>
         /// </summary>
-        public GivingAnalytics()
+        public GivingAutomation()
         {
         }
 
@@ -106,36 +118,45 @@ namespace Rock.Jobs
         #region Execute
 
         /// <summary>
-        /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
-        ///
         /// Called by the <see cref="IScheduler" /> when a
         /// <see cref="ITrigger" /> fires that is associated with
         /// the <see cref="IJob" />.
         /// </summary>
         public virtual void Execute( IJobExecutionContext jobContext )
         {
-            // Since this class could technically be persisted across jobs, zero out the last run cache
-            _lastRunDateTime = null;
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            if ( !settings.GivingAutomationJobSettings.IsEnabled )
+            {
+                jobContext.UpdateLastStatusMessage( $"Giving Automation is not enabled." );
+                return;
+            }
 
             // Create a context object that will help transport state and helper information so as to not rely on the
             // job class itself being a single use instance
-            var context = new GivingAnalyticsContext( jobContext );
+            var context = new GivingAutomationContext( jobContext );
 
             // First determine the ranges for each of the 4 giving bins by looking at all contribution transactions in the last 12 months.
-            // These ranges will be updated in the Giving Analytics system settings.
+            // These ranges will be updated in the Giving Automation system settings.
             UpdateGiverBinRanges( context );
 
             // Load the alert types once since they will be needed for each giving id
             HydrateAlertTypes( context );
 
+            // we only want to update classifications on people that have had new transactions since they last time they were classified
+            DateTime? lastClassificationRunDateTime = GetLastClassificationsRunDateTime();
+            var classificationStartDateTime = RockDateTime.Now;
+
+            var classificationsDaysToRun = settings.GivingClassificationSettings.RunDays ?? DayOfWeekFlag.All.AsDayOfWeekList().ToArray();
+            context.IsGivingClassificationRunDay = classificationsDaysToRun.Contains( context.Now.DayOfWeek );
+
             // Get a list of all giving units (distinct giver ids) that have given since the last classification
-            HydrateGivingIdsToClassify( context );
+            HydrateGivingIdsToClassify( context, lastClassificationRunDateTime );
 
             // For each giving id, classify and run analysis and create alerts
             var totalStopWatch = new Stopwatch();
-            var elapsedTimesMs = new List<long>();
+            var elapsedTimesMs = new ConcurrentBag<long>();
 
-            if ( DEBUG )
+            if ( _debugModeEnabled )
             {
                 totalStopWatch.Start();
             }
@@ -143,49 +164,108 @@ namespace Rock.Jobs
             long progressCount = 0;
             long totalCount = context.GivingIdsToClassify.Count();
 
-            Parallel.ForEach( context.GivingIdsToClassify, givingId =>
-            {
-                var perStopWatch = new Stopwatch();
+            jobContext.UpdateLastStatusMessage( $"Processing classifications and alerts for {totalCount} Giving Units..." );
 
-                if ( DEBUG )
+            DateTime lastGivingClassificationProgressUpdate = DateTime.MinValue;
+
+            Parallel.ForEach(
+                context.GivingIdsToClassify,
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                givingId =>
                 {
-                    perStopWatch.Start();
-                }
+                    var perStopWatch = new Stopwatch();
 
-                ProcessGivingId( givingId, context );
-
-                if ( DEBUG )
-                {
-                    perStopWatch.Stop();
-                    elapsedTimesMs.Add( perStopWatch.ElapsedMilliseconds );
-                    var ms = perStopWatch.ElapsedMilliseconds.ToString( "G" );
-                    progressCount++;
-                    if ( progressCount % 10 == 0 )
+                    if ( _debugModeEnabled )
                     {
-                        Debug( $"Giving Id {givingId} done in {ms}ms, progress: {progressCount}/{totalCount}, totalMS:{totalStopWatch.Elapsed.TotalMilliseconds}, progressCount/minute:{progressCount / totalStopWatch.Elapsed.TotalMinutes}" );
+                        perStopWatch.Start();
                     }
 
-                    perStopWatch.Reset();
-                }
-            } );
+                    ProcessGivingIdClassificationsAndAlerts( givingId, context );
 
-            if ( DEBUG && elapsedTimesMs.Any() )
+                    if ( _debugModeEnabled )
+                    {
+                        perStopWatch.Stop();
+                        elapsedTimesMs.Add( perStopWatch.ElapsedMilliseconds );
+                        progressCount++;
+                        if ( ( RockDateTime.Now - lastGivingClassificationProgressUpdate ).TotalSeconds >= 3 )
+                        {
+                            var ms = perStopWatch.ElapsedMilliseconds.ToString( "G" );
+
+                            WriteToDebugOutput( $"Progress: {progressCount}/{totalCount}, progressCount/minute:{progressCount / totalStopWatch.Elapsed.TotalMinutes}" );
+                            perStopWatch.Reset();
+                            lastGivingClassificationProgressUpdate = RockDateTime.Now;
+                        }
+                    }
+                } );
+
+            if ( context.IsGivingClassificationRunDay )
+            {
+                // If GivingClassifications where run and we've identified the GivingIds and are done processing them, set lastClassificationRunDateTime to when we starting hydrating. 
+                SaveLastClassificationsRunDateTime( classificationStartDateTime );
+            }
+
+            if ( _debugModeEnabled && elapsedTimesMs.Any() )
             {
                 totalStopWatch.Stop();
                 var ms = totalStopWatch.ElapsedMilliseconds.ToString( "G" );
-                Debug( $"Finished {elapsedTimesMs.Count} giving ids in average of {elapsedTimesMs.Average()}ms per giving unit and total {ms}ms" );
+                WriteToDebugOutput( $"Finished {elapsedTimesMs.Count} giving ids in average of {elapsedTimesMs.Average()}ms per giving unit and total {ms}ms" );
             }
+
+            jobContext.UpdateLastStatusMessage( "Processing Alerts..." );
 
             // Create alerts for "late" gifts
             ProcessLateAlerts( context );
 
-            // Store the last run date
-            LastRunDateTime = context.Now;
+            // Process the Giving Journeys
+            var givingJourneyHelper = new GivingJourneyHelper
+            {
+                SqlCommandTimeout = context.SqlCommandTimeoutSeconds
+            };
+
+            givingJourneyHelper.OnProgress += ( object sender, GivingJourneyHelper.ProgressEventArgs e ) =>
+            {
+                jobContext.UpdateLastStatusMessage( e.ProgressMessage );
+            };
+
+            var daysToUpdateGivingJourneys = GivingAutomationSettings.LoadGivingAutomationSettings().GivingJourneySettings.DaysToUpdateGivingJourneys;
+
+            bool updateGivingJourneyStages = daysToUpdateGivingJourneys?.Contains( context.Now.DayOfWeek ) == true;
+
+            string journeyStageStatusMessage;
+            if ( updateGivingJourneyStages )
+            {
+                givingJourneyHelper.UpdateGivingJourneyStages();
+                if ( givingJourneyHelper.UpdatedJourneyStageCount == 1 )
+                {
+                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount } journey stage.";
+                }
+                else
+                {
+                    journeyStageStatusMessage = $"Updated {givingJourneyHelper.UpdatedJourneyStageCount } journey stages.";
+                }
+            }
+            else
+            {
+                journeyStageStatusMessage = "Journey Stage updates not configured to run today.";
+            }
+
+            string classificationStatusMessage;
+            if ( context.IsGivingClassificationRunDay )
+            {
+                classificationStatusMessage = $@"
+Classified {context.GivingIdsSuccessful} giving {"group".PluralizeIf( context.GivingIdsSuccessful != 1 )}.
+There were {context.GivingIdsFailed} {"failure".PluralizeIf( context.GivingIdsFailed != 1 )}.".Trim();
+            }
+            else
+            {
+                classificationStatusMessage = "Classification updates not configured to run today.";
+            }
 
             // Format the result message
-            jobContext.Result = $@"Classified {context.GivingIdsSuccessful} giving {"group".PluralizeIf( context.GivingIdsSuccessful != 1 )}.
-There were {context.GivingIdsFailed} {"failure".PluralizeIf( context.GivingIdsFailed != 1 )}.
-Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1 )}.";
+            jobContext.Result = $@"
+{classificationStatusMessage}
+Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1 )}.
+{journeyStageStatusMessage}".Trim();
 
             if ( context.Errors.Any() )
             {
@@ -208,13 +288,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         #region Settings and Attribute Helpers
 
         /// <summary>
-        /// Creates the person identifier query for dataview.
+        /// Creates the person identifier query for DataView.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="alertType">Type of the alert.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static IQueryable<int> CreatePersonIdQueryForDataview( RockContext rockContext, FinancialTransactionAlertType alertType, GivingAnalyticsContext context )
+        private static IQueryable<int> CreatePersonIdQueryForDataView( RockContext rockContext, FinancialTransactionAlertType alertType, GivingAutomationContext context )
         {
             if ( alertType.DataViewId is null )
             {
@@ -265,7 +345,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="context">The context.</param>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        private static string GetAttributeKey( GivingAnalyticsContext context, string guidString )
+        private static string GetAttributeKey( GivingAutomationContext context, string guidString )
         {
             var key = AttributeCache.Get( guidString )?.Key;
 
@@ -284,7 +364,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="people">The people.</param>
         /// <param name="guidString">The guid string.</param>
         /// <returns></returns>
-        private static string GetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString )
+        private static string GetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString )
         {
             if ( !people.Any() )
             {
@@ -324,7 +404,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="guidString">The unique identifier string.</param>
         /// <param name="value">The value.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString, double? value, RockContext rockContext = null )
+        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, double? value, RockContext rockContext = null )
         {
             SetGivingUnitAttributeValue( context, people, guidString, value.ToStringSafe(), rockContext );
         }
@@ -337,7 +417,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="guidString">The unique identifier string.</param>
         /// <param name="value">The value.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString, decimal? value, RockContext rockContext = null )
+        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, decimal? value, RockContext rockContext = null )
         {
             SetGivingUnitAttributeValue( context, people, guidString, value.ToStringSafe(), rockContext );
         }
@@ -350,7 +430,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="guidString">The unique identifier string.</param>
         /// <param name="value">The value.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString, int? value, RockContext rockContext = null )
+        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, int? value, RockContext rockContext = null )
         {
             SetGivingUnitAttributeValue( context, people, guidString, value.ToStringSafe(), rockContext );
         }
@@ -363,7 +443,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="guidString">The unique identifier string.</param>
         /// <param name="value">The value.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString, DateTime? value, RockContext rockContext = null )
+        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, DateTime? value, RockContext rockContext = null )
         {
             SetGivingUnitAttributeValue( context, people, guidString, value.ToISO8601DateString(), rockContext );
         }
@@ -376,7 +456,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="guidString">The unique identifier string.</param>
         /// <param name="value">The value.</param>
         /// <param name="rockContext">The rock context.</param>
-        private static void SetGivingUnitAttributeValue( GivingAnalyticsContext context, List<Person> people, string guidString, string value, RockContext rockContext = null )
+        private static void SetGivingUnitAttributeValue( GivingAutomationContext context, List<Person> people, string guidString, string value, RockContext rockContext = null )
         {
             var key = GetAttributeKey( context, guidString );
 
@@ -421,26 +501,6 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         }
 
         /// <summary>
-        /// Gets the giving analytics settings.
-        /// </summary>
-        /// <returns></returns>
-        private static GivingAnalyticsSetting GetGivingAnalyticsSettings()
-        {
-            return Rock.Web.SystemSettings
-                .GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION )
-                .FromJsonOrNull<GivingAnalyticsSetting>() ?? new GivingAnalyticsSetting();
-        }
-
-        /// <summary>
-        /// Saves the giving analytics settings.
-        /// </summary>
-        /// <param name="givingAnalyticsSetting">The giving analytics setting.</param>
-        private static void SaveGivingAnalyticsSettings( GivingAnalyticsSetting givingAnalyticsSetting )
-        {
-            Rock.Web.SystemSettings.SetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION, givingAnalyticsSetting.ToJson() );
-        }
-
-        /// <summary>
         /// Gets the global repeat prevention days.
         /// </summary>
         /// <value>
@@ -450,8 +510,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         {
             get
             {
-                var settings = GetGivingAnalyticsSettings();
-                return settings?.Alerting?.GlobalRepeatPreventionDurationDays;
+                var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+                return settings.GivingAlertingSettings.GlobalRepeatPreventionDurationDays;
             }
         }
 
@@ -461,12 +521,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <value>
         /// The global repeat prevention days.
         /// </value>
-        private static int? GratitiudeRepeatPreventionDays
+        private static int? GratitudeRepeatPreventionDays
         {
             get
             {
-                var settings = GetGivingAnalyticsSettings();
-                return settings?.Alerting?.GratitudeRepeatPreventionDurationDays;
+                var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+                return settings?.GivingAlertingSettings?.GratitudeRepeatPreventionDurationDays;
             }
         }
 
@@ -480,8 +540,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         {
             get
             {
-                var settings = GetGivingAnalyticsSettings();
-                return settings?.Alerting?.FollowupRepeatPreventionDurationDays;
+                var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+                return settings?.GivingAlertingSettings?.FollowupRepeatPreventionDurationDays;
             }
         }
 
@@ -489,32 +549,18 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// Gets the last run date time.
         /// </summary>
         /// <returns></returns>
-        private static DateTime? LastRunDateTime
+        private static DateTime? GetLastClassificationsRunDateTime()
         {
-            get
-            {
-                if ( _lastRunDateTime.HasValue )
-                {
-                    return _lastRunDateTime;
-                }
-
-                var settings = GetGivingAnalyticsSettings();
-                _lastRunDateTime = settings?.GivingAnalytics?.GivingAnalyticsLastRunDateTime;
-                return _lastRunDateTime;
-            }
-            set
-            {
-                _lastRunDateTime = value;
-                var settings = GetGivingAnalyticsSettings() ?? new GivingAnalyticsSetting();
-                var givingAnalytics = settings.GivingAnalytics ?? new Utility.Settings.GivingAnalytics.GivingAnalytics();
-
-                givingAnalytics.GivingAnalyticsLastRunDateTime = _lastRunDateTime;
-                settings.GivingAnalytics = givingAnalytics;
-
-                SaveGivingAnalyticsSettings( settings );
-            }
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            return settings.GivingClassificationSettings.LastRunDateTime;
         }
-        private static DateTime? _lastRunDateTime = null;
+
+        private static void SaveLastClassificationsRunDateTime( DateTime lastRunDateTime )
+        {
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
+            settings.GivingClassificationSettings.LastRunDateTime = lastRunDateTime;
+            GivingAutomationSettings.SaveGivingAutomationSettings( settings );
+        }
 
         /// <summary>
         /// Gets the last run date time.
@@ -522,10 +568,10 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <returns></returns>
         private static decimal? GetGivingBinLowerLimit( int binIndex )
         {
-            var settings = GetGivingAnalyticsSettings();
-            var giverBin = settings?.GivingAnalytics?.GiverBins?.Count > binIndex ?
-                settings.GivingAnalytics.GiverBins[binIndex] :
-                null;
+            var classificationSettings = GivingAutomationSettings.LoadGivingAutomationSettings().GivingClassificationSettings;
+            var giverBin = classificationSettings.GiverBins?.Count > binIndex
+                    ? classificationSettings.GiverBins[binIndex]
+                    : null;
 
             return giverBin?.LowerLimit;
         }
@@ -536,23 +582,16 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <returns></returns>
         private static void SetGivingBinLowerLimit( int binIndex, decimal? lowerLimit )
         {
-            var settings = GetGivingAnalyticsSettings();
-            var givingAnalytics = settings.GivingAnalytics ?? new Utility.Settings.GivingAnalytics.GivingAnalytics();
-            settings.GivingAnalytics = givingAnalytics;
+            var settings = GivingAutomationSettings.LoadGivingAutomationSettings();
 
-            if ( givingAnalytics.GiverBins == null )
+            while ( settings.GivingClassificationSettings.GiverBins.Count <= binIndex )
             {
-                settings.GivingAnalytics.GiverBins = new List<GiverBin>();
+                settings.GivingClassificationSettings.GiverBins.Add( new GiverBin() );
             }
 
-            while ( givingAnalytics.GiverBins.Count <= binIndex )
-            {
-                settings.GivingAnalytics.GiverBins.Add( new GiverBin() );
-            }
-
-            var giverBin = settings.GivingAnalytics.GiverBins[binIndex];
+            var giverBin = settings.GivingClassificationSettings.GiverBins[binIndex];
             giverBin.LowerLimit = lowerLimit;
-            SaveGivingAnalyticsSettings( settings );
+            GivingAutomationSettings.SaveGivingAutomationSettings( settings );
         }
 
         /// <summary>
@@ -560,7 +599,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// </summary>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static DateTime GetEarliestLastGiftDateTime( GivingAnalyticsContext context )
+        private static DateTime GetEarliestLastGiftDateTime( GivingAutomationContext context )
         {
             var days = context.GetAttributeValue( AttributeKey.MaxDaysSinceLastGift ).AsIntegerOrNull() ??
                 AttributeDefaultValue.MaxDaysSinceLastGift;
@@ -573,7 +612,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// </summary>
         /// <param name="orderedValues"></param>
         /// <returns></returns>
-        public static Tuple<List<decimal>, List<decimal>, List<decimal>> SplitQuartileRanges( List<decimal> orderedValues )
+        internal static Tuple<List<decimal>, List<decimal>, List<decimal>> SplitQuartileRanges( List<decimal> orderedValues )
         {
             var count = orderedValues.Count;
 
@@ -632,7 +671,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="people">The people.</param>
         /// <param name="amount">The amount.</param>
         /// <returns></returns>
-        public static decimal GetAmountIqrCount( GivingAnalyticsContext context, List<Person> people, decimal amount )
+        internal static decimal GetAmountIqrCount( GivingAutomationContext context, List<Person> people, decimal amount )
         {
             // For the purpose of having a high number that is reasonable and also does not overflow any c# type, I am choosing
             // a constant to represent infinity other than max value of any particular type
@@ -689,12 +728,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="people">The people.</param>
         /// <param name="daysSinceLastTransaction">The days since last transaction.</param>
         /// <returns></returns>
-        public static decimal GetFrequencyDeviationCount( GivingAnalyticsContext context, List<Person> people, double daysSinceLastTransaction )
+        internal static decimal GetFrequencyDeviationCount( GivingAutomationContext context, List<Person> people, double daysSinceLastTransaction )
         {
             // For the purpose of having a high number that is reasonable and also does not overflow any c# type, I am choosing
             // a constant to represent infinity other than max value of any particular type
-            const int infinity = 1000;
-            const int negativeInfinity = 0 - infinity;
+            const int FrequencyStdDevsInfinity = 1000;
+            const int FrequencyStdDevsNegativeInfinity = 0 - FrequencyStdDevsInfinity;
 
             var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
             var frequencyMean = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS ).AsDecimal();
@@ -726,13 +765,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             }
 
             // Make sure the calculation doesn't exceed "infinity"
-            if ( numberOfFrequencyStdDevs > infinity )
+            if ( numberOfFrequencyStdDevs > FrequencyStdDevsInfinity )
             {
-                numberOfFrequencyStdDevs = infinity;
+                numberOfFrequencyStdDevs = FrequencyStdDevsInfinity;
             }
-            else if ( numberOfFrequencyStdDevs < negativeInfinity )
+            else if ( numberOfFrequencyStdDevs < FrequencyStdDevsNegativeInfinity )
             {
-                numberOfFrequencyStdDevs = negativeInfinity;
+                numberOfFrequencyStdDevs = FrequencyStdDevsNegativeInfinity;
             }
 
             return numberOfFrequencyStdDevs;
@@ -744,7 +783,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static bool AllowFollowUpAlerts( List<AlertView> recentAlerts, GivingAnalyticsContext context )
+        private static bool AllowFollowUpAlerts( List<AlertView> recentAlerts, GivingAutomationContext context )
         {
             if ( !recentAlerts.Any() )
             {
@@ -785,7 +824,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        private static bool AllowGratitudeAlerts( List<AlertView> recentAlerts, GivingAnalyticsContext context )
+        private static bool AllowGratitudeAlerts( List<AlertView> recentAlerts, GivingAutomationContext context )
         {
             if ( !recentAlerts.Any() )
             {
@@ -806,11 +845,11 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             var lastGratitudeAlertDate = recentAlerts.LastOrDefault( a => a.AlertType == AlertType.Gratitude )?.AlertDateTime;
 
-            if ( GratitiudeRepeatPreventionDays.HasValue && lastGratitudeAlertDate.HasValue )
+            if ( GratitudeRepeatPreventionDays.HasValue && lastGratitudeAlertDate.HasValue )
             {
-                var daysSinceLastGratitiudeAlert = ( context.Now - lastGratitudeAlertDate.Value ).TotalDays;
+                var daysSinceLastGratitudeAlert = ( context.Now - lastGratitudeAlertDate.Value ).TotalDays;
 
-                if ( daysSinceLastGratitiudeAlert <= GratitiudeRepeatPreventionDays.Value )
+                if ( daysSinceLastGratitudeAlert <= GratitudeRepeatPreventionDays.Value )
                 {
                     // This group has gratitude alerts within the repeat duration. Don't create any new gratitude alerts.
                     return false;
@@ -828,10 +867,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// Hydrates the alert types that should be considered today (according to the alert type RunDays).
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void HydrateAlertTypes( GivingAnalyticsContext context )
+        private static void HydrateAlertTypes( GivingAutomationContext context )
         {
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+
                 // Get the alert types
                 var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
                 var alertTypes = alertTypeService.Queryable()
@@ -856,7 +897,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// Hydrates the giving ids to classify.
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void HydrateGivingIdsToClassify( GivingAnalyticsContext context )
+        /// <param name="lastClassificationRunDateTime">The last classification run date time.</param>
+        private static void HydrateGivingIdsToClassify( GivingAutomationContext context, DateTime? lastClassificationRunDateTime )
         {
             // Classification attributes need to be written for all adults with the same giver id in Rock. So Ted &
             // Cindy should have the same attribute values if they are set to contribute as a family even if Cindy
@@ -866,12 +908,17 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // the "late gift" alert, which needs to find people based on the absence of a gift.
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
                 var financialTransactionService = new FinancialTransactionService( rockContext );
 
                 // This is the people that have given since the last run date or the configured old gift date point.
-                var minTransactionDate = LastRunDateTime ?? GetEarliestLastGiftDateTime( context );
-                var givingIds = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
-                    .Where( t => t.TransactionDateTime >= minTransactionDate )
+                // Just in case transactions were modified since the last run date, also include givingids that have
+                // transaction records that have been modified since the last run date.
+                var minTransactionDate = lastClassificationRunDateTime ?? GetEarliestLastGiftDateTime( context );
+                var givingIds = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
+                    .Where( t =>
+                        ( t.TransactionDateTime >= minTransactionDate )
+                        || ( t.ModifiedDateTime.HasValue && t.ModifiedDateTime.Value >= minTransactionDate ) )
                     .Select( t => t.AuthorizedPersonAlias.Person.GivingId )
                     .Distinct()
                     .ToList();
@@ -885,16 +932,17 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// Updates the giver bins ranges.
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void UpdateGiverBinRanges( GivingAnalyticsContext context )
+        private static void UpdateGiverBinRanges( GivingAutomationContext context )
         {
             // First determine the ranges for each of the 4 giving bins by looking at all contribution transactions in the last 12 months.
-            // These ranges will be updated in the Giving Analytics system settings.
+            // These ranges will be updated in the Giving Automation system settings.
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
                 var minDate = context.Now.AddMonths( -12 );
 
                 var financialTransactionService = new FinancialTransactionService( rockContext );
-                var givingGroups = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                var givingGroups = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
                     .Where( t =>
                         t.TransactionDateTime.HasValue &&
                         t.TransactionDateTime > minDate &&
@@ -954,10 +1002,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// </summary>
         /// <param name="givingId">The giving identifier.</param>
         /// <param name="context">The context.</param>
-        private static void ProcessGivingId( string givingId, GivingAnalyticsContext context )
+        private static void ProcessGivingIdClassificationsAndAlerts( string givingId, GivingAutomationContext context )
         {
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+
                 // Load the people that are in this giving group so their attribute values can be set
                 var personService = new PersonService( rockContext );
                 var people = personService.Queryable()
@@ -975,7 +1025,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // off of all giving in the last 12 months.In the case of a tie in values( e.g. 50% credit card, 50%
                 // cash ) use the most recent value as the tie breaker. This could be calculated with only one gift.
                 var oneYearAgo = context.Now.AddMonths( -12 );
-                var twelveMonthsTransactionsQry = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                var twelveMonthsTransactionsQry = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
                     .Where( t =>
                         t.AuthorizedPersonAliasId.HasValue &&
                         t.TransactionDateTime >= oneYearAgo );
@@ -1025,32 +1075,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     }
                 }
 
-                // We need to know if this giving group has other transactions. If they do then we do not need to
-                // extrapolate because we have the complete 12 month data picture.
-                var mostRecentOldTransactionDateQuery = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
-                    .Where( t =>
-                        t.AuthorizedPersonAliasId.HasValue &&
-                        t.TransactionDateTime < oneYearAgo );
-
-                if ( personAliasIds.Count == 1 )
-                {
-                    var personAliasId = personAliasIds[0];
-                    mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => t.AuthorizedPersonAliasId == personAliasId );
-                }
-                else
-                {
-                    mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
-                }
-
-                var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
-
                 // If the group doesn't have FirstGiftDate attribute, set it by querying for the value
                 var firstGiftDate = GetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_ERA_FIRST_GAVE ).AsDateTime();
                 var updatedFirstGiftDate = false;
 
                 if ( !firstGiftDate.HasValue )
                 {
-                    var firstGiftDateQry = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                    var firstGiftDateQry = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
                         .Where( t =>
                             t.AuthorizedPersonAliasId.HasValue &&
                             t.TransactionDateTime.HasValue );
@@ -1082,11 +1113,27 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 }
 
                 // Only run classifications on the days specified by the settings
-                var settings = GetGivingAnalyticsSettings();
-                var daysToRun = settings?.GivingAnalytics?.GiverAnalyticsRunDays ?? DayOfWeekFlag.All.AsDayOfWeekList();
-
-                if ( daysToRun.Contains( context.Now.DayOfWeek ) )
+                if ( context.IsGivingClassificationRunDay )
                 {
+                    // We need to know if this giving group has other transactions. If they do then we do not need to
+                    // extrapolate because we have the complete 12 month data picture.
+                    var mostRecentOldTransactionDateQuery = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
+                        .Where( t =>
+                            t.AuthorizedPersonAliasId.HasValue &&
+                            t.TransactionDateTime < oneYearAgo );
+
+                    if ( personAliasIds.Count == 1 )
+                    {
+                        var personAliasId = personAliasIds[0];
+                        mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => t.AuthorizedPersonAliasId == personAliasId );
+                    }
+                    else
+                    {
+                        mostRecentOldTransactionDateQuery = mostRecentOldTransactionDateQuery.Where( t => personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
+                    }
+
+                    var mostRecentOldTransactionDate = mostRecentOldTransactionDateQuery.Select( t => t.TransactionDateTime ).Max();
+
                     // Update the attributes using the logic function
                     var classificationSuccess = UpdateGivingUnitClassifications( givingId, people, twelveMonthsTransactions, mostRecentOldTransactionDate, context, oneYearAgo );
 
@@ -1100,8 +1147,8 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                     // Update the giving history attribute. This is done outside of the UpdateGivingUnitClassifications method because it
                     // requires a unique query
-                    var givingHistoryObjects = financialTransactionService.GetGivingAnalyticsMonthlyAccountGivingHistory( givingId );
-                    var givingHistoryJson = givingHistoryObjects.ToJson();
+                    List<MonthlyAccountGivingHistory> monthlyAccountGivingHistoryList = financialTransactionService.GetGivingAutomationMonthlyAccountGivingHistory( givingId );
+                    var givingHistoryJson = monthlyAccountGivingHistoryList.ToJson();
                     SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_HISTORY_JSON, givingHistoryJson );
 
                     // Save all the attribute value changes
@@ -1115,7 +1162,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 else if ( updatedFirstGiftDate )
                 {
                     // Save attribute value change for first gift date
-                    // First gift date isn't technically part of classification since this attribute predates giving analytics
+                    // First gift date isn't technically part of classification since this attribute predates giving automation
                     people.ForEach( p => p.SaveAttributeValues( rockContext ) );
                     rockContext.SaveChanges();
                 }
@@ -1180,16 +1227,16 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 // Check the repeat prevention durations. These prevent multiple alert types from being generated
                 // for these people in a short time period (if configured)
                 var allowFollowUp = AllowFollowUpAlerts( twelveMonthsAlerts, context );
-                var allowGratitiude = AllowGratitudeAlerts( twelveMonthsAlerts, context );
+                var allowGratitude = AllowGratitudeAlerts( twelveMonthsAlerts, context );
                 var alertsToAddToDb = new List<FinancialTransactionAlert>();
 
-                if ( allowFollowUp || allowGratitiude )
+                if ( allowFollowUp || allowGratitude )
                 {
                     foreach ( var transaction in transactionsToCheckAlerts )
                     {
                         var lastTransactionDate = twelveMonthsTransactions
-                            .LastOrDefault( t => t.TransactionDateTime < transaction.TransactionDateTime )?
-                            .TransactionDateTime;
+                            .LastOrDefault( t => t.TransactionDateTime < transaction.TransactionDateTime )
+                            ?.TransactionDateTime;
 
                         var alertsForTransaction = lastTransactionDate.HasValue ?
                             CreateAlertsForTransaction(
@@ -1199,7 +1246,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                                 transaction,
                                 lastTransactionDate.Value,
                                 context,
-                                allowGratitiude,
+                                allowGratitude,
                                 allowFollowUp ) :
                             new List<FinancialTransactionAlert>();
 
@@ -1217,9 +1264,9 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
                             // Recheck if more alerts can be created now that there are more alerts created
                             allowFollowUp = AllowFollowUpAlerts( twelveMonthsAlerts, context );
-                            allowGratitiude = AllowGratitudeAlerts( twelveMonthsAlerts, context );
+                            allowGratitude = AllowGratitudeAlerts( twelveMonthsAlerts, context );
 
-                            if ( !allowFollowUp && !allowGratitiude )
+                            if ( !allowFollowUp && !allowGratitude )
                             {
                                 // Break out of the for loop since no more alerts can be generated
                                 break;
@@ -1252,13 +1299,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="context">The context.</param>
         /// <param name="allowGratitude">if set to <c>true</c> [allow gratitude].</param>
         /// <param name="allowFollowUp">if set to <c>true</c> [allow follow up].</param>
-        public static List<FinancialTransactionAlert> CreateAlertsForTransaction(
+        internal static List<FinancialTransactionAlert> CreateAlertsForTransaction(
             RockContext rockContext,
             List<Person> people,
             List<AlertView> recentAlerts,
             TransactionView transaction,
             DateTime lastGiftDate,
-            GivingAnalyticsContext context,
+            GivingAutomationContext context,
             bool allowGratitude,
             bool allowFollowUp )
         {
@@ -1415,7 +1462,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     // If the query hasn't already been created, generate the person id query for this dataview
                     if ( personIdQuery is null )
                     {
-                        personIdQuery = CreatePersonIdQueryForDataview( rockContext, alertType, context );
+                        personIdQuery = CreatePersonIdQueryForDataView( rockContext, alertType, context );
 
                         if ( personIdQuery is null )
                         {
@@ -1478,12 +1525,12 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <returns>
         /// True if success
         /// </returns>
-        public static bool UpdateGivingUnitClassifications(
+        internal static bool UpdateGivingUnitClassifications(
             string givingId,
             List<Person> people,
             List<TransactionView> transactions,
             DateTime? mostRecentOldTransactionDate,
-            GivingAnalyticsContext context,
+            GivingAutomationContext context,
             DateTime minDate )
         {
             if ( transactions == null )
@@ -1628,6 +1675,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             // Update the last classification run date to now
             SetGivingUnitAttributeValue( context, people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE, context.Now );
 
+            /*
             // iii.) Classification for: Median Amount, IQR Amount, Mean Frequency, Frequency Standard Deviation
             //      a.) If there is 12 months of giving use all of those
             //      b.) If not use the previous gifts that are within 12 months but there must be at least 5 gifts.
@@ -1635,6 +1683,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
             //      d.) For Frequency: we will calculate the trimmed mean and standard deviation. The trimmed mean will
             //          exclude the top 10 % largest and smallest gifts with in the dataset. If the number of gifts
             //          available is < 10 then we’ll remove the top largest and smallest gift.
+            */
 
             if ( transactionTwelveMonthCount < 5 )
             {
@@ -1647,11 +1696,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return true;
             }
 
+            /*
             // Interquartile range deals with finding the median. Then we say the numbers before the median numbers
             // are q1 and the numbers after are q1.
             // Ex: 50, 100, 101, 103, 103, 5000
             // Q1, Median, and then Q3: (50, 100), (101, 103), (103, 5000)
             // IQR is the median(Q3) - median(Q1)
+            */
 
             // Store median amount
             var orderedAmounts = transactions.Select( t => t.TotalAmount ).OrderBy( a => a ).ToList();
@@ -1746,7 +1797,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// Processes the late alerts. This method finds giving groups that have an expected gift date that has now passed
         /// </summary>
         /// <param name="context">The context.</param>
-        private static void ProcessLateAlerts( GivingAnalyticsContext context )
+        private static void ProcessLateAlerts( GivingAutomationContext context )
         {
             // Find the late gift alert types. There are already filtered to the alert types that should run today
             var lateGiftAlertTypes = context.AlertTypes
@@ -1771,12 +1822,14 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = context.SqlCommandTimeoutSeconds;
+
                 var stopWatch = new Stopwatch();
                 var elapsedTimesMs = new List<long>();
 
-                if ( DEBUG )
+                if ( _debugModeEnabled )
                 {
-                    Debug( "Starting late transaction query" );
+                    WriteToDebugOutput( "Starting late transaction query" );
                     stopWatch.Start();
                 }
 
@@ -1829,11 +1882,11 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     .Select( p => p.PersonId )
                     .ToList();
 
-                if ( DEBUG )
+                if ( _debugModeEnabled )
                 {
                     stopWatch.Stop();
                     var ms = stopWatch.ElapsedMilliseconds.ToString( "G" );
-                    Debug( $"Found {personIds.Count} people with potential late transactions in {ms}ms" );
+                    WriteToDebugOutput( $"Found {personIds.Count} people with potential late transactions in {ms}ms" );
                     stopWatch.Reset();
                 }
 
@@ -1874,7 +1927,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     var aliasIds = people.SelectMany( p => p.Aliases.Select( a => a.Id ) ).ToList();
 
                     // Get the last giver, who the alert will be tied to
-                    var lastTransactionAliasId = financialTransactionService.GetGivingAnalyticsSourceTransactionQuery()
+                    var lastTransactionAliasId = financialTransactionService.GetGivingAutomationSourceTransactionQuery()
                         .Where( ft =>
                             ft.AuthorizedPersonAliasId.HasValue &&
                             aliasIds.Contains( ft.AuthorizedPersonAliasId.Value ) )
@@ -1887,7 +1940,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                         continue;
                     }
 
-                    if ( DEBUG )
+                    if ( _debugModeEnabled )
                     {
                         stopWatch.Start();
                     }
@@ -1912,19 +1965,19 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     var alerts = CreateAlertsForLateTransaction( rockContext, lateGiftAlertTypes, lastTransactionAliasId.Value, people, recentAlerts, context );
                     alertsToAdd.AddRange( alerts );
 
-                    if ( DEBUG )
+                    if ( _debugModeEnabled )
                     {
                         stopWatch.Stop();
                         elapsedTimesMs.Add( stopWatch.ElapsedMilliseconds );
                         var ms = stopWatch.ElapsedMilliseconds.ToString( "G" );
-                        Debug( $"Giving Id {givingId} late alerts done in {ms}ms" );
+                        WriteToDebugOutput( $"Giving Id {givingId} late alerts done in {ms}ms" );
                         stopWatch.Reset();
                     }
                 }
 
-                if ( DEBUG && elapsedTimesMs.Any() )
+                if ( _debugModeEnabled && elapsedTimesMs.Any() )
                 {
-                    Debug( $"Finished {elapsedTimesMs.Count} giving ids for late alerts in average of {elapsedTimesMs.Average()}ms per giving unit" );
+                    WriteToDebugOutput( $"Finished {elapsedTimesMs.Count} giving ids for late alerts in average of {elapsedTimesMs.Average()}ms per giving unit" );
                 }
 
                 // Save the new alerts to the database
@@ -1949,13 +2002,13 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="recentAlerts">The recent alerts.</param>
         /// <param name="context">The context.</param>
         /// <returns></returns>
-        public static List<FinancialTransactionAlert> CreateAlertsForLateTransaction(
+        internal static List<FinancialTransactionAlert> CreateAlertsForLateTransaction(
             RockContext rockContext,
             List<FinancialTransactionAlertType> lateGiftAlertTypes,
             int lastTransactionAuthorizedAliasId,
             List<Person> people,
             List<AlertView> recentAlerts,
-            GivingAnalyticsContext context )
+            GivingAutomationContext context )
         {
             var alerts = new List<FinancialTransactionAlert>();
 
@@ -1975,7 +2028,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                 return alerts;
             }
 
-            // Load giving analytics attributes
+            // Load giving overview attributes
             var amountIqr = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR ).AsDecimal();
             var medianGiftAmount = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN ).AsDecimal();
             var frequencyStdDev = GetGivingUnitAttributeValue( context, people, Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS ).AsDecimal();
@@ -2076,7 +2129,7 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
                     // If the query hasn't already been created, generate the person id query for this dataview
                     if ( personIdQuery is null )
                     {
-                        personIdQuery = CreatePersonIdQueryForDataview( rockContext, alertType, context );
+                        personIdQuery = CreatePersonIdQueryForDataView( rockContext, alertType, context );
 
                         if ( personIdQuery is null )
                         {
@@ -2154,131 +2207,152 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <summary>
         /// Log debug output?
         /// </summary>
-        private static bool DEBUG = false;
+        private static bool _debugModeEnabled = false;
 
         /// <summary>
         /// Debugs the specified message.
         /// </summary>
         /// <param name="message">The message.</param>
-        private static void Debug( string message )
+        private static void WriteToDebugOutput( string message )
         {
-            if ( DEBUG && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+            if ( _debugModeEnabled && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
-                System.Diagnostics.Debug.WriteLine( $"\tGiving Analytics {RockDateTime.Now:mm.ss.f} {message}" );
+                System.Diagnostics.Debug.WriteLine( $"\tGiving Automation {RockDateTime.Now:mm.ss.f} {message}" );
             }
         }
 
         #endregion Debug
-    }
 
-    /// <summary>
-    /// Giving Analytics Context
-    /// </summary>
-    public sealed class GivingAnalyticsContext
-    {
+        #region Classes
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="GivingAnalyticsContext"/> class.
+        /// Giving Automation Context
         /// </summary>
-        /// <param name="jobExecutionContext">The job execution context.</param>
-        public GivingAnalyticsContext( IJobExecutionContext jobExecutionContext )
+        public sealed class GivingAutomationContext
         {
-            JobExecutionContext = jobExecutionContext;
-            JobDataMap = jobExecutionContext.JobDetail.JobDataMap;
-            DataViewPersonQueries = new Dictionary<int, IQueryable<int>>();
+            /// <summary>
+            /// Initializes a new instance of the <see cref="GivingAutomationContext"/> class.
+            /// </summary>
+            /// <param name="jobExecutionContext">The job execution context.</param>
+            public GivingAutomationContext( IJobExecutionContext jobExecutionContext )
+            {
+                JobExecutionContext = jobExecutionContext;
+                JobDataMap = jobExecutionContext.JobDetail.JobDataMap;
+                DataViewPersonQueries = new Dictionary<int, IQueryable<int>>();
+                SqlCommandTimeoutSeconds = JobDataMap.GetString( GivingAutomation.AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? AttributeDefaultValue.CommandTimeout;
+            }
+
+            #region Fields
+
+            /// <summary>
+            /// Returns true based on <see cref="GivingClassificationSettings.RunDays"/>
+            /// </summary>
+            /// <value><c>true</c> if this instance is giving classification run day; otherwise, <c>false</c>.</value>
+            public bool IsGivingClassificationRunDay { get; set; }
+
+            /// <summary>
+            /// Gets the SQL command timeout seconds.
+            /// </summary>
+            /// <value>The SQL command timeout seconds.</value>
+            public int SqlCommandTimeoutSeconds { get; private set; }
+
+            #endregion Fields
+
+            /// <summary>
+            /// The date time to consider as current time. The time when this processing instance began
+            /// </summary>
+            public DateTime Now { get; set; } = RockDateTime.Now;
+
+            /// <summary>
+            /// The errors
+            /// </summary>
+            public readonly HashSet<string> Errors = new HashSet<string>();
+
+            /// <summary>
+            /// Gets the job execution context.
+            /// </summary>
+            /// <value>
+            /// The job execution context.
+            /// </value>
+            public IJobExecutionContext JobExecutionContext { get; }
+
+            /// <summary>
+            /// Gets the job data map.
+            /// </summary>
+            /// <value>
+            /// The job data map.
+            /// </value>
+            public JobDataMap JobDataMap { get; }
+
+            /// <summary>
+            /// Gets or sets the giving ids to classify.
+            /// </summary>
+            /// <value>
+            /// The giving ids to classify.
+            /// </value>
+            public List<string> GivingIdsToClassify { get; set; }
+
+            /// <summary>
+            /// Gets or sets the giving ids classified.
+            /// </summary>
+            /// <value>
+            /// The giving ids classified.
+            /// </value>
+            public int GivingIdsSuccessful { get; set; }
+
+            /// <summary>
+            /// Gets or sets the alerts created.
+            /// </summary>
+            /// <value>
+            /// The alerts created.
+            /// </value>
+            public int AlertsCreated { get; set; }
+
+            /// <summary>
+            /// Gets or sets the giving ids failed.
+            /// </summary>
+            /// <value>
+            /// The giving ids failed.
+            /// </value>
+            public int GivingIdsFailed { get; set; }
+
+            /// <summary>
+            /// Gets or sets the percentile lower range.
+            /// Ex. Index 50 holds the lower range for being in the 50th percentile of the givers within the church
+            /// </summary>
+            /// <value>
+            /// The percentile lower range.
+            /// </value>
+            public List<decimal> PercentileLowerRange { get; set; }
+
+            /// <summary>
+            /// Gets or sets the alert types.
+            /// </summary>
+            /// <value>
+            /// The alert types.
+            /// </value>
+            public List<FinancialTransactionAlertType> AlertTypes { get; set; }
+
+            /// <summary>
+            /// Gets the data view person queries.
+            /// </summary>
+            /// <value>
+            /// The data view person queries.
+            /// </value>
+            public Dictionary<int, IQueryable<int>> DataViewPersonQueries { get; }
+
+            /// <summary>
+            /// Gets the attribute value.
+            /// </summary>
+            /// <param name="key">The key.</param>
+            /// <returns></returns>
+            public string GetAttributeValue( string key )
+            {
+                return JobDataMap.GetString( key );
+            }
         }
 
-        /// <summary>
-        /// The date time to consider as current time. The time when this processing instance began
-        /// </summary>
-        public DateTime Now { get; set; } = RockDateTime.Now;
-
-        /// <summary>
-        /// The errors
-        /// </summary>
-        public readonly HashSet<string> Errors = new HashSet<string>();
-
-        /// <summary>
-        /// Gets the job execution context.
-        /// </summary>
-        /// <value>
-        /// The job execution context.
-        /// </value>
-        public IJobExecutionContext JobExecutionContext { get; }
-
-        /// <summary>
-        /// Gets the job data map.
-        /// </summary>
-        /// <value>
-        /// The job data map.
-        /// </value>
-        public JobDataMap JobDataMap { get; }
-
-        /// <summary>
-        /// Gets or sets the giving ids to classify.
-        /// </summary>
-        /// <value>
-        /// The giving ids to classify.
-        /// </value>
-        public List<string> GivingIdsToClassify { get; set; }
-
-        /// <summary>
-        /// Gets or sets the giving ids classified.
-        /// </summary>
-        /// <value>
-        /// The giving ids classified.
-        /// </value>
-        public int GivingIdsSuccessful { get; set; }
-
-        /// <summary>
-        /// Gets or sets the alerts created.
-        /// </summary>
-        /// <value>
-        /// The alerts created.
-        /// </value>
-        public int AlertsCreated { get; set; }
-
-        /// <summary>
-        /// Gets or sets the giving ids failed.
-        /// </summary>
-        /// <value>
-        /// The giving ids failed.
-        /// </value>
-        public int GivingIdsFailed { get; set; }
-
-        /// <summary>
-        /// Gets or sets the percentile lower range.
-        /// Ex. Index 50 holds the lower range for being in the 50th percentile of the givers within the church
-        /// </summary>
-        /// <value>
-        /// The percentile lower range.
-        /// </value>
-        public List<decimal> PercentileLowerRange { get; set; }
-
-        /// <summary>
-        /// Gets or sets the alert types.
-        /// </summary>
-        /// <value>
-        /// The alert types.
-        /// </value>
-        public List<FinancialTransactionAlertType> AlertTypes { get; set; }
-
-        /// <summary>
-        /// Gets the data view person queries.
-        /// </summary>
-        /// <value>
-        /// The data view person queries.
-        /// </value>
-        public Dictionary<int, IQueryable<int>> DataViewPersonQueries { get; }
-
-        /// <summary>
-        /// Gets the attribute value.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public string GetAttributeValue( string key )
-        {
-            return JobDataMap.GetString( key );
-        }
+        #endregion
     }
 
     /// <summary>

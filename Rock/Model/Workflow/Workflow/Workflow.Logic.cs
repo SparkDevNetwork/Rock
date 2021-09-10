@@ -76,6 +76,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                var workflowTypeCache = this.WorkflowTypeCache;
+                return workflowTypeCache != null ? workflowTypeCache : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a collection containing all the <see cref="Rock.Model.WorkflowActivity">WorkflowActivities</see> that are a part of this Workflow instance.
         /// </summary>
         /// <value>

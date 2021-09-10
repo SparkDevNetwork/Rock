@@ -48,33 +48,33 @@ namespace Rock.Client
 
         /// <summary />
         public string CardLavaTemplate { get; set; } = @"<div class=""card-top"">
-                <h3 class=""step-name"">{{ StepType.Name }}</h3>
-            </div>
-            <div class=""card-middle"">
-                {% if StepType.HighlightColor == '' or IsComplete == false %}
-                    <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
-                {% else %}
-                    <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
-                {% endif %}
-            </div>
-            <div class=""card-bottom"">
-                <p class=""step-status"">
-                    {% if LatestStepStatus %}
-                        <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
-                    {% endif %}
-                    {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
-                        <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
-                    {% endif %}
-                    {% if LatestStep and LatestStep.CompletedDateTime != '' %}
-                        <br />
-                        <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
-                    {% endif %}
-                </p>
-                {% if StepCount > 1 %}
-                    <span class=""badge"">{{ StepCount }}</span>
-                {% endif %}
-            </div>
-            ";
+    <h3 class=""step-name"">{{ StepType.Name }}</h3>
+</div>
+<div class=""card-middle"">
+    {% if StepType.HighlightColor == '' or IsComplete == false %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+    {% else %}
+        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+    {% endif %}
+</div>
+<div class=""card-bottom"">
+    <p class=""step-status"">
+        {% if LatestStepStatus %}
+            <span class=""label"" style=""background-color: {{ LatestStepStatus.StatusColor }};"">{{ LatestStepStatus.Name }}</span>
+        {% endif %}
+        {% if ShowCampus and LatestStep and LatestStep.Campus != '' %}
+            <span class=""label label-campus"">{{ LatestStep.Campus.Name }}</span>
+        {% endif %}
+        {% if LatestStep and LatestStep.CompletedDateTime != '' %}
+            <br />
+            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+        {% endif %}
+    </p>
+    {% if StepCount > 1 %}
+        <span class=""badge"">{{ StepCount }}</span>
+    {% endif %}
+</div>
+";
 
         /// <summary />
         public string Description { get; set; }

@@ -159,7 +159,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Cancels the specified scheduled transaction.
+        /// Cancels the specified scheduled transaction on the <see cref="FinancialScheduledTransaction.FinancialGateway" />.
+        /// After doing this, the next call to <see cref="FinancialScheduledTransactionService.GetStatus(FinancialScheduledTransaction, out string)"/>
+        /// will set <see cref="FinancialScheduledTransaction.IsActive" /> to <c>false</c>
+        /// if is it successfully cancelled.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="errorMessages">The error messages.</param>

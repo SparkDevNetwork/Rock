@@ -33,9 +33,8 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Lists of current alerts based on current filters.
     /// </summary>
-    [DisplayName( "Giving Analytics Alerts" )]
+    [DisplayName( "Giving Automation Alerts" )]
     [Category( "Finance" )]
     [Description( "Lists of current alerts based on current filters." )]
 
@@ -49,14 +48,14 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.TransactionPage )]
 
     [LinkedPage(
-        "Alert Config Page",
+        "Automation Configuration Page",
         Description = "The page to configure what criteria should be used to generate alerts.",
         Order = 1,
         Key = AttributeKey.ConfigPage )]
 
     #endregion  Block Attributes
 
-    public partial class GivingAnalyticsAlerts : RockBlock
+    public partial class GivingAutomationAlerts : RockBlock
     {
         #region Attribute Keys
 
@@ -188,8 +187,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            BindFilter();
-            BindGrid();
+            this.NavigateToCurrentPageReference();
         }
 
         /// <summary>

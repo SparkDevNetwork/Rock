@@ -468,6 +468,9 @@ namespace Rock.Client.Enums
         ConnectionRequestStatusModify = 0xe,
         ConnectionRequestStateModify = 0xf,
         ConnectionRequestDelete = 0x10,
+        StepAdded = 0x11,
+        StepStatusModify = 0x12,
+        StepCampusModify = 0x13,
     }
 
     /// <summary>

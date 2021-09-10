@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -184,7 +185,9 @@ namespace Rock
             var authorizedAttributes = new Dictionary<string, AttributeCache>();
 
             if ( entity == null )
+            {
                 return authorizedAttributes;
+            }
 
             foreach ( var item in entity.Attributes )
             {
@@ -219,7 +222,53 @@ namespace Rock
             return attributeQuery.AsNoTracking().Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList().Where( a => a != null ).ToList();
         }
 
-        #endregion IHasAttributes extensions
+        /// <summary>
+        /// Query by AttributeIds. This is optimized to execute about 10-15ms more quickly than doing a Contains statement.
+        /// </summary>
+        /// <param name="attributeValueQuery">The attribute value query.</param>
+        /// <param name="attributeIds">The attribute ids.</param>
+        /// <returns>IQueryable&lt;AttributeValue&gt;.</returns>
+        public static IQueryable<AttributeValue> WhereAttributeIds( this IQueryable<Rock.Model.AttributeValue> attributeValueQuery, List<int> attributeIds )
+        {
+            if ( attributeIds.Count != 1 )
+            {
+                if ( attributeIds.Count >= 1000 )
+                {
+                    // the linq Expression.Or tree gets too big if there is more than 1000 attributes, so just do a contains instead
+                    attributeValueQuery = attributeValueQuery.Where( v => attributeIds.Contains( v.AttributeId ) );
+                }
+                else
+                {
+                    // a Linq query that uses 'Contains' can't be cached in the EF Plan Cache, so instead of doing a Contains, build a List of OR conditions. This can save 15-20ms per call (and still ends up with the exact same SQL)
+                    var parameterExpression = Expression.Parameter( typeof( AttributeValue ), "p" );
+                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
+                    Expression expression = null;
 
+                    foreach ( var attributeId in attributeIds )
+                    {
+                        Expression attributeIdValue = Expression.Constant( attributeId );
+                        if ( expression != null )
+                        {
+                            expression = Expression.Or( expression, Expression.Equal( propertyExpression, attributeIdValue ) );
+                        }
+                        else
+                        {
+                            expression = Expression.Equal( propertyExpression, attributeIdValue );
+                        }
+                    }
+
+                    attributeValueQuery = attributeValueQuery.Where( parameterExpression, expression );
+                }
+            }
+            else
+            {
+                int attributeId = attributeIds[0];
+                attributeValueQuery = attributeValueQuery.Where( v => v.AttributeId == attributeId );
+            }
+
+            return attributeValueQuery;
+        }
+
+        #endregion IHasAttributes extensions
     }
 }
