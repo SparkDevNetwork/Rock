@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Cms
             pnlAddSection.Visible = false;
             pnlAddLink.Visible = true;
             tbLinkName.Text = RockPage.Title;
-            urlLink.Text = Page.Request.Url.ToString();
+            urlLink.Text = Page.Request.UrlProxySafe().ToString();
             BindSectionDropdown();
         }
 

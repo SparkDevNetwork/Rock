@@ -2697,7 +2697,7 @@ function onTaskCompleted( resultData )
             // Set a placeholder value for the navigation URL, to be replaced using client-side script when the task completed notification is sent.
             this.CurrentPageReference.Parameters.AddOrReplace( PageParameterKey.CommunicationId, _viewCommunicationIdPlaceholder );
 
-            var uri = new Uri( Request.Url.ToString() );
+            var uri = new Uri( Request.UrlProxySafe().ToString() );
 
             _viewCommunicationTemplateUrl = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
 

@@ -121,7 +121,7 @@ namespace Rock.Net
         {
             CurrentUser = UserLoginService.GetCurrentUser( true );
 
-            var uri = new Uri( request.Url.ToString() );
+            var uri = new Uri( request.UrlProxySafe().ToString() );
             RootUrlPath = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + request.ApplicationPath;
 
             ClientInformation = new ClientInformation( request );

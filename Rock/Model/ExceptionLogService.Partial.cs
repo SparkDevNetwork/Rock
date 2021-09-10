@@ -466,9 +466,9 @@ namespace Rock.Model
 
                 exceptionLog.Cookies = cookies.ToString();
                 exceptionLog.StatusCode = context.Response.StatusCode.ToString();
-                exceptionLog.PageUrl = request.Url.ToString();
+                exceptionLog.PageUrl = request.UrlProxySafe().ToString();
                 exceptionLog.ServerVariables = serverVars.ToString();
-                exceptionLog.QueryString = request.Url.Query;
+                exceptionLog.QueryString = request.UrlProxySafe().Query;
                 exceptionLog.Form = formItems.ToString();
             }
             catch { }
