@@ -198,7 +198,7 @@ namespace Rock.SystemGuid
         /// Use <see cref="GIVING_AUTOMATION" /> instead
         /// </summary>
         [Obsolete( "Use GIVING_AUTOMATION instead" )]
-        [RockObsolete("1.12")]
+        [RockObsolete( "1.13" )]
         public const string GIVING_ANALYTICS = GIVING_AUTOMATION;
 
         /// <summary>

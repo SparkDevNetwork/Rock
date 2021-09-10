@@ -42,6 +42,7 @@ namespace Rock
         /// The call ms total
         /// </summary>
         public static double CallMSTotal => Interlocked.Read( ref _callMicrosecondsTotal ) / 1000.0;
+
         private static long _callMicrosecondsTotal = 0;
 
         private static StringBuilder _sqlOutput = new StringBuilder();
@@ -85,10 +86,15 @@ namespace Rock
         private class DebugHelperUserState
         {
             public int CallNumber { get; set; }
+
             public Stopwatch Stopwatch { get; set; }
+
             public double CommandExecutedStopwatchMS { get; internal set; }
+
             public double CommandExecutedSqlExecutionTimeMS { get; internal set; }
+
             public double StatementCompletedStopwatchMS { get; internal set; }
+
             public double StatementCompletedSqlExecutionTimeMS { get; internal set; }
         }
 
@@ -317,7 +323,7 @@ StackTrace:
             public void CommandExecuted( System.Data.Common.DbCommand command, DbCommandInterceptionContext interceptionContext, object userState )
             {
                 var sqlReaderContext = interceptionContext as System.Data.Entity.Infrastructure.Interception.DbCommandInterceptionContext<System.Data.Common.DbDataReader>;
-                var sqlCommand = ( command as System.Data.SqlClient.SqlCommand );
+                var sqlCommand = command as System.Data.SqlClient.SqlCommand;
 
                 var debugHelperUserState = userState as DebugHelperUserState;
                 if ( debugHelperUserState != null )
@@ -329,10 +335,6 @@ StackTrace:
                         {
                             HandleStatementCompleted( sqlCommand, sender, debugHelperUserState );
                         };
-                    }
-                    else
-                    {
-                        Debug.WriteLine( "What is this?" );
                     }
 
                     debugHelperUserState.Stopwatch.Stop();
@@ -362,9 +364,8 @@ StackTrace:
 --  [{commandExecutionTimeText}] ExecutionTime (CommandExecuted)
 --  [{commandExecutedElaspedTimeMS,10:0.000} ms] ElapsedTime   (CommandExecuted)".Trim();
 
-						_sqlOutput.Append( statsMessage );
+                        _sqlOutput.Append( statsMessage );
                         System.Diagnostics.Debug.Write( statsMessage );
-
                     }
 
                     debugHelperUserState.Stopwatch.Start();
