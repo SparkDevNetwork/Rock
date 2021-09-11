@@ -118,10 +118,6 @@
   }
 }
 
-.checkin-body-container {
-  width: 80%; // keep items from going into the bamboo
-}
-
 body {
   display: none;
   -ms-touch-action: none !important;
@@ -159,6 +155,15 @@ body {
   0% {transform: scale(1) translate(-500px,-250px);opacity: 1;}
   99% {opacity: 1;}
   100% {transform: scale(3) translate(160%,100%);opacity: 0; display: none;}
+}
+
+@media (min-width: 768px) {
+  .page-checkin-success {
+    .body-content {
+      width: 100% !important;
+      padding: 0 30px;
+    }
+  }
 }
 
 @import "_css-overrides.less";
