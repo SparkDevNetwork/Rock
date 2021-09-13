@@ -753,18 +753,21 @@ This can be due to multiple threads updating the same attribute at the same time
             // Create a attribute model that will be saved
             Rock.Model.Attribute attribute = null;
 
+            List<AttributeQualifier> existingQualifiers;
+
             // Check to see if this was an existing or new attribute
             if ( newAttribute.Id > 0 )
             {
-                // If editing an existing attribute, remove all the old qualifiers in case they were changed
-                foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
-                {
-                    attributeQualifierService.Delete( oldQualifier );
-                }
+                existingQualifiers = attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList();
+
                 rockContext.SaveChanges();
 
                 // Then re-load the existing attribute 
                 attribute = internalAttributeService.Get( newAttribute.Id );
+            }
+            else
+            {
+                existingQualifiers = new List<AttributeQualifier>();
             }
 
             if ( attribute == null )
@@ -783,10 +786,30 @@ This can be due to multiple threads updating the same attribute at the same time
             // Copy all the properties from the new attribute to the attribute model
             attribute.CopyPropertiesFrom( newAttribute );
 
-            // Add any qualifiers
-            foreach ( var qualifier in newAttribute.AttributeQualifiers )
+            var addedQualifiers = newAttribute.AttributeQualifiers.Where( a => !existingQualifiers.Any( x => x.Key == a.Key ) );
+            var deletedQualifiers = existingQualifiers.Where( a => !newAttribute.AttributeQualifiers.Any( x => x.Key == a.Key ) );
+            var modifiedQualifiers = newAttribute.AttributeQualifiers.Where( a => existingQualifiers.Any( x => x.Key == a.Key && a.Value != x.Value ) );
+
+            // Add any new qualifiers
+            foreach ( var addedQualifier in addedQualifiers )
             {
-                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
+                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = addedQualifier.Key, Value = addedQualifier.Value, IsSystem = addedQualifier.IsSystem } );
+            }
+
+            // Delete any deleted qualifiers
+            foreach ( var deletedQualifier in deletedQualifiers )
+            {
+                attribute.AttributeQualifiers.Remove( deletedQualifier );
+            }
+
+            // Update any modified qualifiers
+            foreach ( var modifiedQualifier in modifiedQualifiers )
+            {
+                var existingQualifier = attribute.AttributeQualifiers.Where( a => a.Key == modifiedQualifier.Key ).FirstOrDefault();
+                if ( existingQualifier != null )
+                {
+                    existingQualifier.Value = modifiedQualifier.Value;
+                }
             }
 
             // Add any categories
