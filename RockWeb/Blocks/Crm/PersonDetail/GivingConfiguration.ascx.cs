@@ -238,6 +238,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lScheduledTransactionCardTypeLast4 = e.Item.FindControl( "lScheduledTransactionCardTypeLast4" ) as Literal;
             var lScheduledTransactionExpiration = e.Item.FindControl( "lScheduledTransactionExpiration" ) as Literal;
             var lScheduledTransactionSavedAccountName = e.Item.FindControl( "lScheduledTransactionSavedAccountName" ) as Literal;
+            var lScheduledTransactionStatusHtml = e.Item.FindControl( "lScheduledTransactionStatusHtml" ) as Literal;
 
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
@@ -279,7 +280,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText} <span class='o-30'>|</span> Inactive";
+                lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}";
+                lScheduledTransactionStatusHtml.Text = "<span class='text-xs text-warning text-nowrap'>Inactive</span>";
             }
 
             if ( lScheduledTransactionAccountName != null )

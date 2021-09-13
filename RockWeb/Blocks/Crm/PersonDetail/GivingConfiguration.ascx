@@ -55,6 +55,7 @@
                                         </td>
 
                                         <td class="w-1 text-right pr-0 py-4">
+                                            <span class="d-block"><asp:Literal ID="lScheduledTransactionStatusHtml" runat="server" /></span>
                                             <span class="scheduled-total font-weight-semibold text-sm d-block">
                                                 <asp:Literal ID="lScheduledTransactionTotalAmount" runat="server"/>
                                             </span>
