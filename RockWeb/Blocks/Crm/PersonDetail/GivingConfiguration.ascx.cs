@@ -218,32 +218,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
-
-            var btnScheduledTransactionDelete = e.Item.FindControl( "btnScheduledTransactionDelete" ) as LinkButton;
-            btnScheduledTransactionDelete.CommandArgument = financialScheduledTransaction.Guid.ToString();
+            
 
             if ( financialScheduledTransaction.IsActive )
             {
-                /* 09-07-2021 MDP
 
-                If the scheduled transaction is active but doesn't currently have any FinancialTransactions,
-                we'll have the confirmation message say "Are you sure you want to delete...'.
-                However, we are really just going to inactivate it regardless of if the Delete or Inactivate button
-                is clicked.
-                 
-                */
-
-                var financialTransactionService = new FinancialTransactionService( new RockContext() );
-                var hasFinancialTransactions = financialTransactionService.Queryable()
-                    .Any( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId.Value == financialScheduledTransaction.Id );
-
-                btnScheduledTransactionDelete.Visible = !hasFinancialTransactions;
-                btnScheduledTransactionInactivate.Visible = hasFinancialTransactions;
+                btnScheduledTransactionInactivate.Visible = true;
             }
             else
             {
                 btnScheduledTransactionEdit.Visible = false;
-                btnScheduledTransactionDelete.Visible = false;
                 btnScheduledTransactionInactivate.Visible = false;
             }
 
@@ -295,13 +279,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                var trScheduledTransaction = e.Item.FindControl( "trScheduledTransaction" ) as System.Web.UI.HtmlControls.HtmlControl;
-                if ( trScheduledTransaction != null )
-                {
-                    trScheduledTransaction.AddCssClass( "is-inactive" );
-                }
-
-                lScheduledTransactionFrequencyAndNextPaymentDate.Text = "Inactive";
+                lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText} <span class='o-30'>|</span> Inactive";
             }
 
             if ( lScheduledTransactionAccountName != null )
@@ -488,11 +466,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
-        protected void rptScheduledTransaction_Delete( object sender, CommandEventArgs e )
-        {
-            rptScheduledTransaction_Inactivate( sender, e );
-        }
-
         /// <summary>
         /// Event when the user clicks to delete (but really inactivates) the scheduled transaction
         /// </summary>
@@ -677,8 +650,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-               // if including Inactive, only include inactive ones if they currently have transactions associated with it
-                qry = qry.Where( t => t.IsActive || t.Transactions.Any() );
+               // if including Inactive, show both Active and Inactive
                 btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
             }
 
