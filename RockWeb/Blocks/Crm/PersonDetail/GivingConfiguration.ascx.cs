@@ -167,11 +167,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var lPledgeAccountName = e.Item.FindControl( "lPledgeAccountName" ) as Literal;
             var lPledgeTotalAmount = e.Item.FindControl( "lPledgeTotalAmount" ) as Literal;
+            var lPledgeFrequency = e.Item.FindControl( "lPledgeFrequency" ) as Literal;
             var btnPledgeEdit = e.Item.FindControl( "btnPledgeEdit" ) as LinkButton;
             var btnPledgeDelete = e.Item.FindControl( "btnPledgeDelete" ) as LinkButton;
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ): string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -179,10 +181,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
             if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
             {
+                var pledgeTimeSpan = financialPledge.StartDate - financialPledge.EndDate;
                 lPledgeDate.Text = string.Format(
                     "{0} {1}",
                     financialPledge.StartDate.ToShortDateString(),
-                    financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
+                    pledgeTimeSpan.Humanize() );
             }
             else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
             {

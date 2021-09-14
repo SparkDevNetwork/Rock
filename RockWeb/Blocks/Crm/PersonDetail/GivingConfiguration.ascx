@@ -120,7 +120,10 @@
                                     <tr class="rollover-container-nested">
                                         <td class="pl-0 py-4">
                                             <strong class="d-block text-sm"><asp:Literal ID="lPledgeDate" runat="server" /></strong>
-                                            <span class="d-block text-sm text-muted"><asp:Literal ID="lPledgeAccountName" runat="server" /></span>
+                                            <span class="d-block text-sm text-muted">
+                                                <asp:Literal ID="lPledgeAccountName" runat="server" />
+                                                <asp:Literal ID="lPledgeFrequency" runat="server" />
+                                            </span>
                                         </td>
 
                                         <td class="w-1 text-right pr-0 py-4">
