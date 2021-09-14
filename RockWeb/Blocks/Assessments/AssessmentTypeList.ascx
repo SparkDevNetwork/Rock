@@ -32,7 +32,7 @@
                                 <%-- Block-specific List Columns --%>
                                 <Rock:RockBoundField DataField="Title" HeaderText="Title" SortExpression="Title" Visible="true" ExcelExportBehavior="AlwaysInclude" />
                                 <Rock:BoolField DataField="RequiresRequest" HeaderText="Requires Request" SortExpression="RequiresRequest" />
-                                <Rock:BoolField DataField="IsActive" HeaderText="Is Active" SortExpression="IsActive" />
+                                <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             </Columns>
                         </Rock:Grid>
                     </div>
