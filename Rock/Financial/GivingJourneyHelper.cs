@@ -202,13 +202,13 @@ namespace Rock.Financial
                         lapsedGiverGivingIds.Add( givingId );
                         break;
                     case GivingJourneyStage.NewGiver:
-                        formerGiverGivingIds.Add( givingId );
+                        newGiverGivingIds.Add( givingId );
                         break;
                     case GivingJourneyStage.OccasionalGiver:
-                        formerGiverGivingIds.Add( givingId );
+                        occasionalGiverGivingIds.Add( givingId );
                         break;
                     case GivingJourneyStage.ConsistentGiver:
-                        formerGiverGivingIds.Add( givingId );
+                        consistentGiverGivingIds.Add( givingId );
                         break;
                     case GivingJourneyStage.NonGiver:
                         // Shouldn't happen since we are only looking at people with transactions, and we have already
@@ -374,7 +374,15 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
 
                             var person = personService.Get( personId );
                             Rock.Attribute.Helper.LoadAttributes( person, journeyStageAttributesList.ToList() );
-                            person.SetAttributeValue( _previousJourneyStageAttribute.Key, currentJourneyStage.ConvertToInt() );
+                            if ( currentJourneyStage.HasValue )
+                            {
+                                person.SetAttributeValue( _previousJourneyStageAttribute.Key, currentJourneyStage.ConvertToInt() );
+                            }
+                            else
+                            {
+                                person.SetAttributeValue( _previousJourneyStageAttribute.Key, ( int? ) null );
+                            }
+                            
                             person.SetAttributeValue( _journeyStageChangeDateAttribute.Key, currentDate );
 
                             if ( calculatedGivingJourneyStage.HasValue )

@@ -53,7 +53,7 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateBlockTypeByGuid( "Giving Automation Alerts", "Lists of current alerts based on current filters.", "~/Blocks/Finance/GivingAutomationAlerts.ascx", "Finance", "0A813EC3-EC36-499B-9EBD-C3388DC7F49D" );
 
             // Add/Update BlockType Giving Automation Configuration
-            RockMigrationHelper.UpdateBlockTypeByGuid( "Giving Alerts Configuration", " Block used to view and create new alert types for the giving automation system.", "~/Blocks/Finance/GivingAutomationConfiguration.ascx", "Finance", "A91ACA78-68FD-41FC-B652-17A37789EA32" );
+            RockMigrationHelper.UpdateBlockTypeByGuid( "Giving Automation Configuration", " Block used to view and create new alert types for the giving automation system.", "~/Blocks/Finance/GivingAutomationConfiguration.ascx", "Finance", "A91ACA78-68FD-41FC-B652-17A37789EA32" );
 
             // The Giving Alerts page was added in the GivingAnalyticsUpdates2 migration, but was hidden. 
             // Now, we are ready to have show when allowed
