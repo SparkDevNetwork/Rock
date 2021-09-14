@@ -55,6 +55,8 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
+        #region Navigation Properties
+
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
         /// </summary>
@@ -72,6 +74,8 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<Attendance> Attendances { get; set; }
+
+        #endregion Navigation Properties
     }
 
     /// <summary>
@@ -87,8 +91,7 @@ namespace Rock.Model
             this.HasOptional( c => c.Device ).WithMany().HasForeignKey( c => c.DeviceId ).WillCascadeOnDelete( false );
 
             // the Migration will manually add a ON DELETE SET NULL for AttendanceCheckInSessionId
-            this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession )
-                .HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
+            this.HasMany( c => c.Attendances ).WithOptional( a => a.AttendanceCheckInSession ).HasForeignKey( a => a.AttendanceCheckInSessionId ).WillCascadeOnDelete( true );
         }
     }
 }

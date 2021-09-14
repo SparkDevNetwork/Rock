@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -57,12 +57,19 @@ namespace Rock.Model
         /// <summary>
         /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
         /// </summary>
-        public static readonly List<string> noGood = new List<string> {
+        public static readonly List<string> NoGood = new List<string> {
             "4NL", "4SS", "5CK", "5HT", "5LT", "5NM", "5TD", "5XX", "666", "BCH", "CLT", "CNT", "D4M", "D5H", "DCK", "DMN", "DSH", "F4G", "FCK", "FGT", "G4Y", "GZZ", "H8R",
             "JNK", "JZZ", "KKK", "KLT", "KNT", "L5D", "LCK", "LSD", "MFF", "MLF", "ND5", "NDS", "NDZ", "NGR", "P55", "PCP", "PHC", "PHK", "PHQ", "PM5", "PMS", "PN5", "PNS",
             "PRC", "PRK", "PRN", "PRQ", "PSS", "RCK", "SCK", "S3X", "SHT", "SLT", "SNM", "STD", "SXX", "THC", "V4G", "WCK", "XTC", "XXX", "911", "1XL", "2XL", "3XL", "4XL",
             "5XL", "6XL", "7XL", "8XL", "9XL", "XXL"
         };
+
+        /// <summary>
+        /// A list of <see cref="System.String"/> values that are not allowable as attendance codes.
+        /// </summary>
+        [Obsolete( "Use NoGood instead" )]
+        [RockObsolete( "1.13" )]
+        public static readonly List<string> noGood = NoGood;
 
         private static readonly string timeoutExceptionMessage = "Too many attempts to create a unique attendance code.  There is almost certainly a check-in system 'Security Code Length' configuration problem.";
 
@@ -171,14 +178,12 @@ namespace Rock.Model
                             }
 
                             numericCode = GetNextNumericCodeAsString( alphaNumericLength, alphaLength, numericLength, isRandomized, lastCode );
-
-
                         }
 
                         code = alphaNumericCode + alphaCode + numericCode;
 
                         // Check if code is already in use or contains bad unallowed strings.
-                        if ( noGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
+                        if ( NoGood.Any( s => code.Contains( s ) ) || _todaysUsedCodes.Contains( code ) )
                         {
                             lastCode = code;
                             alphaNumericCode = string.Empty;
@@ -240,7 +245,7 @@ namespace Rock.Model
                 numericCode = GenerateRandomNumericCode( numericLength );
 
                 // Leaving the noGood check here because it is possible that this method used outside of GetNew().
-                while ( noGood.Any( s => numericCode.Contains( s ) ) || _todaysUsedCodes.Any( c => c.EndsWith( numericCode ) ) )
+                while ( NoGood.Any( s => numericCode.Contains( s ) ) || _todaysUsedCodes.Any( c => c.EndsWith( numericCode ) ) )
                 {
                     attempts++;
 
@@ -265,7 +270,7 @@ namespace Rock.Model
                         throw new Exception( $"Error generating numeric check-in code {numericCode}. The number of digits exceeds the configured length of {numericLength}. Check the check-in system 'Security Code Length to adjust this." );
                     }
 
-                    while ( noGood.Any( s => numericCode.Contains( s ) ) )
+                    while ( NoGood.Any( s => numericCode.Contains( s ) ) )
                     {
                         attempts++;
 

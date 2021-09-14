@@ -736,6 +736,11 @@
     <Compile Include="Model\Engagement\StreakType\StreakStructureType.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceGraphBy.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.Logic.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.Logic.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.SaveHook.cs" />
+    <Compile Include="Model\Event\Attendance\RSVP.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.Logic.cs" />
     <Compile Include="Model\Event\EventCalendarItem\EventCalendarItem.Logic.cs" />
@@ -1082,7 +1087,7 @@
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedService.cs" />
     <Compile Include="Model\WebFarmNodeLog.cs" />
     <Compile Include="Model\WebFarmNode.cs" />
-    <Compile Include="Model\AttendanceCheckInSession.cs" />
+    <Compile Include="Model\Event\AttendanceCheckInSession\AttendanceCheckInSession.cs" />
     <Compile Include="Model\AuthClaim.cs" />
     <Compile Include="Model\AuthClient.cs" />
     <Compile Include="Model\AuthClientService.Partial.cs" />
@@ -1968,10 +1973,10 @@
     <Compile Include="Model\CodeGenerated\AssetStorageProviderService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeService.cs" />
-    <Compile Include="Model\AttendanceOccurrence.cs" />
-    <Compile Include="Model\Attendance.cs" />
-    <Compile Include="Model\AttendanceCode.cs" />
-    <Compile Include="Model\AttendanceOccurrenceService.Partial.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.cs" />
+    <Compile Include="Model\Event\AttendanceCode\AttendanceCode.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrenceService.cs" />
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
@@ -2025,8 +2030,8 @@
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
     <Compile Include="Model\Reporting\Metric\MetricService.cs" />
-    <Compile Include="Model\AttendanceCodeService.Partial.cs" />
-    <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\Event\AttendanceCode\AttendanceCodeService.cs" />
+    <Compile Include="Model\Event\Attendance\AttendanceService.cs" />
     <Compile Include="Model\Attribute.cs" />
     <Compile Include="Model\AttributeQualifier.cs" />
     <Compile Include="Model\AttributeQualifierService.Partial.cs" />

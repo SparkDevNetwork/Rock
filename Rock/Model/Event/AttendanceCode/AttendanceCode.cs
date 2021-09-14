@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -69,9 +69,17 @@ namespace Rock.Model
         /// </value>
         public virtual ICollection<Attendance> Attendances
         {
-            get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }
-            set { _attendances = value; }
+            get
+            {
+                return _attendances ?? ( _attendances = new Collection<Attendance>() );
+            }
+
+            set
+            {
+                _attendances = value;
+            }
         }
+
         private ICollection<Attendance> _attendances;
 
         #endregion
@@ -90,7 +98,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
@@ -109,5 +116,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }
