@@ -548,6 +548,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\AuthorizationCacheWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\GivingUnitWasClassifiedMessage.cs" />
     <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
     <Compile Include="Bus\Queue\GivingEventQueue.cs" />
@@ -766,6 +767,7 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
     <Compile Include="Security\Authentication\OidcClient.cs" />
+    <Compile Include="Security\AuthorizationCacheConsumer.cs" />
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
