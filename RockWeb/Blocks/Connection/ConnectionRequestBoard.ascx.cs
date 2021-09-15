@@ -13,13 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Linq.Dynamic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
@@ -251,7 +249,6 @@ namespace RockWeb.Blocks.Connection
             public const string WorkflowEntryPage = "WorkflowEntryPage";
             public const string StatusTemplate = "StatusTemplate";
             public const string ConnectionRequestHistoryPage = "ConnectionRequestHistoryPage";
-
         }
 
         /// <summary>
@@ -831,6 +828,7 @@ namespace RockWeb.Blocks.Connection
 
             lRequestModalViewModeHeading.Text = GetAttributeValue( AttributeKey.LavaHeadingTemplate ).ResolveMergeFields( mergeFields );
             lRequestModalViewModeBadgeBar.Text = GetAttributeValue( AttributeKey.LavaBadgeBar ).ResolveMergeFields( mergeFields );
+            mdRequest.OnCancelScript = "Rock.controls.connectionRequestBoard.removeConnectionQuerystringParameters('ConnectionRequestId');";
 
             // Bind the more straightforward UI pieces
             divRequestModalViewModePhoto.Attributes["title"] = string.Format( "{0} Profile Photo", viewModel.PersonFullname );
@@ -944,9 +942,6 @@ namespace RockWeb.Blocks.Connection
                         Helper.AddDisplayControls( groupMember, phGroupMemberAttributesView, null, false, false );
                     }
                 }
-
-
-
             }
 
             rightDescList.Add( "Placement Group", placementGroupHtml );
@@ -1129,6 +1124,11 @@ namespace RockWeb.Blocks.Connection
         private string GetLabelMarkup( string labelClass, string text )
         {
             return string.Format( @"<span class=""label label-{0}"">{1}</span>", labelClass, text );
+        }
+
+        internal string UpdateConnectionQuerystring( string connectionRequestId )
+        {
+            return string.Format( "return Rock.controls.connectionRequestBoard.updateConnectionQuerystringParameters(\"{0}\", \"{1}\", \"{2}\");", "ConnectionOpportunityId", connectionRequestId.ToStringSafe(), false );
         }
 
         #endregion Helper Methods
@@ -2047,7 +2047,6 @@ namespace RockWeb.Blocks.Connection
             var canEdit = CanEdit();
             gRequests.IsDeleteEnabled = canEdit;
             deleteField.Visible = canEdit;
-
 
             var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = connectionRequestEntityId;
@@ -3882,6 +3881,7 @@ namespace RockWeb.Blocks.Connection
                 ShowError( "At least one connection opportunity is required before this block can be used" );
                 return;
             }
+
             var connectionOpportunity = GetConnectionOpportunity();
 
             BindHeader();

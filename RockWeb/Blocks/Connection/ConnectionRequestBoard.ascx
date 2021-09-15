@@ -194,7 +194,8 @@
                                             <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                                 <ItemTemplate>
                                                     <li>
-                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'>
+                                                        <asp:LinkButton runat="server" CommandArgument='<%# Eval("Id") %>'
+                                                            OnClick='<%# UpdateConnectionQuerystring(Eval("Id").ToString()) %>'>
                                                                     <i class="<%# Eval("IconCssClass") %>"></i>
                                                                     <%# Eval("PublicName") %>
                                                         </asp:LinkButton>
