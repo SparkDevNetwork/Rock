@@ -1786,6 +1786,15 @@ namespace RockWeb.Blocks.Communication
                         break;
                     }
             }
+
+            if ( communication != null && communication.IsBulkCommunication )
+            {
+                hlBulk.Visible = true;
+            }
+            else
+            {
+                hlBulk.Visible = false;
+            }
         }
 
         /// <summary>
