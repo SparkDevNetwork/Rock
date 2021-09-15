@@ -142,7 +142,6 @@ namespace Rock.Model
             RockContext rockContext = ( RockContext ) Context;
             int newConnectionTypeId = 0;
             AttributeService attributeService = new AttributeService( rockContext );
-            var authService = new AuthService( rockContext );
 
             // Get current Opportunity attributes 
             var opportunityAttributes = attributeService
@@ -157,7 +156,6 @@ namespace Rock.Model
             ConnectionType newConnectionType = new ConnectionType();
             rockContext.WrapTransaction( () =>
             {
-
                 newConnectionType.CopyPropertiesFrom( connectionType );
                 InitModel( ref newConnectionType );
                 newConnectionType.Name = connectionType.Name + " - Copy";

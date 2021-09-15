@@ -252,7 +252,12 @@ namespace Rock.Web.Cache
                         {
                             if ( messageParts.Length > 2 )
                             {
-                                Rock.Security.Authorization.RefreshEntity( messageParts[1].AsInteger(), messageParts[2].AsInteger() );
+                                var entityTypeId = messageParts[1].AsInteger();
+                                var entityId = messageParts[2].AsInteger();
+
+                                // NOTE: RockMemoryCache is obsolete (with Error On Compile enabled)
+
+                                AuthorizationEntityTypeAuthCache.FlushItem( entityTypeId );
                             }
                             break;
                         }
@@ -260,7 +265,13 @@ namespace Rock.Web.Cache
                         {
                             if ( messageParts.Length > 3 )
                             {
-                                Rock.Security.Authorization.RefreshAction( messageParts[1].AsInteger(), messageParts[2].AsInteger(), messageParts[3] );
+                                var entityTypeId = messageParts[1].AsInteger();
+                                var entityId = messageParts[2].AsInteger();
+                                var authAction = messageParts[3];
+
+                                // NOTE: RockMemoryCache is obsolete (with Error On Compile enabled)
+
+                                AuthorizationEntityTypeAuthCache.FlushItem( entityTypeId );
                             }
                             break;
                         }

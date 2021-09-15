@@ -267,8 +267,10 @@ END
                 authsToAdd.ForEach( a => a.Order = authOrder++ );
 
                 authService.AddRange( authsToAdd );
+#pragma warning disable CS0618 // Type or member is obsolete
                 Authorization.RefreshAction( bulkUpdateBlock.TypeId, bulkUpdateBlock.Id, "EditConnectionStatus" );
                 Authorization.RefreshAction( bulkUpdateBlock.TypeId, bulkUpdateBlock.Id, "EditRecordStatus" );
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             rockContext.SaveChanges();

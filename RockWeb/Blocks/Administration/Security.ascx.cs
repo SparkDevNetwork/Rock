@@ -245,8 +245,6 @@ namespace RockWeb.Blocks.Administration
             authService.Reorder( rules, e.OldIndex, e.NewIndex );
             rockContext.SaveChanges();
 
-            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
-
             BindGrid();
         }
 
@@ -279,8 +277,6 @@ namespace RockWeb.Blocks.Administration
             {
                 authService.Delete( auth );
                 rockContext.SaveChanges();
-
-                Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
             }
 
             BindGrid();
@@ -339,8 +335,6 @@ namespace RockWeb.Blocks.Administration
                 {
                     auth.AllowOrDeny = rblAllowDeny.SelectedValue;
                     rockContext.SaveChanges();
-
-                    Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                 }
             }
 
@@ -443,8 +437,6 @@ namespace RockWeb.Blocks.Administration
                             authService.Add( auth );
 
                             rockContext.SaveChanges();
-
-                            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, li.Text );
                         }
                     }
                 }
@@ -489,8 +481,6 @@ namespace RockWeb.Blocks.Administration
                             authService.Add( auth );
 
                             rockContext.SaveChanges();
-
-                            Authorization.RefreshAction( iSecured.TypeId, iSecured.Id, CurrentAction );
                         }
                     }
                 }

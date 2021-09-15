@@ -278,6 +278,7 @@ namespace Rock.Web.Cache
             FlushItem( key.ToString() );
         }
 
+        /// <inheritdoc cref="ItemCache{T}.AddToAllIds(string, Func{List{string}})" />
         internal static void AddToAllIds( int key)
         {
             AddToAllIds( key.ToString() );

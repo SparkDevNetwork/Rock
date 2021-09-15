@@ -1340,8 +1340,6 @@ namespace Rock.Model
                 {
                     authService.Delete( auth );
                 }
-
-                Rock.Security.Authorization.Clear();
             }
         }
 

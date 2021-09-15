@@ -452,8 +452,6 @@ namespace RockWeb.Blocks.Security
                 {
                     explicitAuth.AllowOrDeny = "A";
                     rockContext.SaveChanges();
-
-                    Authorization.RefreshAction( entity.TypeId, entity.Id, auth.Action );
                 }
                 else
                 {

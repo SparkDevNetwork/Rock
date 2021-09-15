@@ -16,11 +16,13 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,7 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Auth" )]
     [DataContract]
-    public partial class Auth : Model<Auth>, IOrdered
+    public partial class Auth : Model<Auth>, IOrdered, ICacheable
     {
 
         #region Entity Properties
@@ -190,6 +192,31 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            // flush the AuthorizationEntityTypeAuthCache cache for this Auth's EntityTypeId
+            AuthorizationEntityTypeAuthCache.FlushItem( this.EntityTypeId );
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // Auth itself doesn't have a Cache object, it is just the associated AuthorizationEntityTypeAuthCache
+            return null;
+        }
+
+        #endregion ICacheable
 
     }
 

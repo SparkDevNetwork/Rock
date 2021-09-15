@@ -249,9 +249,6 @@ namespace Rock.WebStartup
                     Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
                 }
             }
-
-            // Force authorizations to be cached
-            Rock.Security.Authorization.Get();
         }
 
         /// <summary>
