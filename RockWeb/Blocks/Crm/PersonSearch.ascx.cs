@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Crm
                             {
                                 var dict = location.ToDictionary();
                                 dict["Country"] = countryValue.Description;
-                                sbPersonDetails.Append( string.Format( "<small><br>{0}</small>", format.ResolveMergeFields( dict ).ConvertCrLfToHtmlBr().Replace( "<br/><br/>", "<br/>" ) ) );
+                                sbPersonDetails.Append( string.Format( "<small><br>{0}</small>", format.ResolveMergeFields( dict ).ConvertCrLfToHtmlBr().Replace( "<br><br>", "<br>" ) ) );
                             }
                             else
                             {
