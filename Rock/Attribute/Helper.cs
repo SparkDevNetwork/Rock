@@ -423,10 +423,10 @@ This can be due to multiple threads updating the same attribute at the same time
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
-                var entityAttributesList = AttributeCache.GetByEntity( entityTypeCache.Id );
-                if ( entityAttributesList.Any() )
+                var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
+                if ( entityTypeAttributesList.Any() )
                 {
-                    var entityTypeQualifierColumnPropertyNames = entityAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                    var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
                     Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
                     foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
                     {
@@ -437,19 +437,13 @@ This can be due to multiple threads updating the same attribute at the same time
                         }
                     }
 
-                    foreach ( var entityAttributes in entityAttributesList )
-                    {
-                        if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
-                            ( propertyValues.ContainsKey( entityAttributes.EntityTypeQualifierColumn ) &&
-                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
-                            ( propertyValues[entityAttributes.EntityTypeQualifierColumn] ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
-                        {
-                            foreach ( int attributeId in entityAttributes.AttributeIds )
-                            {
-                                attributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeId ) );
-                            }
-                        }
-                    }
+                    var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
+                      string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
+                             ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
+                             ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
+                             ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
+
+                    attributes.AddRange( entityTypeAttributesForQualifier );
                 }
             }
 

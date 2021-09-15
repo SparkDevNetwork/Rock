@@ -23,6 +23,7 @@ using System.Text;
 using System.Web;
 using System.Web.Security;
 
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -169,6 +170,7 @@ namespace Rock.Security
         private static void AddOrUpdate( Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> authorizations )
         {
             RockCache.AddOrUpdate( CACHE_KEY, authorizations );
+            AuthorizationCacheWasUpdatedMessage.Publish( CACHE_KEY );
         }
 
         private static Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> LoadAuthorizations()

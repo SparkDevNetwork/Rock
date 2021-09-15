@@ -767,8 +767,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 // Because the SaveAttributes above may have flushed the cached entity attribute cache, and it would get loaded again with
                 // a different context, manually reload the cache now with our context to prevent a database lock conflict (when database is 
                 // configured without snapshot isolation turned on)
-                EntityAttributesCache.Remove();
-                EntityAttributesCache.Get( rockContext );
+                EntityTypeAttributesCache.Clear();
 
                 int workflowActionTypeOrder = 0;
                 foreach ( var editorWorkflowActionType in editorWorkflowActivityType.ActionTypes )

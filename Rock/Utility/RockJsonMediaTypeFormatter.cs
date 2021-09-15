@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Text;
 using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.Utility
@@ -210,8 +211,8 @@ namespace Rock.Utility
                     if ( entityTypeType != null )
                     {
                         var entityType = EntityTypeCache.Get( entityTypeType );
-                        var entityAttributesList = AttributeCache.GetByEntity( entityType.Id )?.SelectMany( a => a.AttributeIds ).ToList().Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
-                        limitToAttributes = entityAttributesList?.Where( a => loadAttributesOptions.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
+                        var entityTypeAttributesList = AttributeCache.GetByEntityType( entityType.Id );
+                        limitToAttributes = entityTypeAttributesList?.Where( a => loadAttributesOptions.LimitToAttributeKeyList.Contains( a.Key, StringComparer.OrdinalIgnoreCase ) ).ToList();
                     }
                 }
 
@@ -351,28 +352,24 @@ namespace Rock.Utility
                 return;
             }
 
-            var entityAttributes = AttributeCache.GetByEntity( entityType.Id );
+            var entityTypeAttributes = AttributeCache.GetByEntityType( entityType.Id );
 
             // only return attributes that the person has VIEW auth to
             // NOTE: There are some Attributes that even Admin doesn't have VIEW auth so (For example, some of obsolete DISC attributes)
-            foreach ( var entityAttribute in entityAttributes )
+            foreach ( var attribute in entityTypeAttributes )
             {
-                foreach ( var attributeId in entityAttribute.AttributeIds )
+                if ( !attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
-                    var attribute = AttributeCache.Get( attributeId );
-                    if ( !attribute.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                    foreach ( var item in items )
                     {
-                        foreach ( var item in items )
+                        if ( item.AttributeValues.ContainsKey( attribute.Key ) )
                         {
-                            if ( item.AttributeValues.ContainsKey( attribute.Key ) )
-                            {
-                                item.AttributeValues.Remove( attribute.Key );
-                            }
+                            item.AttributeValues.Remove( attribute.Key );
+                        }
 
-                            if ( item.Attributes.ContainsKey( attribute.Key ) )
-                            {
-                                item.Attributes.Remove( attribute.Key );
-                            }
+                        if ( item.Attributes.ContainsKey( attribute.Key ) )
+                        {
+                            item.Attributes.Remove( attribute.Key );
                         }
                     }
                 }

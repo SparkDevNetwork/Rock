@@ -226,15 +226,12 @@ namespace Rock.Model
 
             // Get all attributes there were defined for instance's template.
             var attributes = new List<AttributeCache>();
-            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
-                .Where( e => 
+            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( entityTypeCache.Id )
+                .Where( e =>
                     e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
                     e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
             {
-                foreach ( int attributeId in entityAttributes.AttributeIds )
-                {
-                    attributes.Add( AttributeCache.Get( attributeId ) );
-                }
+                attributes.Add( entityTypeAttribute );
             }
 
             return attributes;

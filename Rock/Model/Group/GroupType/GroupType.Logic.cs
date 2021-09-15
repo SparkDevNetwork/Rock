@@ -197,18 +197,15 @@ namespace Rock.Model
             //
             // Walk each group type and generate a list of matching attributes.
             //
-            foreach ( var entityAttributes in AttributeCache.GetByEntity( entityTypeId ) )
+            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( entityTypeId ) )
             {
                 // group type ids exist and qualifier is for a group type id
-                if ( string.Compare( entityAttributes.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
+                if ( string.Compare( entityTypeAttribute.EntityTypeQualifierColumn, entityTypeQualifierColumn, true ) == 0 )
                 {
                     int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( entityAttributes.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
+                    if ( int.TryParse( entityTypeAttribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
-                        foreach ( int attributeId in entityAttributes.AttributeIds )
-                        {
-                            inheritedAttributes[groupTypeIdValue].Add( AttributeCache.Get( attributeId ) );
-                        }
+                        inheritedAttributes[groupTypeIdValue].Add( entityTypeAttribute );
                     }
                 }
             }

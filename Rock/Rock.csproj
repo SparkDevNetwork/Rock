@@ -594,6 +594,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\AuthorizationCacheWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\GivingUnitWasClassifiedMessage.cs" />
     <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
     <Compile Include="Bus\Queue\GivingEventQueue.cs" />
@@ -1121,6 +1122,7 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
     <Compile Include="Security\Authentication\OidcClient.cs" />
+    <Compile Include="Security\AuthorizationCacheConsumer.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemGuid\BinaryFile.cs" />
@@ -1213,6 +1215,7 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
@@ -1622,7 +1625,7 @@
     <Compile Include="Web\Cache\Entities\PageCache.cs" />
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityAttributesCache.cs" />
+    <Compile Include="Web\Cache\Entities\Obsolete\EntityAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />

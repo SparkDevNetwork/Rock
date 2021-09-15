@@ -92,17 +92,13 @@ namespace Rock.Model
             var calendarItemEntityType = EntityTypeCache.Get( typeof( EventCalendarItem ) );
             if ( calendarItemEntityType != null )
             {
-                foreach ( var calendarItemEntityAttributes in AttributeCache
-                    .GetByEntity( calendarItemEntityType.Id )
+                foreach ( var calendarItemEntityAttribute in AttributeCache
+                    .GetByEntityType( calendarItemEntityType.Id )
                     .Where( a =>
                         a.EntityTypeQualifierColumn == "EventCalendarId" &&
                         calendarIds.Contains( a.EntityTypeQualifierValue.AsInteger() ) ) )
                 {
-                    foreach ( var attributeId in calendarItemEntityAttributes.AttributeIds )
-                    {
-                        inheritedAttributes[calendarItemEntityAttributes.EntityTypeQualifierValue.AsInteger()].Add(
-                            AttributeCache.Get( attributeId ) );
-                    }
+                    inheritedAttributes[calendarItemEntityAttribute.EntityTypeQualifierValue.AsInteger()].Add( calendarItemEntityAttribute );
                 }
             }
 
