@@ -11,7 +11,7 @@
                 <h1 class="panel-title">
                     <i class="fa fa-comment-alt"></i>
                     Giving Alerts</h1>
-                <div class="pull-right d-flex align-items-center">
+                <div class="panel-labels">
                     <asp:LinkButton ID="lbConfig" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConfig_Click" CausesValidation="false">
                         <i title="Options" class="fa fa-gear"></i>
                     </asp:LinkButton>
