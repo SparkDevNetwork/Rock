@@ -41,9 +41,9 @@ namespace Rock
         public static Uri UrlProxySafe( this HttpRequest request )
         {
             // If no proxy just return the request URL
-            var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
+            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
 
-            if ( !isRequestForwaredFromProxy )
+            if ( !isRequestForwardedFromProxy )
             {
                 return request.Url;
             }
