@@ -80,6 +80,7 @@
                                 <asp:LinkButton ID="lbAddScheduledTransaction"
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
+                                    ToolTip="Add Scheduled Transaction"
                                     Text="<i class='fa fa-plus'></i>"
                                     OnClick="lbAddScheduledTransaction_Click" />
                             </div>
@@ -150,6 +151,7 @@
                                 <asp:LinkButton ID="lbAddPledge"
                                     runat="server"
                                     CssClass="btn btn-default btn-square btn-xs mt-3 pull-right"
+                                    Tooltip="Add Pledge"
                                     Text="<i class='fa fa-plus'></i>"
                                     OnClick="lbAddPledge_Click" />
                             </div>

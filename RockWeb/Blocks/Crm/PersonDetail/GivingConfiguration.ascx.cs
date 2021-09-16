@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "Contribution Statement Detail Page",
         Description = "The contribution statement detail page.",
         Order = 6,
+        DefaultValue = Rock.SystemGuid.Page.CONTRIBUTION_STATEMENT_PAGE,
         Key = AttributeKey.ContributionStatementDetailPage )]
     [LinkedPage(
         "Scheduled Transaction Detail Page",
@@ -326,13 +327,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( year.HasValue && btnContributionStatementYYYY != null )
             {
-                string yearStr = year.ToStringSafe();
+                string yearHtml;
                 if ( year == RockDateTime.Now.Year )
                 {
-                    yearStr = yearStr + " <small>YTD</small>";
+                    yearHtml = $"{year} <small>YTD</small>";
+                }
+                else
+                {
+                    yearHtml = year.ToString();
                 }
 
-                btnContributionStatementYYYY.Text = yearStr;
+                btnContributionStatementYYYY.Text = yearHtml;
+                btnContributionStatementYYYY.CommandArgument = year.ToString();
             }
         }
 
@@ -646,18 +652,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
-
-            if ( !includeInactive )
-            {
-                btnShowInactiveScheduledTransactions.Text = "Show Inactive";
-                qry = qry.Where( t => t.IsActive );
-            }
-            else
-            {
-               // if including Inactive, show both Active and Inactive
-                btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
-            }
+            
 
             if ( Person.GivingGroupId.HasValue )
             {
@@ -668,6 +663,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 // Person contributes individually
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == Person.Id );
+            }
+
+            // only show the button if there some in active scheduled transactions
+            btnShowInactiveScheduledTransactions.Visible = qry.Any( a => !a.IsActive );
+
+            var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
+            if ( !includeInactive )
+            {
+                btnShowInactiveScheduledTransactions.Text = "Show Inactive";
+                qry = qry.Where( t => t.IsActive );
+            }
+            else
+            {
+                // if including Inactive, show both Active and Inactive
+                btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
             }
 
             qry = qry
