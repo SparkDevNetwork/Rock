@@ -21,11 +21,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
-using Rock.Security;
 
 namespace Rock.Model
 {
@@ -317,10 +314,10 @@ namespace Rock.Model
         public virtual FinancialAccount Account { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> representing the PersonAlias who is the contact person.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PersonAlias"/> representing the personalias who is the contact person.
+        /// A <see cref="Rock.Model.PersonAlias"/> representing the PersonAlias who is the contact person.
         /// </value>
         [DataMember]
         public virtual PersonAlias ContactPersonAlias { get; set; }
@@ -365,20 +362,6 @@ namespace Rock.Model
         #endregion Navigation Properties
 
         #region Methods
-
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
-            }
-        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.
