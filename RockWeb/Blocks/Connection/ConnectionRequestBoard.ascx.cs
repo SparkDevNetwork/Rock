@@ -4793,7 +4793,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     LastName = p.LastName,
                     NickName = p.NickName,
-                    PersonAliasId = p.Aliases.FirstOrDefault().Id
+                    PersonAliasId = p.Aliases.Where( a => a.AliasPersonId == p.Id ).FirstOrDefault().Id
                 } )
                 .ToList();
 
