@@ -241,6 +241,34 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     && i.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
                 .FirstOrDefault();
 
+            /*
+             * If an interaction was not found and we don't have a specific date
+             * then there is a sort of race condition we need to account for.
+             *
+             * Say the individual opened the challenge page at 11:50pm and
+             * completed all but one item and kept the page open until past
+             * midnight. Then at 12:02am the next day they complete the last
+             * item. In this case we will not find an interaction and instead
+             * write a new interaction for today when really we should have
+             * updated yesterday's interaction.
+             * 
+             * Daniel Hazelbaker - 9/16/2021
+             */
+            if ( interaction == null && !forDate.HasValue )
+            {
+                // Look for an interaction yesterday for the same daily challenge
+                // that is not complete.
+                var yesterdayDateKey = now.AddDays( -1 ).ToString( "yyyyMMdd" ).AsInteger();
+
+                interaction = interactionService.Queryable()
+                    .Where( i => i.InteractionComponentId == componentId
+                        && i.EntityId == dailyChallenge.Id
+                        && i.InteractionDateKey == yesterdayDateKey
+                        && i.Operation == "INCOMPLETE"
+                        && i.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                    .FirstOrDefault();
+            }
+
             // If not found, create a new one.
             if ( interaction == null )
             {
@@ -372,6 +400,31 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( challengeStartIndex > 0 )
             {
                 recentInteractions = recentInteractions.Skip( challengeStartIndex ).ToList();
+            }
+
+            if ( recentInteractions.Any() )
+            {
+                var lastInteraction = recentInteractions.Last();
+
+                // If the last item is completed, is the last day of the challenge
+                // and is not today, then return an empty list to signal starting a new
+                // challenge. This catches situations where we might accidentally
+                // return interactions for a past challenge the day after the
+                // challenge has been completed (and they are going to start over).
+                if ( lastInteraction.Operation == "COMPLETE" && lastInteraction.EntityId == orderedItems.Last().Id && lastInteraction.InteractionDateKey < todayDateKey )
+                {
+                    return new List<Interaction>();
+                }
+
+                // If we don't have all the interactions for this sequence then
+                // that means we got out of order somehow. Just start over. This
+                // actually means something went wrong elsewhere, but without
+                // this check the person is stuck trying to fill in day 1 forever.
+                int expectedCount = 1 + orderedItems.FindIndex( c => c.Id == lastInteraction.EntityId );
+                if ( recentInteractions.Count != expectedCount )
+                {
+                    return new List<Interaction>();
+                }
             }
 
             return recentInteractions;
