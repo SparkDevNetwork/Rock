@@ -1073,7 +1073,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.cs" />
     <Compile Include="Model\CMS\MediaAccount\MediaAccountService.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.cs" />
-    <Compile Include="Model\CMS\MediaElement\MediaElementService.Partial.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElementService.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolderService.cs" />
     <Compile Include="Model\PersonalLink.cs" />
@@ -1424,7 +1424,7 @@
     <Compile Include="Model\CodeGenerated\PersonScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowTriggerService.cs" />
-    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusionService.Partial.cs" />
+    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusionService.cs" />
     <Compile Include="Model\Engagement\Streak\StreakService.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakTypeService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
