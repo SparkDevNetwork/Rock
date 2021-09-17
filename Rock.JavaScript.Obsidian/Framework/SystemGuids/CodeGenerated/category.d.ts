@@ -42,6 +42,8 @@ export const enum Category {
     HistoryPersonGroupMembership = "325278A4-FACA-4F38-A405-9C090B3BAA34",
     /** History of connection request */
     HistoryPersonConnectionRequest = "4B472C6A-1ACF-481E-A2D4-9C44436BBCF5",
+    /** History of step */
+    HistoryPersonStep = "517BB2D3-0A50-4132-818E-63BB3C81EAE9",
     /** History of person communications */
     HistoryPersonCommunications = "F291034B-7581-48F3-B522-E31B8534D529",
     /** History of person activity */
@@ -74,8 +76,10 @@ export const enum Category {
     PersonAttributesDisc = "0B187C81-2106-4875-82B6-FBF1277AE23B",
     /** The category for person attributes for Personality Assessment Data */
     PersonAttributesPersonalityAssessmentData = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969",
-    /** The person attributes giving analytics */
+    /** Obsolete. Use  instead */
     PersonAttributesGivingAnalytics = "61823196-8EA1-4C2B-A7DF-1654BD085667",
+    /** Person Attribute Category for Giving Overview */
+    PersonAttributesGivingOverview = "61823196-8EA1-4C2B-A7DF-1654BD085667",
     /** The category for defined types for PowerBI */
     PowerbiDefinedType = "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C",
     /** The 'Public' category for Communication List groups */

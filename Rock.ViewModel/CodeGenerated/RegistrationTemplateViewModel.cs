@@ -232,14 +232,6 @@ namespace Rock.ViewModel
         public int Notify { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentRedirectVendor.
-        /// </summary>
-        /// <value>
-        /// The PaymentRedirectVendor.
-        /// </value>
-        public int? PaymentRedirectVendor { get; set; }
-
-        /// <summary>
         /// Gets or sets the PaymentReminderEmailTemplate.
         /// </summary>
         /// <value>

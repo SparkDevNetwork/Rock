@@ -598,13 +598,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum PaymentRedirectVendor
-    {
-        Pushpay = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
     public enum PersistedDatasetDataFormat
     {
         JSON = 0x0,

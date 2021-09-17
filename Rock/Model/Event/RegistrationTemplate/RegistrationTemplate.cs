@@ -563,15 +563,6 @@ namespace Rock.Model
         public RegistrarOption RegistrarOption { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment redirect vendor.
-        /// </summary>
-        /// <value>
-        /// The payment redirect vendor.
-        /// </value>
-        [DataMember]
-        public PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is registration metering enabled.
         /// </summary>
         /// <value>

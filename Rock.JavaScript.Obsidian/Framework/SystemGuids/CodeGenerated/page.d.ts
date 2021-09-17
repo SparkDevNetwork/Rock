@@ -1030,5 +1030,7 @@ ParentPage: System Dialogs */
     OidcClientDetail = "41E6A833-1697-4463-9962-01DFD123D4C9",
     /** The financial settings menu page on the internal Rock page */
     FinancialSettings = "90723727-56EC-494D-9708-E188869D900C",
+    /** The Contribution Statement Page on the stock external site */
+    ContributionStatementPage = "98EBADAF-CCA9-4893-9DD3-D8201D8BD7FA",
 }
 

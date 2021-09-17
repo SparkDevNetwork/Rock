@@ -49,7 +49,6 @@ export type RegistrationTemplate = IEntity & {
     minimumInitialPayment?: number | null;
     name?: string | null;
     notify?: number;
-    paymentRedirectVendor?: number | null;
     paymentReminderEmailTemplate?: string | null;
     paymentReminderFromEmail?: string | null;
     paymentReminderFromName?: string | null;

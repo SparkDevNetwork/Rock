@@ -768,7 +768,6 @@
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.WebForms.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.Logic.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.Logic.cs" />
-    <Compile Include="Model\Event\RegistrationTemplate\PaymentRedirectVendor.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrantsSameFamily.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrarOption.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationNotify.cs" />

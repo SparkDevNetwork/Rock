@@ -40,7 +40,6 @@ export type RegistrationInstance = IEntity & {
     maxAttendees?: number | null;
     minimumInitialPayment?: number | null;
     name?: string | null;
-    paymentRedirectData?: string | null;
     registrationInstructions?: string | null;
     registrationMeteringThreshold?: number | null;
     registrationTemplateId?: number;

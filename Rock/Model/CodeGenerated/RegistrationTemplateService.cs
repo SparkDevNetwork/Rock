@@ -113,7 +113,6 @@ namespace Rock.Model
                 MinimumInitialPayment = model.MinimumInitialPayment,
                 Name = model.Name,
                 Notify = ( int ) model.Notify,
-                PaymentRedirectVendor = ( int? ) model.PaymentRedirectVendor,
                 PaymentReminderEmailTemplate = model.PaymentReminderEmailTemplate,
                 PaymentReminderFromEmail = model.PaymentReminderFromEmail,
                 PaymentReminderFromName = model.PaymentReminderFromName,
@@ -242,7 +241,6 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
-            target.PaymentRedirectVendor = source.PaymentRedirectVendor;
             target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             target.PaymentReminderFromName = source.PaymentReminderFromName;

@@ -89,7 +89,9 @@ export const enum ServiceJob {
     SendGroupAttendanceDigest = "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B",
     /** A run once job after a new installation. The purpose of this job is to populate generated datasets after an initial installation using RockInstaller that are too large to include in the installer. */
     PostInstallDataMigrations = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3",
-    /** The Job to execute giving analytics logic */
+    /** The  job. */
+    GivingAutomation = "B6DE0544-8C91-444E-B911-453D4CE71515",
+    /** Use  instead */
     GivingAnalytics = "B6DE0544-8C91-444E-B911-453D4CE71515",
     /** The media synchronize job. */
     SyncMedia = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9",

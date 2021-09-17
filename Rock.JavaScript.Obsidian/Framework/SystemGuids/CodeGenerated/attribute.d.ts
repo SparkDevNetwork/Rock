@@ -338,6 +338,12 @@ Classification is updated after each new gift, but if they stop giving we’ll u
     PersonGiving12MonthsCount = "23B6A7BD-BBBB-4F2D-9695-2B1E03B3013A",
     /** Gift count 90 days - Integer */
     PersonGiving90DaysCount = "356B8F0B-AA54-4F44-8513-F8A5FF592F18",
+    /** Giving Journey - Current Giving Journey Stage */
+    PersonGivingCurrentGivingJourneyStage = "13C55AEA-6D88-4470-B3AE-EE5138F044DF",
+    /** Giving Journey - Previous Giving Journey Stage */
+    PersonGivingPreviousGivingJourneyStage = "B35CE867-6017-484E-9EC7-AEB93CD4B2D8",
+    /** Giving Journey - Change Date of Giving Journey Stage */
+    PersonGivingGivingJourneyStageChangeDate = "8FFE3554-43F2-40D8-8803-446559D2B1F7",
     /** Language in ISO639-1 */
     Iso6391 = "F5E8B6D2-6483-0F8D-4C20-07C51E7548AD",
     /** Language in ISO639 */

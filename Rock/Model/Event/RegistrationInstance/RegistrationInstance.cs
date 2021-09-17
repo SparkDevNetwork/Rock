@@ -223,16 +223,6 @@ namespace Rock.Model
         public int? RegistrationWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment redirect data.
-        /// </summary>
-        /// <value>
-        /// The payment redirect data.
-        /// </value>
-        [DataMember]
-        [MaxLength( 500 )]
-        public string PaymentRedirectData { get; set; }
-
-        /// <summary>
         /// Gets or sets the external gateway merchant identifier.
         /// </summary>
         /// <value>
