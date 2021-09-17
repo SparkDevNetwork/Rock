@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.CheckIn
         Key = AttributeKey.NoOptionMessage )]
 
     [BooleanField( "Prioritize families for this campus",
-        Description = "If selected the families for this kiosk's campus will appear at the top of the list. If not selected the families will appear in alphabetical order regardless of their campus.",
+        Description = "If enabled, families matching this kiosk's campus will appear first. Otherwise families will appear in alphabetical order regardless of their campus.",
         IsRequired = false,
         DefaultBooleanValue = false,
         Order = 8,
