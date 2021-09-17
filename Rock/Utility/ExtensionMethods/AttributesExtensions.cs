@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
 namespace Rock
@@ -171,6 +172,137 @@ namespace Rock
         public static void SetAttributeValue( this IHasAttributes entity, string key, DateTime? value )
         {
             entity.SetAttributeValue( key, value?.ToString( "o" ) ?? string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the attribute values in a format that can be sent to remote
+        /// clients in a compact and secure manner.
+        /// </summary>
+        /// <param name="entity">The entity whose attributes are requested.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <returns>A collection of <see cref="ClientAttributeValueViewModel" /> objects.</returns>
+        public static List<ClientAttributeValueViewModel> GetClientAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        {
+            if ( entity == null )
+            {
+                return new List<ClientAttributeValueViewModel>();
+            }
+
+            return entity.AttributeValues
+                .Select( av => new
+                {
+                    av.Value,
+                    Attribute = AttributeCache.Get( av.Value.AttributeId )
+                } )
+                .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Select( kvp => ClientAttributeHelper.ToClientAttributeValue( kvp.Value ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the attribute values in a format that can be sent to remote
+        /// clients in a compact and secure manner. This includes additional
+        /// details to allow for editing the value.
+        /// </summary>
+        /// <param name="entity">The entity whose attributes are requested.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        /// <returns>A collection of <see cref="ClientEditableAttributeValueViewModel" /> objects.</returns>
+        public static List<ClientEditableAttributeValueViewModel> GetClientEditableAttributeValues( this IHasAttributes entity, Person currentPerson, bool enforceSecurity = true )
+        {
+            if ( entity == null )
+            {
+                return new List<ClientEditableAttributeValueViewModel>();
+            }
+
+            return entity.AttributeValues
+                .Select( av => new
+                {
+                    av.Value,
+                    Attribute = AttributeCache.Get( av.Value.AttributeId )
+                } )
+                .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Select( kvp => ClientAttributeHelper.ToClientEditableAttributeValue( kvp.Value ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Sets attribute values that have been provided by a remote client.
+        /// </summary>
+        /// <remarks>
+        /// This should be used to handle values the client sent back after
+        /// calling the <see cref="GetClientEditableAttributeValues(IHasAttributes, Person, bool)"/>
+        /// method. It handles conversion from custom data formats into the
+        /// proper values to be stored in the database.
+        /// </remarks>
+        /// <param name="entity">The entity.</param>
+        /// <param name="attributeValues">The attribute values.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        public static void SetClientAttributeValues( this IHasAttributes entity, Dictionary<string, string> attributeValues, Person currentPerson, bool enforceSecurity = true )
+        {
+            if ( entity == null || entity.Attributes == null || entity.AttributeValues == null )
+            {
+                return;
+            }
+
+            foreach ( var kvp in attributeValues )
+            {
+                if ( !entity.Attributes.ContainsKey( kvp.Key ) || !entity.AttributeValues.ContainsKey( kvp.Key ) )
+                {
+                    continue;
+                }
+
+                var attribute = entity.Attributes[kvp.Key];
+
+                if ( enforceSecurity && !attribute.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+                {
+                    continue;
+                }
+
+                var value = ClientAttributeHelper.GetValueFromClient( attribute, kvp.Value );
+
+                entity.SetAttributeValue( kvp.Key, value );
+            }
+        }
+
+        /// <summary>
+        /// Sets a single attribute values that have been provided by a remote client.
+        /// </summary>
+        /// <remarks>
+        /// This should be used to handle values the client sent back after
+        /// calling the <see cref="GetClientEditableAttributeValues(IHasAttributes, Person, bool)"/>
+        /// method. It handles conversion from custom data formats into the
+        /// proper values to be stored in the database.
+        /// </remarks>
+        /// <param name="entity">The entity.</param>
+        /// <param name="key">The attribute key to set.</param>
+        /// <param name="value">The value provided by the remote client.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="enforceSecurity">if set to <c>true</c> then security will be enforced.</param>
+        public static void SetClientAttributeValue( this IHasAttributes entity, string key, string value, Person currentPerson, bool enforceSecurity = true )
+        {
+            if ( entity == null || entity.Attributes == null || entity.AttributeValues == null )
+            {
+                return;
+            }
+
+            if ( !entity.Attributes.ContainsKey( key ) || !entity.AttributeValues.ContainsKey( key ) )
+            {
+                return;
+            }
+
+            var attribute = entity.Attributes[key];
+
+            if ( enforceSecurity && !attribute.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+            {
+                return;
+            }
+
+            var databaseValue = ClientAttributeHelper.GetValueFromClient( attribute, value );
+
+            entity.SetAttributeValue( key, databaseValue );
         }
 
         /// <summary>

@@ -46,7 +46,8 @@ namespace Rock.Blocks.Example
         {
             var currentPerson = GetCurrentPerson();
             var personViewModel = currentPerson.ToViewModel( currentPerson );
-            return new BlockActionResult( HttpStatusCode.OK, personViewModel );
+
+            return ActionOk( personViewModel );
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace Rock.Blocks.Example
 
                 if ( family == null )
                 {
-                    return new BlockActionResult( HttpStatusCode.NotFound );
+                    return ActionNotFound();
                 }
 
                 family.CampusId = personArgs.PrimaryCampusId;
@@ -86,7 +87,8 @@ namespace Rock.Blocks.Example
                 person.BirthYear = personArgs.BirthYear;
 
                 rockContext.SaveChanges();
-                return new BlockActionResult( HttpStatusCode.OK );
+
+                return ActionOk();
             }
         }
     }

@@ -54,7 +54,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Validates the arguments.
+        /// Gets the generic context about the registration.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="errorMessage">The error result.</param>
@@ -94,14 +94,16 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Validates the arguments.
+        /// Gets the context about the registration and performs initial validation
+        /// of the data provided, such as making sure the discount code is valid.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="registrationGuid">The registration unique identifier to load into the context for verification.</param>
         /// <param name="currentPerson">The current person.</param>
-        /// <param name="args">The arguments.</param>
+        /// <param name="discountCode">The discount code in use that should be verified.</param>
         /// <param name="errorMessage">The error result.</param>
         /// <returns></returns>
-        public RegistrationContext GetRegistrationContext( int registrationInstanceId, Person currentPerson, RegistrationEntryBlockArgs args, out string errorMessage )
+        public RegistrationContext GetRegistrationContext( int registrationInstanceId, Guid? registrationGuid, Person currentPerson, string discountCode, out string errorMessage )
         {
             var rockContext = Context as RockContext;
             var context = GetRegistrationContext( registrationInstanceId, out errorMessage );
@@ -111,88 +113,51 @@ namespace Rock.Model
                 return null;
             }
 
-            // Basic check on the args to see that they appear valid
-            if ( args == null )
-            {
-                errorMessage = "The args cannot be null";
-                return null;
-            }
-
-            if ( args.Registrants?.Any() != true )
-            {
-                errorMessage = "At least one registrant is required";
-                return null;
-            }
-
-            if ( args.Registrar == null )
-            {
-                errorMessage = "A registrar is required";
-                return null;
-            }
-
             // Look up and validate the discount by the code
-            var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
-            var discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, args.DiscountCode );
-
-            if ( !args.DiscountCode.IsNullOrWhiteSpace() && discount == null )
+            if ( discountCode.IsNotNullOrWhiteSpace() )
             {
-                errorMessage = "The discount code is not valid";
-                return null;
-            }
+                var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
 
-            // Get or create the registration
-            var registrationService = new RegistrationService( rockContext );
-            var registration = args.RegistrationGuid.HasValue ? registrationService.Get( args.RegistrationGuid.Value ) : null;
+                context.Discount = registrationTemplateDiscountService.GetDiscountByCodeIfValid( registrationInstanceId, discountCode );
 
-            if ( registration == null && args.RegistrationGuid.HasValue )
-            {
-                errorMessage = "The registration was not found";
-                return null;
-            }
-
-            // Validate the amount to pay today
-            var isNewRegistration = registration == null;
-            var cost = context.RegistrationSettings.PerRegistrantCost;
-
-            // Cannot pay less than 0
-            if ( args.AmountToPayNow < 0 )
-            {
-                args.AmountToPayNow = 0;
-            }
-
-            // Cannot pay more than is owed
-            if ( args.AmountToPayNow > cost )
-            {
-                args.AmountToPayNow = cost;
-            }
-
-            // Validate the charge amount is not too low according to the initial payment amount
-            if ( isNewRegistration && cost > 0 )
-            {
-                var minimumInitialPayment = context.RegistrationSettings.PerRegistrantMinInitialPayment ?? cost;
-
-                if ( args.AmountToPayNow < minimumInitialPayment )
+                if ( context.Discount == null )
                 {
-                    args.AmountToPayNow = minimumInitialPayment;
+                    errorMessage = "The discount code is not valid";
+                    return null;
                 }
             }
 
-            if ( !isNewRegistration )
+            // Validate the registration
+            if ( registrationGuid.HasValue )
             {
-                if ( registration.PersonAliasId.HasValue && registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                var registrationService = new RegistrationService( rockContext );
+
+                context.Registration = registrationService.Get( registrationGuid.Value );
+
+                if ( context.Registration == null )
                 {
-                    // This existing registration does not belong to this person
-                    errorMessage = "Your existing registration was not found";
+                    errorMessage = "The registration was not found";
+                    return null;
                 }
-                else if ( registration.RegistrationInstanceId != registrationInstanceId )
+
+                // Verify this registration is for the same person and instance.
+                if ( context.Registration != null )
                 {
-                    // This existing registration is not for this instance
-                    errorMessage = "Your existing registration was not found";
+                    if ( context.Registration.PersonAliasId.HasValue && context.Registration.PersonAliasId.Value != currentPerson?.PrimaryAliasId )
+                    {
+                        // This existing registration does not belong to this person
+                        errorMessage = "Your existing registration was not found";
+                        return null;
+                    }
+                    else if ( context.Registration.RegistrationInstanceId != registrationInstanceId )
+                    {
+                        // This existing registration is not for this instance
+                        errorMessage = "Your existing registration was not found";
+                        return null;
+                    }
                 }
             }
 
-            context.Discount = discount;
-            context.Registration = registration;
             return context;
         }
 

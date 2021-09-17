@@ -31,6 +31,8 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid( "a2b98b90-6dcb-4049-ad04-353c9b46a113" )]
 
+[assembly: InternalsVisibleTo( "Rock.Blocks" )]
+[assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]

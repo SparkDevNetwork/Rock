@@ -20,17 +20,18 @@ using System;
 namespace Rock.ViewModel
 {
     /// <summary>
-    /// TypeScript Type
+    /// Defines the property type used when defining a property in TypeScript
+    /// as well as the import statement needed to make that type available.
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Property, AllowMultiple = false, Inherited = true )]
-    public class TypeScriptTypeAttribute : System.Attribute
+    internal class TypeScriptTypeAttribute : System.Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeScriptTypeAttribute" /> class.
         /// </summary>
-        /// <param name="tsType">Type of the ts.</param>
-        /// <param name="importStatement">The import statement.</param>
+        /// <param name="tsType">The TypeScript type definition.</param>
+        /// <param name="importStatement">The import statement that makes the type available.</param>
         public TypeScriptTypeAttribute( string tsType, string importStatement = null )
         {
             TsType = tsType;

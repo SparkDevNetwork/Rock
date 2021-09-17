@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModel.NonEntities;
+
 namespace Rock.ViewModel
 {
     public abstract class ViewModelBase : IViewModelWithAttributes
@@ -44,7 +46,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The attributes.
         /// </value>
-        [TypeScriptType( "Record<string, AttributeValue> | null", "import AttributeValue from './AttributeValueViewModel';" )]
-        public Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+        [TypeScriptType( "Record<string, ClientAttributeValue> | null", "import { ClientAttributeValue } from './clientAttributeValue';" )]
+        public Dictionary<string, ClientAttributeValueViewModel> Attributes { get; set; }
     }
 }

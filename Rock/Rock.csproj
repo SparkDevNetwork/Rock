@@ -450,6 +450,7 @@
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\ClientAttributeHelper.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
@@ -756,6 +757,7 @@
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.Logic.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationSession\RegistrationSessionService.cs" />
     <Compile Include="Model\Event\RegistrationSession\SessionStatus.cs" />
     <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscount.Logic.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFeeItem\RegistrationTemplateFeeItem.Logic.cs" />
@@ -966,6 +968,7 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
+    <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
@@ -1194,9 +1197,12 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\Client\CampusOptions.cs" />
+    <Compile Include="ViewModel\Client\ClientHelper.cs" />
+    <Compile Include="ViewModel\Client\DefinedValueOptions.cs" />
     <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
     <Compile Include="ViewModel\IViewModelHelper.cs" />
-    <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
+    <Compile Include="Utility\CodeGenExcludeAttribute.cs" />
     <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
@@ -3582,35 +3588,37 @@
 REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
 if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
- call "$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+ call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
 )
 
 REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll" del "$(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JSPool.dll" del "$(SolutionDir)\RockWeb\Bin\JSPool.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll" del "$(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Core.dll" del "$(SolutionDir)\RockWeb\Bin\React.Core.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Web.dll" del "$(SolutionDir)\RockWeb\Bin\React.Web.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll" del "$(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll" del "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JSPool.dll" del "$(ProjectDir)..\RockWeb\Bin\JSPool.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll" del "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Core.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll" del "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>REM Check if the JavaScript projects have been built.
+If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\dist" (
+    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

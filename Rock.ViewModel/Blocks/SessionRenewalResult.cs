@@ -38,6 +38,6 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The expiration date time.
         /// </value>
-        public DateTime ExpirationDateTime { get; set; }
+        public DateTimeOffset ExpirationDateTime { get; set; }
     }
 }

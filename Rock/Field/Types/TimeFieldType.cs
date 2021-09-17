@@ -33,6 +33,17 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( !TimeSpan.TryParse( value, out var timeValue ) )
+            {
+                return string.Empty;
+            }
+
+            return timeValue.ToTimeString();
+        }
+
         /// <summary>
         /// Formats time display
         /// </summary>
@@ -43,15 +54,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            var timeValue = TimeSpan.MinValue;
-            if ( TimeSpan.TryParse( value, out timeValue ) )
-            {
-                formattedValue = timeValue.ToTimeString();
-            }
-
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>

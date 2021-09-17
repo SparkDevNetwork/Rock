@@ -49,16 +49,17 @@ namespace Rock.Rest
         /// <summary>
         /// Gets the currently logged in Person
         /// </summary>
+        /// <param name="controller">The ApiController instance that is looking up the current person.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
+        internal static Rock.Model.Person GetPerson( ApiController controller, RockContext rockContext )
         {
-            if ( Request.Properties.Keys.Contains( "Person" ) )
+            if ( controller.Request.Properties.Keys.Contains( "Person" ) )
             {
-                return Request.Properties["Person"] as Person;
+                return controller.Request.Properties["Person"] as Person;
             }
 
-            var principal = ControllerContext.Request.GetUserPrincipal();
+            var principal = controller.ControllerContext.Request.GetUserPrincipal();
             if ( principal != null && principal.Identity != null )
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
@@ -78,13 +79,23 @@ namespace Rock.Rest
                     if ( userLogin != null )
                     {
                         var person = userLogin.Person;
-                        Request.Properties.Add( "Person", person );
+                        controller.Request.Properties.Add( "Person", person );
                         return userLogin.Person;
                     }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the currently logged in Person
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        protected virtual Rock.Model.Person GetPerson( RockContext rockContext )
+        {
+            return GetPerson( this, rockContext );
         }
 
         /// <summary>

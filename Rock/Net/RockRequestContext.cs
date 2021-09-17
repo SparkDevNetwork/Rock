@@ -271,7 +271,14 @@ namespace Rock.Net
                 {
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        return Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+                        var entity = Reflection.GetIEntityForEntityType( entityType, contextId.Value );
+
+                        if ( entity != null && entity is IHasAttributes attributedEntity )
+                        {
+                            Helper.LoadAttributes( attributedEntity );
+                        }
+
+                        return entity;
                     } ) );
                 }
 
@@ -280,7 +287,14 @@ namespace Rock.Net
                 {
                     ContextEntities.AddOrReplace( entityType, new Lazy<IEntity>( () =>
                     {
-                        return Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+                        var entity = Reflection.GetIEntityForEntityType( entityType, contextGuid.Value );
+
+                        if ( entity != null && entity is IHasAttributes attributedEntity )
+                        {
+                            Helper.LoadAttributes( attributedEntity );
+                        }
+
+                        return entity;
                     } ) );
                 }
             }
