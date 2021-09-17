@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -53,55 +56,61 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            // get the configured timeout, or default to 60 minutes if it is blank
+            // Get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-            var isProcessingComplete = false;
-            var batchSize = 100;
-            var totalBatchSize = 0;
-            var currentBatch = 1;
+
+            // Get a list of all FinancialPaymentDetails that need to have the Encrypted fields decrypted into the plain text fields
+#pragma warning disable 612, 618
+            var financialPaymentDetailIdsToUpdate = new FinancialPaymentDetailService( new RockContext() )
+                .Queryable()
+                .Where( pd =>
+                    ( pd.ExpirationMonth == null && pd.ExpirationMonthEncrypted != null )
+                    || ( pd.NameOnCardEncrypted != null && pd.NameOnCard == null ) )
+                .OrderByDescending( a => a.Id )
+                .Select( a => a.Id )
+                .ToList();
+#pragma warning restore 612, 618
 
             var runtime = System.Diagnostics.Stopwatch.StartNew();
-            while ( !isProcessingComplete )
+            var lastProgressUpdate = DateTime.MinValue;
+            double recordsProcessed = 0;
+            var totalRecords = financialPaymentDetailIdsToUpdate.Count();
+
+            // Load the FinancialPayemntDetail record for each of the financialPaymentDetailIdsToUpdate
+            // and convert the encrypted fields to plain text field.
+            foreach ( var financialPaymentDetailId in financialPaymentDetailIdsToUpdate )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    var service = new FinancialPaymentDetailService( rockContext );
-#pragma warning disable 612, 618
-                    var itemsToUpdate = service
-                        .Queryable()
-                        .Where( pd => ( pd.ExpirationMonth == null && pd.ExpirationMonthEncrypted != null )
-                        || ( pd.NameOnCardEncrypted != null && pd.NameOnCard == null ) );
-#pragma warning restore 612, 618
+                    var financialPaymentDetail = new FinancialPaymentDetailService( rockContext ).Get( financialPaymentDetailId );
 
-                    if ( currentBatch == 1 )
+                    if ( financialPaymentDetail != null )
                     {
-                        totalBatchSize = itemsToUpdate.Count();
+                        // Tell EF that the whole FinancialPaymentDetail record has been modified.
+                        // This will ensure that all the logic for setting the field data
+                        // is processed, and that all the appropriate PostSaveChanges, etc is done.
+                        rockContext.Entry( financialPaymentDetail ).State = EntityState.Modified;
+                        rockContext.SaveChanges();
                     }
-
-                    itemsToUpdate = itemsToUpdate.Take( batchSize );
-
-                    var currentBatchSize = itemsToUpdate.Count();
-
-                    isProcessingComplete = currentBatchSize < batchSize;
-
-                    foreach ( var item in itemsToUpdate )
-                    {
-                        rockContext.Entry( item ).State = EntityState.Modified;
-                    }
-                    rockContext.SaveChanges();
-
-                    currentBatch++;
 
                     var processTime = runtime.ElapsedMilliseconds;
-                    var recordsProcessed = ( double ) ( currentBatchSize * currentBatch );
+                    recordsProcessed++;
                     var recordsPerMillisecond = recordsProcessed / processTime;
-                    var recordsRemaining = totalBatchSize - recordsProcessed;
+                    var recordsRemaining = totalRecords - recordsProcessed;
                     var minutesRemaining = recordsRemaining / recordsPerMillisecond / 1000 / 60;
 
-                    context.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalBatchSize} records. Approximately {minutesRemaining:N0} minutes remaining." );
+                    if ( RockDateTime.Now - lastProgressUpdate > TimeSpan.FromSeconds( 10 ) )
+                    {
+                        // Update the status every 10 seconds so that the progress can be shown.
+                        context.UpdateLastStatusMessage( $"Processing {recordsProcessed} of {totalRecords} records. Approximately {minutesRemaining:N0} minutes remaining." );
+                        lastProgressUpdate = RockDateTime.Now;
+                    }
                 }
             }
 
+            context.UpdateLastStatusMessage( $"Processed {recordsProcessed} of {totalRecords} records. " );
+
+            // Now that all the rows that need to have been decrypted have been processed, the job can be deleted.
             ServiceJobService.DeleteJob( context.GetJobId() );
         }
     }
