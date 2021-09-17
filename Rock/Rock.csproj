@@ -1411,7 +1411,7 @@
     <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
     <Compile Include="Model\CRM\Assessment\Assessment.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentService.cs" />
-    <Compile Include="Model\AssessmentType.cs" />
+    <Compile Include="Model\CRM\AssessmentType\AssessmentType.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
     <Compile Include="Model\AttendanceData.cs" />

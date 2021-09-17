@@ -45,7 +45,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> for the Title.
         /// </value>
         [Required]
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
 
@@ -53,7 +53,7 @@ namespace Rock.Model
         /// Gets or sets the Description of the <see cref="Rock.Model.AssessmentType"/>
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> for the Decsription.
+        /// A <see cref="System.String"/> for the Description.
         /// </value>
         [MaxLength( 100 )]
         public string Description { get; set; }
@@ -73,7 +73,7 @@ namespace Rock.Model
         /// Gets or sets the AssessmentResultsPath of the <see cref="Rock.Model.Assessment"/> or the <see cref="Rock.Model.AssessmentType"/> if no requestor required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> for the AssessmentResultsPath
+        /// A <see cref="System.String"/> for the AssessmentResultsPath.
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
@@ -157,9 +157,9 @@ namespace Rock.Model
         [DataMember]
         public string BadgeSummaryLava { get; set; }
 
-        #endregion
+        #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Collection of Assessments for each <see cref="Rock.Model.AssessmentType"/>.
@@ -167,7 +167,7 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<Assessment> Assessments { get; set; } = new Collection<Assessment>();
 
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -182,7 +182,7 @@ namespace Rock.Model
             return this.Title;
         }
 
-        #endregion
+        #endregion Public Methods
 
         #region ICacheable
 
@@ -196,7 +196,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
+        /// Updates any Cache Objects that are associated with this entity.
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
@@ -219,9 +219,9 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="AssessmentTypeConfiguration" /> class.
         /// </summary>
         public AssessmentTypeConfiguration()
-        { 
+        {
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }
