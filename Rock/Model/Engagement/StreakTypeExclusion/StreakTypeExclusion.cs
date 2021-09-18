@@ -22,7 +22,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Tasks;
-using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -59,7 +58,7 @@ namespace Rock.Model
 
         #endregion Entity Properties
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the Sequence <see cref="Rock.Model.StreakType"/> .
@@ -73,30 +72,7 @@ namespace Rock.Model
         [DataMember]
         public virtual Location Location { get; set; }
 
-        #endregion Virtual Properties
-
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return StreakTypeExclusionCache.Get( Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            StreakTypeExclusionCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
+        #endregion Navigation Properties
 
         #region Entity Configuration
 

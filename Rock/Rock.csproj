@@ -684,6 +684,7 @@
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemStatus.cs" />
     <Compile Include="Model\CMS\ContentChannelType\ContentChannelDateType.cs" />
+    <Compile Include="Model\CMS\ContentChannelType\ContentChannelType.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannelPath.cs" />
@@ -722,6 +723,7 @@
     <Compile Include="Model\Core\Note\Note.Logic.cs" />
     <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
+    <Compile Include="Model\CRM\AssessmentType\AssessmentType.Logic.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
@@ -734,8 +736,10 @@
     <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTrigger.Logic.cs" />
     <Compile Include="Model\Engagement\Step\Step.Logic.cs" />
     <Compile Include="Model\Engagement\Step\Step.SaveHook.cs" />
+    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusion.Logic.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakOccurrenceFrequency.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakStructureType.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakType.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceGraphBy.cs" />

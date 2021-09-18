@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class ContentChannel
+    public partial class ContentChannelType
     {
         #region ICacheable
 
@@ -30,7 +29,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return ContentChannelCache.Get( this.Id );
+            return ContentChannelTypeCache.Get( this.Id );
         }
 
         /// <summary>
@@ -40,23 +39,9 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
+            ContentChannelTypeCache.UpdateCachedEntity( Id, entityState );
         }
 
         #endregion ICacheable
-        /// <summary>
-        /// Gets the parent authority.
-        /// </summary>
-        /// <value>
-        /// The parent authority.
-        /// </value>
-        [NotMapped]
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.ContentChannelType != null ? this.ContentChannelType : base.ParentAuthority;
-            }
-        }
     }
 }
