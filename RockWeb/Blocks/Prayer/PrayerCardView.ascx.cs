@@ -44,13 +44,13 @@ namespace RockWeb.Blocks.Prayer
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = LavaTemplateDefaultValue,
         Order = 0 )]
     [TextField(
         "Prayed Button Text",
         Description = "The text to display inside the Prayed button.",
-        DefaultValue = "Prayed!",
+        DefaultValue = "I Prayed",
         IsRequired = true,
         Key = AttributeKey.PrayedButtonText,
         Order = 1 )]
@@ -140,27 +140,28 @@ namespace RockWeb.Blocks.Prayer
         /// The Default Value for the LavaTemplate block attribute
         /// </summary>
         private const string LavaTemplateDefaultValue = @"
-<div class=""row"">
+<div class=""row d-flex flex-wrap"">
   {% assign prayedButtonText = PrayedButtonText %}
   {% for item in PrayerRequestItems %}
-  <div class=""col-md-4 col-sm-6"">
-    <h4>{{ item.FirstName }} {{ item.LastName }}</h4>
-    <p>
-        {% if item.Campus != null %}
-        <span class=""label label-campus"">{{ item.Campus.Name }}</span>
+  <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+    <div class=""card h-100"">
+      <div class=""card-body"">
+        <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
+        {% if item.Category != null %}
+        <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
         {% endif %}
-    </p>
-    <p>
+        <p class=""card-text"">
         {{ item.Text }}
-    </p>
-    
-	<div class=""actions margin-v-md clearfix"">
-	    {% if EnablePrayerTeamFlagging == true %}
-	    <a href = ""#"" onclick=""{{ item.Id | Postback:'Flag' }}""><i class='fa fa-flag'></i> Flag</a>
-	    {% endif %}
-		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""iPrayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
-	</div>
-   </div>
+        </p>
+    </div>
+       <div class=""card-footer"">
+        {% if EnablePrayerTeamFlagging == true %}
+        <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""{{ item.Id | Postback:'Flag' }}""><i class='fa fa-flag'></i> Flag</a>
+        {% endif %}
+   		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""iPrayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
+        </div>
+        </div>
+    </div>
   {% endfor -%}
 </div>
 <script>function iPrayed(elmnt) { 
@@ -235,7 +236,7 @@ namespace RockWeb.Blocks.Prayer
             }
             else
             {
-                RouteAction();
+               RouteAction();
             }
         }
 
@@ -263,6 +264,7 @@ namespace RockWeb.Blocks.Prayer
         {
             SetUserPreference( CAMPUS_SETTING, cpCampus.SelectedCampusId.ToString() );
             LoadContent();
+            upPrayer.Update();
         }
 
         #endregion
@@ -412,7 +414,7 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService
                 .Queryable()
-                .Where( r => r.IsActive ?? true && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) && r.IsApproved == true );
+                .Where( r => ( r.IsActive ?? true ) && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) && r.IsApproved == true );
 
             if ( GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean() )
             {
@@ -504,7 +506,7 @@ namespace RockWeb.Blocks.Prayer
             mergeFields.Add( AttributeKey.PrayedButtonText, GetAttributeValue( AttributeKey.PrayedButtonText ) );
             mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ) );
             string template = GetAttributeValue( AttributeKey.DisplayLavaTemplate );
-            lContent.Text = template.ResolveMergeFields( mergeFields );
+            lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upPrayer.ClientID );
         }
 
         /// <summary>
