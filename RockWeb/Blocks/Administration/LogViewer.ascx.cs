@@ -15,9 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Web.UI;
-using Rock.Logging;
+
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
@@ -33,6 +32,12 @@ namespace RockWeb.Blocks.Administration
     {
         public void SetVisible( bool visible )
         {
+            if ( visible && !pnlLogs.Visible )
+            {
+                // if setting back to visible, make sure the log grid is refreshed
+                BindGrid();
+            }
+
             pnlLogs.Visible = visible;
         }
 
@@ -103,6 +108,7 @@ namespace RockWeb.Blocks.Administration
             {
                 rGrid.EmptyDataText = "The end of the log entries have been reached. <a href=''>Start Over.</a>";
             }
+
             rGrid.VirtualItemCount = logReader.RecordCount;
             rGrid.DataSource = events;
             rGrid.DataBind();

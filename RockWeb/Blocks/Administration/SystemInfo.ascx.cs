@@ -515,24 +515,26 @@ namespace RockWeb.Blocks.Administration
         {
             lDatabase.Text = GetDbInfo();
 
-            var systemDataTime = RockInstanceConfig.SystemDateTime;
+            var systemDateTime = RockInstanceConfig.SystemDateTime;
 
-            lSystemDateTime.Text = systemDataTime.ToString( "G" ) + " " + systemDataTime.ToString( "zzz" );
+            // Display System DateTime in Server TimeZone
+            lSystemDateTime.Text = new DateTimeOffset( systemDateTime ).ToString();
 
-            var rockDateTime = RockInstanceConfig.RockDateTime;
-
-            lRockTime.Text = rockDateTime.ToString( "G" ) + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset.ToString();
+            lRockTime.Text = new DateTimeOffset( RockInstanceConfig.RockDateTime, Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ).ToString();
 
             var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
 
             if ( currentProcess != null && currentProcess.StartTime != null )
             {
-                lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + RockInstanceConfig.SystemDateTime.ToString( "zzz" );
+                // Display Process StartTime (iis.exe) in Server TimeZone
+                lProcessStartTime.Text = new DateTimeOffset( currentProcess.StartTime ).ToString();
             }
             else
             {
                 lProcessStartTime.Text = "-";
             }
+
+            lRockApplicationStartTime.Text = new DateTimeOffset( RockInstanceConfig.ApplicationStartedDateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset ).ToString();
 
             lExecLocation.Text = "Machine Name: " + RockInstanceConfig.MachineName;
             lExecLocation.Text += "<br>" + Assembly.GetExecutingAssembly().Location + "<br>" + RockInstanceConfig.PhysicalDirectory;

@@ -586,6 +586,7 @@
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="CheckIn\CheckinResult.cs" />
     <Compile Include="CheckIn\PersonAchievementType.cs" />

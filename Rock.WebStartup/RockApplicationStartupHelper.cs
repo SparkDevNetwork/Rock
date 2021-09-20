@@ -42,6 +42,7 @@ using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
+using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.WebFarm;
 
@@ -107,6 +108,7 @@ namespace Rock.WebStartup
             InitializeRockOrgTimeZone();
 
             StartDateTime = RockDateTime.Now;
+            RockInstanceConfig.SetApplicationStartedDateTime( StartDateTime );
 
             // If there are Task.Runs that don't handle their exceptions, this will catch those
             // so that we can log it. Note that this event won't fire until the Task is disposed.
@@ -124,6 +126,8 @@ namespace Rock.WebStartup
             ShowDebugTimingMessage( "EF Migrations" );
 
             ConfigureEntitySaveHooks();
+
+            ShowDebugTimingMessage( "Configure Entity SaveHooks" );
 
             // Now that EF Migrations have gotten the Schema in sync with our Models,
             // get the RockContext initialized (which can take several seconds)

@@ -18,6 +18,8 @@ using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Logging;
+using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Web.Cache
 {
@@ -41,9 +43,20 @@ namespace Rock.Web.Cache
         {
             if ( !RockMessageBus.IsRockStarted )
             {
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Ignored Authorization Cache Update message. RockStarted=false" );
-                return;
+                var logMessage = $"Authorization Update message was not consumed because Rock is not fully started yet.";
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
 
+                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    ExceptionLogService.LogException( new BusException( logMessage ) );
+                }
+                else
+                {
+                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                }
+
+                return;
             }
 
             RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Authorization Cache Update message." );

@@ -20,7 +20,9 @@ using System.Configuration;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MassTransit;
+
 using Rock.Bus.Consumer;
 using Rock.Bus.Faults;
 using Rock.Bus.Message;
@@ -69,6 +71,11 @@ namespace Rock.Bus
         public static StatLog StatLog { get; } = new StatLog();
 
         /// <summary>
+        /// If <see cref="IsRockStarted"/> has been <c>false</c> for more than 20 minutes. An error should be logged if attempting a publish or consume.
+        /// </summary>
+        public const int MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR = 20 * 60;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is rock started.
         /// </summary>
         /// <value>
@@ -104,6 +111,7 @@ namespace Rock.Bus
                 return _nodeName;
             }
         }
+
         private static string _nodeName;
 
         /// <summary>
@@ -157,7 +165,7 @@ namespace Rock.Bus
                 await ConfigureAndStartBusAsync();
 
                 // Log that the original transport did not work
-                ExceptionLogService.LogException( new Exception( $"Could not start the message bus transport: {originalTransport.GetType().Name}", e ) );
+                ExceptionLogService.LogException( new BusException( $"Could not start the message bus transport: {originalTransport.GetType().Name}", e ) );
             }
 
             if ( _transportComponent == inMemoryTransport && !inMemoryTransport.IsActive )
@@ -207,7 +215,7 @@ namespace Rock.Bus
         {
             if ( !IsReady() )
             {
-                ExceptionLogService.LogException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" );
+                ExceptionLogService.LogException( new BusException( $"A message was published before the message bus was ready: {RockMessage.GetLogString( message )}" ) );
                 return;
             }
 
@@ -239,7 +247,6 @@ namespace Rock.Bus
         public static async Task SendAsync<TQueue>( ICommandMessage<TQueue> message, Type messageType )
             where TQueue : ISendCommandQueue, new()
         {
-
             RockLogger.Log.Debug( RockLogDomains.Core, "Send Message Async: {@message} Message Type: {1}", message, messageType );
 
             if ( !IsReady() )
