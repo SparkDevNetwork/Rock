@@ -2055,9 +2055,9 @@
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
-    <Compile Include="Model\BenevolenceRequestDocument.cs" />
-    <Compile Include="Model\BenevolenceRequest.cs" />
-    <Compile Include="Model\BenevolenceResult.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequestDocument\BenevolenceRequestDocument.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.cs" />
+    <Compile Include="Model\Finance\BenevolenceResult\BenevolenceResult.cs" />
     <Compile Include="Model\BinaryFile.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
