@@ -1,5 +1,11 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestBoard.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestBoard" %>
 
+<style>
+    .can-edit-false,.can-connect-false {
+        display: none;
+    }
+</style>
+
 <script type="text/javascript">
     // This is the source for the "dragscroll" library. It has a modification in the
     // mousedown handler. The modification is to prevent dragscroll from acting
@@ -749,23 +755,19 @@
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a href="javascript:void(0);" class="js-view">View Details
-                                </a>
+                                <a href="javascript:void(0);" class="js-view">View Details</a>
                             </li>
                             <li class="can-connect-{{CanConnect}}">
-                                <a href="javascript:void(0);" class="js-connect">Connect
-                                </a>
+                                <a href="javascript:void(0);" class="js-connect">Connect</a>
                             </li>
                             <% if ( ShowSecurityButton ) { %>
                             <li>
-                                <a href="javascript:Rock.controls.modal.show($(this), '/Secure/<%= ConnectionRequestEntityTypeId %>/{{Id}}?t=Security&pb=&sb=Done')">Security
-                                </a>
+                                <a href="javascript:Rock.controls.modal.show($(this), '/Secure/<%= ConnectionRequestEntityTypeId %>/{{Id}}?t=Security&pb=&sb=Done')">Security</a>
                             </li>
                             <% } %>
-                            <li role="separator" class="divider can-connect-{{CanCurrentUserEdit}}"></li>
-                            <li class="can-connect-{{CanCurrentUserEdit}}">
-                                <a href="javascript:void(0);" class="dropdown-item-danger js-delete">Delete
-                                </a>
+                            <li role="separator" class="divider can-edit-{{CanCurrentUserEdit}}"></li>
+                            <li class="can-edit-{{CanCurrentUserEdit}}">
+                                <a href="javascript:void(0);" class="dropdown-item-danger js-delete">Delete</a>
                             </li>
                         </ul>
                     </div>

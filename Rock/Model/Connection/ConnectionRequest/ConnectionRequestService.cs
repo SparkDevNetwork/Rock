@@ -390,7 +390,7 @@ namespace Rock.Model
                         .FirstOrDefault(),
                     FollowupDate = cr.FollowupDate,
                     UserHasDirectAccess = false,
-                    CanCurrentUserEdit = canViewAllRequests,
+                    CanCurrentUserEdit = canEditAllRequest
                 } );
 
             // Filter by connector
