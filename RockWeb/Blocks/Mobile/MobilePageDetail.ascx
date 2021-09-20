@@ -233,9 +233,11 @@
         // Setup dragula to allow re-ordering within the actions.
         //
         var reorderOldIndex = -1;
+        var reorderOldZone = "";
         var reorderDrake = dragula(componentContainers, {
             moves: function (el, source, handle, sibling) {
                 reorderOldIndex = $(source).children().index(el);
+                reorderOldZone = $(el).closest('.js-block-zone').data('zone-name');
                 return $(handle).hasClass('js-reorder');
             },
             revertOnSpill: true
@@ -245,7 +247,7 @@
             var newIndex = $(target).children().index(el);
             var zone = $(el).closest('.js-block-zone').data('zone-name');
             var blockId = $(el).find('.js-block').data('block-id');
-            if (reorderOldIndex !== newIndex) {
+            if (reorderOldIndex !== newIndex || reorderOldZone !== zone) {
                 var postback = "javascript:__doPostBack('<%= lbDragCommand.ClientID %>', 'reorder-block|" + zone + "|" + blockId + "|" + newIndex + "')";
                 window.location = postback;
             }
