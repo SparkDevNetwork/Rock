@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,7 +30,6 @@ namespace Rock.Model
     [DataContract]
     public partial class BenevolenceResult : Model<BenevolenceResult>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -76,7 +74,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BenevolenceRequest"/>.
@@ -96,8 +94,7 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue ResultTypeValue { get; set; }
 
-        #endregion
-
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
@@ -114,7 +111,6 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.BenevolenceRequest ).WithMany( p => p.BenevolenceResults ).HasForeignKey( p => p.BenevolenceRequestId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.ResultTypeValue ).WithMany().HasForeignKey( p => p.ResultTypeValueId ).WillCascadeOnDelete( false );
-
         }
     }
 

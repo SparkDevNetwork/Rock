@@ -18,7 +18,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 using Rock.Lava;
 
@@ -32,7 +31,6 @@ namespace Rock.Model
     [DataContract]
     public partial class BenevolenceRequestDocument : Model<BenevolenceRequestDocument>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -65,7 +63,7 @@ namespace Rock.Model
         public int? Order { get; set; }
         #endregion
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.BenevolenceRequest" />.
@@ -85,7 +83,7 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile BinaryFile { get; set; }
 
-        #endregion
+        #endregion Navigation Properties
     }
 
     #region Entity Configuration
