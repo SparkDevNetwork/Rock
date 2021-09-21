@@ -169,6 +169,9 @@ namespace RockWeb.Blocks.Prayer
         elmnt.innerHTML = iPrayedText;
     }
 </script>
+<style>
+.block-filter { float:right; }
+</style>
 ";
 
         #endregion Constants

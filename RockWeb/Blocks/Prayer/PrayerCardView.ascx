@@ -7,9 +7,9 @@
             <div class="block-filter">
                 <Rock:CampusPicker ID="cpCampus" runat="server" IncludeInactive="false" CssClass="input-width-lg" AutoPostBack="true" OnSelectedIndexChanged="cpCampus_SelectedIndexChanged" />
             </div>
-            <div class="block-body">
-                <asp:Literal ID="lContent" runat="server"></asp:Literal>
-            </div>
+        </div>
+        <div class="block-body">
+            <asp:Literal ID="lContent" runat="server"></asp:Literal>
         </div>
     </ContentTemplate>
 </asp:UpdatePanel>
