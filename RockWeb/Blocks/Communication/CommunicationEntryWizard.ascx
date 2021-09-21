@@ -84,7 +84,7 @@
                                             <label class="control-label mb-0">Segments</label>
                                             <p class="text-sm">Optionally, further refine your recipients by filtering by segment.</p>
                                             <div class="margin-b-lg">
-                                                <Rock:RockCheckBoxList 
+                                                <Rock:RockCheckBoxList
                                                     ID="cblCommunicationGroupSegments"
                                                     runat="server"
                                                     RepeatDirection="Horizontal"
@@ -518,6 +518,12 @@
                                                 <div class="form-group">
                                                     <label class="control-label" for="component-image-link">Link</label>
                                                     <input type="url" id="component-image-link" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-image-alt">Alt Text</label>
+                                                    <input type="text" id="component-image-alt" class="form-control" />
                                                 </div>
                                             </div>
                                         </div>
