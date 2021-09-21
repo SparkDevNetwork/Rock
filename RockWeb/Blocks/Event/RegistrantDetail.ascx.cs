@@ -395,9 +395,19 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
+                // Create a RegistrationSession here to create a lock. This will prevent multiple registrations at the same time that could exceed the registration limit.
+                // Only do this if there is a limit.
+                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+                Guid registrationSessionGuid;
+                if ( registrationInstance.MaxAttendees != null && registrationInstance.MaxAttendees != 0 )
+                {
+                    //RegistrationSessionService.CreateOrUpdateSession
+                }
+
                 // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
                 rockContext.WrapTransaction( () =>
                 {
+
                     rockContext.SaveChanges();
 
                     registrant.LoadAttributes();
