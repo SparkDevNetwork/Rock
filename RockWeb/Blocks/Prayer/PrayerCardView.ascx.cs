@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Prayer
     }
 </script>
 <style>
-.block-filter { float:right; }
+.block-filter { margin-left: auto; }
 </style>
 ";
 
