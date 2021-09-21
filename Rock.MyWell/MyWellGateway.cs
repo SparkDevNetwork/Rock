@@ -125,24 +125,24 @@ namespace Rock.MyWell
 
         #region Obsidian
 
-        /// <summary>
-        /// Gets the Obsidian control file URL.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <returns></returns>
-        /// <value>
-        /// The control file URL.
-        /// </value>
+        ///// <summary>
+        ///// Gets the Obsidian control file URL.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
+        ///// <value>
+        ///// The control file URL.
+        ///// </value>
         //public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
         //{
         //    return "/Obsidian/Controls/MyWellGatewayControl.js";
         //}
 
-        /// <summary>
-        /// Gets the obsidian control settings.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <returns></returns>
+        ///// <summary>
+        ///// Gets the obsidian control settings.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
         //public object GetObsidianControlSettings( FinancialGateway financialGateway )
         //{
         //    return new
