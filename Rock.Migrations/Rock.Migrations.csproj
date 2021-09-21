@@ -93,6 +93,10 @@
     <Compile Include="Migrations\202109172125405_RemovePushpayEventRegistrationSupportModels.Designer.cs">
       <DependentUpon>202109172125405_RemovePushpayEventRegistrationSupportModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs" />
+    <Compile Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.Designer.cs">
+      <DependentUpon>202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -722,6 +726,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202109172125405_RemovePushpayEventRegistrationSupportModels.resx">
       <DependentUpon>202109172125405_RemovePushpayEventRegistrationSupportModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.resx">
+      <DependentUpon>202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
