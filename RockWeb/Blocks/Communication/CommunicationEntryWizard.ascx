@@ -69,7 +69,7 @@
                                 <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="row">
-                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-7">
+                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-8">
                                         <Rock:RockDropDownList
                                             ID="ddlCommunicationGroupList"
                                             runat="server"
