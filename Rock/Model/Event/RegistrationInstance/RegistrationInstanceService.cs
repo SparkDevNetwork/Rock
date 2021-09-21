@@ -348,7 +348,8 @@ namespace Rock.Model
                     var sessionRegistrantCount = new RegistrationSessionService( Context as RockContext )
                         .Queryable()
                         .AsNoTracking()
-                        .Where( s => s.ExpirationDateTime > RockDateTime.Now )
+                        .Where( s => s.RegistrationInstanceId == context.RegistrationSettings.RegistrationInstanceId
+                            && s.ExpirationDateTime > RockDateTime.Now )
                         .Select( s => s.RegistrationCount )
                         .DefaultIfEmpty( 0 )
                         .Sum();

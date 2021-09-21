@@ -277,6 +277,25 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHECK_IN_MANAGER_EN_ROUTE = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D";
 
+        #region Obsidian Block Types
+
+        /// <summary>
+        /// The obsidian event registration entry
+        /// </summary>
+        public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "0252E237-0684-4426-9E5C-D454A13E152A";
+
+        /// <summary>
+        /// The obsidian event control gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_CONTROL_GALLERY = "3ED1B4B2-FD1C-4E4B-B4B9-2DE4E6EF8915";
+
+        /// <summary>
+        /// The obsidian event field type gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "B9C209C2-ABB8-4B48-A68E-944572007B03";
+
+        #endregion Obsidian Block Types
+
         /// <summary>
         /// The contribution statement lava (Legacy)
         /// </summary>

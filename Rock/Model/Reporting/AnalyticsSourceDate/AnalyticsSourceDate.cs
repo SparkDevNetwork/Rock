@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,7 +31,7 @@ namespace Rock.Model
     [Table( "AnalyticsSourceDate" )]
     [DataContract]
     [HideFromReporting]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public partial class AnalyticsSourceDate
     {
         #region Entity Properties

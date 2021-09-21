@@ -19,12 +19,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Lava;
-using Rock.Security;
 
 namespace Rock.Model
 {
@@ -154,7 +151,7 @@ namespace Rock.Model
         }
 
         private DateTime? _lastPaymentReminderDateTime;
-        
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -196,22 +193,6 @@ namespace Rock.Model
         public virtual AnalyticsSourceDate CreatedSourceDate { get; set; }
 
         #endregion Navigation Properties
-
-        #region Methods
-
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and
-        /// then the authorization on the Rock.Security.GlobalDefault entity
-        /// </summary>
-        public override ISecured ParentAuthority
-        {
-            get
-            {
-                return RegistrationInstance != null ? RegistrationInstance : base.ParentAuthority;
-            }
-        }
-        #endregion Methods
     }
 
     #region Entity Configuration

@@ -239,6 +239,16 @@ namespace RockWeb.Blocks.Steps
 
             RenderStepsPerRow();
             DisplayStepTerm();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
             RenderViewMode();
         }
 
@@ -479,7 +489,11 @@ namespace RockWeb.Blocks.Steps
         {
             var stepId = e.CommandArgument.ToStringSafe().AsInteger();
             DeleteStep( stepId );
-            RenderCardView();
+
+            // Redirect the browser to reload the page so that the POST data associated with this request is cleared from the cache.
+            // This prevents the delete operation from being repeated if the page is reloaded, which is usually accompanied by
+            // an unwanted postback alert dialog.
+            Response.Redirect( Request.Url.ToString(), false );
         }
 
         /// <summary>

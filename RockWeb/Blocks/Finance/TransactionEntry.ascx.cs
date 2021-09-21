@@ -1402,6 +1402,10 @@ TransactionAccountDetails: [
                                 savedAccountService.Add( savedAccount );
                                 rockContext.SaveChanges();
 
+                                // If we created a new saved account, update the transaction to say it that is used this saved account.
+                                paymentDetail.FinancialPersonSavedAccountId = savedAccount.Id;
+                                rockContext.SaveChanges();
+
                                 cbSaveAccount.Visible = false;
                                 txtSaveAccount.Visible = false;
                                 phCreateLogin.Visible = false;

@@ -55,6 +55,32 @@ namespace Rock.Field.Types
             return configKeys;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var clientValues = base.GetClientConfigurationValues( configurationValues );
+
+            if ( clientValues.ContainsKey( VALUES_KEY ) )
+            {
+                var configuredValues = Helper.GetConfiguredValues( configurationValues );
+
+                var options = Helper.GetConfiguredValues( configurationValues )
+                    .Select( kvp => new
+                    {
+                        value = kvp.Key,
+                        text = kvp.Value
+                    } );
+
+                clientValues[VALUES_KEY] = options.ToCamelCaseJson( false, true );
+            }
+            else
+            {
+                clientValues[VALUES_KEY] = "[]";
+            }
+
+            return clientValues;
+        }
+
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -153,15 +179,8 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( !string.IsNullOrWhiteSpace( value ) && configurationValues.ContainsKey( VALUES_KEY ) )
             {
@@ -174,7 +193,22 @@ namespace Rock.Field.Types
                     .AsDelimited( ", " );
             }
 
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return base.GetTextValue( value, configurationValues );
+        }
+
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var formattedValue = GetTextValue( value, configurationValues );
+
+            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
         }
 
         /// <summary>

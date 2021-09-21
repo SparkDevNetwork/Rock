@@ -852,11 +852,28 @@ namespace Rock.Migrations.Migrations {
         ///
         ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/security&apos; WHERE ([Guid]=&apos;3F1A5C3F-53B6-46CA-AA66-6587C8FC56BC&apos;)
         ///
-        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/persondocs&apos; WHERE ([Guid]=&apos;AF2B7CB5-9CBA-41C4-A2DE-AB84FB5C35 [rest of string was truncated]&quot;;.
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/persondocs&apos; WHERE ([Guid]=&apos;AF2B7CB5-9CBA-41C4-A2DE-AB [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202109081805229_Rollup_20210908_routemigration {
             get {
                 return ResourceManager.GetString("_202109081805229_Rollup_20210908_routemigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 
+        ///-- Update Capitalization on Routes
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/steps/{StepTypeId}/{StepId}&apos; WHERE ([Guid]=&apos;6BA3B394-C827-4548-94AE-CA9AD585CF3A&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/steps&apos; WHERE ([Guid]=&apos;181A8246-0F80-44BE-A448-DADF680E6F73&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/security&apos; WHERE ([Guid]=&apos;3F1A5C3F-53B6-46CA-AA66-6587C8FC56BC&apos;)
+        ///
+        ///UPDATE [PageRoute] SET [Route]=N&apos;person/{PersonId}/persondocs&apos; WHERE ([Guid]=&apos;AF2B7CB5-9CBA-41C4-A2DE-AB84FB5C35 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202109212048053_Rollup_20210921_routemigration {
+            get {
+                return ResourceManager.GetString("_202109212048053_Rollup_20210921_routemigration", resourceCulture);
             }
         }
     }

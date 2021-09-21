@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
-
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -24,6 +22,8 @@ using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
 using Rock.Logging;
+using Rock.Model;
+using Rock.Utility.Settings;
 
 namespace Rock.Web.Cache
 {
@@ -52,14 +52,31 @@ namespace Rock.Web.Cache
         {
             if ( !RockMessageBus.IsRockStarted )
             {
+                var logMessage = $"Cache Update message was not consumed because Rock is not fully started yet. {message.ToDebugString()}.";
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+
+                if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
+                {
+                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
+                    ExceptionLogService.LogException( new BusException( logMessage ) );
+                }
+                else
+                {
+                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                }
+
                 return;
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Cache Update message. Key: {message.Key}, Region: {message.Region}, CacheTypeName: {message.CacheTypeName}." );
+            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed Cache Update message from {message.SenderNodeName} node. {message.ToDebugString()}." );
             var applyCacheMessageMethodInfo = FindApplyCacheMessageMethodInfo( message.CacheTypeName );
 
             if ( applyCacheMessageMethodInfo == null )
             {
+                var logMessage = $"Unable to resolve cache type when consuming cache update message. {message.ToDebugString()}.";
+                RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                ExceptionLogService.LogException( new BusException( logMessage ) );
+
                 return;
             }
 

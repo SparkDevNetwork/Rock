@@ -390,7 +390,7 @@ namespace Rock.Model
                         .FirstOrDefault(),
                     FollowupDate = cr.FollowupDate,
                     UserHasDirectAccess = false,
-                    CanCurrentUserEdit = canViewAllRequests,
+                    CanCurrentUserEdit = canEditAllRequest
                 } );
 
             // Filter by connector
@@ -402,7 +402,10 @@ namespace Rock.Model
             // Filter by connector
             if ( args.ConnectorPersonAliasId.HasValue )
             {
-                connectionRequestsQuery = connectionRequestsQuery.Where( cr => cr.ConnectorPersonAliasId == args.ConnectorPersonAliasId );
+                var personAliasService = new PersonAliasService( rockContext );
+                var connectorPersonId = personAliasService.GetPersonId( args.ConnectorPersonAliasId.Value );
+                var aliasList = personAliasService.Queryable().Where( pa => pa.PersonId == connectorPersonId ).Select( pa => pa.Id ).ToList();
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr => aliasList.Contains( cr.ConnectorPersonAliasId.Value ) );
             }
 
             // Filter by date range
@@ -419,7 +422,10 @@ namespace Rock.Model
             // Filter requester
             if ( args.RequesterPersonAliasId.HasValue )
             {
-                connectionRequestsQuery = connectionRequestsQuery.Where( cr => cr.PersonAliasId == args.RequesterPersonAliasId.Value );
+                var personAliasService = new PersonAliasService( rockContext );
+                var requesterPersonId = personAliasService.GetPersonId( args.RequesterPersonAliasId.Value );
+                var aliasList = personAliasService.Queryable().Where( pa => pa.PersonId == requesterPersonId ).Select( pa => pa.Id ).ToList();
+                connectionRequestsQuery = connectionRequestsQuery.Where( cr => aliasList.Contains( cr.PersonAliasId ) );
             }
 
             // Filter statuses

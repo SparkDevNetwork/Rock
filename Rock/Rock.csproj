@@ -450,6 +450,7 @@
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
     <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
+    <Compile Include="Attribute\ClientAttributeHelper.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
@@ -585,6 +586,7 @@
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="CheckIn\CheckinResult.cs" />
     <Compile Include="CheckIn\PersonAchievementType.cs" />
@@ -594,6 +596,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\AnswerToPrayer.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\MyPrayerRequests.cs" />
     <Compile Include="Blocks\Types\Mobile\Security\OnboardPerson.cs" />
+    <Compile Include="Bus\Message\AuthorizationCacheWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\GivingUnitWasClassifiedMessage.cs" />
     <Compile Include="Bus\Message\TransactionWasAlertedMessage.cs" />
     <Compile Include="Bus\Queue\GivingEventQueue.cs" />
@@ -673,13 +676,16 @@
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
+    <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
+    <Compile Include="Jobs\GivingAutomation.cs" />
     <Compile Include="Lava\Blocks\ReturnTag.cs" />
     <Compile Include="Lava\RockLiquid\Blocks\Return.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItem.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\ContentChannelItemStatus.cs" />
     <Compile Include="Model\CMS\ContentChannelType\ContentChannelDateType.cs" />
+    <Compile Include="Model\CMS\ContentChannelType\ContentChannelType.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannel.SaveHook.cs" />
     <Compile Include="Model\CMS\ContentChannel\ContentChannelPath.cs" />
@@ -718,6 +724,7 @@
     <Compile Include="Model\Core\Note\Note.Logic.cs" />
     <Compile Include="Model\Core\Note\Note.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteApprovalStatus.cs" />
+    <Compile Include="Model\CRM\AssessmentType\AssessmentType.Logic.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentRequestStatus.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCode.cs" />
     <Compile Include="Model\CRM\IdentityVerificationCode\IdentityVerificationCodeService.cs" />
@@ -730,10 +737,17 @@
     <Compile Include="Model\Engagement\StepWorkflowTrigger\StepWorkflowTrigger.Logic.cs" />
     <Compile Include="Model\Engagement\Step\Step.Logic.cs" />
     <Compile Include="Model\Engagement\Step\Step.SaveHook.cs" />
+    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusion.Logic.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakOccurrenceFrequency.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakStructureType.cs" />
+    <Compile Include="Model\Engagement\StreakType\StreakType.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.Logic.cs" />
     <Compile Include="Model\Engagement\Streak\Streak.SaveHook.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceGraphBy.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.Logic.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.Logic.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.SaveHook.cs" />
+    <Compile Include="Model\Event\Attendance\RSVP.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.cs" />
     <Compile Include="Model\Event\EventCalendarContentChannel\EventCalendarContentChannel.Logic.cs" />
     <Compile Include="Model\Event\EventCalendarItem\EventCalendarItem.Logic.cs" />
@@ -748,6 +762,7 @@
     <Compile Include="Model\Event\RegistrationInstance\RegistrationInstance.SaveHook.cs" />
     <Compile Include="Model\Event\RegistrationRegistrantFee\RegistrationRegistrantFee.Logic.cs" />
     <Compile Include="Model\Event\RegistrationRegistrant\RegistrationRegistrant.Logic.cs" />
+    <Compile Include="Model\Event\RegistrationSession\RegistrationSessionService.cs" />
     <Compile Include="Model\Event\RegistrationSession\SessionStatus.cs" />
     <Compile Include="Model\Event\RegistrationTemplateDiscount\RegistrationTemplateDiscount.Logic.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFeeItem\RegistrationTemplateFeeItem.Logic.cs" />
@@ -758,7 +773,6 @@
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.WebForms.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormField.Logic.cs" />
     <Compile Include="Model\Event\RegistrationTemplatePlacement\RegistrationTemplatePlacement.Logic.cs" />
-    <Compile Include="Model\Event\RegistrationTemplate\PaymentRedirectVendor.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrantsSameFamily.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrarOption.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationNotify.cs" />
@@ -774,6 +788,7 @@
     <Compile Include="Model\Event\Registration\RegistrationCostSummaryType.cs" />
     <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
     <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Logic.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />
@@ -958,6 +973,7 @@
     <Compile Include="Tasks\UpdateUserLastActivity.cs" />
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
+    <Compile Include="Utility\CodeGenFeature.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
@@ -996,7 +1012,6 @@
     <Compile Include="Financial\FinancialStatementGeneratorPledgeSummary.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorOptions.cs" />
     <Compile Include="Financial\FinancialStatementGeneratorRecipient.cs" />
-    <Compile Include="Jobs\GivingAnalytics.cs" />
     <Compile Include="Jobs\AutoOpenLocations.cs" />
     <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\ContentChannelItemSelfUpdate.cs" />
@@ -1066,7 +1081,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.cs" />
     <Compile Include="Model\CMS\MediaAccount\MediaAccountService.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.cs" />
-    <Compile Include="Model\CMS\MediaElement\MediaElementService.Partial.cs" />
+    <Compile Include="Model\CMS\MediaElement\MediaElementService.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolderService.cs" />
     <Compile Include="Model\PersonalLink.cs" />
@@ -1081,7 +1096,7 @@
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggestedService.cs" />
     <Compile Include="Model\WebFarmNodeLog.cs" />
     <Compile Include="Model\WebFarmNode.cs" />
-    <Compile Include="Model\AttendanceCheckInSession.cs" />
+    <Compile Include="Model\Event\AttendanceCheckInSession\AttendanceCheckInSession.cs" />
     <Compile Include="Model\AuthClaim.cs" />
     <Compile Include="Model\AuthClient.cs" />
     <Compile Include="Model\AuthClientService.Partial.cs" />
@@ -1115,6 +1130,7 @@
     <Compile Include="Plugin\HotFixes\129_MigrationRollupsFor11_1_0.cs" />
     <Compile Include="Security\Authentication\ClaimExtensionMethods.cs" />
     <Compile Include="Security\Authentication\OidcClient.cs" />
+    <Compile Include="Security\AuthorizationCacheConsumer.cs" />
     <Compile Include="SystemGuid\Badge.cs" />
     <Compile Include="SystemGuid\AuthScope.cs" />
     <Compile Include="SystemGuid\BinaryFile.cs" />
@@ -1136,8 +1152,8 @@
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
     <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
-    <Compile Include="Utility\Settings\GivingAnalytcis\GivingAnalyticsSetting.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
+    <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Model\CampaignConnectionItem.cs" />
@@ -1186,9 +1202,12 @@
     <Compile Include="Utility\Settings\RockInstanceDatabaseConfiguration.cs" />
     <Compile Include="Utility\TimeInterval.cs" />
     <Compile Include="Utility\TimeIntervalSetting.cs" />
+    <Compile Include="ViewModel\Client\CampusOptions.cs" />
+    <Compile Include="ViewModel\Client\ClientHelper.cs" />
+    <Compile Include="ViewModel\Client\DefinedValueOptions.cs" />
     <Compile Include="ViewModel\DefaultViewModelHelperAttribute.cs" />
     <Compile Include="ViewModel\IViewModelHelper.cs" />
-    <Compile Include="ViewModel\ViewModelExcludeAttribute.cs" />
+    <Compile Include="Utility\CodeGenExcludeAttribute.cs" />
     <Compile Include="ViewModel\ViewModelHelper.cs" />
     <Compile Include="WebFarm\IntervalAction.cs" />
     <Compile Include="WebFarm\MessageBusConsumer.cs" />
@@ -1207,6 +1226,7 @@
     <Compile Include="Logging\RockLoggerSerilog.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
+    <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\UI\Controls\FieldVisibilityRuleField.cs" />
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
@@ -1402,7 +1422,7 @@
     <Compile Include="Financial\IThreeStepGatewayComponent.cs" />
     <Compile Include="Model\CRM\Assessment\Assessment.cs" />
     <Compile Include="Model\CRM\Assessment\AssessmentService.cs" />
-    <Compile Include="Model\AssessmentType.cs" />
+    <Compile Include="Model\CRM\AssessmentType\AssessmentType.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentService.cs" />
     <Compile Include="Model\CodeGenerated\AssessmentTypeService.cs" />
     <Compile Include="Model\AttendanceData.cs" />
@@ -1415,7 +1435,7 @@
     <Compile Include="Model\CodeGenerated\PersonScheduleExclusionService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowService.cs" />
     <Compile Include="Model\CodeGenerated\StepWorkflowTriggerService.cs" />
-    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusionService.Partial.cs" />
+    <Compile Include="Model\Engagement\StreakTypeExclusion\StreakTypeExclusionService.cs" />
     <Compile Include="Model\Engagement\Streak\StreakService.cs" />
     <Compile Include="Model\Engagement\StreakType\StreakTypeService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplateFeeItemService.cs" />
@@ -1616,7 +1636,7 @@
     <Compile Include="Web\Cache\Entities\PageCache.cs" />
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityAttributesCache.cs" />
+    <Compile Include="Web\Cache\Entities\Obsolete\EntityAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
@@ -1967,10 +1987,10 @@
     <Compile Include="Model\CodeGenerated\AssetStorageProviderService.cs" />
     <Compile Include="Model\CodeGenerated\ServiceJobHistoryService.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeService.cs" />
-    <Compile Include="Model\AttendanceOccurrence.cs" />
-    <Compile Include="Model\Attendance.cs" />
-    <Compile Include="Model\AttendanceCode.cs" />
-    <Compile Include="Model\AttendanceOccurrenceService.Partial.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.cs" />
+    <Compile Include="Model\Event\Attendance\Attendance.cs" />
+    <Compile Include="Model\Event\AttendanceCode\AttendanceCode.cs" />
+    <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrenceService.cs" />
     <Compile Include="Model\AttributeMatrix.cs" />
     <Compile Include="Model\AttributeMatrixItem.cs" />
     <Compile Include="Model\AttributeMatrixTemplate.cs" />
@@ -2024,8 +2044,8 @@
     <Compile Include="Model\MetaLastNameLookup.cs" />
     <Compile Include="Model\MetaNickNameLookup.cs" />
     <Compile Include="Model\Reporting\Metric\MetricService.cs" />
-    <Compile Include="Model\AttendanceCodeService.Partial.cs" />
-    <Compile Include="Model\AttendanceService.Partial.cs" />
+    <Compile Include="Model\Event\AttendanceCode\AttendanceCodeService.cs" />
+    <Compile Include="Model\Event\Attendance\AttendanceService.cs" />
     <Compile Include="Model\Attribute.cs" />
     <Compile Include="Model\AttributeQualifier.cs" />
     <Compile Include="Model\AttributeQualifierService.Partial.cs" />
@@ -2037,9 +2057,9 @@
     <Compile Include="Model\Auth.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BackgroundCheck.cs" />
-    <Compile Include="Model\BenevolenceRequestDocument.cs" />
-    <Compile Include="Model\BenevolenceRequest.cs" />
-    <Compile Include="Model\BenevolenceResult.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequestDocument\BenevolenceRequestDocument.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.cs" />
+    <Compile Include="Model\Finance\BenevolenceResult\BenevolenceResult.cs" />
     <Compile Include="Model\BinaryFile.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
     <Compile Include="Model\BinaryFileService.Partial.cs" />
@@ -3573,35 +3593,37 @@
 REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
 if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
- call "$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+ call "$(ProjectDir)..\Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
 )
 
 REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll" del "$(SolutionDir)\RockWeb\Bin\InteractivePreGeneratedViews.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll" del "$(SolutionDir)\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\JSPool.dll" del "$(SolutionDir)\RockWeb\Bin\JSPool.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll" del "$(SolutionDir)\RockWeb\Bin\MsieJavaScriptEngine.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Core.dll" del "$(SolutionDir)\RockWeb\Bin\React.Core.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Web.dll" del "$(SolutionDir)\RockWeb\Bin\React.Web.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll" del "$(SolutionDir)\RockWeb\Bin\React.Web.Mvc4.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Helpers.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Mvc.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.Razor.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Deployment.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(ProjectDir)..\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll" del "$(ProjectDir)..\RockWeb\Bin\InteractivePreGeneratedViews.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Core.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.Msie.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll" del "$(ProjectDir)..\RockWeb\Bin\JavaScriptEngineSwitcher.V8.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\JSPool.dll" del "$(ProjectDir)..\RockWeb\Bin\JSPool.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll" del "$(ProjectDir)..\RockWeb\Bin\MsieJavaScriptEngine.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Core.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Core.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll" del "$(ProjectDir)..\RockWeb\Bin\React.Web.Mvc4.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Helpers.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Mvc.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.Razor.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Deployment.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(ProjectDir)..\RockWeb\Bin\System.Web.WebPages.Razor.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll" del "$(ProjectDir)..\RockWeb\Bin\VroomJs.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll" del "$(ProjectDir)..\RockWeb\Bin\WebActivatorEx.dll"
+if Exist "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(ProjectDir)..\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>REM Check if the JavaScript projects have been built.
+If Not Exist "$(ProjectDir)..\Rock.JavaScript.Obsidian\dist" (
+    "$(DevEnvDir)..\..\MSBuild\Current\Bin\MSBuild.exe" "$(ProjectDir)..\Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj" -p:Configuration=$(ConfigurationName)
+)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

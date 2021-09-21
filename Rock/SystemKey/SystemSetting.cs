@@ -233,9 +233,9 @@ namespace Rock.SystemKey
         public const string ROCK_CLEANUP_LAST_RUN_DATETIME = "core_RockCleanup_LastRunDateTime";
 
         /// <summary>
-        /// Settings for Giving Analytics
+        /// Settings for Giving Automation
         /// </summary>
-        public const string GIVING_ANALYTICS_CONFIGURATION = "core_GivingAnalyticsConfiguration";
+        public const string GIVING_AUTOMATION_CONFIGURATION = "core_GivingAutomationConfiguration";
 
         /// <summary>
         /// The organization currency code

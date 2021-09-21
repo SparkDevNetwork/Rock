@@ -86,7 +86,7 @@ namespace Rock.MyWell
         Order = 5 )]
 
     #endregion Component Attributes
-    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent, IObsidianFinancialGateway
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent, IFeeCoverageGatewayComponent/*, IObsidianFinancialGateway*/
     {
         #region Attribute Keys
 
@@ -125,32 +125,32 @@ namespace Rock.MyWell
 
         #region Obsidian
 
-        /// <summary>
-        /// Gets the Obsidian control file URL.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <returns></returns>
-        /// <value>
-        /// The control file URL.
-        /// </value>
-        public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
-        {
-            return "/Obsidian/Controls/MyWellGatewayControl.js";
-        }
+        ///// <summary>
+        ///// Gets the Obsidian control file URL.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
+        ///// <value>
+        ///// The control file URL.
+        ///// </value>
+        //public string GetObsidianControlFileUrl( FinancialGateway financialGateway )
+        //{
+        //    return "/Obsidian/Controls/MyWellGatewayControl.js";
+        //}
 
-        /// <summary>
-        /// Gets the obsidian control settings.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <returns></returns>
-        public object GetObsidianControlSettings( FinancialGateway financialGateway )
-        {
-            return new
-            {
-                PublicApiKey = GetPublicApiKey( financialGateway ),
-                GatewayUrl = GetGatewayUrl( financialGateway )
-            };
-        }
+        ///// <summary>
+        ///// Gets the obsidian control settings.
+        ///// </summary>
+        ///// <param name="financialGateway">The financial gateway.</param>
+        ///// <returns></returns>
+        //public object GetObsidianControlSettings( FinancialGateway financialGateway )
+        //{
+        //    return new
+        //    {
+        //        PublicApiKey = GetPublicApiKey( financialGateway ),
+        //        GatewayUrl = GetGatewayUrl( financialGateway )
+        //    };
+        //}
 
         #endregion Obsidian
 

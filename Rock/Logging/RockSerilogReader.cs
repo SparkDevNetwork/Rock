@@ -145,9 +145,15 @@ namespace Rock.Logging
             foreach ( var filePath in rockLogFiles )
             {
                 _rockLogger.Close();
-                using ( var file = System.IO.File.OpenRead( filePath ) )
+                var logFileInfo = new System.IO.FileInfo( filePath );
+
+                // if the logFile is zero-length, we'll get an i/o error when reading it, so skip it
+                if ( logFileInfo.Exists && logFileInfo.Length > 0 )
                 {
-                    lines += file.CountLines();
+                    using ( var file = logFileInfo.OpenRead() )
+                    {
+                        lines += file.CountLines();
+                    }
                 }
             }
 

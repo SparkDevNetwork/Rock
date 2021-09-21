@@ -15,8 +15,8 @@
 // </copyright>
 
 using System.Collections.Generic;
-
 using Rock.Communication;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -40,6 +40,19 @@ namespace Rock.Model
             else
             {
                 return RockEmailMessageRecipient.CreateAnonymous( contactEmail, mergeObjects );
+            }
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
             }
         }
     }

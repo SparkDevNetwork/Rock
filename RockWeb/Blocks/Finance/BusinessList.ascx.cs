@@ -131,9 +131,10 @@ namespace RockWeb.Blocks.Finance
             // If it's there, strip the SearchTerm parameter from the query string and reload.
             if ( !string.IsNullOrWhiteSpace( PageParameter( "SearchTerm" ) ) )
             {
-                var parameters = System.Web.HttpUtility.ParseQueryString( Request.Url.Query );
+                var proxySafeUri = Request.UrlProxySafe();
+                var parameters = System.Web.HttpUtility.ParseQueryString( proxySafeUri.Query );
                 parameters.Remove( "SearchTerm" );
-                string url = Request.Url.AbsolutePath + ( parameters.Count > 0 ? "?" + parameters.ToString() : string.Empty );
+                string url = proxySafeUri.AbsolutePath + ( parameters.Count > 0 ? "?" + parameters.ToString() : string.Empty );
                 Response.Redirect( url );
             }
             else

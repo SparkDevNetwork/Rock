@@ -915,7 +915,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 // Only one schedule to pick from so hide the options and set the wording on the prompt.
                 var singleSchedule = sortedScheduleList[0];
 
-                lConfirmStayingPromptText.Text = string.Format( "Would you like to this person to stay for {0}?", singleSchedule.Name );
+                lConfirmStayingPromptText.Text = string.Format( "Would you like this person to stay for {0}?", singleSchedule.Name );
                 rblScheduleStayingFor.SetValue( singleSchedule.Id );
                 rblScheduleStayingFor.Visible = false;
             }

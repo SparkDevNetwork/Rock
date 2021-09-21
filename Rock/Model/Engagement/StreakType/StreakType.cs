@@ -128,29 +128,6 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
-        #region ICacheable
-
-        /// <summary>
-        /// Gets the cache object associated with this Entity
-        /// </summary>
-        /// <returns></returns>
-        public IEntityCache GetCacheObject()
-        {
-            return StreakTypeCache.Get( Id );
-        }
-
-        /// <summary>
-        /// Updates any Cache Objects that are associated with this entity
-        /// </summary>
-        /// <param name="entityState">State of the entity.</param>
-        /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
-        {
-            StreakTypeCache.UpdateCachedEntity( Id, entityState );
-        }
-
-        #endregion ICacheable
-
         #region Navigation Properties
 
         /// <summary>

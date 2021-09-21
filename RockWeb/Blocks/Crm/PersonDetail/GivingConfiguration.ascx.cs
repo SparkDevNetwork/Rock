@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "Contribution Statement Detail Page",
         Description = "The contribution statement detail page.",
         Order = 6,
+        DefaultValue = Rock.SystemGuid.Page.CONTRIBUTION_STATEMENT_PAGE,
         Key = AttributeKey.ContributionStatementDetailPage )]
     [LinkedPage(
         "Scheduled Transaction Detail Page",
@@ -167,11 +168,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var lPledgeAccountName = e.Item.FindControl( "lPledgeAccountName" ) as Literal;
             var lPledgeTotalAmount = e.Item.FindControl( "lPledgeTotalAmount" ) as Literal;
+            var lPledgeFrequency = e.Item.FindControl( "lPledgeFrequency" ) as Literal;
             var btnPledgeEdit = e.Item.FindControl( "btnPledgeEdit" ) as LinkButton;
             var btnPledgeDelete = e.Item.FindControl( "btnPledgeDelete" ) as LinkButton;
 
             lPledgeAccountName.Text = financialPledge.Account?.Name;
             lPledgeTotalAmount.Text = financialPledge.TotalAmount.FormatAsCurrency();
+            lPledgeFrequency.Text = financialPledge.PledgeFrequencyValue.IsNotNull() ? ( "<span class='o-30'>|</span> " + financialPledge.PledgeFrequencyValue.ToString() ): string.Empty;
             btnPledgeEdit.CommandArgument = financialPledge.Guid.ToString();
             btnPledgeDelete.CommandArgument = financialPledge.Guid.ToString();
 
@@ -179,10 +182,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lPledgeDate = e.Item.FindControl( "lPledgeDate" ) as Literal;
             if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
             {
+                var pledgeTimeSpan = financialPledge.StartDate - financialPledge.EndDate;
                 lPledgeDate.Text = string.Format(
                     "{0} {1}",
                     financialPledge.StartDate.ToShortDateString(),
-                    financialPledge.EndDate.Humanize( true, financialPledge.StartDate, null ) );
+                    pledgeTimeSpan.Humanize() );
             }
             else if ( financialPledge.StartDate == DateTime.MinValue.Date && financialPledge.EndDate != DateTime.MaxValue.Date )
             {
@@ -218,32 +222,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
-
-            var btnScheduledTransactionDelete = e.Item.FindControl( "btnScheduledTransactionDelete" ) as LinkButton;
-            btnScheduledTransactionDelete.CommandArgument = financialScheduledTransaction.Guid.ToString();
+            
 
             if ( financialScheduledTransaction.IsActive )
             {
-                /* 09-07-2021 MDP
 
-                If the scheduled transaction is active but doesn't currently have any FinancialTransactions,
-                we'll have the confirmation message say "Are you sure you want to delete...'.
-                However, we are really just going to inactivate it regardless of if the Delete or Inactivate button
-                is clicked.
-                 
-                */
-
-                var financialTransactionService = new FinancialTransactionService( new RockContext() );
-                var hasFinancialTransactions = financialTransactionService.Queryable()
-                    .Any( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId.Value == financialScheduledTransaction.Id );
-
-                btnScheduledTransactionDelete.Visible = !hasFinancialTransactions;
-                btnScheduledTransactionInactivate.Visible = hasFinancialTransactions;
+                btnScheduledTransactionInactivate.Visible = true;
             }
             else
             {
                 btnScheduledTransactionEdit.Visible = false;
-                btnScheduledTransactionDelete.Visible = false;
                 btnScheduledTransactionInactivate.Visible = false;
             }
 
@@ -254,6 +242,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lScheduledTransactionCardTypeLast4 = e.Item.FindControl( "lScheduledTransactionCardTypeLast4" ) as Literal;
             var lScheduledTransactionExpiration = e.Item.FindControl( "lScheduledTransactionExpiration" ) as Literal;
             var lScheduledTransactionSavedAccountName = e.Item.FindControl( "lScheduledTransactionSavedAccountName" ) as Literal;
+            var lScheduledTransactionStatusHtml = e.Item.FindControl( "lScheduledTransactionStatusHtml" ) as Literal;
 
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
@@ -286,7 +275,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( nextPaymentDate.HasValue )
                 {
-                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}: : Next Gift {nextPaymentDate.ToShortDateString()}";
+                    lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText} <span class='o-30'>|</span> Next Gift {nextPaymentDate.ToShortDateString()}";
                 }
                 else
                 {
@@ -295,13 +284,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else
             {
-                var trScheduledTransaction = e.Item.FindControl( "trScheduledTransaction" ) as System.Web.UI.HtmlControls.HtmlControl;
-                if ( trScheduledTransaction != null )
-                {
-                    trScheduledTransaction.AddCssClass( "is-inactive" );
-                }
-
-                lScheduledTransactionFrequencyAndNextPaymentDate.Text = "Inactive";
+                lScheduledTransactionFrequencyAndNextPaymentDate.Text = $"{frequencyText}";
+                lScheduledTransactionStatusHtml.Text = "<span class='text-xs text-warning text-nowrap'>Inactive</span>";
             }
 
             if ( lScheduledTransactionAccountName != null )
@@ -343,13 +327,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( year.HasValue && btnContributionStatementYYYY != null )
             {
-                string yearStr = year.ToStringSafe();
+                string yearHtml;
                 if ( year == RockDateTime.Now.Year )
                 {
-                    yearStr = yearStr + " <small>YTD</small>";
+                    yearHtml = $"{year} <small>YTD</small>";
+                }
+                else
+                {
+                    yearHtml = year.ToString();
                 }
 
-                btnContributionStatementYYYY.Text = yearStr;
+                btnContributionStatementYYYY.Text = yearHtml;
+                btnContributionStatementYYYY.CommandArgument = year.ToString();
             }
         }
 
@@ -449,17 +438,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( cardIsExpired )
             {
-                lSavedAccountInUseStatusHtml.Text = "<span class='label label-danger'>Expired</span>";
+                lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-danger text-nowrap'>Expired</span>";
             }
             else
             {
                 if ( cardInUse )
                 {
-                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-success'>In Use</span>";
+                    lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-success text-nowrap'>In Use</span>";
                 }
                 else
                 {
-                    lSavedAccountInUseStatusHtml.Text = "<span class='label label-default'>Not In Use</span>";
+                    lSavedAccountInUseStatusHtml.Text = "<span class='text-xs text-muted text-nowrap'>Not In Use</span>";
                 }
             }
         }
@@ -486,11 +475,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             queryParams.AddOrReplace( "PledgeId", "0" );
             queryParams.AddOrReplace( "PersonGuid", Person.Guid.ToString() );
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
-        }
-
-        protected void rptScheduledTransaction_Delete( object sender, CommandEventArgs e )
-        {
-            rptScheduledTransaction_Inactivate( sender, e );
         }
 
         /// <summary>
@@ -668,19 +652,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
 
-            var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
-
-            if ( !includeInactive )
-            {
-                btnShowInactiveScheduledTransactions.Text = "Show Inactive";
-                qry = qry.Where( t => t.IsActive );
-            }
-            else
-            {
-               // if including Inactive, only include inactive ones if they currently have transactions associated with it
-                qry = qry.Where( t => t.IsActive || t.Transactions.Any() );
-                btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
-            }
+            
 
             if ( Person.GivingGroupId.HasValue )
             {
@@ -691,6 +663,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 // Person contributes individually
                 qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == Person.Id );
+            }
+
+            // only show the button if there some in active scheduled transactions
+            btnShowInactiveScheduledTransactions.Visible = qry.Any( a => !a.IsActive );
+
+            var includeInactive = hfShowInactiveScheduledTransactions.Value.AsBoolean();
+            if ( !includeInactive )
+            {
+                btnShowInactiveScheduledTransactions.Text = "Show Inactive";
+                qry = qry.Where( t => t.IsActive );
+            }
+            else
+            {
+                // if including Inactive, show both Active and Inactive
+                btnShowInactiveScheduledTransactions.Text = "Hide Inactive";
             }
 
             qry = qry

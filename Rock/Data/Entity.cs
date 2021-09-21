@@ -24,7 +24,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Lava;
 using Rock.Tasks;
-using Rock.ViewModel;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Data
@@ -50,7 +50,7 @@ namespace Rock.Data
         [Key]
         [DataMember]
         [IncludeForReporting]
-        [ViewModelExclude] // Excluded because the ViewModelBase provides this through inheritance
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )] // Excluded because the ViewModelBase provides this through inheritance
         public int Id { get; set; }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Data
         [DataMember]
         [IncludeForReporting]
         [NotEmptyGuidAttribute]
-        [ViewModelExclude] // Excluded because the ViewModelBase provides this through inheritance
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )] // Excluded because the ViewModelBase provides this through inheritance
         public Guid Guid
         {
             get { return _guid; }
@@ -86,7 +86,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [ViewModelExclude]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public int? ForeignId { get; set; }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Rock.Data
         /// </value>
         [DataMember]
         [HideFromReporting]
-        [ViewModelExclude]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public Guid? ForeignGuid { get; set; }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Rock.Data
         [MaxLength( 100 )]
         [DataMember]
         [HideFromReporting]
-        [ViewModelExclude]
+        [CodeGenExclude( CodeGenFeature.ViewModelFile )]
         public string ForeignKey { get; set; }
 
         #endregion

@@ -1,8 +1,8 @@
 ﻿<div class="panel panel-block">
-  <div class="d-flex flex-row p-2">
-    <img src="{{ Organization.LogoUrl }}" class="img-responsive border border-gray-400 mr-2" style="width: 100px" />
+  <div class="d-flex flex-row align-items-center p-2">
+    <img src="{{ Organization.LogoUrl }}" class="img-responsive border border-gray-400 mr-2" style="width: 50px" />
     <div>
-      <h6 class="mb-1">{{ Organization.Name }}</h6>
+      <h3 class="leading-snug my-0">{{ Organization.Name }}</h3>
       <small class="text-muted">{{ Organization.City }}, {{ Organization.State }}</small>
     </div>
     <div class="ml-auto align-self-end">

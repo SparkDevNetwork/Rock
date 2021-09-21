@@ -271,7 +271,7 @@ namespace Rock.Web
                         if ( Convert.ToBoolean( GlobalAttributesCache.Get().GetValue( "Log404AsException" ) ) )
                         {
                             Rock.Model.ExceptionLogService.LogException(
-                                new Exception( $"404 Error: {routeHttpRequest.Url.AbsoluteUri}" ),
+                                new Exception( $"404 Error: {routeHttpRequest.UrlProxySafe().AbsoluteUri}" ),
                                 requestContext.HttpContext.ApplicationInstance.Context );
                         }
 

@@ -14,12 +14,37 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
 using System.Runtime.Serialization;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class StepType
     {
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StepTypeCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StepTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
+
         private string _cardLavaTemplate;
 
         /// <summary>

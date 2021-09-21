@@ -527,6 +527,15 @@ namespace Rock.Model
         public int? RegistrationWorkflowTypeId { get; set; }
 
         /// <summary>
+        /// Optional workflow type to launch for registrant
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        [DataMember]
+        public int? RegistrantWorkflowTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the required signature document type identifier.
         /// </summary>
         /// <value>
@@ -561,15 +570,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public RegistrarOption RegistrarOption { get; set; }
-
-        /// <summary>
-        /// Gets or sets the payment redirect vendor.
-        /// </summary>
-        /// <value>
-        /// The payment redirect vendor.
-        /// </value>
-        [DataMember]
-        public PaymentRedirectVendor? PaymentRedirectVendor { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is registration metering enabled.
@@ -619,6 +619,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual WorkflowType RegistrationWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.WorkflowType"/> to launch for the registrant
+        /// </summary>
+        /// <value>
+        /// The Workflow Type.
+        /// </value>
+        [DataMember]
+        public virtual WorkflowType RegistrantWorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the required <see cref="Rock.Model.SignatureDocumentTemplate">signature document</see>.
@@ -738,6 +747,7 @@ namespace Rock.Model
             this.HasOptional( t => t.GroupType ).WithMany().HasForeignKey( t => t.GroupTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.FinancialGateway ).WithMany().HasForeignKey( t => t.FinancialGatewayId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.RegistrantWorkflowType ).WithMany().HasForeignKey( t => t.RegistrantWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
         }
     }

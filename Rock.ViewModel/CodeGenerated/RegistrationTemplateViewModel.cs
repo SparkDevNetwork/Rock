@@ -232,14 +232,6 @@ namespace Rock.ViewModel
         public int Notify { get; set; }
 
         /// <summary>
-        /// Gets or sets the PaymentRedirectVendor.
-        /// </summary>
-        /// <value>
-        /// The PaymentRedirectVendor.
-        /// </value>
-        public int? PaymentRedirectVendor { get; set; }
-
-        /// <summary>
         /// Gets or sets the PaymentReminderEmailTemplate.
         /// </summary>
         /// <value>
@@ -294,6 +286,14 @@ namespace Rock.ViewModel
         /// The RegistrantTerm.
         /// </value>
         public string RegistrantTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the RegistrantWorkflowTypeId.
+        /// </summary>
+        /// <value>
+        /// The RegistrantWorkflowTypeId.
+        /// </value>
+        public int? RegistrantWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the RegistrarOption.

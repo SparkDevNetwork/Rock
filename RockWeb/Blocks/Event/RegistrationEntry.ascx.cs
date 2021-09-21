@@ -779,7 +779,7 @@ namespace RockWeb.Blocks.Event
                                     {
                                         // Redirect to the digital signature provider page to initialize a cookie.
                                         // The returnUrl specifies the current Rock page as the address to return to once the cookie has been created.
-                                        var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
+                                        var returnUrl = ResolvePublicUrl( Request.UrlProxySafe().PathAndQuery );
                                         returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "Redirected=True";
 
                                         /*
@@ -2446,6 +2446,11 @@ namespace RockWeb.Blocks.Event
                             }
                         }
 
+                        foreach ( var item in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                        {
+                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), null, null );
+                        }
+
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
                         newRegistration.LaunchWorkflow( RegistrationInstanceState.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
                     }
@@ -3838,7 +3843,7 @@ namespace RockWeb.Blocks.Event
 
             // Sanitize for empty check catches things like empty paragraph tags.
             // ...But don't sanitize if the instructions contains an img tag.
-            if ( instructions.ToLower().Contains( "<img " ) || instructions.SanitizeHtml().IsNotNullOrWhiteSpace() )
+            if ( instructions.IsNotNullOrWhiteSpace() && ( instructions.ToLower().Contains( "<img " ) || instructions.SanitizeHtml().IsNotNullOrWhiteSpace() ) )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
                 return true;
@@ -4488,16 +4493,17 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private string ResolvePublicUrl( string relativeUrl )
         {
-            string resolvedUrl = ResolveRockUrl( relativeUrl );
+            string resolvedUrl = ResolveRockUrl( relativeUrl ).RemoveLeadingForwardslash();
+            var proxySafeUri = Request.UrlProxySafe();
 
-            string url = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority ).EnsureTrailingForwardslash() + resolvedUrl.RemoveLeadingForwardslash();
+            string url = ( $"{proxySafeUri.Scheme}://{proxySafeUri.Authority }" ).EnsureTrailingForwardslash() + resolvedUrl;
 
             try
             {
                 var appRootUri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
                 if ( appRootUri != null )
                 {
-                    url = string.Format( "{0}://{1}", Request.Url.Scheme, appRootUri.Authority ).EnsureTrailingForwardslash() + resolvedUrl.RemoveLeadingForwardslash();
+                    url = ( $"{proxySafeUri.Scheme}://{appRootUri.Authority}" ).EnsureTrailingForwardslash() + resolvedUrl;
                 }
             }
             catch { }

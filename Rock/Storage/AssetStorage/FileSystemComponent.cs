@@ -98,7 +98,7 @@ namespace Rock.Storage.AssetStorage
             {
                 string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
                 asset.Key = FixKey( asset, rootFolder );
-                string domainName = FileSystemComponentHttpContext.Request.Url.GetLeftPart( UriPartial.Authority );
+                string domainName = FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority );
                 string uriKey = asset.Key.TrimStart( '~' );
                 return domainName + uriKey;
             }
@@ -650,7 +650,7 @@ namespace Rock.Storage.AssetStorage
             {
                 Name = fileInfo.Name,
                 Key = relativePath,
-                Uri = $"{FileSystemComponentHttpContext.Request.Url.GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
+                Uri = $"{FileSystemComponentHttpContext.Request.UrlProxySafe().GetLeftPart( UriPartial.Authority )}/{relativePath.TrimStart( '~' )}",
                 Type = AssetType.File,
                 IconPath = createThumbnail ? GetThumbnail( assetStorageProvider, relativePath, fileInfo.LastWriteTime ) : string.Empty,
                 FileSize = fileInfo.Length,

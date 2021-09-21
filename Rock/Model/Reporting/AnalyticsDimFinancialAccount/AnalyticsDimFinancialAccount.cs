@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,7 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]
     [HideFromReporting]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsDimFinancialAccount : Entity<AnalyticsDimFinancialAccount>
     {
         #region Entity Properties

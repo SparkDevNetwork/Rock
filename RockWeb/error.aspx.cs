@@ -40,8 +40,10 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Init( object sender, EventArgs e )
         {
+            var proxySafeUri = Request.UrlProxySafe();
+
             // If this is an API call, set status code and exit
-            if ( Request.Url.Query.Contains( Request.Url.Authority + ResolveUrl( "~/api/" ) ) )
+            if ( proxySafeUri.Query.Contains( proxySafeUri.Authority + ResolveUrl( "~/api/" ) ) )
             {
                 Response.StatusCode = 500;
                 Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );
@@ -52,11 +54,11 @@ namespace RockWeb
 
             // If this is an call to the handler page, set status code and exit
             string[] handlers = new string[] {
-                Request.Url.Authority + ResolveUrl( "~/FileUploader.ashx" ),
-                Request.Url.Authority + ResolveUrl( "~/ImageUploader.ashx" )
+                proxySafeUri.Authority + ResolveUrl( "~/FileUploader.ashx" ),
+                proxySafeUri.Authority + ResolveUrl( "~/ImageUploader.ashx" )
             };
 
-            if ( handlers.Any( a => Request.Url.Query.Contains( a ) ) )
+            if ( handlers.Any( a => proxySafeUri.Query.Contains( a ) ) )
             {
                 Response.StatusCode = 500;
                 Response.Write( "An error has occurred. See the ExceptionLog in Rock for details." );

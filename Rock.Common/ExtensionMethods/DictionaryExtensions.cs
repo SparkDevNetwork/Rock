@@ -116,6 +116,27 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the value of the given key if found. If not then returns the provided default value.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <returns></returns>
+        public static TValue GetReadOnlyValueOrDefault<TKey, TValue>( this IReadOnlyDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
+        {
+            if ( dictionary.ContainsKey( key ) )
+            {
+                return dictionary[key];
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        /// <summary>
         /// Gets the value or null.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>

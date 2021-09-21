@@ -138,7 +138,7 @@
                                         <asp:Panel ID="pnlCosts" runat="server" Visible="false" CssClass="well">
 
                                             <div class="fee-table">
-                                                <h4>Cost Summary</h4>
+                                                <h4 class="mt-0">Cost Summary</h4>
                                                 <div class="registrationentry-summary">
                                                     <asp:Repeater ID="rptFeeSummary" runat="server">
                                                         <HeaderTemplate>

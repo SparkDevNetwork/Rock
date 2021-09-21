@@ -46,6 +46,7 @@ namespace Rock.Transactions
         /// <param name="jobId">The job identifier.</param>
         /// <param name="jobDataMapDictionary">Data for the job.</param>
         [System.Obsolete( "Use the RunJobNowTransaction( int jobId ) constructor instead. The jobDataMapDictionary parameter isn't needed since the Job already knows all that." )]
+        [RockObsolete( "1.13" )]
         public RunJobNowTransaction( int jobId, Dictionary<string, string> jobDataMapDictionary ) : this( jobId )
         {
         }

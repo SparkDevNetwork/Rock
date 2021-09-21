@@ -18,12 +18,14 @@
 using System;
 using System.Collections.Generic;
 using Rock.ViewModel.Controls;
+using Rock.ViewModel.NonEntities;
 
 namespace Rock.ViewModel.Blocks
 {
     /// <summary>
     /// RegistrationEntryBlockViewModel
     /// </summary>
+    /// <seealso cref="Rock.ViewModel.IViewModel" />
     public sealed class RegistrationEntryBlockViewModel : IViewModel
     {
         /// <summary>
@@ -137,7 +139,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The registration attributes start.
         /// </value>
-        public IEnumerable<AttributeViewModel> RegistrationAttributesStart { get; set; }
+        public IEnumerable<ClientEditableAttributeValueViewModel> RegistrationAttributesStart { get; set; }
 
         /// <summary>
         /// Gets or sets the registration attributes end.
@@ -145,7 +147,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The registration attributes end.
         /// </value>
-        public IEnumerable<AttributeViewModel> RegistrationAttributesEnd { get; set; }
+        public IEnumerable<ClientEditableAttributeValueViewModel> RegistrationAttributesEnd { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum registrants.
@@ -306,6 +308,14 @@ namespace Rock.ViewModel.Blocks
         /// The gateway unique identifier.
         /// </value>
         public Guid? GatewayGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campuses available for the user to select.
+        /// </summary>
+        /// <value>
+        /// The campuses available for the user to select.
+        /// </value>
+        public List<ListItemViewModel> Campuses { get; set; }
     }
 
     /// <summary>
@@ -495,7 +505,7 @@ namespace Rock.ViewModel.Blocks
         /// <value>
         /// The attribute.
         /// </value>
-        public AttributeViewModel Attribute { get; set; }
+        public ClientEditableAttributeValueViewModel Attribute { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the visibility rule.

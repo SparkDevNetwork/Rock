@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     [Serializable]
     public class KeyValueListFieldType : ValueListFieldType
     {
+        private const string VALUES_KEY = "values";
 
         #region Configuration
 
@@ -44,6 +45,36 @@ namespace Rock.Field.Types
             configKeys.Insert(0, "keyprompt" );
             configKeys.Insert( 0, "displayvaluefirst" );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var clientValues = base.GetClientConfigurationValues( configurationValues );
+
+            // Remove the defined type key if it exists, clients don't need to see this.
+            if ( clientValues.ContainsKey( "definedtype" ) )
+            {
+                clientValues.Remove( "definedtype" );
+            }
+
+            // Remove the internal custom values key if it exists, clients don't
+            // need to see this.
+            if ( clientValues.ContainsKey( "customvalues" ) )
+            {
+                clientValues.Remove( "customvalues" );
+            }
+
+            // Generate the custom values that the clients expect to see.
+            clientValues[VALUES_KEY] = GetCustomValues( configurationValues )
+                .Select( kvp => new
+                {
+                    value = kvp.Key,
+                    text = kvp.Value
+                } )
+                .ToCamelCaseJson( false, true );
+
+            return clientValues;
         }
 
         /// <summary>
@@ -152,19 +183,37 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the custom values that have been defined. These reflect either the
+        /// defined type values or the custom options entered into the custom values
+        /// text box.
+        /// </summary>
+        /// <param name="configurationValues"></param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetCustomValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var definedTypeId = configurationValues.GetConfigurationValueAsString( "definedtype" ).AsIntegerOrNull();
+
+            if ( definedTypeId.HasValue )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeId.Value );
+
+                if ( definedType != null )
+                {
+                    return definedType.DefinedValues
+                        .ToDictionary( v => v.Id.ToString(), v => v.Value );
+                }
+            }
+
+            return Helper.GetConfiguredValues( configurationValues, "customvalues" );
+        }
+
         #endregion
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues"></param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
 
@@ -174,7 +223,7 @@ namespace Rock.Field.Types
             foreach ( string nameValue in nameValues )
             {
                 string[] nameAndValue = nameValue.Split( new char[] { '^' } );
-                
+
                 // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
                 nameAndValue = nameAndValue.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
@@ -199,9 +248,63 @@ namespace Rock.Field.Types
             return values.AsDelimited( ", " );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues"></param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            return GetTextValue( value, configurationValues );
+        }
+
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var nameValues = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+
+            return nameValues
+                .Select( nv => nv.Split( new char[] { '^' } ) )
+                .Where( nv => nv.Length == 2 )
+                .Select( nv => new ClientValue
+                {
+                    Key = HttpUtility.UrlDecode( nv[0] ),
+                    Value = HttpUtility.UrlDecode( nv[1] )
+                } )
+                .ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc/>
+        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var values = clientValue.FromJsonOrNull<List<ClientValue>>();
+
+            if ( values == null )
+            {
+                return string.Empty;
+            }
+
+            var customValues = GetCustomValues( configurationValues );
+
+            // If there are any custom values, then ensure that all values we
+            // got from the client are valid. If not, ignore them.
+            if ( customValues.Any() )
+            {
+                values = values
+                    .Where( v => customValues.ContainsKey( v.Value ) )
+                    .ToList();
+            }
+
+            return values.Select( v => $"{HttpUtility.UrlEncode( v.Key )}^{HttpUtility.UrlEncode( v.Value )}" )
+                .JoinStrings( "|" );
+        }
 
         /// <summary>
         /// Edits the control.
@@ -351,6 +454,28 @@ namespace Rock.Field.Types
 
             return values;
         }
-      
+
+        /// <summary>
+        /// Represents a single element value (presented as a row when editing)
+        /// formatted in a way the clients will understand.
+        /// </summary>
+        private class ClientValue
+        {
+            /// <summary>
+            /// Gets or sets the key.
+            /// </summary>
+            /// <value>
+            /// The key.
+            /// </value>
+            public string Key { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value.
+            /// </summary>
+            /// <value>
+            /// The value.
+            /// </value>
+            public string Value { get; set; }
+        }
     }
 }

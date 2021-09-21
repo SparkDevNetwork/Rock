@@ -69,7 +69,7 @@
                                 <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
                                 <div class="row">
-                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-6">
+                                    <asp:Panel ID="pnlListSelectionList" runat="server" CssClass="col-lg-8">
                                         <Rock:RockDropDownList
                                             ID="ddlCommunicationGroupList"
                                             runat="server"
@@ -81,16 +81,17 @@
                                             AutoPostBack="true" />
 
                                         <asp:Panel ID="pnlCommunicationGroupSegments" runat="server">
-                                            <label>Segments</label>
-                                            <p>Optionally, further refine your recipients by filtering by segment.</p>
-                                            <asp:CheckBoxList
-                                                ID="cblCommunicationGroupSegments"
-                                                runat="server"
-                                                RepeatDirection="Horizontal"
-                                                CssClass="margin-b-lg"
-                                                ValidationGroup="vgRecipientSelection"
-                                                OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged"
-                                                AutoPostBack="true" />
+                                            <label class="control-label mb-0">Segments</label>
+                                            <p class="text-sm">Optionally, further refine your recipients by filtering by segment.</p>
+                                            <div class="margin-b-lg">
+                                                <Rock:RockCheckBoxList
+                                                    ID="cblCommunicationGroupSegments"
+                                                    runat="server"
+                                                    RepeatDirection="Horizontal"
+                                                    ValidationGroup="vgRecipientSelection"
+                                                    OnSelectedIndexChanged="cblCommunicationGroupSegments_SelectedIndexChanged"
+                                                    AutoPostBack="true" />
+                                            </div>
 
                                             <Rock:RockRadioButtonList
                                                 ID="rblCommunicationGroupSegmentFilterType"
@@ -517,6 +518,12 @@
                                                 <div class="form-group">
                                                     <label class="control-label" for="component-image-link">Link</label>
                                                     <input type="url" id="component-image-link" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label class="control-label" for="component-image-alt">Alt Text</label>
+                                                    <input type="text" id="component-image-alt" class="form-control" />
                                                 </div>
                                             </div>
                                         </div>

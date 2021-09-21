@@ -159,15 +159,19 @@ namespace RockWeb.Blocks.Cms
         private void ClearCache()
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( AttributeKey.RSSFeedUrl ) );
-            RockCache.Remove( TemplateCacheKey );
+
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
+                LavaTemplateCache.Remove( this.TemplateCacheKey );
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            LavaService.RemoveTemplateCacheEntry( this.TemplateCacheKey );
         }
 
-        private ILavaTemplate GetLavaTemplate()
-        {
-            var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
-            return cacheTemplate != null ? cacheTemplate.Template as ILavaTemplate : null;
-        }
-
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( TemplateCacheKey, GetAttributeValue( AttributeKey.Template ) );
@@ -305,11 +309,19 @@ namespace RockWeb.Blocks.Cms
 
                         if ( LavaService.RockLiquidIsEnabled )
                         {
+#pragma warning disable CS0618 // Type or member is obsolete
                             content = GetTemplate().Render( Hash.FromDictionary( feedFinal ) );
+#pragma warning restore CS0618 // Type or member is obsolete
                         }
                         else
                         {
-                            var result = LavaService.RenderTemplate( GetLavaTemplate(), feedFinal );
+                            var renderParameters = new LavaRenderParameters
+                            {
+                                Context = LavaService.NewRenderContext( feedFinal ),
+                                CacheKey = this.TemplateCacheKey
+                            };
+
+                            var result = LavaService.RenderTemplate( GetAttributeValue( AttributeKey.Template ), renderParameters );
 
                             content = result.Text;
                         }

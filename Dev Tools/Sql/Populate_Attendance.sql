@@ -186,8 +186,8 @@ begin
 
 		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
 		if (@AttendanceOccurrenceId is null) begin
-			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, OccurrenceDateKey, [Guid]) 
-            values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), CONVERT(INT, (CONVERT(CHAR(8), @OccurrenceDate, 112))), newid());
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, OccurrenceDateKey, [Guid] ,[CreatedDateTime] ,[ModifiedDateTime]) 
+            values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), CONVERT(INT, (CONVERT(CHAR(8), @OccurrenceDate, 112))), newid(), @OccurrenceDate, SYSDATETIME());
 			set @AttendanceOccurrenceId = @@IDENTITY;
 		end
 
@@ -274,8 +274,8 @@ begin
     close attendanceCodeIdCursor;
 
     insert into Attendance 
-        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, PresentDateTime, EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] ) 
-    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, [at].StartDateTime, [at].PresentDateTime, [at].EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid] 
+        ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, PresentDateTime, EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid],[CreatedDateTime],[ModifiedDateTime] ) 
+    select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, [at].StartDateTime, [at].PresentDateTime, [at].EndDateTime, CampusId, DidAttend, RSVP, ScheduledToAttend, RequestedToAttend, [Guid], [at].StartDateTime, SYSDATETIME()
         from @attendanceTable [at] order by at.StartDateTime
 
     update AttendanceOccurrence set OccurrenceDateKey = CONVERT(INT, (CONVERT(CHAR(8), OccurrenceDate, 112)) ) where OccurrenceDateKey = 0

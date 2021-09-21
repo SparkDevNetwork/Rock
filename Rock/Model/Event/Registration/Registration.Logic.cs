@@ -20,10 +20,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -436,6 +436,19 @@ Registration By: {0} Total Cost/Fees:{1}
 
             string personName = string.Format( "{0} {1}", FirstName, LastName );
             return string.IsNullOrWhiteSpace( personName ) ? "Registration" : personName.Trim();
+        }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check the default authorization on the current type, and
+        /// then the authorization on the Rock.Security.GlobalDefault entity
+        /// </summary>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                return RegistrationInstance != null ? RegistrationInstance : base.ParentAuthority;
+            }
         }
 
         #endregion Methods

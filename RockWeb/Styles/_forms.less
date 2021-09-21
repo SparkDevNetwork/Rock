@@ -307,6 +307,11 @@ dl:not(.dl-horizontal) {
     margin-right: 6px;
   }
 
+  // Nested form controls get too much margin
+  .input-group > .form-control {
+    margin-right: 0;
+  }
+
   & > span {
     float: left;
     margin: 8px 6px 0 0;
@@ -447,6 +452,8 @@ dl:not(.dl-horizontal) {
 
 /* SK Add margin in ListItems */
 .list-items-rows .controls-row {
+  display: flex;
+  align-items: center;
   margin-bottom: 6px;
 }
 
