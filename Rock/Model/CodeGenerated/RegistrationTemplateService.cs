@@ -120,6 +120,7 @@ namespace Rock.Model
                 PaymentReminderTimeSpan = model.PaymentReminderTimeSpan,
                 RegistrantsSameFamily = ( int ) model.RegistrantsSameFamily,
                 RegistrantTerm = model.RegistrantTerm,
+                RegistrantWorkflowTypeId = model.RegistrantWorkflowTypeId,
                 RegistrarOption = ( int ) model.RegistrarOption,
                 RegistrationAttributeTitleEnd = model.RegistrationAttributeTitleEnd,
                 RegistrationAttributeTitleStart = model.RegistrationAttributeTitleStart,
@@ -248,6 +249,7 @@ namespace Rock.Model
             target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
+            target.RegistrantWorkflowTypeId = source.RegistrantWorkflowTypeId;
             target.RegistrarOption = source.RegistrarOption;
             target.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
             target.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;

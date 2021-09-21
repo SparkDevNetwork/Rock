@@ -147,6 +147,9 @@ namespace Rock.Client
         public string RegistrantTerm { get; set; }
 
         /// <summary />
+        public int? RegistrantWorkflowTypeId { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.RegistrarOption RegistrarOption { get; set; }
 
         /// <summary />
@@ -283,6 +286,7 @@ namespace Rock.Client
             this.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             this.RegistrantsSameFamily = source.RegistrantsSameFamily;
             this.RegistrantTerm = source.RegistrantTerm;
+            this.RegistrantWorkflowTypeId = source.RegistrantWorkflowTypeId;
             this.RegistrarOption = source.RegistrarOption;
             this.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
             this.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;
@@ -334,6 +338,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<RegistrationTemplatePlacement> Placements { get; set; }
+
+        /// <summary />
+        public WorkflowType RegistrantWorkflowType { get; set; }
 
         /// <summary />
         public WorkflowType RegistrationWorkflowType { get; set; }

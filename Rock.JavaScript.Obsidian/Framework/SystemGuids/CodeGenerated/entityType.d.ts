@@ -170,6 +170,12 @@ export const enum EntityType {
     MobilePrayerPrayerRequestDetailsBlockType = "F8E56BC0-E9D1-44A4-9900-46589A1FB784",
     /** The GUID for the entity . */
     MobileSecurityOnboardPerson = "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
+    /** The obsidian event registration entry */
+    ObsidianEventRegistrationEntry = "06AAC065-BF89-483D-B671-80F0F72779A6",
+    /** The obsidian event control gallery */
+    ObsidianExampleControlGallery = "7B916FEC-9395-4877-9856-427419C50AB5",
+    /** The obsidian event field type gallery */
+    ObsidianExampleFieldTypeGallery = "82F9C803-C998-46B2-B354-783D4D1E3B43",
     /** The guid for the Rock.Model.Note entity */
     Note = "53DC1E78-14A5-44DE-903F-6A2CB02164E7",
     /** The guid for the Rock.Model.Page entity */
