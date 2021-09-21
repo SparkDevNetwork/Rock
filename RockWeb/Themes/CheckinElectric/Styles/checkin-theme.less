@@ -58,6 +58,13 @@ html {
 @import "_variables.less";
 @import "_variable-overrides.less";
 
+@media (min-width: 768px) {
+  .body-content {
+    width: 100% !important;
+    padding: 0 30px;
+  }
+}
+
 .checkin-scroll-panel {
   bottom: 0;
 }
@@ -357,13 +364,6 @@ html {
 
   i {
     display: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .page-checkin-success .body-content {
-    width: 100% !important;
-    padding: 0 30px;
   }
 }
 
