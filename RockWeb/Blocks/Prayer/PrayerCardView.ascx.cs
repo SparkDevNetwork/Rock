@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -131,6 +132,13 @@ namespace RockWeb.Blocks.Prayer
         Description = "The workflow type to launch when someone presses the Flag button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: FlaggedByPersonId.",
         IsRequired = false,
         Order = 12 )]
+    [BooleanField(
+        "Load Last Prayed Collection",
+        Description = "Loads an optional collection of last prayed times for the requests. This is available as a separate merge field in Lava.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.LoadLastPrayedCollection )]
+    
     #endregion Block Attributes
     public partial class PrayerCardView : RockBlock
     {
@@ -199,6 +207,7 @@ namespace RockWeb.Blocks.Prayer
             public const string MaxResults = "MaxResults";
             public const string PrayedWorkflow = "PrayedWorkflow";
             public const string FlaggedWorkflow = "FlaggedWorkflow";
+            public const string LoadLastPrayedCollection = "LoadLastPrayedCollection";
         }
 
         #endregion Attribute Keys
@@ -418,6 +427,7 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService
                 .Queryable()
+                .Include( "Category" )
                 .Where( r => ( r.IsActive ?? true ) && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) && r.IsApproved == true );
 
             if ( GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean() )
@@ -441,7 +451,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( categoryFilter != null )
             {
-                // if filtered by category, only show comments for prayer requests in that category or any of its decendent categories
+                // If filtered by category, only show comments for prayer requests in that category or any of its decendent categories
                 var categoryService = new CategoryService( rockContext );
                 var categories = new CategoryService( rockContext ).GetAllDescendents( categoryFilter.Guid ).Select( a => a.Id ).ToList();
 
@@ -467,12 +477,13 @@ namespace RockWeb.Blocks.Prayer
                 }
                 else
                 {
-                    var campusIds = cpCampus
+                    var filteredCampusIds = cpCampus
                        .Items
                        .Cast<ListItem>()
                        .Select( i => i.Value )
                        .AsIntegerList();
-                    qryPrayerRequests = qryPrayerRequests.Where( e => !e.CampusId.HasValue || campusIds.Contains( e.CampusId.Value ) );
+
+                    qryPrayerRequests = qryPrayerRequests.Where( e => !e.CampusId.HasValue || filteredCampusIds.Contains( e.CampusId.Value ) );
                 }
             }
 
@@ -506,10 +517,38 @@ namespace RockWeb.Blocks.Prayer
                 qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
             }
 
-            mergeFields.Add( "PrayerRequestItems", qryPrayerRequests.ToList() );
+            var prayerRequests = qryPrayerRequests.ToList();
+
+            mergeFields.Add( "PrayerRequestItems", prayerRequests );
             mergeFields.Add( AttributeKey.PrayedButtonText, GetAttributeValue( AttributeKey.PrayedButtonText ) );
             mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ) );
             string template = GetAttributeValue( AttributeKey.DisplayLavaTemplate );
+
+            // Add last prayed information if requested
+            if ( GetAttributeValue( AttributeKey.LoadLastPrayedCollection ).AsBoolean() )
+            {
+                var prayerRequestIds = prayerRequests.Select( p => p.Id ).ToList();
+                var prayerRequestInteractionChannel = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.PRAYER_EVENTS ).Id;
+
+                var lastPrayedInteractions = new InteractionService( rockContext ).Queryable()
+                                                .Where( i =>
+                                                    i.InteractionComponent.EntityId.HasValue
+                                                    && prayerRequestIds.Contains( i.InteractionComponent.EntityId.Value )
+                                                    && i.InteractionComponent.InteractionChannelId == prayerRequestInteractionChannel )
+                                                .GroupBy( i => i.InteractionComponentId )
+                                                .Select( i => i.OrderByDescending( x => x.InteractionDateTime ).FirstOrDefault() )
+                                                .Select( y => new
+                                                {
+                                                    RequestId = y.InteractionComponent.EntityId,
+                                                    PrayerDateTime = y.InteractionDateTime,
+                                                    FirstName = y.PersonAlias.Person.NickName,
+                                                    LastName = y.PersonAlias.Person.LastName
+                                                } )
+                                                .ToList();
+
+                mergeFields.Add( "LastPrayed", lastPrayedInteractions );
+            }
+
             lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upPrayer.ClientID );
         }
 
