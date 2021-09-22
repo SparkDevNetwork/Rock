@@ -409,6 +409,8 @@ namespace Rock.Model
                 WorkflowTypeIds.Add( instance.RegistrationWorkflowTypeId.Value );
             }
 
+            RegistrantWorkflowTypeId = template.RegistrantWorkflowTypeId;
+
             // Terms and text
             Instructions = instance.RegistrationInstructions.IsNullOrWhiteSpace() ? template.RegistrationInstructions : instance.RegistrationInstructions;
             FeeTerm = template.FeeTerm.IsNullOrWhiteSpace() ? "Fee" : template.FeeTerm;
@@ -695,6 +697,14 @@ namespace Rock.Model
         /// The group member status.
         /// </value>
         public GroupMemberStatus GroupMemberStatus { get; private set; }
+
+        /// <summary>
+        /// Optional workflow type to launch for registrant
+        /// </summary>
+        /// <value>
+        /// The workflow type id.
+        /// </value>        
+        public int? RegistrantWorkflowTypeId { get; private set; }
 
         /// <summary>
         /// Gets or sets the registration workflow type identifier.

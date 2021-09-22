@@ -173,7 +173,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
         <div class="note-content">
             {{ noteText }}
 
-            {% comment %}Only Display Attibute Markup if Exists, and only if the current person has rights to view it{% endcomment %}
+            {% comment %}Only Display Attribute Markup if Exists, and only if the current person has rights to view it{% endcomment %}
             {% assign totalAttributes = note.AttributeValues | Size %}
             {% assign totalEmptyAttributes = note.AttributeValues | Where:'ValueFormatted','' | Size %}
             {% if totalAttributes != totalEmptyAttributes %}

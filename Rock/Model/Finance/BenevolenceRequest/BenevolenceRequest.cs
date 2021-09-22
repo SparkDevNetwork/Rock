@@ -21,7 +21,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -34,7 +33,6 @@ namespace Rock.Model
     [DataContract]
     public partial class BenevolenceRequest : Model<BenevolenceRequest>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -211,20 +209,7 @@ namespace Rock.Model
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
         public int? CampusId { get; set; }
 
-        /// <summary>
-        /// Gets the request date key.
-        /// </summary>
-        /// <value>
-        /// The request date key.
-        /// </value>
-        [DataMember]
-        [FieldType( Rock.SystemGuid.FieldType.DATE )]
-        public int RequestDateKey
-        {
-            get => RequestDateTime.ToString( "yyyyMMdd" ).AsInteger();
-            private set { }
-        }
-        #endregion
+        #endregion Entity Properties
 
         #region Constructors
 
@@ -238,9 +223,9 @@ namespace Rock.Model
             _documents = new Collection<BenevolenceRequestDocument>();
         }
 
-        #endregion
+        #endregion Constructors
 
-        #region Virtual Properties
+        #region Navigation Properties
 
         /// <summary>
         /// Gets or sets the requested by <see cref="Rock.Model.PersonAlias"/>.
@@ -297,57 +282,6 @@ namespace Rock.Model
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets  full name of the person for who the benevolence request is about.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the full name of the person who this benevolence request is about.
-        /// </value>
-        public virtual string FullName
-        {
-            get
-            {
-                return string.Format( "{0} {1}", FirstName, LastName );
-            }
-        }
-
-        /// <summary>
-        /// Gets the full name of the person who this benevolence request is about in Last Name, First Name format.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> containing the full name of the person who this benevolence request is about in last name first name format.
-        /// </value>
-        public virtual string FullNameReversed
-        {
-            get
-            {
-                return string.Format( "{0}, {1}", LastName, FirstName );
-            }
-        }
-
-        /// <summary>
-        /// Gets the total amount of benevolence given.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.Decimal"/> containing the total amount of benevolence given.
-        /// </value>
-        [Previewable]
-        public virtual decimal TotalAmount
-        {
-            get
-            {
-                decimal totalAmount = 0;
-                foreach ( BenevolenceResult result in BenevolenceResults )
-                {
-                    if ( result.Amount != null )
-                    {
-                        totalAmount += result.Amount.Value;
-                    }
-                }
-                return totalAmount;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.BenevolenceResult">BenevolenceResults</see>
         /// </summary>
         /// <value>
@@ -359,22 +293,8 @@ namespace Rock.Model
             get { return _results; }
             set { _results = value; }
         }
+
         private ICollection<BenevolenceResult> _results;
-
-
-        /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.BenevolenceRequestDocument">documents</see>.
-        /// </summary>
-        /// <value>
-        /// The documents.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<BenevolenceRequestDocument> Documents
-        {
-            get { return _documents ?? ( _documents = new Collection<BenevolenceRequestDocument>() ); }
-            set { _documents = value; }
-        }
-        private ICollection<BenevolenceRequestDocument> _documents;
 
         /// <summary>
         /// Gets or sets the request source date.
@@ -384,7 +304,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AnalyticsSourceDate RequestSourceDate { get; set; }
-        #endregion
+        #endregion Navigation Properties
 
         #region Public Methods
 
@@ -399,7 +319,7 @@ namespace Rock.Model
             return this.RequestText;
         }
 
-        #endregion
+        #endregion Public Methods
     }
 
     #region Entity Configuration
@@ -427,5 +347,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion
+    #endregion Entity Configuration
 }

@@ -169,6 +169,9 @@ namespace RockWeb.Blocks.Prayer
         elmnt.innerHTML = iPrayedText;
     }
 </script>
+<style>
+.block-filter { margin-left: auto; }
+</style>
 ";
 
         #endregion Constants
@@ -341,6 +344,7 @@ namespace RockWeb.Blocks.Prayer
                 rockContext.SaveChanges();
 
                 StartWorkflow( request, rockContext, AttributeKey.PrayedWorkflow );
+                PrayerRequestService.EnqueuePrayerInteraction( request, CurrentPerson, PageCache.Layout.Site.Name, Request.UserAgent, RockPage.GetClientIpAddress(), RockPage.Session["RockSessionId"]?.ToString().AsGuidOrNull() );
             }
         }
 

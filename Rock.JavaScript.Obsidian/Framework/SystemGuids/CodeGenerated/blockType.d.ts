@@ -114,6 +114,12 @@ export const enum BlockType {
     WorkflowEntry = "A8BD05C8-6F89-4628-845B-059E686F089A",
     /** The Checkin Manager En Route */
     CheckInManagerEnRoute = "BC86F18C-9F38-4CA3-8CF9-5A837CBC700D",
+    /** The obsidian event registration entry */
+    ObsidianEventRegistrationEntry = "0252E237-0684-4426-9E5C-D454A13E152A",
+    /** The obsidian event control gallery */
+    ObsidianExampleControlGallery = "3ED1B4B2-FD1C-4E4B-B4B9-2DE4E6EF8915",
+    /** The obsidian event field type gallery */
+    ObsidianExampleFieldTypeGallery = "B9C209C2-ABB8-4B48-A68E-944572007B03",
     /** The contribution statement lava (Legacy) */
     ContributionStatementLavaLegacy = "AF986B72-ADD9-4E05-971F-1DE4EBED8667",
 }

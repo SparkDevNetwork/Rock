@@ -288,6 +288,14 @@ namespace Rock.ViewModel
         public string RegistrantTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets the RegistrantWorkflowTypeId.
+        /// </summary>
+        /// <value>
+        /// The RegistrantWorkflowTypeId.
+        /// </value>
+        public int? RegistrantWorkflowTypeId { get; set; }
+
+        /// <summary>
         /// Gets or sets the RegistrarOption.
         /// </summary>
         /// <value>

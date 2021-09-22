@@ -2446,6 +2446,11 @@ namespace RockWeb.Blocks.Event
                             }
                         }
 
+                        foreach ( var item in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
+                        {
+                            newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrantWorkflowTypeId, newRegistration.ToString(), null, null );
+                        }
+
                         newRegistration.LaunchWorkflow( RegistrationTemplate.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
                         newRegistration.LaunchWorkflow( RegistrationInstanceState.RegistrationWorkflowTypeId, newRegistration.ToString(), null, null );
                     }

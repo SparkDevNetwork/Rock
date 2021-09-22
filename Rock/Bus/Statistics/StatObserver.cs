@@ -39,7 +39,7 @@ namespace Rock.Bus.Statistics
         /// <exception cref="NotImplementedException"></exception>
         public Task ConsumeFault<T>( ConsumeContext<T> context, Exception exception ) where T : class
         {
-            ExceptionLogService.LogException( exception );
+            ExceptionLogService.LogException( new BusException( $"A Consume Fault occurred. Original Message: {context?.Message}", exception ) );
             RockLogger.Log.Error( RockLogDomains.Core, "A Consume Fault occurred Original Message: @originalMessage Exception: @exception", context.Message, exception );
             return RockMessageBus.GetCompletedTask();
         }

@@ -586,6 +586,7 @@
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
     <Compile Include="CheckIn\CheckinResult.cs" />
     <Compile Include="CheckIn\PersonAchievementType.cs" />
@@ -787,6 +788,7 @@
     <Compile Include="Model\Event\Registration\RegistrationCostSummaryType.cs" />
     <Compile Include="Model\Event\Registration\RegistrationExtensionMethods.cs" />
     <Compile Include="Model\Event\Registration\RegistrationInfo.cs" />
+    <Compile Include="Model\Finance\BenevolenceRequest\BenevolenceRequest.Logic.cs" />
     <Compile Include="Model\Group\GroupDemographicType\GroupDemographicType.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.cs" />
     <Compile Include="Model\Group\GroupDemographicValue\GroupDemographicValue.Logic.cs" />

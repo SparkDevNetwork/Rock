@@ -93,6 +93,18 @@
     <Compile Include="Migrations\202109172125405_RemovePushpayEventRegistrationSupportModels.Designer.cs">
       <DependentUpon>202109172125405_RemovePushpayEventRegistrationSupportModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs" />
+    <Compile Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.Designer.cs">
+      <DependentUpon>202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109212048053_Rollup_20210921.cs" />
+    <Compile Include="Migrations\202109212048053_Rollup_20210921.Designer.cs">
+      <DependentUpon>202109212048053_Rollup_20210921.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202109212253216_CodeGenerated_20210921.cs" />
+    <Compile Include="Migrations\202109212253216_CodeGenerated_20210921.Designer.cs">
+      <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -723,6 +735,15 @@
     <EmbeddedResource Include="Migrations\202109172125405_RemovePushpayEventRegistrationSupportModels.resx">
       <DependentUpon>202109172125405_RemovePushpayEventRegistrationSupportModels.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.resx">
+      <DependentUpon>202109211435172_AddRegistrantWorkflowTypeToRegistrationTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109212048053_Rollup_20210921.resx">
+      <DependentUpon>202109212048053_Rollup_20210921.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109212253216_CodeGenerated_20210921.resx">
+      <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
     </EmbeddedResource>
@@ -1195,6 +1216,9 @@
     </Content>
     <Content Include="Migrations\202109081805229_Rollup_20210908_routemigration.sql">
       <DependentUpon>202109081805229_Rollup_20210908.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202109212048053_Rollup_20210921_routemigration.sql">
+      <DependentUpon>202109212048053_Rollup_20210921.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608_LavaHeatMap.sql">
       <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
