@@ -521,7 +521,7 @@ namespace RockWeb.Blocks.Prayer
 
             mergeFields.Add( "PrayerRequestItems", prayerRequests );
             mergeFields.Add( AttributeKey.PrayedButtonText, GetAttributeValue( AttributeKey.PrayedButtonText ) );
-            mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ) );
+            mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean() );
             string template = GetAttributeValue( AttributeKey.DisplayLavaTemplate );
 
             // Add last prayed information if requested
