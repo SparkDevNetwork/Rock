@@ -395,20 +395,20 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                // Check Max Attendees and lock a spot on the RegistrationSession table if required.
+                // If this is a new registrant and not on the waitlist then check Max Attendees and lock a spot on the RegistrationSession table if needed.
                 Guid? registrationSessionGuid = null;
-                if ( !registrant.OnWaitList )
+                if ( newRegistrant && !registrant.OnWaitList )
                 {
                     var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
                     if ( registrationInstance.TimeoutIsEnabled )
                     {
-                        var registrationSession = UpsertSession();
-                        registrationSessionGuid = registrationSession?.Guid;
-
+                        var registrationSession = CreateRegistrationSession();
                         if ( registrationSession == null )
                         {
                             return;
                         }
+
+                        registrationSessionGuid = registrationSession?.Guid;
                     }
                 }
 
@@ -539,6 +539,9 @@ namespace RockWeb.Blocks.Event
                 catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex );
+                    // Use custom validator to show the error
+                    cvFullRegistration.IsValid = false;
+                    cvFullRegistration.ErrorMessage = ex.Message;
                     return;
                 }
                 finally
@@ -627,22 +630,20 @@ namespace RockWeb.Blocks.Event
 
         #region Methods
 
-        private RegistrationSession UpsertSession()
+        /// <summary>
+        /// Creates the registration session.
+        /// </summary>
+        /// <returns></returns>
+        private RegistrationSession CreateRegistrationSession()
         {
             string errorMessage = string.Empty;
             RegistrationSession registrationSession = null;
 
             using ( var rockContext = new RockContext() )
             {
-                var registrationService = new RegistrationService( rockContext );
-                var registration = registrationService.Get( RegistrantState.RegistrationId );
-                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
-
-                //var context = registrationService.GetRegistrationContext( registrationInstance.Id, registration?.Guid, CurrentPerson, registration?.DiscountCode, out errorMessage );
-
+                // Just provide a create function, no update needed. Only minimal data needed since all this is doing is checking availability and locking a spot if needed.
                 registrationSession = RegistrationSessionService.CreateOrUpdateSession(
                     Guid.Empty,
-                    // Create
                     () => new RegistrationSession
                     {
                         Guid = Guid.NewGuid(),
@@ -650,16 +651,15 @@ namespace RockWeb.Blocks.Event
                         RegistrationData = string.Empty,
                         SessionStartDateTime = RockDateTime.Now,
                         RegistrationCount = 1,
-                        RegistrationId = registration?.Id,
+                        RegistrationId = RegistrantState.RegistrationId,
                         SessionStatus = SessionStatus.Transient
                     },
-                    // No update needed. No timer and the session will be deleted after the transaction.
                     null,
                     out errorMessage );
             }
             if ( errorMessage.IsNotNullOrWhiteSpace() )
             {
-                // Create a custom validator and show the error
+                // Use custom validator to show the error
                 cvFullRegistration.IsValid = false;
                 cvFullRegistration.ErrorMessage = errorMessage;
             }
