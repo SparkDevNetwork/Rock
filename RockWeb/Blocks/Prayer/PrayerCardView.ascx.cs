@@ -534,7 +534,8 @@ namespace RockWeb.Blocks.Prayer
                                                 .Where( i =>
                                                     i.InteractionComponent.EntityId.HasValue
                                                     && prayerRequestIds.Contains( i.InteractionComponent.EntityId.Value )
-                                                    && i.InteractionComponent.InteractionChannelId == prayerRequestInteractionChannel )
+                                                    && i.InteractionComponent.InteractionChannelId == prayerRequestInteractionChannel
+                                                    && i.Operation == "Prayed" )
                                                 .GroupBy( i => i.InteractionComponentId )
                                                 .Select( i => i.OrderByDescending( x => x.InteractionDateTime ).FirstOrDefault() )
                                                 .Select( y => new
