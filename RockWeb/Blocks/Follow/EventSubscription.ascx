@@ -13,12 +13,12 @@
 
                 <asp:Repeater ID="rptEntityType" runat="server" OnItemDataBound="rptEntityType_ItemDataBound">
                     <ItemTemplate>
-                        <h4><%# Eval("FriendlyName").ToString().Replace(" Alias", "") %> Events</h4>
+                        <h4 class="mt-0"><%# Eval("FriendlyName").ToString().Replace(" Alias", "") %> Events</h4>
                         <div class="clearfix margin-l-md">
                             <ul class="list-unstyled">
                                 <asp:Repeater ID="rptEvent" runat="server" >
                                     <ItemTemplate>
-                                        <li class="margin-b-sm">
+                                        <li class="mb-2">
                                             <asp:HiddenField ID="hfEvent" runat="server" Value='<%# Eval("Id") %>' />
                                             <Rock:RockCheckBox ID="cbEvent" runat="server" Checked='<%# (bool)Eval("Selected") %>'  Enabled='<%# !(bool)Eval("IsNoticeRequired") %>'
                                                 Text='<%# Eval("Name") %>' SelectedIconCssClass="fa fa-check-square-o fa-lg fa-fw" UnSelectedIconCssClass="fa fa-square-o fa-lg fa-fw" />
