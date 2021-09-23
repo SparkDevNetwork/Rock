@@ -13,11 +13,10 @@
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
-
-                <h4>Watched by</h4>
-
-                <Rock:NotificationBox ID="nbWatcherMustBeSelectWarning" runat="server" NotificationBoxType="Danger" Text="A Person or Group must be specified as the watcher" Dismissable="true" Visible="false" />
+                <Rock:NotificationBox ID="nbWatcherMustBeSelectWarning" runat="server" NotificationBoxType="Validation" Text="A Person or Group must be specified as the watcher" Dismissable="true" Visible="false" />
                 <Rock:NotificationBox ID="nbUnableToOverride" runat="server" NotificationBoxType="Danger" Text="Unable to set Watching to false. This would override another note watch that doesn't allow overrides." Dismissable="true" Visible="false" />
+
+                <h4 class="mt-0">Watched by</h4>
 
                 <div class="row">
                     <div class="col-md-6">

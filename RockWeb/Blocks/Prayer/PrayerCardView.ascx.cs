@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -131,6 +132,13 @@ namespace RockWeb.Blocks.Prayer
         Description = "The workflow type to launch when someone presses the Flag button. Prayer Request will be passed to the workflow as a generic \"Entity\" field type. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: FlaggedByPersonId.",
         IsRequired = false,
         Order = 12 )]
+    [BooleanField(
+        "Load Last Prayed Collection",
+        Description = "Loads an optional collection of last prayed times for the requests. This is available as a separate merge field in Lava.",
+        DefaultBooleanValue = false,
+        Order = 13,
+        Key = AttributeKey.LoadLastPrayedCollection )]
+    
     #endregion Block Attributes
     public partial class PrayerCardView : RockBlock
     {
@@ -139,40 +147,45 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// The Default Value for the LavaTemplate block attribute
         /// </summary>
-        private const string LavaTemplateDefaultValue = @"
-<div class=""row d-flex flex-wrap"">
-  {% assign prayedButtonText = PrayedButtonText %}
-  {% for item in PrayerRequestItems %}
-  <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
-    <div class=""card h-100"">
-      <div class=""card-body"">
-        <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
-        {% if item.Category != null %}
-        <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
-        {% endif %}
-        <p class=""card-text"">
-        {{ item.Text }}
-        </p>
-    </div>
-       <div class=""card-footer"">
-        {% if EnablePrayerTeamFlagging == true %}
-        <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""{{ item.Id | Postback:'Flag' }}""><i class='fa fa-flag'></i> Flag</a>
-        {% endif %}
-   		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""iPrayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
+        private const string LavaTemplateDefaultValue = @"<div class=""row d-flex flex-wrap"">
+    {% assign prayedButtonText = PrayedButtonText %}
+    {% for item in PrayerRequestItems %}
+        <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+            <div class=""card h-100"">
+                <div class=""card-body"">
+                    <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
+                    {% if item.Category != null %}
+                    <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
+                    {% endif %}
+                    <p class=""card-text"">
+                    {{ item.Text }}
+                    </p>
+                </div>
+
+                <div class=""card-footer bg-white border-0"">
+                    {% if EnablePrayerTeamFlagging %}
+                    <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""ReviewFlag(this);{{ item.Id | Postback:'Flag' }}""><i class=""fa fa-flag""></i> <span>Flag</span></a>
+                    {% endif %}
+                    <a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""Prayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
+                </div>
+            </div>
         </div>
-        </div>
-    </div>
-  {% endfor -%}
+    {% endfor -%}
 </div>
-<script>function iPrayed(elmnt) { 
-        var iPrayedText = '{{PrayedButtonText}}';
-        elmnt.innerHTML = iPrayedText;
-    }
+
+<script>
+function Prayed(elem) {
+    $(elem).addClass('btn-default').removeClass('btn-primary').text('{{PrayedButtonText}}')
+}
+
+function ReviewFlag(elem) {
+    $(elem).removeClass('text-muted').addClass('text-danger').find('span').text('Flagged')
+}
 </script>
+
 <style>
 .block-filter { margin-left: auto; }
-</style>
-";
+</style>";
 
         #endregion Constants
 
@@ -199,6 +212,7 @@ namespace RockWeb.Blocks.Prayer
             public const string MaxResults = "MaxResults";
             public const string PrayedWorkflow = "PrayedWorkflow";
             public const string FlaggedWorkflow = "FlaggedWorkflow";
+            public const string LoadLastPrayedCollection = "LoadLastPrayedCollection";
         }
 
         #endregion Attribute Keys
@@ -418,6 +432,7 @@ namespace RockWeb.Blocks.Prayer
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService
                 .Queryable()
+                .Include( "Category" )
                 .Where( r => ( r.IsActive ?? true ) && ( !r.ExpirationDate.HasValue || r.ExpirationDate >= RockDateTime.Now ) && r.IsApproved == true );
 
             if ( GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean() )
@@ -441,7 +456,7 @@ namespace RockWeb.Blocks.Prayer
 
             if ( categoryFilter != null )
             {
-                // if filtered by category, only show comments for prayer requests in that category or any of its decendent categories
+                // If filtered by category, only show comments for prayer requests in that category or any of its decendent categories
                 var categoryService = new CategoryService( rockContext );
                 var categories = new CategoryService( rockContext ).GetAllDescendents( categoryFilter.Guid ).Select( a => a.Id ).ToList();
 
@@ -467,12 +482,13 @@ namespace RockWeb.Blocks.Prayer
                 }
                 else
                 {
-                    var campusIds = cpCampus
+                    var filteredCampusIds = cpCampus
                        .Items
                        .Cast<ListItem>()
                        .Select( i => i.Value )
                        .AsIntegerList();
-                    qryPrayerRequests = qryPrayerRequests.Where( e => !e.CampusId.HasValue || campusIds.Contains( e.CampusId.Value ) );
+
+                    qryPrayerRequests = qryPrayerRequests.Where( e => !e.CampusId.HasValue || filteredCampusIds.Contains( e.CampusId.Value ) );
                 }
             }
 
@@ -506,10 +522,39 @@ namespace RockWeb.Blocks.Prayer
                 qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
             }
 
-            mergeFields.Add( "PrayerRequestItems", qryPrayerRequests.ToList() );
+            var prayerRequests = qryPrayerRequests.ToList();
+
+            mergeFields.Add( "PrayerRequestItems", prayerRequests );
             mergeFields.Add( AttributeKey.PrayedButtonText, GetAttributeValue( AttributeKey.PrayedButtonText ) );
-            mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ) );
+            mergeFields.Add( AttributeKey.EnablePrayerTeamFlagging, GetAttributeValue( AttributeKey.EnablePrayerTeamFlagging ).AsBoolean() );
             string template = GetAttributeValue( AttributeKey.DisplayLavaTemplate );
+
+            // Add last prayed information if requested
+            if ( GetAttributeValue( AttributeKey.LoadLastPrayedCollection ).AsBoolean() )
+            {
+                var prayerRequestIds = prayerRequests.Select( p => p.Id ).ToList();
+                var prayerRequestInteractionChannel = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.PRAYER_EVENTS ).Id;
+
+                var lastPrayedInteractions = new InteractionService( rockContext ).Queryable()
+                                                .Where( i =>
+                                                    i.InteractionComponent.EntityId.HasValue
+                                                    && prayerRequestIds.Contains( i.InteractionComponent.EntityId.Value )
+                                                    && i.InteractionComponent.InteractionChannelId == prayerRequestInteractionChannel
+                                                    && i.Operation == "Prayed" )
+                                                .GroupBy( i => i.InteractionComponentId )
+                                                .Select( i => i.OrderByDescending( x => x.InteractionDateTime ).FirstOrDefault() )
+                                                .Select( y => new
+                                                {
+                                                    RequestId = y.InteractionComponent.EntityId,
+                                                    PrayerDateTime = y.InteractionDateTime,
+                                                    FirstName = y.PersonAlias.Person.NickName,
+                                                    LastName = y.PersonAlias.Person.LastName
+                                                } )
+                                                .ToList();
+
+                mergeFields.Add( "LastPrayed", lastPrayedInteractions );
+            }
+
             lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upPrayer.ClientID );
         }
 
