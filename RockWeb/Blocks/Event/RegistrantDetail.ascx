@@ -69,7 +69,7 @@
                 <div class="panel-body">
 
                     <asp:ValidationSummary ID="ValidationSummary1" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-
+                    <asp:CustomValidator ID="cvFullRegistration" runat="server" Display="None" ErrorMessage="There are no more spots open for this event." />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" />

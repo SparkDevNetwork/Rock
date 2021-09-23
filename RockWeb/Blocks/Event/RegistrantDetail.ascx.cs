@@ -395,137 +395,160 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                // Create a RegistrationSession here to create a lock. This will prevent multiple registrations at the same time that could exceed the registration limit.
-                // Only do this if there is a limit.
-                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
-                Guid registrationSessionGuid;
-                if ( registrationInstance.MaxAttendees != null && registrationInstance.MaxAttendees != 0 )
+                // Check Max Attendees and lock a spot on the RegistrationSession table if required.
+                Guid? registrationSessionGuid = null;
+                if ( !registrant.OnWaitList )
                 {
-                    //RegistrationSessionService.CreateOrUpdateSession
+                    var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+                    if ( registrationInstance.TimeoutIsEnabled )
+                    {
+                        var registrationSession = UpsertSession();
+                        registrationSessionGuid = registrationSession?.Guid;
+
+                        if ( registrationSession == null )
+                        {
+                            return;
+                        }
+                    }
                 }
 
-                // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
-                rockContext.WrapTransaction( () =>
+                try
                 {
+                    // use WrapTransaction since SaveAttributeValues does it's own RockContext.SaveChanges()
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
 
-                    rockContext.SaveChanges();
-
-                    registrant.LoadAttributes();
+                        registrant.LoadAttributes();
                     // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
                     // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
                     foreach ( var field in this.RegistrationTemplate.Forms
-                        .SelectMany( f => f.Fields
-                            .Where( t =>
-                                t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
-                                t.AttributeId.HasValue ) ) )
-                    {
-                        var attribute = AttributeCache.Get( field.AttributeId.Value );
-                        if ( attribute != null )
+                            .SelectMany( f => f.Fields
+                                .Where( t =>
+                                    t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
+                                    t.AttributeId.HasValue ) ) )
                         {
-                            string originalValue = registrant.GetAttributeValue( attribute.Key );
-                            var fieldValue = RegistrantState.FieldValues
-                                .Where( f => f.Key == field.Id )
-                                .Select( f => f.Value.FieldValue )
-                                .FirstOrDefault();
-                            string newValue = fieldValue != null ? fieldValue.ToString() : string.Empty;
-
-                            if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
+                            var attribute = AttributeCache.Get( field.AttributeId.Value );
+                            if ( attribute != null )
                             {
-                                string formattedOriginalValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                string originalValue = registrant.GetAttributeValue( attribute.Key );
+                                var fieldValue = RegistrantState.FieldValues
+                                    .Where( f => f.Key == field.Id )
+                                    .Select( f => f.Value.FieldValue )
+                                    .FirstOrDefault();
+                                string newValue = fieldValue != null ? fieldValue.ToString() : string.Empty;
+
+                                if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
-                                    formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                    string formattedOriginalValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( originalValue ) )
+                                    {
+                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( null, originalValue, attribute.QualifierValues, false );
+                                    }
+
+                                    string formattedNewValue = string.Empty;
+                                    if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                    {
+                                        formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    }
+
+                                    History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                                 }
 
-                                string formattedNewValue = string.Empty;
-                                if ( !string.IsNullOrWhiteSpace( newValue ) )
+                                if ( fieldValue != null )
                                 {
-                                    formattedNewValue = attribute.FieldType.Field.FormatValue( null, newValue, attribute.QualifierValues, false );
+                                    registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
                                 }
-
-                                History.EvaluateChange( registrantChanges, attribute.Name, formattedOriginalValue, formattedNewValue );
                             }
+                        }
 
-                            if ( fieldValue != null )
+                        registrant.SaveAttributeValues( rockContext );
+                    } );
+
+                    if ( newRegistrant && this.RegistrationTemplate.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
+                    {
+                        using ( var newRockContext = new RockContext() )
+                        {
+                            var reloadedRegistrant = new RegistrationRegistrantService( newRockContext ).Get( registrant.Id );
+                            if ( reloadedRegistrant != null &&
+                                reloadedRegistrant.Registration != null &&
+                                reloadedRegistrant.Registration.Group != null &&
+                                reloadedRegistrant.Registration.Group.GroupTypeId == this.RegistrationTemplate.GroupTypeId.Value )
                             {
-                                registrant.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+                                int? groupRoleId = this.RegistrationTemplate.GroupMemberRoleId.HasValue ?
+                                    this.RegistrationTemplate.GroupMemberRoleId.Value :
+                                    reloadedRegistrant.Registration.Group.GroupType.DefaultGroupRoleId;
+                                if ( groupRoleId.HasValue )
+                                {
+                                    var groupMemberService = new GroupMemberService( newRockContext );
+                                    var groupMember = groupMemberService
+                                        .Queryable().AsNoTracking()
+                                        .Where( m =>
+                                            m.GroupId == reloadedRegistrant.Registration.Group.Id &&
+                                            m.PersonId == reloadedRegistrant.PersonId &&
+                                            m.GroupRoleId == groupRoleId.Value )
+                                        .FirstOrDefault();
+                                    if ( groupMember == null )
+                                    {
+                                        groupMember = new GroupMember();
+                                        groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
+                                        groupMember.PersonId = ppPerson.PersonId.Value;
+                                        groupMember.GroupRoleId = groupRoleId.Value;
+                                        groupMember.GroupMemberStatus = this.RegistrationTemplate.GroupMemberStatus;
+                                        groupMemberService.Add( groupMember );
+
+                                        newRockContext.SaveChanges();
+
+                                        registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Registrant to {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                    }
+                                    else
+                                    {
+                                        registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                    }
+
+                                    if ( reloadedRegistrant.GroupMemberId.HasValue && reloadedRegistrant.GroupMemberId.Value != groupMember.Id )
+                                    {
+                                        groupMemberService.Delete( reloadedRegistrant.GroupMember );
+                                        newRockContext.SaveChanges();
+                                        registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, string.Format( "Registrant to previous person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
+                                    }
+
+                                    // Record this to the Person's and Registrants Notes and History...
+
+                                    reloadedRegistrant.GroupMemberId = groupMember.Id;
+                                }
                             }
+                            if ( reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace() )
+                            {
+                                reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
+                            }
+                            newRockContext.SaveChanges();
                         }
                     }
-
-                    registrant.SaveAttributeValues( rockContext );
-                } );
-
-                if ( newRegistrant && this.RegistrationTemplate.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
+                    
+                    HistoryService.SaveChanges(
+                        rockContext,
+                        typeof( Registration ),
+                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                        registrant.RegistrationId,
+                        registrantChanges,
+                        "Registrant: " + registrantName,
+                        null,
+                        null );
+                }
+                catch ( Exception ex )
                 {
-                    using ( var newRockContext = new RockContext() )
+                    ExceptionLogService.LogException( ex );
+                    return;
+                }
+                finally
+                {
+                    if ( registrationSessionGuid != null )
                     {
-                        var reloadedRegistrant = new RegistrationRegistrantService( newRockContext ).Get( registrant.Id );
-                        if ( reloadedRegistrant != null &&
-                            reloadedRegistrant.Registration != null &&
-                            reloadedRegistrant.Registration.Group != null &&
-                            reloadedRegistrant.Registration.Group.GroupTypeId == this.RegistrationTemplate.GroupTypeId.Value )
-                        {
-                            int? groupRoleId = this.RegistrationTemplate.GroupMemberRoleId.HasValue ?
-                                this.RegistrationTemplate.GroupMemberRoleId.Value :
-                                reloadedRegistrant.Registration.Group.GroupType.DefaultGroupRoleId;
-                            if ( groupRoleId.HasValue )
-                            {
-                                var groupMemberService = new GroupMemberService( newRockContext );
-                                var groupMember = groupMemberService
-                                    .Queryable().AsNoTracking()
-                                    .Where( m =>
-                                        m.GroupId == reloadedRegistrant.Registration.Group.Id &&
-                                        m.PersonId == reloadedRegistrant.PersonId &&
-                                        m.GroupRoleId == groupRoleId.Value )
-                                    .FirstOrDefault();
-                                if ( groupMember == null )
-                                {
-                                    groupMember = new GroupMember();
-                                    groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
-                                    groupMember.PersonId = ppPerson.PersonId.Value;
-                                    groupMember.GroupRoleId = groupRoleId.Value;
-                                    groupMember.GroupMemberStatus = this.RegistrationTemplate.GroupMemberStatus;
-                                    groupMemberService.Add( groupMember );
-
-                                    newRockContext.SaveChanges();
-
-                                    registrantChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, string.Format( "Registrant to {0} group", reloadedRegistrant.Registration.Group.Name ) );
-                                }
-                                else
-                                {
-                                    registrantChanges.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Record, string.Format( "Registrant to existing person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
-                                }
-
-                                if ( reloadedRegistrant.GroupMemberId.HasValue && reloadedRegistrant.GroupMemberId.Value != groupMember.Id )
-                                {
-                                    groupMemberService.Delete( reloadedRegistrant.GroupMember );
-                                    newRockContext.SaveChanges();
-                                    registrantChanges.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, string.Format( "Registrant to previous person in {0} group", reloadedRegistrant.Registration.Group.Name ) );
-                                }
-
-                                // Record this to the Person's and Registrants Notes and History...
-
-                                reloadedRegistrant.GroupMemberId = groupMember.Id;
-                            }
-                        }
-                        if ( reloadedRegistrant.Registration.FirstName.IsNotNullOrWhiteSpace() && reloadedRegistrant.Registration.LastName.IsNotNullOrWhiteSpace() )
-                        {
-                            reloadedRegistrant.Registration.SavePersonNotesAndHistory( reloadedRegistrant.Registration.FirstName, reloadedRegistrant.Registration.LastName, this.CurrentPersonAliasId, previousRegistrantPersonIds );
-                        }
-                        newRockContext.SaveChanges();
+                        // we're done so remove this. In finally to make sure this gets deleted and does not tie up spots.
+                        RegistrationSessionService.CloseAndRemoveSession( registrationSessionGuid.Value );
                     }
                 }
-
-                HistoryService.SaveChanges(
-                    rockContext,
-                    typeof( Registration ),
-                    Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                    registrant.RegistrationId,
-                    registrantChanges,
-                    "Registrant: " + registrantName,
-                    null,
-                    null );
             }
 
             NavigateToRegistration();
@@ -604,6 +627,45 @@ namespace RockWeb.Blocks.Event
 
         #region Methods
 
+        private RegistrationSession UpsertSession()
+        {
+            string errorMessage = string.Empty;
+            RegistrationSession registrationSession = null;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationService = new RegistrationService( rockContext );
+                var registration = registrationService.Get( RegistrantState.RegistrationId );
+                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
+
+                //var context = registrationService.GetRegistrationContext( registrationInstance.Id, registration?.Guid, CurrentPerson, registration?.DiscountCode, out errorMessage );
+
+                registrationSession = RegistrationSessionService.CreateOrUpdateSession(
+                    Guid.Empty,
+                    // Create
+                    () => new RegistrationSession
+                    {
+                        Guid = Guid.NewGuid(),
+                        RegistrationInstanceId = RegistrationInstanceId,
+                        RegistrationData = string.Empty,
+                        SessionStartDateTime = RockDateTime.Now,
+                        RegistrationCount = 1,
+                        RegistrationId = registration?.Id,
+                        SessionStatus = SessionStatus.Transient
+                    },
+                    // No update needed. No timer and the session will be deleted after the transaction.
+                    null,
+                    out errorMessage );
+            }
+            if ( errorMessage.IsNotNullOrWhiteSpace() )
+            {
+                // Create a custom validator and show the error
+                cvFullRegistration.IsValid = false;
+                cvFullRegistration.ErrorMessage = errorMessage;
+            }
+
+            return registrationSession;
+        }
 
         /// <summary>
         /// Registers the client script.
