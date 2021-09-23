@@ -247,9 +247,6 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                // set their status (wait list / registrant)
-                registrant.OnWaitList = !tglWaitList.Checked;
-
                 History.EvaluateChange( registrantChanges, "Cost", registrant.Cost, cbCost.Value );
                 registrant.Cost = cbCost.Value == null ? 0 : cbCost.Value.Value;
 
@@ -396,11 +393,12 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // If this is a new registrant and not on the waitlist then check Max Attendees and lock a spot on the RegistrationSession table if needed.
+                var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
                 Guid? registrationSessionGuid = null;
-                if ( newRegistrant && !registrant.OnWaitList )
+                if ( registrationInstance.TimeoutIsEnabled )
                 {
-                    var registrationInstance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
-                    if ( registrationInstance.TimeoutIsEnabled )
+                    // If the registrant is new or coming off the waitlist then we need to check capacity and reserve a spot.
+                    if ( newRegistrant && tglWaitList.Checked || registrant.OnWaitList && tglWaitList.Checked)
                     {
                         var registrationSession = CreateRegistrationSession();
                         if ( registrationSession == null )
@@ -411,6 +409,9 @@ namespace RockWeb.Blocks.Event
                         registrationSessionGuid = registrationSession?.Guid;
                     }
                 }
+
+                // set their status (wait list / registrant)
+                registrant.OnWaitList = !tglWaitList.Checked;
 
                 try
                 {
