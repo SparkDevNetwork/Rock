@@ -90,10 +90,10 @@
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
 
-                                <div class="row">
+                                <div class="row d-flex flex-wrap">
                                     <asp:Repeater ID="rptScreenshots" runat="server">
                                         <ItemTemplate>
-                                            <div class="col-sm-6">
+                                            <div class="col-xs-12 col-sm-6">
                                                 <a href='' class='package-screenshot'>
                                                     <%# string.Format("<img src=\"{0}\" style=\"width: 100%\" class=\"margin-b-lg\" />", Eval("ImageUrl"))%>
                                                 </a>
