@@ -147,40 +147,45 @@ namespace RockWeb.Blocks.Prayer
         /// <summary>
         /// The Default Value for the LavaTemplate block attribute
         /// </summary>
-        private const string LavaTemplateDefaultValue = @"
-<div class=""row d-flex flex-wrap"">
-  {% assign prayedButtonText = PrayedButtonText %}
-  {% for item in PrayerRequestItems %}
-  <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
-    <div class=""card h-100"">
-      <div class=""card-body"">
-        <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
-        {% if item.Category != null %}
-        <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
-        {% endif %}
-        <p class=""card-text"">
-        {{ item.Text }}
-        </p>
-    </div>
-       <div class=""card-footer"">
-        {% if EnablePrayerTeamFlagging == true %}
-        <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""{{ item.Id | Postback:'Flag' }}""><i class='fa fa-flag'></i> Flag</a>
-        {% endif %}
-   		<a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""iPrayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
+        private const string LavaTemplateDefaultValue = @"<div class=""row d-flex flex-wrap"">
+    {% assign prayedButtonText = PrayedButtonText %}
+    {% for item in PrayerRequestItems %}
+        <div class=""col-md-4 col-sm-6 col-xs-12 mb-4"">
+            <div class=""card h-100"">
+                <div class=""card-body"">
+                    <h3 class=""card-title mt-0"">{{ item.FirstName }} {{ item.LastName }}</h3>
+                    {% if item.Category != null %}
+                    <p class=""card-subtitle mb-2""><span class=""label label-primary"">{{ item.Category.Name }}</span></p>
+                    {% endif %}
+                    <p class=""card-text"">
+                    {{ item.Text }}
+                    </p>
+                </div>
+
+                <div class=""card-footer bg-white border-0"">
+                    {% if EnablePrayerTeamFlagging %}
+                    <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""ReviewFlag(this);{{ item.Id | Postback:'Flag' }}""><i class=""fa fa-flag""></i> <span>Flag</span></a>
+                    {% endif %}
+                    <a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""Prayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
+                </div>
+            </div>
         </div>
-        </div>
-    </div>
-  {% endfor -%}
+    {% endfor -%}
 </div>
-<script>function iPrayed(elmnt) { 
-        var iPrayedText = '{{PrayedButtonText}}';
-        elmnt.innerHTML = iPrayedText;
-    }
+
+<script>
+function Prayed(elem) {
+    $(elem).addClass('btn-default').removeClass('btn-primary').text('{{PrayedButtonText}}')
+}
+
+function ReviewFlag(elem) {
+    $(elem).removeClass('text-muted').addClass('text-danger').find('span').text('Flagged')
+}
 </script>
+
 <style>
 .block-filter { margin-left: auto; }
-</style>
-";
+</style>";
 
         #endregion Constants
 
