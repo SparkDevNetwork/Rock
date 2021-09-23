@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlWrapper" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-shield"></i> Checkr Background Checks</h1>
-                <div class="pull-right">
+                <div class="panel-labels">
                     <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
             </div>
