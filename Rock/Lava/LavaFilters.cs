@@ -5243,8 +5243,8 @@ namespace Rock.Lava
                 if ( lavaObject != null )
                 {
                     if ( lavaObject.ContainsKey( filterKey )
-                            && ( ( comparisonType == "equal" && AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) )
-                                 || ( comparisonType == "notequal" && !AreEqualValue( lavaObject.GetValue( filterKey ), filterValue ) ) ) )
+                            && ( ( comparisonType == "equal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) == 0 )
+                                 || ( comparisonType == "notequal" && GetLavaCompareResult( lavaObject.GetValue( filterKey ), filterValue ) != 0 ) ) )
                     {
                         result.Add( lavaObject );
                     }
@@ -5269,8 +5269,10 @@ namespace Rock.Lava
                         propertyValue = string.Empty;
                     }
 
-                    if ( ( propertyValue.Equals( filterValue ) && comparisonType == "equal" )
-                            || ( !propertyValue.Equals( filterValue ) && comparisonType == "notequal" ) )
+                    var compareResult = GetLavaCompareResult( propertyValue, filterValue );
+
+                    if ( ( compareResult == 0 && comparisonType == "equal" )
+                            || ( compareResult != 0 && comparisonType == "notequal" ) )
                     {
                         result.Add( value );
                     }
@@ -5280,19 +5282,62 @@ namespace Rock.Lava
             return result;
         }
 
-        private static bool AreEqualValue( object left, object right )
+        /// <summary>
+        /// Returns the result of a comparison between two values, indicating if the left value is less than, greater than or equal to the right value.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns>
+        /// A signed integer that indicates the relative values of x and y.
+        /// -2: x is not equal to y, but the comparison is indeterminate.
+        /// -1: x is less than y.
+        /// 0: x equals y.
+        /// +1: x is greater than y.
+        /// </returns>
+        private static int GetLavaCompareResult( object left, object right )
         {
-            if ( right == null )
+            if ( left == null || right == null )
             {
-                if ( left == null )
+                if ( left == null && right == null )
                 {
-                    return true;
+                    return 0;
                 }
 
-                return false;
+                // Return a result that indicates inqueality without specifying greater or less.
+                return -2;
             }
 
-            return left.Equals( right );
+            // Compare DateTimeOffset values by converting to DateTime to ignore differences in offset.
+            if ( right is DateTimeOffset rightDto )
+            {
+                right = rightDto.DateTime;
+            }
+
+            if ( left is DateTimeOffset leftDto )
+            {
+                left = leftDto.DateTime;
+            }
+
+            // If the operand types are not the same, try to convert the right type to the left type.
+            var leftType = left.GetType();
+            var rightType = right.GetType();
+
+
+            if ( leftType != rightType )
+            {
+                if ( leftType.IsEnum )
+                {
+                    right = Enum.Parse( leftType, right.ToString() );
+                }
+                else
+                {
+                    right = Convert.ChangeType( right, leftType );
+                }
+            }
+
+            var compareResult = Comparer.Default.Compare( left, right );
+
+            return compareResult;
         }
 
         /// <summary>
