@@ -923,6 +923,7 @@
     <Compile Include="Model\Workflow\Workflow\Workflow.WebForms.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.Logic.cs" />
     <Compile Include="Model\Workflow\Workflow\Workflow.SaveHook.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupStarkDataViewFilter.cs" />
     <Compile Include="Storage\Common\AzureBlobStorageClient.cs" />
     <Compile Include="Storage\Provider\AzureBlobStorage.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.Logic.cs" />

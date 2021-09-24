@@ -47,7 +47,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <summary>
         /// Gets the title of this filter.
         /// </summary>
-        /// <param name="entityType">The entity type that this filter will be applied to.</param>
+        /// <param name="entityType">The entity type to which this filter will be applied.</param>
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
@@ -79,7 +79,7 @@ namespace Rock.Reporting.DataFilter.Group
             var nbCapacityCount = new NumberBox();
             nbCapacityCount.Label = "&nbsp;";
             nbCapacityCount.ID = string.Format( "{0}_nbCapacityCount", filterControl.ID );
-            nbCapacityCount.AddCssClass( "js-capacity-count" );
+            nbCapacityCount.AddCssClass( "js-filter-control js-capacity-count" );
             nbCapacityCount.FieldName = "Capacity Count";
             filterControl.Controls.Add( nbCapacityCount );
 
@@ -95,15 +95,15 @@ namespace Rock.Reporting.DataFilter.Group
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            // 1: Get references to the controls we created in CreateChildControls
+            // 1: Get references to the controls we created in CreateChildControls.
             var ddlCompare = controls[0] as DropDownList;
             var nbValue = controls[1] as NumberBox;
 
-            // 2: Begin Comparison Row
+            // 2: Begin comparison row.
             writer.AddAttribute( "class", "row field-criteria" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // 3: Render comparison type control
+            // 3: Render comparison type control.
             writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             ddlCompare.RenderControl( writer );
@@ -119,13 +119,13 @@ namespace Rock.Reporting.DataFilter.Group
             nbValue.RenderControl( writer );
             writer.RenderEndTag();
 
-            // 6: End comparison row
+            // 6: End comparison row.
             writer.RenderEndTag();
         }
 
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by
-        /// the user, the Filterfield control will set the description of the filter to
+        /// the user, the FilterField control will set the description of the filter to
         /// whatever is returned by this property.  If including script, the controls
         /// parent container can be referenced through a '$content' variable that is
         /// set by the control before referencing this property.
@@ -135,7 +135,6 @@ namespace Rock.Reporting.DataFilter.Group
             return @"
 function () {
     var result = 'Available Capacity';
-
     result += ' ' + $('.js-filter-compare', $content).find(':selected').text() + ' ';
 
     if ($('.js-capacity-count', $content).filter(':visible').length)
@@ -147,6 +146,30 @@ function () {
 
 }
 ";
+        }
+
+        /// <summary>
+        /// Formats the selection data into a user-friendly string.
+        /// </summary>
+        /// <param name="entityType">The type of the entity.</param>
+        /// <param name="selection">The selection(s) from filter controls.</param>
+        /// <returns></returns>
+        public override string FormatSelection( Type entityType, string selection )
+        {
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            string result = "Available Capacity";
+
+            ComparisonType comparisonType = ( ComparisonType ) selectionConfig.CapacityCompareId;
+            int? capacityCountValue = selectionConfig.CapacityNumber;
+
+            result += " " + comparisonType.ConvertToString();
+
+            if ( comparisonType != ComparisonType.IsBlank && comparisonType != ComparisonType.IsNotBlank )
+            {
+                result += " " + capacityCountValue.ToString();
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -177,9 +200,9 @@ function () {
             DropDownList ddlCompare = controls[0] as DropDownList;
             NumberBox nbValue = controls[1] as NumberBox;
 
-                ComparisonType comparisonType = ( ComparisonType ) selectionConfig.CapacityCompareId;
-                ddlCompare.SelectedValue = comparisonType.ConvertToInt().ToString();
-                nbValue.Text = selectionConfig.CapacityNumber.ToString();
+            ComparisonType comparisonType = ( ComparisonType ) selectionConfig.CapacityCompareId;
+            ddlCompare.SelectedValue = comparisonType.ConvertToInt().ToString();
+            nbValue.Text = selectionConfig.CapacityNumber.ToString();
         }
 
         /// <summary>
@@ -255,6 +278,7 @@ function () {
                 var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
 
                 // This will only occur when the selection string is not JSON.
+                // This should only be used if you are converting an Array / Split implementation to JSON.
                 if ( selectionConfig == null )
                 {
                     selectionConfig = new SelectionConfig();
