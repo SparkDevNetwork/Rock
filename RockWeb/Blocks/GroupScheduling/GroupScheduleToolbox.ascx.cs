@@ -1681,10 +1681,15 @@ $('#{0}').tooltip();
             cbSignupSchedule.CheckedChanged += CbSignupSchedule_CheckedChanged;
             cbSignupSchedule.Enabled = !personScheduleSignup.MaxScheduled;
 
-            if ( personScheduleSignup.MaxScheduled )
+            if ( personScheduleSignup.PeopleNeeded > 0 )
+            {
+                cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed'>({personScheduleSignup.PeopleNeeded} {"person".PluralizeIf( personScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
+            }
+            else if ( personScheduleSignup.MaxScheduled )
             {
                 cbSignupSchedule.Text += " (filled)";
             }
+            
 
             pnlCheckboxCol.Controls.Add( cbSignupSchedule );
 
@@ -1845,9 +1850,15 @@ $('#{0}').tooltip();
                     {
                         //  find if this has max volunteers here
                         int? maximumCapacitySetting = null;
+                        int? desiredCapacitySetting = null;
+                        int? minimumCapacitySetting = null;
+                        int? desiredOrMinimumNeeded = null;
                         if ( personGroupLocation.GroupLocationScheduleConfigs.Any() )
                         {
                             maximumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MaximumCapacity;
+                            desiredCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.DesiredCapacity;
+                            minimumCapacitySetting = personGroupLocation.GroupLocationScheduleConfigs.Where( c => c.ScheduleId == schedule.Id ).FirstOrDefault()?.MinimumCapacity;
+                            desiredOrMinimumNeeded = desiredCapacitySetting == null ? minimumCapacitySetting : minimumCapacitySetting == null ? desiredCapacitySetting : Math.Max( desiredCapacitySetting.Value, minimumCapacitySetting.Value );
                         }
 
                         var startDateTimeList = schedule.GetScheduledStartTimes( startDate, endDate );
@@ -1874,12 +1885,12 @@ $('#{0}').tooltip();
 
                             // If there is a maximum Capacity then find out how many already RSVP with "Yes"
                             var currentScheduled = maximumCapacitySetting != null
-                                ? attendanceService
-                                    .GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes )
-                                    .Count()
+                                ? attendanceService.GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes ).Count()
                                 : 0;
 
                             bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
+
+                            int peopleNeeded = desiredOrMinimumNeeded != null ? desiredOrMinimumNeeded.Value - currentScheduled : 0;
 
                             // Add to master list personScheduleSignups
                             personScheduleSignups.Add( new PersonScheduleSignup
@@ -1894,7 +1905,8 @@ $('#{0}').tooltip();
                                 ScheduleId = schedule.Id,
                                 ScheduleName = schedule.Name,
                                 ScheduledDateTime = startDateTime,
-                                MaxScheduled = maxScheduled
+                                MaxScheduled = maxScheduled,
+                                PeopleNeeded = peopleNeeded
                             } );
                         }
                     }
@@ -1927,6 +1939,8 @@ $('#{0}').tooltip();
             public int LocationOrder { get; set; }
 
             public bool MaxScheduled { get; set; }
+
+            public int PeopleNeeded { get; set; }
         }
 
         #endregion Sign-up Tab
