@@ -122,7 +122,7 @@
                 // toggle all checkboxes
                 $('.js-members-label').on('click', function (e) {
 
-                    var container = $(this).parent();
+                    var container = $(this).closest('.js-roster');
                     var isChecked = container.hasClass('all-checked');
 
                     container.find('input:checkbox').each(function () {
