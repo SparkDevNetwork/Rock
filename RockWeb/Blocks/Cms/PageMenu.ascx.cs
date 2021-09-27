@@ -154,7 +154,18 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PageMenu_BlockUpdated( object sender, EventArgs e )
         {
-            LavaTemplateCache.Remove( CacheKey() );
+            if ( LavaService.RockLiquidIsEnabled )
+            {
+                // Remove the template from the DotLiquid cache.
+#pragma warning disable CS0618 // Type or member is obsolete
+                LavaTemplateCache.Remove( CacheKey() );
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
+            // Remove the existing template from the cache.
+            var cacheKey = CacheKey();
+
+            LavaService.RemoveTemplateCacheEntry( cacheKey );
         }
 
         private void Render()
@@ -212,7 +223,9 @@ namespace RockWeb.Blocks.Cms
 
                 if ( LavaService.RockLiquidIsEnabled )
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     var lavaTemplate = GetTemplate();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     // Apply Enabled Lava Commands
                     var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
@@ -284,7 +297,8 @@ namespace RockWeb.Blocks.Cms
             return string.Format( "Rock:PageMenu:{0}", BlockId );
         }
 
-        #region RockLiquid Lava code
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private Template GetTemplate()
         {
             var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
@@ -293,7 +307,6 @@ namespace RockWeb.Blocks.Cms
 
             return cacheTemplate != null ? cacheTemplate.Template as Template : null;
         }
-        #endregion
 
         /// <summary>
         /// Will not display the block information if it is considered a secondary block and secondary blocks are being hidden.

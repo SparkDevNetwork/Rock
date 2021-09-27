@@ -308,6 +308,12 @@ namespace RockWeb.Blocks.Prayer
                 if ( person != null )
                 {
                     prayerRequest.RequestedByPersonAliasId = person.PrimaryAliasId;
+
+                    // If there is no active user, set the CreatedBy field to show that this record was created by the requester.
+                    if ( CurrentPersonAliasId == null )
+                    {
+                        prayerRequest.CreatedByPersonAliasId = person.PrimaryAliasId;
+                    }
                 }
                 else
                 {
@@ -371,6 +377,7 @@ namespace RockWeb.Blocks.Prayer
                 prayerRequest.SaveAttributeValues( rockContext );
             } );
 
+            PrepareObjectForLavaContext( prayerRequest, rockContext );
 
             StartWorkflow( prayerRequest, rockContext );
 
@@ -399,6 +406,40 @@ namespace RockWeb.Blocks.Prayer
                 string themeRoot = ResolveRockUrl( "~~/" );
                 nbMessage.Text = nbMessage.Text.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
+            }
+        }
+
+        /// <summary>
+        /// Ensure that all of the Lava-accessible navigation properties of a Prayer Request object are populated.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="rockContext"></param>
+        private void PrepareObjectForLavaContext( PrayerRequest request, RockContext rockContext )
+        {
+            var personAliasService = new PersonAliasService( rockContext );
+
+            if ( request.RequestedByPersonAliasId != null
+                && request.RequestedByPersonAlias == null )
+            {
+                request.RequestedByPersonAlias = personAliasService.Get( request.RequestedByPersonAliasId.Value );
+            }
+
+            if ( request.ApprovedByPersonAliasId != null
+                && request.ApprovedByPersonAlias == null )
+            {
+                request.ApprovedByPersonAlias = personAliasService.Get( request.ApprovedByPersonAliasId.Value );
+            }
+
+            if ( request.CreatedByPersonAliasId != null
+                 && request.CreatedByPersonAlias == null )
+            {
+                request.CreatedByPersonAlias = personAliasService.Get( request.CreatedByPersonAliasId.Value );
+            }
+
+            if ( request.ModifiedByPersonAliasId != null
+                 && request.ModifiedByPersonAlias == null )
+            {
+                request.ModifiedByPersonAlias = personAliasService.Get( request.ModifiedByPersonAliasId.Value );
             }
         }
 

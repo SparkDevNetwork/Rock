@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "outDir": "../dist/Framework",
+    "rootDir": ".",
+    "declaration": false,
+    "incremental": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noEmitOnError": true,
+    "removeComments": true,
+    "allowUnreachableCode": false,
+    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "target": "ES2016",
+    "module": "System",
+    "moduleResolution": "Node",
+    "strict": true,
+    "lib": [
+      "DOM",
+      "ES2016",
+      "ES2020.Symbol.WellKnown" /* Fixes compile issue in Vue declaration files, not actually in use. */
+    ],
+    "paths": {
+    }
+  },
+  "exclude": [
+    "./Tests/**/*"
+  ]
+}

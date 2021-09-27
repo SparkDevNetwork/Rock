@@ -48,7 +48,7 @@ namespace RockWeb
         {
             var request = context.Request;
             var formValues = new List<string>();
-            formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", request.Url ) );
+            formValues.Add( string.Format( "{0}: '{1}'", "End Point URL", request.UrlProxySafe() ) );
             foreach ( string name in request.Form.AllKeys )
             {
                 formValues.Add( string.Format( "{0}: '{1}'", name, request.Form[name] ) );

@@ -47,6 +47,17 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( string.IsNullOrWhiteSpace( value ) )
+            {
+                return string.Empty;
+            }
+
+            return value.AsDecimal().FormatAsCurrency( CurrencyCodeDefinedValueId );
+        }
+
         /// <summary>
         /// Formats the value.
         /// </summary>
@@ -57,12 +68,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
-            {
-                return value.AsDecimal().FormatAsCurrency( CurrencyCodeDefinedValueId );
-            }
-
-            return base.FormatValue( parentControl, value, null, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         #endregion

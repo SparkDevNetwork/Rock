@@ -154,21 +154,59 @@ namespace Rock.Lava.Fluid
                 return isDto;
             }
 
+            var rockTimeZone = RockDateTime.OrgTimeZoneInfo;
+
             if ( rawValue is DateTime isDt )
             {
-                return new DateTimeOffset( isDt );
+                if ( isDt.Kind == DateTimeKind.Utc || isDt.Kind == DateTimeKind.Local )
+                {
+                    return new DateTimeOffset( isDt );
+                }
+                else
+                {
+                    // Assume that an unspecified DateTime is a Rock datetime.
+                    return new DateTimeOffset( isDt, rockTimeZone.BaseUtcOffset );
+                }
             }
 
+            // Try to parse a datetime offset from the input string.
             DateTimeOffset dto;
+            bool isParsed;
 
-            var success = DateTimeOffset.TryParse( value.ToStringValue(), out dto );
+            var stringValue = value.ToStringValue();
 
-            if ( success )
+            // First, try to parse the datetime string with the default Rock timezone offset.
+            // There doesn't appear to be any elegant method of detecting if the input specifies a timezone, so this will simply fail if it does.
+            var nowRockTime = TimeZoneInfo.ConvertTime( DateTimeOffset.UtcNow, rockTimeZone );
+
+            isParsed = DateTimeOffset.TryParse( stringValue + " " + nowRockTime.ToString( "zzz" ), out dto );
+
+            if ( isParsed )
+            {
+                // If the input string parsed correctly with the default timezone, check if it should be adjusted for DST.
+                if ( rockTimeZone.SupportsDaylightSavingTime )
+                {
+                    var utcOffset = rockTimeZone.GetUtcOffset( dto );
+
+                    var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + utcOffset.Hours + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + utcOffset.Minutes;
+
+                    isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, out dto );
+                }
+            }
+            else
+            {
+                // Parsing with the additional timezone information failed, so check the input string already specifies a timezone.
+                isParsed = DateTimeOffset.TryParse( stringValue, out dto );
+
+                dto = TimeZoneInfo.ConvertTime( dto, rockTimeZone );
+            }
+
+            if ( isParsed )
             {
                 return dto;
             }
 
-            return null;
+            return defaultValue;
         }
 
         /// <summary>

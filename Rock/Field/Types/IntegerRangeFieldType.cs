@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 using Rock.Web.UI.Controls;
 
@@ -30,6 +31,35 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
+            string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+
+            if ( valuePair.Length == 2 )
+            {
+                string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
+                string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
+
+                if ( !string.IsNullOrWhiteSpace( lowerValue ) || !string.IsNullOrWhiteSpace( upperValue ) )
+                {
+                    return string.Format( "{0} to {1}", lowerValue, upperValue );
+                }
+                else
+                {
+                    return string.Empty;
+                }
+            }
+
+            // Something unexpected, return the raw value.
+            return value;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary> 
@@ -40,28 +70,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            if ( value != null )
-            {
-                string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
-                if ( valuePair.Length == 2 )
-                {
-                    string lowerValue = string.IsNullOrWhiteSpace( valuePair[0] ) ? Rock.Constants.None.TextHtml : valuePair[0];
-                    string upperValue = string.IsNullOrWhiteSpace( valuePair[1] ) ? Rock.Constants.None.TextHtml : valuePair[1];
-                    if ( !string.IsNullOrWhiteSpace( lowerValue ) || !string.IsNullOrWhiteSpace( upperValue ) )
-                    {
-                        return string.Format( "{0} to {1}", lowerValue, upperValue );
-                    }
-                    else
-                    {
-                        return string.Empty;
-                    }
-                }
-            }
-
-            // something unexpected.  Let the base format it
-            return base.FormatValue( parentControl, value, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         #endregion

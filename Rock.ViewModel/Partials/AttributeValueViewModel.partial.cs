@@ -28,7 +28,7 @@ namespace Rock.ViewModel
         /// <value>
         /// The attribute.
         /// </value>
-        [TypeScriptType( "Attribute | null", "import Attribute from './AttributeViewModel';" )]
+        [TypeScriptType( "Attribute | null", "import { Attribute } from \"./attribute\";" )]
         public AttributeViewModel Attribute { get; set; }
     }
 }

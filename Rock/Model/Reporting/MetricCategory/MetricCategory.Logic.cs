@@ -53,6 +53,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// A parent authority.  A user is specifically allowed or denied access to
+        /// this object based on the Metric ParentAuthority of the current object.
+        /// </summary>
+        public virtual Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.Metric.ParentAuthority;
+            }
+        }
+
+        /// <summary>
         /// Determines whether the specified action is private (Only the current user has access).
         /// </summary>
         /// <param name="action">The action.</param>

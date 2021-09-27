@@ -167,8 +167,8 @@ namespace Rock.Web.UI.Controls
 
         private void ServerValidation( object source, ServerValidateEventArgs args )
         {
-            var min = Convert.ToDecimal( MinimumValue ?? int.MinValue.ToString() );
-            var max = Convert.ToDecimal( MaximumValue ?? int.MaxValue.ToString() );
+            var min = MinimumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MinimumValue ) : int.MinValue;
+            var max = MaximumValue.IsNotNullOrWhiteSpace() ? Convert.ToDecimal( MaximumValue ) : int.MaxValue;
 
             var value = args.Value.AsDecimalInvariantCultureOrNull();
 

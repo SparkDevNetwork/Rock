@@ -16,7 +16,7 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                            <Rock:RockBoundField DataField="IsActive" HeaderText="Is Active" SortExpression="IsActive" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                             <Rock:DeleteField OnClick="gSmsPipelines_Delete" />
                         </Columns>
                     </Rock:Grid>

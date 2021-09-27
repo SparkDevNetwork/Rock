@@ -618,25 +618,38 @@ namespace Rock.Model
                         string virtualUrl = string.Empty;
                         if ( !string.IsNullOrWhiteSpace( urlMask ) )
                         {
-                            if ( urlMask.Contains( "{0}" ) )
+                            IEntity iEntity = null;
+                            if ( this.RelatedEntityTypeId.HasValue && this.RelatedEntityId.HasValue )
                             {
-                                string p1 = this.RelatedEntityId.HasValue ? this.RelatedEntityId.Value.ToString() : "";
+                                var relatedEntityType = EntityTypeCache.Get( this.RelatedEntityTypeId.Value );
+                                iEntity = Reflection.GetIEntityForEntityType( relatedEntityType.GetEntityType(), this.RelatedEntityId.Value );
+                            }
+
+                            if ( urlMask.Contains( "{0}" ) && iEntity != null)
+                            {
+                                string p1 = this.RelatedEntityId.Value.ToString();
                                 string p2 = this.EntityId.ToString();
                                 virtualUrl = string.Format( urlMask, p1, p2 );
                             }
 
-                            string resolvedUrl;
-
-                            if ( System.Web.HttpContext.Current == null )
+                            string formattedCaption = caption;
+                            if ( virtualUrl.IsNotNullOrWhiteSpace() )
                             {
-                                resolvedUrl = virtualUrl;
-                            }
-                            else
-                            {
-                                resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+                                string resolvedUrl;
+
+                                if ( System.Web.HttpContext.Current == null )
+                                {
+                                    resolvedUrl = virtualUrl;
+                                }
+                                else
+                                {
+                                    resolvedUrl = System.Web.VirtualPathUtility.ToAbsolute( virtualUrl );
+                                }
+
+                                formattedCaption = string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
                             }
 
-                            return string.Format( "<a href='{0}'>{1}</a>", resolvedUrl, caption );
+                            return formattedCaption;
                         }
                     }
 

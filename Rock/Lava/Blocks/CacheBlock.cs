@@ -106,31 +106,36 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            // Get content from cache
-            var cachedResult = RockCache.Get( cacheKey, true ) as CacheLavaTag;
+            var cacheDuration = parms["duration"].AsInteger();
 
-            // Check that the cached value is current
-            if ( cachedResult != null )
+            if ( cacheDuration > 0 )
             {
-                var currentHash = CalculateContentHash( _blockMarkup.ToString() );
-                if ( currentHash != cachedResult.Hash )
-                {
-                    cachedResult = null;
-                }
-            }
+                // Get content from cache
+                var cachedResult = RockCache.Get( cacheKey, true ) as CacheLavaTag;
 
-            // Use the cached value
-            if ( cachedResult != null )
-            {
-                if ( twoPassEnabled )
+                // Check that the cached value is current
+                if ( cachedResult != null )
                 {
-                    result.Write( MergeLava( cachedResult.Content, context ) );
+                    var currentHash = CalculateContentHash( _blockMarkup.ToString() );
+                    if ( currentHash != cachedResult.Hash )
+                    {
+                        cachedResult = null;
+                    }
                 }
-                else
+
+                // Use the cached value
+                if ( cachedResult != null )
                 {
-                    result.Write( cachedResult.Content );
+                    if ( twoPassEnabled )
+                    {
+                        result.Write( MergeLava( cachedResult.Content, context ) );
+                    }
+                    else
+                    {
+                        result.Write( cachedResult.Content );
+                    }
+                    return;
                 }
-                return;
             }
 
             // Cached value not available so render the template and cache it
@@ -138,8 +143,6 @@ namespace Rock.Lava.Blocks
 
             if ( lavaResults != null )
             {
-                var cacheDuration = parms["duration"].AsInteger();
-
                 if ( cacheDuration > 0 )
                 {
                     // Don't cache if it's too large
@@ -230,8 +233,6 @@ namespace Rock.Lava.Blocks
         private Dictionary<string, string> ParseMarkup( string markup, ILavaRenderContext context )
         {
             // first run lava across the inputted markup
-            var internalMergeFields = context.GetMergeFields();
-
             var parms = new Dictionary<string, string>();
             parms.Add( "key", string.Empty );
             parms.Add( "tags", string.Empty );
@@ -251,10 +252,7 @@ namespace Rock.Lava.Blocks
                 {
                     var value = itemParts[1];
 
-                    if ( value.HasMergeFields() )
-                    {
-                        value = value.ResolveMergeFields( internalMergeFields );
-                    }
+                    value = MergeLava( value, context );
 
                     parms.AddOrReplace( itemParts[0].Trim().ToLower(), value.Substring( 1, value.Length - 2 ).Trim() );
                 }

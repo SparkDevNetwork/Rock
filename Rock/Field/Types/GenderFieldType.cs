@@ -33,6 +33,12 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value.ConvertToEnum<Gender>( Gender.Unknown ).ConvertToString();
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -43,8 +49,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var formattedValue = value.ConvertToEnum<Gender>( Gender.Unknown ).ConvertToString();
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>

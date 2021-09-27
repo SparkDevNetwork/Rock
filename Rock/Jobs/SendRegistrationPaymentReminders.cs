@@ -120,8 +120,10 @@ namespace Rock.Jobs
                             emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
                             emailMessage.Message = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
                             emailMessage.AppRoot = publicAppRoot;
+
                             var emailErrors = new List<string>();
-                            emailMessage.Send(out errors);
+                            emailMessage.Send(out emailErrors);
+                            errors.AddRange( emailErrors );
 
                             registration.LastPaymentReminderDateTime = RockDateTime.Now;
                             rockContext.SaveChanges();

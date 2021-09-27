@@ -97,7 +97,7 @@ namespace Rock.Blocks.Example
                 } );
 
                 // Enumerate and use non-linq-capable functions like FullName
-                return new BlockActionResult( HttpStatusCode.OK, new BlockActionGridResponse
+                return ActionOk( new BlockActionGridResponse
                 {
                     CurrentPageData = selectQuery.ToList(),
                     TotalCount = totalCount

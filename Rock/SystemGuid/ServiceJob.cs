@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -188,15 +190,20 @@ namespace Rock.SystemGuid
         public const string POST_INSTALL_DATA_MIGRATIONS = "322984F1-A7A0-4D1B-AE6F-D7F043F66EB3";
 
         /// <summary>
-        /// The Job to execute giving analytics logic
+        /// The <seealso cref="Rock.Jobs.GivingAutomation"/> job.
         /// </summary>
-        public const string GIVING_ANALYTICS = "B6DE0544-8C91-444E-B911-453D4CE71515";
+        public const string GIVING_AUTOMATION = "B6DE0544-8C91-444E-B911-453D4CE71515";
+
+        /// <summary>
+        /// Use <see cref="GIVING_AUTOMATION" /> instead
+        /// </summary>
+        [Obsolete( "Use GIVING_AUTOMATION instead" )]
+        [RockObsolete( "1.13" )]
+        public const string GIVING_ANALYTICS = GIVING_AUTOMATION;
 
         /// <summary>
         /// The <see cref="Rock.Jobs.SyncMedia">media synchronize</see> job.
         /// </summary>
         public const string SYNC_MEDIA = "FB27C6DF-F8DB-41F8-83AF-BBE09E77A0A9";
-
-        
     }
 }

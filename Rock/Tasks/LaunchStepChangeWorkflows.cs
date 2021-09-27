@@ -99,7 +99,7 @@ namespace Rock.Tasks
                 // Determine if this Step has transitioned between statuses that match the "To" and "From" qualifiers for this trigger.
                 // If the condition does not specify a status, any status will match.
                 // A new Step can only match this condition if it has a matching "To" State and a "From" State is not specified.
-                if ( message.EntityState == EntityState.Added || message.EntityState == EntityState.Modified )
+                if ( message.EntityContextState == EntityContextState.Added || message.EntityContextState == EntityContextState.Modified )
                 {
                     var settings = new StepWorkflowTrigger.StatusChangeTriggerSettings( trigger.TypeQualifier );
 
@@ -114,7 +114,7 @@ namespace Rock.Tasks
             {
                 // Determine if this Step has transitioned from an incomplete status to a complete status.
                 // Note that adding a new Step with a complete status will satisfy this trigger.
-                if ( message.EntityState == EntityState.Added || message.EntityState == EntityState.Modified )
+                if ( message.EntityContextState == EntityContextState.Added || message.EntityContextState == EntityContextState.Modified )
                 {
                     var statusService = new StepStatusService( rockContext );
 
@@ -126,7 +126,6 @@ namespace Rock.Tasks
                     {
                         return true;
                     }
-
                 }
             }
 

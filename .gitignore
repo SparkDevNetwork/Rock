@@ -26,10 +26,11 @@ StyleCop.Cache
 
 #specific folders
 RockWeb/Cache/*
-RockWeb/Plugins/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
 RockWeb/App_Data/MobileAppBundles
+RockWeb/Plugins/*
+RockWeb/Obsidian/
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/

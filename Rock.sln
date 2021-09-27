@@ -101,6 +101,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lava.Fluid\Rock.Lava.Fluid.csproj", "{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian", "Rock.JavaScript.Obsidian\Rock.JavaScript.Obsidian.njsproj", "{A4FB4B9B-3564-4C25-938C-4350A9515B24}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apollosProject.OneSignal", "..\apollos-onesignal\apollosProject.OneSignal.csproj", "{237D789F-52EF-48EF-A213-8D2284A6DE6F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{13568622-324E-4493-B605-C9896E725D30} = {13568622-324E-4493-B605-C9896E725D30}
@@ -257,6 +259,10 @@ Global
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{237D789F-52EF-48EF-A213-8D2284A6DE6F}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1776,8 +1776,8 @@ WHERE gta.GroupTypeId IS NULL" );
                 nextNewFamilyForeignId = Math.Max( nextNewFamilyForeignId, personImports.Where( a => a.FamilyForeignId.HasValue ).Max( a => a.FamilyForeignId.Value ) );
             }
 
-            // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added directly via SQL)
-            AttributeCache.RemoveEntityAttributes();
+            // Just In Case, ensure EntityType Attributes are flushed (they might be stale if they were added directly via SQL)
+            EntityTypeAttributesCache.Clear();
 
             var entityTypeIdPerson = EntityTypeCache.Get<Person>().Id;
             var attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson && a.EntityId.HasValue )
@@ -2438,7 +2438,7 @@ WHERE gta.GroupTypeId IS NULL" );
             }
 
             // Just In Case, ensure Entity Attributes are flushed (they might be stale if they were added directly via SQL)
-            AttributeCache.RemoveEntityAttributes();
+            EntityTypeAttributesCache.Clear();
 
             var entityTypeIdPerson = EntityTypeCache.Get<Person>().Id;
             var attributeValuesLookup = new AttributeValueService( rockContext ).Queryable().Where( a => a.Attribute.EntityTypeId == entityTypeIdPerson && a.EntityId.HasValue )

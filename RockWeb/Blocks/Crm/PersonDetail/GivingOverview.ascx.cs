@@ -227,7 +227,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var contributionByMonths = new Dictionary<DateTime, decimal>();
 
             var historyJson = Person.GetAttributeValue( Rock.SystemGuid.Attribute.PERSON_GIVING_HISTORY_JSON.AsGuid() );
-            var historyObjects = FinancialTransactionService.GetGivingAnalyticsMonthlyAccountGivingHistoryFromJson( historyJson );
+            var historyObjects = FinancialTransactionService.GetGivingAutomationMonthlyAccountGivingHistoryFromJson( historyJson );
 
             for ( var i = 35; i >= 0; i-- )
             {
@@ -534,7 +534,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void BindYearlySummary()
         {
             var historyJson = Person.GetAttributeValue( Rock.SystemGuid.Attribute.PERSON_GIVING_HISTORY_JSON.AsGuid() );
-            var historyObjects = FinancialTransactionService.GetGivingAnalyticsMonthlyAccountGivingHistoryFromJson( historyJson );
+            var historyObjects = FinancialTransactionService.GetGivingAutomationMonthlyAccountGivingHistoryFromJson( historyJson );
 
             if ( !IsYearlySummaryExpanded )
             {

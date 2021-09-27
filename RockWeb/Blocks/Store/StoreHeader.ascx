@@ -8,13 +8,14 @@
         <asp:Literal ID="lDebug" Visible="false" runat="server"></asp:Literal>
 
         <asp:Panel ID="pnlConfigureOrganization" runat="server" CssClass="alert alert-warning">
-            <strong>Rock Shop Configuration Needed </strong>
-            <div class="row">
-                <div class="col-sm-10">
+
+            <div class="d-flex flex-wrap flex-sm-nowrap align-items-center">
+                <div class="flex-fill">
+                    <strong class="d-block">Rock Shop Configuration Needed</strong>
                     The Rock Shop is not yet configured for your server. Please complete the configuration to enable showing pricing and the installation of plugins.
                 </div>
-                <div class="col-sm-2">
-                    <Rock:BootstrapButton ID="btnConfigureRockShop" runat="server" Text="Configure Rock Shop" CssClass="btn btn-warning" OnClick="btnConfigureRockShop_Click" />
+                <div class="flex-shrink-0 mt-2 mt-sm-0 ml-sm-3">
+                    <Rock:BootstrapButton ID="btnConfigureRockShop" runat="server" Text="Configure Rock Shop" CssClass="btn btn-warning btn-xs" OnClick="btnConfigureRockShop_Click" />
                 </div>
             </div>
         </asp:Panel>

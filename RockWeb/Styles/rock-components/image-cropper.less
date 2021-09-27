@@ -16,7 +16,7 @@
     position: absolute;
     top: 110px;
     right: 0;
-    padding: 6px 12px;
+    padding: 0 6px;
     color: @imageeditor-color;
     background-color: @imageeditor-bg;
     border-radius: @border-radius-base 0 0 @border-radius-base;
@@ -25,18 +25,19 @@
     -moz-transition: opacity .25s ease-in-out;
     transition: opacity .25s ease-in-out;
 
+    &:focus-within {
+      opacity: 1;
+    }
+
     a {
-      margin-right: 12px;
-      color: #fff;
+      display: inline-block;
+      padding: 6px;
+      color: @imageeditor-color;
       text-decoration: none;
       cursor: pointer;
 
       &:hover {
         opacity: .5;
-      }
-
-      &:last-child {
-        margin-right: 0;
       }
     }
   }

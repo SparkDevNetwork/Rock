@@ -93,8 +93,6 @@ namespace RockWeb.Blocks.Administration
             nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
             nbLoggingMessage.Title = string.Empty;
             nbLoggingMessage.Text = "Setting saved successfully.";
-
-
         }
 
         protected void btnDeleteLog_Click( object sender, EventArgs e )

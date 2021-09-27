@@ -469,11 +469,14 @@ namespace RockWeb.Blocks.Cms
             IEnumerable<WebControl> customAdminControls = new List<WebControl>();
             try
             {
-                blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
-                blockControl.SetBlock( block.Page, block, true, true );
-                var adminControls = blockControl.GetAdministrateControls( true, true );
-                string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
-                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+                if ( block.BlockType.Path.IsNotNullOrWhiteSpace() )
+                {
+                    blockControl = this.Page.TemplateControl.LoadControl( block.BlockType.Path ) as RockBlock;
+                    blockControl.SetBlock( block.Page, block, true, true );
+                    var adminControls = blockControl.GetAdministrateControls( true, true );
+                    string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
+                    customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+                }
             }
             catch (Exception ex)
             {

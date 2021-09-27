@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
@@ -29,7 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>
     {
         #region Entity Properties

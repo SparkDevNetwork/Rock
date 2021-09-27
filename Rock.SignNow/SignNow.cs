@@ -74,7 +74,7 @@ namespace Rock.SignNow
         {
             if ( string.IsNullOrWhiteSpace( GetAttributeValue( "WebhookUrl" ) ) )
             {
-                Uri uri = new Uri( request.Url.ToString() );
+                Uri uri = new Uri( request.UrlProxySafe().ToString() );
                 string webhookUrl = "https://" + uri.GetComponents( UriComponents.Host, UriFormat.UriEscaped ) + rootUrl + "WebHooks/SignNow.ashx";
                 SetAttributeValue( "WebhookUrl", webhookUrl );
                 this.SaveAttributeValues();

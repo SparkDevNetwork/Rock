@@ -18,6 +18,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Data;
+using System.Collections.Generic;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -110,5 +111,197 @@ blue - three
 
         #endregion
 
+        #region Null/Nil/Empty/Blank
+
+        /// <summary>
+        /// Keyword "Null" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void Null_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+            var template = @"
+{% assign value = 1 %}
+{% if value != Null %}
+True
+{% endif %}
+{% if value != null %}
+true
+{% endif %}
+
+{% if value == Null %}
+False
+{% endif %}
+{% if value == null %}
+False
+{% endif %}
+
+";
+
+            var expectedOutput = @"True true";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Keyword "empty" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void Empty_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+
+            var mergeValues = new LavaDataDictionary { { "Items", new List<string>() } };
+
+            var template = @"
+{% if Items == Empty %}
+True
+{% endif %}
+{% if Items == empty %}
+true
+{% endif %}
+
+{% if Items != Empty %}
+False
+{% endif %}
+{% if Items != empty %}
+false
+{% endif %}
+";
+
+            var expectedOutput = @"True true";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Keyword "blank" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void Blank_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+
+            var mergeValues = new LavaDataDictionary { { "Items", new List<string>() } };
+
+            var template = @"
+{% if Items == Blank %}
+True
+{% endif %}
+{% if Items == blank %}
+true
+{% endif %}
+
+{% if Items != Blank %}
+False
+{% endif %}
+{% if Items != blank %}
+false
+{% endif %}
+";
+
+            var expectedOutput = @"True true";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeValues, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Keyword "nil" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void Nil_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+
+            var template = @"
+{% if undefinedVariable == Nil %}
+True
+{% endif %}
+{% if undefinedVariable == nil %}
+true
+{% endif %}
+
+{% if undefinedVariable != Nil %}
+False
+{% endif %}
+{% if undefinedVariable != nil %}
+false
+{% endif %}
+";
+
+            var expectedOutput = @"True true";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Keyword "true" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void True_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+            var template = @"
+{% assign value = true %}
+
+{% if value == true %}
+passed
+{% endif %}
+{% if value == True %}
+Passed
+{% endif %}
+{% if value == TRUE %}
+PASSED
+{% endif %}
+
+{% if value != true %}
+failed
+{% endif %}
+{% if value != True %}
+Failed
+{% endif %}
+{% if value != TRUE %}
+FAILED
+{% endif %}
+
+";
+
+            var expectedOutput = @"passed Passed PASSED";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Keyword "false" is not case-sensitive.
+        /// </summary>
+        [TestMethod]
+        public void False_UpperCaseOrLowerCase_IsNotCaseSensitive()
+        {
+            var template = @"
+{% assign value = false %}
+
+{% if value == false %}
+passed
+{% endif %}
+{% if value == False %}
+Passed
+{% endif %}
+{% if value == FALSE %}
+PASSED
+{% endif %}
+
+{% if value != false %}
+failed
+{% endif %}
+{% if value != False %}
+Failed
+{% endif %}
+{% if value != FALSE %}
+FAILED
+{% endif %}
+
+";
+
+            var expectedOutput = @"passed Passed PASSED";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        #endregion
     }
 }

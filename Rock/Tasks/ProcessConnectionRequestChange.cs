@@ -88,7 +88,7 @@ namespace Rock.Tasks
                         {
                             case ConnectionWorkflowTriggerType.RequestStarted:
                                 {
-                                    if ( message.State == EntityState.Added )
+                                    if ( message.State == EntityContextState.Added )
                                     {
                                         LaunchWorkflow( rockContext, connectionWorkflow, "Request Started", message );
                                     }
@@ -109,7 +109,7 @@ namespace Rock.Tasks
 
                             case ConnectionWorkflowTriggerType.RequestConnected:
                                 {
-                                    if ( message.State == EntityState.Modified &&
+                                    if ( message.State == EntityContextState.Modified &&
                                         message.PreviousConnectionState != ConnectionState.Connected &&
                                         message.ConnectionState == ConnectionState.Connected )
                                     {
@@ -121,7 +121,7 @@ namespace Rock.Tasks
 
                             case ConnectionWorkflowTriggerType.RequestTransferred:
                                 {
-                                    if ( message.State == EntityState.Modified &&
+                                    if ( message.State == EntityContextState.Modified &&
                                         !message.PreviousConnectionOpportunityId.Equals( message.ConnectionOpportunityId ) )
                                     {
                                         LaunchWorkflow( rockContext, connectionWorkflow, "Request Transferred", message );
@@ -132,7 +132,7 @@ namespace Rock.Tasks
 
                             case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                                 {
-                                    if ( message.State == EntityState.Modified &&
+                                    if ( message.State == EntityContextState.Modified &&
                                         !message.PreviousAssignedGroupId.HasValue &&
                                         message.AssignedGroupId.HasValue )
                                     {
@@ -144,7 +144,7 @@ namespace Rock.Tasks
 
                             case ConnectionWorkflowTriggerType.StatusChanged:
                                 {
-                                    if ( message.State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, message.PreviousConnectionStatusId, message.ConnectionStatusId ) )
+                                    if ( message.State == EntityContextState.Modified && QualifiersMatch( rockContext, connectionWorkflow, message.PreviousConnectionStatusId, message.ConnectionStatusId ) )
                                     {
                                         LaunchWorkflow( rockContext, connectionWorkflow, "Status Changed", message );
                                     }
@@ -154,7 +154,7 @@ namespace Rock.Tasks
 
                             case ConnectionWorkflowTriggerType.StateChanged:
                                 {
-                                    if ( message.State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, message.PreviousConnectionState, message.ConnectionState ) )
+                                    if ( message.State == EntityContextState.Modified && QualifiersMatch( rockContext, connectionWorkflow, message.PreviousConnectionState, message.ConnectionState ) )
                                     {
                                         LaunchWorkflow( rockContext, connectionWorkflow, "State Changed", message );
                                     }
@@ -268,7 +268,7 @@ namespace Rock.Tasks
             /// <summary>
             /// Gets or sets the state.
             /// </summary>
-            public EntityState State { get; set; }
+            public EntityContextState State { get; set; }
 
             /// <summary>
             /// Gets or sets the connection request identifier.

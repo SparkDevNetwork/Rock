@@ -482,7 +482,12 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             AttributeCache.UpdateCachedEntity( this.Id, entityState );
-            AttributeCache.UpdateCacheEntityAttributes( this, entityState );
+            if ( originalEntityTypeId.HasValue && originalEntityTypeId.Value != this.EntityTypeId )
+            {
+                EntityTypeAttributesCache.FlushItem( originalEntityTypeId );
+            }
+
+            EntityTypeAttributesCache.FlushItem( this.EntityTypeId );
 
             int? entityTypeId;
             string entityTypeQualifierColumn;

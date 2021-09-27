@@ -132,7 +132,9 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( printFromClient.Any() )
                         {
-                            var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
+                            var safeProxySafeUrl = Request.UrlProxySafe();
+                            var urlRoot = $"{safeProxySafeUrl.Scheme}://{safeProxySafeUrl.Authority}";
+
                             printFromClient
                                 .OrderBy( l => l.PersonId )
                                 .ThenBy( l => l.Order )
