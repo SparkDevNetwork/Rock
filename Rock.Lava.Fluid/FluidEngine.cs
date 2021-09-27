@@ -18,8 +18,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Fluid;
 using Fluid.Ast;
@@ -69,6 +71,14 @@ namespace Rock.Lava.Fluid
         protected override ILavaRenderContext OnCreateRenderContext()
         {
             var fluidContext = new global::Fluid.TemplateContext( _templateOptions );
+
+            // Context variables are case-sensitive, so add both upper/lower case entries for built-in symbols.
+            fluidContext.SetValue( "Empty", NilValue.Empty );
+            fluidContext.SetValue( "empty", NilValue.Empty );
+
+            fluidContext.SetValue( "Blank", NilValue.Empty );
+            fluidContext.SetValue( "blank", NilValue.Empty );
+
 
             var context = new FluidRenderContext( fluidContext );
 
@@ -210,6 +220,11 @@ namespace Rock.Lava.Fluid
 
                 // Set Fluid to use the local server culture for formatting dates, times and currencies.
                 _templateOptions.CultureInfo = CultureInfo.CurrentCulture;
+
+                // Set Fluid to use the Rock Organization timezone.
+                _templateOptions.TimeZone = RockDateTime.OrgTimeZoneInfo;
+
+                TemplateOptions.Default.TimeZone = RockDateTime.OrgTimeZoneInfo;
             }
 
             return _templateOptions;
@@ -575,7 +590,23 @@ namespace Rock.Lava.Fluid
 
             var result = new LavaRenderResult();
 
-            result.Text = template.Render( templateContext.FluidContext );
+            var sb = new StringBuilder();
+            var writer = new StringWriter( sb );
+
+            try
+            {
+                template.Render( templateContext.FluidContext, NullEncoder.Default, writer );
+            }
+            catch ( LavaInterruptException )
+            {
+                // Ignore this exception, it is thrown by custom Lava components to terminate the render process prematurely.
+            }
+
+            writer.Flush();
+
+            result.Text = sb.ToString();
+
+            writer.Dispose();
 
             return result;
         }

@@ -73,6 +73,11 @@ namespace Rock.Lava
             return;
         }
 
+        void ILavaTemplateCacheService.RemoveKey( string content )
+        {
+            return;
+        }
+
         ILavaTemplate ILavaTemplateCacheService.GetOrAddTemplate( ILavaEngine engine, string templateContent, string cacheKey )
         {
             _cacheMisses++;

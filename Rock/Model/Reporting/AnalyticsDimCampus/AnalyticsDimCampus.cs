@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
@@ -29,7 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimCampus" )]
     [DataContract]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsDimCampus : AnalyticsSourceCampusBase<AnalyticsDimCampus>
     {
         // Note:  Additional fields inherited from AnalyticsSourceCampusBase.

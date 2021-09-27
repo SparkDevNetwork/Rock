@@ -16,6 +16,8 @@
 //
 using System;
 using System.Web;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Rock
 {
@@ -38,7 +40,35 @@ namespace Rock
         /// <returns></returns>
         public static Uri UrlProxySafe( this HttpRequest request )
         {
+            // If no proxy just return the request URL
+            var isRequestForwardedFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
 
+            if ( !isRequestForwardedFromProxy )
+            {
+                return request.Url;
+            }
+
+            // Assemble a URI from the proxied headers
+            return new UriBuilder( request.Url )
+            {
+                Scheme = request.Headers["X-Forwarded-Proto"].ToString(),
+                Host = request.Headers["X-Forwarded-Host"].ToString()
+            }.Uri;
+        }
+
+        /// <summary>
+        /// Returns a URL from the request object that checks to see if the request has been proxied from a CDN or
+        /// other form of web proxy / load balancers. These devices will convert the Request.Url to be their private
+        /// proxied address. The client's original address will be in the "X-Forwarded-For" header. This method will check
+        /// if the request is proxied. If so it will return the original source URI, otherwise if it's not proxied it will
+        /// return the Request.Uri.
+        ///
+        /// Safe to use for both proxied and non-proxied traffic.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        public static Uri UrlProxySafe( this HttpRequestBase request )
+        {
             // If no proxy just return the request URL
             var isRequestForwaredFromProxy = request.Headers["X-Forwarded-Host"].IsNotNull() && request.Headers["X-Forwarded-Proto"].IsNotNull();
 
@@ -54,6 +84,5 @@ namespace Rock
                 Host = request.Headers["X-Forwarded-Host"].ToString()
             }.Uri;
         }
-        
     }
 }

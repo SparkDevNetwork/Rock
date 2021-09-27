@@ -48,20 +48,15 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UAParser, Version=3.1.44.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
+      <HintPath>..\packages\UAParser.3.1.44\lib\net45\UAParser.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Crm\AttributeValues.cs" />
     <Compile Include="Event\RegistrationEntry.cs" />
     <Compile Include="Example\FieldTypeGallery.cs" />
-    <Compile Include="Example\LargeDatasetGrid.cs" />
-    <Compile Include="Finance\TransactionEntry.cs" />
-    <Compile Include="Groups\GroupMemberList.cs" />
     <Compile Include="RockObsidianBlockType.cs" />
-    <Compile Include="Security\Login.cs" />
-    <Compile Include="Example\PersonSecondary.cs" />
-    <Compile Include="Example\PersonDetail.cs" />
     <Compile Include="Example\ControlGallery.cs" />
-    <Compile Include="Utility\StarkDetail.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +89,12 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Crm\" />
+    <Folder Include="Finance\" />
+    <Folder Include="Groups\" />
+    <Folder Include="Security\" />
+    <Folder Include="Utility\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

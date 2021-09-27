@@ -83,18 +83,6 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check access to the parent authority specified by this property.
-        /// </summary>
-        public virtual Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.Metric.ParentAuthority;
-            }
-        }
-
-        /// <summary>
         /// An optional additional parent authority.  (i.e for Groups, the GroupType is main parent
         /// authority, but parent group is an additional parent authority )
         /// </summary>

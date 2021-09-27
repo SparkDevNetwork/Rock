@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
@@ -188,12 +187,12 @@ namespace Rock.Tasks
         public abstract class BaseMessage : BusStartedTaskMessage
         {
             /// <summary>
-            /// Gets or sets the state of the entity.
+            /// Gets or sets the state of the entity context.
             /// </summary>
             /// <value>
-            /// The state of the entity.
+            /// The state of the entity context.
             /// </value>
-            public EntityState EntityState { get; set; }
+            public EntityContextState EntityContextState { get; set; }
 
             /// <summary>
             /// Gets or sets the entity unique identifier.

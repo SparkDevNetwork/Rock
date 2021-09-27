@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><i class='text-info'>{0}</i> as {1}</small>", s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
+                    syncedRolesHtml = string.Join( "<br>", _group.GroupSyncs.Select( s => string.Format( "<small><i>{0}</i> as {1}</small>", s.SyncDataView.Name, s.GroupTypeRole.Name ) ).ToArray() );
                 }
 
                 spanSyncLink.Attributes.Add( "data-content", syncedRolesHtml );

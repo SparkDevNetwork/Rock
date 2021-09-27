@@ -302,7 +302,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         }
 
         var requestValidator = new Twilio.Security.RequestValidator( authToken );
-        var isValid = requestValidator.Validate( request.Url.AbsoluteUri, request.Form, signature );
+        var isValid = requestValidator.Validate( request.UrlProxySafe().AbsoluteUri, request.Form, signature );
         if ( isValid )
         {
             return isValid;
@@ -312,13 +312,13 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         // path and query (e.g., /Webhooks/TwilioSms.ashx?SmsPipelineId=2)
         var requestUrl = GlobalAttributesCache
             .Get()
-            .GetValue( "PublicApplicationRoot" ) + request.Url.PathAndQuery.RemoveLeadingForwardslash();
+            .GetValue( "PublicApplicationRoot" ) + request.UrlProxySafe().PathAndQuery.RemoveLeadingForwardslash();
 
         isValid = requestValidator.Validate( requestUrl, request.Form, signature );
 
         if ( !isValid )
         {
-            RockLogger.Log.Debug( RockLogDomains.Communications, "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.Url.AbsoluteUri, requestUrl, authToken );
+            RockLogger.Log.Debug( RockLogDomains.Communications, "Authentication Failed: request.Url.AbsoluteUri: {0},  requestUrl: {1}  authToken: {2}", request.UrlProxySafe().AbsoluteUri, requestUrl, authToken );
         }
 
         return isValid;
@@ -332,7 +332,7 @@ public abstract class TwilioDefaultResponseAsync : IAsyncResult
         }
 
         var formValues = new List<string>();
-        formValues.Add( string.Format( "End Point URL: '{0}'", _context.Request.Url ) );
+        formValues.Add( string.Format( "End Point URL: '{0}'", _context.Request.UrlProxySafe() ) );
 
         foreach ( string name in _context.Request.Form.AllKeys )
         {

@@ -666,7 +666,9 @@ namespace Rock
                         }
                     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     rockLiquidOutput = ResolveMergeFieldsForRockLiquid( content, mergeObjects, currentPersonOverride, enabledLavaCommands, encodeStrings, throwExceptionOnErrors );
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     if ( lavaEngineOutput != null )
                     {
@@ -713,6 +715,8 @@ namespace Rock
             }
         }
 
+        [RockObsolete( "1.13" )]
+        [Obsolete( "This method is only required for the DotLiquid Lava implementation." )]
         private static string ResolveMergeFieldsForRockLiquid( this string content, IDictionary<string, object> mergeObjects, Person currentPersonOverride, string enabledLavaCommands, bool encodeStrings = false, bool throwExceptionOnErrors = false )
         {
             Template template = GetTemplate( content );
@@ -926,6 +930,8 @@ namespace Rock
         /// </summary>
         /// <param name="content">The content of the template.</param>
         /// <returns></returns>
+        [RockObsolete("1.13")]
+        [Obsolete("This method is only required for the DotLiquid Lava implementation.")]
         private static Template GetTemplate( string content )
         {
             const int hashLength = 10;

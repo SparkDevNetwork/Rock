@@ -192,7 +192,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                Uri uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                Uri uri = new Uri( HttpContext.Current.Request.UrlProxySafe().ToString() );
                 return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + Page.ResolveUrl( "~" );
             }
         }

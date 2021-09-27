@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": true,
+    "sourceMap": true,
+    "target": "ES2016",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "lib": [
+      "DOM",
+      "ES2016"
+    ],
+    "allowUnreachableCode": false
+  }
+}

@@ -1376,9 +1376,9 @@ namespace RockWeb.Blocks.WorkFlow
             // Match or Create Person from personEditor
             var personMatchQuery = new PersonService.PersonMatchQuery( personEditor.FirstName, personEditor.LastName, personEditor.Email, personEditor.MobilePhoneNumber )
             {
-                Gender = personEditor.PersonGender,
-                BirthDate = personEditor.PersonBirthDate,
-                SuffixValueId = personEditor.PersonSuffixValueId
+                Gender = personEditor.ShowGender ? personEditor.PersonGender : null,
+                BirthDate = personEditor.ShowBirthdate ? personEditor.PersonBirthDate : null,
+                SuffixValueId = personEditor.ShowSuffix ? personEditor.PersonSuffixValueId : null
             };
 
             bool updatePrimaryEmail = false;

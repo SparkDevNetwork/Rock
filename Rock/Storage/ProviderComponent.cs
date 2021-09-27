@@ -107,7 +107,7 @@ namespace Rock.Storage
                 {
                     if ( HttpContext.Current != null && HttpContext.Current.Request != null )
                     {
-                        uri = new Uri( HttpContext.Current.Request.Url.ToString() );
+                        uri = new Uri( HttpContext.Current.Request.UrlProxySafe().ToString() );
                     }
                 }
                 catch { }

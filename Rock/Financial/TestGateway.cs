@@ -364,6 +364,11 @@ namespace Rock.Financial
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             transaction.LastStatusUpdateDateTime = RockDateTime.Now;
+            if ( !transaction.IsActive )
+            {
+                transaction.NextPaymentDate = null;
+            }
+
             errorMessage = string.Empty;
             return true;
         }
@@ -452,7 +457,14 @@ namespace Rock.Financial
         /// <returns></returns>
         public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
         {
-            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
+            if ( scheduledTransaction.IsActive )
+            {
+                return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
+            }
+            else
+            {
+                return scheduledTransaction.NextPaymentDate;
+            }
         }
 
         #endregion

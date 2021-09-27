@@ -70,16 +70,6 @@ namespace Rock.Blocks
         /// <inheritdoc/>
         public abstract object GetBlockInitialization( RockClientType clientType );
 
-
-        /// <summary>
-        /// Gets the control markup.
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetControlMarkup()
-        {
-            return string.Empty;
-        }
-
         /// <summary>
         /// Gets the attribute value.
         /// </summary>

@@ -1933,9 +1933,9 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                         communication.SenderPersonAliasId = rockPage.CurrentPersonAliasId;
                     }
 
-                    if ( rockPage.Request != null && rockPage.Request.Url != null )
+                    if ( rockPage.Request != null && rockPage.Request.UrlProxySafe() != null )
                     {
-                        communication.UrlReferrer = rockPage.Request.Url.AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
+                        communication.UrlReferrer = rockPage.Request.UrlProxySafe().AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
                     }
 
                     communicationService.Add( communication );
@@ -2043,7 +2043,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
             else
             {
-                var uri = new Uri( Page.Request.Url, routeTemplate );
+                var uri = new Uri( Page.Request.UrlProxySafe(), routeTemplate );
                 var uriBuilder = new UriBuilder( uri.AbsoluteUri );
                 var paramValues = HttpUtility.ParseQueryString( uriBuilder.Query );
                 paramValues.Add( "EntitySetId", entitySetId.Value.ToString() );
@@ -2157,7 +2157,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
             }
 
             // add the page that created this
-            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.Url.OriginalString );
+            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.UrlProxySafe().OriginalString );
 
             ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
 

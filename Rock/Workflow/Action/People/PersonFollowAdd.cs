@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -226,10 +227,22 @@ namespace Rock.Workflow.Action
                     var entityFieldType = attribute.FieldType.Field as IEntityFieldType;
                     if ( entityFieldType != null )
                     {
-                        var entity = entityFieldType.GetEntity( attributeValue );
-                        if ( entity != null )
+                        if ( entityFieldType is Rock.Field.Types.PersonFieldType && EntityTypeCache.Get<Model.PersonAlias>().Id == entityType.Id )
                         {
-                            entities.Add( entity );
+                            var guidValue = attributeValue.AsGuidOrNull();
+                            if ( guidValue.HasValue )
+                            {
+                                // It was not the Guid for an Attribute, so it must be the Guid for an Entity.
+                                AddEntityByGuid( entityTypeService, entityType.Id, guidValue.Value, entities );
+                            }
+                        }
+                        else
+                        {
+                            var entity = entityFieldType.GetEntity( attributeValue );
+                            if ( entity != null )
+                            {
+                                entities.Add( entity );
+                            }
                         }
                     }
                     else

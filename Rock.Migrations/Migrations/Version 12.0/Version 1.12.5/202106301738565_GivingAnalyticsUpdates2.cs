@@ -102,7 +102,10 @@ namespace Rock.Migrations
         /// </summary>
         private void AttributesUp()
         {
+            // Since this is a migration. Don't change this to the PERSON_ATTRIBUTES_GIVING_OVERVIEW. We can suppress this warning.
+#pragma warning disable CS0618 // Type or member is obsolete
             var givingAnalyticsCategory = new List<string>() { SystemGuid.Category.PERSON_ATTRIBUTES_GIVING_ANALYTICS };
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Person Attribute "Giving History JSON"
             RockMigrationHelper.AddOrUpdatePersonAttributeByGuid(

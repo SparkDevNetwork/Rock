@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             if ( this.Request != null && this.Request.Url != null )
             {
-                communication.UrlReferrer = this.Request.Url.AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
+                communication.UrlReferrer = this.Request.UrlProxySafe().AbsoluteUri.TrimForMaxLength( communication, "UrlReferrer" );
             }
 
             communicationService.Add( communication );

@@ -69,12 +69,13 @@ namespace DotLiquid
 				: CultureInfo.CurrentCulture.TextInfo.ToTitleCase(input);
 		}
 
-		/// <summary>
-		/// capitalize first word in the input sentence
-		/// </summary>
-		/// <param name="input"></param>
-		/// <returns></returns>
-		public static string CapitalizeFirstWord(string input)
+        /// <summary>
+        /// capitalize first word in the input sentence
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        [Obsolete( "Use SentenceCase instead." )]
+        public static string CapitalizeFirstWord(string input)
 		{
 			if (input.IsNullOrWhiteSpace())
 				return input;

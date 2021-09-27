@@ -219,6 +219,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "tag-wrap" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                // Hide the source textbox until it's processed by the JS
+                this.Style[HtmlTextWriterStyle.Display] = "none";
+
                 string cssTemp = this.CssClass;
                 this.CssClass = string.Empty;
                 base.RenderControl( writer );

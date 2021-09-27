@@ -1218,7 +1218,7 @@ namespace RockWeb.Blocks.Crm
                         // Launch all the workflows
                         foreach ( var wfGuid in workflows )
                         {
-                            family.LaunchWorkflow( wfGuid, family.Name, parameters );
+                            family.LaunchWorkflow( wfGuid, family.Name, parameters, null );
                         }
                     }
 

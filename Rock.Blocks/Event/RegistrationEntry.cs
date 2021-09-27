@@ -26,8 +26,10 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.ViewModel;
 using Rock.ViewModel.Blocks;
 using Rock.ViewModel.Controls;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Event
@@ -193,10 +195,10 @@ namespace Rock.Blocks.Event
                 if ( discount == null )
                 {
                     // The code is not found
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
+                    return ActionNotFound();
                 }
 
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                return ActionOk( new
                 {
                     DiscountCode = discount.RegistrationTemplateDiscount.Code,
                     UsagesRemaining = discount.UsagesRemaining,
@@ -210,39 +212,30 @@ namespace Rock.Blocks.Event
         /// Gets the payment redirect.
         /// </summary>
         /// <param name="args">The arguments.</param>
-        /// <returns></returns>
+        /// <returns>The URL to redirect the person to in order to handle payment.</returns>
         [BlockAction]
         public BlockActionResult GetPaymentRedirect( RegistrationEntryBlockArgs args )
         {
-            var currentPerson = GetCurrentPerson();
-
             using ( var rockContext = new RockContext() )
             {
-                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
-                var registrationService = new RegistrationService( rockContext );
-                var context = registrationService.GetRegistrationContext( registrationInstanceId, currentPerson, args, out var errorMessage );
+                var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
-                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
+                var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
-
-                rockContext.SaveChanges();
-
-                var registrationInstanceService = new RegistrationInstanceService( rockContext );
-                var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args );
-                var discountedCost = costs.Sum( c => c.DiscountedCost );
 
                 // Generate the redirect URL
-                var redirectUrl = GenerateRedirectUrl( rockContext, context, discountedCost, args.Registrar, args.Registrants, session.Guid );
-                return new BlockActionResult( System.Net.HttpStatusCode.Created, redirectUrl );
+                var redirectUrl = GenerateRedirectUrl( rockContext, context, args.AmountToPayNow, args.Registrar, args.Registrants, session.Guid );
+
+                return ActionOk( redirectUrl );
             }
         }
 
@@ -254,31 +247,25 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult PersistSession( RegistrationEntryBlockArgs args )
         {
-            var currentPerson = GetCurrentPerson();
-
             using ( var rockContext = new RockContext() )
             {
-                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
-                var registrationService = new RegistrationService( rockContext );
-                var context = registrationService.GetRegistrationContext( registrationInstanceId, currentPerson, args, out var errorMessage );
+                var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
-                var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
+                var session = UpsertSession( context, args, SessionStatus.PaymentPending, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
-                rockContext.SaveChanges();
-
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, new
+                return ActionOk( new
                 {
-                    session.ExpirationDateTime
+                    ExpirationDateTime = session.ExpirationDateTime.ToRockDateTimeOffset()
                 } );
             }
         }
@@ -297,63 +284,39 @@ namespace Rock.Blocks.Event
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
                 var costs = registrationInstanceService.GetRegistrationCostSummaryInfo( context, args );
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, costs );
+
+                return ActionOk( costs );
             }
         }
 
         /// <summary>
         /// Persists the session.
         /// </summary>
-        /// <param name="args">The arguments.</param>
+        /// <param name="registrationSessionGuid">The registration session unique identifier to be renewed.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult TryToRenewSession( Guid registrationSessionGuid )
         {
             using ( var rockContext = new RockContext() )
             {
-                var registrationInstanceId = GetRegistrationInstanceId( rockContext );
-                var registrationService = new RegistrationService( rockContext );
-                var context = registrationService.GetRegistrationContext( registrationInstanceId, out var errorMessage );
+                var registrationSession = RegistrationSessionService.TryToRenewSession( registrationSessionGuid );
 
-                if ( !errorMessage.IsNullOrWhiteSpace() )
+                // Null means the session failed to renew, generally because the
+                // Guid wasn't valid.
+                if ( registrationSession == null )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionNotFound();
                 }
 
-                var registrationSessionService = new RegistrationSessionService( rockContext );
-                var registrationSession = registrationSessionService.Get( registrationSessionGuid );
-
-                if ( registrationSession is null )
-                {
-                    return new BlockActionResult( System.Net.HttpStatusCode.NotFound );
-                }
-
-                // Set the new expiration
-                var wasExpired = registrationSession.ExpirationDateTime < RockDateTime.Now;
-                var newExpiration = context.RegistrationSettings.TimeoutMinutes.HasValue ?
-                    RockDateTime.Now.AddMinutes( context.RegistrationSettings.TimeoutMinutes.Value ) :
-                    RockDateTime.Now.AddDays( 1 );
-
-                registrationSession.ExpirationDateTime = newExpiration;
-
-                if ( wasExpired && context.SpotsRemaining.HasValue && context.SpotsRemaining.Value < registrationSession.RegistrationCount )
-                {
-                    // Adjust the number of registrants to fit the available spots
-                    registrationSession.RegistrationCount = context.SpotsRemaining.Value;
-                }
-
-                // The session wasn't expired yet, there is no capacity limit, or there are enough spots, so renew without issue
-                rockContext.SaveChanges();
-
-                return new BlockActionResult( System.Net.HttpStatusCode.OK, new SessionRenewalResult
+                return ActionOk( new SessionRenewalResult
                 {
                     SpotsSecured = registrationSession.RegistrationCount,
-                    ExpirationDateTime = registrationSession.ExpirationDateTime
+                    ExpirationDateTime = registrationSession.ExpirationDateTime.ToRockDateTimeOffset()
                 } );
             }
         }
@@ -372,17 +335,18 @@ namespace Rock.Blocks.Event
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
                 SubmitRegistration( rockContext, context, args, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage );
+                    return ActionBadRequest( errorMessage );
                 }
 
                 var successViewModel = GetSuccessViewModel( context.Registration.Id, context.TransactionCode, context.GatewayPersonIdentifier );
+
                 return new BlockActionResult( System.Net.HttpStatusCode.Created, successViewModel );
             }
         }
@@ -392,13 +356,14 @@ namespace Rock.Blocks.Event
         #region Helpers
 
         /// <summary>
-        /// Upserts the session.
+        /// Updates or Inserts the session.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="context">The context.</param>
         /// <param name="args">The arguments.</param>
+        /// <param name="sessionStatus">The status to set the session to.</param>
+        /// <param name="errorMessage">On exit will contain any error message.</param>
+        /// <returns>The <see cref="RegistrationSession"/> or <c>null</c> if an error occurred.</returns>
         private RegistrationSession UpsertSession(
-            RockContext rockContext,
             RegistrationContext context,
             RegistrationEntryBlockArgs args,
             SessionStatus sessionStatus,
@@ -418,48 +383,29 @@ namespace Rock.Blocks.Event
                 RegistrationSessionGuid = args.RegistrationSessionGuid
             };
 
-            var registrationSessionService = new RegistrationSessionService( rockContext );
-            var registrationSession = registrationSessionService.Get( args.RegistrationSessionGuid );
-            var newExpiration = context.RegistrationSettings.TimeoutMinutes.HasValue ?
-                RockDateTime.Now.AddMinutes( context.RegistrationSettings.TimeoutMinutes.Value ) :
-                RockDateTime.Now.AddDays( 1 );
+            var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
 
-            var wasExpired = registrationSession != null && registrationSession.ExpirationDateTime < RockDateTime.Now;
-
-            if ( registrationSession is null )
-            {
-                registrationSession = new RegistrationSession
+            var registrationSession = RegistrationSessionService.CreateOrUpdateSession( args.RegistrationSessionGuid,
+                // Create
+                () => new RegistrationSession
                 {
                     Guid = args.RegistrationSessionGuid,
                     RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
                     RegistrationData = sessionData.ToJson(),
                     SessionStartDateTime = RockDateTime.Now,
-                    ExpirationDateTime = newExpiration,
+                    RegistrationCount = nonWaitlistRegistrantCount,
                     RegistrationId = context.Registration?.Id,
                     SessionStatus = sessionStatus
-                };
+                },
+                // Update
+                session =>
+                {
+                    session.RegistrationData = sessionData.ToJson();
+                    session.SessionStatus = sessionStatus;
+                    session.RegistrationCount = nonWaitlistRegistrantCount;
+                },
+                out errorMessage );
 
-                registrationSessionService.Add( registrationSession );
-            }
-
-            registrationSession.RegistrationData = sessionData.ToJson();
-            registrationSession.ExpirationDateTime = newExpiration;
-            registrationSession.SessionStatus = sessionStatus;
-
-            var nonWaitlistRegistrantCount = args.Registrants.Count( r => !r.IsOnWaitList );
-            var newRegistrantCount = wasExpired ?
-                nonWaitlistRegistrantCount :
-                ( nonWaitlistRegistrantCount - registrationSession.RegistrationCount );
-
-            // Handle the possibility that there is a change in the number of registrants in the session
-            if ( context.SpotsRemaining.HasValue && context.SpotsRemaining.Value < newRegistrantCount )
-            {
-                errorMessage = "There is not enough capacity remaining for this many registrants";
-                return registrationSession;
-            }
-
-            errorMessage = string.Empty;
-            registrationSession.RegistrationCount = nonWaitlistRegistrantCount;
             return registrationSession;
         }
 
@@ -939,7 +885,7 @@ namespace Rock.Blocks.Event
                 case RegistrationFieldSource.PersonField:
                     return GetPersonCurrentFieldValue( rockContext, person, field );
                 case RegistrationFieldSource.PersonAttribute:
-                    return GetEntityCurrentAttributeValue( rockContext, person, field );
+                    return GetEntityCurrentClientAttributeValue( rockContext, person, field );
             }
 
             return null;
@@ -966,7 +912,7 @@ namespace Rock.Blocks.Event
                     return person.Email;
                 case RegistrationPersonFieldType.Campus:
                     var family = person.GetFamily( rockContext );
-                    return family?.Guid;
+                    return family?.Campus?.Guid;
                 case RegistrationPersonFieldType.Birthdate:
                     return new BirthdayPickerViewModel
                     {
@@ -997,7 +943,7 @@ namespace Rock.Blocks.Event
         /// <param name="entity">The entity.</param>
         /// <param name="field">The field.</param>
         /// <returns></returns>
-        private object GetEntityCurrentAttributeValue( RockContext rockContext, IHasAttributes entity, RegistrationTemplateFormField field )
+        private string GetEntityCurrentClientAttributeValue( RockContext rockContext, IHasAttributes entity, RegistrationTemplateFormField field )
         {
             var attribute = AttributeCache.Get( field.AttributeId ?? 0 );
 
@@ -1007,7 +953,8 @@ namespace Rock.Blocks.Event
             }
 
             entity.LoadAttributes( rockContext );
-            return entity.GetAttributeValue( attribute.Key );
+
+            return ClientAttributeHelper.GetClientEditValue( attribute, entity.GetAttributeValue( attribute.Key ) );
         }
 
         /// <summary>
@@ -1347,7 +1294,11 @@ namespace Rock.Blocks.Event
                     switch ( field.PersonFieldType )
                     {
                         case RegistrationPersonFieldType.Campus:
-                            campusId = fieldValue.ToString().AsIntegerOrNull();
+                            var campusGuid = fieldValue.ToString().AsGuidOrNull();
+                            if ( campusGuid.HasValue )
+                            {
+                                campusId = CampusCache.Get( campusGuid.Value )?.Id ?? campusId;
+                            }
                             break;
 
                         case RegistrationPersonFieldType.MiddleName:
@@ -1476,13 +1427,13 @@ namespace Rock.Blocks.Event
                             string formattedOriginalValue = string.Empty;
                             if ( !string.IsNullOrWhiteSpace( originalValue ) )
                             {
-                                formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
+                                formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
                             }
 
                             string formattedNewValue = string.Empty;
                             if ( !string.IsNullOrWhiteSpace( newValue ) )
                             {
-                                formattedNewValue = attribute.FieldType.Field.FormatValue( newValue, attribute.QualifierValues, false );
+                                formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.QualifierValues );
                             }
 
                             Helper.SaveAttributeValue( person, attribute, newValue, rockContext );
@@ -1655,31 +1606,21 @@ namespace Rock.Blocks.Event
 
                 var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid );
                 var originalValue = registrant.GetAttributeValue( attribute.Key );
-                var newValueAsString = newValue.ToStringSafe();
+                var newValueAsString = ClientAttributeHelper.GetValueFromClient( attribute, newValue.ToStringSafe() );
                 registrant.SetAttributeValue( attribute.Key, newValueAsString );
-
-                // DateTime values must be stored in ISO8601
-                var isDateAttribute =
-                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE.AsGuid() ) ||
-                    attribute.FieldType.Guid.Equals( Rock.SystemGuid.FieldType.DATE_TIME.AsGuid() );
-
-                if ( isDateAttribute && DateTime.TryParse( newValueAsString, out var asDateTime ) )
-                {
-                    newValueAsString = asDateTime.ToISO8601DateString();
-                }
 
                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValueAsString ?? string.Empty ).Trim() )
                 {
                     var formattedOriginalValue = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( originalValue ) )
                     {
-                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
+                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
                     }
 
                     string formattedNewValue = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( newValueAsString ) )
                     {
-                        formattedNewValue = attribute.FieldType.Field.FormatValue( newValueAsString, attribute.QualifierValues, false );
+                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValueAsString, attribute.QualifierValues );
                     }
 
                     Helper.SaveAttributeValue( registrant, attribute, newValueAsString, rockContext );
@@ -1829,7 +1770,7 @@ namespace Rock.Blocks.Event
                     var attribute = fieldModel.AttributeId.HasValue ? AttributeCache.Get( fieldModel.AttributeId.Value ) : null;
 
                     field.Guid = fieldModel.Guid;
-                    field.Attribute = attribute?.ToViewModel();
+                    field.Attribute = attribute != null ? ClientAttributeHelper.ToClientEditableAttributeValue( attribute, attribute.DefaultValue ) : null;
                     field.FieldSource = ( int ) fieldModel.FieldSource;
                     field.PersonFieldType = ( int ) fieldModel.PersonFieldType;
                     field.IsRequired = fieldModel.IsRequired;
@@ -1871,7 +1812,7 @@ namespace Rock.Blocks.Event
             var beforeAttributes = registrationAttributes
                 .Where( a =>
                     a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION.AsGuid() ) )
-                .Select( a => a.ToViewModel( currentPerson, false ) )
+                .Select( a => ClientAttributeHelper.ToClientEditableAttributeValue( a, a.DefaultValue ) )
                 .ToList();
 
             // only show the Registration Attributes After Registrants that have don't have a category or have a category of REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION
@@ -1879,7 +1820,7 @@ namespace Rock.Blocks.Event
                 .Where( a =>
                     !a.Categories.Any() ||
                     a.Categories.Any( c => c.Guid == Rock.SystemGuid.Category.REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION.AsGuid() ) )
-                .Select( a => a.ToViewModel( currentPerson, false ) )
+                .Select( a => ClientAttributeHelper.ToClientEditableAttributeValue( a, a.DefaultValue ) )
                 .ToList();
 
             // Get the maximum number of registrants
@@ -1924,6 +1865,8 @@ namespace Rock.Blocks.Event
             var startAtBeginning = !isExistingRegistration ||
                 ( context.RegistrationSettings.AllowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
 
+            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
+
             var viewModel = new RegistrationEntryBlockViewModel
             {
                 RegistrationAttributesStart = beforeAttributes,
@@ -1964,7 +1907,8 @@ namespace Rock.Blocks.Event
                 TimeoutMinutes = timeoutMinutes,
                 AllowRegistrationUpdates = allowRegistrationUpdates,
                 StartAtBeginning = startAtBeginning,
-                GatewayGuid = financialGateway?.Guid
+                GatewayGuid = financialGateway?.Guid,
+                Campuses = clientHelper.GetCampusesAsListItems()
             };
 
             return viewModel;
@@ -2589,7 +2533,56 @@ namespace Rock.Blocks.Event
             var currentPerson = GetCurrentPerson();
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
-            var context = registrationService.GetRegistrationContext( registrationInstanceId, currentPerson, args, out errorMessage );
+
+            // Basic check on the args to see that they appear valid
+            if ( args == null )
+            {
+                errorMessage = "The args cannot be null";
+                return null;
+            }
+
+            if ( args.Registrants?.Any() != true )
+            {
+                errorMessage = "At least one registrant is required";
+                return null;
+            }
+
+            if ( args.Registrar == null )
+            {
+                errorMessage = "A registrar is required";
+                return null;
+            }
+
+            var context = registrationService.GetRegistrationContext( registrationInstanceId, args.RegistrationGuid, currentPerson, args.DiscountCode, out errorMessage );
+
+            // Validate the amount to pay today
+            var cost = context.RegistrationSettings.PerRegistrantCost;
+
+            // Cannot pay less than 0
+            if ( args.AmountToPayNow < 0 )
+            {
+                args.AmountToPayNow = 0;
+            }
+
+            // Cannot pay more than is owed
+            if ( args.AmountToPayNow > cost )
+            {
+                args.AmountToPayNow = cost;
+            }
+
+            var isNewRegistration = context.Registration == null;
+
+            // Validate the charge amount is not too low according to the initial payment amount
+            if ( isNewRegistration && cost > 0 )
+            {
+                var minimumInitialPayment = context.RegistrationSettings.PerRegistrantMinInitialPayment ?? cost;
+
+                if ( args.AmountToPayNow < minimumInitialPayment )
+                {
+                    args.AmountToPayNow = minimumInitialPayment;
+                }
+            }
+
             return context;
         }
 
@@ -2604,8 +2597,8 @@ namespace Rock.Blocks.Event
         {
             var registrationInstanceId = GetRegistrationInstanceId( rockContext );
             var registrationService = new RegistrationService( rockContext );
-            var context = registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
-            return context;
+
+            return registrationService.GetRegistrationContext( registrationInstanceId, out errorMessage );
         }
 
         /// <summary>
@@ -2652,16 +2645,24 @@ namespace Rock.Blocks.Event
                 }.Send();
             }
 
-            if ( isNewRegistration && settings.WorkflowTypeIds.Any() )
+            if ( isNewRegistration )
             {
                 var registrationService = new RegistrationService( new RockContext() );
                 var newRegistration = registrationService.Get( registration.Id );
 
                 if ( newRegistration != null )
                 {
-                    foreach ( var workflowTypeId in settings.WorkflowTypeIds )
+                    foreach ( var item in newRegistration.Registrants.Where( r => r.PersonAlias != null && r.PersonAlias.Person != null ) )
                     {
-                        newRegistration.LaunchWorkflow( workflowTypeId, newRegistration.ToString() );
+                        newRegistration.LaunchWorkflow( settings.RegistrantWorkflowTypeId, newRegistration.ToString(), null, null );
+                    }
+
+                    if ( settings.WorkflowTypeIds.Any() )
+                    {
+                        foreach ( var workflowTypeId in settings.WorkflowTypeIds )
+                        {
+                            newRegistration.LaunchWorkflow( workflowTypeId, newRegistration.ToString(), null, null );
+                        }
                     }
                 }
             }
@@ -2755,21 +2756,21 @@ namespace Rock.Blocks.Event
                             if ( attribute != null )
                             {
                                 string originalValue = groupMember.GetAttributeValue( attribute.Key );
-                                string newValue = fieldValue.ToString();
-                                groupMember.SetAttributeValue( attribute.Key, fieldValue.ToString() );
+                                string newValue = ClientAttributeHelper.GetValueFromClient( attribute, fieldValue.ToString() );
+                                groupMember.SetAttributeValue( attribute.Key, newValue );
 
                                 if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
                                 {
                                     string formattedOriginalValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( originalValue ) )
                                     {
-                                        formattedOriginalValue = attribute.FieldType.Field.FormatValue( originalValue, attribute.QualifierValues, false );
+                                        formattedOriginalValue = attribute.FieldType.Field.GetTextValue( originalValue, attribute.QualifierValues );
                                     }
 
                                     string formattedNewValue = string.Empty;
                                     if ( !string.IsNullOrWhiteSpace( newValue ) )
                                     {
-                                        formattedNewValue = attribute.FieldType.Field.FormatValue( newValue, attribute.QualifierValues, false );
+                                        formattedNewValue = attribute.FieldType.Field.GetTextValue( newValue, attribute.QualifierValues );
                                     }
 
                                     Helper.SaveAttributeValue( groupMember, attribute, newValue, rockContext );

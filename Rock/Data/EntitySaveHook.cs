@@ -67,6 +67,7 @@ namespace Rock.Data
         /// <summary>
         /// Gets the original values the entity was loaded with. Only valid
         /// if <see cref="PreSaveState"/> has the value <see cref="EntityContextState.Modified"/>.
+        /// or <see cref="EntityContextState.Deleted"/>
         /// </summary>
         /// <value>
         /// The original values the entity was loaded with.
@@ -102,7 +103,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Saves the failed.
+        /// Called if the save operation failed or was otherwise aborted.
         /// </summary>
         /// <remarks>
         /// This method is only called if <see cref="PreSave()"/> returns
@@ -113,7 +114,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Called after the save operation has been executed
+        /// Called after the save operation has been executed.
         /// </summary>
         /// <remarks>
         /// This method is only called if <see cref="PreSave()"/> returns

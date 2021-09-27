@@ -18,7 +18,7 @@
     {% assign childGroups = group.ChildGroups | Where:'IsPublic',true | OrderBy:'Name' %}
     {% assign dropdownlinkpath = '/staff/support-center' %}
 {% elseif lastSegment == 'campus' %}
-    {% assign group = staffTeams | Where:'Id',2080787 | First %}
+    {% assign group = staffTeams | Where:'Id',2084074 | First %}
     {% assign groupName = 'Campus Pastors' %}
     {% assign members = group.Members | Where:'Role','Campus Pastor' %}
     {% assign childGroups = group.ChildGroups | Where:'IsPublic',true | OrderBy:'Name' %}
@@ -33,10 +33,10 @@
     {% assign childGroups = staffTeams | Where:'Id',1936475 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
 {% elseif pagePath contains 'campus' %}
     {% assign groupName = lastSegment | Append:' Team' | Replace:'-',' ' | Capitalize %}
-    {% assign groupId = staffTeams | Where:'Id',2080787 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
+    {% assign groupId = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'Name',groupName | First | Property:'Id' %}
     {% assign group = staffTeams | Where:'Id',groupId | First %}
     {% assign members = group.Members %}
-    {% assign childGroups = staffTeams | Where:'Id',2080787 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
+    {% assign childGroups = staffTeams | Where:'Id',2084074 | First | Property:'ChildGroups' | Where:'IsPublic',true | OrderBy:'Name' %}
 {% endif %}
 
 
@@ -72,7 +72,7 @@
     {% if lastSegment == 'staff' or lastSegment == 'teaching-team' %}
         {% capture leadPastors %}[
             {% for member in members %}
-                {% if member.Title contains 'Assistant' %}
+                {% if member.Title contains 'Assistant' or member.Title contains 'Coordinator' %}
                 {% else %}
                     {{ member | ToJSON }},
                 {% endif %}
@@ -81,7 +81,7 @@
 
         {% capture members %}[
             {% for member in members %}
-                {% if member.Title contains 'Assistant' %}
+                {% if member.Title contains 'Assistant' or member.Title contains 'Coordinator' %}
                     {{ member | ToJSON }},
                 {% endif %}
             {% endfor %}

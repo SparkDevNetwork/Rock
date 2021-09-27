@@ -732,11 +732,11 @@ namespace RockWeb.Blocks.Reporting
 
             if ( queryString.AllKeys.Any() )
             {
-                Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
+                Response.Redirect( $"{Request.UrlProxySafe().AbsolutePath}?{queryString}", false );
             }
             else
             {
-                Response.Redirect( Request.Url.AbsolutePath, false );
+                Response.Redirect( Request.UrlProxySafe().AbsolutePath, false );
             }
         }
 
@@ -788,7 +788,7 @@ namespace RockWeb.Blocks.Reporting
         private string GetParameterizedUrl()
         {
             var queryString = GenerateQueryString();
-            var url = Request.Url.AbsolutePath;
+            var url = Request.UrlProxySafe().AbsolutePath;
 
             var pageGuid = GetAttributeValue( AttributeKey.RedirectPage ).AsGuidOrNull();
             if ( pageGuid.HasValue )

@@ -309,6 +309,19 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bbtnDelete_Click( object sender, EventArgs e )
         {
+            /* 2021-08-27 MDP
+
+            We really don't want to actually delete a FinancialScheduledTransaction.
+            Just inactivate it, even if there aren't FinancialTransactions associated with it.
+            It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
+            If that happens, Rock won't be able to match a record for that downloaded transaction! 
+            We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
+            so we'll need the ScheduledTransaction to do that.
+
+            So, don't delete ScheduledTransactions.
+             
+            */
+
             BootstrapButton bbtnDelete = ( BootstrapButton ) sender;
             RepeaterItem riItem = ( RepeaterItem ) bbtnDelete.NamingContainer;
 

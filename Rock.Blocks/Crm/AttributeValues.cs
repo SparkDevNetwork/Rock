@@ -19,9 +19,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
@@ -118,7 +120,8 @@ namespace Rock.Blocks.Crm
                 BlockTitle = GetBlockTitle(),
                 ShowCategoryNamesAsSeparators = GetAttributeValue( AttributeKey.ShowCategoryNamesAsSeparators ).AsBoolean(),
                 UseAbbreviatedNames = GetAttributeValue( AttributeKey.UseAbbreviatedName ).AsBoolean(),
-                CategoryGuids = GetCategoryGuids()
+                CategoryGuids = GetCategoryGuids(),
+                Attributes = GetClientAttributeValues( RequestContext.GetContextEntity<Person>() )
             };
         }
 
@@ -127,56 +130,71 @@ namespace Rock.Blocks.Crm
         #region Actions
 
         /// <summary>
+        /// Gets the attribute values for editing.
+        /// </summary>
+        /// <returns>A collection of attribute values that can be edited.</returns>
+        [BlockAction]
+        public BlockActionResult GetAttributeValuesForEdit()
+        {
+            var categoryGuids = GetCategoryGuids();
+            var person = RequestContext.GetContextEntity<Person>();
+
+            var attributeValues = person.GetClientEditableAttributeValues( RequestContext.CurrentPerson )
+                .Where( av => categoryGuids.Count == 0 || categoryGuids.Any( g => av.Categories.FirstOrDefault( c => c.Guid == g ) != null ) )
+                .ToList();
+
+            return ActionOk( attributeValues );
+        }
+
+        /// <summary>
         /// Saves the attribute values.
         /// </summary>
         /// <param name="personGuid">The person unique identifier.</param>
         /// <param name="attributeValues">The attribute values.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult SaveAttributeValues( Guid personGuid, Dictionary<string, string> keyValueMap )
+        public BlockActionResult SaveAttributeValues( Dictionary<string, string> keyValueMap )
         {
             using ( var rockContext = new RockContext() )
             {
-                var currentPerson = GetCurrentPerson();
+                var currentPerson = RequestContext.CurrentPerson;
 
                 var personService = new PersonService( rockContext );
-                var person = personService.Get( personGuid );
+                var person = personService.Get( RequestContext.GetContextEntity<Person>()?.Id ?? 0 );
 
                 if ( person == null || currentPerson == null )
                 {
-                    return new BlockActionResult( HttpStatusCode.NotFound );
+                    return ActionNotFound();
                 }
 
                 person.LoadAttributes();
-                var attributes = GetAttributes( currentPerson, Rock.Security.Authorization.EDIT );
+                var validKeys = GetCategoryAttributeKeys( person );
 
-                foreach ( var attribute in attributes )
+                foreach ( var kvp in keyValueMap )
                 {
-                    if ( keyValueMap.ContainsKey( attribute.Key ) )
+                    if ( validKeys.Contains( kvp.Key ) )
                     {
-                        person.SetAttributeValue( attribute.Key, keyValueMap[attribute.Key] );
+                        person.SetClientAttributeValue( kvp.Key, kvp.Value, currentPerson );
                     }
                 }
 
                 person.SaveAttributeValues( rockContext );
-                return new BlockActionResult( HttpStatusCode.NoContent );
+
+                return ActionOk( GetClientAttributeValues( person ) );
             }
         }
 
         /// <summary>
-        /// Gets the attributes.
+        /// Gets the attributes keys that are valid given our category configuration.
         /// </summary>
         /// <returns></returns>
-        private List<AttributeCache> GetAttributes( Person currentPerson, string authAction ) {
+        private List<string> GetCategoryAttributeKeys( IHasAttributes entity )
+        {
             var categories = GetCategoryGuids();
 
-            return AttributeCache.All()
-                .Where( a =>
-                    a.IsActive &&
-                    a.Categories.Any( c => categories.Contains( c.Guid ) ) &&
-                    a.IsAuthorized( authAction, currentPerson ) )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Name )
+            return entity.Attributes.Values
+                .Where( a => a.Categories.Any( c => categories.Contains( c.Guid ) ) )
+                .Select( a => a.Key )
                 .ToList();
         }
 
@@ -247,6 +265,19 @@ namespace Rock.Blocks.Crm
         private List<Guid> GetCategoryGuids()
         {
             return GetAttributeValueAsFieldType<List<Guid>>( AttributeKey.Category );
+        }
+
+        /// <summary>
+        /// Gets the client attribute values.
+        /// </summary>
+        /// <returns></returns>
+        private List<ClientAttributeValueViewModel> GetClientAttributeValues( IHasAttributes entity )
+        {
+            var categoryGuids = GetCategoryGuids();
+
+            return entity.GetClientAttributeValues( RequestContext.CurrentPerson )
+                .Where( av => categoryGuids.Count == 0 || categoryGuids.Any( g => av.Categories.FirstOrDefault( c => c.Guid == g ) != null ) )
+                .ToList();
         }
 
         #endregion Data Access

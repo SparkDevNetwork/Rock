@@ -313,12 +313,11 @@ namespace Rock.Lava.RockLiquid.Blocks
 
                                     // get attribute id
                                     int? attributeId = null;
-                                    foreach ( var id in AttributeCache.GetByEntity( entityTypeCache.Id ).SelectMany( a => a.AttributeIds ) )
+                                    foreach ( var attribute in AttributeCache.GetByEntityType( entityTypeCache.Id ) )
                                     {
-                                        var attribute = AttributeCache.Get( id );
                                         if ( attribute.Key == propertyName )
                                         {
-                                            attributeId = id;
+                                            attributeId = attribute.Id;
                                             break;
                                         }
                                     }
@@ -796,11 +795,8 @@ namespace Rock.Lava.RockLiquid.Blocks
                         // will do that "Just in case..." code below (because this actually happened in our Spark
                         // environment.
                         // Also, there could be multiple attributes that have the same key (due to attribute qualifiers or just simply a duplicate key)
-                        var entityAttributeListForAttributeKey = AttributeCache.GetByEntity( entityTypeCache.Id )
-                            .SelectMany( a => a.AttributeIds )
-                            .Select( a => AttributeCache.Get( a ) )
+                        var entityAttributeListForAttributeKey = AttributeCache.GetByEntityType( entityTypeCache.Id )
                             .Where( a => a != null && a.Key == attributeKey ).ToList();
-
 
                         // Just in case this EntityType has multiple attributes with the same key, create a OR'd clause for each attribute that has this key
                         // NOTE: this could easily happen if doing an entity command against a DefinedValue, and the same attribute key is used in more than one defined type

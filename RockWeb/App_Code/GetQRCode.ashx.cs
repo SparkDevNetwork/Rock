@@ -42,7 +42,7 @@ namespace RockWeb
             try
             {
                 context.Response.Clear();
-                context.RewritePath( context.Server.HtmlDecode( context.Request.Url.PathAndQuery ) );
+                context.RewritePath( context.Server.HtmlDecode( context.Request.UrlProxySafe().PathAndQuery ) );
 
                 var data = context.Request.QueryString["data"];
                 var outputType = context.Request.QueryString["outputType"] ?? string.Empty;

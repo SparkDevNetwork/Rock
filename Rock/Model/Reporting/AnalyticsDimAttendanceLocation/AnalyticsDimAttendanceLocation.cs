@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Spatial;
@@ -30,7 +30,7 @@ namespace Rock.Model
     [Table( "AnalyticsDimAttendanceLocation" )]
     [DataContract]
     [HideFromReporting]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsDimAttendanceLocation
     {
         #region Entity Properties

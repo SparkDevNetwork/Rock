@@ -24,17 +24,8 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <h4><%=_groupTypeName %> Members</h4>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:NewGroupMembers ID="nfmMembers" runat="server" OnAddGroupMemberClick="nfmMembers_AddGroupMemberClick" />
-                        </div>
-                    </div>
+                    <h4 class="mt-0"><%=_groupTypeName %> Members</h4>
+                    <Rock:NewGroupMembers ID="nfmMembers" runat="server" OnAddGroupMemberClick="nfmMembers_AddGroupMemberClick" />
 
                     <div class="row">
                         <div class="col-md-4">
