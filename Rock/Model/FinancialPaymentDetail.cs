@@ -69,7 +69,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the DefinedValueId of the credit card type <see cref="Rock.Model.DefinedValue"/> that was used to make this transaction.
-        /// This value value will be null for transactions that were not made by credit card.
+        /// This value will be null for transactions that were not made by credit card.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE )]
@@ -95,6 +95,7 @@ namespace Rock.Model
                 {
                     return _nameOnCardEncrypted;
                 }
+
                 return Encryption.EncryptString( _nameOnCard );
             }
             set
@@ -104,6 +105,7 @@ namespace Rock.Model
         }
 
         private string _nameOnCard = null;
+
         /// <summary>
         /// Gets the name on card.
         /// </summary>
@@ -116,16 +118,17 @@ namespace Rock.Model
             get
             {
                 // We are only checking null here because empty string is valid.
-                if ( _nameOnCard.IsNull() && _nameOnCardEncrypted.IsNotNullOrWhiteSpace() )
+                if ( _nameOnCard == null && _nameOnCardEncrypted != null )
                 {
                     /* MDP 07-20-2021
 
                     If Decryption Fails, just set NameOnCard to EmptyString (not null).
                     This will prevent it from endlessly trying to decrypt it.
-
                     */
-                    return Encryption.DecryptString( _nameOnCardEncrypted ) ?? string.Empty;
+
+                    _nameOnCard = Encryption.DecryptString( _nameOnCardEncrypted ) ?? string.Empty;
                 }
+
                 return _nameOnCard;
             }
             set
@@ -155,6 +158,7 @@ namespace Rock.Model
                 {
                     return Encryption.EncryptString( _expirationMonth.Value.ToString() );
                 }
+
                 return _expirationMonthEncrypted;
             }
 
@@ -182,6 +186,7 @@ namespace Rock.Model
                 {
                     return Encryption.EncryptString( _expirationYear.Value.ToString() );
                 }
+
                 return _expirationYearEncrypted;
             }
             set
@@ -275,10 +280,6 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationMonth
         {
-            /* MDP 2020-03-13
-               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
-            */
-
             get
             {
                 if ( _expirationMonth == null && _expirationMonthEncrypted != null )
@@ -318,10 +319,6 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationYear
         {
-            /* MDP 2020-03-13
-               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
-            */
-
             get
             {
                 if ( _expirationYear == null && _expirationYearEncrypted != null )
