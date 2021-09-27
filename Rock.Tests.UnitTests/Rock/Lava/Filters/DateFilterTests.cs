@@ -594,6 +594,17 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Requesting the difference between two dates in years should yield the result as multiples of 365.25 days.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_CompareDifferenceInYears_ReturnsWholeYearDifferenceOnly()
+        {
+            TestHelper.AssertTemplateOutput( "0", "{{ '31-Dec-2020' | DateDiff:'01-Jan-2021','Y' }}" );
+            TestHelper.AssertTemplateOutput( "10", "{{ '31-Dec-2010' | DateDiff:'31-Dec-2020','Y' }}" );
+            TestHelper.AssertTemplateOutput( "-10", "{{ '31-Dec-2020' | DateDiff:'31-Dec-2010','Y' }}" );
+        }
+
+        /// <summary>
         /// Requesting the difference between a target date and a DateTimeOffset should return a result that accounts for the input time zone.
         /// </summary>
         [TestMethod]
