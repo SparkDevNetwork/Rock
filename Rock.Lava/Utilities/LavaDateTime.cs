@@ -145,7 +145,10 @@ namespace Rock.Lava
 
             if ( dateTime.Kind == DateTimeKind.Utc )
             {
-                dateTimeOffset = new DateTimeOffset( dateTime, RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                // Convert UTC time to Rock time.
+                dateTimeOffset = new DateTimeOffset( dateTime, TimeSpan.Zero );
+
+                dateTimeOffset = TimeZoneInfo.ConvertTime( dateTimeOffset, RockDateTime.OrgTimeZoneInfo );
             }
             else if ( dateTime.Kind == DateTimeKind.Local )
             {
