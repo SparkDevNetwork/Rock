@@ -1885,7 +1885,7 @@ $('#{0}').tooltip();
 
                             // If there is a maximum Capacity then find out how many already RSVP with "Yes"
                             var currentScheduled = maximumCapacitySetting != null
-                                ? attendanceService.GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, Rock.Model.RSVP.Yes ).Count()
+                                ? attendanceService.GetAttendances( startDateTime, personGroupLocation.LocationId, schedule.Id, RSVP.Yes ).Where( a => a.Occurrence.GroupId == personGroupLocation.GroupId ).Count()
                                 : 0;
 
                             bool maxScheduled = maximumCapacitySetting != null && currentScheduled >= maximumCapacitySetting;
