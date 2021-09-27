@@ -96,7 +96,7 @@ namespace Rock.Logging
 
             if ( _logger != null && _logger != Serilog.Core.Logger.None )
             {
-                ( ( IDisposable ) _logger ).Dispose();
+                ( _logger as IDisposable )?.Dispose();
                 _logger = Serilog.Core.Logger.None;
             }
         }
