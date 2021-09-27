@@ -16,11 +16,14 @@
 //
 using System;
 using System.ComponentModel;
+using System.Net;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.RegisterAccount;
 using Rock.Data;
+using Rock.Mobile;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Cms
@@ -36,6 +39,28 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [IconCssClass( "fa fa-user-plus" )]
 
     #region Block Attributes
+
+    [BooleanField(
+        "Check For Duplicates",
+        Key = AttributeKeys.CheckForDuplicates,
+        Description = "If enabled and a duplicate is found then it will be used instead of creating a new person record. You must also configure the Confirmation Page and Confirm Account Template settings.",
+        DefaultBooleanValue = true,
+        Order = 0 )]
+
+    [LinkedPage(
+        "Confirmation Page",
+        Key = AttributeKeys.ConfirmationWebPage,
+        Description = "Web page on a public site for user to confirm their account (if not set then no confirmation e-mail will be sent).",
+        IsRequired = false,
+        Order = 1 )]
+
+    [SystemCommunicationField(
+        "Confirm Account Template",
+        Key = AttributeKeys.ConfirmAccountTemplate,
+        Description = "The system communication to use when generating the confirm account e-mail.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Order = 2 )]
 
     [DefinedValueField(
         "Connection Status",
@@ -148,57 +173,72 @@ namespace Rock.Blocks.Types.Mobile.Cms
         public static class AttributeKeys
         {
             /// <summary>
-            /// The connection status key
+            /// The check for duplicates key.
+            /// </summary>
+            public const string CheckForDuplicates = "CheckForDuplicates";
+
+            /// <summary>
+            /// The confirmation web page key.
+            /// </summary>
+            public const string ConfirmationWebPage = "ConfirmationWebPage";
+
+            /// <summary>
+            /// The confirm account template key.
+            /// </summary>
+            public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+
+            /// <summary>
+            /// The connection status key.
             /// </summary>
             public const string ConnectionStatus = "ConnectionStatus";
 
             /// <summary>
-            /// The record status key
+            /// The record status key.
             /// </summary>
             public const string RecordStatus = "RecordStatus";
 
             /// <summary>
-            /// The birth date show key
+            /// The birth date show key.
             /// </summary>
             public const string BirthDateShow = "BirthDateShow";
 
             /// <summary>
-            /// The birth date required key
+            /// The birth date required key.
             /// </summary>
             public const string BirthDateRequired = "BirthDateRequired";
 
             /// <summary>
-            /// The campus show key
+            /// The campus show key.
             /// </summary>
             public const string CampusShow = "CampusShow";
 
             /// <summary>
-            /// The campus required key
+            /// The campus required key.
             /// </summary>
             public const string CampusRequired = "CampusRequired";
 
             /// <summary>
-            /// The email show key
+            /// The email show key.
             /// </summary>
             public const string EmailShow = "EmailShow";
 
             /// <summary>
-            /// The email required key
+            /// The email required key.
             /// </summary>
             public const string EmailRequired = "EmailRequired";
 
             /// <summary>
-            /// The gender key
+            /// The gender key.
             /// </summary>
             public const string Gender = "Gender";
 
             /// <summary>
-            /// The mobile phone show key
+            /// The mobile phone show key.
             /// </summary>
             public const string MobilePhoneShow = "MobilePhoneShow";
 
             /// <summary>
-            /// The mobile phone required key
+            /// The mobile phone required key.
             /// </summary>
             public const string MobilePhoneRequired = "MobilePhoneRequired";
         }
@@ -242,31 +282,116 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Registers the user.
         /// </summary>
         /// <param name="account">The account data.</param>
-        /// <returns></returns>
+        /// <param name="supportsLogin">If <c>true</c> then the caller supports immediate login responses.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier that represents the device being used to login from.</param>
+        /// <returns>The result of the registration request.</returns>
         [BlockAction]
-        public object RegisterUser( AccountData account )
+        public object RegisterUser( AccountData account, bool supportsLogin = false, Guid? personalDeviceGuid = null )
         {
             if ( account.Username.IsNullOrWhiteSpace() || account.FirstName.IsNullOrWhiteSpace() || account.LastName.IsNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "Missing required information." );
             }
 
-            if ( !UserLoginService.IsPasswordValid( account.Password ) )
+            // Verify that the username and password are valid.
+            if ( !UserLoginService.IsValidNewUserLogin( account.Username, account.Password, account.Password, out _, out var errorMessage ) )
             {
-                return ActionBadRequest( UserLoginService.FriendlyPasswordRules() );
+                return ActionBadRequest( errorMessage );
             }
 
-            var userLoginService = new UserLoginService( new RockContext() );
-            var userLogin = userLoginService.GetByUserName( account.Username );
-            if ( userLogin != null )
+            using ( var rockContext = new RockContext() )
             {
-                return ActionBadRequest( "Username already exists." );
+                var checkForDuplicates = GetAttributeValue( AttributeKeys.CheckForDuplicates ).AsBoolean();
+                Person person = null;
+                UserLogin userLogin;
+
+                // Determine if we can perform duplicate matching. This requires:
+                // 1) That it be enabled on the block settings.
+                // 2) An e-mail address was provided which triggers stricter matching.
+                // 3) V3 shell or later that supports the new response type.
+                // 4) Valid confirmation web page configured.
+                // 5) Valid confirmation e-mail configured.
+                var canSearchForDuplicates = checkForDuplicates
+                    && account.Email.IsNotNullOrWhiteSpace()
+                    && supportsLogin
+                    && GetAttributeValue( AttributeKeys.ConfirmationWebPage ).IsNotNullOrWhiteSpace()
+                    && GetAttributeValue( AttributeKeys.ConfirmAccountTemplate ).IsNotNullOrWhiteSpace();
+
+                if ( canSearchForDuplicates )
+                {
+                    person = FindMatchingPerson( account, rockContext );
+                }
+
+                if ( person == null || ( person.Email.IsNullOrWhiteSpace() && account.Email.IsNullOrWhiteSpace() ) )
+                {
+                    // If no person was found, or we don't have any e-mail address
+                    // to work with then create a new account. We need at least an
+                    // e-mail address so we can send the confirmation e-mail.
+                    person = CreatePerson( account, rockContext );
+                    userLogin = CreateUser( person, account, true, rockContext );
+                }
+                else
+                {
+                    UpdatePerson( person, account, rockContext );
+                    userLogin = CreateUser( person, account, false, rockContext );
+                }
+
+                // Older versions of the mobile shell do not support automatic
+                // login. At this point we can be assured that we have not done
+                // person matching because that also requires supportsLogin.
+                if ( !supportsLogin )
+                {
+                    return ActionOk();
+                }
+
+                // If the account isn't confirmed yet, then return a special
+                // code to the shell so it knows to update the UI.
+                if ( userLogin.IsConfirmed != true )
+                {
+                    SendConfirmation( userLogin );
+
+                    return ActionContent( HttpStatusCode.Unauthorized, new
+                    {
+                        Code = 1,
+                        Message = GetConfirmEmailMessage()
+                    } );
+                }
+
+                // Update the last login details and log the user in.
+                UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
+
+                return GetMobileResponse( userLogin, true );
             }
+        }
 
-            // TODO: Do we need to do duplicate matching? -dsh
-            var person = CreateUser( CreatePerson( account ), account, true );
+        /// <summary>
+        /// Validates the username and password and returns a response that
+        /// can by used by the mobile shell.
+        /// </summary>
+        /// <param name="username">The username to login with.</param>
+        /// <param name="password">The password to login with.</param>
+        /// <param name="rememberMe">If <c>true</c> then the cookie will persist across sessions.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier making the request.</param>
+        /// <returns>The result of the block action.</returns>
+        [BlockAction]
+        public BlockActionResult MobileLogin( string username, string password, bool rememberMe, Guid? personalDeviceGuid )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var userLoginService = new UserLoginService( rockContext );
+                var (state, userLogin) = userLoginService.GetAuthenticatedUserLogin( username, password );
 
-            return ActionOk();
+                if ( state == UserLoginValidationState.Valid )
+                {
+                    UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
+
+                    return GetMobileResponse( userLogin, rememberMe );
+                }
+                else
+                {
+                    return ActionUnauthorized( "It looks like your account isn't ready to be logged into just yet, please try again after confirming your e-mail address." );
+                }
+            }
         }
 
         #endregion
@@ -274,14 +399,39 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #region Methods
 
         /// <summary>
+        /// Finds the best matching person for the given account data. This will
+        /// handle 
+        /// </summary>
+        /// <param name="account">The account.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private Person FindMatchingPerson( AccountData account, RockContext rockContext )
+        {
+            var personService = new PersonService( rockContext );
+            Gender? gender = ( Gender ) account.Gender;
+
+            // For matching purposes, treat "unknown" as not set.
+            if ( gender == Gender.Unknown )
+            {
+                gender = null;
+            }
+
+            // Try to find a matching person based on name, email address,
+            // mobile phone, and birthday. If these were not provided they
+            // are not considered.
+            var personQuery = new PersonService.PersonMatchQuery( account.FirstName, account.LastName, account.Email, account.MobilePhone, gender: gender, birthDate: account.BirthDate?.DateTime );
+
+            return personService.FindPerson( personQuery, true );
+        }
+
+        /// <summary>
         /// Creates the person.
         /// </summary>
         /// <param name="account">The account details.</param>
+        /// <param name="rockContext">The database context to operate in.</param>
         /// <returns></returns>
-        private Person CreatePerson( AccountData account )
+        private Person CreatePerson( AccountData account, RockContext rockContext )
         {
-            var rockContext = new RockContext();
-
             DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKeys.ConnectionStatus ).AsGuid() );
             DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKeys.RecordStatus ).AsGuid() );
 
@@ -338,7 +488,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             if ( account.Campus.HasValue )
             {
-                campusId = CampusCache.Get( account.Campus.Value ).Id;
+                campusId = CampusCache.Get( account.Campus.Value )?.Id;
             }
 
             PersonService.SaveNewPerson( person, rockContext, campusId, false );
@@ -351,13 +501,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="account">The account details.</param>
-        /// <param name="confirmed">if set to <c>true</c> [confirmed].</param>
-        /// <returns></returns>
-        private UserLogin CreateUser( Person person, AccountData account, bool confirmed )
+        /// <param name="confirmed">If set to <c>true</c> then the account is marked as confirmed.</param>
+        /// <param name="rockContext">The database context to operate in.</param>
+        /// <returns>The <see cref="UserLogin"/> that was created.</returns>
+        private UserLogin CreateUser( Person person, AccountData account, bool confirmed, RockContext rockContext )
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-
             return UserLoginService.Create(
                 rockContext,
                 person,
@@ -366,6 +514,140 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 account.Username,
                 account.Password,
                 confirmed );
+        }
+
+        /// <summary>
+        /// Updates the person record with the provided account information.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="account">The account.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void UpdatePerson( Person person, AccountData account, RockContext rockContext )
+        {
+            person.FirstName = account.FirstName;
+            person.LastName = account.LastName;
+
+            if ( account.Gender != ( int ) Gender.Unknown )
+            {
+                person.Gender = ( Gender ) account.Gender;
+            }
+
+            if ( account.BirthDate.HasValue )
+            {
+                person.BirthMonth = account.BirthDate.Value.Month;
+                person.BirthDay = account.BirthDate.Value.Day;
+                if ( account.BirthDate.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = account.BirthDate.Value.Year;
+                }
+            }
+
+            if ( account.Campus.HasValue )
+            {
+                var campusId = CampusCache.Get( account.Campus.Value )?.Id;
+
+                if ( campusId.HasValue )
+                {
+                    person.GetFamily( rockContext ).CampusId = campusId;
+                }
+            }
+
+            if ( account.Email.IsNotNullOrWhiteSpace() )
+            {
+                person.Email = account.Email;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( account.MobilePhone ) ) )
+            {
+                int phoneNumberTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
+
+                person.UpdatePhoneNumber( phoneNumberTypeId, string.Empty, account.MobilePhone, null, null, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Gets the confirm e-mail address message.
+        /// </summary>
+        /// <returns>The message to display.</returns>
+        protected virtual string GetConfirmEmailMessage()
+        {
+            return "Your account was created, however, we need to confirm the email associated with this account belongs to you. We've sent you an email that contains a link for confirming. Please click the link in your email and then try logging in again.";
+        }
+
+        /// <summary>
+        /// Updates the last login details and any related login facts.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void UpdateLastLoginDetails( UserLogin userLogin, Guid? personalDeviceGuid, RockContext rockContext )
+        {
+            // If we have a personal device, then attempt to update it
+            // to point at this person unless it already points there.
+            if ( personalDeviceGuid.HasValue )
+            {
+                var personalDevice = new PersonalDeviceService( rockContext ).Get( personalDeviceGuid.Value );
+
+                if ( personalDevice != null && personalDevice.PersonAliasId != userLogin.Person.PrimaryAliasId )
+                {
+                    personalDevice.PersonAliasId = userLogin.Person.PrimaryAliasId;
+                }
+            }
+
+            userLogin.LastLoginDateTime = RockDateTime.Now;
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Gets the response to send for a valid login on mobile.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        /// <param name="rememberMe">if set to <c>true</c> then the login should persist beyond this session.</param>
+        /// <returns>The result of the action.</returns>
+        private BlockActionResult GetMobileResponse( UserLogin userLogin, bool rememberMe )
+        {
+            var site = MobileHelper.GetCurrentApplicationSite();
+
+            if ( site == null )
+            {
+                return ActionStatusCode( HttpStatusCode.Unauthorized );
+            }
+
+            var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
+
+            var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
+            mobilePerson.AuthToken = authCookie.Value;
+
+            return ActionOk( new
+            {
+                Person = mobilePerson
+            } );
+        }
+
+        /// <summary>
+        /// Sends the confirmation e-mail for the login.
+        /// </summary>
+        /// <param name="userLogin">The user login that should receive the confirmation e-mail.</param>
+        /// <returns><c>true</c> if the e-mail was sent; otherwise <c>false</c>.</returns>
+        private bool SendConfirmation( UserLogin userLogin )
+        {
+            var systemEmailGuid = GetAttributeValue( AttributeKeys.ConfirmAccountTemplate ).AsGuidOrNull();
+            var confirmationWebPage = GetAttributeValue( AttributeKeys.ConfirmationWebPage );
+            var confirmationPageGuid = confirmationWebPage.Split( ',' )[0].AsGuidOrNull();
+            var confirmationPage = confirmationPageGuid.HasValue ? PageCache.Get( confirmationPageGuid.Value ) : null;
+
+            // Make sure we have the required information.
+            if ( !systemEmailGuid.HasValue || confirmationPage == null )
+            {
+                return false;
+            }
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+
+            UserLoginService.SendConfirmationEmail( userLogin, systemEmailGuid.Value, confirmationPage, null, mergeFields );
+
+            return true;
         }
 
         #endregion
