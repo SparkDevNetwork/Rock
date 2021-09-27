@@ -16,7 +16,6 @@
 //
 using System;
 using System.ComponentModel;
-using System.Net;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -51,20 +50,30 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.ForgotPasswordUrl,
         Order = 1 )]
 
-    [LinkedPage(
-        "Confirmation Page",
+    [LinkedPage( "Confirmation Page",
         Key = AttributeKeys.ConfirmationWebPage,
         Description = "Web page on a public site for user to confirm their account (if not set then no confirmation e-mail will be sent).",
         IsRequired = false,
         Order = 2 )]
 
-    [SystemCommunicationField(
-        "Confirm Account Template",
+    [SystemCommunicationField( "Confirm Account Template",
         Key = AttributeKeys.ConfirmAccountTemplate,
         Description = "The system communication to use when generating the confirm account e-mail.",
         IsRequired = false,
         DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Order = 3 )]
+
+    [LinkedPage( "Return Page",
+        Description = "The page to return to after the individual has successfully logged in, defaults to the home page (requires shell v3).",
+        IsRequired = false,
+        Key = AttributeKeys.ReturnPage,
+        Order = 4 )]
+
+    [LinkedPage( "Cancel Page",
+        Description = "The page to return to after pressing the cancel button, defaults to the home page (requires shell v3).",
+        IsRequired = false,
+        Key = AttributeKeys.CancelPage,
+        Order = 5 )]
 
     #endregion
 
@@ -94,6 +103,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The confirm account template key.
             /// </summary>
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
+
+            /// <summary>
+            /// The return page key.
+            /// </summary>
+            public const string ReturnPage = "ReturnPage";
+
+            /// <summary>
+            /// The cancel page key.
+            /// </summary>
+            public const string CancelPage = "CancelPage";
         }
 
         #region IRockMobileBlockType Implementation
@@ -125,7 +144,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
             return new
             {
                 RegistrationPageGuid = GetAttributeValue( AttributeKeys.RegistrationPage ).AsGuidOrNull(),
-                ForgotPasswordUrl = GetAttributeValue( AttributeKeys.ForgotPasswordUrl )
+                ForgotPasswordUrl = GetAttributeValue( AttributeKeys.ForgotPasswordUrl ),
+                ReturnPageGuid = GetAttributeValue( AttributeKeys.ReturnPage ).AsGuidOrNull(),
+                CancelPageGuid = GetAttributeValue( AttributeKeys.CancelPage ).AsGuidOrNull()
             };
         }
 
@@ -166,12 +187,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <returns>The result of the action.</returns>
         private BlockActionResult GetMobileResponse( UserLogin userLogin, bool rememberMe )
         {
-            var site = MobileHelper.GetCurrentApplicationSite();
-
-            if ( site == null )
-            {
-                return ActionStatusCode( HttpStatusCode.Unauthorized );
-            }
+            var site = PageCache.Layout.Site;
 
             var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
 
@@ -235,10 +251,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// Validates the username and password and returns a response that
         /// can by used by the mobile shell.
         /// </summary>
-        /// <param name="password"></param>
-        /// <param name="rememberMe"></param>
-        /// <param name="username"></param>
-        /// <param name="personalDeviceGuid"></param>
+        /// <param name="username">The username to login with.</param>
+        /// <param name="password">The password to login with.</param>
+        /// <param name="rememberMe">If <c>true</c> then the cookie will persist across sessions.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier making the request.</param>
+        /// <returns>The result of the block action.</returns>
         [BlockAction]
         public BlockActionResult MobileLogin( string username, string password, bool rememberMe, Guid? personalDeviceGuid )
         {
