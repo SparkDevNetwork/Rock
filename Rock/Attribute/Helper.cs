@@ -423,10 +423,10 @@ This can be due to multiple threads updating the same attribute at the same time
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
-                var entityAttributesList = AttributeCache.GetByEntity( entityTypeCache.Id );
-                if ( entityAttributesList.Any() )
+                var entityTypeAttributesList = AttributeCache.GetByEntityType( entityTypeCache.Id );
+                if ( entityTypeAttributesList.Any() )
                 {
-                    var entityTypeQualifierColumnPropertyNames = entityAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
+                    var entityTypeQualifierColumnPropertyNames = entityTypeAttributesList.Select( a => a.EntityTypeQualifierColumn ).Distinct().Where( a => !string.IsNullOrWhiteSpace( a ) ).ToList();
                     Dictionary<string, object> propertyValues = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
                     foreach ( var propertyName in entityTypeQualifierColumnPropertyNames )
                     {
@@ -437,19 +437,13 @@ This can be due to multiple threads updating the same attribute at the same time
                         }
                     }
 
-                    foreach ( var entityAttributes in entityAttributesList )
-                    {
-                        if ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierColumn ) ||
-                            ( propertyValues.ContainsKey( entityAttributes.EntityTypeQualifierColumn ) &&
-                            ( string.IsNullOrEmpty( entityAttributes.EntityTypeQualifierValue ) ||
-                            ( propertyValues[entityAttributes.EntityTypeQualifierColumn] ?? "" ).ToString() == entityAttributes.EntityTypeQualifierValue ) ) )
-                        {
-                            foreach ( int attributeId in entityAttributes.AttributeIds )
-                            {
-                                attributes.Add( Rock.Web.Cache.AttributeCache.Get( attributeId ) );
-                            }
-                        }
-                    }
+                    var entityTypeAttributesForQualifier = entityTypeAttributesList.Where( x =>
+                      string.IsNullOrEmpty( x.EntityTypeQualifierColumn ) ||
+                             ( propertyValues.ContainsKey( x.EntityTypeQualifierColumn ) &&
+                             ( string.IsNullOrEmpty( x.EntityTypeQualifierValue ) ||
+                             ( propertyValues[x.EntityTypeQualifierColumn] ?? "" ).ToString() == x.EntityTypeQualifierValue ) ) );
+
+                    attributes.AddRange( entityTypeAttributesForQualifier );
                 }
             }
 
@@ -787,18 +781,21 @@ This can be due to multiple threads updating the same attribute at the same time
             // Create a attribute model that will be saved
             Rock.Model.Attribute attribute = null;
 
+            List<AttributeQualifier> existingQualifiers;
+
             // Check to see if this was an existing or new attribute
             if ( newAttribute.Id > 0 )
             {
-                // If editing an existing attribute, remove all the old qualifiers in case they were changed
-                foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList() )
-                {
-                    attributeQualifierService.Delete( oldQualifier );
-                }
+                existingQualifiers = attributeQualifierService.GetByAttributeId( newAttribute.Id ).ToList();
+
                 rockContext.SaveChanges();
 
                 // Then re-load the existing attribute 
                 attribute = internalAttributeService.Get( newAttribute.Id );
+            }
+            else
+            {
+                existingQualifiers = new List<AttributeQualifier>();
             }
 
             if ( attribute == null )
@@ -817,10 +814,30 @@ This can be due to multiple threads updating the same attribute at the same time
             // Copy all the properties from the new attribute to the attribute model
             attribute.CopyPropertiesFrom( newAttribute );
 
-            // Add any qualifiers
-            foreach ( var qualifier in newAttribute.AttributeQualifiers )
+            var addedQualifiers = newAttribute.AttributeQualifiers.Where( a => !existingQualifiers.Any( x => x.Key == a.Key ) );
+            var deletedQualifiers = existingQualifiers.Where( a => !newAttribute.AttributeQualifiers.Any( x => x.Key == a.Key ) );
+            var modifiedQualifiers = newAttribute.AttributeQualifiers.Where( a => existingQualifiers.Any( x => x.Key == a.Key && a.Value != x.Value ) );
+
+            // Add any new qualifiers
+            foreach ( var addedQualifier in addedQualifiers )
             {
-                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = qualifier.Key, Value = qualifier.Value, IsSystem = qualifier.IsSystem } );
+                attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = addedQualifier.Key, Value = addedQualifier.Value, IsSystem = addedQualifier.IsSystem } );
+            }
+
+            // Delete any deleted qualifiers
+            foreach ( var deletedQualifier in deletedQualifiers )
+            {
+                attribute.AttributeQualifiers.Remove( deletedQualifier );
+            }
+
+            // Update any modified qualifiers
+            foreach ( var modifiedQualifier in modifiedQualifiers )
+            {
+                var existingQualifier = attribute.AttributeQualifiers.Where( a => a.Key == modifiedQualifier.Key ).FirstOrDefault();
+                if ( existingQualifier != null )
+                {
+                    existingQualifier.Value = modifiedQualifier.Value;
+                }
             }
 
             // Add any categories

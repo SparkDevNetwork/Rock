@@ -1019,6 +1019,7 @@ namespace Rock.Client.SystemGuid
         public const string GROUP_SAFETY_SECURITY = "32E80B6C-A1EB-40FD-BEC3-E11DE8FF75AB";
         public const string GROUP_STAFF_LIKE_MEMBERS = "300BA2C8-49A3-44BA-A82A-82E3FD8C3745";
         public const string GROUP_STAFF_MEMBERS = "2C112948-FF4C-46E7-981A-0257681EADF4";
+        public const string GROUP_WEB_ADMINISTRATORS = "1918E74F-C00D-4DDD-94C4-2E7209CE12C3";
     }
 
     /// <summary>

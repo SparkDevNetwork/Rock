@@ -380,13 +380,23 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets a list of all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
+        /// Gets all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <returns></returns>
         public static AttributeCache[] AllForEntityType( int entityTypeId )
         {
-            var attributeIds = AttributeCache.GetByEntity( entityTypeId ).SelectMany( a => a.AttributeIds ).ToList();
+            return GetByEntityType( entityTypeId );
+        }
+
+        /// <summary>
+        /// Gets all <seealso cref="AttributeCache">Attributes</seealso> for a specific entityTypeId.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <returns></returns>
+        internal static AttributeCache[] GetByEntityType( int? entityTypeId )
+        {
+            var attributeIds = EntityTypeAttributesCache.Get( entityTypeId ).AttributeIds;
             return attributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
         }
 
@@ -398,7 +408,6 @@ namespace Rock.Web.Cache
         {
             var entityTypeId = EntityTypeCache.Get<T>()?.Id;
             return AllForEntityType( entityTypeId ?? 0 );
-            
         }
 
         /// <summary>
@@ -708,35 +717,7 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static List<AttributeCache> GetByEntityTypeQualifier( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool includeInactive )
         {
-            var query = GetByEntity( entityTypeId );
-
-            if ( string.IsNullOrWhiteSpace( entityQualifierColumn ) )
-            {
-                query = query.Where( t => t.EntityTypeQualifierColumn == null || t.EntityTypeQualifierColumn == string.Empty ).ToList();
-            }
-            else
-            {
-                query = query.Where( t => t.EntityTypeQualifierColumn == entityQualifierColumn ).ToList();
-            }
-
-            if ( string.IsNullOrWhiteSpace( entityQualifierValue ) )
-            {
-                query = query.Where( t => t.EntityTypeQualifierValue == null || t.EntityTypeQualifierValue == string.Empty ).ToList();
-            }
-            else
-            {
-                query = query.Where( t => t.EntityTypeQualifierValue == entityQualifierValue ).ToList();
-            }
-
-            var attributeIds = query.SelectMany( t => t.AttributeIds );
-            var attributes = attributeIds.Select( Get ).ToList();
-
-            if ( !includeInactive )
-            {
-                attributes = attributes.Where( a => a.IsActive == true ).ToList();
-            }
-
-            return attributes;
+            return EntityTypeAttributesCache.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, includeInactive ).ToList();
         }
 
         /// <summary>
@@ -748,7 +729,9 @@ namespace Rock.Web.Cache
         public static AttributeCache Get( Model.Attribute entity, Dictionary<string, string> qualifiers )
         {
             if ( entity == null )
+            {
                 return null;
+            }
 
             var value = new AttributeCache();
             value.SetFromEntity( entity, qualifiers );
@@ -757,7 +740,6 @@ namespace Rock.Web.Cache
             RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
 
             return value;
-
         }
 
         /// <summary>
@@ -817,53 +799,11 @@ namespace Rock.Web.Cache
 
         #region Entity Attributes Cache
 
-
-        /// <summary>
-        /// Gets a list of AttributeIds for the specified entityTypeId
-        /// </summary>
-        /// <param name="entityTypeId">The entity type identifier.</param>
-        /// <returns></returns>
-        internal static List<EntityAttributes> GetByEntity( int? entityTypeId )
-        {
-            var allEntityAttributes = EntityAttributesCache.Get();
-            if ( allEntityAttributes != null )
-            {
-                List<EntityAttributes> result;
-                if ( entityTypeId.HasValue )
-                {
-                    result = allEntityAttributes.EntityAttributesByEntityTypeId.GetValueOrNull( entityTypeId.Value ) ?? new List<EntityAttributes>();
-                }
-                else
-                {
-                    result = allEntityAttributes.EntityAttributes.Where( a => !a.EntityTypeId.HasValue ).ToList();
-                }
-
-                return result;
-            }
-
-            return new List<EntityAttributes>();
-        }
-
-        /// <summary>
-        /// Gets the by entity.
-        /// </summary>
-        /// <param name="entityTypeid">The entity typeid.</param>
-        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
-        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
-        /// <returns></returns>
-        internal static List<int> GetByEntity( int? entityTypeid, string entityTypeQualifierColumn, string entityTypeQualifierValue )
-        {
-            return GetByEntity( entityTypeid )
-                .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( entityTypeQualifierColumn ) &&
-                    a.EntityTypeQualifierValue.Equals( entityTypeQualifierValue ) )
-                .SelectMany( a => a.AttributeIds )
-                .ToList();
-        }
-
         /// <summary>
         /// Flushes the entity attributes.
         /// </summary>
+        [RockObsolete( "1.12" )]
+        [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
         public static void RemoveEntityAttributes()
         {
             EntityAttributesCache.Remove();
@@ -888,16 +828,6 @@ namespace Rock.Web.Cache
         public static void FlushEntityAttributes()
         {
             EntityAttributesCache.Remove();
-        }
-
-        /// <summary>
-        /// Updates the <see cref="EntityAttributesCache" /> based on the attribute and entityState
-        /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
-        {
-            EntityAttributesCache.UpdateCacheEntityAttributes( attribute, entityState );
         }
 
         #endregion

@@ -30,6 +30,8 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use EntityTypeAttributesCache instead" )]
+    [RockObsolete( "1.12.6" )]
     public class EntityAttributesCache : ItemCache<EntityAttributesCache>
     {
         private const string KEY = "AllEntityAttributes";
@@ -222,6 +224,8 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
+    [Obsolete( "Use EntityTypeAttributesCache instead" )]
+    [RockObsolete( "1.12.6" )]
     public class EntityAttributes
     {
         /// <summary>
