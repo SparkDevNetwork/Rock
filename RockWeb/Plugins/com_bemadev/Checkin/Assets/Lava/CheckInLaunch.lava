@@ -13,9 +13,8 @@
 {% assign volunteerURL = urlPattern %}
 {% assign nextStepsUnattendedURL = urlPattern %}
 {% assign campusEventsURL = urlPattern %}
-
-
 {% assign motsURL = urlPattern %}
+{% assign iPadEventsURL = urlPattern %}
 
 {% assign campusShortCode = 'Global' | PageParameter:'campus' %}
 
@@ -39,6 +38,9 @@
 {% device where:'Name == "{{ campusName }}: Unattended Check-In (Generic)" || Name == "{{ campusName }}: Unattended (Generic)"' %}
     {% assign unattendedCheckInGenericKioskId = device.Id %}
 {% enddevice %}
+{% device where:'Name == "{{ campusName }}: iPad With Camera"' %}
+{% assign iPadWithCameraKioskId = device.Id %}
+{% enddevice %}
 
 
 <!-- Set Kiosk Device in URLs -->
@@ -54,6 +56,7 @@
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign motsURL = motsURL | Replace: 'kioskId', attendedCheckInKioskId %}
+{% assign iPadEventsURL = iPadEventsURL | Replace: 'kioskId', iPadWithCameraKioskId %}
 {% assign volunteerURL = volunteerURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
@@ -105,6 +108,7 @@
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
+{% assign iPadEventsURL = iPadEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 {% assign motsURL = motsURL | Replace: 'checkInConfigId', motsCheckinConfigId %}
 {% assign volunteerURL = volunteerURL | Replace: 'checkInConfigId', volunteerCheckinConfigId %}
 
@@ -226,6 +230,15 @@ Build up string of check-in areas
 {% endfor %}
 {% assign campusEventsAreas = campusEventsAreas | Split:',' | Join:',' %}
 
+<!-- Campus Events iPad With Camera Only Areas -->
+{% assign iPadEventsAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == campusEventsAreaId %}
+        {% assign iPadEventsAreas = iPadEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
+    {% endif %}
+{% endfor %}
+{% assign iPadEventsAreas = iPadEventsAreas | Split:',' | Join:',' %}
+
 <!-- MOTS Areas -->
 {% assign motsAreas = "" %}
 {% for item in results %}
@@ -255,6 +268,7 @@ Build up string of check-in areas
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
+{% assign iPadEventsURL = iPadEventsURL | Replace: 'checkInAreas', iPadEventsAreas %}
 {% assign motsURL = motsURL | Replace: 'checkInAreas', motsAreas %}
 {% assign volunteerURL = volunteerURL | Replace: 'checkInAreas', volunteerAreas %}
 
@@ -277,6 +291,7 @@ Build up string of check-in areas
 {% assign nextStepsURL = nextStepsURL | Append: genericLCBCTheme %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Append: genericLCBCTheme %}
 {% assign campusEventsURL = campusEventsURL | Append: genericLCBCTheme %}
+{% assign iPadEventsURL = iPadEventsURL | Append: genericLCBCTheme %}
 {% assign motsURL = motsURL | Append: genericLCBCTheme %}
 {% assign volunteerURL = volunteerURL | Append: genericLCBCTheme %}
 
@@ -404,6 +419,12 @@ Build up string of check-in areas
                 <h3>Campus Events Check-In</h3>
                 </a>
             </li>
+            <li>
+                <a href="{{ iPadEventsURL }}">
+                <i class="fas fa-tablet-alt"></i>
+                <h3>Handheld iPad With Camera Events Check-In</h3>
+                </a>
+            </li>
             {% if campusName == 'Manheim' %}
                 <li>
                     <a href="{{ motsURL }}">
@@ -450,6 +471,7 @@ Build up string of check-in areas
             StudMin Events Check-In Config: {{ studentMinEventsCheckinConfigId }}<br>
             Next Steps Check-In Config: {{ nextStepsCheckinConfigId }}<br>
             Campus Events Check-In Config: {{ campusEventsCheckinConfigId }}<br>
+            iPad With Camera Events Check-In Config: {{ campusEventsCheckinConfigId }}<br>
             MOTS Check-In Config: {{ motsCheckinConfigId }}<br>
             Volunteer Check-In Config: {{volunteerCheckinConfigId}}<br><br>
 
@@ -461,24 +483,26 @@ Build up string of check-in areas
             First-Time Family Areas: {{ firstTimeFamilyAreas }}<br>
             Next Steps Areas: {{ nextStepsAreas }}<br>
             Campus Events Areas: {{ campusEventsAreas }}<br>
+            iPad With Camera Events Areas: {{ iPadEventsAreas }}<br>
             MOTS Areas: {{ motsAreas }}<br>
             Volunteer Areas: {{ volunteerAreas}}<br><br>
 
-            KVI Attended Check-In:          {{ kviAttendedCheckInURL }}<br>
-            KVI Unattended Check-In:        {{ kviUnattendedCheckInURL }}<br>
-            iPad Assisted Check-In:         {{ iPadAssistedURL }}<br>
-            iPad Self Check-In:             {{ iPadSelfURL }}<br>
-            First-Time Family Check-In:     {{ firstTimeFamilyURL }}<br>
-            KVI Events Assisted Check-In:   {{ kidMinistryEventsAttendedURL }}<br>
-            KVI Events Self Check-In:       {{ kidMinistryEventsUnattendedURL }}<br>
-            Collide Check-In:               {{ studentMinistryCollideURL }}<br>
-            HSM Check-In:                   {{ studentMinistryHSMURL }}<br>
-            StudentMin Events Check-In:     {{ studentMinistryEventsURL }}<br>
-            Next Steps Assisted Check-In:   {{ nextStepsURL }}<br>
-            Next Steps Self Check-In:       {{ nextStepsUnattendedURL }}<br>
-            Campus Events Check-In:         {{ campusEventsURL }}<br>
-            MOTS Check-In:                  {{ motsURL }}<br>
-            Volunteer Check-In:             {{ volunteerURL}}<br>
+            KVI Attended Check-In:           {{ kviAttendedCheckInURL }}<br>
+            KVI Unattended Check-In:         {{ kviUnattendedCheckInURL }}<br>
+            iPad Assisted Check-In:          {{ iPadAssistedURL }}<br>
+            iPad Self Check-In:              {{ iPadSelfURL }}<br>
+            First-Time Family Check-In:      {{ firstTimeFamilyURL }}<br>
+            KVI Events Assisted Check-In:    {{ kidMinistryEventsAttendedURL }}<br>
+            KVI Events Self Check-In:        {{ kidMinistryEventsUnattendedURL }}<br>
+            Collide Check-In:                {{ studentMinistryCollideURL }}<br>
+            HSM Check-In:                    {{ studentMinistryHSMURL }}<br>
+            StudentMin Events Check-In:      {{ studentMinistryEventsURL }}<br>
+            Next Steps Assisted Check-In:    {{ nextStepsURL }}<br>
+            Next Steps Self Check-In:        {{ nextStepsUnattendedURL }}<br>
+            Campus Events Check-In:          {{ campusEventsURL }}<br>
+            iPad With Camera Events Check-In:{{ iPadEventsURL }}<br>
+            MOTS Check-In:                   {{ motsURL }}<br>
+            Volunteer Check-In:              {{ volunteerURL}}<br>
         </div>
       </div>
   </div>
