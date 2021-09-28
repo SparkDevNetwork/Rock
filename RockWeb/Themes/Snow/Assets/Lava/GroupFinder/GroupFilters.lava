@@ -1,0 +1,141 @@
+{%- comment -%}
+{% include '~~/Assets/Lava/GroupFinder/GroupFilters.lava' %}
+{%- endcomment -%}
+
+{%- capture postback -%}
+{{ 'x' | Postback:'Search' }}
+{%- endcapture -%}
+{%- assign postback = postback | Remove:'javascript:' | Remove:' return false;' -%}
+
+<script>
+Sys.Application.add_load(function () {
+  //UpdateUrl();
+  HighlightTags();
+
+  $("input[id$='_tbKeywords']").keydown(function(e){
+      if (e.keyCode == 13)
+      {
+          e.preventDefault();
+          UpdateUrl(true);
+      }
+  });
+});
+
+function HighlightTags() {
+  var search = $('.js-search').val().split(','),
+  campus = $('.js-CampusId').val().split(','),
+  filterOne = $('.js-FilterOneValue').val().split(','),
+  filterTwo = $('.js-FilterTwoValue').val().split(',');
+
+  for(var i=0; i< filterOne.length; i++){
+     $('.js-dv-'+ filterOne[i]).addClass('active');
+  }
+
+  for(var i=0; i< filterTwo.length; i++){
+     $('.js-dv-'+ filterTwo[i]).addClass('active');
+  }
+
+  for(var i=0; i< campus.length; i++){
+     $('.js-campus-'+ campus[i]).addClass('active');
+  }
+}
+
+function UpdateUrl(reloadPage) {
+  var search = $('.js-search').val(),
+  campus = $('.js-CampusId').val(),
+  filterOne = $('.js-FilterOneValue').val(),
+  filterTwo = $('.js-FilterTwoValue').val(),
+  page = $('.js-Page').val(),
+  searchQuery = '?';
+
+  if (search !== '') {
+    searchQuery = searchQuery + 'Q=' + search + '&'
+  }
+
+  if (campus !== '') {
+    searchQuery = searchQuery + 'CampusId=' + campus + '&'
+  }
+
+  if (filterOne !== '') {
+    searchQuery = searchQuery + 'FilterOneValue=' + filterOne + '&'
+  }
+
+  if (filterTwo !== '') {
+    searchQuery = searchQuery + 'FilterTwoValue=' + filterTwo + '&'
+  }
+
+  if (page !== '') {
+    searchQuery = searchQuery + 'Page=' + page + '&'
+  }
+
+  searchQuery = searchQuery.slice(0,-1);
+
+  window.history.replaceState("object or string", "Title", searchQuery);
+  if(reloadPage) {
+    {{ postback }}
+  }
+}
+
+function ToggleParameter(param, id) {
+  var elem = $('.js-' + param);
+  var val = elem.val();
+  if (val !== '') {
+    val = val.split(',');
+    if (val.includes(id)) {
+      val = val.filter(function(item) {
+          return item !== id
+      });
+    } else {
+      val.push(id);
+    }
+    elem.val(val);
+  } else {
+    $('.js-' + param).val(id);
+  }
+  UpdateUrl(true);
+}
+</script>
+
+{% comment %} Group Type {% endcomment %}
+{%- assign FilterTwo = FilterTwoDefinedTypeId | FromCache:'DefinedType' -%}
+<p class="tag-list-label-">{{ FilterTwo.Name }}</p>
+
+<div class="col-xs-12 col-md-4 col-lg-3">
+    <div class="form-group form-group-sm">
+        <label for="exampleInputEmail1">{{ FilterTwo.Name }}</label>
+        <select class="form-control">
+            <option value="">Select a Category</option>
+            {%- for item in FilterTwo.DefinedValues -%}
+            {% if item.IsActive %}
+            <option value="{{ item.Value }}" id="{{ item.Id }}">
+              {{item.Value}}
+            </option>
+            {% endif %}
+            {%- endfor -%}
+        </select>
+    </div>
+</div>
+
+{% comment %} Tags {% endcomment %}
+<p class="tag-list-label-">Use the tags below to find a group that fits your interest. </p>
+{%- assign FilterOne = FilterOneDefinedTypeId | FromCache:'DefinedType' -%}
+<div class="tag-list form-group">
+  {%- for item in FilterOne.DefinedValues -%}
+  {% if item.IsActive %}
+  <a href="?FilterOneValue={{ item.Id }}" onclick="ToggleParameter('FilterOneValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {% endif %}
+  {%- endfor -%}
+</div>
+
+{% comment %} Campus {% endcomment %}
+<p class="text-muted-">Stay connected with others who attend your location. Search by location you attend or live near!</p>
+<div class="tag-list-label hidden">Campus</div>
+<div class="tag-list form-group">
+{%- for campus in Campuses -%}
+  <a href="?CampusId={{ campus.Id }}" onclick="ToggleParameter('CampusId', '{{ campus.Id }}');return false;" class="tag js-campus-{{campus.Id}}">{{ campus.Name }}</a>
+{%- endfor -%}
+</div>
+
+
+
+

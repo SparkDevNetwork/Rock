@@ -1,0 +1,55 @@
+.hero {
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    color: white;
+    @media (min-width: 1000px) {
+        aspect-ratio: 16/5;
+        &--sm {
+            aspect-ratio: 16/4;
+        }
+        &--lg {
+            aspect-ratio: 16/6;
+        }
+        &--xl {
+            aspect-ratio: 16/9;
+        }
+    }
+
+    h1 {
+        font-weight: 900;
+        font-size: 3.5rem;
+    }
+
+    h2 {
+        font-weight: 800;
+        // font-size: 1.7rem;
+        color: rgba(255, 255, 255, .7);
+    }
+
+    .hero__overlay {
+        .cover();
+        position: absolute;
+        z-index: 2;
+        background: rgba(0, 0, 0, .6);
+    }
+
+    img {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    .container {
+        margin: auto;
+        position: relative;
+        z-index: 3;
+        @media (max-width: 999px) {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+    }
+}

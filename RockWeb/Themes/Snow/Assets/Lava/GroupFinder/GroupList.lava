@@ -1,0 +1,184 @@
+{%- comment -%}
+{% include '~~/Assets/Lava/GroupFinder/GroupList.lava' %}
+{%- endcomment -%}
+
+{%- unless HasFilter or PageParameter.FilterOneValue != null or PageParameter.FilterTwoValue != null or PageParameter.Campus != null -%}
+<div class="group-results">
+
+    <div class="row flex-row">
+        <div class="col-xs-12 col-lg-4 margin-b-lg">
+            <a href="?FilterTwoValue=1880"  class="card card-link d-flex h-100">
+                <div class="embed-responsive embed-responsive-21by9">
+                <div class="embed-responsive-item bg-cover" style="background-image:url({{ '~~' | ResolveRockUrl }}/Assets/Images/offsitegroups.jpg);">&nbsp;</div>
+                </div>
+                <div class="card-body-sm">
+                    <h5 class="margin-v-none my-0">Offsite Groups</h5>
+                    <p class="small  margin-b-none">Choose a focus and get out into your community. Offsite groups meet around shared interests, passions, studies or activities.</p>
+                </div>
+                <div class="card-footer-sm">
+                    <svg width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1 9.24998H16.586L11.222 14.614C10.8315 15.0045 10.8315 15.6377 11.2218 16.028C11.6123 16.4185 12.2457 16.4185 12.6362 16.028L19.707 8.95698C19.7535 8.91048 19.795 8.85923 19.8315 8.80473C19.8482 8.77948 19.86 8.75223 19.8745 8.72598C19.891 8.69498 19.91 8.66548 19.9233 8.63273C19.9375 8.59898 19.9455 8.56398 19.9555 8.52898C19.9637 8.50123 19.9745 8.47473 19.9802 8.44623C19.9932 8.38123 20 8.31573 20 8.24998C20 8.24923 19.9998 8.24848 19.9998 8.24773C19.9995 8.18298 19.993 8.11798 19.9802 8.05423C19.9742 8.02423 19.963 7.99648 19.9543 7.96698C19.9445 7.93373 19.937 7.89998 19.9235 7.86773C19.909 7.83298 19.8895 7.80148 19.8715 7.76873C19.858 7.74423 19.8472 7.71923 19.8318 7.69573C19.7952 7.64048 19.7532 7.58898 19.7065 7.54223L12.636 0.471983C12.2455 0.0814834 11.6123 0.0814834 11.2218 0.471733C10.8313 0.862233 10.8313 1.49548 11.2218 1.88623L16.5858 7.24998H1C0.44775 7.24998 0 7.69773 0 8.24998C0 8.80223 0.44775 9.24998 1 9.24998Z" fill="#6B6B6B"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+        <div class="col-xs-12 col-lg-4 margin-b-lg">
+            <a href="?FilterTwoValue=1882"  class="card card-link d-flex h-100">
+                <div class="embed-responsive embed-responsive-21by9">
+                <div class="embed-responsive-item bg-cover" style="background-image:url({{ '~~' | ResolveRockUrl }}/Assets/Images/onsitegroups.jpg);">&nbsp;</div>
+                </div>
+                <div class="card-body-sm">
+                    <h5 class="margin-v-none my-0">Onsite Groups</h5>
+                    <p class="small  margin-b-none">Find connection with others who attend your location as you take next steps together, right at the LCBC location you regularly attend. </p>
+                </div>
+                <div class="card-footer-sm">
+                    <svg width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1 9.24998H16.586L11.222 14.614C10.8315 15.0045 10.8315 15.6377 11.2218 16.028C11.6123 16.4185 12.2457 16.4185 12.6362 16.028L19.707 8.95698C19.7535 8.91048 19.795 8.85923 19.8315 8.80473C19.8482 8.77948 19.86 8.75223 19.8745 8.72598C19.891 8.69498 19.91 8.66548 19.9233 8.63273C19.9375 8.59898 19.9455 8.56398 19.9555 8.52898C19.9637 8.50123 19.9745 8.47473 19.9802 8.44623C19.9932 8.38123 20 8.31573 20 8.24998C20 8.24923 19.9998 8.24848 19.9998 8.24773C19.9995 8.18298 19.993 8.11798 19.9802 8.05423C19.9742 8.02423 19.963 7.99648 19.9543 7.96698C19.9445 7.93373 19.937 7.89998 19.9235 7.86773C19.909 7.83298 19.8895 7.80148 19.8715 7.76873C19.858 7.74423 19.8472 7.71923 19.8318 7.69573C19.7952 7.64048 19.7532 7.58898 19.7065 7.54223L12.636 0.471983C12.2455 0.0814834 11.6123 0.0814834 11.2218 0.471733C10.8313 0.862233 10.8313 1.49548 11.2218 1.88623L16.5858 7.24998H1C0.44775 7.24998 0 7.69773 0 8.24998C0 8.80223 0.44775 9.24998 1 9.24998Z" fill="#6B6B6B"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+        <div class="col-xs-12 col-lg-4 margin-b-lg">
+            <a href="?FilterTwoValue=1881" class="card card-link d-flex h-100">
+                <div class="embed-responsive embed-responsive-21by9">
+                <div class="embed-responsive-item bg-cover" style="background-image:url({{ '~~' | ResolveRockUrl }}/Assets/Images/onlinegroups.jpg);">&nbsp;</div>
+                </div>
+                <div class="card-body-sm">
+                <h5 class="margin-v-none my-0">Online Groups</h5>
+                <p class="small margin-b-none">Meet people and enjoy their company from the comfort of anywhere.</p>
+                </div>
+                <div class="card-footer-sm">
+                    <svg width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M1 9.24998H16.586L11.222 14.614C10.8315 15.0045 10.8315 15.6377 11.2218 16.028C11.6123 16.4185 12.2457 16.4185 12.6362 16.028L19.707 8.95698C19.7535 8.91048 19.795 8.85923 19.8315 8.80473C19.8482 8.77948 19.86 8.75223 19.8745 8.72598C19.891 8.69498 19.91 8.66548 19.9233 8.63273C19.9375 8.59898 19.9455 8.56398 19.9555 8.52898C19.9637 8.50123 19.9745 8.47473 19.9802 8.44623C19.9932 8.38123 20 8.31573 20 8.24998C20 8.24923 19.9998 8.24848 19.9998 8.24773C19.9995 8.18298 19.993 8.11798 19.9802 8.05423C19.9742 8.02423 19.963 7.99648 19.9543 7.96698C19.9445 7.93373 19.937 7.89998 19.9235 7.86773C19.909 7.83298 19.8895 7.80148 19.8715 7.76873C19.858 7.74423 19.8472 7.71923 19.8318 7.69573C19.7952 7.64048 19.7532 7.58898 19.7065 7.54223L12.636 0.471983C12.2455 0.0814834 11.6123 0.0814834 11.2218 0.471733C10.8313 0.862233 10.8313 1.49548 11.2218 1.88623L16.5858 7.24998H1C0.44775 7.24998 0 7.69773 0 8.24998C0 8.80223 0.44775 9.24998 1 9.24998Z" fill="#6B6B6B"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="row" style="height:25vh;"></div>
+
+</div>
+{%- else -%}
+    {%- assign filterOneName = FilterOneAttributeKey.Key -%}
+    {%- assign filterTwoName = FilterTwoAttributeKey.Key -%}
+    {%- assign resultCount = Groups | Size -%}
+
+    <div class="group-results row d-flex">
+    {%- if resultCount == 0 -%}
+    <h3 class="text-center">No Groups Found. Try removing search criteria</h3>
+    {%- else -%}
+        {% for group in Groups %}
+                <div class="card group-result">
+                    {%- assign leaderCount = 0 -%}
+                    {%- capture leaderName -%}
+                    {%- for member in group.Members -%}
+                    {%- if member.GroupRole.IsLeader -%}{%- assign leaderCount = leaderCount | Plus:1 -%}
+                    {{ member.Person.FullName }},
+                    {%- endif -%}
+                    {%- endfor -%}
+                    {%- endcapture -%}
+                    {%- if leaderCount == 1 -%}
+                    {%- assign leaderName = leaderName | ReplaceLast:',','' -%}
+                    {% elseif leaderCount > 1 %}
+                    {%- assign leaderName = leaderName | ReplaceLast:',','' -%}
+                    {%- assign leaderName = leaderName | ReplaceLast:',',' and ' -%}
+                    {%- endif -%}
+                    {%- assign groupImage = group | Attribute:'GroupImage','Id' -%}
+
+                    {%- if groupImage != '' -%}
+                    <img class="js-lazy card-img-top" data-original="/GetImage.ashx?Id={{groupImage}}" alt="">
+                    {%- else -%}
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/Groups__horizontal-600x290.jpg" class="card-img-top" alt="...">
+                    {%- endif -%}
+
+                    <div class="card-body">
+                        <h4 class="card-title mt-0 mb-1">{{ group.Name | Truncate:50,'...' }}</h4>
+                        <h6 class="text-gray-600 mt-0">{{ group.Campus.Name }}</h6>
+                        <div class="group-content">
+                            <!--
+                            <div class="group-details">
+                                {%- assign now = 'Now' | Date:'yyyy-MM-ddTHH:mm:sszzz' -%}
+                                {%- assign startDate = group | Attribute:'StartDate' -%}
+                                {%- assign dates = group | Attribute:'DateRange' -%}
+                                {%- assign city = group | GroupLocation | 'City' -%}
+
+                                <span class="detail detail-time">Time: {{ group.Schedule.FriendlyScheduleText }}</span>
+                                {%- if now > startDate and startDate != '' -%}
+                                    <span class="detail detail-start">Starts: {{ startDate | Date:'M/d/yy' }}</span>
+                                {%- endif -%}
+                                {%- if dates != '' -%}
+                                    <span class="detail detail-start">Dates: {{ dates }}</span>
+                                {%- endif -%}
+                                {% for GroupLocation in group.GroupLocations %}
+                                    <span class="detail detail-start">Location: {{ GroupLocation.Location.City }}</span>
+                                {% endfor %}
+                                {%- if leaderCount > 0 -%}
+                                <span class="detail detail-leader">Leader: {{ leaderName }}</span>
+                                {%- endif -%}
+                            </div>
+                            -->
+                            <div class="group-description">
+                                {{ group.Description | Truncate:150,'...' }}
+                            </div>
+                        </div>
+
+                        <div class="row py-3">
+                            <div class="col-xs-offset-1 col-xs-2 text-center">
+                                <i class="fa fa-lg fa-calendar " data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="Saturday"></i><span class="sr-only">Saturday</span>
+                            </div>
+                            <div class="col-xs-2 text-center">
+                                <i class="fa fa-lg fa-tag" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="{%- assign filterName = 'FilterOneValue' -%}
+                                {% assign filterTags = group | Attribute:filterOneName,'RawValue' %}
+                                {%- if filterTags != '' -%}
+                                    {% assign filterTags = filterTags | Split:',' %}
+                                        {%- for tag in filterTags -%}
+                                            {%- assign dv = tag | FromCache:'DefinedValue' -%}
+                                            {%- assign dvId = dv.Id -%}
+                                            {{dv.Value}},
+                                        {%- endfor -%}
+                                {%- endif -%}"></i>
+                                <span class="sr-only">
+                                    Outreach, Weekend Experiences
+                                </span>
+                            </div>
+                            <div class="col-xs-2 text-center">
+                                <i class="fa fa-lg fa-building" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="{{ group.Campus.Name }}"></i><span class="sr-only">{{ group.Campus.Name }}</span>
+                            </div>
+                            <div class="col-xs-2 text-center">
+                                <i class="fa fa-lg fa-venus-mars" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="COED"></i><span class="sr-only">COED</span>
+                            </div>
+                            <div class="col-xs-2 text-center">
+                                <i class="fa fa-lg fa-child  text-gray-500 " data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title=" No Children "></i><span class="sr-only"> No Children </span>
+                            </div>
+                        </div>
+
+                        {%- assign ctaButton = group | Attribute:'CalltoActionButton','RawValue' -%}
+                        {%- if ctaButton != '' -%}
+                            {%- assign ctaButton = ctaButton | FromCache:'DefinedValue' -%}
+                            {%- assign ctaUrl =  ctaButton | Attribute:'URL' -%}
+                            {%- assign ctaUrl =  ctaUrl | Downcase | Replace:'{groupguid}',group.Guid -%}
+                            <a href="{{ctaUrl}}" class="btn btn-primary btn-block border-0">{{ ctaButton | Attribute:'Text' }}</a>
+                        {%- endif -%}
+
+                        <p class="h6 text-semibold text-gray-600 mb-0 text-center hide">
+                        <i class="fa fa-tag"></i>
+                        {% assign filterTags = group | Attribute:filterOneName,'RawValue' %}
+                        {%- if filterTags != '' -%}
+                            {% assign filterTags = filterTags | Split:',' %}
+                                {%- for tag in filterTags -%}
+                                    {%- assign dv = tag | FromCache:'DefinedValue' -%}
+                                    {%- assign dvId = dv.Id -%}
+                                    {% if dv.Value == 'Men' %}{% continue %}{% endif %}
+                                    {{dv.Value}}{% if forloop.last == false %},{% endif %}
+                                {%- endfor -%}
+                        {%- endif -%}
+                        </p>
+
+                    </div>
+            </div>
+        {% endfor %}
+    {%- endif -%}
+    </div>
+{%- endunless -%}
