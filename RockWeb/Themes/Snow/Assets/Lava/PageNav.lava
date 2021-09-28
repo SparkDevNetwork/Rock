@@ -1,0 +1,15 @@
+{% if Page.DisplayChildPages == 'true' and Page.Pages != empty %}
+    <ul class="menubar__nav ml-auto font-avenir">
+
+    {% for childPage in Page.Pages %}
+        <li class="menubar__nav__item">
+            <a href="{{ childPage.Url }}" class="menubar__link{% if childPage.IsParentOfCurrent == 'true' or childPage.Current == 'true' %} active{% endif%}">
+                <!--<i class="tabbar-icon {{ childPage.IconCssClass }}"></i>-->
+                {{ childPage.Title }}
+            </a>
+        </li>
+    {% endfor %}
+
+    </ul>
+{% endif %}
+

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+
+<head runat="server">
+
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="/Scripts/Bundles/RockJQueryLatest"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="Styles/bootstrap.css" />
+    <link rel="stylesheet" href="Styles/theme.css" />
+    <script src="https://kit.fontawesome.com/271b4fffb0.js" crossorigin="anonymous"></script>
+
+
+</head>
+
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+        <div class="site-container">
+
+            <!-- <div class=" slideout-overlay"></div>
+            <div class=" slideout is-open shadow-lg">
+                <ul class="slideout__favorites row">
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <span class="text">Church Online</span>
+                        </a>
+                    </li>
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <span class="text">Locations</span>
+                        </a>
+                    </li>
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <span class="text">Sermons</span>
+                        </a>
+                    </li>
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-bible"></i>
+                            </div>
+                            <span class="text">Next Steps</span>
+                        </a>
+                    </li>
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-hand-holding-heart"></i>
+                            </div>
+                            <span class="text">Serve</span>
+                        </a>
+                    </li>
+                    <li class="col-xs-4">
+                        <a href="">
+                            <div class="icon">
+                                <i class="fas fa-hand-holding-usd"></i>
+                            </div>
+                            <span class="text">Give</span>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="slideout__nav">
+                    <li><a href="">About</a></li>
+                    <li><a href="">Locations</a></li>
+                    <li><a href="">Next Steps</a></li>
+                    <li><a href="">Watch &amp; Read</a></li>
+                    <li><a href="">Give</a></li>
+                </ul>
+            </div> -->
+
+            <!-- Page Header -->
+            <header class="menubar clearfix bg-white d-flex">
+                <a class="menubar__item menubar__item--logo" href="/">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/logo.svg" alt="" width="85">
+                </a>
+
+                <ul class="menubar__nav ml-auto">
+                    <li class="menubar__nav__item">
+                        <a href="menubar__link">About</a>
+                    </li>
+                    <li class="menubar__nav__item">
+                        <a href="menubar__link">Times &amp; Locations</a>
+                    </li>
+                    <li class="menubar__nav__item">
+                        <a href="menubar__link">Next Steps</a>
+                    </li>
+                    <li class="menubar__nav__item">
+                        <a href="menubar__link">Watch &amp; Read</a>
+                    </li>
+                    <li class="menubar__nav__item">
+                        <a href="menubar__link">Give</a>
+                    </li>
+                </ul>
+                
+                <!-- <a class=" menubar__item" href="">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor"
+                        class="bi bi-person-circle" viewBox="0 0 16 16">
+                        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                        <path fill-rule="evenodd"
+                            d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z" />
+                    </svg>
+                </a> -->
+                <a class="menubar__item menubar__item--profile" href="">
+                    <img src="https://rock.lcbcchurch.com/GetImage.ashx?id=494530&maxwidth=200&maxheight=200" width="40" alt="">
+                    <svg width="10" height="7" viewBox="0 0 10 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.090625 0.90099L0.146875 0.977593L4.39687 6.6863C4.54062 6.87962 4.75625 7 4.99687 7C5.2375 7 5.45313 6.87598 5.59688 6.6863L9.84375 0.988536L9.91562 0.893695C9.96875 0.802501 10 0.693069 10 0.576342C10 0.258989 9.76875 0 9.48125 0H0.51875C0.23125 0 0 0.258989 0 0.576342C0 0.696717 0.034375 0.809797 0.090625 0.90099Z" fill="black"/>
+                    </svg>
+                </a>
+                <!-- <a class="menubar__item" href="">
+                    <svg width="22" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#393939" d="M0 1h22v3H0zM0 9h22v3H0z"/>
+                    </svg>
+                </a> -->
+            </header>
+
+            <div class="site-body">
+                <section class="hero">
+                    <img src="https://storage.googleapis.com/lcbc-assets/images/LeaderResources_Hero-1600x600.jpg">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12 col-lg-8 col-lg-offset-2  text-center ">
+                                <h1 class="fade-in u-mb-">Group Leaders</h1>
+                                <h2 class="fade-in u-mb0  lap-and-up-ph++">Tools &amp; Resources to Help You Lead Well</h2>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="py-5 bg-gray-100">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group mb-4">
+                                    <input type="text" class="form-control" placeholder="Enter Search Keywords...">
+                                </div>
+                            </div>    
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Group Category</label>
+                                    <select class="form-control">
+                                        <option value="">Select a Category</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Meeting Days</label>
+                                    <select class="form-control">
+                                        <option value="">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Gender</label>
+                                    <select class="form-control">
+                                        <option value="">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Location</label>
+                                    <select class="form-control">
+                                        <option value="">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Campus/Region</label>
+                                    <select class="form-control">
+                                        <option value="">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-4 col-lg-3">
+                                <div class="form-group form-group-sm">
+                                    <label for="exampleInputEmail1">Children</label>
+                                    <select class="form-control">
+                                        <option value="">Select</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-sm mt-4">
+                                    <a class="btn btn-primary border-0" href="">Filter Groups</a>
+                                    <a class="btn btn-text" href="">Reset Filters</a>
+                                </div>
+                                
+                            </div>
+                        </div>    
+                    </div>    
+                </section>
+
+                <div class="container py-5">
+                    <div class="row">
+                        <div class="col-xs-12 col-md-4">
+                            <div class="card h-100">
+                                <img src="https://storage.googleapis.com/lcbc-assets/images/TheWayBack__1600x900-SeriesHero.jpg" class="card-img-top" alt="...">
+                                <div class="card-body">
+
+                                    <h5 class="card-title mb-2">Casual Cycling Group</h5>
+                                    <h6 class="text-gray-600 mt-1">Led by Cullen Ketcham</h6>
+                                    <p class="card-text mb-4">New to riding a bike or just wanting to get some exercise in a group setting? This is the riding group for you...</p>
+
+                                    <div class="row ">
+                                        <div class="col-xs-offset-1 col-xs-2 text-center">
+                                            <i class="fa fa-lg fa-calendar " data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="Saturday"></i><span class="sr-only">Saturday</span>
+                                        </div>
+                                        <div class="col-xs-2 text-center">
+                                            <i class="fa fa-lg fa-list" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="Outreach, Weekend Experiences"></i><span class="sr-only">Outreach, Weekend Experiences</span>
+                                        </div>
+                                        <div class="col-xs-2 text-center">
+                                            <i class="fa fa-lg fa-building" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="Dream Center"></i><span class="sr-only">Dream Center</span>
+                                        </div>
+                                        <div class="col-xs-2 text-center">
+                                            <i class="fa fa-lg fa-venus-mars" data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title="COED"></i><span class="sr-only">COED</span>
+                                        </div>
+                                        <div class="col-xs-2 text-center">
+                                            <i class="fa fa-lg fa-child  text-gray-500 " data-toggle="tooltip" data-placement="top" title="" aria-hidden="true" data-original-title=" No Children "></i><span class="sr-only"> No Children </span>
+                                        </div>
+                                    </div>
+
+                                    
+                                    
+                                    <a href="#" class="mt-3 btn btn-primary btn-block border-0">Group Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Account Info</div>
+                        <div class="panel-body">
+                            <a href="/ChangePassword">Change Password</a><br>
+                            <a href="/Subscribe">Communication Lists</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pre-footer py-4 bg-blue-600">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-inline mb-0">
+                                <li><a href="/locations">Find a Location</a></li>
+                                <li><a href="https://my.lcbcchurch.com/contact-us" target="_blank">Contact Us</a></li>
+                                <li><a href="tel:717-928-2155">717-928-2155</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-inline mb-0 text-white">
+                                <li><a href="https://www.youtube.com/lcbcchurch" title="Visit us on Youtube" target="_blank" class="u-ph--"><i class="icon-youtube"></i></a></li>
+                                <li><a href="https://www.facebook.com/lcbcchurch" title="Visit us on Facebook" target="_blank" class="u-ph--"><i class="icon-facebook"></i></a></li>
+                                <li><a href="https://www.twitter.com/lcbcchurch" title="Visit us on Twitter" target="_blank" class="u-ph--"><i class="icon-twitter"></i></a></li>
+                                <li><a href="https://www.instagram.com/lcbcchurch" title="Visit us on Instagram" target="_blank" class="u-ph--"><i class="icon-instagram"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="footer py-5">
+                
+                <div class="container footer__collapse visuallyhidden--palm">
+                    <div class="row">
+                        <div class="col-md-3">
+
+                            <h4 class="u-mb">About</h4>
+                            <ul class="footer-nav mb-5 mb-md-0">
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="https://lcbcchurch.com/kids">Kids</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/students">Students</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/adults">Adults</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/music">Music</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/beliefs">Beliefs</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/team">Our Team</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/develup">DEVELUP</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/global-initiatives">Global Initiatives</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/help-for-churches">Help for Churches</a></li>
+                            </ul>
+
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="u-mb">Next Steps</h4>
+                            <ul class="footer-nav mb-5 mb-md-0">
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/first-steps">First Steps</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/growth-track">Growth Track</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/trust-jesus">Trust Jesus</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/baptism">Baptism</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/serve">Serve</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/groups">Groups</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/starting-point">Explore Faith</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/partnership">Partnership</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/personal-finance">Personal Finance</a>
+                                </li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/next-steps/care">Care &amp; Prayer</a></li>
+                            </ul>
+
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="u-mb">Watch &amp; Read</h4>
+                            <ul class="footer-nav mb-5 mb-md-0">
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/sermons">Sermons</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/articles">Articles</a>
+                                </li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/stories">Stories</a>
+                                </li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/studies">Studies</a>
+                                </li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/bible-reading">Bible
+                                        Reading</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link" href="/news">News</a></li>
+                            </ul>
+
+                        </div>
+                        <div class="col-md-3">
+
+                            <h4 class="u-mb">Give</h4>
+                            <ul class="footer-nav mb-5 mb-md-0">
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/give">Why We Give</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://pushpay.com/pay/lcbcchurch" rel="noopener" target="_blank">Give
+                                        Now</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://lcbcchurch.com/90-day-tithing-challenge">90-Day Tithing
+                                        Challenge</a></li>
+                                <li class="footer-nav__item"><a class="footer-nav__link"
+                                        href="https://pushpay.com/login" rel="noopener" target="_blank">Pushpay Giving
+                                        Account</a></li>
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+
+        </div><!-- site-container -->
+    </form>
+</body>
+
+</html>

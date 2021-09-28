@@ -1,0 +1,40 @@
+.footer {
+    background: #525252;
+    margin: 0;
+    h4 {
+        color: white;
+        font-weight: 900;
+    }
+    a {
+        color: rgba(255,255,255, .6);
+        font-size: .95rem;
+        display: block;
+        margin-bottom: .2rem;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+}
+
+.pre-footer {
+    color: white;
+    font-weight: bold;
+    .col-md-6:first-child {
+        li {
+            padding: 0;
+        }
+        li + li {
+            &:before {
+                content: " - ";
+                padding: 0 10px;
+            }
+        }
+
+    }
+    a {
+        color: white;
+    }
+}
+

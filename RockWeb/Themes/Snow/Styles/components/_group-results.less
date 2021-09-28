@@ -1,0 +1,64 @@
+.group-results {
+    display: flex;
+    flex-wrap: wrap;
+    > .card {
+        margin-bottom: 2rem;
+        width: 100%;
+        @media (min-width: 1000px) {
+            flex: 0 0 auto;
+            width: 31.3%;
+            margin: 0 2% 2% 0;
+        }
+    }
+    .card-img-top {
+        aspect-ratio: 1.8;
+        object-fit: cover;
+    }
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        .row {
+            margin-top: auto;
+        }
+    }
+}
+
+.group-contact-form {
+    input, textarea {
+        height: auto;
+        padding: .36rem .8rem;
+    }
+    .rock-text-box.required {
+        width: 48%;
+        float: left;
+    }
+    .rock-text-box + .rock-text-box {
+        margin-left: 4%;
+    }
+    .btn {
+        display: block;
+        border: 0;
+    }
+}
+
+
+.groups-parameter-filter {
+    .panel {
+        background: none;
+    }
+    fieldset .row .col-md-3:first-child {
+        width: 100%;
+        label {
+            //display: none;
+            font-size: 1.7rem;
+        }
+    }
+    fieldset .row .col-md-3:nth-child(4n-2){
+        clear:left;
+    }
+    .chosen-choices .search-field {
+        width: 140px;
+    }
+
+}

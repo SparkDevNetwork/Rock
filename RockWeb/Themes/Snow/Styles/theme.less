@@ -1,0 +1,252 @@
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_mixins.less";
+@import "_variable-overrides.less";
+@import "_print.less";
+
+
+@import "components/_site-container.less";
+@import "components/_menubar.less";
+@import "components/_footer.less";
+@import "components/_slideout.less";
+@import "components/_hero.less";
+@import "components/_group-results.less";
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+select {
+  text-rendering: auto;
+  -webkit-font-smoothing: none;
+}
+// End Temporary Fix
+
+main {
+  display: block;
+}
+
+// 2. Bootstrap Overrides
+// -------------------------
+
+.navbar {
+  position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+  // using fontawesome nav toggle button instead of the BS default
+  .navbar-toggle {
+    padding: 6px 10px;
+
+    i.fa-bars {
+      color: @navbar-inverse-toggle-icon-bar-bg;
+    }
+  }
+}
+
+a:hover i.fs {
+  text-decoration: none;
+}
+
+// 3. Theme Styling
+// -------------------------
+
+h1.pagetitle:empty { // hides the page title h1 tag if the page has the title hidden
+  display: none;
+}
+
+.page-icon {
+  display: none;
+}
+
+header {
+  .page-menu,
+  .login-status {
+    float: right;
+  }
+
+  .navbar {
+    // background-color: @header-bg;
+    border: 0;
+  }
+}
+
+// homepage items
+#announcement-rotator {
+  margin: 0 -@grid-gutter-width/2 @spacing-lg-px;
+
+  .item {
+    img {
+      width: 100%;
+    }
+  }
+}
+
+.announcement-list {
+  .announcement {
+    max-width: 390px;
+    margin: 0 auto @spacing-lg-px;
+  }
+
+  .announcement-title {
+    margin: @spacing-sm-px 0;
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.announcement-detail {
+  img {
+    width: 100%;
+  }
+}
+
+.nav-sub {
+  li {
+    border: 1px solid @gray-lighter;
+    border-radius: @border-radius-base;
+  }
+}
+
+footer {
+  margin-bottom: 50px;
+
+  .footer-message {
+    float: left;
+  }
+
+  .footer-address {
+    float: right;
+  }
+}
+
+#splash.error {
+  background-color: @gray-lighter;
+
+  #content {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: @body-bg;
+    border-radius: @border-radius-base;
+  }
+}
+
+.not-found h2 {
+  font-size: 200px;
+  font-weight: @font-weight-bold;
+  line-height: 210px;
+  letter-spacing: -5px;
+
+  i {
+    position: relative;
+    top: -12px;
+    font-size: 210px;
+    color: #f03;
+  }
+}
+
+/* hide block panels */
+.panel.panel-block {
+  border: 0;
+  box-shadow: none;
+
+  & > .panel-heading,
+  & > .rock-panel-drawer {
+    display: none;
+  }
+
+  & > .panel-body {
+    padding: 0;
+
+    .grid.grid-panel {
+      margin: 0;
+    }
+  }
+}
+
+
+.panel-heading {
+  a {
+    border-bottom: 1px dotted @link-color;
+    &:hover {
+      border-bottom-style: solid;
+      text-decoration: none;
+    }
+  }
+
+  .panel-success & {
+    a {
+      color: @panel-success-text;
+      border-color: @panel-success-text;
+    }
+  }
+
+  .panel-warning & {
+    a {
+      color: @panel-warning-text;
+      border-color: @panel-warning-text;
+    }
+  }
+}
+
+
+
+
+// 4. Responsive Overrides
+// -------------------------
+
+// default styling should be for phones 767px or less
+
+// Small devices (tablets, 768px and up)
+@media (min-width: @screen-sm-min) {
+  #announcement-rotator {
+    margin: @spacing-lg-px 0;
+  }
+}
+
+// Medium devices (desktops, 992px and up)
+@media (min-width: @screen-md-min) {
+}
+
+// Large devices (large desktops, 1200px and up)
+@media (min-width: @screen-lg-min) {
+}
+
+* {
+  -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+.form-control, .btn:not(.btn-text, .btn-link) {
+  box-shadow: 0 2px 3px rgba(0,0,0,.02);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.system-font {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.font-avenir {
+  font-family: 'Avenir', 'Avenir Next', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+
+@import "_css-overrides.less";
