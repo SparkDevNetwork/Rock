@@ -1668,7 +1668,7 @@ $('#{0}').tooltip();
             scheduleSignUpRowItem.Controls.Add( hfAttendanceId );
 
             var pnlCheckboxCol = new Panel();
-            pnlCheckboxCol.Attributes.Add( "class", "col-md-4" );
+            pnlCheckboxCol.Attributes.Add( "class", "col-xs-12 col-sm-5 col-md-4" );
 
             var cbSignupSchedule = new RockCheckBox();
             cbSignupSchedule.ID = "cbSignupSchedule";
@@ -1683,7 +1683,7 @@ $('#{0}').tooltip();
 
             if ( personScheduleSignup.PeopleNeeded > 0 )
             {
-                cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed'>({personScheduleSignup.PeopleNeeded} {"person".PluralizeIf( personScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
+                cbSignupSchedule.Text += $" <span class='schedule-signup-people-needed text-muted small'>({personScheduleSignup.PeopleNeeded} {"person".PluralizeIf( personScheduleSignup.PeopleNeeded != 1 )} needed)</span>";
             }
             else if ( personScheduleSignup.MaxScheduled )
             {
@@ -1717,7 +1717,7 @@ $('#{0}').tooltip();
             ddlSignupLocations.SelectedIndexChanged += DdlSignupLocations_SelectedIndexChanged;
 
             var pnlLocationCol = new Panel();
-            pnlLocationCol.Attributes.Add( "class", "col-md-8" );
+            pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
             pnlLocationCol.Controls.Add( ddlSignupLocations );
 
             var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='fa fa-check-square'></i> Saved" };
