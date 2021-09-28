@@ -82,6 +82,31 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets the file.
+        /// </summary>
+        /// <param name="relativeFilePath">The relative file path.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        /// <exception cref="System.Net.Http.HttpResponseMessage"></exception>
+        [HttpGet]
+        [System.Web.Http.Route( "api/FileBrowser/GetFile" )]
+        public HttpResponseMessage GetFile( string relativeFilePath )
+        {
+            string physicalFilePath = HttpContext.Current.Request.MapPath( relativeFilePath );
+            if ( !File.Exists( physicalFilePath ) )
+            {
+                throw new HttpResponseException( new System.Net.Http.HttpResponseMessage( HttpStatusCode.NotFound ) );
+            }
+
+            HttpResponseMessage result = new HttpResponseMessage( HttpStatusCode.OK );
+            result.Content = new StreamContent( new FileStream( physicalFilePath, FileMode.Open, FileAccess.Read ) );
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue( "application/octet-stream" );
+            result.Content.Headers.Add( "content-disposition", "attachment; filename=" + Path.GetFileName( physicalFilePath ) );
+
+            return result;
+        }
+
+        /// <summary>
         /// Resizes the and send image.
         /// </summary>
         /// <param name="width">The width.</param>
