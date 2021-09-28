@@ -67,7 +67,7 @@
 
       &.group-result {
         display: list-item;
-        font-weight: bold;
+        font-weight: 700;
         color: #999;
         cursor: default;
       }
@@ -87,7 +87,7 @@
 
       &.highlighted {
         color: #fff;
-        background-color: @link-color;
+        background-color: @brand-primary;
 
         em {
           color: rgba(255,255,255,.8);
@@ -449,33 +449,17 @@ input[type="text"].chosen-focus-input {
 }
 
 .input-group {
-  &:nth-of-type(1) {
-    .chosen-container {
-      .chosen-choices {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-    }
-  }
-
-  &:not(:nth-of-type(1)) {
-    .chosen-container {
-      .chosen-choices {
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-      }
-    }
-
-    .input-group-prepend {
-      .input-group-text {
-        border-top-right-radius: @input-border-radius;
-        border-bottom-right-radius: @input-border-radius;
-      }
-    }
-  }
-
   .chosen-container {
     position: relative;
     flex: 1 1 auto;
+
+    .chosen-default {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  .chosen-container-active {
+    z-index: 3;
   }
 }

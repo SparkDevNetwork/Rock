@@ -25,6 +25,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
+using Rock.Utility.Enums;
 using Rock.Utility.Settings.GivingAnalytics;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -43,9 +44,9 @@ namespace RockWeb.Blocks.Finance
         #region Constants
 
         /// <summary>
-        /// The account type: all tax deductable
+        /// The account type: all tax deductible
         /// </summary>
-        private const string AccountTypes_AllTaxDeductable = "AllTaxDeductable";
+        private const string AccountTypes_AllTaxDeductible = "AllTaxDeductible";
 
         /// <summary>
         /// The account type: custom
@@ -301,6 +302,8 @@ namespace RockWeb.Blocks.Finance
             financialTransactionAlertType.ConnectionOpportunityId = ddlConnectionOpportunity.SelectedValueAsId();
             financialTransactionAlertType.SystemCommunicationId = ddlSystemCommunication.SelectedValueAsId();
             financialTransactionAlertType.WorkflowTypeId = wtpLaunchWorkflow.SelectedValueAsId();
+            financialTransactionAlertType.AlertSummaryNotificationGroupId = gpNotificationGroup.GroupId;
+            financialTransactionAlertType.RunDays = dwpDaysToRunAlertType.SelectedDaysOfWeekAsFlags();
             rockContext.SaveChanges();
 
             hfIdValue.Value = string.Empty;
@@ -338,6 +341,12 @@ namespace RockWeb.Blocks.Finance
             }
 
             var isCustomAccounts = rblAccountTypes.SelectedValue == AccountTypes_Custom;
+
+            var givingAnalytics = _givingAnalyticsSetting.GivingAnalytics ?? new Rock.Utility.Settings.GivingAnalytics.GivingAnalytics();
+            _givingAnalyticsSetting.GivingAnalytics = givingAnalytics;
+
+            var alerting = _givingAnalyticsSetting.Alerting ?? new Alerting();
+            _givingAnalyticsSetting.Alerting = alerting;
 
             _givingAnalyticsSetting.FinancialAccountGuids = isCustomAccounts ? accountGuids : null;
             _givingAnalyticsSetting.AreChildAccountsIncluded = isCustomAccounts ? cbIncludeChildAccounts.Checked : ( bool? ) null;
@@ -379,6 +388,12 @@ namespace RockWeb.Blocks.Finance
             // Load values from the system settings
             _givingAnalyticsSetting = Rock.Web.SystemSettings.GetValue( SystemSetting.GIVING_ANALYTICS_CONFIGURATION ).FromJsonOrNull<GivingAnalyticsSetting>() ?? new GivingAnalyticsSetting();
 
+            var givingAnalytics = _givingAnalyticsSetting.GivingAnalytics ?? new Rock.Utility.Settings.GivingAnalytics.GivingAnalytics();
+            _givingAnalyticsSetting.GivingAnalytics = givingAnalytics;
+
+            var alerting = _givingAnalyticsSetting.Alerting ?? new Rock.Utility.Settings.GivingAnalytics.Alerting();
+            _givingAnalyticsSetting.Alerting = alerting;
+
             var savedTransactionTypeGuids =
                 _givingAnalyticsSetting.TransactionTypeGuids ??
                 new List<Guid> { Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() };
@@ -404,14 +419,14 @@ namespace RockWeb.Blocks.Finance
             // Sync the system setting values to the controls
             divAccounts.Visible = savedAccountGuids.Any();
             apAccounts.SetValues( accounts );
-            rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductable );
+            rblAccountTypes.SetValue( savedAccountGuids.Any() ? AccountTypes_Custom : AccountTypes_AllTaxDeductible );
             cbIncludeChildAccounts.Checked = areChildAccountsIncluded;
             cblTransactionTypes.SetValues( savedTransactionTypeGuidStrings );
             cbEnableGivingAnalytics.Checked = _givingAnalyticsSetting.GivingAnalytics.IsEnabled;
-            dwpDaysToUpdateAnalytics.SelectedDaysOfWeek = _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays;
-            nbGlobalRepeatPreventionDuration.Text = _givingAnalyticsSetting.Alerting.GlobalRepeatPreventionDurationDays.ToStringSafe();
-            nbGratitudeRepeatPreventionDuration.Text = _givingAnalyticsSetting.Alerting.GratitudeRepeatPreventionDurationDays.ToStringSafe();
-            nbFollowupRepeatPreventionDuration.Text = _givingAnalyticsSetting.Alerting.FollowupRepeatPreventionDurationDays.ToStringSafe();
+            dwpDaysToUpdateAnalytics.SelectedDaysOfWeek = _givingAnalyticsSetting.GivingAnalytics.GiverAnalyticsRunDays ?? DayOfWeekFlag.All.AsDayOfWeekList();
+            nbGlobalRepeatPreventionDuration.Text = alerting.GlobalRepeatPreventionDurationDays.ToStringSafe();
+            nbGratitudeRepeatPreventionDuration.Text = alerting.GratitudeRepeatPreventionDurationDays.ToStringSafe();
+            nbFollowupRepeatPreventionDuration.Text = alerting.FollowupRepeatPreventionDurationDays.ToStringSafe();
 
             BindAlerts();
         }
@@ -431,7 +446,7 @@ namespace RockWeb.Blocks.Finance
             rblAccountTypes.DataSource = new[] {
                 new {
                     Text = "All Tax Deductible Accounts",
-                    Value = AccountTypes_AllTaxDeductable
+                    Value = AccountTypes_AllTaxDeductible
                 },
                 new {
                     Text ="Custom",
@@ -522,6 +537,8 @@ namespace RockWeb.Blocks.Finance
             dvpPersonDataView.SetValue( financialTransactionAlertType.DataViewId );
             cbSendBusEvent.Checked = financialTransactionAlertType.SendBusEvent;
             wtpLaunchWorkflow.SetValue( financialTransactionAlertType.WorkflowTypeId );
+            gpNotificationGroup.GroupId = financialTransactionAlertType.AlertSummaryNotificationGroupId;
+            dwpDaysToRunAlertType.SelectedDaysOfWeek = ( financialTransactionAlertType.RunDays ?? DayOfWeekFlag.All ).AsDayOfWeekList();
 
             if ( financialTransactionAlertType.ConnectionOpportunity != null )
             {

@@ -61,7 +61,7 @@ namespace Rock.Apps.StatementGenerator
             }
             catch
             {
-                // ignore
+                // ignore if ReportConfigurationListJson can be de-serialized. We'll just create a new one instead.
             }
 
             if ( reportConfigurationList == null )

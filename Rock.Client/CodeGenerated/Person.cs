@@ -132,6 +132,9 @@ namespace Rock.Client
         public int? PhotoId { get; set; }
 
         /// <summary />
+        public int? PreferredLanguageValueId { get; set; }
+
+        /// <summary />
         public int? PrimaryCampusId { get; set; }
 
         /// <summary />
@@ -240,6 +243,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
+            this.PreferredLanguageValueId = source.PreferredLanguageValueId;
             this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
@@ -293,6 +297,9 @@ namespace Rock.Client
 
         /// <summary />
         public BinaryFile Photo { get; set; }
+
+        /// <summary />
+        public DefinedValue PreferredLanguageValue { get; set; }
 
         /// <summary>
         /// The Primary PersonAliasId of the Person

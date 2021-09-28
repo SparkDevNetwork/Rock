@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 
 using Rock;
@@ -339,6 +340,21 @@ namespace Rock.Utility.EntityCoding
                         {
                             value = FindMappedGuid( guidValue.Value ).ToString();
                         }
+                        else
+                        {
+                            //
+                            // If the string is a json string we need to look for and replaces guids in that string too.
+                            //
+                            var dynamicJson = value.ToString().FromJsonDynamicOrNull();
+
+                            if ( dynamicJson != null && dynamicJson is ExpandoObject )
+                            {
+                                var expando = ( ExpandoObject ) dynamicJson;
+                                expando = ReplaceGuidInExpandoObject( expando );
+
+                                value = expando.ToJson();
+                            }
+                        }
                     }
 
                     property.SetValue( entity, ChangeType( property.PropertyType, value ) );
@@ -352,6 +368,47 @@ namespace Rock.Utility.EntityCoding
             {
                 reference.Restore( entity, this );
             }
+        }
+
+        /// <summary>
+        /// Replaces the unique identifier in expando object.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        private ExpandoObject ReplaceGuidInExpandoObject( ExpandoObject item )
+        {
+
+            var dictionary = ( ( IDictionary<String, Object> ) item );
+            var updates = new Dictionary<string, string>();
+
+            foreach ( var keyValuePair in item )
+            {
+                if ( keyValuePair.Value is List<object> )
+                {
+                    var list = ( List<object> ) keyValuePair.Value;
+                    for ( int i = 0; i < list.Count; i++ )
+                    {
+                        var expando = list[i];
+                        expando = ReplaceGuidInExpandoObject( ( ExpandoObject ) expando );
+                        list[i] = expando;
+                    }
+                }
+                else
+                {
+                    var guid = keyValuePair.Value.ToString().AsGuidOrNull();
+                    if ( guid != null )
+                    {
+                        updates.Add( keyValuePair.Key, FindMappedGuid( guid.Value ).ToString() );
+                    }
+                }
+            }
+
+            foreach ( var key in updates.Keys )
+            {
+                dictionary[key] = updates[key];
+            }
+
+            return item;
         }
 
         /// <summary>

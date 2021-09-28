@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -1007,6 +1008,30 @@ namespace Rock
 
             decimal value;
             if ( decimal.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static decimal? AsDecimalInvariantCultureOrNull( this string str )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off non numeric and characters at the beginning of the line (currency symbols)
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            decimal value;
+            if ( decimal.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
             {
                 return value;
             }

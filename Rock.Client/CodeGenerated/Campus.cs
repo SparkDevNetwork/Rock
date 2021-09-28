@@ -157,6 +157,9 @@ namespace Rock.Client
     public partial class Campus : CampusEntity
     {
         /// <summary />
+        public ICollection<CampusSchedule> CampusSchedules { get; set; }
+
+        /// <summary />
         public DefinedValue CampusStatusValue { get; set; }
 
         /// <summary />

@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -32,6 +31,19 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Communication
 {
+    /* 8-4-2021 MDP
+
+    Note that there are two blocks that are very similar
+    - CommunicationList (People > Communication History)
+    - CommunicationRecipientList (The block shown in the Person Profile History tab)
+
+    So any changes you make to one might need to be made to the other.
+
+    There are a few differences between these two blocks in what these blocks do,
+    but it might be worth considering combining these blocks into one block in the future.
+     
+     */
+
     [DisplayName( "Communication Recipient List" )]
     [Category( "Communication" )]
     [Description( "Lists communications sent to an individual" )]
@@ -164,7 +176,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         if ( !string.IsNullOrWhiteSpace( e.Value ) )
                         {
-                            e.Value = ( (CommunicationType)System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
+                            e.Value = ( ( CommunicationType ) System.Enum.Parse( typeof( CommunicationType ), e.Value ) ).ConvertToString();
                         }
 
                         break;
@@ -225,7 +237,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        void gCommunication_RowDataBound( object sender, GridViewRowEventArgs e )
+        protected void gCommunication_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( !UserCanEdit && e.Row.RowType == DataControlRowType.DataRow )
             {
@@ -354,17 +366,17 @@ namespace RockWeb.Blocks.Communication
             }
 
             var queryable = qryCommunications
-            .Select( c => new CommunicationItem
-            {
-                Id = c.Id,
-                CommunicationType = c.CommunicationType,
-                Subject = string.IsNullOrEmpty( c.Subject ) ? ( string.IsNullOrEmpty( c.PushTitle ) ? c.Name : c.PushTitle ) : c.Subject,
-                CreatedDateTime = c.CreatedDateTime,
-                Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
-                Status = c.Status,
-                CreatedByPersonAliasId = c.CreatedByPersonAliasId
-            } );
-
+                .WherePersonAuthorizedToView( rockContext, this.CurrentPerson )
+                .Select( c => new CommunicationItem
+                {
+                    Id = c.Id,
+                    CommunicationType = c.CommunicationType,
+                    Subject = string.IsNullOrEmpty( c.Subject ) ? ( string.IsNullOrEmpty( c.PushTitle ) ? c.Name : c.PushTitle ) : c.Subject,
+                    CreatedDateTime = c.CreatedDateTime,
+                    Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
+                    Status = c.Status,
+                    CreatedByPersonAliasId = c.CreatedByPersonAliasId
+                } );
 
             var sortProperty = gCommunication.SortProperty;
             if ( sortProperty != null )
@@ -386,11 +398,17 @@ namespace RockWeb.Blocks.Communication
         protected class CommunicationItem : RockDynamic
         {
             public int Id { get; set; }
+
             public CommunicationType CommunicationType { get; set; }
+
             public DateTime? CreatedDateTime { get; set; }
+
             public string Subject { get; set; }
+
             public Person Sender { get; set; }
+
             public CommunicationStatus Status { get; set; }
+
             public int? CreatedByPersonAliasId { get; set; }
         }
     }

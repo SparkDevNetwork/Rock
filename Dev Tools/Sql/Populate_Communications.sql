@@ -10,30 +10,25 @@ SET NOCOUNT ON
 DECLARE @recipientPersonAliasId INT
 	,@senderPersonAliasId INT
 	,@communicationCounter INT = 0
-	,@maxCommunicationCount INT = 25000
+	,@maxCommunicationCount INT = 250000
 
     -- it does a batch communications around 5% of the time, and then a random number of recipients (up to 500) for each batch communication
     ,@maxCommunicationRecipientBatchCount INT = 500
-	,@maxPersonAliasIdForCommunications INT = (
-		SELECT max(Id)
-		FROM (
-			SELECT TOP 4000 Id
-			FROM PersonAlias
-			ORDER BY Id
-			) x
-		)
-	,/* limit to first 4000 persons in the database */
-	@communicationDateTime DATETIME
+    ,@personSampleSize int = 10000 -- number of people to use when randomly assigning a person to each attendance. You might want to set this lower or higher depending on what type of data you want
+	,@communicationDateTime DATETIME
 	,@futureSendDateTime DATETIME
 	,@communicationSubject NVARCHAR(max)
 	,@communicationId INT
 	,@mediumEntityTypeId INT
-    ,@mediumEntityTypeName NVARCHAR(max)
+    ,@isSmsEntityTypeId int
     ,@transportEntityTypeId int
     ,@transportEntityTypeName nvarchar(max)
 	,@yearsBack INT = 4
 	,@isbulk BIT
 	,@communicationStatus INT = 0
+	,@isCommunicationTemplate bit
+	,@CommunicationTemplateId INT
+	,@SystemCommunicationId INT
 
    	,@smsNumbersDefinedTypeId int = (select top 1 Id from DefinedType where [Guid] = '611BDE1F-7405-4D16-8626-CCFEDB0E62BE')
 
@@ -42,7 +37,23 @@ declare
 
 DECLARE @daysBack INT = @yearsBack * 366
 
+DECLARE @CommunicationMediumEntities AS TABLE (Id int PRIMARY KEY, isSms bit);
+DECLARE @CommunicationTransportEntities AS TABLE (Id int PRIMARY KEY, [Name] nvarchar(100));
+DECLARE @twilioEntityTypeId int = (select top 1 Id from EntityType where Name like 'Rock.Communication.Transport.Twilio');
+
 BEGIN
+
+  	insert into @CommunicationMediumEntities 
+  		SELECT Id, case when [Name] like '%.sms' then 1 else 0 end
+		    FROM EntityType
+		    WHERE Name LIKE 'Rock.Communication.Medium%'
+   
+	insert into @CommunicationTransportEntities 
+		SELECT Id, [Name]
+		    FROM EntityType
+		    WHERE Name LIKE 'Rock.Communication.Transport%'
+			and Id != @twilioEntityTypeId
+
 
 /*
  select count(*) from Communication
@@ -50,48 +61,52 @@ BEGIN
  delete [CommunicationRecipient]
  delete [Communication]
 */
+
+    IF CURSOR_STATUS('global','senderPersonAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE senderPersonAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each communication
+	declare senderPersonAliasIdCursor cursor LOCAL FAST_FORWARD for 
+        select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
+        not in (select Id from Person where (IsDeceased = 1  and RecordStatusValueId != 3)) order by newid();
+	open senderPersonAliasIdCursor;
+
+    IF CURSOR_STATUS('global','recipientPersonAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE recipientPersonAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each communication
+	declare recipientPersonAliasIdCursor cursor LOCAL FAST_FORWARD for 
+        select top (@personSampleSize) Id from PersonAlias pa where pa.PersonId 
+        not in (select Id from Person where (IsDeceased = 1  and RecordStatusValueId != 3)) order by newid();
+	open recipientPersonAliasIdCursor;
 	
     
     SET @communicationDateTime = DATEADD(DAY, - @daysBack, SYSDATETIME())
 
 	WHILE @communicationCounter < @maxCommunicationCount
 	BEGIN
-		SET @communicationSubject = 'Random Subject ' + convert(NVARCHAR(max), rand());
-		SET @recipientPersonAliasId = (
-				SELECT TOP 1 Id
-				FROM PersonAlias
-				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-				ORDER BY Id DESC
-				);
+		fetch next from recipientPersonAliasIdCursor into @recipientPersonAliasId;
 
-		WHILE @recipientPersonAliasId IS NULL
-		BEGIN
-			-- Try again just in case we didn't get anybody
-			SET @recipientPersonAliasId = (
-					SELECT TOP 1 Id
-					FROM PersonAlias
-					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-					ORDER BY Id DESC
-					);
-		END
+		if (@@FETCH_STATUS != 0) begin
+		   close recipientPersonAliasIdCursor;
+		   open recipientPersonAliasIdCursor;
+		   fetch next from recipientPersonAliasIdCursor into @recipientPersonAliasId;
+		end
 
-		SET @senderPersonAliasId = (
-				SELECT TOP 1 Id
-				FROM PersonAlias
-				WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-				ORDER BY Id DESC
-				);
+        fetch next from senderPersonAliasIdCursor into @senderPersonAliasId;
 
-		WHILE @senderPersonAliasId IS NULL
-		BEGIN
-			-- Try again just in case we didn't get anybody
-			SET @senderPersonAliasId = (
-					SELECT TOP 1 Id
-					FROM PersonAlias
-					WHERE Id <= rand() * @maxPersonAliasIdForCommunications
-					ORDER BY Id DESC
-					);
-		END
+		if (@@FETCH_STATUS != 0) begin
+		   close senderPersonAliasIdCursor;
+		   open senderPersonAliasIdCursor;
+		   fetch next from senderPersonAliasIdCursor into @senderPersonAliasId;
+		end
+        
+        
+        SET @communicationSubject = 'Random Subject ' + convert(NVARCHAR(max), rand());
 
 		SET @futureSendDateTime = DATEADD(DAY, round(50 * rand(), 0) - 1, @communicationDateTime)
 
@@ -102,25 +117,31 @@ BEGIN
 
 		SET @communicationStatus = ROUND(5 * RAND(), 0)
 
-		SELECT TOP 1 @mediumEntityTypeId = id, @mediumEntityTypeName = et.Name
-		FROM EntityType et
-		WHERE Name LIKE 'Rock.Communication.Medium%'
+		SELECT TOP 1 @mediumEntityTypeId = id, @isSmsEntityTypeId = isSms
+		FROM @CommunicationMediumEntities
 		ORDER BY newid()
 
-        if (@mediumEntityTypeName like '%.Sms') begin
-            SELECT TOP 1 @transportEntityTypeId = id, @transportEntityTypeName = [Name]
-		    FROM EntityType
-		    WHERE Name LIKE 'Rock.Communication.Transport.Twilio'
-		    ORDER BY newid()
+        if (@isSmsEntityTypeId = 1) begin
+		    set @transportEntityTypeId = @twilioEntityTypeId
+			set @transportEntityTypeName = 'Rock.Communication.Transport.Twilio'
         end else begin
-            SELECT TOP 1 @transportEntityTypeId = id, @transportEntityTypeName = [Name]
-		    FROM EntityType
-		    WHERE Name LIKE 'Rock.Communication.Transport%'
+            SELECT TOP 1 @transportEntityTypeId = [Id], @transportEntityTypeName = [Name]
+		    FROM @CommunicationTransportEntities
 		    ORDER BY newid()
         end
 
-		-- generate a bulk about 1/20th of the time
-		SELECT @isbulk = CASE CAST(ROUND(RAND() * 20, 0) AS BIT)
+		-- have it be from a SystemCommunication a about 1/10th of the time
+		SELECT @isCommunicationTemplate = CAST(ROUND(RAND() * 10, 0) AS BIT);
+		if (@isCommunicationTemplate = 1)  BEGIN
+			select @CommunicationTemplateId = (select top 1 Id from CommunicationTemplate order by newid());	
+			set @SystemCommunicationId = null;
+		end else BEGIN
+			select @SystemCommunicationId = (select top 1 Id from SystemCommunication order by newid());
+			set @CommunicationTemplateId = null;
+		end
+
+		-- generate a bulk about 1/100th of the time
+		SELECT @isbulk = CASE CAST(ROUND(RAND() * 100, 0) AS BIT)
 				WHEN 1
 					THEN 0
 				ELSE 1
@@ -144,6 +165,8 @@ BEGIN
 			,[ReviewerPersonAliasId]
 			,[MediumDataJson]
             ,[SMSFromDefinedValueId]
+			,[CommunicationTemplateId]
+			,[SystemCommunicationId]
 			)
 		VALUES (
 			@communicationSubject
@@ -163,6 +186,8 @@ BEGIN
 			,NULL
 			,NULL
             ,@relatedSmsFromDefinedValueId
+			,@CommunicationTemplateId
+			,@SystemCommunicationId
 			)
 
 		SET @communicationId = SCOPE_IDENTITY()
@@ -258,7 +283,7 @@ BEGIN
 
 		DECLARE @messageKey NVARCHAR(11)
         
-        if @mediumEntityTypeName like '%.Sms' begin
+        if @isSmsEntityTypeId = 1 begin
 			select top 1 @messageKey = FullNumber
 			FROM PhoneNumber tablesample(10 percent)
 			WHERE IsMessagingEnabled = 1
@@ -295,7 +320,7 @@ BEGIN
 			,NEWID()
 			)
 
-        if (@communicationCounter % 50 = 0)
+        if (@communicationCounter % 1000 = 0)
 		begin
   		  print @communicationCounter  
         end
@@ -304,8 +329,14 @@ BEGIN
         
 		SET @communicationDateTime = DATEADD(ss, (86000 * @daysBack / @maxCommunicationCount), @communicationDateTime);
 	END
+
+    close senderPersonAliasIdCursor;
+    close recipientPersonAliasIdCursor;
+    
 END;
 
 select count(*) [Total Communications] from Communication 
+select count(*) [CommunicationsFromTemplate] from Communication where CommunicationTemplateId is not null
+select count(*) [CommunicationsFromSystemCommunication] from Communication where SystemCommunicationId is not null
 select count(*) [Total Communication Recipients] from CommunicationRecipient
 

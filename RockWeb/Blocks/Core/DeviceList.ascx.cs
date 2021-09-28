@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -436,7 +437,7 @@ namespace RockWeb.Blocks.Core
 
         #region Classes
 
-        private class DeviceInfo
+        private class DeviceInfo : RockDynamic
         {
             public int Id { get; internal set; }
 

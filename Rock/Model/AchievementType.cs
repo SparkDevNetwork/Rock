@@ -156,6 +156,34 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image binary file identifier. This would be the image
+        /// that would be shown in the achievement summary (for example, a trophy).
+        /// </summary>
+        /// <value>
+        /// The image binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? ImageBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lava template used to render the status summary of the achievement.
+        /// </summary>
+        /// <value>
+        /// The custom summary lava template.
+        /// </value>
+        [DataMember]
+        public string CustomSummaryLavaTemplate { get; set; }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag
@@ -239,6 +267,15 @@ namespace Rock.Model
         public virtual Category Category { get; set; }
 
         /// <summary>
+        /// Gets or sets the image binary file.
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ImageBinaryFile { get; set; }
+
+        /// <summary>
         /// Gets or sets the attempts.
         /// </summary>
         /// <value>
@@ -303,6 +340,7 @@ namespace Rock.Model
                 HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.AchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.ImageBinaryFile ).WithMany().HasForeignKey( stat => stat.ImageBinaryFileId ).WillCascadeOnDelete( false );
             }
         }
 

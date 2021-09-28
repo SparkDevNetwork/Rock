@@ -1096,6 +1096,11 @@ namespace Rock.SystemGuid
         public const string GIVE_NOW = "1615E090-1889-42FF-AB18-5F7BE9F24498";
 
         /// <summary>
+        /// The giving alerts
+        /// </summary>
+        public const string GIVING_ALERTS = "57650485-7727-4392-9C42-36DE50FBEEEA";
+
+        /// <summary>
         /// Gets the Global Attributes page guid
         /// ParentPage: General Settings
         /// </summary>
@@ -2097,5 +2102,10 @@ namespace Rock.SystemGuid
         /// The oidc client detail page.
         /// </summary>
         public const string OIDC_CLIENT_DETAIL = "41E6A833-1697-4463-9962-01DFD123D4C9";
+
+        /// <summary>
+        /// The financial settings menu page on the internal Rock page
+        /// </summary>
+        public const string FINANCIAL_SETTINGS = "90723727-56EC-494D-9708-E188869D900C";
     }
 }

@@ -3,7 +3,8 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Warning" />
+        <asp:Panel ID="pnlCommunicationView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment-o"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
@@ -342,7 +343,7 @@
 
                 </asp:Panel>
             </div>
-        </div>
+        </asp:Panel>
 
         <asp:UpdatePanel ID="upDialog" runat="server" UpdateMode="Conditional">
             <ContentTemplate>

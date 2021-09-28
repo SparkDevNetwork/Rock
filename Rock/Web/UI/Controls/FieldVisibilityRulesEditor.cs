@@ -21,7 +21,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Field;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -96,7 +95,7 @@ namespace Rock.Web.UI.Controls
         /// Gets or sets the fields that will be available to compare to
         /// NOTE: Use Rock.Model.Attribute instead of AttributeCache since we might be using Attributes that haven't been saved to the database yet
         /// </summary>
-        public Dictionary<Guid, RegistrationTemplateFormField> ComparableFields { get; set; }
+        public Dictionary<Guid, FieldVisibilityRuleField> ComparableFields { get; set; }
 
         /// <summary>
         /// The Name that should be displayed for the Field that the rules are for
@@ -229,7 +228,7 @@ namespace Rock.Web.UI.Controls
             base.LoadViewState( savedState );
 
             this._fieldVisibilityRulesState = ( ViewState[ViewStateKey.FieldVisibilityRulesStateJSON] as string ).FromJsonOrNull<FieldVisibilityRules>();
-            this.ComparableFields = ( ViewState[ViewStateKey.ComparableFieldsJSON] as string ).FromJsonOrNull<Dictionary<Guid, RegistrationTemplateFormField>>();
+            this.ComparableFields = ( ViewState[ViewStateKey.ComparableFieldsJSON] as string ).FromJsonOrNull<Dictionary<Guid, FieldVisibilityRuleField>>();
 
             EnsureChildControls();
             _phFilterFieldRuleControls.Controls.Clear();
@@ -357,7 +356,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( selectedField != null )
                 {
-                    fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = selectedField.Guid;
+                    fieldVisibilityRule.ComparedToFormFieldGuid = selectedField.Guid;
                     var filterControl = rockControlWrapper.FindControl( $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}" );
 
                     if ( selectedField.Attribute != null )
@@ -485,9 +484,9 @@ namespace Rock.Web.UI.Controls
             var supportedComparableFields = GetSupportedComparableFields();
 
             // if adding a new fieldVisibilityRule, default to the first supportedComparableAttribute
-            if ( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid == null )
+            if ( fieldVisibilityRule.ComparedToFormFieldGuid == null )
             {
-                fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = supportedComparableFields.Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+                fieldVisibilityRule.ComparedToFormFieldGuid = supportedComparableFields.Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
             }
 
             foreach ( var field in supportedComparableFields )
@@ -495,7 +494,7 @@ namespace Rock.Web.UI.Controls
                 var listItem = new ListItem
                 {
                     Value = field.Guid.ToString(),
-                    Selected = setValues && field.Guid == fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid
+                    Selected = setValues && field.Guid == fieldVisibilityRule.ComparedToFormFieldGuid
                 };
 
                 if ( field.Attribute != null )
@@ -534,9 +533,9 @@ namespace Rock.Web.UI.Controls
         /// Gets the supported comparable attributes.
         /// </summary>
         /// <returns></returns>
-        private List<RegistrationTemplateFormField> GetSupportedComparableFields()
+        private List<FieldVisibilityRuleField> GetSupportedComparableFields()
         {
-            var supportedComparableFields = new List<RegistrationTemplateFormField>();
+            var supportedComparableFields = new List<FieldVisibilityRuleField>();
             foreach ( var field in this.ComparableFields.Values )
             {
                 if ( field.Attribute != null )
@@ -548,7 +547,7 @@ namespace Rock.Web.UI.Controls
                         var qualifiers = attribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
 
                         // get the editControl to see if the FieldType supports a ChangeHandler for it (but don't actually use the control)
-                        var editControl = fieldType.Field.EditControl( qualifiers, $"temp_editcontrol_attribute_{attribute.Id}" );
+                        var editControl = fieldType.Field.EditControl( qualifiers, $"temp_editcontrol_attribute_{attribute.Guid}" );
 
                         if ( fieldType.Field.HasChangeHandler( editControl ) )
                         {
@@ -600,7 +599,7 @@ namespace Rock.Web.UI.Controls
             var fieldVisibilityRule = this._fieldVisibilityRulesState.RuleList.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
 
             var selectedFieldGuid = ddlCompareField.SelectedValue.AsGuidOrNull();
-            fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = selectedFieldGuid;
+            fieldVisibilityRule.ComparedToFormFieldGuid = selectedFieldGuid;
 
             CreateFilterControl( fieldVisibilityRule, false );
         }
@@ -617,7 +616,7 @@ namespace Rock.Web.UI.Controls
             var filterControlPlaceholder = rockControlWrapper.FindControl( $"_filterControlPlaceholder_{fieldVisibilityRule.Guid.ToString( "N" )}" ) as DynamicPlaceholder;
             filterControlPlaceholder.Controls.Clear();
 
-            var selectedField = fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.HasValue ? this.ComparableFields.GetValueOrNull( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.Value ) : null;
+            var selectedField = fieldVisibilityRule.ComparedToFormFieldGuid.HasValue ? this.ComparableFields.GetValueOrNull( fieldVisibilityRule.ComparedToFormFieldGuid.Value ) : null;
             var selectedAttribute = selectedField?.Attribute;
 
             if ( selectedAttribute != null )
@@ -639,7 +638,7 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
-            else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
+            else if ( selectedField != null && FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
             {
                 var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
                 var filterControl = fieldType.Field.FilterControl( null, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );

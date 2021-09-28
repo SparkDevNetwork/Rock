@@ -61,6 +61,167 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
+      <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate.Designer.cs">
+      <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106061641568_UpdateHistoryForConnectionRequest.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106061641568_UpdateHistoryForConnectionRequest.Designer.cs">
+      <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106072003418_ContributionStatementsDetail.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106072003418_ContributionStatementsDetail.Designer.cs">
+      <DependentUpon>202106072003418_ContributionStatementsDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106072348124_EventCalendarIndexProperty.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106072348124_EventCalendarIndexProperty.Designer.cs">
+      <DependentUpon>202106072348124_EventCalendarIndexProperty.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608.Designer.cs">
+      <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106081839210_CodeGenerated_0608.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106081839210_CodeGenerated_0608.Designer.cs">
+      <DependentUpon>202106081839210_CodeGenerated_0608.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106091502220_AddStepProgramCompletion.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106091502220_AddStepProgramCompletion.Designer.cs">
+      <DependentUpon>202106091502220_AddStepProgramCompletion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106091645247_ScheduledTransactionInactiveDateTime.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106091645247_ScheduledTransactionInactiveDateTime.Designer.cs">
+      <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106101643505_FinancialScheduledTransactionStatus.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106101643505_FinancialScheduledTransactionStatus.Designer.cs">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141358456_AddAzureBlobStorageProvider.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141358456_AddAzureBlobStorageProvider.Designer.cs">
+      <DependentUpon>202106141358456_AddAzureBlobStorageProvider.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141449072_RegistrationTimeout.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141449072_RegistrationTimeout.Designer.cs">
+      <DependentUpon>202106141449072_RegistrationTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141518385_Rollup_0614.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106141518385_Rollup_0614.Designer.cs">
+      <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.Designer.cs">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106221850270_Rollup_06221.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106221850270_Rollup_06221.Designer.cs">
+      <DependentUpon>202106221850270_Rollup_06221.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106241733122_AddCampusSchedules.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106241733122_AddCampusSchedules.Designer.cs">
+      <DependentUpon>202106241733122_AddCampusSchedules.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106301738565_GivingAnalyticsUpdates2.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202106301738565_GivingAnalyticsUpdates2.Designer.cs">
+      <DependentUpon>202106301738565_GivingAnalyticsUpdates2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107011629291_AddLanguageDefinedValue.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107011629291_AddLanguageDefinedValue.Designer.cs">
+      <DependentUpon>202107011629291_AddLanguageDefinedValue.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706.Designer.cs">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107062006254_CodeGenerated_0706.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107062006254_CodeGenerated_0706.Designer.cs">
+      <DependentUpon>202107062006254_CodeGenerated_0706.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107062041018_AddMapMarkersDefinedType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107062041018_AddMapMarkersDefinedType.Designer.cs">
+      <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107070516013_AddLanguageDefinedType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107070516013_AddLanguageDefinedType.Designer.cs">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107071327583_UpdateSignatureDocument.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107071327583_UpdateSignatureDocument.Designer.cs">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107071721363_CheckinAbilityLevelDetermination.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107071721363_CheckinAbilityLevelDetermination.Designer.cs">
+      <DependentUpon>202107071721363_CheckinAbilityLevelDetermination.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107072001368_AddLogSettingsBlock.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107072001368_AddLogSettingsBlock.Designer.cs">
+      <DependentUpon>202107072001368_AddLogSettingsBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.Designer.cs">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107121730176_RegistrationInstanceTimeout.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107121730176_RegistrationInstanceTimeout.Designer.cs">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107141721235_CodeGenerated_0714.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107141721235_CodeGenerated_0714.Designer.cs">
+      <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType.Designer.cs">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107151238317_OneTimeSchedule.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107151238317_OneTimeSchedule.Designer.cs">
+      <DependentUpon>202107151238317_OneTimeSchedule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107152221207_PersonEntryCampusFilter.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107152221207_PersonEntryCampusFilter.Designer.cs">
+      <DependentUpon>202107152221207_PersonEntryCampusFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107191657515_MakeCoreSchedulePagesConsistent.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107191657515_MakeCoreSchedulePagesConsistent.Designer.cs">
+      <DependentUpon>202107191657515_MakeCoreSchedulePagesConsistent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107202021122_Rollup_0720.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107202021122_Rollup_0720.Designer.cs">
+      <DependentUpon>202107202021122_Rollup_0720.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107221854506_RenameUpdateStepProgramCompletionJobClass.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107221854506_RenameUpdateStepProgramCompletionJobClass.Designer.cs">
+      <DependentUpon>202107221854506_RenameUpdateStepProgramCompletionJobClass.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107261748077_AddSystemCommunicationIdColumn.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107261748077_AddSystemCommunicationIdColumn.Designer.cs">
+      <DependentUpon>202107261748077_AddSystemCommunicationIdColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107281739146_AddPersonalLink.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107281739146_AddPersonalLink.Designer.cs">
+      <DependentUpon>202107281739146_AddPersonalLink.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107291902405_WorkflowEntryInteractions.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202107291902405_WorkflowEntryInteractions.Designer.cs">
+      <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108031829239_Rollup_0803.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108031829239_Rollup_0803.Designer.cs">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108031853278_CodeGenerated_0803.cs" />
+    <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108031853278_CodeGenerated_0803.Designer.cs">
+      <DependentUpon>202108031853278_CodeGenerated_0803.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.Designer.cs">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
@@ -228,11 +389,6 @@
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102011629370_CoverTheFees.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202102011629370_CoverTheFees.Designer.cs">
       <DependentUpon>202102011629370_CoverTheFees.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\RockMigrationSQL.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RockMigrationSQL.resx</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.1\202012091759168_Rollup_1209.Designer.cs">
@@ -1735,6 +1891,123 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
+      <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate.resx">
+      <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106061641568_UpdateHistoryForConnectionRequest.resx">
+      <DependentUpon>202106061641568_UpdateHistoryForConnectionRequest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106072003418_ContributionStatementsDetail.resx">
+      <DependentUpon>202106072003418_ContributionStatementsDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106072348124_EventCalendarIndexProperty.resx">
+      <DependentUpon>202106072348124_EventCalendarIndexProperty.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608.resx">
+      <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106081839210_CodeGenerated_0608.resx">
+      <DependentUpon>202106081839210_CodeGenerated_0608.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106091502220_AddStepProgramCompletion.resx">
+      <DependentUpon>202106091502220_AddStepProgramCompletion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106091645247_ScheduledTransactionInactiveDateTime.resx">
+      <DependentUpon>202106091645247_ScheduledTransactionInactiveDateTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106101643505_FinancialScheduledTransactionStatus.resx">
+      <DependentUpon>202106101643505_FinancialScheduledTransactionStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106141358456_AddAzureBlobStorageProvider.resx">
+      <DependentUpon>202106141358456_AddAzureBlobStorageProvider.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106141449072_RegistrationTimeout.resx">
+      <DependentUpon>202106141449072_RegistrationTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106141518385_Rollup_0614.resx">
+      <DependentUpon>202106141518385_Rollup_0614.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.resx">
+      <DependentUpon>202106142350296_AddFieldVisibilityRulesJSONToWorkflowActionFormAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106221850270_Rollup_06221.resx">
+      <DependentUpon>202106221850270_Rollup_06221.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106241733122_AddCampusSchedules.resx">
+      <DependentUpon>202106241733122_AddCampusSchedules.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202106301738565_GivingAnalyticsUpdates2.resx">
+      <DependentUpon>202106301738565_GivingAnalyticsUpdates2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107011629291_AddLanguageDefinedValue.resx">
+      <DependentUpon>202107011629291_AddLanguageDefinedValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706.resx">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107062006254_CodeGenerated_0706.resx">
+      <DependentUpon>202107062006254_CodeGenerated_0706.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107062041018_AddMapMarkersDefinedType.resx">
+      <DependentUpon>202107062041018_AddMapMarkersDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107070516013_AddLanguageDefinedType.resx">
+      <DependentUpon>202107070516013_AddLanguageDefinedType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107071327583_UpdateSignatureDocument.resx">
+      <DependentUpon>202107071327583_UpdateSignatureDocument.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107071721363_CheckinAbilityLevelDetermination.resx">
+      <DependentUpon>202107071721363_CheckinAbilityLevelDetermination.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107072001368_AddLogSettingsBlock.resx">
+      <DependentUpon>202107072001368_AddLogSettingsBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.resx">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107121730176_RegistrationInstanceTimeout.resx">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107141721235_CodeGenerated_0714.resx">
+      <DependentUpon>202107141721235_CodeGenerated_0714.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType.resx">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107151238317_OneTimeSchedule.resx">
+      <DependentUpon>202107151238317_OneTimeSchedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107152221207_PersonEntryCampusFilter.resx">
+      <DependentUpon>202107152221207_PersonEntryCampusFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107191657515_MakeCoreSchedulePagesConsistent.resx">
+      <DependentUpon>202107191657515_MakeCoreSchedulePagesConsistent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107202021122_Rollup_0720.resx">
+      <DependentUpon>202107202021122_Rollup_0720.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107221854506_RenameUpdateStepProgramCompletionJobClass.resx">
+      <DependentUpon>202107221854506_RenameUpdateStepProgramCompletionJobClass.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107261748077_AddSystemCommunicationIdColumn.resx">
+      <DependentUpon>202107261748077_AddSystemCommunicationIdColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107281739146_AddPersonalLink.resx">
+      <DependentUpon>202107281739146_AddPersonalLink.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202107291902405_WorkflowEntryInteractions.resx">
+      <DependentUpon>202107291902405_WorkflowEntryInteractions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108031829239_Rollup_0803.resx">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108031853278_CodeGenerated_0803.resx">
+      <DependentUpon>202108031853278_CodeGenerated_0803.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator.resx">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </EmbeddedResource>
@@ -3003,6 +3276,48 @@
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608_LavaHeatMap.sql">
+      <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202106081803525_Rollup_0608_UpdateTrendChart.sql">
+      <DependentUpon>202106081803525_Rollup_0608.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202106221850270_Rollup_06221_UpdateStatementGenerator.sql">
+      <DependentUpon>202106221850270_Rollup_06221.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_chartupdate.sql">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_KPIShortCode.sql">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_update-easypie.sql">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107061930320_Rollup_0706_update-sparklinesimg.sql">
+      <DependentUpon>202107061930320_Rollup_0706.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime_spCrm_PersonMerge.sql">
+      <DependentUpon>202107081553024_UpdateMergePersonStoredProcedureToSetIsFirstTime.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107121730176_RegistrationInstanceTimeout_UpdatePersonEntity.sql">
+      <DependentUpon>202107121730176_RegistrationInstanceTimeout.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddAchievementTypes.sql">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddMedalBinaryFile.sql">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddTrophyBinaryFile.sql">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202107141741515_AchievementType_AddWeeklyAttendanceStreakType.sql">
+      <DependentUpon>202107141741515_AchievementType.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\Version 12.0\Version 1.12.5\202108031829239_Rollup_0803_LavaDocumentationUpdates.sql">
+      <DependentUpon>202108031829239_Rollup_0803.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 12.0\Version 1.12.4\202104291818024_GroupSalutation_spAnalytics_ETL_Family.sql">
       <DependentUpon>202104291818024_GroupSalutation.cs</DependentUpon>
     </Content>
@@ -3208,6 +3523,9 @@
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\Version 12.0\Version 1.12.5\202106042044568_StatementGeneratorDefaultTemplateUpdate_RockDefaultTemplate.lava">
+      <DependentUpon>202106042044568_StatementGeneratorDefaultTemplateUpdate.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplate.lava">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
@@ -3376,7 +3694,9 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>CD $(SolutionDir)Dev Tools\EntityFramework\

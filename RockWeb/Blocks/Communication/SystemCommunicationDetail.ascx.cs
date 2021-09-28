@@ -24,6 +24,7 @@ using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -297,6 +298,43 @@ namespace RockWeb.Blocks.Communication
 
                 cbCssInliningEnabled.Checked = emailTemplate.CssInliningEnabled;
 
+                // render UI based on Authorized and IsSystem
+                var readOnly = false;
+                var restrictedEdit = false;
+
+                if ( !emailTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    restrictedEdit = true;
+                    readOnly = true;
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( CommunicationTemplate.FriendlyTypeName );
+                    nbEditModeMessage.Visible = true;
+                }
+
+                if ( emailTemplate.IsSystem )
+                {
+                    restrictedEdit = true;
+                    nbEditModeMessage.Text = EditModeMessage.System( CommunicationTemplate.FriendlyTypeName );
+                    nbEditModeMessage.Visible = true;
+                }
+
+                tbTitle.ReadOnly = restrictedEdit;
+                cbIsActive.Enabled = !restrictedEdit;
+                cpCategory.Enabled = !restrictedEdit;
+                tbFromName.ReadOnly = restrictedEdit;
+                tbTo.ReadOnly = restrictedEdit;
+                tbFrom.ReadOnly = restrictedEdit;
+                tbCc.ReadOnly = restrictedEdit;
+                tbBcc.ReadOnly = restrictedEdit;
+                tbSubject.ReadOnly = restrictedEdit;
+
+                mfpSMSMessage.Visible = !restrictedEdit;
+                dvpSMSFrom.Enabled = !restrictedEdit;
+                tbSMSTextMessage.ReadOnly = restrictedEdit;
+                ceEmailTemplate.ReadOnly = restrictedEdit;
+
+                ( phPushNotification.Controls[0] as PushNotification ).Enabled = !restrictedEdit;
+
+                btnSave.Enabled = !readOnly;
                 showMessagePreview = true;
             }
             else
@@ -340,7 +378,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Sets the Email Message view mode to Prewiew or Advanced.
+        /// Sets the Email Message view mode to Preview or Advanced.
         /// </summary>
         /// <param name="isEnabled">If true, Preview mode will be enabled.</param>
         private void SetEmailMessagePreviewModeEnabled( bool isEnabled )

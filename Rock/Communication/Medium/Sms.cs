@@ -354,7 +354,20 @@ namespace Rock.Communication.Medium
             string communicationName = fromPerson != null ? string.Format( "From: {0}", fromPerson.FullName ) : "From: unknown person";
 
             var communicationService = new CommunicationService( rockContext );
-            var communication = communicationService.CreateSMSCommunication( fromPerson, toPersonAliasId, message, fromPhone, responseCode, communicationName );
+
+            var createSMSCommunicationArgs = new CommunicationService.CreateSMSCommunicationArgs
+            {
+                FromPerson = fromPerson,
+                ToPersonAliasId = toPersonAliasId,
+                Message = message,
+                FromPhone = fromPhone,
+                CommunicationName = communicationName,
+                ResponseCode = responseCode,
+                SystemCommunicationId = null,
+            };
+
+            Rock.Model.Communication communication = communicationService.CreateSMSCommunication( createSMSCommunicationArgs );
+            
             rockContext.SaveChanges();
 
             // queue the sending

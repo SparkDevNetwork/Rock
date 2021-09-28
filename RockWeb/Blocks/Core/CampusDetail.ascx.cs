@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 
 using Rock;
 using Rock.Constants;
@@ -53,6 +54,8 @@ namespace RockWeb.Blocks.Core
 
         private static readonly string _readOnlyIncludes = "LeaderPersonAlias,LeaderPersonAlias.Person,Location,TeamGroup";
 
+        private List<CampusScheduleDTO> CampusSchedulesState { get; set; }
+
         #endregion
 
         #region Properties
@@ -73,6 +76,26 @@ namespace RockWeb.Blocks.Core
         #region Control Methods
 
         /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            // NOTE: These things are converted to JSON prior to going into ViewState, so the json variable could be null or the string "null"!
+            string json = ViewState["CampusSchedulesState"] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                CampusSchedulesState = new List<CampusScheduleDTO>();
+            }
+            else
+            {
+                CampusSchedulesState = JsonConvert.DeserializeObject<List<CampusScheduleDTO>>( json );
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -81,6 +104,11 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Campus.FriendlyTypeName );
+
+            gCampusSchedules.DataKeyNames = new string[] { "Guid" };
+            gCampusSchedules.Actions.ShowAdd = true;
+            gCampusSchedules.Actions.AddClick += gCampusSchedules_Add;
+            gCampusSchedules.GridRebind += gCampusSchedules_GridRebind;
         }
 
         /// <summary>
@@ -95,6 +123,25 @@ namespace RockWeb.Blocks.Core
             {
                 ShowDetail( PageParameter( PageParameterKey.CampusId ).AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var jsonSetting = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
+            };
+
+            ViewState["CampusSchedulesState"] = JsonConvert.SerializeObject( CampusSchedulesState, Formatting.None, jsonSetting );
+
+            return base.SaveViewState();
         }
 
         #endregion Control Methods
@@ -205,6 +252,41 @@ namespace RockWeb.Blocks.Core
 
             campus.ServiceTimes = kvlServiceTimes.Value;
 
+
+            // Remove any CampusSchedules that were removed in the UI
+            var selectedSchedules = CampusSchedulesState.Select( s => s.Guid );
+            var locationsToRemove = campus.CampusSchedules.Where( s => !selectedSchedules.Contains( s.Guid ) ).ToList();
+            CampusScheduleService campusScheduleService = null;
+            foreach ( var campusSchedule in locationsToRemove )
+            {
+                campusScheduleService = campusScheduleService ?? new CampusScheduleService( rockContext );
+                campus.CampusSchedules.Remove( campusSchedule );
+                campusScheduleService.Delete( campusSchedule );
+            }
+
+            // Add/Update any CampusSchedules that were added or changed in the UI.
+            foreach ( var campusScheduleState in CampusSchedulesState )
+            {
+                var campusSchedule = campus.CampusSchedules.Where( s => s.Guid == campusScheduleState.Guid ).FirstOrDefault();
+                if ( campusSchedule == null )
+                {
+                    campusSchedule = new CampusSchedule()
+                    {
+                        CampusId = campus.Id,
+                        ScheduleId = campusScheduleState.ScheduleId,
+                        ScheduleTypeValueId = campusScheduleState.ScheduleTypeId,
+                        Order = campusScheduleState.Order,
+                        Guid = Guid.NewGuid()
+                    };
+                    campus.CampusSchedules.Add( campusSchedule );
+                }
+                else
+                {
+                    campusSchedule.ScheduleId = campusScheduleState.ScheduleId;
+                    campusSchedule.ScheduleTypeValueId = campusScheduleState.ScheduleTypeId;
+                }
+            }
+
             avcAttributes.GetEditValues( campus );
 
             if ( !campus.IsValid && campus.Location.IsValid )
@@ -256,6 +338,7 @@ namespace RockWeb.Blocks.Core
             ddlTimeZone.Visible = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
             dvpCampusStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_STATUS.AsGuid() ).Id;
             dvpCampusType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.CAMPUS_TYPE.AsGuid() ).Id;
+            dvpScheduleType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHEDULE_TYPE.AsGuid() ).Id;
         }
 
         /// <summary>
@@ -325,7 +408,107 @@ namespace RockWeb.Blocks.Core
             }
         }
 
-        #endregion
+        #region CampusSchedule Grid/Dialog Events
+
+        /// <summary>
+        /// Handles the Add event of the gCampusSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gCampusSchedules_Add( object sender, EventArgs e )
+        {
+            ShowCampusScheduleEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gCampusSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCampusSchedules_Edit( object sender, RowEventArgs e )
+        {
+            Guid campusScheduleGuid = ( Guid ) e.RowKeyValue;
+            ShowCampusScheduleEdit( campusScheduleGuid );
+        }
+
+        /// <summary>
+        /// Gets the CampusSchedule.
+        /// </summary>
+        /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
+        private CampusScheduleDTO GetCampusSchedule( Guid campusScheduleGuid )
+        {
+            return CampusSchedulesState.Where( s => s.Guid == campusScheduleGuid ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gCampusSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gCampusSchedules_Delete( object sender, RowEventArgs e )
+        {
+            Guid campusScheduleGuid = ( Guid ) e.RowKeyValue;
+            RemoveScheduleState( campusScheduleGuid );
+            BindCampusSchedulesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gCampusSchedules control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gCampusSchedules_GridRebind( object sender, EventArgs e )
+        {
+            BindCampusSchedulesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgSchedule_SaveClick( object sender, EventArgs e )
+        {
+            var campusScheduleGuid = hfCampusScheduleGuid.Value.AsGuidOrNull();
+
+            CampusScheduleDTO campusSchedule;
+            int scheduleId = spCampusSchedule.SelectedValueAsId().Value;
+            int scheduleTypeId = dvpScheduleType.SelectedValueAsId().Value;
+            Schedule schedule;
+            DefinedValue scheduleType;
+            using ( var rockContext = new RockContext() )
+            {
+                schedule = new ScheduleService( rockContext ).Get( scheduleId );
+                scheduleType = new DefinedValueService( rockContext ).Get( scheduleTypeId );
+            }
+
+            if ( campusScheduleGuid == null || campusScheduleGuid == Guid.Empty)
+            {
+                campusSchedule = new CampusScheduleDTO()
+                {
+                    Guid = Guid.NewGuid(),
+                    Order = CampusSchedulesState.Any() ? CampusSchedulesState.Max( s => s.Order ) + 1 : 0
+                };
+
+                CampusSchedulesState.Add( campusSchedule );
+            }
+            else
+            {
+                campusSchedule = CampusSchedulesState.FirstOrDefault( s => s.Guid.Equals( campusScheduleGuid ) );
+            }
+
+            campusSchedule.ScheduleId = scheduleId;
+            campusSchedule.Schedule = schedule.Name;
+            campusSchedule.ScheduleTypeId = scheduleTypeId;
+            campusSchedule.ScheduleType = scheduleType.Value;
+
+            dlgSchedule.Hide();
+            BindCampusSchedulesGrid();
+        }
+
+        #endregion CampusSchedule Grid/Dialog Events
+
+        #endregion Edit Events
 
         #region Internal Methods
 
@@ -375,12 +558,18 @@ namespace RockWeb.Blocks.Core
             {
                 dl.Add( "Service Times", serviceTimes );
             }
-            
+
+            if ( campus.CampusSchedules.Any() )
+            {
+                var scheduleText = campus.CampusSchedules.Select( s => s.Schedule.Name ).ToList().AsDelimited( ", " );
+                dl.Add( "Campus Schedules", scheduleText );
+            }
+
             lMainDetailsLeft.Text = dl.Html;
 
             // right column (col-md-6)
             dl = new DescriptionList();
-            
+
             if ( campus.CampusTypeValueId.HasValue )
             {
                 dl.Add( "Type", DefinedValueCache.GetValue( campus.CampusTypeValueId ) );
@@ -388,7 +577,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( campus.Url ) )
             {
-                dl.Add( "Url", campus.Url );
+                dl.Add( "URL", campus.Url );
             }
 
             if ( !string.IsNullOrWhiteSpace( campus.PhoneNumber ) )
@@ -443,9 +632,33 @@ namespace RockWeb.Blocks.Core
             ppCampusLeader.SetValue( campus.LeaderPersonAlias != null ? campus.LeaderPersonAlias.Person : null );
             kvlServiceTimes.Value = campus.ServiceTimes;
 
+            CampusSchedulesState = campus.CampusSchedules.OrderBy( s => s.Order ).ThenBy( s => s.Schedule.Name )
+                .Select(
+                s => new CampusScheduleDTO
+                {
+                    Guid = s.Guid,
+                    Schedule = s.Schedule.Name,
+                    ScheduleId = s.ScheduleId,
+                    ScheduleType = s.ScheduleTypeValue.Value,
+                    ScheduleTypeId = s.ScheduleTypeValueId.Value,
+                    Order = s.Order
+                } ).ToList();
+
+            BindCampusSchedulesGrid();
+
             campus.LoadAttributes();
             avcAttributes.ExcludedAttributes = campus.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
             avcAttributes.AddEditControls( campus );
+        }
+
+        private void BindCampusSchedulesGrid()
+        {
+            gCampusSchedules.DataSource = CampusSchedulesState
+                .OrderBy( s => s.Order )
+                .ThenBy( s => s.Schedule )
+                .ToList();
+            gCampusSchedules.DataBind();
+
         }
 
         /// <summary>
@@ -580,7 +793,57 @@ namespace RockWeb.Blocks.Core
             return true;
         }
 
+        /// <summary>
+        /// Shows the CampusSchedule edit dialog.
+        /// </summary>
+        /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
+        private void ShowCampusScheduleEdit( Guid campusScheduleGuid )
+        {
+            hfCampusScheduleGuid.Value = campusScheduleGuid.ToString();
+            dlgSchedule.Show();
+
+            if ( campusScheduleGuid == Guid.Empty )
+            {
+                var scheduleTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.SCHEDULE_TYPE_WEEKEND_SERVICE.AsGuid() ).Id;
+                spCampusSchedule.SetValue( null );
+                dvpScheduleType.SelectedValue = scheduleTypeId.ToString();
+            }
+            else
+            {
+                var campusSchedule = GetCampusSchedule( campusScheduleGuid );
+                spCampusSchedule.SetValue( campusSchedule.ScheduleId );
+                dvpScheduleType.SelectedValue = campusSchedule.ScheduleTypeId.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Removes the schedule.
+        /// </summary>
+        /// <param name="campusScheduleGuid">The CampusSchedule guid.</param>
+        private void RemoveScheduleState( Guid campusScheduleGuid )
+        {
+            var item = CampusSchedulesState.FirstOrDefault( a => a.Guid.Equals( campusScheduleGuid ) );
+            if ( item != null )
+            {
+                CampusSchedulesState.Remove( item );
+            }
+        }
+
         #endregion Private Methods
 
+        #region Helper Class
+
+        private class CampusScheduleDTO
+        {
+            public Guid Guid { get; set; }
+            public string Schedule { get; set; }
+            public int ScheduleId { get; set; }
+            public string ScheduleType { get; set; }
+            public int ScheduleTypeId { get; set; }
+            public int Order { get; set; }
+        }
+
+        #endregion Helper Class
     }
+
 }

@@ -140,6 +140,29 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a RelatedEntity for the given source entity, target entity, purpose key, and qualifier value.
+        /// </summary>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="relatedEntityId">The related entity identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <param name="qualifierValue">The qualifier value.</param>
+        /// <returns></returns>
+        public RelatedEntity GetRelatedEntityRecordToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, int relatedEntityId, string purposeKey, string qualifierValue )
+        {
+            var query = Queryable()
+            .Where( a => a.SourceEntityTypeId == sourceEntityTypeId
+                && a.SourceEntityId == sourceEntityId
+                && a.TargetEntityTypeId == relatedEntityTypeId
+                && a.TargetEntityId == relatedEntityId
+                && a.QualifierValue == qualifierValue );
+
+            query = purposeKey.IsNullOrWhiteSpace() ? query.Where( a => string.IsNullOrEmpty( a.PurposeKey ) ) : query.Where( a => a.PurposeKey == purposeKey );
+            return query.FirstOrDefault();
+        }
+
+        /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="targetEntityId">A <see cref="System.Int32" /> representing the target entity identifier.</param>

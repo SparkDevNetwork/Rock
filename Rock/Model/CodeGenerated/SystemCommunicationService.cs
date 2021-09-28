@@ -51,6 +51,8 @@ namespace Rock.Model
         public bool CanDelete( SystemCommunication item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring Communication,SystemCommunicationId 
  
             if ( new Service<FinancialTransactionAlertType>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
             {
@@ -79,6 +81,12 @@ namespace Rock.Model
             if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.CompletionSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
                 return false;
             }  
  

@@ -586,6 +586,13 @@ $(document).ready(function() {
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }
+            else
+            {
+                string quickReturnLava = "{{ Dataview.Name | AddQuickReturn:'Data Views', 30 }}";
+                var quickReturnMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                quickReturnMergeFields.Add( "Dataview", dataView );
+                quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
+            }
 
             if ( !dataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {

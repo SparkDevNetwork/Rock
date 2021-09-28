@@ -623,7 +623,12 @@ namespace Rock.Model
             }
 
             var entityTypeId = attributeCache.EntityTypeId.Value;
-            var entityId = EntityId ?? entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+            var entityId = EntityId;
+            if ( !entityId.HasValue && ( entry.State == EntityState.Modified || entry.State == EntityState.Deleted ) )
+            {
+                entityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+            }
+
             var caption = attributeCache.Name;
 
             // Check to see if this attribute is for a person or group, and if so, save to history table
@@ -793,7 +798,7 @@ namespace Rock.Model
             ).Select( a => a.Id );
 
             var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
-                 attributeIdQuery.Contains(av.AttributeId) && matrixGuidQuery.Contains( av.Value )
+                 attributeIdQuery.Contains( av.AttributeId ) && matrixGuidQuery.Contains( av.Value )
             );
 
             return attributeValue;

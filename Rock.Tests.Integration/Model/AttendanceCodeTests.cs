@@ -239,10 +239,9 @@ namespace Rock.Tests.Integration.Model
                 // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
                 Assert.That.IsTrue( codeList.Last().Length == 2, "last code was " + codeList.Last().Length + " characters long." );
             }
-            catch ( TimeoutException )
+            catch ( Exception )
             {
-                // An exception in this case is considered better than hanging (since there is 
-                // no actual solution).
+                // An exception in this case is considered better than hanging (since there is no actual solution).
                 Assert.That.IsTrue( true );
             }
             finally
@@ -264,16 +263,13 @@ namespace Rock.Tests.Integration.Model
 
             var codeList = new List<string>();
             AttendanceCode code = null;
-            for ( int i = 0; i < 998; i++ )
+            for ( int i = 0; i < 997; i++ )
             {
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
                 codeList.Add( code.Code );
             }
 
-            var duplicates = codeList.GroupBy( x => x )
-                                    .Where( group => group.Count() > 1 )
-                                    .Select( group => group.Key );
-
+            var duplicates = codeList.GroupBy( x => x ).Where( group => group.Count() > 1 ).Select( group => group.Key );
             Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join( ", ", duplicates ) );
 
             stopWatch.Stop();
@@ -517,13 +513,36 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            // TODO: Once the combination of codes issue is addressed, this next line should be uncommented
-            // and replace the one below it:
-            //var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
-            var matches = codeList.Select( x => x ).Intersect( AttendanceCodeService.noGood );
-
+            var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
             Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+
+            stopWatch.Stop();
+            System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));
+            System.Diagnostics.Trace.WriteLine( string.Format( "Test AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes took {0} ms.", stopWatch.ElapsedMilliseconds ) );
+        }
+
+        /// <summary>
+        /// Codes containing parts combined into noGood codes, such as "P" + "55", should not occur.
+        /// Ensure sequential numbers are also validated at the correct time so the next number is generated.
+        /// </summary>
+        [TestMethod]
+        public void TwoAlphaWithFourSequentialNumericCodesShouldSkipBadCodes()
+        {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+
+            var codeList = new List<string>();
+            AttendanceCode code = null;
+            for ( int i = 0; i < 6000; i++ )
+            {
+                code = AttendanceCodeService.GetNew( 0, 2, 4, false );
+                codeList.Add( code.Code );
+            }
+
+            var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
+            bool hasMatchIsBad = matches.Any();
+            Assert.That.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
 
             stopWatch.Stop();
             System.Diagnostics.Trace.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(Console.Out));

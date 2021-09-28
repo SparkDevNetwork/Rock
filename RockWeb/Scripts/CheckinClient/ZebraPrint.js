@@ -21,7 +21,7 @@ var ZebraPrintPlugin = {
             return true;
         }
 
-        if (typeof window.external.PrintLabels != 'undefined') {
+        if ( typeof window.external != 'undefined' && typeof window.external.PrintLabels != 'undefined') {
             return true;
         }
 

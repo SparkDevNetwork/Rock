@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -77,7 +78,19 @@ namespace RockWeb.Blocks.WorkFlow
         Order = 4
         )]
 
-    #endregion
+    [BooleanField(
+        "Log Interaction when Form is Viewed",
+        Key = AttributeKey.LogInteractionOnView,
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
+    [BooleanField(
+        "Log Interaction when Form is Completed",
+        Key = AttributeKey.LogInteractionOnCompletion,
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    #endregion Block Attributes
 
     public partial class WorkflowEntry : Rock.Web.UI.RockBlock, IPostBackEventHandler
     {
@@ -93,6 +106,8 @@ namespace RockWeb.Blocks.WorkFlow
             public const string BlockTitleTemplate = "BlockTitleTemplate";
             public const string BlockTitleIconCssClass = "BlockTitleIconCssClass";
             public const string DisablePassingWorkflowId = "DisablePassingWorkflowId";
+            public const string LogInteractionOnView = "LogInteractionOnView";
+            public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
         }
 
         #endregion Attribute Keys
@@ -113,6 +128,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string Command = "Command";
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
+            public const string InteractionStartDateTime = "InteractionStartDateTime";
         }
 
         #endregion PageParameter Keys
@@ -123,6 +139,7 @@ namespace RockWeb.Blocks.WorkFlow
             public const string ActionTypeId = "ActionTypeId";
             public const string WorkflowId = "WorkflowId";
             public const string WorkflowTypeDeterminedByBlockAttribute = "WorkflowTypeDeterminedByBlockAttribute";
+            public const string InteractionStartDateTime = "InteractionStartDateTime";
         }
 
         #region Fields
@@ -137,7 +154,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private WorkflowActionTypeCache _actionType = null;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -189,7 +206,19 @@ namespace RockWeb.Blocks.WorkFlow
             set { ViewState[ViewStateKey.ActionTypeId] = value; }
         }
 
-        #endregion
+        /// <summary>
+        /// Gets or sets the interaction start date time.
+        /// </summary>
+        /// <value>
+        /// The interaction start date time.
+        /// </value>
+        public DateTime? InteractionStartDateTime
+        {
+            get { return ViewState[ViewStateKey.InteractionStartDateTime] as DateTime?; }
+            set { ViewState[ViewStateKey.InteractionStartDateTime] = value; }
+        }
+
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -199,12 +228,12 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
-            base.LoadViewState( savedState );
-
             if ( HydrateObjects() )
             {
                 BuildWorkflowActionForm( false );
             }
+
+            base.LoadViewState( savedState );
         }
 
         /// <summary>
@@ -236,6 +265,8 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 if ( HydrateObjects() )
                 {
+                    InitializeInteractions();
+
                     BuildWorkflowActionForm( true );
                     ProcessActionRequest();
                 }
@@ -265,7 +296,7 @@ namespace RockWeb.Blocks.WorkFlow
             return breadCrumbs;
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -294,7 +325,7 @@ namespace RockWeb.Blocks.WorkFlow
             CompleteFormAction( eventArgument );
         }
 
-        #endregion
+        #endregion Events
 
         #region Methods
 
@@ -674,8 +705,8 @@ namespace RockWeb.Blocks.WorkFlow
                 }
 
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
+                var value = attribute.DefaultValue;
 
-                string value = attribute.DefaultValue;
                 if ( _workflow != null && _workflow.AttributeValues.ContainsKey( attribute.Key ) && _workflow.AttributeValues[attribute.Key] != null )
                 {
                     // if the key is in the workflow's attributes get the value from that
@@ -687,9 +718,23 @@ namespace RockWeb.Blocks.WorkFlow
                     value = _activity.AttributeValues[attribute.Key].Value;
                 }
 
+                var fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_attribute_" + formAttribute.Id.ToString(),
+                    FormFieldId = formAttribute.AttributeId,
+                    FieldVisibilityRules = formAttribute.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
+                };
+
+                phAttributes.Controls.Add( fieldVisibilityWrapper );
+
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )
                 {
-                    phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields( mergeFields ) ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields( mergeFields ) ) );
                 }
 
                 if ( formAttribute.IsReadOnly )
@@ -710,7 +755,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( formAttribute.HideLabel )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formattedValue ) );
+                        fieldVisibilityWrapper.Controls.Add( new LiteralControl( formattedValue ) );
                     }
                     else
                     {
@@ -729,7 +774,7 @@ namespace RockWeb.Blocks.WorkFlow
                             lAttribute.Text = formattedValue;
                         }
 
-                        phAttributes.Controls.Add( lAttribute );
+                        fieldVisibilityWrapper.Controls.Add( lAttribute );
                     }
                 }
                 else
@@ -744,14 +789,28 @@ namespace RockWeb.Blocks.WorkFlow
                         LabelText = formAttribute.HideLabel ? string.Empty : attribute.Name
                     };
 
-                    attribute.AddControl( phAttributes.Controls, attributeControlOptions );
+                    var editControl = attribute.AddControl( fieldVisibilityWrapper.Controls, attributeControlOptions );
+                    fieldVisibilityWrapper.EditControl = editControl;
+
+                    var hasDependantVisibilityRule = form.FormAttributes.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToFormFieldGuid == attribute.Guid ) );
+                    if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
+                    {
+                        attribute.FieldType.Field.AddChangeHandler(
+                            editControl,
+                            () =>
+                            {
+                                fieldVisibilityWrapper.TriggerEditValueUpdated( editControl, new FieldVisibilityWrapper.FieldEventArgs( attribute, editControl ) );
+                            } );
+                    }
                 }
 
                 if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
                 {
-                    phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields ) ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields ) ) );
                 }
             }
+
+            FieldVisibilityWrapper.ApplyFieldVisibilityRules( phAttributes );
 
             if ( form.AllowNotes.HasValue && form.AllowNotes.Value && _workflow != null && _workflow.Id != 0 )
             {
@@ -802,7 +861,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 buttonMergeFields.Add( "ButtonClick", buttonClickScript );
 
-                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, buttonText );
+                var buttonLinkScript = Page.ClientScript.GetPostBackClientHyperlink( this, button.ActionName );
                 buttonMergeFields.Add( "ButtonLink", buttonLinkScript );
 
                 buttonHtml = buttonHtml.ResolveMergeFields( buttonMergeFields );
@@ -834,8 +893,32 @@ namespace RockWeb.Blocks.WorkFlow
 
             lPersonEntryPreHtml.Text = form.PersonEntryPreHtml.ResolveMergeFields( mergeFields );
 
-            // NOTE: If there is only one Campus in the system, this control be always be hidden
-            cpPersonEntryCampus.Visible = form.PersonEntryCampusIsVisible;
+            if ( form.PersonEntryCampusIsVisible )
+            {
+                // NOTE: If there is only one Campus in the system, this control be always be hidden
+                cpPersonEntryCampus.Visible = true;
+
+                /* 7/15/2020 - MDP
+                 The list of campus should include Inactive, but limited to
+                 the configured CampusStatus and/or CampusType.
+                 See https://app.asana.com/0/1121505495628584/1200153314028124/f
+                 */
+
+                cpPersonEntryCampus.IncludeInactive = true;
+                if ( form.PersonEntryCampusStatusValueId.HasValue )
+                {
+                    cpPersonEntryCampus.CampusStatusFilter = new List<int> { form.PersonEntryCampusStatusValueId.Value };
+                }
+
+                if ( form.PersonEntryCampusTypeValueId.HasValue )
+                {
+                    cpPersonEntryCampus.CampusTypesFilter = new List<int> { form.PersonEntryCampusTypeValueId.Value };
+                }
+            }
+            else
+            {
+                cpPersonEntryCampus.Visible = false;
+            }
 
             SetPersonEditorOptions( pePerson1, form );
             SetPersonEditorOptions( pePerson2, form );
@@ -952,7 +1035,6 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
-
                 // default to Married if this is a new person
                 var maritalStatusMarriedValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                 dvpMaritalStatus.SetValue( maritalStatusMarriedValueId );
@@ -1446,7 +1528,7 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 if ( button.CausesValidation )
                 {
-                    Page.Validate();
+                    Page.Validate( this.BlockValidationGroup );
 
                     if ( !Page.IsValid )
                     {
@@ -1525,6 +1607,9 @@ namespace RockWeb.Blocks.WorkFlow
 
             Guid? previousActionGuid = null;
 
+            // just in case this is the Form Completion, keep track of that actionTypeId is
+            int? completionActionTypeId = _actionType?.Id;
+
             if ( _action != null )
             {
                 // Compare GUIDs since the IDs are DB generated and will be 0 if the workflow is not persisted.
@@ -1553,6 +1638,11 @@ namespace RockWeb.Blocks.WorkFlow
                     }
 
                     pageReference.Parameters.AddOrReplace( PageParameterKey.WorkflowGuid, _workflow.Guid.ToString() );
+                    if ( this.GetAttributeValue( AttributeKey.LogInteractionOnCompletion ).AsBoolean() || this.GetAttributeValue( AttributeKey.LogInteractionOnView ).AsBoolean() )
+                    {
+                        // we only need InteractionStartDateTime in the URL if we the Interaction Block settings are enabled.
+                        pageReference.Parameters.AddOrReplace( PageParameterKey.InteractionStartDateTime, this.InteractionStartDateTime.ToISO8601DateString() );
+                    }
 
                     foreach ( var key in pageReference.QueryString.AllKeys.Where( k => !k.Equals( PageParameterKey.Command, StringComparison.OrdinalIgnoreCase ) ) )
                     {
@@ -1566,6 +1656,9 @@ namespace RockWeb.Blocks.WorkFlow
             }
             else
             {
+                // final form completed
+                LogWorkflowEntryInteraction( _workflow, completionActionTypeId, WorkflowInteractionOperationType.FormCompleted );
+
                 if ( lSummary.Text.IsNullOrWhiteSpace() )
                 {
                     var hideForm = _action == null || _action.Guid != previousActionGuid;
@@ -1665,6 +1758,117 @@ namespace RockWeb.Blocks.WorkFlow
             }
         }
 
-        #endregion
+        #endregion Methods
+
+        #region Interaction Methods
+
+        /// <summary>
+        /// Initializes the interactions.
+        /// </summary>
+        private void InitializeInteractions()
+        {
+            var urlInteractionStartDateTime = this.PageParameter( PageParameterKey.InteractionStartDateTime ).AsDateTime();
+            this.InteractionStartDateTime = urlInteractionStartDateTime ?? RockDateTime.Now;
+
+            if ( this.GetAttributeValue( AttributeKey.LogInteractionOnView ).AsBoolean() )
+            {
+                // if this is the First Viewed Form (which we can detect if the URL doesn't contain a StartDateTime) log a FormView interaction
+                if ( !urlInteractionStartDateTime.HasValue )
+                {
+                    LogWorkflowEntryInteraction( _workflow, _actionType?.Id, WorkflowInteractionOperationType.FormViewed );
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private enum WorkflowInteractionOperationType
+        {
+            FormViewed,
+            FormCompleted,
+        }
+
+        /// <summary>
+        /// Logs a 'Form Viewed' or 'Form Completed' Interaction
+        /// </summary>
+        private void LogWorkflowEntryInteraction( Workflow workflow, int? workflowActionTypeId, WorkflowInteractionOperationType workflowInteractionOperationType )
+        {
+            if ( workflowInteractionOperationType == WorkflowInteractionOperationType.FormCompleted )
+            {
+                if ( !this.GetAttributeValue( AttributeKey.LogInteractionOnCompletion ).AsBoolean() )
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if ( !this.GetAttributeValue( AttributeKey.LogInteractionOnView ).AsBoolean() )
+                {
+                    return;
+                }
+            }
+
+            var workflowLaunchInteractionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.WORKFLOW_LAUNCHES.AsGuid() );
+
+            var interactionTransactionInfo = new InteractionTransactionInfo
+            {
+                PersonAliasId = this.CurrentPersonAliasId,
+                InteractionEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() ),
+                InteractionDateTime = RockDateTime.Now,
+                InteractionChannelId = workflowLaunchInteractionChannelId ?? 0,
+                InteractionRelatedEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW_ACTION_TYPE.AsGuid() ),
+                InteractionRelatedEntityId = workflowActionTypeId,
+                LogCrawlers = false
+            };
+
+            /* 7-30-2021 MDP
+
+             If the workflow isn't persisted, the WorkflowId would be 0. If so, just leave the InteractionEntityId
+             null. The InteractionData will still have WorkflowType and ActionType, which are the main things that will
+             be needed when looking at WorkflowEntry Interactions. So, leaving InteractionEntityId null (workflow.Id)
+             is OK.
+             see https://app.asana.com/0/0/1200679813013532/f
+            */
+            if ( workflow.Id > 0 )
+            {
+                interactionTransactionInfo.InteractionEntityId = workflow.Id;
+                interactionTransactionInfo.InteractionEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.WORKFLOW.AsGuid() );
+            }
+
+            var workflowType = GetWorkflowType();
+
+            if ( workflowInteractionOperationType == WorkflowInteractionOperationType.FormCompleted )
+            {
+                interactionTransactionInfo.InteractionSummary = $"Completed a workflow of type: { workflowType?.Name }";
+                interactionTransactionInfo.InteractionOperation = "Form Completed";
+
+                if ( this.InteractionStartDateTime.HasValue )
+                {
+                    interactionTransactionInfo.InteractionLength = ( RockDateTime.Now - this.InteractionStartDateTime.Value ).TotalSeconds;
+                }
+            }
+            else
+            {
+                interactionTransactionInfo.InteractionSummary = $"Launched a workflow of type: { workflowType?.Name }";
+                interactionTransactionInfo.InteractionOperation = "Form Viewed";
+            }
+
+            // there is only one Channel for Workflow Entry (Rock.SystemGuid.InteractionChannel.WORKFLOW_LAUNCHES)
+            // so there isn't a channel entity
+            IEntity channelEntity = null;
+
+            var componentEntity = workflowType;
+
+            var interactionTransaction = new InteractionTransaction(
+                DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS.AsGuid() ),
+                channelEntity,
+                componentEntity,
+                interactionTransactionInfo );
+
+            interactionTransaction.Enqueue();
+        }
+
+        #endregion Interaction Methods
     }
 }

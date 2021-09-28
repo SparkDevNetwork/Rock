@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Communication;
 using Rock.Communication.Medium;
@@ -93,9 +94,7 @@ namespace RockWeb.Blocks.Communication
                 // This must come after BindComponents so that the SmsActionContainer will
                 // have been initialized already and any new attributes created.
                 //
-                var smsActionEntityTypeId = EntityTypeCache.Get( typeof( SmsAction ) ).Id;
-                var attributes = AttributeCache.All()
-                    .Where( a => a.EntityTypeId == smsActionEntityTypeId )
+                var attributes = AttributeCache.AllForEntityType<SmsAction>()
                     .Where( a => a.Key == "Order" || a.Key == "Active" );
                 avcAttributes.ExcludedAttributes = attributes.ToArray();
                 avcAttributes.ExcludedCategoryNames = new string[] { SmsActionComponent.BaseAttributeCategories.Filters };

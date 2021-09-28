@@ -94,6 +94,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this FinancialTransactionAlertType target, FinancialTransactionAlertType source )
         {
             target.Id = source.Id;
+            target.AlertSummaryNotificationGroupId = source.AlertSummaryNotificationGroupId;
             target.AlertType = source.AlertType;
             target.AmountSensitivityScale = source.AmountSensitivityScale;
             target.CampusId = source.CampusId;
@@ -111,6 +112,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Order = source.Order;
             target.RepeatPreventionDuration = source.RepeatPreventionDuration;
+            target.RunDays = source.RunDays;
             target.SendBusEvent = source.SendBusEvent;
             target.SystemCommunicationId = source.SystemCommunicationId;
             target.WorkflowTypeId = source.WorkflowTypeId;

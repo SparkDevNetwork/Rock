@@ -28,7 +28,10 @@
                     <Rock:RockTextBox ID="txtUsername" runat="server" Label="Rock RMS Username" />
                     <Rock:RockTextBox ID="txtPassword" TextMode="Password" runat="server" Label="Rock RMS Password" />
 
-                    <asp:Button ID="btnRetrieveOrganization" CssClass="btn btn-primary" runat="server" OnClick="btnRetrieveOrganization_Click" Text="Retrieve Organization" />
+                    <div class="actions">
+                        <asp:Button ID="btnRetrieveOrganization" CssClass="btn btn-primary" runat="server" OnClick="btnRetrieveOrganization_Click" Text="Retrieve Organization" />
+                    </div>
+
                 </asp:Panel>
 
                 <asp:Panel ID="pnlSelectOrganization" runat="server" Visible="false">

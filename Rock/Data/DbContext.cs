@@ -737,30 +737,46 @@ namespace Rock.Data
 
                     var currentProperty = propertyInfo.GetValue( item.Entity, null );
                     var currentValue = currentProperty != null ? currentProperty.ToString() : string.Empty;
+                    var alternateCurrentValue = currentValue; // used for comparisons of EntityTypeQualifierValue in case the user enters the numeric value of an enum.
+                    if ( propertyInfo.PropertyType.IsEnum )
+                    {
+                        alternateCurrentValue = Convert.ChangeType( currentProperty, Enum.GetUnderlyingType( currentProperty.GetType() ) ).ToString();
+                    }
+
                     var previousValue = string.Empty;
+                    var alternatePreviousValue = previousValue; // used for comparisons of EntityTypeQualifierValue in case the user enters the numeric value of an enum.
 
                     if ( item.OriginalValues != null && item.OriginalValues.ContainsKey( propertyInfo.Name ) )
                     {
-                        previousValue = item.OriginalValues[propertyInfo.Name].ToStringSafe();
+                        var previousProperty = item.OriginalValues[propertyInfo.Name];
+                        previousValue = previousProperty.ToStringSafe();
+                        if ( propertyInfo.PropertyType.IsEnum )
+                        {
+                            alternatePreviousValue = Convert.ChangeType( previousProperty, Enum.GetUnderlyingType( previousProperty.GetType() ) ).ToString();
+                        }
                     }
                     else
                     {
                         var dbPropertyEntry = dbEntity.Property( propertyInfo.Name );
-                        if ( dbPropertyEntry != null )
+                        if ( dbPropertyEntry != null && item.PreSaveState != EntityState.Added )
                         {
-                            previousValue = item.PreSaveState == EntityState.Added ? string.Empty : dbPropertyEntry.OriginalValue.ToStringSafe();
+                            previousValue = dbPropertyEntry.OriginalValue.ToStringSafe();
+                            if ( propertyInfo.PropertyType.IsEnum )
+                            {
+                                alternatePreviousValue = Convert.ChangeType( dbPropertyEntry.OriginalValue, Enum.GetUnderlyingType( dbPropertyEntry.OriginalValue.GetType() ) ).ToString();
+                            }
                         }
                     }
 
                     if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PreDelete ||
                         trigger.WorkflowTriggerType == WorkflowTriggerType.PostDelete )
                     {
-                        match = ( previousValue == trigger.EntityTypeQualifierValue );
+                        match = ( previousValue == trigger.EntityTypeQualifierValue || alternatePreviousValue == trigger.EntityTypeQualifierValue );
                     }
 
                     if ( trigger.WorkflowTriggerType == WorkflowTriggerType.PostAdd )
                     {
-                        match = ( currentValue == trigger.EntityTypeQualifierValue );
+                        match = ( currentValue == trigger.EntityTypeQualifierValue || alternateCurrentValue == trigger.EntityTypeQualifierValue );
                     }
 
                     if ( trigger.WorkflowTriggerType == WorkflowTriggerType.ImmediatePostSave ||
@@ -769,26 +785,30 @@ namespace Rock.Data
                     {
                         if ( trigger.WorkflowTriggerValueChangeType == WorkflowTriggerValueChangeType.ValueEqual )
                         {
-                            match = trigger.EntityTypeQualifierValue == currentValue;
+                            match = ( trigger.EntityTypeQualifierValue == currentValue || trigger.EntityTypeQualifierValue == alternateCurrentValue );
                         }
                         else
                         {
                             if ( hasCurrent && !hasPrevious )
                             {
                                 // ...and previous cannot be the same as the current (must be a change)
-                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                    currentValue != previousValue );
+                                match = ( currentValue != previousValue &&
+                                    ( currentValue == trigger.EntityTypeQualifierValue ||
+                                    alternateCurrentValue == trigger.EntityTypeQualifierValue ) );
                             }
                             else if ( !hasCurrent && hasPrevious )
                             {
                                 // ...and previous cannot be the same as the current (must be a change)
-                                match = ( previousValue == trigger.EntityTypeQualifierValuePrevious &&
-                                    previousValue != currentValue );
+                                match = ( previousValue != currentValue &&
+                                    ( previousValue == trigger.EntityTypeQualifierValuePrevious ||
+                                    alternatePreviousValue == trigger.EntityTypeQualifierValuePrevious ) );
                             }
                             else if ( hasCurrent && hasPrevious )
                             {
-                                match = ( currentValue == trigger.EntityTypeQualifierValue &&
-                                    previousValue == trigger.EntityTypeQualifierValuePrevious );
+                                match = ( ( currentValue == trigger.EntityTypeQualifierValue ||
+                                    alternateCurrentValue == trigger.EntityTypeQualifierValue ) &&
+                                    ( previousValue == trigger.EntityTypeQualifierValuePrevious ||
+                                    alternatePreviousValue == trigger.EntityTypeQualifierValuePrevious ) );
                             }
                             else if ( !hasCurrent && !hasPrevious )
                             {

@@ -111,6 +111,8 @@ namespace Rock.Model
             target.PersonEntryAutofillCurrentPerson = source.PersonEntryAutofillCurrentPerson;
             target.PersonEntryBirthdateEntryOption = source.PersonEntryBirthdateEntryOption;
             target.PersonEntryCampusIsVisible = source.PersonEntryCampusIsVisible;
+            target.PersonEntryCampusStatusValueId = source.PersonEntryCampusStatusValueId;
+            target.PersonEntryCampusTypeValueId = source.PersonEntryCampusTypeValueId;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryEmailEntryOption = source.PersonEntryEmailEntryOption;
             target.PersonEntryFamilyAttributeGuid = source.PersonEntryFamilyAttributeGuid;

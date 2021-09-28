@@ -858,7 +858,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Show a block-level exception notification. 
+        /// Show a block-level exception notification.
         /// </summary>
         /// <param name="ex"></param>
         /// <param name="writeToLog"></param>
@@ -873,7 +873,7 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Show a block-level success notification. 
+        /// Show a block-level success notification.
         /// </summary>
         /// <param name="ex"></param>
         /// <param name="writeToLog"></param>
@@ -1347,7 +1347,7 @@ namespace RockWeb.Blocks.Administration
                                         } )
                                         .Select( eg => {
 
-                                            var mostRecentException = eg.OrderBy( e => e.CreatedDateTime ).FirstOrDefault();
+                                            var mostRecentException = eg.OrderBy( e => e.CreatedDateTime ).LastOrDefault();
 
                                             var exceptionLogViewModel = new ExceptionLogViewModel
                                             {

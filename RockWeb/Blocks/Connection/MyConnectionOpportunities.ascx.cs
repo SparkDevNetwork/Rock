@@ -719,6 +719,7 @@ namespace RockWeb.Blocks.Connection
                         {
                             Id = opportunity.ConnectionTypeId,
                             Name = opportunity.ConnectionType.Name,
+                            Order = opportunity.ConnectionType.Order,
                             EnableRequestSecurity = opportunity.ConnectionType.EnableRequestSecurity,
                             ConnectionRequestDetailPageId = opportunity.ConnectionType.ConnectionRequestDetailPageId,
                             ConnectionRequestDetailPageRouteId = opportunity.ConnectionType.ConnectionRequestDetailPageRouteId,
@@ -910,7 +911,7 @@ namespace RockWeb.Blocks.Connection
 
             nbNoOpportunities.Visible = !viewableOpportunityIds.Any();
 
-            rptConnnectionTypes.DataSource = SummaryState.Where( t => t.Opportunities.Any( o => viewableOpportunityIds.Contains( o.Id ) ) );
+            rptConnnectionTypes.DataSource = SummaryState.Where( t => t.Opportunities.Any( o => viewableOpportunityIds.Contains( o.Id ) ) ).OrderBy( a => a.Order ).ThenBy( a => a.Name );
             rptConnnectionTypes.DataBind();
 
             if ( SelectedOpportunityId.HasValue )
@@ -1365,6 +1366,7 @@ namespace RockWeb.Blocks.Connection
         {
             public int Id { get; set; }
             public string Name { get; set; }
+            public int Order { get; set; }
             public bool EnableRequestSecurity { get; set; }
             public int? ConnectionRequestDetailPageId { get; set; }
             public int? ConnectionRequestDetailPageRouteId { get; set; }

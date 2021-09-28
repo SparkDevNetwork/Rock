@@ -29,6 +29,7 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -36,23 +37,106 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to take care of schema changes ( dynamic attribute value fields ) and data updates to the BI related analytic tables
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Process BI Analytics" )]
     [Description( "Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to the BI related analytic tables." )]
 
     [DisallowConcurrentExecution]
-    [BooleanField( "Process Person BI Analytics", "Do the BI Analytics tasks related to the Person Analytics tables", true, "", 1 )]
-    [BooleanField( "Process Family BI Analytics", "Do the BI Analytics tasks related to the Family Analytics tables", true, "", 2 )]
-    [BooleanField( "Process Campus BI Analytics", "Do the BI Analytics tasks related to the Campus table", true, "", 3 )]
-    [BooleanField( "Process Financial Transaction BI Analytics", "Do the BI Analytics tasks related to the Financial Transaction Analytics tables", true, "", 4 )]
-    [BooleanField( "Process Attendance BI Analytics", "Do the BI Analytics tasks related to the Attendance Analytics tables", true, "", 5 )]
-    [BooleanField( "Refresh Power BI Account Tokens", "Refresh any Power BI Account Tokens to prevent them from expiring.", true, "", 6 )]
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.", false, 60 * 60, "General", 7, "CommandTimeout" )]
-    [BooleanField( "Save SQL for Debug", "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs", false, "Advanced", 8, "SaveSQLForDebug" )]
+    [BooleanField(
+        "Process Person BI Analytics",
+        Key = AttributeKey.ProcessPersonBIAnalytics,
+        Description = "Do the BI Analytics tasks related to the Person Analytics tables.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 1 )]
+
+    [BooleanField(
+        "Process Family BI Analytics",
+        Key = AttributeKey.ProcessFamilyBIAnalytics,
+        Description = "Do the BI Analytics tasks related to the Family Analytics tables.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 2 )]
+
+    [BooleanField(
+        "Process Campus BI Analytics",
+        Key = AttributeKey.ProcessCampusBIAnalytics,
+        Description = "Do the BI Analytics tasks related to the Campus table.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 3 )]
+
+    [BooleanField(
+        "Process Financial Transaction BI Analytics",
+        Key = AttributeKey.ProcessFinancialTransactionBIAnalytics,
+        Description = "Do the BI Analytics tasks related to the Financial Transaction Analytics tables.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 4 )]
+
+    [BooleanField(
+        "Process Attendance BI Analytics",
+        Key = AttributeKey.ProcessAttendanceBIAnalytics,
+        Description = "Do the BI Analytics tasks related to the Attendance Analytics tables",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 5 )]
+
+    [BooleanField(
+        "Refresh Power BI Account Tokens",
+        Key = AttributeKey.RefreshPowerBIAccountTokens,
+        Description = "Refresh any Power BI Account Tokens to prevent them from expiring.",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 6 )]
+
+    [BooleanField(
+        "Process Giving Unit BI Analytics",
+        Key = AttributeKey.ProcessGivingUnitBIAnalytics,
+        Description = "Do the BI Analytics tasks related to Giving Units",
+        DefaultBooleanValue = true,
+        Category = "",
+        Order = 7 )]
+
+    [IntegerField(
+        "Command Timeout",
+        Key = AttributeKey.CommandTimeout,
+        Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. Leave blank to use the default for this job (3600 seconds). Note that some of the tasks might take a while on larger databases, so you might need to set it higher.",
+        IsRequired = false,
+        DefaultIntegerValue = 60 * 60,
+        Category = "General",
+        Order = 8 )]
+
+    [BooleanField(
+        "Save SQL for Debug",
+        Key = AttributeKey.SaveSQLForDebug,
+        Description = "Save the SQL that is used in the Person and Family related parts of the this job to App_Data\\Logs",
+        DefaultBooleanValue = false,
+        Category = "Advanced",
+        Order = 9 )]
     public class ProcessBIAnalytics : IJob
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Attribute Keys
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ProcessPersonBIAnalytics = "ProcessPersonBIAnalytics";
+            public const string ProcessFamilyBIAnalytics = "ProcessFamilyBIAnalytics";
+            public const string ProcessCampusBIAnalytics = "ProcessCampusBIAnalytics";
+            public const string ProcessFinancialTransactionBIAnalytics = "ProcessFinancialTransactionBIAnalytics";
+            public const string ProcessAttendanceBIAnalytics = "ProcessAttendanceBIAnalytics";
+            public const string RefreshPowerBIAccountTokens = "RefreshPowerBIAccountTokens";
+            public const string CommandTimeout = "CommandTimeout";
+            public const string SaveSQLForDebug = "SaveSQLForDebug";
+            public const string ProcessGivingUnitBIAnalytics = "ProcessGivingUnitBIAnalytics";
+        }
+
+        #endregion Attribute Keys
+
         #region Constructor
 
         /// <summary> 
@@ -70,6 +154,8 @@ namespace Rock.Jobs
 
         #region Private Fields
 
+        private const int _maxAttributeValueLength = 250;
+
         /// <summary>
         /// The person job stats
         /// </summary>
@@ -84,6 +170,11 @@ namespace Rock.Jobs
         /// The campus job stats
         /// </summary>
         private JobStats _campusJobStats = new JobStats();
+
+        /// <summary>
+        /// The giving unit job stats
+        /// </summary>
+        private JobStats _givingUnitJobStats = new JobStats();
 
         private int? _commandTimeout = null;
 
@@ -100,12 +191,12 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
             // get the configured timeout, or default to 20 minutes if it is blank
-            _commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 1200;
+            _commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 1200;
 
             StringBuilder results = new StringBuilder();
 
             // Do the stuff for Person related BI Tables
-            if ( dataMap.GetString( "ProcessPersonBIAnalytics" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.ProcessPersonBIAnalytics ).AsBoolean() )
             {
                 ProcessPersonBIAnalytics( context, dataMap );
 
@@ -116,7 +207,7 @@ namespace Rock.Jobs
             }
 
             // Do the stuff for Family related BI Tables
-            if ( dataMap.GetString( "ProcessFamilyBIAnalytics" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.ProcessFamilyBIAnalytics ).AsBoolean() )
             {
                 ProcessFamilyBIAnalytics( context, dataMap );
 
@@ -127,7 +218,7 @@ namespace Rock.Jobs
             }
 
             // Do the stuff for Campus related BI Tables
-            if ( dataMap.GetString( "ProcessCampusBIAnalytics" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.ProcessCampusBIAnalytics ).AsBoolean() )
             {
                 ProcessCampusBIAnalytics( context, dataMap );
 
@@ -137,7 +228,7 @@ namespace Rock.Jobs
             }
 
             // Run Stored Proc ETL for Financial Transaction BI Tables
-            if ( dataMap.GetString( "ProcessFinancialTransactionBIAnalytics" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.ProcessFinancialTransactionBIAnalytics ).AsBoolean() )
             {
                 try
                 {
@@ -155,7 +246,7 @@ namespace Rock.Jobs
             }
 
             // Run Stored Proc ETL for Attendance BI Tables
-            if ( dataMap.GetString( "ProcessAttendanceBIAnalytics" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.ProcessAttendanceBIAnalytics ).AsBoolean() )
             {
                 try
                 {
@@ -173,7 +264,7 @@ namespace Rock.Jobs
             }
 
             // "Refresh Power BI Account Tokens"
-            if ( dataMap.GetString( "RefreshPowerBIAccountTokens" ).AsBoolean() )
+            if ( dataMap.GetString( AttributeKey.RefreshPowerBIAccountTokens ).AsBoolean() )
             {
                 var powerBiAccountsDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS.AsGuid() );
                 if ( powerBiAccountsDefinedType?.DefinedValues?.Any() == true )
@@ -192,6 +283,14 @@ namespace Rock.Jobs
                         }
                     }
                 }
+            }
+
+            if ( dataMap.GetString( AttributeKey.ProcessGivingUnitBIAnalytics ).AsBoolean() )
+            {
+                ProcessGivingUnitAnalytics( context, dataMap );
+                results.AppendLine( "Giving Unit BI Analytic  Results:" );
+                results.AppendLine( _givingUnitJobStats.SummaryMessage );
+                context.UpdateLastStatusMessage( results.ToString() );
             }
 
             context.Result = results.ToString();
@@ -279,13 +378,12 @@ namespace Rock.Jobs
             analyticsFieldNames.Add( "Guid" );
             analyticsFieldNames.Add( "TypeId" );
 
-            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a =>
-                !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
+            var currentDatabaseAttributeFields = dataTable.Columns.OfType<DataColumn>().Where( a => !analyticsFieldNames.Contains( a.ColumnName ) ).ToList();
 
             const string BooleanSqlFieldType = "bit";
             const string DateTimeSqlFieldType = "datetime";
             const string NumericSqlFieldType = "[decimal](29,4)";
-            const string DefaultSqlFieldType = "nvarchar(250)";
+            string DefaultSqlFieldType = $"nvarchar({_maxAttributeValueLength})";
 
             using ( var rockContext = GetNewConfiguredDataContext() )
             {
@@ -390,7 +488,7 @@ namespace Rock.Jobs
         {
             var entityType = Type.GetType( $"Rock.Model.{entityName}, Rock" );
 
-            if (entityType == null )
+            if ( entityType == null )
             {
                 return false;
             }
@@ -486,7 +584,7 @@ UPDATE [{analyticsTableName}]
         /// <param name="dataMap">The data map.</param>
         private void ProcessPersonBIAnalytics( IJobExecutionContext context, JobDataMap dataMap )
         {
-            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ),  false, false );
+            List<EntityField> analyticsSourcePersonHistoricalFields = EntityHelper.GetEntityFields( typeof( Rock.Model.AnalyticsSourcePersonHistorical ), false, false );
             EntityField typeIdField = analyticsSourcePersonHistoricalFields.Where( f => f.Name == "TypeId" ).FirstOrDefault();
 
             if ( typeIdField != null )
@@ -505,7 +603,6 @@ UPDATE [{analyticsTableName}]
             {
                 analyticsSourcePersonHistoricalFields.Remove( typeIdField );
             }
-
 
             List<AttributeCache> personAnalyticAttributes = EntityHelper.GetEntityFields( typeof( Rock.Model.Person ) )
                 .Where( a => a.FieldKind == FieldKind.Attribute && a.AttributeGuid.HasValue )
@@ -541,7 +638,7 @@ UPDATE [{analyticsTableName}]
             }
             finally
             {
-                if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimPerson.sql", _personJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -634,15 +731,22 @@ UPDATE [AnalyticsSourcePersonHistorical]
                         {
                             var formattedValue = attribute.FieldType.Field.FormatValue( null, personAttributeValue, attribute.QualifierValues, false );
 
+                            // unformatted values over this length are filtered out. Prevent truncated string SQL errors here by checking the formatted value against the max length.
+                            if ( formattedValue.Length > _maxAttributeValueLength )
+                            {
+                                continue;
+                            }
+
                             // mass update the value for the Attribute in the AnalyticsSourcePersonHistorical records 
-                            // Don't update the Historical Records, even if it was just a Text change.  For example, if they changed DefinedValue "Member" to "Owner", 
-                            // have the historical records say "Member" even though it is the same definedvalue id
+                            // Don't update the Historical Records, even if it was just a Text change.  For example, 
+                            // if they changed DefinedValue "Member" to "Owner", have the historical records say "Member"
+                            // even though it is the same definedvalue id.
                             var updateSql = $@"
-UPDATE [AnalyticsSourcePersonHistorical] 
-    SET [{columnName}] = @formattedValue 
-    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
-    AND isnull([{columnName}],'') != @formattedValue
-    AND [CurrentRowIndicator] = 1";
+                                UPDATE [AnalyticsSourcePersonHistorical] 
+                                    SET [{columnName}] = @formattedValue 
+                                    WHERE [PersonId] IN (SELECT EntityId FROM AttributeValue WHERE AttributeId = {attribute.Id} AND Value = @personAttributeValue) 
+                                        AND isnull([{columnName}],'') != @formattedValue
+                                        AND [CurrentRowIndicator] = 1";
 
                             var parameters = new Dictionary<string, object>();
                             parameters.Add( "@personAttributeValue", personAttributeValue );
@@ -650,7 +754,17 @@ UPDATE [AnalyticsSourcePersonHistorical]
 
                             _personJobStats.SqlLogs.Add( parameters.Select( a => $"/* {a.Key} = '{a.Value}' */" ).ToList().AsDelimited( "\n" ) + updateSql );
 
-                            _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            try
+                            {
+                                _personJobStats.AttributeFieldsUpdated += DbService.ExecuteCommand( updateSql, System.Data.CommandType.Text, parameters, _commandTimeout );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( new Exception( $"Error inserting Person Analytics value {columnName}. Value: {personAttributeValue}, formatted value: {formattedValue}", ex ) );
+
+                                // Throw the exception since missing any data will not provide accurate analytics.
+                                throw;
+                            }
                         }
                     }
                 }
@@ -688,8 +802,6 @@ UPDATE [AnalyticsSourcePersonHistorical]
             }
 
             List<string> populatePersonValueFROMClauses = new List<string>( populatePersonValueSELECTClauses );
-
-            const int maxAttributeValueLength = 250;
 
             using ( var rockContext = GetNewConfiguredDataContext() )
             {
@@ -731,7 +843,7 @@ UPDATE [AnalyticsSourcePersonHistorical]
                     }
 
                     string lengthCondition = personAttributeValueFieldName == "Value"
-                        ? $"AND len(av{personAttribute.Id}.Value) <= {maxAttributeValueLength}"
+                        ? $"AND len(av{personAttribute.Id}.Value) <= {_maxAttributeValueLength}"
                         : null;
 
                     string populateAttributeValueFROMClause =
@@ -996,7 +1108,7 @@ WHERE asph.CurrentRowIndicator = 1 AND (";
             }
             finally
             {
-                if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimFamily.sql", _familyJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -1099,7 +1211,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             }
             finally
             {
-                if ( dataMap.GetString( "SaveSQLForDebug" ).AsBoolean() )
+                if ( dataMap.GetString( AttributeKey.SaveSQLForDebug ).AsBoolean() )
                 {
                     LogSQL( "ProcessAnalyticsDimCampus.sql", _campusJobStats.SqlLogs.AsDelimited( "\n" ).ToString() );
                 }
@@ -1107,6 +1219,159 @@ UPDATE [AnalyticsSourceFamilyHistorical]
         }
 
         #endregion Campus Analytics
+
+        #region GivingUnit Analytics
+
+        private void ProcessGivingUnitAnalytics( IJobExecutionContext context, JobDataMap dataMap )
+        {
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = _commandTimeout;
+
+            var givingLeaderPersonQry = new PersonService( rockContext ).Queryable().Where( p => p.GivingLeaderId == p.Id );
+
+            var givingAttributes = new List<AttributeCache>();
+            var personGivingBinAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_BIN.AsGuid() );
+            var personGivingPercentileAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_PERCENTILE.AsGuid() );
+            var personGivingAmountMedianAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_MEDIAN.AsGuid() );
+            var personGivingAmountIQRAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_AMOUNT_IQR.AsGuid() );
+            var personGivingFreqencyMeanDaysAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_MEAN_DAYS.AsGuid() );
+            var personGivingFreqencyStdDevDaysAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_STD_DEV_DAYS.AsGuid() );
+            var personGivingPercentScheduledAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_PERCENT_SCHEDULED.AsGuid() );
+
+            var personGivingFrequencyLabelAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_FREQUENCY_LABEL.AsGuid() );
+            var personGivingPreferredCurrencyAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_PREFERRED_CURRENCY.AsGuid() );
+            var personGivingPreferredSourceAttributeId = AttributeCache.GetId( Rock.SystemGuid.Attribute.PERSON_GIVING_PREFERRED_SOURCE.AsGuid() );
+
+            var attributesValuesQuery = new AttributeValueService( rockContext ).Queryable();
+
+            var givingUnitDataQuery = givingLeaderPersonQry.Select( p => new
+            {
+                GivingId = p.GivingId,
+                GivingLeaderPersonId = p.Id,
+                GivingSalutation = p.PrimaryFamily.GroupSalutation,
+                GivingSalutationFull = p.PrimaryFamily.GroupSalutationFull,
+
+                GivingBinValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingBinAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                GivingPercentileValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingPercentileAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                GiftAmountMedianValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingAmountMedianAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                GiftAmountIqrValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingAmountIQRAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+
+                GiftFrequencyMeanValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingFreqencyMeanDaysAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                GiftFrequencyStandardDeviationValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingFreqencyStdDevDaysAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                PercentGiftsScheduledValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingPercentScheduledAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                FrequencyIntValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingFrequencyLabelAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+
+                PreferredCurrencyValueGuidValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingPreferredCurrencyAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+                PreferredSourceValueGuidValue = attributesValuesQuery.Where( av => av.EntityId == p.Id && av.AttributeId == personGivingPreferredSourceAttributeId ).Select( a => a.Value ).FirstOrDefault(),
+            } );
+
+            var analyticsSourceGivingUnitQry = new AnalyticsSourceGivingUnitService( rockContext ).Queryable();
+
+            // Figure out which GIvingId data needs to be Inserted into  AnalyticsSourceGivingUnit
+            var givingIdsToInsert = givingLeaderPersonQry.Where( p => !analyticsSourceGivingUnitQry.Any( a => a.GivingId == p.GivingId ) ).Select( a => a.GivingId ).ToList();
+
+            // delete any  AnalyticsSourceGivingUnit rows that have a GivingId that no longer exists
+            var analyticsSourceGivingUnitToDeleteQuery = analyticsSourceGivingUnitQry.Where( a => !givingLeaderPersonQry.Any( p => p.GivingId == a.GivingId ) );
+            _givingUnitJobStats.RowsDeleted = rockContext.BulkDelete( analyticsSourceGivingUnitToDeleteQuery );
+
+            // Create a List of AnalyticsSourceGivingUnit records from the current giving data attribute values, etc
+            // We'll use that to figure out which ones to Insert/Update/Delete in the AnalyticsSourceGivingUnit table
+            var frequencyLabelLookup = Enum.GetValues( typeof( FinancialGivingAnalyticsFrequencyLabel ) ).OfType<FinancialGivingAnalyticsFrequencyLabel>()
+                .ToDictionary( k => k.ConvertToInt(), v => v.GetDescription() );
+
+            var givingUnitDataQueryList = givingUnitDataQuery.ToList();
+            var analyticsSourceGivingUnitFromCurrentData = givingUnitDataQueryList
+                .ToList()
+                .Select( a =>
+                {
+                    var result = new AnalyticsSourceGivingUnit
+                    {
+                        GivingId = a.GivingId,
+                        GivingLeaderPersonId = a.GivingLeaderPersonId,
+                        GivingSalutation = a.GivingSalutation,
+                        GivingSalutationFull = a.GivingSalutationFull,
+                        GivingBin = a.GivingBinValue.AsInteger(),
+                        GivingPercentile = a.GivingPercentileValue.AsInteger(),
+
+                        GiftAmountMedian = decimal.Round( a.GiftAmountMedianValue.AsDecimal(), 2 ),
+                        GiftAmountIqr = decimal.Round( a.GiftAmountIqrValue.AsDecimal(), 2 ),
+                        GiftFrequencyMean = decimal.Round( a.GiftFrequencyMeanValue.AsDecimal(), 2 ),
+                        GiftFrequencyStandardDeviation = decimal.Round( a.GiftFrequencyStandardDeviationValue.AsDecimal(), 2 ),
+
+                        PercentGiftsScheduled = a.PercentGiftsScheduledValue.AsInteger(),
+                        Frequency = frequencyLabelLookup.GetValueOrNull( a.FrequencyIntValue.AsInteger() ) ?? "Undetermined",
+                    };
+
+                    var preferredCurrencyValueGuid = a.PreferredCurrencyValueGuidValue.AsGuidOrNull();
+                    if ( preferredCurrencyValueGuid.HasValue )
+                    {
+                        var preferredCurrencyValue = DefinedValueCache.Get( preferredCurrencyValueGuid.Value );
+                        result.PreferredCurrencyValueId = preferredCurrencyValue?.Id ?? 0;
+                        result.PreferredCurrency = preferredCurrencyValue?.Value;
+                    }
+
+                    var preferredSourceValueGuid = a.PreferredSourceValueGuidValue.AsGuidOrNull();
+
+                    if ( preferredSourceValueGuid.HasValue )
+                    {
+                        var preferredSourceValue = DefinedValueCache.Get( preferredSourceValueGuid.Value );
+                        result.PreferredSourceValueId = preferredSourceValue?.Id ?? 0;
+                        result.PreferredSource = preferredSourceValue?.Value;
+                    }
+
+                    return result;
+                } ).ToList();
+
+            // using the list of givingIdsToInsert, and the current data for those givingIds, create AnalyticsSourceGivingUnit records to bulk insert into the database
+            var analyticsSourceGivingUnitToInsert = analyticsSourceGivingUnitFromCurrentData.Where( a => givingIdsToInsert.Contains( a.GivingId ) ).ToList();
+            if ( analyticsSourceGivingUnitToInsert.Any() )
+            {
+                _givingUnitJobStats.RowsInserted = analyticsSourceGivingUnitToInsert.Count();
+                rockContext.BulkInsert( analyticsSourceGivingUnitToInsert );
+            }
+
+            // Join CurrentGIvingUnitData to the data in the AnalyticsSourceGivingUnit
+            // Then we can use this join to compare and updated as needed
+            var analyticsSourceGivingUnitAll = analyticsSourceGivingUnitQry.ToList();
+            var givingUnitsJoinCompareList = analyticsSourceGivingUnitFromCurrentData
+                .Join(
+                    analyticsSourceGivingUnitAll,
+                    currentData => currentData.GivingId,
+                    biData => biData.GivingId,
+                    ( currentData, biData ) => new
+                    {
+                        CurrentGivingUnitData = currentData,
+                        BIGivingUnitData = biData
+                    } );
+
+            // now go thru and update the values on every record. If there are changes, EF will detect that and updated the record in the database.
+            foreach ( var givingUnitJoin in givingUnitsJoinCompareList )
+            {
+                AnalyticsSourceGivingUnit analyticsSourceGivingUnit = givingUnitJoin.BIGivingUnitData;
+                var currentGivingUnitData = givingUnitJoin.CurrentGivingUnitData;
+                analyticsSourceGivingUnit.Frequency = currentGivingUnitData.Frequency;
+                analyticsSourceGivingUnit.GiftAmountIqr = currentGivingUnitData.GiftAmountIqr;
+                analyticsSourceGivingUnit.GiftAmountMedian = currentGivingUnitData.GiftAmountMedian;
+                analyticsSourceGivingUnit.GiftFrequencyMean = currentGivingUnitData.GiftFrequencyMean;
+                analyticsSourceGivingUnit.GiftFrequencyStandardDeviation = currentGivingUnitData.GiftFrequencyStandardDeviation;
+                analyticsSourceGivingUnit.GivingBin = currentGivingUnitData.GivingBin;
+                analyticsSourceGivingUnit.GivingLeaderPersonId = currentGivingUnitData.GivingLeaderPersonId;
+                analyticsSourceGivingUnit.GivingPercentile = currentGivingUnitData.GivingPercentile;
+                analyticsSourceGivingUnit.GivingSalutation = currentGivingUnitData.GivingSalutation;
+                analyticsSourceGivingUnit.GivingSalutationFull = currentGivingUnitData.GivingSalutationFull;
+                analyticsSourceGivingUnit.PercentGiftsScheduled = currentGivingUnitData.PercentGiftsScheduled;
+                analyticsSourceGivingUnit.PreferredCurrency = currentGivingUnitData.PreferredCurrency;
+                analyticsSourceGivingUnit.PreferredCurrencyValueId = currentGivingUnitData.PreferredCurrencyValueId;
+                analyticsSourceGivingUnit.PreferredSource = currentGivingUnitData.PreferredSource;
+                analyticsSourceGivingUnit.PreferredSourceValueId = currentGivingUnitData.PreferredSourceValueId;
+            }
+
+            var rowsUpdated = rockContext.SaveChanges();
+
+            _givingUnitJobStats.RowsUpdated = rowsUpdated;
+        }
+
+        #endregion GivingUnit Analytics
 
         #region Private Classes
 
@@ -1212,7 +1477,6 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                 }
             }
 
-
             /// <summary>
             /// Gets or sets the rows marked as history.
             /// </summary>
@@ -1238,6 +1502,14 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             public int RowsInserted { get; set; }
 
             /// <summary>
+            /// Gets or sets the rows deleted.
+            /// </summary>
+            /// <value>
+            /// The rows deleted.
+            /// </value>
+            public int RowsDeleted { get; set; }
+
+            /// <summary>
             /// Gets a value indicating whether [row data was modified].
             /// </summary>
             /// <value>
@@ -1247,7 +1519,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             {
                 get
                 {
-                    return RowsMarkedAsHistory > 0 || RowsUpdated > 0 || RowsInserted > 0 || AttributeFieldsUpdated > 0;
+                    return RowsMarkedAsHistory > 0 || RowsUpdated > 0 || RowsInserted > 0 || AttributeFieldsUpdated > 0 || RowsDeleted > 0;
                 }
             }
 
@@ -1262,7 +1534,7 @@ UPDATE [AnalyticsSourceFamilyHistorical]
             /// <summary>
             /// The SQL logs
             /// </summary>
-            public List<string> SqlLogs = new List<string>();
+            public List<string> SqlLogs { get; set; } = new List<string>();
 
             /// <summary>
             /// Gets the summary message.
@@ -1283,9 +1555,9 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                     if ( RowDataWasModified )
                     {
                         summaryMessage.Append( $"--" );
-                        if ( this.RowsMarkedAsHistory > 0)
+                        if ( this.RowsMarkedAsHistory > 0 )
                         {
-                            summaryMessage.Append( $" Marked {this.RowsMarkedAsHistory} records as History;" ); 
+                            summaryMessage.Append( $" Marked {this.RowsMarkedAsHistory} records as History;" );
                         }
 
                         if ( this.RowsUpdated > 0 )
@@ -1301,6 +1573,11 @@ UPDATE [AnalyticsSourceFamilyHistorical]
                         if ( this.RowsInserted > 0 )
                         {
                             summaryMessage.Append( $" Inserted {this.RowsInserted} records;" );
+                        }
+
+                        if ( this.RowsDeleted > 0 )
+                        {
+                            summaryMessage.Append( $" Deleted {this.RowsDeleted} records;" );
                         }
 
                         summaryMessage.AppendLine();

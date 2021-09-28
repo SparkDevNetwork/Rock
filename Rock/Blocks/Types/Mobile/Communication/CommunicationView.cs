@@ -220,13 +220,15 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return GetNotFoundContent();
                 }
 
+                var person = recipient.PersonAlias?.Person ?? recipient.PersonalDevice?.PersonAlias?.Person;
+
                 //
                 // Configure the standard merge fields.
                 //
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 mergeFields.AddOrReplace( "CurrentPage", PageCache );
                 mergeFields.AddOrReplace( "Communication", recipient.Communication );
-                mergeFields.AddOrReplace( "Person", recipient.PersonAlias?.Person );
+                mergeFields.AddOrReplace( "Person", person );
 
                 //
                 // Add in all the additional merge fields from grids.
@@ -238,6 +240,10 @@ namespace Rock.Blocks.Types.Mobile.Communication
                         mergeFields.Add( mergeField.Key, mergeField.Value );
                     }
                 }
+
+                var communicationContent = recipient.Communication.PushOpenMessage.ResolveMergeFields( mergeFields );
+
+                mergeFields.AddOrReplace( "Content", communicationContent );
 
                 var content = Template.ResolveMergeFields( mergeFields, null, EnabledLavaCommands );
 

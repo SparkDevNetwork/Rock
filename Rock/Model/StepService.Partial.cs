@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Rock.Data;
@@ -64,7 +65,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if (stepType.AllowMultiple)
+            if ( stepType.AllowMultiple )
             {
                 return true;
             }
@@ -157,5 +158,38 @@ namespace Rock.Model
         {
             base.Add( item );
         }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Updates the step set with step program completion
+        /// </summary>
+        public static void UpdateStepProgramCompletion( List<Step> stepSet, int personAliasId, int stepProgramId, RockContext rockContext = null )
+        {
+            rockContext = rockContext ?? new RockContext();
+            var campusId = stepSet.Where( a => a.CampusId.HasValue ).Select( a => a.CampusId ).FirstOrDefault();
+            var startDateTime = stepSet.Select( a => a.StartDateTime ?? a.CreatedDateTime ).OrderBy( a => a ).FirstOrDefault();
+            var endDateTime = stepSet.Select( a => a.CompletedDateTime ?? a.EndDateTime ).OrderByDescending( a => a ).FirstOrDefault();
+
+            var stepProgramCompletionService = new StepProgramCompletionService( rockContext );
+            var stepService = new StepService( rockContext );
+
+            var stepProgramCompletion = new StepProgramCompletion
+            {
+                StepProgramId = stepProgramId,
+                PersonAliasId = personAliasId,
+                CampusId = campusId,
+                StartDateTime = startDateTime.Value,
+                EndDateTime = endDateTime
+            };
+            stepProgramCompletionService.Add( stepProgramCompletion );
+            rockContext.SaveChanges();
+
+            var stepIds = stepSet.Select( b => b.Id );
+            var stepQry = stepService.Queryable().Where( a => stepIds.Contains( a.Id ) );
+            rockContext.BulkUpdate( stepQry, a => new Step { StepProgramCompletionId = stepProgramCompletion.Id } );
+        }
+
+        #endregion Static Methods
     }
 }

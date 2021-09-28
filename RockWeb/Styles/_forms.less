@@ -352,6 +352,32 @@ dl:not(.dl-horizontal) {
   }
 }
 
+// Add btn using PrependText or AppendText
+.input-group-addon {
+  > .btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: @input-height-base;
+    margin: -(@padding-base-vertical + 1) -(@padding-base-horizontal + 1);
+    border-radius: @input-border-radius;
+
+    &:focus {
+      z-index: 3;
+    }
+  }
+
+  &:first-child > .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  &:last-child > .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
 .date-parts-picker {
   display: flex;
   flex-wrap: wrap;

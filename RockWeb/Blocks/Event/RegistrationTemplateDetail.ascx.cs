@@ -882,12 +882,12 @@ The logged-in person's information will be used to complete the registrar inform
 
                         var newFormFieldsWithRules = newFormFieldsState[newForm.Guid]
                                                         .Where( a => a.FieldVisibilityRules.RuleList
-                                                                        .Any( b => b.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) );
+                                                                        .Any( b => b.ComparedToFormFieldGuid.HasValue ) );
                         foreach ( var newFormField in newFormFieldsWithRules )
                         {
-                            foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
+                            foreach ( var rule in newFormField.FieldVisibilityRules.RuleList.Where( a => a.ComparedToFormFieldGuid.HasValue ) )
                             {
-                                rule.ComparedToRegistrationTemplateFormFieldGuid = mapKeys.GetValueOrNull(rule.ComparedToRegistrationTemplateFormFieldGuid.Value);
+                                rule.ComparedToFormFieldGuid = mapKeys.GetValueOrNull( rule.ComparedToFormFieldGuid.Value );
                             }
                         }
                     }
@@ -1654,14 +1654,14 @@ The logged-in person's information will be used to complete the registrar inform
                 var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
                     .Where( a => a.FieldVisibilityRules.RuleList.Any()
                      && a.FieldVisibilityRules.RuleList.Any( b =>
-                         b.ComparedToRegistrationTemplateFormFieldGuid.HasValue
-                         && b.ComparedToRegistrationTemplateFormFieldGuid == e.FormFieldGuid ) );
+                         b.ComparedToFormFieldGuid.HasValue
+                         && b.ComparedToFormFieldGuid == e.FormFieldGuid ) );
 
                 foreach ( var newFormField in newFormFieldsWithRules )
                 {
                     newFormField.FieldVisibilityRules.RuleList
-                        .RemoveAll( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue
-                        && a.ComparedToRegistrationTemplateFormFieldGuid.Value == e.FormFieldGuid );
+                        .RemoveAll( a => a.ComparedToFormFieldGuid.HasValue
+                        && a.ComparedToFormFieldGuid.Value == e.FormFieldGuid );
                 }
                 FormFieldsState[e.FormGuid].RemoveEntity( e.FormFieldGuid );
             }
@@ -2927,7 +2927,13 @@ The logged-in person's information will be used to complete the registrar inform
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => rtff );
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => new FieldVisibilityRuleField
+                {
+                    Guid = rtff.Guid,
+                    Attribute = rtff.Attribute,
+                    PersonFieldType = rtff.PersonFieldType,
+                    FieldSource = rtff.FieldSource
+                } );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 

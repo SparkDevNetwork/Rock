@@ -60,10 +60,10 @@
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             </div>
                             <div class="col-md-3">
-                                <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
+                                <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Label="Active" />
                             </div>
                             <div class="col-md-3">
-                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
+                                <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Label="Public" />
                             </div>
                         </div>
 
@@ -501,7 +501,7 @@
                         <Rock:RockTextBox ID="tbTriggerName" runat="server" Label="Name" Required="true" ValidationGroup="Trigger" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Text="Active" ValidationGroup="Trigger" />
+                        <Rock:RockCheckBox ID="cbTriggerIsActive" runat="server" Label="Active" ValidationGroup="Trigger" />
                     </div>
                 </div>
                 <div class="row">

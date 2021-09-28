@@ -146,6 +146,7 @@
     <Compile Include="Controllers\CodeGenerated\AuthClaimsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthClientsController.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthScopesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\CampusSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponseAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
@@ -177,6 +178,9 @@
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersistedDatasetsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinkSectionOrdersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersonalLinkSectionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
@@ -186,6 +190,7 @@
     <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepProgramCompletionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
@@ -214,6 +219,7 @@
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\InteractionsController.Partial.cs" />
     <Compile Include="Controllers\MediaElementsController.Partial.cs" />
+    <Compile Include="Controllers\PersonalLinksController.Partial.cs" />
     <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
     <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
