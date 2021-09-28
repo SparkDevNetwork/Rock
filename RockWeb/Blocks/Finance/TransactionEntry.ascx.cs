@@ -169,7 +169,7 @@ namespace RockWeb.Blocks.Finance
 
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
-        Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)",
+        Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
         Order = 15 )]
 
@@ -323,8 +323,8 @@ namespace RockWeb.Blocks.Finance
         Category = CategoryKey.TextOptions,
         Order = 12 )]
 
-    [CodeEditorField( "Payment Comment",
-        Key = AttributeKey.PaymentComment,
+    [CodeEditorField( "Payment Comment Template",
+        Key = AttributeKey.PaymentCommentTemplate,
         Description = AttributeString.PaymentCommentDescription,
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
@@ -488,7 +488,10 @@ namespace RockWeb.Blocks.Finance
             public const string ConfirmationFooter = "ConfirmationFooter";
             public const string SuccessHeader = "SuccessHeader";
             public const string SuccessFooter = "SuccessFooter";
-            public const string PaymentComment = "PaymentComment";
+
+            // Keep this as "PaymentComment" for backwords compatibility 
+            public const string PaymentCommentTemplate = "PaymentComment";
+
             public const string AnonymousGivingTooltip = "AnonymousGivingTooltip";
 
             // Advanced Category
@@ -527,45 +530,7 @@ namespace RockWeb.Blocks.Finance
 </p>
 ";
 
-            public const string PaymentCommentDescription = @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>. Merge fields include: <pre>CurrentPerson: {},
-PageParameters {},
-TransactionDateTime: '8/29/2016',
-CurrencyType: {
-  'AttributeIds': [],
-  'IsSystem': true,
-  'DefinedTypeId': 10,
-  'Order': 2,
-  'Value': 'Credit Card',
-  'Description': 'Credit Card',
-  'TypeId': 31,
-  'TypeName': 'Rock.Model.DefinedValue',
-  'AttributeValues': {},
-  'Id': 156,
-  'Guid': '928a2e04-c77b-4282-888f-ec549cee026a',
-  'ForeignId': null,
-  'ForeignGuid': null,
-  'ForeignKey': null
-}
-TransactionAccountDetails: [
-  {
-    'Id': 1,
-    'Order': 0,
-    'Name': 'General Fund',
-    'CampusId': null,
-    'Amount': 50.00,
-    'PublicName': 'General Fund',
-    'AmountFormatted': '$50.00'
-  },
-  {
-    'Id': 2,
-    'Order': 1,
-    'Name': 'Building Fund',
-    'CampusId': null,
-    'Amount': 10.00,
-    'PublicName': 'Building Fund',
-    'AmountFormatted': '$10.00'
-  }
-]</pre>";
+            public const string PaymentCommentDescription = @"The comment to include with the payment transaction when sending to Gateway. <span class='tip tip-lava'></span>";
         }
 
         private static class PageParameterKey
@@ -3103,11 +3068,13 @@ TransactionAccountDetails: [
 
             if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
             {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentComment ) ) ? string.Format( "{0}: {1}", GetAttributeValue( AttributeKey.PaymentComment ), txtCommentEntry.Text ) : txtCommentEntry.Text;
+                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentCommentTemplate ) )
+                    ? string.Format( "{0}: {1}", GetAttributeValue( AttributeKey.PaymentCommentTemplate ), txtCommentEntry.Text )
+                    : txtCommentEntry.Text;
             }
             else
             {
-                paymentInfo.Comment1 = GetAttributeValue( AttributeKey.PaymentComment );
+                paymentInfo.Comment1 = GetAttributeValue( AttributeKey.PaymentCommentTemplate );
             }
 
             var transactionAlreadyExists = new FinancialTransactionService( rockContext ).Queryable().FirstOrDefault( a => a.Guid == transactionGuid );
@@ -3203,11 +3170,13 @@ TransactionAccountDetails: [
                 mergeFields.Add( "TransactionAccountDetails", SelectedAccounts.Where( a => a.Amount != 0 ).ToList() );
             }
 
-            string paymentComment = GetAttributeValue( AttributeKey.PaymentComment ).ResolveMergeFields( mergeFields );
+            string paymentComment = GetAttributeValue( AttributeKey.PaymentCommentTemplate ).ResolveMergeFields( mergeFields );
 
             if ( GetAttributeValue( AttributeKey.EnableCommentEntry ).AsBoolean() )
             {
-                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment ) ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text ) : txtCommentEntry.Text;
+                paymentInfo.Comment1 = !string.IsNullOrWhiteSpace( paymentComment )
+                    ? string.Format( "{0}: {1}", paymentComment, txtCommentEntry.Text )
+                    : txtCommentEntry.Text;
             }
             else
             {
@@ -3241,17 +3210,6 @@ TransactionAccountDetails: [
                 }
             }
 
-            var changeSummary = new StringBuilder();
-            changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
-            changeSummary.AppendLine();
-            changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
-            if ( paymentInfo.CreditCardTypeValue != null )
-            {
-                changeSummary.AppendFormat( " - {0}", paymentInfo.CreditCardTypeValue.Value );
-            }
-            changeSummary.AppendFormat( " {0}", paymentInfo.MaskedNumber );
-            changeSummary.AppendLine();
-
             var transactionEntity = this.GetTransactionEntity();
 
             foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
@@ -3267,17 +3225,9 @@ TransactionAccountDetails: [
                 }
 
                 scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
-                changeSummary.AppendFormat( "{0}: {1}", account.Name, account.Amount.FormatAsCurrency() );
-                changeSummary.AppendLine();
             }
 
-            if ( !string.IsNullOrWhiteSpace( paymentInfo.Comment1 ) )
-            {
-                changeSummary.Append( paymentInfo.Comment1 );
-                changeSummary.AppendLine();
-            }
-
-            scheduledTransaction.Summary = changeSummary.ToString();
+            scheduledTransaction.Summary = paymentInfo.Comment1;
 
             var transactionService = new FinancialScheduledTransactionService( rockContext );
             transactionService.Add( scheduledTransaction );
