@@ -105,6 +105,10 @@
     <Compile Include="Migrations\202109212253216_CodeGenerated_20210921.Designer.cs">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.cs" />
+    <Compile Include="Migrations\202109292108441_RestoreDeletedAttributes.Designer.cs">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -743,6 +747,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202109212253216_CodeGenerated_20210921.resx">
       <DependentUpon>202109212253216_CodeGenerated_20210921.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202109292108441_RestoreDeletedAttributes.resx">
+      <DependentUpon>202109292108441_RestoreDeletedAttributes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
