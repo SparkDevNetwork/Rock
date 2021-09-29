@@ -421,7 +421,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// Using the keyword 'Now' as input to the DateAdd filter should resolve to the current date.
         /// </summary>
         [TestMethod]
-        public void DateAdd_Now_ResolvesToCurrentDate()
+        public void DateAdd_WithNowAsInput_ResolvesToCurrentDate()
         {
             var expectedOutputDate = LavaDateTime.NowOffset.AddDays( 5 );
 
