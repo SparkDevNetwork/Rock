@@ -12,6 +12,11 @@
             event.stopImmediatePropagation();
             return Rock.dialogs.confirmDelete(event, 'saved account');
         });
+
+        $('.js-delete-pledge').on('click', function (event) {
+            event.stopImmediatePropagation();
+            return Rock.dialogs.confirmDelete(event, 'pledge');
+        });
     });
 </script>
 
@@ -103,7 +108,7 @@
                                         <td class="w-1 text-right pr-0 py-4">
                                             <span class="d-block"><asp:Literal ID="lSavedAccountInUseStatusHtml" runat="server" /></span>
                                             <div class="rollover-item">
-                                            <asp:LinkButton runat="server" ID="btnSavedAccountDelete" OnCommand="rptSavedAccounts_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1">
+                                            <asp:LinkButton runat="server" ID="btnSavedAccountDelete" OnCommand="rptSavedAccounts_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account">
                                                 <i class="fa fa-times"></i>
                                             </asp:LinkButton>
                                             </div>
@@ -136,7 +141,7 @@
                                                     <asp:LinkButton runat="server" ID="btnPledgeEdit" OnCommand="rptPledges_Edit" CssClass="btn btn-sm btn-link text-muted py-0 px-1">
                                                     <i class="fa fa-pencil"></i>
                                                     </asp:LinkButton>
-                                                    <asp:LinkButton runat="server" ID="btnPledgeDelete"  OnCommand="rptPledges_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 ml-1">
+                                                    <asp:LinkButton runat="server" ID="btnPledgeDelete"  OnCommand="rptPledges_Delete" CssClass="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge">
                                                     <i class="fa fa-times"></i>
                                                     </asp:LinkButton>
                                                 </div>

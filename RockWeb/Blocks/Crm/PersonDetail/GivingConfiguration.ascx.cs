@@ -431,10 +431,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var cardIsExpired = financialPaymentDetail.CardExpirationDate.HasValue && financialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now;
 
             var cardInUse = new FinancialScheduledTransactionService( new RockContext() ).Queryable().Where( a => a.FinancialPaymentDetailId.HasValue
+                && a.IsActive
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.HasValue
                 && a.FinancialPaymentDetail.FinancialPersonSavedAccountId.Value == financialPersonSavedAccount.Id ).Any();
 
             btnSavedAccountDelete.Visible = !cardInUse;
+            btnSavedAccountDelete.CommandArgument = financialPersonSavedAccount.Guid.ToString();
 
             if ( cardIsExpired )
             {
