@@ -414,7 +414,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// takes computer-readible-formats and makes them human readable
+        /// takes computer-readable-formats and makes them human readable
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
@@ -1530,7 +1530,7 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Dayses from now.
+        /// Days from now.
         /// </summary>
         /// <param name="input">The input.</param>
         /// <returns></returns>
@@ -3048,7 +3048,7 @@ namespace Rock.Lava
 
             if ( includeInactive == false && useFormalNames == false && finalfinalSeparator == "&" && separator == "," && person.PrimaryFamilyId.HasValue )
             {
-                // if default parameters are specified, we can get the family salutation from the GroupSalutionField of the person's PrimaryFamily
+                // if default parameters are specified, we can get the family salutation from the GroupSalutationField of the person's PrimaryFamily
                 if ( includeChildren )
                 {
                     familySalutation = person.PrimaryFamily?.GroupSalutationFull;
@@ -4387,7 +4387,7 @@ namespace Rock.Lava
                 // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
                 isCollection = resultDataObject is IEnumerable<ExpandoObject>;
 
-                // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidently modify the cached object
+                // if we are dealing with a persisted dataset, make a copy of the objects so we don't accidentally modify the cached object
                 if ( isCollection )
                 {
                     resultDataObject = ( resultDataObject as IEnumerable<ExpandoObject> ).Select( a => a.ShallowCopy() ).ToList();

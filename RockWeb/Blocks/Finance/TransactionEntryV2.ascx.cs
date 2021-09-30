@@ -1186,7 +1186,7 @@ mission. We are so grateful for your commitment.</p>
             var feeCoverageGatewayComponent = FinancialGateway.GetGatewayComponent() as IFeeCoverageGatewayComponent;
             if ( feeCoverageGatewayComponent == null )
             {
-                // the gateway doesn't have fee converage options
+                // the gateway doesn't have fee coverage options
                 return;
             }
 

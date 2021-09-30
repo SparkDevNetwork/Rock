@@ -989,7 +989,7 @@ namespace RockWeb.Blocks.Finance
             /* 2021-01-28 MDP
 
               FinancialScheduledTransactionDetail.Amount includes the FeeCoverageAmount.
-              For example, if a person scheduld to gave $100.00 but elected to pay $1.80 to cover the fee.
+              For example, if a person scheduled to gave $100.00 but elected to pay $1.80 to cover the fee.
               FinancialScheduledTransactionDetail.Amount would be stored as $101.80 and
               FinancialScheduledTransactionDetail.FeeCoverageAmount would be stored as $1.80.
 

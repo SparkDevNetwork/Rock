@@ -2921,7 +2921,7 @@ namespace RockWeb.Blocks.Finance
                 // only create/update the person if they are giving as a person. If they are giving as a Business, the person shouldn't be created this way
                 Person person = GetPerson( !givingAsBusiness );
 
-                // Add contact person if giving as a business and current person is unknow
+                // Add contact person if giving as a business and current person is unknown
                 if ( person == null && givingAsBusiness )
                 {
                     person = GetBusinessContact();
@@ -3029,7 +3029,7 @@ namespace RockWeb.Blocks.Finance
             bool givingAsBusiness = GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             Person person = GetPerson( !givingAsBusiness );
 
-            // Add contact person if giving as a business and current person is unknow
+            // Add contact person if giving as a business and current person is unknown
             if ( person == null && givingAsBusiness )
             {
                 person = GetBusinessContact();
@@ -3102,7 +3102,7 @@ namespace RockWeb.Blocks.Finance
                      * Starting with V11, we can use the DirectPost API to schedule transactions with saved accounts to get around that issue
                      */
 
-                    // If this is a saved account, we can juse use the regular DirectPost API of the ThreeStepGateway (see above note)
+                    // If this is a saved account, we can just use the regular DirectPost API of the ThreeStepGateway (see above note)
                     scheduledTransaction = ( threeStepGateway as GatewayComponent ).AddScheduledPayment( financialGateway, schedule, paymentInfo, out errorMessage );
                 }
                 else

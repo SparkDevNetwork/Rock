@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "ResultLavaTemplate" );
                 lResult.Text = template.ResolveMergeFields( mergeFields );
 
-                // Will only redirect if a value is specifed
+                // Will only redirect if a value is specified
                 NavigateToLinkedPage( "ResultPage" );
             }
         }
