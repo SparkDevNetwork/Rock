@@ -43,7 +43,7 @@
             </div>
             <div class="panel-body">
             <div class="row">
-            <div class="col-lg-2 col-lg-offset-1 col-md-2" style="position:sticky;top:80px;"><nav id="toc"></nav></div>
+            <div class="d-none d-md-block col-lg-2 col-lg-offset-1 col-md-2" style="position:sticky;top:80px;"><nav id="toc"></nav></div>
             <div id="main-controls" class="col-md-9 col-lg-7">
                 <asp:Panel ID="pnlDetails" runat="server">
 
@@ -513,6 +513,16 @@
                         <asp:Label ID="lblPhysicalFileName" runat="server" Text="Uploaded File: -" />
                     </div>
 
+                    <a id="FileUploaderButton"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FileUploader ID="fuprExampleUploader2" runat="server" DisplayMode="Button" IsBinaryFile="true" Required="false" Label="Rock:FileUploader Button (BinaryFile mode)" RequiredErrorMessage="A Document File is required."></Rock:FileUploader>
+                    </div>
+
+                                        <a id="FileUploaderButton"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FileUploader ID="fuprExampleUploader3" runat="server" DisplayMode="DefaultButton" IsBinaryFile="true" Required="false" Label="Rock:FileUploader DefaultButton (BinaryFile mode)" RequiredErrorMessage="A Document File is required."></Rock:FileUploader>
+                    </div>
+
                     <a id="ImageUploader"></a>
                     <div runat="server" class="r-example">
                         <Rock:ImageUploader ID="imgupExample" runat="server" Label="Rock:ImageUploader" />
@@ -577,22 +587,22 @@
                     <h2 runat="server">Locations</h2>
                     <a id="LocationList"></a>
                     <div id="Div3" runat="server" class="r-example">
-                        <Rock:LocationList ID="LocationList1" runat="server" Label="Rock:LocationList" AllowAdd="true" ShowCityState="true" IsAddressRequired="true" />
+                        <Rock:LocationList ID="LocationList1" runat="server" Enabled="false" Label="Rock:LocationList" AllowAdd="true" ShowCityState="true" IsAddressRequired="true" />
                     </div>
 
                     <a id="LocationPicker"></a>
                     <div id="Div2" runat="server" class="r-example">
-                        <Rock:LocationPicker ID="locpExample" runat="server" Label="Rock:LocationPicker" />
+                        <Rock:LocationPicker ID="locpExample" Enabled="false" runat="server" Label="Rock:LocationPicker" />
                     </div>
 
                     <a id="LocationPicker2"></a>
                     <div runat="server" class="r-example">
-                        <Rock:LocationPicker ID="locpExampleAddressMode" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" />
+                        <Rock:LocationPicker ID="locpExampleAddressMode" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" CurrentPickerMode="Address" AllowedPickerModes="Address" Enabled="false" />
                     </div>
 
                     <a id="GeoPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
+                        <Rock:GeoPicker ID="geopExamplePoint" runat="server" Label="Rock:GeoPicker (Point mode)" Enabled="false" DrawingMode="Point" MapStyleValueGuid="BFC46259-FB66-4427-BF05-2B030A582BEA" />
                     </div>
 
                     <a id="GeoPickerPolygon"></a>
@@ -604,7 +614,7 @@
 
                     <a id="PagePicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:PagePicker ID="pagepExample" runat="server" Label="Rock:PagePicker" />
+                        <Rock:PagePicker ID="pagepExample" runat="server" Enabled="false" Label="Rock:PagePicker" />
                     </div>
 
                     <h2>Person Pickers</h2>
