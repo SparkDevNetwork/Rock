@@ -622,7 +622,7 @@ namespace RockWeb.Blocks.Steps
             gSteps.ShowConfirmDeleteDialog = true;
 
             // Allow Edit if authorized to edit the block or the Step Type.
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || _stepType.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
 
             gSteps.Actions.ShowAdd = canEditBlock;
             gSteps.IsDeleteEnabled = canEditBlock;

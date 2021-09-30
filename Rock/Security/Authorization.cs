@@ -148,6 +148,11 @@ namespace Rock.Security
         /// </summary>
         public const string COOKIE_UNSECURED_PERSON_IDENTIFIER = ".ROCK-UnauthenticatedPersonIdentifier";
 
+        /// <summary>
+        /// Authorization to manage the steps
+        /// </summary>
+        public const string MANAGE_STEPS = "ManageSteps";
+
         #endregion
 
         #region Public Methods
