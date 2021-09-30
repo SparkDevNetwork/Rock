@@ -1628,6 +1628,14 @@ body.navbar-side-open {
   }
 }
 
+.personprofilebar-bio,
+.personprofilebar-family {
+  small {
+    // lighten up small elements a bit
+    opacity: .7;
+  }
+}
+
 .person-content {
   .panel {
     .box-shadow(none);
@@ -1831,7 +1839,7 @@ body.navbar-side-open {
 
 // Move the debug timing table to the right so it's not hidden by the admin theme's left nav
 .debug-timings {
-  width: ~"calc(100% - 140px)" !important;
+  // width: ~"calc(100% - 140px)" !important;
   margin-left: 115px;
 }
 
