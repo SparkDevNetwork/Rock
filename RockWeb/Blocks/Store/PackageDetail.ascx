@@ -80,9 +80,9 @@
                             <div class="col-md-9">
 
                                 <h4>Package Description</h4>
-                                <p class="margin-b-lg">
+                                <div class="margin-b-lg clearfix">
                                     <asp:Literal ID="lPackageDescription" runat="server" />
-                                </p>
+                                </div>
 
                                 <p class="clearfix margin-t-md">
                                     <asp:HyperLink ID="hlPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:HyperLink>
