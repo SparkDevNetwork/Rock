@@ -76,6 +76,11 @@ namespace Rock.SystemGuid
         public const string BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS = "198F3006-5F0F-48AB-9EA0-2FA56F633753";
 
         /// <summary>
+        /// The block template for Mobile > Prayer > Prayer Card View block.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_PRAYER_PRAYER_CARD_VIEW = "DCFECA8C-CDF5-4863-851E-7EFEE6758EE9";
+
+        /// <summary>
         /// The block template for the mobile prayer session block.
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION = "6F1F6BAB-B403-48D1-BF6A-52B16361279C";
