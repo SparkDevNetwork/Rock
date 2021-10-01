@@ -340,6 +340,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the giving automation source transaction query by giving identifier.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <returns>IQueryable&lt;FinancialTransaction&gt;.</returns>
+        public IQueryable<FinancialTransaction> GetGivingAutomationSourceTransactionQueryByGivingId( string givingId )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
+
+            return GetGivingAutomationSourceTransactionQuery().Where( a => a.AuthorizedPersonAliasId.HasValue && givingIdPersonAliasIdQuery.Contains( a.AuthorizedPersonAliasId.Value ) );
+        }
+
+        /// <summary>
         /// Gets the giving automation source transaction query.
         /// This is used by <see cref="Rock.Jobs.GivingAutomation"/>.
         /// </summary>
@@ -404,17 +416,36 @@ namespace Rock.Model
         /// <returns></returns>
         public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId )
         {
-            var personAliasIdQry = new PersonAliasService( this.Context as RockContext )
+            return GetGivingAutomationMonthlyAccountGivingHistory( givingId, null );
+        }
+
+        /// <summary>
+        /// Gets the giving automation monthly account giving history. This is used for the Giving Overview block's monthly
+        /// bar chart and also yearly summary.
+        /// </summary>
+        /// <param name="givingId">The giving identifier.</param>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <returns>List&lt;MonthlyAccountGivingHistory&gt;.</returns>
+        public List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistory( string givingId, DateTime? startDateTime )
+        {
+            var givingIdPersonAliasIdQuery = new PersonAliasService( this.Context as RockContext )
                 .Queryable()
                 .Where( a => a.Person.GivingId == givingId )
                 .Select( a => a.Id );
 
-            var views = GetGivingAutomationSourceTransactionQuery()
+            var qry = GetGivingAutomationSourceTransactionQuery()
                 .AsNoTracking()
                 .Where( t =>
                     t.TransactionDateTime.HasValue &&
                     t.AuthorizedPersonAliasId.HasValue &&
-                    personAliasIdQry.Contains( t.AuthorizedPersonAliasId.Value ) )
+                    givingIdPersonAliasIdQuery.Contains( t.AuthorizedPersonAliasId.Value ) );
+
+            if ( startDateTime.HasValue )
+            {
+                qry = qry.Where( t => t.TransactionDateTime >= startDateTime );
+            }
+
+            var views = qry
                 .SelectMany( t => t.TransactionDetails.Select( td => new
                 {
                     TransactionDateTime = t.TransactionDateTime.Value,
@@ -444,10 +475,12 @@ namespace Rock.Model
         /// Giving Overview block's monthly bar chart and also yearly summary.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.13" )]
+        [Obsolete( "Use GetGivingAutomationMonthlyAccountGivingHistory instead" )]
         public static List<MonthlyAccountGivingHistory> GetGivingAutomationMonthlyAccountGivingHistoryFromJson( string json )
         {
-            var objects = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
-            return objects ?? new List<MonthlyAccountGivingHistory>();
+            var monthlyAccountGivingHistoryList = json.FromJsonOrNull<List<MonthlyAccountGivingHistory>>();
+            return monthlyAccountGivingHistoryList ?? new List<MonthlyAccountGivingHistory>();
         }
     }
 

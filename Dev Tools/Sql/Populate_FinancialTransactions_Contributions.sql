@@ -124,7 +124,32 @@ begin
 
     while (@TransactionCountPerPerson < @MaxTransactionCountPerPerson AND @transactionCounter < @maxTransactionCount)
     begin
-        set @transactionAmount = ROUND(rand() * 5000, 2);
+        -- select a random amount with smaller rounded off amounts being more common than random amounts
+        SET @transactionAmount = (SELECT round(w.r, 1)
+                FROM (
+                    SELECT (
+                            CASE floor(rand(CHECKSUM(newid())) * 10)
+                                WHEN 1
+                                    THEN 100.00
+                                WHEN 2
+                                    THEN 100.00
+                                WHEN 3
+                                    THEN 150.00
+                                WHEN 4
+                                    THEN 200.00
+                                WHEN 5
+                                    THEN 20.00
+                                WHEN 6
+                                    THEN 20.00
+                                WHEN 7
+                                    THEN 25.00
+                                WHEN 8
+                                    THEN 250.00
+                                ELSE RAND() * 1000
+                                END
+                            ) [r]
+                    ) w)
+
 
         SET @TransactionCountPerPerson = @TransactionCountPerPerson + 1;
 
@@ -250,7 +275,7 @@ begin
                     ,SYSDATETIME())
 
         set @transactionCounter += 1;
-        declare @randomSecondsAgo int = (RAND(CHECKSUM(newid())))*366*86400;
+        declare @randomSecondsAgo int = (RAND(CHECKSUM(newid())))*@daysBack*86400;
         set @transactionDateTime = DATEADD(ss, -@randomSecondsAgo, GetDate());
         if (@transactionCounter % 10000 = 0)
         begin
