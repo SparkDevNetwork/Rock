@@ -65,11 +65,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DefinedValueField(
         "Connection Status",
         Key = AttributeKeys.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
         DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Order = 11 )]
 
     [DefinedValueField(

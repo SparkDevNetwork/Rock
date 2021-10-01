@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -678,8 +680,15 @@ namespace Rock.SystemGuid
         public const string PERSON_CONNECTION_STATUS_PARTICIPANT = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061";
 
         /// <summary>
+        /// Person Connection Status - Prospect
+        /// </summary>
+        public const string PERSON_CONNECTION_STATUS_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
+
+        /// <summary>
         /// Person Connection Status - Web Prospect
         /// </summary>
+        [Obsolete( "This is the same as the old Web Prospect but it is renamed to just Prospect." )]
+        [RockObsolete( "1.13" )]
         public const string PERSON_CONNECTION_STATUS_WEB_PROSPECT = "368DD475-242C-49C4-A42C-7278BE690CC2";
 
         #endregion

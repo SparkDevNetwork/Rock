@@ -53,11 +53,11 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [DefinedValueField( "Default Connection Status",
-        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Key = AttributeKeys.DefaultConnectionStatus,
         Order = 1 )]
 

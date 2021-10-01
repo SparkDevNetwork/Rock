@@ -253,6 +253,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="app.ConnectionStrings.config" />
     <None Include="packages.config" />
     <None Include="settings\lava-dotliquid-engine.runsettings" />
     <None Include="settings\lava-fluid-engine.runsettings" />
