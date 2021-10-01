@@ -172,16 +172,6 @@ namespace Rock.StatementGenerator
         public Guid? LayoutDefinedValueGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [order by postal code].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [order by postal code]; otherwise, <c>false</c>.
-        /// </value>
-        //[RockObsolete( "1.7.3" )]
-        [Obsolete("Use OrderBy Instead", true)]
-        public bool OrderByPostalCode { get; set; } = true;
-
-        /// <summary>
         /// Gets or sets the order by.
         /// </summary>
         /// <value>

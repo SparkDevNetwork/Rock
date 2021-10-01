@@ -234,22 +234,6 @@ namespace Rock.Model
         #endregion
 
         /// <summary>
-        /// Gets a value indicating whether this schedule (or it's check-in window) is currently active.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", true )]
-        public virtual bool IsScheduleOrCheckInActive
-        {
-            get
-            {
-                return WasScheduleOrCheckInActive( RockDateTime.Now );
-            }
-        }
-
-        /// <summary>
         /// Gets the type of the schedule.
         /// </summary>
         /// <value>
@@ -270,22 +254,6 @@ namespace Rock.Model
                     return WeeklyDayOfWeek.HasValue ?
                         ScheduleType.Weekly : ScheduleType.None;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Gets the next start time.
-        /// </summary>
-        /// <returns></returns>
-        [NotMapped]
-        [LavaVisible]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
-        public virtual DateTime? NextStartDateTime
-        {
-            get
-            {
-                return GetNextStartDateTime( RockDateTime.Now );
             }
         }
 
@@ -639,7 +607,7 @@ namespace Rock.Model
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetICalEvent() instead " )]
+        [Obsolete( "Use GetICalEvent() instead ", true )]
         public virtual DDay.iCal.Event GetCalenderEvent()
         {
             return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
@@ -1815,7 +1783,7 @@ namespace Rock.Model
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
+        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead ", true )]
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
         {
             return GetCalendarEvent( iCalendarContent );

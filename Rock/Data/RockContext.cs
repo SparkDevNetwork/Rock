@@ -27,24 +27,6 @@ using Rock.Model;
 namespace Rock.Data
 {
     /// <summary>
-    /// Helper class to set view cache
-    /// </summary>
-    [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed,", true )]
-    public static class RockInteractiveViews
-    {
-        /// <summary>
-        /// Sets the view factory.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,", true )]
-        public static void SetViewFactory( string path )
-        {
-        }
-    }
-
-    /// <summary>
     /// Entity Framework Context
     /// </summary>
     public class RockContext : Rock.Data.DbContext

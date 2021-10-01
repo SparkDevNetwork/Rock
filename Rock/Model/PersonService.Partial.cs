@@ -254,25 +254,6 @@ namespace Rock.Model
         /// <summary>
         /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
         /// </summary>
-        /// <param name="firstName">A <see cref="System.String"/> representing the first name to search by.</param>
-        /// <param name="lastName">A <see cref="System.String"/> representing the last name to search by.</param>
-        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
-        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
-        /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
-        /// <param name="includeBusinesses">if set to <c>true</c> [include businesses].</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
-        /// </returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindPersons instead.", true )]
-        public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
-        {
-            return this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses );
-        }
-
-        /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
-        /// </summary>
         /// <param name="firstName">The first name.</param>
         /// <param name="lastName">The last name.</param>
         /// <param name="email">The email.</param>
@@ -819,35 +800,6 @@ namespace Rock.Model
 
             // Return a freshly queried person
             return this.Get( match.Id );
-        }
-
-        /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities that have a matching email address, firstname and lastname.
-        /// </summary>
-        /// <param name="businessName">A <see cref="System.String"/> representing the business name to search by.</param>
-        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
-        /// <returns>
-        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
-        /// </returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindBusinesses instead.", true )]
-        public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
-        {
-            businessName = businessName ?? string.Empty;
-            email = email ?? string.Empty;
-            var query = Queryable( false, true );
-            var definedValueBusinessType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() );
-            if ( definedValueBusinessType != null )
-            {
-                int recordTypeBusiness = definedValueBusinessType.Id;
-                query = query.Where( p => p.RecordTypeValueId == recordTypeBusiness );
-            }
-
-            return query
-            .Where( p =>
-                email != "" && p.Email == email &&
-                businessName != "" && p.LastName == businessName )
-            .ToList();
         }
 
         /// <summary>

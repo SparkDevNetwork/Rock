@@ -2717,24 +2717,6 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="age">The age.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use other GetPersonPhotoUrl", true )]
-        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
-        {
-            return GetPersonPhotoUrl( personId, photoId, age, gender, recordTypeValueGuid, null, maxWidth, maxHeight );
-        }
-
-        /// <summary>
-        /// Gets the person photo URL.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
         /// <param name="gender">The gender.</param>
         /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="ageClassification">The age classification.</param>

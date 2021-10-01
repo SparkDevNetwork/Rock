@@ -462,7 +462,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
         /// </returns>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
+        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need", true )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
             return GetAllDescendentGroups( parentGroupId, true );
@@ -1381,7 +1381,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
-        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", true )]
         [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {

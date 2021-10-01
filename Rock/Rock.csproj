@@ -1276,7 +1276,6 @@
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
-    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -1643,9 +1642,6 @@
     <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\Entities\LavaShortcodeCache.cs" />
     <Compile Include="Web\Cache\Entities\NoteTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\CachedEntity.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\CachedModel.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\RockMemoryCache.cs" />
     <Compile Include="Web\Cache\Entities\BadgeCache.cs" />
     <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
     <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
@@ -1951,7 +1947,6 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
-    <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
@@ -2523,7 +2518,6 @@
     <Compile Include="Reporting\PowerBiUtilities.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
-    <Compile Include="Security\Role.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Storage\AssetStorage\AmazonS3Component.cs" />
     <Compile Include="Storage\AssetStorage\Asset.cs" />
@@ -2990,7 +2984,6 @@
     <Compile Include="Transactions\GroupMemberPlacedElsewhereTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
-    <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
@@ -3183,7 +3176,6 @@
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
@@ -3413,7 +3405,6 @@
     <Compile Include="Workflow\Action\WorkflowControl\UserForm.cs" />
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
-    <Compile Include="Workflow\TriggerCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

@@ -187,17 +187,6 @@ namespace Rock.Model
         public string ReviewerNote { get; set; }
 
         /// <summary>
-        /// Gets or sets a JSON formatted string containing the Medium specific data.
-        /// </summary>
-        /// <value>
-        /// A Json formatted <see cref="System.String"/> that contains any Medium specific data.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.7" )]
-        [Obsolete( "MediumDataJson is no longer used.", true )]
-        public string MediumDataJson { get; set; }
-
-        /// <summary>
         /// Gets or sets a JSON string containing any additional merge fields for the Communication.
         /// </summary>
         /// <value>

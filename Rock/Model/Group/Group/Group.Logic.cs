@@ -94,17 +94,6 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
-        /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead", true )]
-        public virtual List<string> HistoryChanges { get; set; }
-
         #endregion Properties
 
         #region Indexing Methods
