@@ -51,7 +51,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// <returns></returns>
         public override string GetTitle( Type entityType )
         {
-            return "Available Capacity";
+            return "Group Stark DataView Filter";
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Rock.Reporting.DataFilter.Group
         {
             // Create the standard comparison control, less than, greater than, etc.
             var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
-            ddlIntegerCompare.Label = "Count";
+            ddlIntegerCompare.Label = "Capacity";
             ddlIntegerCompare.ID = string.Format( "{0}_ddlIntegerCompare", filterControl.ID );
             ddlIntegerCompare.AddCssClass( "js-filter-compare" );
             filterControl.Controls.Add( ddlIntegerCompare );
@@ -259,45 +259,26 @@ function () {
             }
 
             /// <summary>
-            /// 
+            /// The selected integer value of the compare filter control.
             /// </summary>
             public int CapacityCompareId { get; set; }
 
             /// <summary>
-            /// 
+            /// The integer value for the capacity filter.
             /// </summary>
             public int? CapacityNumber { get; set; }
 
             /// <summary>
-            /// Parses the specified selection from a JSON or delimited string.  If a delimited string, position 0 is the capacity compare ID, 1 is the capacity number.
+            /// Parses the specified selection from a JSON string.
             /// </summary>
-            /// <param name="selection">The selection.</param>
+            /// <param name="selection">The filter selection control.</param>
             /// <returns></returns>
             public static SelectionConfig Parse( string selection )
             {
                 var selectionConfig = selection.FromJsonOrNull<SelectionConfig>();
-
-                // This will only occur when the selection string is not JSON.
-                // This should only be used if you are converting an Array / Split implementation to JSON.
                 if ( selectionConfig == null )
                 {
                     selectionConfig = new SelectionConfig();
-
-                    // If the configuration is a pipe-delimited string, then try to parse it the old-fashioned way.
-                    string[] selectionValues = selection.Split( '|' );
-
-                    // Index 0 is the capacity compare ID.
-                    // Index 1 is the capacity number.
-                    if ( selectionValues.Count() >= 2 )
-                    {
-                        selectionConfig.CapacityCompareId = selectionValues[0].AsInteger();
-                        selectionConfig.CapacityNumber = selectionValues[1].AsIntegerOrNull();
-                    }
-                    else
-                    {
-                        // If there are not at least 2 values in the selection string then it is not a valid selection.
-                        return null;
-                    }
                 }
 
                 return selectionConfig;
