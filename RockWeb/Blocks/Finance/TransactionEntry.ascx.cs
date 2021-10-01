@@ -658,6 +658,17 @@ namespace RockWeb.Blocks.Finance
             get { return ViewState["DisplayPhone"].ToString().AsBoolean(); }
             set { ViewState["DisplayPhone"] = value; }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether is configured for partial postbacks. If partial postbacks disabled we'll need to not add history points.
+        /// </summary>
+        protected bool PartialPostbacksAllowed
+        {
+            get
+            {
+                return ScriptManager.GetCurrent( this.Page ).EnablePartialRendering;
+            }
+        }
         #endregion
 
         #region Base Control Methods
@@ -1086,7 +1097,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( ProcessStep1( out errorMessage ) )
                     {
-                        this.AddHistory( "GivingDetail", "1", null );
+                        if ( this.PartialPostbacksAllowed )
+                        {
+                            this.AddHistory( "GivingDetail", "1", null );
+                        }
+
                         if ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 )
                         {
                             hfStep2AutoSubmit.Value = "true";
@@ -1102,7 +1117,11 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    this.AddHistory( "GivingDetail", "1", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "1", null );
+                    }
+
                     SetPage( 3 );
                     pnlConfirmation.Focus();
                 }
@@ -1120,7 +1139,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStep2PaymentPrev_Click( object sender, EventArgs e )
         {
-            this.AddHistory( "GivingDetail", "2", null );
+            if ( this.PartialPostbacksAllowed )
+            {
+                this.AddHistory( "GivingDetail", "2", null );
+            }
+
             SetPage( 1 );
             pnlSelection.Focus();
         }
@@ -1165,7 +1188,11 @@ namespace RockWeb.Blocks.Finance
                 string resultQueryString = hfStep2ReturnQueryString.Value;
                 if ( ProcessStep3( resultQueryString, out errorMessage ) )
                 {
-                    this.AddHistory( "GivingDetail", "3", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "3", null );
+                    }
+
                     SetPage( 4 );
                     pnlSuccess.Focus();
                 }
@@ -1178,7 +1205,11 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( ProcessConfirmation( out errorMessage ) )
                 {
-                    this.AddHistory( "GivingDetail", "2", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "2", null );
+                    }
+
                     SetPage( 4 );
                     pnlSuccess.Focus();
                 }
