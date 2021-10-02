@@ -648,6 +648,14 @@ namespace Rock.Data
         public DbSet<ConnectionStatus> ConnectionStatuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the connection status automations.
+        /// </summary>
+        /// <value>
+        /// The connection automations.
+        /// </value>
+        public DbSet<ConnectionStatusAutomation> ConnectionStatusAutomations { get; set; }
+
+        /// <summary>
         /// Gets or sets the connection types.
         /// </summary>
         /// <value>
