@@ -416,7 +416,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
             var kpi = kpiLast12Months + kpiLast90Days + kpiGivesAs + kpiGivingJourney;
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            lLastGiving.Text = string.Format( @"{{[kpis size:'lg' style:'edgeless' columnmin:'200px' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
+            lLastGiving.Text = string.Format( @"{{[kpis style:'edgeless' iconbackground:'false' columnmin:'200px' columncount:'4' columncountmd:'4' columncountsm:'2']}}{0}{{[endkpis]}}", kpi ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -593,7 +593,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
                 }
             }
 
-            lGivingCharacteristicsHtml.Text = string.Format( @"{{[kpis columnmin:'200px' style:'edgeless' iconbackground:'false' columncount:'4' columncountmd:'3' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
+            lGivingCharacteristicsHtml.Text = string.Format( @"{{[kpis columnmin:'200px' style:'edgeless' iconbackground:'false' columncount:'3' columncountmd:'2' columncountsm:'2']}}{0}{{[endkpis]}}", stringBuilder ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -615,7 +615,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{ ( isGrowthPositive ?
 
             var hasAlertListLink = !alertListUrl.IsNullOrWhiteSpace();
 
-            var givingAlertsBadges = $"<span class=\"badge bg-success\">{financialTransactionGratitudeCount}</span> <span class=\"badge bg-warning\">{financialTransactionFollowupCount}</span>";
+            var givingAlertsBadges = $"<span class=\"badge badge-success align-text-bottom\">{financialTransactionGratitudeCount}</span> <span class=\"badge badge-warning align-text-bottom\">{financialTransactionFollowupCount}</span>";
             if ( hasAlertListLink )
             {
                 lGivingAlertsBadgesHtml.Text = $"<a href=\"{alertListUrl}\">" + givingAlertsBadges + "</a>";
