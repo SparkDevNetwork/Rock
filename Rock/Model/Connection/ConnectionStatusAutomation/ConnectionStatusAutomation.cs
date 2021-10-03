@@ -73,6 +73,15 @@ namespace Rock.Model
         [DataMember]
         public int? DataViewId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Group Requirements filter.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.GroupRequirementsFilter"/> enum value that represents the Group Requirements filter.
+        /// </value>
+        [DataMember]
+        public GroupRequirementsFilter GroupRequirementsFilter { get; set; }
+
         #endregion
 
         #region Navigation Properties
