@@ -519,12 +519,13 @@ namespace Rock.Rest
             }
             else
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeGuid, workflowName );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeGuid = workflowTypeGuid,
-                    WorkflowName = workflowName,
-                    WorkflowAttributeValues = workflowAttributeValues
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
@@ -552,12 +553,13 @@ namespace Rock.Rest
             }
             else
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction( workflowTypeId, workflowName );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeId = workflowTypeId,
-                    WorkflowName = workflowName,
-                    WorkflowAttributeValues = workflowAttributeValues
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 

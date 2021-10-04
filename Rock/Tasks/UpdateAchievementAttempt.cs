@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Tasks
@@ -108,12 +109,12 @@ namespace Rock.Tasks
         {
             var attempt = GetAchievementAttempt( message );
 
-            new LaunchWorkflow.Message
+            if ( attempt == null )
             {
-                EntityTypeId = attempt?.TypeId,
-                EntityId = attempt?.Id,
-                WorkflowTypeId = workflowTypeId
-            }.Send();
+                return;
+            }
+
+            new LaunchWorkflowTransaction<AchievementAttempt>( workflowTypeId, attempt.Id );
         }
 
         /// <summary>
