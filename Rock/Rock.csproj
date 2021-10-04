@@ -714,6 +714,8 @@
     <Compile Include="Data\IEntitySaveEntry.cs" />
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Data\RockContextAnalytics.cs" />
+    <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Reflection;
@@ -66,6 +67,18 @@ namespace Rock.Data
         /// <param name="nameOrConnectionString">Either the database name or a connection string.</param>
         public RockContext( string nameOrConnectionString )
             : base( nameOrConnectionString )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of a <see cref="RockContext"/> sub-class using the same <see cref="ObjectContext"/> as regular RockContext.
+        /// This is for internal use by <see cref="RockContextReadOnly"/> and <see cref="RockContextAnalytics"/>. 
+        /// </summary>
+        /// <param name="objectContext">The object context.</param>
+        /// <param name="dbContextOwnsObjectContext">if set to <c>true</c> [database context owns object context].</param>
+        /// <inheritdoc />
+        internal protected RockContext( ObjectContext objectContext, bool dbContextOwnsObjectContext ) :
+            base( objectContext, dbContextOwnsObjectContext )
         {
         }
 
@@ -398,7 +411,7 @@ namespace Rock.Data
         /// The Auth Claim.
         /// </value>
         public DbSet<AuthClaim> AuthClaims { get; set; }
-                
+
         /// <summary>
         /// Gets or sets the Auths.
         /// </summary>
