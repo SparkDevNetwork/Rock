@@ -56,8 +56,8 @@
                         <Rock:Grid ID="gValues" TableStriped="false" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
                     </div>
 
-                    <div class="actions pull-right">
-                        <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary" OnClick="lbMerge_Click" />
+                    <div class="actions">
+                        <asp:LinkButton ID="lbMerge" runat="server" Text="Merge Records" CssClass="btn btn-primary pull-right" OnClick="lbMerge_Click" />
                     </div>
                 </asp:Panel>
             </div>
