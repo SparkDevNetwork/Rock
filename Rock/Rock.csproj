@@ -976,6 +976,8 @@
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="Security\SecuritySettings.cs" />
+    <Compile Include="Security\SecuritySettingsService.cs" />
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
@@ -1028,6 +1030,8 @@
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringHtmlExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
+    <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
+    <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />

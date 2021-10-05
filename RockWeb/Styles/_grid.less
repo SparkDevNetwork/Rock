@@ -483,13 +483,12 @@ td.grid-col-actions {
 // 9. Row Types
 // -------------------------
 .table > tbody > tr.grid-section-header {
-  > td {
+  > td,
+  &:hover > td {
+    font-size: @grid-section-font-size;
+    font-weight: @grid-section-font-weight;
     color: @grid-section-color;
     background-color: @grid-section-bg;
-  }
-
-  &:hover > td {
-    background-color: @grid-section-bg !important;
   }
 }
 

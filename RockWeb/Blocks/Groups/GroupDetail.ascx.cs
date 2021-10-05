@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Enums;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -945,7 +946,21 @@ namespace RockWeb.Blocks.Groups
             group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
             group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
             group.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
+
             group.IsSecurityRole = cbIsSecurityRole.Checked;
+
+            // If this block's attribute limits group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
+            if ( GetAttributeValue( AttributeKey.LimittoSecurityRoleGroups ).AsBoolean() )
+            {
+                group.IsSecurityRole = true;
+            }
+
+            group.ElevatedSecurityLevel = rblElevatedSecurityLevel.SelectedValue.ConvertToEnum<ElevatedSecurityLevel>();
+            if ( !group.IsSecurityRole )
+            {
+                group.ElevatedSecurityLevel = ElevatedSecurityLevel.None;
+            }
+
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
 
@@ -1707,6 +1722,11 @@ namespace RockWeb.Blocks.Groups
             tbDescription.Text = group.Description;
             nbGroupCapacity.Text = group.GroupCapacity.ToString();
             cbIsSecurityRole.Checked = group.IsSecurityRole;
+
+            LoadElevatedSecurityRadioList();
+
+            rblElevatedSecurityLevel.SelectedValue = group.ElevatedSecurityLevel.ConvertToInt().ToString();
+
             cbIsActive.Checked = group.IsActive;
             cbIsPublic.Checked = group.IsPublic;
 
@@ -1863,6 +1883,15 @@ namespace RockWeb.Blocks.Groups
             BindMemberWorkflowTriggersGrid();
         }
 
+        private void LoadElevatedSecurityRadioList()
+        {
+            rblElevatedSecurityLevel.Items.Clear();
+            foreach ( ElevatedSecurityLevel value in Enum.GetValues( typeof(ElevatedSecurityLevel) ) )
+            {
+                rblElevatedSecurityLevel.Items.Add( new ListItem( value.ToString(), value.ConvertToInt().ToString() ) );
+            }
+        }
+
         /// <summary>
         /// Bind the administrator person picker.
         /// </summary>
@@ -1915,6 +1944,20 @@ namespace RockWeb.Blocks.Groups
 
             if ( groupType != null )
             {
+                if ( cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() )
+                {
+                    pnlElevatedSecurity.Visible = true;
+                }
+                else
+                {
+                    pnlElevatedSecurity.Visible = false;
+
+                    if ( setValues )
+                    {
+                        rblElevatedSecurityLevel.SelectedValue = ElevatedSecurityLevel.None.ConvertToInt().ToString();
+                    }
+                }
+
                 if ( setValues )
                 {
                     dvpGroupStatus.DefinedTypeId = groupType.GroupStatusDefinedTypeId;
@@ -4277,6 +4320,28 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIsSecurityRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
+        {
+            // Grouptype changed, so load up the new attributes and set controls to the default attribute values
+            CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+            if ( CurrentGroupTypeId > 0 )
+            {
+                var groupType = CurrentGroupTypeCache;
+
+                var group = new Group
+                {
+                    GroupTypeId = CurrentGroupTypeId,
+                    IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid()
+                };
+
+                ShowGroupTypeEditDetails( groupType, group, true );
+            }
+        }
     }
 
     class GroupSyncViewModel : GroupSync

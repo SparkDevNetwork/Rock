@@ -27,8 +27,10 @@ using Rock;
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.ViewModel;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Utility.Enums;
 
 namespace Rock.Model
 {
@@ -283,6 +285,10 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( p => p.LastName == searchParameters.LastName );
 
+            // Make sure people with an ignored account protection profile are not considered as possible matches
+            // We'll also double-check by checking against PersonSummary.AccountProtectionProfile when determining MeetsMinimumConfidence
+            List<AccountProtectionProfile> accountProtectionProfilesForDuplicateDetectionToIgnore = new SecuritySettingsService().SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore;
+            query = query.Where( p => !accountProtectionProfilesForDuplicateDetectionToIgnore.Contains( p.AccountProtectionProfile ) );
 
             if ( searchParameters.SuffixValueId.HasValue )
             {
@@ -307,17 +313,18 @@ namespace Rock.Model
                     FirstName = p.FirstName,
                     LastName = p.LastName,
                     NickName = p.NickName,
+                    Email = p.Email,
                     Gender = p.Gender,
                     BirthDate = p.BirthDate,
                     SuffixValueId = p.SuffixValueId,
-                    Email = p.Email
+                    AccountProtectionProfile = p.AccountProtectionProfile
                 } )
                 .ToList()
                 .ToDictionary(
                     p => p.Id,
                     p =>
                     {
-                        var result = new PersonMatchResult( searchParameters, p )
+                        var result = new PersonMatchResult( searchParameters, p, accountProtectionProfilesForDuplicateDetectionToIgnore )
                         {
                             LastNameMatched = true
                         };
@@ -334,7 +341,9 @@ namespace Rock.Model
                 this.Queryable( includeDeceased, includeBusinesses )
                     .AsNoTracking()
                     .Where(
-                        p => previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id && a.SearchValue == searchParameters.Email && a.SearchTypeValueId == searchTypeValueId )
+                        p => previousEmailQry.Any( a => a.PersonAlias.PersonId == p.Id
+                            && a.SearchValue == searchParameters.Email
+                            && a.SearchTypeValueId == searchTypeValueId )
                     )
                     .Select( p => new PersonSummary()
                     {
@@ -342,9 +351,11 @@ namespace Rock.Model
                         FirstName = p.FirstName,
                         LastName = p.LastName,
                         NickName = p.NickName,
+                        Email = p.Email,
                         Gender = p.Gender,
                         BirthDate = p.BirthDate,
-                        SuffixValueId = p.SuffixValueId
+                        SuffixValueId = p.SuffixValueId,
+                        AccountProtectionProfile = p.AccountProtectionProfile
                     } )
                     .ToList()
                     .ForEach( p =>
@@ -355,7 +366,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p, accountProtectionProfilesForDuplicateDetectionToIgnore )
                             {
                                 PreviousEmailMatched = true
                             };
@@ -376,9 +387,11 @@ namespace Rock.Model
                     FirstName = n.PersonAlias.Person.FirstName,
                     LastName = n.PersonAlias.Person.LastName,
                     NickName = n.PersonAlias.Person.NickName,
+                    Email = n.PersonAlias.Person.Email,
                     Gender = n.PersonAlias.Person.Gender,
                     BirthDate = n.PersonAlias.Person.BirthDate,
-                    SuffixValueId = n.PersonAlias.Person.SuffixValueId
+                    SuffixValueId = n.PersonAlias.Person.SuffixValueId,
+                    AccountProtectionProfile = n.PersonAlias.Person.AccountProtectionProfile
                 } )
                 .ToList()
                 .ForEach( p =>
@@ -389,7 +402,7 @@ namespace Rock.Model
                     }
                     else
                     {
-                        foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                        foundPeople[p.Id] = new PersonMatchResult( searchParameters, p, accountProtectionProfilesForDuplicateDetectionToIgnore )
                         {
                             PreviousNameMatched = true
                         };
@@ -410,9 +423,11 @@ namespace Rock.Model
                         FirstName = n.Person.FirstName,
                         LastName = n.Person.LastName,
                         NickName = n.Person.NickName,
+                        Email = n.Person.Email,
                         Gender = n.Person.Gender,
                         BirthDate = n.Person.BirthDate,
-                        SuffixValueId = n.Person.SuffixValueId
+                        SuffixValueId = n.Person.SuffixValueId,
+                        AccountProtectionProfile = n.Person.AccountProtectionProfile
                     } )
                     .ToList()
                     .ForEach( p =>
@@ -423,7 +438,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p )
+                            foundPeople[p.Id] = new PersonMatchResult( searchParameters, p, accountProtectionProfilesForDuplicateDetectionToIgnore )
                             {
                                 MobileMatched = true
                             };
@@ -573,13 +588,25 @@ namespace Rock.Model
         /// </summary>
         private class PersonMatchResult
         {
-
             /// <summary>
             /// Initializes a new instance of the <see cref="PersonMatchResult"/> class.
             /// </summary>
+            /// <param name="query">The query.</param>
+            /// <param name="person">The person.</param>
+            [RockObsolete( "1.13" )]
+            [Obsolete( "Use the constructor that takes a list of AccountProtectionProfiles" )]
+            public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
+                : this( query, person, new List<AccountProtectionProfile> { AccountProtectionProfile.Extreme, AccountProtectionProfile.High, AccountProtectionProfile.Medium } )
+            {
+            }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PersonMatchResult" /> class.
+            /// </summary>
             /// <param name="query">The person match query.</param>
             /// <param name="person">The person summary.</param>
-            public PersonMatchResult( PersonMatchQuery query, PersonSummary person )
+            /// <param name="accountProtectionProfilesForDuplicateDetectionToIgnore">The account protection profiles for duplicate detection to ignore.</param>
+            public PersonMatchResult( PersonMatchQuery query, PersonSummary person, List<AccountProtectionProfile> accountProtectionProfilesForDuplicateDetectionToIgnore )
             {
                 PersonId = person.Id;
                 FirstNameMatched = ( person.FirstName != null && person.FirstName != String.Empty && person.FirstName.Equals( query.FirstName, StringComparison.CurrentCultureIgnoreCase ) ) || ( person.NickName != null && person.NickName != String.Empty && person.NickName.Equals( query.FirstName, StringComparison.CurrentCultureIgnoreCase ) );
@@ -589,6 +616,8 @@ namespace Rock.Model
 
                 EmailSearchSpecified = query.Email.IsNotNullOrWhiteSpace();
                 PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && person.Email.Equals( query.Email, StringComparison.CurrentCultureIgnoreCase );
+
+                MatchingAllowedForAccountProtectionProfile = accountProtectionProfilesForDuplicateDetectionToIgnore.Contains( person.AccountProtectionProfile );
 
                 if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
                 {
@@ -621,6 +650,8 @@ namespace Rock.Model
 
             public bool BirthDateYearMatched { get; set; }
 
+            public bool MatchingAllowedForAccountProtectionProfile { get; set; }
+
             public bool MeetsMinimumConfidence
             {
                 get
@@ -630,30 +661,33 @@ namespace Rock.Model
                         return false;
                     }
 
-                    if ( EmailSearchSpecified )
-                    {
-                        /* 
-                            2020-11-12 - MDP
-                            If Email is specified and the Matched Person has an email, it MUST match
-                            the person's primary email OR one of the person's previous emails.
-                            This prevents matching in cases where we should not match.
+                    /* 
 
-                            See https://app.asana.com/0/1181881054809083/1199161381220905/f for why this was done
-                        */
+                    2021-09-27 - MDP
 
-                        if ( PrimaryEmailMatched || PreviousEmailMatched )
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    else
+                    This used to have strict rule on Email matching to help prevent matching people
+                    if they have different emails. However, this is been changed so that people with a
+                    low AccountProtectionProfile (no Login, for example) can be matched even though
+                    the email address doesn't exactly match (as long as the ConfidenceScore is
+                    above MATCH_SCORE_CUTOFF). Note that this change also results in Never attemping to match people with
+                    higher AccountProtectionProfile, regardless of the ConfidenceScore.
+
+                    2020-11-12 - MDP (outdated, see 2021-09-27 note)
+                    If Email is specified and the Matched Person has an email, it MUST match
+                    the person's primary email OR one of the person's previous emails.
+                    This prevents matching in cases where we should not match.
+                    See https://app.asana.com/0/1181881054809083/1199161381220905/f for why this was done
+
+                    */
+
+                    if ( MatchingAllowedForAccountProtectionProfile )
                     {
-                        return true;
+
+                        return false;
                     }
+
+
+                    return true;
                 }
             }
 
@@ -732,6 +766,8 @@ namespace Rock.Model
             public DateTime? BirthDate { get; set; }
 
             public int? SuffixValueId { get; set; }
+
+            public AccountProtectionProfile AccountProtectionProfile { get; set; }
         }
 
         #endregion
@@ -2688,6 +2724,11 @@ namespace Rock.Model
 
             if ( person != null )
             {
+                if ( !person.IsPersonTokenUsageAllowed() )
+                {
+                    return null;
+                }
+
                 return person;
             }
 
@@ -2697,6 +2738,11 @@ namespace Rock.Model
                 var personAlias = new PersonAliasService( this.Context as RockContext ).GetByAliasEncryptedKey( encryptedKey );
                 if ( personAlias != null )
                 {
+                    if ( !personAlias.Person.IsPersonTokenUsageAllowed() )
+                    {
+                        return null;
+                    }
+
                     return personAlias.Person;
                 }
             }
@@ -4462,6 +4508,186 @@ FROM (
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Person.AccountProtectionProfile" /> for all people.
+        /// Returns the number of people whose account protection profile was updated.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>System.Int32.</returns>
+        public static int UpdateAccountProtectionProfileAll( RockContext rockContext )
+        {
+            return UpdateAccountProtectionProfile( null, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Person.AccountProtectionProfile" /> for the specified person.
+        /// Returns 1 (number of person records updated) if that person's account protection profile was updated.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>System.Int32.</returns>
+        public static int UpdateAccountProtectionProfileForPerson( int personId, RockContext rockContext )
+        {
+            return UpdateAccountProtectionProfile( personId, rockContext );
+        }
+
+        /// <summary>
+        /// Updates the <see cref="Person.AccountProtectionProfile" /> for all people, or just the specified person.
+        /// Returns the number of people whose account protection profile was updated.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>System.Int32.</returns>
+        private static int UpdateAccountProtectionProfile( int? personId, RockContext rockContext )
+        {
+            int rowsUpdated = 0;
+            var personService = new PersonService( rockContext );
+
+            /* Determine people that have logins */
+            var personIdsWithLoginsQuery = personService
+                .AsNoFilter()
+                .Where( p => p.Users.Any() )
+                .Select( a => a.Id );
+
+            bool includeDeceased = true;
+            bool includeArchived = false;
+
+            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            var groupMemberService = new GroupMemberService( rockContext );
+            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
+                .Queryable( includeDeceased, includeArchived )
+                .IsInSecurityRoleGroupOrSecurityRoleGroupType()
+                .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
+                .Select( gm => gm.PersonId );
+
+            /* Determine people in security role groups with ElevatedSecurityLevel.Low */
+            var personIdsInGroupsWithLowSecurityLevelQuery = groupMemberService
+                .Queryable( includeDeceased, includeArchived )
+                .IsInSecurityRoleGroupOrSecurityRoleGroupType()
+                .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.Low )
+                .Select( gm => gm.PersonId );
+
+            /* Determine People with Financial Data */
+
+            // Determine PersonAliasIds that have Financial Saved Accounts
+            var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            var personAliasWithFinancialPersonSavedAccountQuery = financialPersonSavedAccountService
+                .Queryable()
+                .Where( f => f.PersonAliasId.HasValue )
+                .Select( f => f.PersonAliasId.Value );
+
+            // Determine PersonAliasIds that have active Financial Scheduled Transactions
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+            var personAliasIdsWithFinancialScheduledTransactionQuery = financialScheduledTransactionService
+                .Queryable()
+                .Where( p => p.IsActive )
+                .Select( f => f.AuthorizedPersonAliasId );
+
+            /*  2021-10-05 MDP
+
+            If we decide that FinancialTransactions and/or FinancialPersonBankAccount should be factored in,
+            this code can be used to include those.
+
+            // Determine PersonAliasIds that have Financial Transactionss
+            var financialTransactionService = new FinancialTransactionService( rockContext );
+            var peopleWithFinancialTransactionQuery = financialTransactionService
+                .Queryable()
+                .Where( f => f.AuthorizedPersonAliasId.HasValue )
+                .Select( f => f.AuthorizedPersonAliasId.Value );
+
+            // Determine PersonAliasIds that have Financial Bank Accounts
+            var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
+            var personAliasWithFinancialPersonBankAccountQuery = financialPersonBankAccountService
+                .Queryable()
+                .Select( f => f.PersonAliasId );
+
+            // combine to get PersonAliasIds that have any type of financial data
+            var personAliasIdsWithFinancialDataQuery =
+                personAliasWithFinancialPersonBankAccountQuery
+                .Union( personAliasWithFinancialPersonSavedAccountQuery )
+                .Union( personAliasIdsWithFinancialScheduledTransactionQuery )
+                .Union( peopleWithFinancialTransactionQuery );
+
+             */
+
+
+            // combine to get PersonAliasIds that have any type of financial data
+            var personAliasIdsWithFinancialDataQuery = personAliasWithFinancialPersonSavedAccountQuery.Union( personAliasIdsWithFinancialScheduledTransactionQuery );
+
+            /*
+                Rules
+
+                Low
+                  - No Risk Items
+
+                Medium
+                  - Individual Has Login
+
+                High
+                  - one or more of the following -
+                    + Active Scheduled Financial Transaction (inactive are not viewable)
+                    + Saved Payment Account
+                    + in a Security Role Marked w/ Low Elevated Security 
+
+                Extreme
+                  - in a Security Role marked w/ High Elevated Security Level 
+             */
+
+            // set up query as all person records regardless of Deceased, record type, etc
+            var personQuery = personService.AsNoFilter();
+            if ( personId.HasValue )
+            {
+                // if this is for a specific person, just calculate for that one person
+                personQuery = personQuery.Where( a => a.Id == personId.Value );
+            }
+
+            // update the people that meet the AccountProtectionProfile.Low criteria:
+            //  -- No Risk Items
+            var personToSetAsAccountProtectionProfileLowQuery = personQuery.Where( p =>
+                    !personIdsWithLoginsQuery.Contains( p.Id )
+                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && p.AccountProtectionProfile != AccountProtectionProfile.Low
+                    );
+
+            rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
+
+            // update the people that meet the AccountProtectionProfile.Medium criteria:
+            //  -- Has login
+            //  -- No other Risk items
+            var personToSetAsAccountProtectionProfileMediumQuery = personQuery.Where( p =>
+                    personIdsWithLoginsQuery.Contains( p.Id )
+                    && !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
+                    && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
+                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && p.AccountProtectionProfile != AccountProtectionProfile.Medium
+                    );
+
+            rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileMediumQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Medium } );
+
+            // update the people that meet the AccountProtectionProfile.Medium criteria:
+            //   -- In a Low Security Role Group or Has Financial Data
+            //   -- Not in a High security role group
+            var personToSetAsAccountProtectionProfileHighQuery = personQuery.Where( p =>
+                    ( personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id ) || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) )
+                    && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                    && p.AccountProtectionProfile != AccountProtectionProfile.High
+                    );
+
+            rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileHighQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.High } );
+
+            // update the people that meet the AccountProtectionProfile.Extreme criteria:
+            //   -- In a High security role group
+            var personToSetAsAccountProtectionProfileExtremeQuery = personQuery.Where( p =>
+                personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
+                && p.AccountProtectionProfile != AccountProtectionProfile.Extreme );
+
+            rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileExtremeQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Extreme } );
+
+            return rowsUpdated;
         }
 
         #endregion

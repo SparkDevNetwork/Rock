@@ -34,8 +34,10 @@ using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Transactions;
 
 namespace Rock.Model
@@ -548,6 +550,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes.
+        /// </summary>
+        /// <value>
+        /// The account protection profile.
+        /// </value>
+        [DataMember]
+        public AccountProtectionProfile AccountProtectionProfile { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Preferred Language for this person.
@@ -3624,6 +3635,7 @@ namespace Rock.Model
 
     public static partial class PersonExtensionMethods
     {
+
         /// <summary>
         /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
@@ -4103,6 +4115,17 @@ namespace Rock.Model
             } );
 
             return entitySet;
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="Person"/> record is allowed to use <see cref="PersonToken"/>  basd on their account protection profile.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        public static bool IsPersonTokenUsageAllowed( this Person person )
+        {
+            var rockSecuritySettingsService = new SecuritySettingsService();
+
+            return rockSecuritySettingsService.SecuritySettings.DisableTokensForAccountProtectionProfiles.Contains( person.AccountProtectionProfile ) == false;
         }
     }
 

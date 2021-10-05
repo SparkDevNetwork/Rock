@@ -149,6 +149,7 @@
     <Compile Include="Jobs\RockJobListenerTestJob.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
+    <Compile Include="Jobs\RockCleanupJobTests.cs" />
     <Compile Include="Lava\Commands\RockEntityTests.cs" />
     <Compile Include="Lava\DotLiquid\RockLiquidTests.cs" />
     <Compile Include="Lava\Engine\EntityPropertyAccessTests.cs" />
@@ -190,6 +191,8 @@
     <Compile Include="Model\CommunicationServiceTests.cs" />
     <Compile Include="Model\PersonServiceTests.cs" />
     <Compile Include="Model\StepProgramServiceTests.cs" />
+    <Compile Include="Model\GroupMemberTests.cs" />
+    <Compile Include="Model\UserLoginTests.cs" />
     <Compile Include="Rest\ControllersTests\InteractionsControllerTests.cs" />
     <Compile Include="Rest\ControllersTests\AuthControllerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />

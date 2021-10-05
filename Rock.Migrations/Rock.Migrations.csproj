@@ -125,6 +125,10 @@
     <Compile Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.Designer.cs">
       <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.cs" />
+    <Compile Include="Migrations\202110041858310_ElevatedPrivilege.Designer.cs">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -778,6 +782,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202110031055066_UpdateConnectionStatusAutomation.resx">
       <DependentUpon>202110031055066_UpdateConnectionStatusAutomation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110041858310_ElevatedPrivilege.resx">
+      <DependentUpon>202110041858310_ElevatedPrivilege.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
