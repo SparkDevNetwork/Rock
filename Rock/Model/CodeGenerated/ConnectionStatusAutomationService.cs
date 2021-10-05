@@ -85,6 +85,7 @@ namespace Rock.Model
                 AutomationName = model.AutomationName,
                 DataViewId = model.DataViewId,
                 DestinationStatusId = model.DestinationStatusId,
+                GroupRequirementsFilter = ( int ) model.GroupRequirementsFilter,
                 SourceStatusId = model.SourceStatusId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
@@ -160,6 +161,7 @@ namespace Rock.Model
             target.DestinationStatusId = source.DestinationStatusId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.GroupRequirementsFilter = source.GroupRequirementsFilter;
             target.SourceStatusId = source.SourceStatusId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

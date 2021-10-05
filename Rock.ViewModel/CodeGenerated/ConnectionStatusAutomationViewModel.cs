@@ -56,6 +56,14 @@ namespace Rock.ViewModel
         public int DestinationStatusId { get; set; }
 
         /// <summary>
+        /// Gets or sets the GroupRequirementsFilter.
+        /// </summary>
+        /// <value>
+        /// The GroupRequirementsFilter.
+        /// </value>
+        public int GroupRequirementsFilter { get; set; }
+
+        /// <summary>
         /// Gets or sets the SourceStatusId.
         /// </summary>
         /// <value>

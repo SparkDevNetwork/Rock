@@ -190,6 +190,7 @@ namespace Rock.Model
                 Description = model.Description,
                 DisableScheduleToolboxAccess = model.DisableScheduleToolboxAccess,
                 DisableScheduling = model.DisableScheduling,
+                ElevatedSecurityLevel = ( int ) model.ElevatedSecurityLevel,
                 GroupCapacity = model.GroupCapacity,
                 GroupSalutation = model.GroupSalutation,
                 GroupSalutationFull = model.GroupSalutationFull,
@@ -289,6 +290,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
             target.DisableScheduling = source.DisableScheduling;
+            target.ElevatedSecurityLevel = source.ElevatedSecurityLevel;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;

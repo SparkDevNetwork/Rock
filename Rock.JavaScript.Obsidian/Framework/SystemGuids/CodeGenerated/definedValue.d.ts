@@ -42,6 +42,8 @@ export const enum DefinedValue {
     BlockTemplateMobileGroupView = "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests = "198F3006-5F0F-48AB-9EA0-2FA56F633753",
+    /** The block template for Mobile &gt; Prayer &gt; Prayer Card View block. */
+    BlockTemplateMobilePrayerPrayerCardView = "DCFECA8C-CDF5-4863-851E-7EFEE6758EE9",
     /** The block template for the mobile prayer session block. */
     BlockTemplateMobilePrayerSession = "6F1F6BAB-B403-48D1-BF6A-52B16361279C",
     /** Button HTML - Primary  */
@@ -248,6 +250,8 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     PersonConnectionStatusVisitor = "B91BA046-BC1E-400C-B85D-638C1F4E0CE2",
     /** Person Connection Status - Participant */
     PersonConnectionStatusParticipant = "8EBC0CEB-474D-4C1B-A6BA-734C3A9AB061",
+    /** Person Connection Status - Prospect */
+    PersonConnectionStatusProspect = "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person Connection Status - Web Prospect */
     PersonConnectionStatusWebProspect = "368DD475-242C-49C4-A42C-7278BE690CC2",
     /** Person needs review due to being Self-Inactivated */
@@ -263,7 +267,7 @@ NOTE: This is not a core group location type. It'll get created if needed when i
     /** Android platform */
     PersonalDevicePlatformAndroid = "63464BB8-83E2-4914-B922-5075311758F9",
     /** Default Structure Content Editor */
-    StructureContentEditorDefault = "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
+    StructureContentEditorDefault = "09B25845-B879-4E69-87E9-003F9380B8DD",
     /** Google map style */
     MapStyleGoogle = "BFC46259-FB66-4427-BF05-2B030A582BEA",
     /** The standard Rock map style */

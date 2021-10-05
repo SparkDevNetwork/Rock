@@ -429,6 +429,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupRequirementsFilter
+    {
+        Ignore = 0x0,
+        MustMeet = 0x1,
+        DoesNotMeet = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
         GroupMembers = 0x0,

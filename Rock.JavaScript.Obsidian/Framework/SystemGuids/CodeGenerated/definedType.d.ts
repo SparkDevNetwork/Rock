@@ -141,8 +141,6 @@ be phone numbers or short codes */
     PowerbiAccounts = "497DE3E6-66BD-D4A1-4A41-78A2FED2D0DF",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes = "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
-    /** Protect My Ministry background package types */
-    ProtectMyMinistryPackages = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
     /** Template Block */
     TemplateBlock = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183",
     /** Template */
