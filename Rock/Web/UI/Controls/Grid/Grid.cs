@@ -151,17 +151,17 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [table stripped].
+        /// Gets or sets a value indicating whether [table striped].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [table stripped]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [table striped]; otherwise, <c>false</c>.
         /// </value>
         [
         Category( "Appearance" ),
         DefaultValue( true ),
-        Description( "Show a stripped table." )
+        Description( "Show a striped table." )
         ]
-        public virtual bool TableStripped { get; set; } = true;
+        public virtual bool TableStriped { get; set; } = true;
         
         /// <summary>
         /// Gets or sets the name of the row item.
@@ -1185,7 +1185,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
 
-                if ( TableStripped )
+                if ( TableStriped )
                 {
                     this.AddCssClass( "table-striped" );
                 }
