@@ -36,6 +36,7 @@ public class BundleConfig
             "~/Scripts/jquery-migrate-3.1.0.min.js" ) );
         
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
+            "~/Scripts/Rock/microsoft-ajax-shims.js",
             "~/Scripts/jquery-ui-1.12.1.custom.min.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootstrap-timepicker.js",
@@ -74,11 +75,6 @@ public class BundleConfig
         // to be included for HtmlEditor
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockHtmlEditorPlugins" ).Include(
             "~/Scripts/summernote/plugins/*.js" ) );
-
-        // Creating a separate "StructureContentEditorPlugins" bundle specifically for JS functionality that needs
-        // to be included for HtmlEditor
-        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/StructureContentEditorPlugins" ).Include(
-            "~/Scripts/editor.js/*.js" ) );
 
         // Add Obsidian scripts
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/Obsidian" ).Include(

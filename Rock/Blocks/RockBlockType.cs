@@ -186,6 +186,26 @@ namespace Rock.Blocks
         }
 
         /// <summary>
+        /// Creates a 401-Unauthorized response with an optional error message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A BlockActionResult instance.</returns>
+        protected BlockActionResult ActionUnauthorized( string message = null )
+        {
+            if ( message == null )
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized );
+            }
+            else
+            {
+                return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
+                {
+                    Error = message
+                };
+            }
+        }
+
+        /// <summary>
         /// Creates a 403-Forbidden response with an optional error message.
         /// </summary>
         /// <param name="message">The message.</param>

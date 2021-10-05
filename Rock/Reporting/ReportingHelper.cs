@@ -528,18 +528,6 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the filter overrides from controls.
         /// </summary>
-        /// <param name="phFilters">The ph filters.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "", true )]
-        public static DataViewFilterOverrides GetFilterOverridesFromControls( PlaceHolder phFilters )
-        {
-            return GetFilterOverridesFromControls( null, phFilters );
-        }
-
-        /// <summary>
-        /// Gets the filter overrides from controls.
-        /// </summary>
         /// <param name="dataView">The data view.</param>
         /// <param name="phFilters">The ph filters.</param>
         /// <returns></returns>

@@ -981,7 +981,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     Value = at.Id,
                     Text = at.Name
-                } ).ToList();
+                } ).OrderBy( a => a.Text ).ToList();
                 ddlRequestModalViewModeAddActivityModeType.DataBind();
                 BindConnectorOptions( ddlRequestModalViewModeAddActivityModeConnector, true, viewModel.CampusId, connectorPersonAliasId );
 
@@ -4714,6 +4714,8 @@ namespace RockWeb.Blocks.Connection
                         DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
                         Order = ct.Order,
                         ConnectionOpportunities = ct.ConnectionOpportunities
+                            .OrderBy( co => co.Order )
+                            .ThenBy( co => co.Name )
                             .Where( co => co.IsActive )
                             .Select( co => new ConnectionOpportunityViewModel
                             {
@@ -4726,9 +4728,6 @@ namespace RockWeb.Blocks.Connection
                                 ConnectionTypeName = ct.Name,
                                 ConnectionOpportunityCampusIds = co.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList()
                             } )
-                            .ToList()
-                            .OrderBy( co => co.PublicName )
-                            .ThenBy( co => co.Id )
                             .ToList()
                     } )
                     .ToList()
@@ -5096,7 +5095,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( requirementsResults != null )
                 {
-                    // Ignore notapplicable requirements
+                    // Ignore the NotApplicable requirements.
                     requirementsResults = requirementsResults.Where( r => r.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable );
                 }
             }

@@ -170,16 +170,6 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the history changes.
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead", true )]
-        public virtual List<string> HistoryChanges { get; set; }
-
-        /// <summary>
         /// Gets or sets the history change list.
         /// </summary>
         /// <value>

@@ -379,6 +379,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_PRAYER_PRAYER_REQUEST_DETAILS_BLOCK_TYPE = "F8E56BC0-E9D1-44A4-9900-46589A1FB784";
 
         /// <summary>
+        /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Prayer.PrayerCardView"/>.
+        /// </summary>
+        public const string MOBILE_PRAYER_PRAYER_CARD_VIEW_BLOCK_TYPE = "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF";
+
+        /// <summary>
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Security.OnboardPerson"/>.
         /// </summary>
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";

@@ -1008,28 +1008,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the field type id.
-        /// </summary>
-        /// <value>
-        /// The field type id.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead", true )]
-        public int? FieldTypeId
-        {
-            get
-            {
-                return this.AttributeFieldTypeId;
-            }
-
-            set
-            {
-                var dummyQualifiers = FieldTypeCache.Get( value ?? 1 ).Field.ConfigurationKeys().ToDictionary( k => k, v => new ConfigurationValue() );
-                SetAttributeFieldType( value ?? 1, dummyQualifiers );
-            }
-        }
-
-        /// <summary>
         /// Gets the FieldTypeId of the Attribute
         /// </summary>
         /// <value>
@@ -1041,27 +1019,6 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 return _ddlFieldType.SelectedValueAsInt() ?? FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT.AsGuid() )?.Id ?? 1;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the qualifiers.
-        /// </summary>
-        /// <value>
-        /// The qualifiers.
-        /// </value>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead", true )]
-        public Dictionary<string, ConfigurationValue> Qualifiers
-        {
-            get
-            {
-                return this.AttributeQualifiers;
-            }
-
-            set
-            {
-                SetAttributeFieldType( this.AttributeFieldTypeId, value );
             }
         }
 

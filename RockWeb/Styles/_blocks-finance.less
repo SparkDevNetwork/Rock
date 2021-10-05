@@ -300,20 +300,24 @@
 .trend-bar {
   height: 11px;
   margin-top: 4px;
+
+  li {
+    float: left;
+    height: 100%;
+
+    span {
+      display: flex;
+      height: 100%;
+      margin-right: 2px;
+      background: @persondetails-badge-color;
+    }
+  }
 }
 
-.trend-bar li {
-  float: left;
-  height: 100%;
+.percentile-giving {
+  @media (min-width: @screen-sm) {
+    border-left: 1px solid @panel-border;
+  }
 }
 
-.trend-bar li span {
-  display: flex;
-  height: 100%;
-  margin-right: 2px;
-  background: @persondetails-badge-color;
-}
 
-.percentile-giving .stat-label {
-  line-height: 1;
-}

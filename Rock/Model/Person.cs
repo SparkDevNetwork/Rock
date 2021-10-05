@@ -34,8 +34,10 @@ using System.Web;
 using Rock.Data;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Lava;
+using Rock.Security;
 using Rock.Transactions;
 
 namespace Rock.Model
@@ -548,6 +550,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes.
+        /// </summary>
+        /// <value>
+        /// The account protection profile.
+        /// </value>
+        [DataMember]
+        public AccountProtectionProfile AccountProtectionProfile { get; set; }
 
         /// <summary>
         /// Gets or sets the DefinedValueId of the <see cref="Rock.Model.DefinedValue"/> that represents the Preferred Language for this person.
@@ -2717,24 +2728,6 @@ namespace Rock.Model
         /// <param name="personId">The person identifier.</param>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="age">The age.</param>
-        /// <param name="gender">The gender to use if the photoId is null.</param>
-        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
-        /// <param name="maxWidth">The maximum width (in px).</param>
-        /// <param name="maxHeight">The maximum height (in px).</param>
-        /// <returns></returns>
-        [RockObsolete( "1.8" )]
-        [Obsolete( "Use other GetPersonPhotoUrl", true )]
-        public static string GetPersonPhotoUrl( int? personId, int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
-        {
-            return GetPersonPhotoUrl( personId, photoId, age, gender, recordTypeValueGuid, null, maxWidth, maxHeight );
-        }
-
-        /// <summary>
-        /// Gets the person photo URL.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="photoId">The photo identifier.</param>
-        /// <param name="age">The age.</param>
         /// <param name="gender">The gender.</param>
         /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="ageClassification">The age classification.</param>
@@ -3642,6 +3635,7 @@ namespace Rock.Model
 
     public static partial class PersonExtensionMethods
     {
+
         /// <summary>
         /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
@@ -4121,6 +4115,17 @@ namespace Rock.Model
             } );
 
             return entitySet;
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="Person"/> record is allowed to use <see cref="PersonToken"/>  basd on their account protection profile.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        public static bool IsPersonTokenUsageAllowed( this Person person )
+        {
+            var rockSecuritySettingsService = new SecuritySettingsService();
+
+            return rockSecuritySettingsService.SecuritySettings.DisableTokensForAccountProtectionProfiles.Contains( person.AccountProtectionProfile ) == false;
         }
     }
 

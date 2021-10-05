@@ -523,15 +523,13 @@ namespace Rock.Data
         {
             if ( workflowTypeGuid.HasValue )
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeGuid.Value, workflowName, Id );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeGuid = workflowTypeGuid.Value,
-                    WorkflowName = workflowName,
-                    EntityId = Id,
-                    EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues,
-                    InitiatorPersonAliasId = initiatorPersonAliasId
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 
@@ -559,15 +557,13 @@ namespace Rock.Data
         {
             if ( workflowTypeId.HasValue )
             {
-                new LaunchWorkflow.Message
+                var transaction = new Rock.Transactions.LaunchWorkflowTransaction<T>( workflowTypeId.Value, workflowName, Id );
+                if ( workflowAttributeValues != null )
                 {
-                    WorkflowTypeId = workflowTypeId.Value,
-                    WorkflowName = workflowName,
-                    EntityId = Id,
-                    EntityTypeId = TypeId,
-                    WorkflowAttributeValues = workflowAttributeValues,
-                    InitiatorPersonAliasId = initiatorPersonAliasId
-                }.Send();
+                    transaction.WorkflowAttributeValues = workflowAttributeValues;
+                }
+
+                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
         }
 

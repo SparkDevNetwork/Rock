@@ -586,8 +586,47 @@
     <Compile Include="Blocks\IRockWebBlockType.cs" />
     <Compile Include="Blocks\RockClientType.cs" />
     <Compile Include="Blocks\Types\Mobile\Core\Notes.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerCardView.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistDataItem.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\CodeRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\CodeData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\DelimiterRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\DelimiterData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\EmbedRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\EmbedData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\HeaderRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\HeaderData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ImageRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ImageChangeHandler.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ImageData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ImageDataFile.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ListRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ListData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ListDataItem.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\NoteRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\NoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\QuoteRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\QuoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\TableRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\TableData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\WarningRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\WarningData.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockChangeHandler.cs" />
+    <Compile Include="Cms\StructuredContent\StandardBlockTypes.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentBlock.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentBlockAttribute.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentBlockChangeHandler.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentChanges.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentData.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentHelperChangesExtensions.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentBlockRenderer.cs" />
     <Compile Include="CheckIn\CheckinResult.cs" />
     <Compile Include="CheckIn\PersonAchievementType.cs" />
     <Compile Include="Communication\EmailAddressFieldValidator.cs" />
@@ -675,6 +714,8 @@
     <Compile Include="Data\IEntitySaveEntry.cs" />
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Data\RockContextAnalytics.cs" />
+    <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Field\Types\MediaWatchFieldType.cs" />
     <Compile Include="Financial\GivingJourneyHelper.cs" />
     <Compile Include="Financial\IObsidianFinancialGateway.cs" />
@@ -693,6 +734,7 @@
     <Compile Include="Model\CMS\MediaAccount\MediaAccount.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.Logic.cs" />
     <Compile Include="Model\CMS\MediaElement\MediaElement.SaveHook.cs" />
+    <Compile Include="Model\CodeGenerated\ConnectionStatusAutomationService.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunity\ConnectionOpportunity.WebForms.cs" />
     <Compile Include="Model\Connection\ConnectionRequestActivity\ConnectionRequestActivity.SaveHook.cs" />
@@ -705,6 +747,8 @@
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionStatusViewModel.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\WorkflowCheckViewModel.cs" />
+    <Compile Include="Model\Connection\ConnectionStatusAutomation\ConnectionStatusAutomation.cs" />
+    <Compile Include="Model\Connection\ConnectionStatusAutomation\GroupRequirementsFilter.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionType.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionType\ConnectionTypeViewMode.cs" />
     <Compile Include="Model\Connection\ConnectionWorkflow\ConnectionWorkflow.Logic.cs" />
@@ -932,6 +976,8 @@
     <Compile Include="Model\CRM\UserLogin\UserLogin.Logic.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLogin.WebForms.cs" />
     <Compile Include="Model\CRM\UserLogin\UserLoginService.WebForms.cs" />
+    <Compile Include="Security\SecuritySettings.cs" />
+    <Compile Include="Security\SecuritySettingsService.cs" />
     <Compile Include="SystemGuid\AchievementType.cs" />
     <Compile Include="SystemGuid\StreakType.cs" />
     <Compile Include="Tasks\AddCommunicationRecipients.cs" />
@@ -974,6 +1020,8 @@
     <Compile Include="Store\StoreApiResult.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Utility\CodeGenFeature.cs" />
+    <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
+    <Compile Include="Utility\Enums\UserLoginValidationState.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
@@ -982,6 +1030,8 @@
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringHtmlExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\StringRockExtensions.cs" />
+    <Compile Include="Utility\Enums\AccountProtectionProfile.cs" />
+    <Compile Include="Utility\Enums\ElevatedSecurityLevel.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
     <Compile Include="Communication\Transport\RockMobilePush.cs" />
     <Compile Include="Communication\Transport\SafeSenderResult.cs" />
@@ -1150,9 +1200,12 @@
     <Compile Include="Utility\ExtensionMethods\StreamExtensions.cs" />
     <Compile Include="Utility\KeyHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\Request.cs" />
+    <Compile Include="Utility\PrayerRequestLastPrayedDetail.cs" />
+    <Compile Include="Utility\PrayerRequestQueryOptions.cs" />
     <Compile Include="Utility\RockCurrencyCodeInfo.cs" />
     <Compile Include="Financial\FinancialStatementTemplateReportSettings.cs" />
     <Compile Include="Utility\RockDynamic.cs" />
+    <Compile Include="Cms\StructuredContent\StructuredContentHelper.cs" />
     <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
@@ -1232,7 +1285,6 @@
     <Compile Include="Web\UI\Controls\IDoNotBlockValidate.cs" />
     <Compile Include="Web\UI\Controls\IHasAttributeId.cs" />
     <Compile Include="Web\UI\Controls\MediaPlayer.cs" />
-    <Compile Include="Web\UI\Controls\NoteControl.cs" />
     <Compile Include="Web\UI\Controls\PageNavButtons.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonProfileLinkField.cs" />
     <Compile Include="Web\UI\Controls\LocationList.cs" />
@@ -1599,9 +1651,6 @@
     <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
     <Compile Include="Web\Cache\Entities\LavaShortcodeCache.cs" />
     <Compile Include="Web\Cache\Entities\NoteTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\CachedEntity.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\CachedModel.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\RockMemoryCache.cs" />
     <Compile Include="Web\Cache\Entities\BadgeCache.cs" />
     <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
     <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
@@ -1907,7 +1956,6 @@
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\MigrateFamilyAlternateId.cs" />
     <Compile Include="Jobs\MigrateAttendanceOccurrenceData.cs" />
-    <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
@@ -2479,7 +2527,6 @@
     <Compile Include="Reporting\PowerBiUtilities.cs" />
     <Compile Include="Search\Other\Universal.cs" />
     <Compile Include="Reporting\DataFilter\Person\InRegistrationInstanceFilter.cs" />
-    <Compile Include="Security\Role.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Storage\AssetStorage\AmazonS3Component.cs" />
     <Compile Include="Storage\AssetStorage\Asset.cs" />
@@ -2946,7 +2993,6 @@
     <Compile Include="Transactions\GroupMemberPlacedElsewhereTransaction.cs" />
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
-    <Compile Include="Transactions\PageViewTransaction.cs" />
     <Compile Include="Transactions\PersonViewTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="Transactions\RunJobNowTransaction.cs" />
@@ -3139,7 +3185,6 @@
     <Compile Include="Web\UI\Controls\Pickers\CategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\DataViewPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
@@ -3369,7 +3414,6 @@
     <Compile Include="Workflow\Action\WorkflowControl\UserForm.cs" />
     <Compile Include="Workflow\Action\Utility\WebRequest.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\WriteToLog.cs" />
-    <Compile Include="Workflow\TriggerCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">

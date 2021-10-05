@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Steps
             var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
 
             // Allow Edit if authorized to edit the block or the Step Type.
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || stepGridRowViewModel.Step.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.IsAuthorized( Authorization.MANAGE_STEPS, CurrentPerson );
             var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
             if ( deleteFieldColumn != null )
             {

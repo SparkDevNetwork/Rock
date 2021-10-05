@@ -171,7 +171,7 @@ namespace Rock.Rest.v2
                     return new NotFoundResult( controller );
                 }
 
-                var requestContext = new Net.RockRequestContext( controller.Request );
+                var requestContext = controller.RockRequestContext;
 
                 //
                 // Set the basic block parameters.

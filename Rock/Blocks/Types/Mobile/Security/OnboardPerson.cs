@@ -53,11 +53,11 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [DefinedValueField( "Default Connection Status",
-        Description = "The connection status to use for new individuals (default = 'Web Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Key = AttributeKeys.DefaultConnectionStatus,
         Order = 1 )]
 
@@ -1888,7 +1888,81 @@ namespace Rock.Blocks.Types.Mobile.Security
             }
         }
 
+        /// <summary>
+        /// Updates the current person and returns the person's details.
+        /// </summary>
+        /// <param name="details">The details to be updated.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <returns>The result of the block action.</returns>
+        [BlockAction]
+        public BlockActionResult UpdateCurrentPerson( UpdateCurrentPersonDetails details, Guid? personalDeviceGuid )
+        {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionUnauthorized( "Must be logged in to perform this action." );
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
+
+                rockContext.WrapTransaction( () =>
+                {
+                    // Update the campus if we can.
+                    if ( details.CampusGuid != null )
+                    {
+                        var campusId = CampusCache.Get( details.CampusGuid.Value )?.Id;
+
+                        if ( campusId.HasValue )
+                        {
+                            person.GetFamily( rockContext ).CampusId = campusId;
+                        }
+                    }
+
+                    if ( details.Interests.Any() )
+                    {
+                        UpdatePersonInterests( person, details.Interests.AsGuidList(), rockContext );
+                    }
+
+                    // Update the personal device to indicate it's owned by this
+                    // person.
+                    if ( personalDeviceGuid.HasValue )
+                    {
+                        var personalDevice = new PersonalDeviceService( rockContext ).Get( personalDeviceGuid.Value );
+
+                        if ( personalDevice != null )
+                        {
+                            personalDevice.PersonAliasId = person.PrimaryAliasId;
+                            personalDevice.DeviceRegistrationId = details.PushToken;
+                        }
+                    }
+
+                    rockContext.SaveChanges();
+                } );
+
+                var mobilePerson = MobileHelper.GetMobilePerson( person, PageCache.Layout.Site );
+
+                // Set the authentication token to either a normal token or
+                // an impersonated token if we don't have a normal user name.
+                if ( RequestContext.CurrentUser.Id != 0 )
+                {
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( RequestContext.CurrentUser.UserName );
+                }
+                else
+                {
+                    mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( person.GetImpersonationParameter() );
+                }
+
+                return ActionOk( new
+                {
+                    Person = mobilePerson
+                } );
+            }
+        }
+
         #endregion
+
+        #region Support Classes
 
         /// <summary>
         /// Encrypted state that is sent to the client to ensure
@@ -1912,5 +1986,42 @@ namespace Rock.Blocks.Types.Mobile.Security
             /// </value>
             public int? MatchedPersonId { get; set; }
         }
+
+        #endregion
+
+        #region Action Classes
+
+        /// <summary>
+        /// The data that should be updated on the person's record for the
+        /// UpdateCurrentPerson action.
+        /// </summary>
+        public class UpdateCurrentPersonDetails
+        {
+            /// <summary>
+            /// Gets or sets the campus unique identifier.
+            /// </summary>
+            /// <value>
+            /// The campus unique identifier.
+            /// </value>
+            public Guid? CampusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the interests.
+            /// </summary>
+            /// <value>
+            /// The interests.
+            /// </value>
+            public List<string> Interests { get; set; }
+
+            /// <summary>
+            /// Gets or sets the push notification token.
+            /// </summary>
+            /// <value>
+            /// The push notification token.
+            /// </value>
+            public string PushToken { get; set; }
+        }
+
+        #endregion
     }
 }

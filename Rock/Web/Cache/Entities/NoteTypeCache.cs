@@ -89,17 +89,6 @@ namespace Rock.Web.Cache
         public bool UserSelectable { get; private set; }
 
         /// <summary>
-        /// Gets or sets the description.
-        /// </summary>
-        /// <value>
-        /// The description.
-        /// </value>
-        [DataMember]
-        [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported", true )]
-        public string CssClass { get; private set; }
-
-        /// <summary>
         /// Gets or sets the icon CSS class.
         /// </summary>
         /// <value>

@@ -13,8 +13,8 @@
 
             <div class="panel-body">
 
-                <asp:Panel ID="pnlEntry" runat="server" >
-                    <h4>Step 1: Register Your Application</h4>
+                <asp:Panel ID="pnlEntry" runat="server">
+                    <h4 class="mt-0">Step 1: Register Your Application</h4>
                     <p>
                         <ol>
                             <li>Register your application at the <a href="https://dev.powerbi.com/apps?type=web">Power BI Developer site</a>.</li>

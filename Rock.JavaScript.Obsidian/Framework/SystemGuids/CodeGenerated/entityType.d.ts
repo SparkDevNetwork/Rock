@@ -169,6 +169,8 @@ export const enum EntityType {
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.PrayerRequestDetails */
     MobilePrayerPrayerRequestDetailsBlockType = "F8E56BC0-E9D1-44A4-9900-46589A1FB784",
     /** The GUID for the entity . */
+    MobilePrayerPrayerCardViewBlockType = "0D0F1D7E-2D75-451B-95EE-0610B8F26BBF",
+    /** The GUID for the entity . */
     MobileSecurityOnboardPerson = "C9B7F36A-F70A-4ABF-9422-B18E579F927F",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry = "06AAC065-BF89-483D-B671-80F0F72779A6",

@@ -88,6 +88,7 @@ namespace Rock.Model
             {
                 Id = model.Id,
                 Guid = model.Guid,
+                AccountProtectionProfile = ( int ) model.AccountProtectionProfile,
                 AgeClassification = ( int ) model.AgeClassification,
                 AnniversaryDate = model.AnniversaryDate,
                 BirthDay = model.BirthDay,
@@ -200,6 +201,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Person target, Person source )
         {
             target.Id = source.Id;
+            target.AccountProtectionProfile = source.AccountProtectionProfile;
             target.AgeClassification = source.AgeClassification;
             target.AnniversaryDate = source.AnniversaryDate;
             target.BirthDay = source.BirthDay;

@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Data.Entity;
 using System.Linq;
-
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -42,19 +43,25 @@ namespace Rock.Model
                 decryptedToken = Rock.Security.Encryption.DecryptString( urlDecodedKey );
             }
 
-            var personToken = this.Queryable().FirstOrDefault( a => a.Token == decryptedToken );
+            var personToken = this.Queryable().Include(pt => pt.PersonAlias).FirstOrDefault( a => a.Token == decryptedToken );
             if ( personToken == null )
             {
                 bool tokenUseLegacyFallback = GlobalAttributesCache.Get().GetValue( "core.PersonTokenUseLegacyFallback" ).AsBoolean();
                 if ( tokenUseLegacyFallback )
                 {
-                    var person = new PersonService( this.Context as Rock.Data.RockContext ).GetByLegacyEncryptedKey( impersonationToken, true );
-                    if ( person != null )
+                    var legacyPerson = new PersonService( this.Context as Data.RockContext ).GetByLegacyEncryptedKey( impersonationToken, true );
+
+                    if ( !legacyPerson.IsPersonTokenUsageAllowed() )
+                    {
+                        return null;
+                    }
+
+                    if ( legacyPerson != null )
                     {
                         // if LegacyFallback is enabled, and we found a person, create a fake PersonToken
                         personToken = new PersonToken
                         {
-                            PersonAlias = person.PrimaryAlias,
+                            PersonAlias = legacyPerson.PrimaryAlias,
                             ExpireDateTime = null,
                             PageId = null,
                             LastUsedDateTime = RockDateTime.Now,
@@ -62,6 +69,12 @@ namespace Rock.Model
                         };
                     }
                 }
+            }
+
+            var person = new PersonService( this.Context as Data.RockContext ).Get( personToken.PersonAlias.PersonId );
+            if ( !person.IsPersonTokenUsageAllowed() )
+            {
+                return null;
             }
 
             return personToken;

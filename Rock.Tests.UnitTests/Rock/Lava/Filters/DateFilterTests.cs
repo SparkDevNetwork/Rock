@@ -421,7 +421,7 @@ namespace Rock.Tests.UnitTests.Lava
         /// Using the keyword 'Now' as input to the DateAdd filter should resolve to the current date.
         /// </summary>
         [TestMethod]
-        public void DateAdd_Now_ResolvesToCurrentDate()
+        public void DateAdd_WithNowAsInput_ResolvesToCurrentDate()
         {
             var expectedOutputDate = LavaDateTime.NowOffset.AddDays( 5 );
 
@@ -591,6 +591,17 @@ namespace Rock.Tests.UnitTests.Lava
         public void DateDiff_CompareEarlierDateInDays_YieldsNegativeInteger()
         {
             TestHelper.AssertTemplateOutput( "-32", "{{ '18-Mar-2011 11:30 AM' | DateDiff:'14-Feb-2011 8:00 AM','d' }}" );
+        }
+
+        /// <summary>
+        /// Requesting the difference between two dates in years should yield the result as multiples of 365.25 days.
+        /// </summary>
+        [TestMethod]
+        public void DateDiff_CompareDifferenceInYears_ReturnsWholeYearDifferenceOnly()
+        {
+            TestHelper.AssertTemplateOutput( "0", "{{ '31-Dec-2020' | DateDiff:'01-Jan-2021','Y' }}" );
+            TestHelper.AssertTemplateOutput( "10", "{{ '31-Dec-2010' | DateDiff:'31-Dec-2020','Y' }}" );
+            TestHelper.AssertTemplateOutput( "-10", "{{ '31-Dec-2020' | DateDiff:'31-Dec-2010','Y' }}" );
         }
 
         /// <summary>

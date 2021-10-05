@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "LimitToActiveGroups", category: "CustomSetting" )]
     [TextField( "Panel Title", "Set a specific title, or leave blank to have it based on the EntityType selection", required: false, order: 0 )]
     [TextField( "Entity Column Heading", "Set a column heading, or leave blank to have it based on the EntityType selection", required: false, order: 1 )]
-    [BooleanField( "Show Dataview Filter", "Show a DataView filter that lists Dataviews that are based on Rock.Model.FinancialTranasactionDetail.", false, key: "ShowDataviewFilter", order: 2 )]
+    [BooleanField( "Show Dataview Filter", "Show a DataView filter that lists Dataviews that are based on Rock.Model.FinancialTransactionDetail.", false, key: "ShowDataviewFilter", order: 2 )]
     [BooleanField( "Show Batch Filter", "", true, key: "ShowBatchFilter", order: 3 )]
     [IntegerField( "Max Number of Results", "", false, 1000, order: 4 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE, "TransactionTypeGuid", category: "CustomSetting" )]
