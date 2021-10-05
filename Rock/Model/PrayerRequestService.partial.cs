@@ -90,12 +90,12 @@ namespace Rock.Model
         /// <param name="browserSessionGuid">The browser session unique identifier.</param>
         public static void EnqueuePrayerInteraction( PrayerRequest prayerRequest, Person currentPerson, string summary, string userAgent, string ipAddress, Guid? browserSessionGuid )
         {
-            var channelTypeMediumValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_SYSTEM_EVENTS ).Id;
+            var channelId = InteractionChannelCache.Get( Rock.SystemGuid.InteractionChannel.PRAYER_EVENTS ).Id;
 
             // Write the Interaction by way of a transaction.
             var info = new Rock.Transactions.InteractionTransactionInfo
             {
-                ChannelTypeMediumValueId = channelTypeMediumValueId,
+                InteractionChannelId = channelId,
 
                 ComponentEntityId = prayerRequest.Id,
                 ComponentName = prayerRequest.Name,

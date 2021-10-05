@@ -91,7 +91,7 @@ namespace Rock.Model
         /// The discount applies.
         /// </value>
         [DataMember]
-        public bool DiscountApplies 
+        public bool DiscountApplies
         {
             get { return _discountApplies; }
             set { _discountApplies = value; }
@@ -138,7 +138,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual int? PersonId
         {
-            get { return PersonAlias != null ? PersonAlias.PersonId : (int?)null; }
+            get { return PersonAlias != null ? PersonAlias.PersonId : ( int? ) null; }
         }
 
         /// <summary>
@@ -163,9 +163,9 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaInclude]
-        public virtual string NickName 
+        public virtual string NickName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -183,9 +183,9 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [LavaInclude]
-        public virtual string FirstName 
+        public virtual string FirstName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -205,7 +205,7 @@ namespace Rock.Model
         [LavaInclude]
         public virtual string LastName
         {
-            get 
+            get
             {
                 if ( PersonAlias != null && PersonAlias.Person != null )
                 {
@@ -301,7 +301,7 @@ namespace Rock.Model
             var discountedCost = Cost - ( DiscountApplies ? ( Cost * discountPercent ) : 0.0M );
             if ( Fees != null )
             {
-                foreach( var fee in Fees )
+                foreach ( var fee in Fees )
                 {
                     discountedCost += DiscountApplies ? fee.DiscountedCost( discountPercent ) : fee.TotalCost;
                 }
@@ -347,15 +347,12 @@ namespace Rock.Model
 
             // Get all attributes there were defined for instance's template.
             var attributes = new List<AttributeCache>();
-            foreach( var entityAttributes in AttributeCache.GetByEntity( entityTypeCache.Id )
-                .Where( e => 
+            foreach ( var entityTypeAttribute in AttributeCache.GetByEntityType( entityTypeCache.Id )
+                .Where( e =>
                     e.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
                     e.EntityTypeQualifierValue.AsInteger() == registrationInstance.RegistrationTemplateId ) )
             {
-                foreach ( int attributeId in entityAttributes.AttributeIds )
-                {
-                    attributes.Add( AttributeCache.Get( attributeId ) );
-                }
+                attributes.Add( entityTypeAttribute );
             }
 
             return attributes;
