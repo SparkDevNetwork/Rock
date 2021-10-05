@@ -173,6 +173,14 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
+            this.RequiredFieldValidator = new RequiredFieldValidator();
+            this.RequiredFieldValidator.ID = this.ID + "_rfv";
+            this.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            this.RequiredFieldValidator.CssClass = "validation-error help-inline";
+            this.RequiredFieldValidator.Enabled = this.Required;
+            this.RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+            Controls.Add( this.RequiredFieldValidator );
+
             if ( EnhanceForLongLists )
             {
                 _lboxDefinedValues = new RockListBox();
@@ -181,6 +189,8 @@ namespace Rock.Web.UI.Controls
                 _lboxDefinedValues.AutoPostBack = true;
                 _lboxDefinedValues.SelectedIndexChanged += lboxDefinedValues_SelectedIndexChanged;
                 Controls.Add( _lboxDefinedValues );
+
+                this.RequiredFieldValidator.ControlToValidate = _lboxDefinedValues.ID;
             }
             else
             {
@@ -192,6 +202,8 @@ namespace Rock.Web.UI.Controls
                 _cblDefinedValues.AutoPostBack = true;
                 _cblDefinedValues.SelectedIndexChanged += cblDefinedValues_SelectedIndexChanged;
                 Controls.Add( _cblDefinedValues );
+
+                this.RequiredFieldValidator.ControlToValidate = _cblDefinedValues.ID;
             }
 
             LinkButtonAddDefinedValue = new LinkButton();

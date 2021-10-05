@@ -212,6 +212,15 @@ namespace Rock.Web.UI.Controls
             LinkButtonAddDefinedValue.Controls.Add( new HtmlGenericControl { InnerHtml = "<i class='fa fa-plus'></i>" } );
             Controls.Add( LinkButtonAddDefinedValue );
 
+            this.RequiredFieldValidator = new RequiredFieldValidator();
+            this.RequiredFieldValidator.ID = this.ID + "_rfv";
+            this.RequiredFieldValidator.ControlToValidate = _ddlDefinedValues.ID;
+            this.RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            this.RequiredFieldValidator.CssClass = "validation-error help-inline";
+            this.RequiredFieldValidator.Enabled = this.Required;
+            this.RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+            Controls.Add( this.RequiredFieldValidator );
+
             LoadDefinedValues();
         }
 
