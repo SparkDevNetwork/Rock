@@ -202,7 +202,9 @@ namespace Rock.Model
         */
 
         /// <summary>
-        /// Gets a value indicating whether this schedule is currently active.
+        /// Gets a value indicating whether this schedule is currently active. This
+        /// is based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/> and <see cref="WasScheduleActive(DateTime)"/>
+        /// to get this based on the Campus's current datetime. 
         /// </summary>
         /// <value>
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
@@ -217,7 +219,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a value indicating whether check-in is currently active for this Schedule.
+        /// Gets a value indicating whether check-in is currently active for this schedule. This
+        /// is based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/> and <see cref="WasCheckInActive(DateTime)"/>
+        /// to get this based on the Campus's current datetime. 
         /// </summary>
         /// <value>
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
@@ -228,6 +232,20 @@ namespace Rock.Model
             get
             {
                 return WasCheckInActive( RockDateTime.Now );
+            }
+        }
+
+        /// <summary>
+        /// Gets the next start time based on <see cref="RockDateTime.Now" />. Use <see cref="Campus.CurrentDateTime"/>
+        /// and <see cref="GetNextStartDateTime(DateTime)"/> to get this based on the Campus's current datetime. 
+        /// </summary>
+        /// <returns></returns>
+        [LavaVisible]
+        public virtual DateTime? NextStartDateTime
+        {
+            get
+            {
+                return GetNextStartDateTime( RockDateTime.Now );
             }
         }
 
@@ -597,7 +615,7 @@ namespace Rock.Model
             EffectiveStartDate = effectiveStartDateTime?.Date;
             EffectiveEndDate = effectiveEndDateTime?.Date;
 
-            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date) || (EffectiveStartDate?.Date != originalEffectiveStartDate?.Date);
+            return ( EffectiveEndDate?.Date != originalEffectiveEndDate?.Date ) || ( EffectiveStartDate?.Date != originalEffectiveStartDate?.Date );
         }
 
         /// <summary>
@@ -1131,7 +1149,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns value indicating if the schedule was active at a current time.
+        /// Returns value indicating if the schedule was active at the specified time.
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
@@ -1160,7 +1178,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns value indicating if check-in was active at a current time for this schedule.
+        /// Returns value indicating if check-in was active at the specified time.
         /// </summary>
         /// <param name="time">The time.</param>
         /// <returns></returns>
@@ -1243,7 +1261,7 @@ namespace Rock.Model
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
-            
+
             if ( checkOutEndDateCompare < 0 )
             {
                 // invalid condition, end before the start
@@ -1661,7 +1679,7 @@ namespace Rock.Model
         /// <param name="icalEvent">The ical event.</param>
         /// <param name="startTime">The start time.</param>
         /// <returns></returns>
-        [Obsolete("Use the override with the string instead of the Ical.Net.Event.")]
+        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
         [RockObsolete( "1.12.4" )]
         public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime )
         {
@@ -1675,7 +1693,7 @@ namespace Rock.Model
         /// <param name="startTime">The start time.</param>
         /// <param name="endTime">The end time.</param>
         /// <returns></returns>
-        [Obsolete("Use the override with the string instead of the Ical.Net.Event.")]
+        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
         [RockObsolete( "1.12.4" )]
         public static IList<Occurrence> GetOccurrences( Ical.Net.Event icalEvent, DateTime startTime, DateTime endTime )
         {
