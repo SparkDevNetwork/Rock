@@ -47,27 +47,25 @@
     top: 0;
     right: 0;
     z-index: 401; // get this above the fluid-box photo
-    height: 39px;
+    display: flex;
+    height: 40px;
 
     .action {
       display: flex;
       align-items: center;
       justify-content: center;
-      float: left;
-      width: 45px;
-      height: 100%;
-      color: lighten(@persondetails-bio-color, 15%);
-      text-align: center;
-      cursor: pointer;
-      border-color: darken(@persondetails-bio-bg, @const-border-darken-amt);
-      border-style: solid;
+      width: 40px;
+      color: @persondetails-bio-color;
+      border: 0 solid darken(@persondetails-bio-bg, @const-border-darken-amt);
       border-width: 0 0 1px 1px;
     }
 
     .action-extended {
       width: auto;
       .dropdown {
-        padding: 6px 0 4px;
+        display: flex;
+        align-items: center;
+        height: 100%;
       }
 
       .dropdown-menu {
@@ -100,7 +98,7 @@
 
   .nav li .persondetails-actions {
     padding: 2px 15px 0;
-    color: lighten(@persondetails-bio-color, 15%);
+    color: inherit;
 
     &:hover,
     &:focus {
@@ -1035,7 +1033,7 @@ span.field-value {
   }
 
   .table-groupmembers {
-    /* Hide table headers (but not display: none;, for accessibility) */
+    // Hide table headers (but not display: none;, for accessibility)
     thead tr {
       position: absolute;
       top: -9999px;
@@ -1093,7 +1091,7 @@ span.field-value {
       }
     }
 
-    /* Label the data */
+    // Label the data
     tbody {
       td::before {
         content: attr(data-label);
@@ -1136,7 +1134,7 @@ span.field-value {
   }
 
   .table-groupcontactinfo {
-    /* Hide table headers (but not display: none;, for accessibility) */
+    // Hide table headers (but not display: none;, for accessibility)
     thead tr {
       position: absolute;
       top: -9999px;
@@ -1160,7 +1158,7 @@ span.field-value {
       border-bottom: 1px solid @gray-lighter;
     }
 
-    /* Label the data */
+    // Label the data
     tbody {
       .person-name {
         /* Now like a table header */
@@ -1658,8 +1656,6 @@ tr.inactive {
     -ms-flex-direction: column;
     flex-direction: column;
     -ms-flex-pack: center;
-    -ms-flex-pack: center;
-    justify-content: center;
     justify-content: center;
     height: 100%;
     padding: 12px;
