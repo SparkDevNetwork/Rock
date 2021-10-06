@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Model;
 using Rock.Security;
@@ -30,7 +31,6 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// Block for displaying and editing available OpenID Connect clients.
     /// </summary>
     [DisplayName( "Rock Security Settings" )]
     [Category( "Security" )]
@@ -65,10 +65,8 @@ namespace RockWeb.Blocks.Security
             if ( !Page.IsPostBack )
             {
                 LoadSecuritySettings();
-                LoadRoleDropdownList();
+                LoadRoleDropdownLists();
             }
-
-            ShowHideWarning();
             nbSaveResult.Visible = true;
 
             base.OnLoad( e );
@@ -79,15 +77,20 @@ namespace RockWeb.Blocks.Security
         #region Events
 
         /// <summary>
-        /// Handles the BlockUpdated event of the UserLogins control.
+        /// Handles the BlockUpdated event of the Block control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-
+            // no block settings (yet) so nothing needed here
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
             var highProfile = RoleCache.Get( ddlHighRoles.SelectedValue.AsInteger() );
@@ -126,6 +129,10 @@ namespace RockWeb.Blocks.Security
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the account protection profile checklist boxes.
+        /// </summary>
         private void BindAccountProtectionProfileChecklistBoxes()
         {
             cblIgnoredAccountProtectionProfiles.Items.Clear();
@@ -136,20 +143,24 @@ namespace RockWeb.Blocks.Security
                 cblIgnoredAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
                 cblDisableTokensForAccountProtectionProfiles.Items.Add( new ListItem( item.ConvertToString(), item.ConvertToInt().ToString() ) );
             }
-
         }
 
+        /// <summary>
+        /// Binds the role dropdown list.
+        /// </summary>
         private void BindRoleDropdownList()
         {
             BindRoleDropdownList( ddlHighRoles );
             BindRoleDropdownList( ddlExtremeRoles );
         }
 
+        /// <summary>
+        /// Binds the role dropdown list.
+        /// </summary>
+        /// <param name="rockDropdownList">The rock dropdown list.</param>
         private void BindRoleDropdownList( RockDropDownList rockDropdownList )
         {
             rockDropdownList.Items.Clear();
-
-            var securityRoleType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() );
 
             foreach ( var role in RoleCache.AllRoles() )
             {
@@ -158,6 +169,9 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Loads the security settings.
+        /// </summary>
         private void LoadSecuritySettings()
         {
             cblIgnoredAccountProtectionProfiles.SetValues(
@@ -173,7 +187,10 @@ namespace RockWeb.Blocks.Security
                     .Select( a => a.ConvertToInt().ToString() ) );
         }
 
-        private void LoadRoleDropdownList()
+        /// <summary>
+        /// Loads the role dropdown lists.
+        /// </summary>
+        private void LoadRoleDropdownLists()
         {
             RoleCache highRole = null;
             RoleCache extremeRole = null;
@@ -192,17 +209,6 @@ namespace RockWeb.Blocks.Security
             }
         }
 
-        private void ShowHideWarning()
-        {
-            var isExtremeChecked = _securitySettingsService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore.Contains( AccountProtectionProfile.Extreme );
-            var isHighChecked = _securitySettingsService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore.Contains( AccountProtectionProfile.High );
-            if ( !isExtremeChecked || !isHighChecked )
-            {
-
-            }
-        }
         #endregion
-
-
     }
 }

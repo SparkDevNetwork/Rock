@@ -1439,7 +1439,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    memberOfSecurityRoleMessage = "One or more of these records is a member of a security role with elevated privileges";
+                    memberOfSecurityRoleMessage = "One or more of these records is a member of a security role with elevated privileges.";
                 }
 
                 if ( maxAccountProtectionProfile == AccountProtectionProfile.Extreme )
