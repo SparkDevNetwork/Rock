@@ -137,6 +137,10 @@
     <Compile Include="Migrations\202110052025475_CodeGenerated_20211005.Designer.cs">
       <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.cs" />
+    <Compile Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.Designer.cs">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.cs" />
     <Compile Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.Designer.cs">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
@@ -799,6 +803,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202110052025475_CodeGenerated_20211005.resx">
       <DependentUpon>202110052025475_CodeGenerated_20211005.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202110062117275_MigrateFieldVisibilityRulesJSONData.resx">
+      <DependentUpon>202110062117275_MigrateFieldVisibilityRulesJSONData.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 12.0\Version 1.12.5\202108171910402_CodeGenerated_0817.resx">
       <DependentUpon>202108171910402_CodeGenerated_0817.cs</DependentUpon>
