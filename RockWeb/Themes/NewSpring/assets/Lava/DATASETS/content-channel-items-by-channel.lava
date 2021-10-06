@@ -1,6 +1,6 @@
 {%- if ccid != empty -%}
 [
-    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status != 3' limit:'10000' sort:'StartDateTime desc' iterator:'items' -%}
+    {% contentchannelitem where:'ContentChannelId == {{ ccid }} && Status != 3' limit:'10000' sort:'StartDateTime desc' securityenabled:'false' iterator:'items' -%}
       {%- for item in items -%}
         {%- assign itemsManuallyOrdered = item.ContentChannel.ItemsManuallyOrdered -%}
         {%- assign childItemsManuallyOrdered = item.ContentChannel.ChildItemsManuallyOrdered -%}
@@ -92,6 +92,7 @@
         "PublishDateTime": {{ item.StartDateTime | ToJSON }},
         "ExpireDateTime": {{ item.ExpireDateTime | ToJSON }},
         "ModifiedDateTime": {{ item.ModifiedDateTime | ToJSON }},
+        "PublishMonth": {{ item.StartDateTime | Date:'MMMM' | ToJSON }},
         "Dataset": {{ dataset | ToJSON }},
         "ChannelId": {{ item.ContentChannel.Id }},
         "ChannelName": {{ item.ContentChannel.Name | ToJSON }},
@@ -123,6 +124,7 @@
         "BackgroundColor": {{ item | Attribute:'BackgroundColor' | Replace:'#','' | ToJSON }},
         "ForegroundColor": {{ item | Attribute:'ForegroundColor' | Replace:'#','' | ToJSON }},
         "Campuses": "{{ item | Attribute:'Campuses','Name' | Replace:' ','' }}",
+        "LinkUrl": {{ item | Attribute:'LinkUrl','RawValue' | ToJSON }},
         "RelatedItem": {{ item | Attribute:'RelatedEntry','RawValue' | ToJSON }},
         "VideoFileHigh": {{ item | Attribute:'VideoFileHigh' | ToJSON }},
         "VideoFileMid": {{ item | Attribute:'VideoFileMid' | ToJSON }},
