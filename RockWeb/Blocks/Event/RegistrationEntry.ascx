@@ -281,7 +281,7 @@
                         <Rock:CurrencyBox ID="nbAmountPaid" runat="server" CssClass="input-width-md amount-to-pay" Label="Amount To Pay Today" Required="true" />
                     </div>
                                  
-                    <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
+                    <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining After Payment" />
 
 
                     <%-- For Payoff --%>
