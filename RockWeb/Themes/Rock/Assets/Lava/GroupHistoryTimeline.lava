@@ -365,7 +365,7 @@
                                                             {% comment %} Some unexpected Verb {% endcomment %}
                                                         {%- endcase -%}
                                                     {%- endcapture -%}
-                                                    <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>{{ historyVerb | Trim | CapitalizeFirstWord }}</span>
+                                                    <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>{{ historyVerb | Trim | SentenceCase }}</span>
                                                 {%- else -%}
                                                 {%- assign sameValues = true -%}
                                                 {%- endif -%}

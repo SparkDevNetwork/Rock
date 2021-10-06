@@ -209,7 +209,10 @@ namespace Rock.Web.Cache
             Remove( id.ToString() );
 
             // some of the cached lavatemplates might have a reference to this shortcode, so flush them all just in case
+#pragma warning disable CS0618 // Type or member is obsolete
+            // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
             LavaTemplateCache.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         #endregion

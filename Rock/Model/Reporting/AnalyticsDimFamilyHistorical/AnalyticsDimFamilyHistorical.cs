@@ -15,7 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
-using Rock.ViewModel;
+using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -28,7 +28,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFamilyHistorical" )]
     [DataContract]
-    [ViewModelExclude]
+    [CodeGenExclude( CodeGenFeature.ViewModelFile )]
     public class AnalyticsDimFamilyHistorical : AnalyticsDimFamilyBase<AnalyticsDimFamilyHistorical>
     {
         // intentionally blank. See AnalyticsDimFamilyBase, etc for the fields

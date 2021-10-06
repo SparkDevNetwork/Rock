@@ -92,7 +92,11 @@ namespace Rock.Lava
             // Therefore, we need to load the Lava template from the file and convert it to Liquid-compatible syntax before returning it to the Fluid engine.
             var lavaText = exists ? _fileSystem.ReadTemplateFile( null, filePath ) : string.Empty;
 
-            var liquidText = _lavaConverter.ConvertToLiquid( lavaText );
+            /* [2021-09-03] DJL
+             * The Fluid parser is currently capable of parsing all Lava-specific syntax except for shorthand comments.
+             * When this feature is added to the parser, the conversion below should be removed to improve performance.
+             */
+            var liquidText = _lavaConverter.RemoveLavaComments( lavaText );
 
             var fileInfo = new LavaFileInfo( filePath, liquidText, exists );
 

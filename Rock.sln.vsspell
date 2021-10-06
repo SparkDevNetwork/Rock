@@ -36,13 +36,14 @@
     <Ignore>linq</Ignore>
     <Ignore>nullable</Ignore>
     <Ignore>onblur</Ignore>
+    <Ignore>outlier</Ignore>
     <Ignore>postback</Ignore>
     <Ignore>Queryable</Ignore>
     <Ignore>readonly</Ignore>
     <Ignore>texting</Ignore>
     <Ignore>workflow</Ignore>
     <Ignore>workflows</Ignore>
-    <Ignore>outlier</Ignore>
+    <Ignore>fallback</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>

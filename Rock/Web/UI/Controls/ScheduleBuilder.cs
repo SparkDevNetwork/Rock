@@ -1523,7 +1523,7 @@ END:VCALENDAR
                 writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.Write( "<span class='control-label'>Duration</span>" );
+                writer.Write( "<label class='control-label'>Duration</label>" );
                 writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbDurationHours.RenderControl( writer );
@@ -1561,7 +1561,7 @@ END:VCALENDAR
             // OccurrencePattern Radiobuttons
             writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( "<span class='control-label'>Occurrence Pattern</span>" );
+            writer.Write( "<label class='control-label'>Occurrence Pattern</label>" );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radSpecificDates.RenderControl( writer );

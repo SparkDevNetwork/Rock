@@ -75,7 +75,7 @@ namespace RockWeb.Blocks.Fundraising
 ", btnCopyToClipboard.ClientID );
                 ScriptManager.RegisterStartupScript( btnCopyToClipboard, btnCopyToClipboard.GetType(), "share-copy", script, true );
 
-                Uri uri = new Uri( Request.Url.ToString() );
+                Uri uri = new Uri( Request.UrlProxySafe().ToString() );
                 btnCopyToClipboard.Attributes["data-clipboard-text"] = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + CurrentPageReference.BuildUrl();
                 btnCopyToClipboard.Visible = true;
             }

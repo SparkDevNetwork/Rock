@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Store
             else
             {
                 lMessages.Text = @"<div class='alert alert-warning margin-t-md'>The username/password provided did not match a user on the Rock RMS website. Be sure
-                    you provide a valid account from this site. If you would like to create an account or retrieve your password please <a href='https://www.rockrms.com/Rock/Login'>
+                    you provide a valid account from this site. If you would like to create an account or retrieve your password please <a href='https://www.rockrms.com/Login'>
                     visit the Rock RMS website</a> or see the <a href='https://www.rockrms.com/RockShopHelp'>Rock Shop Help Page</a>.</div>";
             }
 

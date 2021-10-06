@@ -228,6 +228,10 @@ namespace Rock.Lava.RockLiquid
                     }
                 }
             }
+            catch ( LavaInterruptException )
+            {
+                // Ignore this exception, it is thrown by custom Lava components to terminate the render process prematurely.
+            }
             catch ( Exception ex )
             {
                 string output;

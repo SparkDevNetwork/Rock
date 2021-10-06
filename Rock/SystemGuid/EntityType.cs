@@ -384,6 +384,21 @@ namespace Rock.SystemGuid
         public const string MOBILE_SECURITY_ONBOARD_PERSON = "C9B7F36A-F70A-4ABF-9422-B18E579F927F";
 
         /// <summary>
+        /// The obsidian event registration entry
+        /// </summary>
+        public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
+
+        /// <summary>
+        /// The obsidian event control gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_CONTROL_GALLERY = "7B916FEC-9395-4877-9856-427419C50AB5";
+
+        /// <summary>
+        /// The obsidian event field type gallery
+        /// </summary>
+        public const string OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY = "82F9C803-C998-46B2-B354-783D4D1E3B43";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";

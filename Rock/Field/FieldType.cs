@@ -57,6 +57,12 @@ namespace Rock.Field
             return new List<string>();
         }
 
+        /// <inheritdoc/>
+        public virtual Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return configurationValues.ToDictionary( kvp => kvp.Key, kvp => kvp.Value.Value );
+        }
+
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -97,21 +103,28 @@ namespace Rock.Field
             get { return HorizontalAlign.Left; }
         }
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public virtual string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public virtual string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( condensed )
-            {
-                return value.Truncate( 100 );
-            }
-
             return value;
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetTextValue( value, configurationValues );
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetTextValue( value, configurationValues ).Truncate( 100 );
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetCondensedHtmlValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>
@@ -124,7 +137,12 @@ namespace Rock.Field
         /// <returns></returns>
         public virtual string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return FormatValue( value, configurationValues, condensed );
+            if ( condensed )
+            {
+                return value.Truncate( 100 );
+            }
+
+            return value;
         }
 
         /// <summary>
@@ -230,6 +248,24 @@ namespace Rock.Field
         /// <c>true</c> if this instance has default control; otherwise, <c>false</c>.
         /// </value>
         public virtual bool HasDefaultControl => true;
+
+        /// <inheritdoc/>
+        public virtual string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return value;
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return GetClientValue( value, configurationValues );
+        }
+
+        /// <inheritdoc/>
+        public virtual string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return clientValue;
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value

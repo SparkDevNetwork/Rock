@@ -28,6 +28,7 @@ using Rock.Tasks;
 using Rock.Transactions;
 using Rock.ViewModel;
 using Rock.ViewModel.Controls;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -861,6 +862,10 @@ mission. We are so grateful for your commitment.</p>
         /// </returns>
         public override object GetObsidianBlockInitialization()
         {
+            var rockContext = new RockContext();
+
+            var clientHelper = new Rock.ViewModel.Client.ClientHelper( rockContext, RequestContext.CurrentPerson );
+
             return new
             {
                 FinancialAccounts = GetAccountViewModels(),
@@ -868,7 +873,9 @@ mission. We are so grateful for your commitment.</p>
                 {
                     FileUrl = FinancialGatewayComponent?.GetObsidianControlFileUrl( FinancialGateway ),
                     Settings = FinancialGatewayComponent?.GetObsidianControlSettings( FinancialGateway )
-                }
+                },
+                Campuses = clientHelper.GetCampusesAsListItems(),
+                Frequencies = clientHelper.GetDefinedValuesAsListItems( SystemGuid.DefinedType.FINANCIAL_FREQUENCY.AsGuid() )
             };
         }
 
@@ -1422,26 +1429,26 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( transactionAlreadyExists )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "A transaction with the same unique identifier has already been created. This might occur when a duplicate charge was requested." );
+                    return ActionBadRequest( "A transaction with the same unique identifier has already been created. This might occur when a duplicate charge was requested." );
                 }
             }
 
             // Validation
             if ( args.AccountAmounts == null )
             {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "At least one account must be selected to designate the funds." );
+                return ActionBadRequest( "At least one account must be selected to designate the funds." );
             }
 
             if ( args.AccountAmounts.Any( kvp => kvp.Value < 0 ) )
             {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "Amounts designated cannot be less than $0." );
+                return ActionBadRequest( "Amounts designated cannot be less than $0." );
             }
 
             var totalAmount = args.AccountAmounts.Sum( kvp => kvp.Value );
 
             if ( totalAmount < 0 )
             {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The total amount must be greater than $0" );
+                return ActionBadRequest( "The total amount must be greater than $0" );
             }
 
             // Convert financial saved account Guid to id
@@ -1460,7 +1467,7 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( savedAccount == null )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "The saved account unique identifier is not valid" );
+                    return ActionBadRequest( "The saved account unique identifier is not valid" );
                 }
             }
 
@@ -1470,7 +1477,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( transactionDetails.Sum( td => td.Amount ) != totalAmount )
             {
-                return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, "One of the designated account unique identifiers is not valid" );
+                return ActionBadRequest( "One of the designated account unique identifiers is not valid" );
             }
 
             // Build the payment info
@@ -1528,7 +1535,7 @@ mission. We are so grateful for your commitment.</p>
 
                 if ( !errorMessage.IsNullOrWhiteSpace() || paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
                 {
-                    return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                    return ActionBadRequest( errorMessage ?? "Unknown Error" );
                 }
             }
 
@@ -1596,7 +1603,7 @@ mission. We are so grateful for your commitment.</p>
 
                     if ( financialScheduledTransaction == null )
                     {
-                        return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                        return ActionBadRequest( errorMessage ?? "Unknown Error" );
                     }
 
                     gatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
@@ -1624,7 +1631,7 @@ mission. We are so grateful for your commitment.</p>
 
                     if ( financialTransaction == null )
                     {
-                        return new BlockActionResult( System.Net.HttpStatusCode.BadRequest, errorMessage ?? "Unknown Error" );
+                        return ActionBadRequest( errorMessage ?? "Unknown Error" );
                     }
 
                     transactionCode = financialTransaction.TransactionCode;
@@ -1831,6 +1838,22 @@ mission. We are so grateful for your commitment.</p>
             ///   <c>true</c> if this instance is give anonymously; otherwise, <c>false</c>.
             /// </value>
             public bool IsGiveAnonymously { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campuses available for the user to select.
+            /// </summary>
+            /// <value>
+            /// The campuses available for the user to select.
+            /// </value>
+            public List<ListItemViewModel> Campuses { get; set; }
+
+            /// <summary>
+            /// Gets or sets the available giving frequencies.
+            /// </summary>
+            /// <value>
+            /// The available giving frequencies.
+            /// </value>
+            public List<ListItemViewModel> Frequencies { get; set; }
         }
 
         #endregion ViewModels

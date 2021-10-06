@@ -106,7 +106,6 @@ namespace Rock.Model
                 MaxAttendees = model.MaxAttendees,
                 MinimumInitialPayment = model.MinimumInitialPayment,
                 Name = model.Name,
-                PaymentRedirectData = model.PaymentRedirectData,
                 RegistrationInstructions = model.RegistrationInstructions,
                 RegistrationMeteringThreshold = model.RegistrationMeteringThreshold,
                 RegistrationTemplateId = model.RegistrationTemplateId,
@@ -204,7 +203,6 @@ namespace Rock.Model
             target.MaxAttendees = source.MaxAttendees;
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
-            target.PaymentRedirectData = source.PaymentRedirectData;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

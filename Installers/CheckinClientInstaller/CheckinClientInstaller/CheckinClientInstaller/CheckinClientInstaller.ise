@@ -4030,7 +4030,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>ISUSLock</td><td>{EEFF672D-BFAB-4FF4-9573-6BD177F4519F}</td></row>
 		<row><td>ISUSSignature</td><td>{2B077B3C-AA70-463D-BD16-59EADA09871A}</td></row>
 		<row><td>ISUpdateNotifications</td><td>0</td></row>
-		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease,viewAppFiles,viewFeatureFiles,viewProject</td></row>
+		<row><td>ISVisitedViews</td><td>viewAssistant,viewUI,viewRelease,viewAppFiles,viewFeatureFiles,viewProject,viewISToday,viewHelpContent</td></row>
 		<row><td>LockPermissionMode</td><td>1</td></row>
 		<row><td>MsiExecCmdLineOptions</td><td/></row>
 		<row><td>MsiLogFile</td><td/></row>
@@ -4407,7 +4407,7 @@ UwBpAG4AZwBsAGUASQBtAGEAZwBlAAEARQB4AHAAcgBlAHMAcwA=
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>[INSTALLDIR]CheckinClient.Primary output</td><td/></row>
 		<row><td>ProductCode</td><td>{6AAB50D5-A63C-43F5-B3A4-A0573395B8FF}</td><td/></row>
 		<row><td>ProductName</td><td>Rock RMS Check-in Client</td><td/></row>
-		<row><td>ProductVersion</td><td>1.11.1</td><td/></row>
+		<row><td>ProductVersion</td><td>1.13.0.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>

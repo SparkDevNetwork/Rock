@@ -841,7 +841,7 @@ btnCopyToClipboard.ClientID );
                 pageReference.Parameters.AddOrReplace( pagePageParameterKey, this.GetBlockUserPreference( pagePageParameterKey ) );
             }
 
-            Uri requestUri = new Uri( Request.Url.ToString() );
+            Uri requestUri = new Uri( Request.UrlProxySafe().ToString() );
             var linkUrl = requestUri.GetLeftPart( UriPartial.Authority ) + pageReference.BuildUrl();
             btnCopyToClipboard.Attributes["data-clipboard-text"] = linkUrl;
             btnCopyToClipboard.Disabled = false;

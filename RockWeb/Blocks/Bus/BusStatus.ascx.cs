@@ -135,6 +135,8 @@ namespace RockWeb.Blocks.Bus
                 descriptionList.Add( "Transport", transport );
             }
 
+            descriptionList.Add( "NodeName", RockMessageBus.NodeName );
+
             var statLog = RockMessageBus.StatLog;
             if ( statLog != null )
             {

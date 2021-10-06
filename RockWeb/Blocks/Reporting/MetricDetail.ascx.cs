@@ -676,6 +676,26 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             sbSchedule.Visible = rblScheduleSelect.SelectedValueAsEnum<ScheduleSelectionType>() == ScheduleSelectionType.Unique;
         }
 
+        /// <summary>
+        /// Handles the SelectItem event of the dvpDataView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dvpDataView_SelectItem( object sender, EventArgs e )
+        {
+            ShowHideAutoPartitionPrimaryCampus();
+        }
+
+        /// <summary>
+        /// Handles the ServerValidate event of the cvTitle control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
+        protected void cvTitle_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            args.IsValid = IsTitleUnique();
+        }
+
         #endregion
 
         #region Methods
@@ -1475,6 +1495,39 @@ The Lava can include Lava merge fields:";
                 && MetricPartitionsState[0].EntityTypeId == EntityTypeCache.GetId( Rock.SystemGuid.EntityType.CAMPUS );
         }
 
+        /// <summary>
+        /// If "Enable Analytics" is checked this methods checks for a metric with the same name that also has "Enable Analytics" checked.
+        /// </summary>
+        /// <returns>
+        ///   <c>false</c> If the name is already taken; otherwise, <c>true</c>.
+        /// </returns>
+        private bool IsTitleUnique()
+        {
+            // Only Analytics Metrics need to have a unique name.
+            if ( !cbEnableAnalytics.Checked )
+            {
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var metricId = hfMetricId.ValueAsInt();
+
+                var existingAnalyticMetricsWithTheSameName = new MetricService( rockContext )
+                    .Queryable()
+                    .Where( m => m.Title == tbTitle.Text && m.EnableAnalytics == true && m.Id != metricId )
+                    .ToList();
+
+                if ( existingAnalyticMetricsWithTheSameName.Any() )
+                {
+                    tbTitle.ShowErrorMessage( string.Empty );
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
         #endregion
 
         #region Series Partitions
@@ -1744,10 +1797,5 @@ The Lava can include Lava merge fields:";
         }
 
         #endregion
-
-        protected void dvpDataView_SelectItem( object sender, EventArgs e )
-        {
-            ShowHideAutoPartitionPrimaryCampus();
-        }
     }
 }

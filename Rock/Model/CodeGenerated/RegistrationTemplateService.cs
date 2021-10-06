@@ -113,7 +113,6 @@ namespace Rock.Model
                 MinimumInitialPayment = model.MinimumInitialPayment,
                 Name = model.Name,
                 Notify = ( int ) model.Notify,
-                PaymentRedirectVendor = ( int? ) model.PaymentRedirectVendor,
                 PaymentReminderEmailTemplate = model.PaymentReminderEmailTemplate,
                 PaymentReminderFromEmail = model.PaymentReminderFromEmail,
                 PaymentReminderFromName = model.PaymentReminderFromName,
@@ -121,6 +120,7 @@ namespace Rock.Model
                 PaymentReminderTimeSpan = model.PaymentReminderTimeSpan,
                 RegistrantsSameFamily = ( int ) model.RegistrantsSameFamily,
                 RegistrantTerm = model.RegistrantTerm,
+                RegistrantWorkflowTypeId = model.RegistrantWorkflowTypeId,
                 RegistrarOption = ( int ) model.RegistrarOption,
                 RegistrationAttributeTitleEnd = model.RegistrationAttributeTitleEnd,
                 RegistrationAttributeTitleStart = model.RegistrationAttributeTitleStart,
@@ -242,7 +242,6 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.Notify = source.Notify;
-            target.PaymentRedirectVendor = source.PaymentRedirectVendor;
             target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             target.PaymentReminderFromName = source.PaymentReminderFromName;
@@ -250,6 +249,7 @@ namespace Rock.Model
             target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
+            target.RegistrantWorkflowTypeId = source.RegistrantWorkflowTypeId;
             target.RegistrarOption = source.RegistrarOption;
             target.RegistrationAttributeTitleEnd = source.RegistrationAttributeTitleEnd;
             target.RegistrationAttributeTitleStart = source.RegistrationAttributeTitleStart;

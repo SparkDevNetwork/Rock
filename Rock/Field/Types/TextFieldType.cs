@@ -191,14 +191,8 @@ namespace Rock.Field.Types
 
         #region Formatting
 
-        /// <summary>
-        /// Returns the field's current value(s)
-        /// </summary>
-        /// <param name="value">Information about the value</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
-        /// <returns></returns>
-        public override string FormatValue( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
         {
             if ( configurationValues != null &&
                 configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
@@ -207,12 +201,20 @@ namespace Rock.Field.Types
                 return "********";
             }
 
-            if ( condensed )
+            return value;
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( configurationValues != null &&
+                configurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
+                configurationValues[IS_PASSWORD_KEY].Value.AsBoolean() )
             {
-                return value.Truncate( 100 );
+                return "********";
             }
 
-            return value;
+            return base.GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>
@@ -225,7 +227,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            return FormatValue( value, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         /// <summary>

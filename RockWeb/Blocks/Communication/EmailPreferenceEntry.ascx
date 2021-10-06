@@ -3,8 +3,10 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
         <div class="email-error"></div>
-        <div class="radio margin-t-sm margin-b-md">
-            <Rock:RockRadioButton ID="rbUnsubscribe" runat="server" Text="Option 1" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+        <div class="margin-t-sm margin-b-md">
+            <div class="radio">
+                <Rock:RockRadioButton ID="rbUnsubscribe" runat="server" Text="Option 1" GroupName="EmailPreference" DisplayInline="false" CssClass="js-email-radio-option" />
+            </div>
             <div id="divUnsubscribeLists" runat="server" class="margin-l-lg margin-t-sm" style="display: none">
                 <Rock:RockCheckBoxList ID="cblUnsubscribeFromLists" runat="server" Label="" />
             </div>

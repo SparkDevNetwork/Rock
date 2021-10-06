@@ -22,9 +22,11 @@ using Rock.Lava;
 namespace Rock.Web.Cache
 {
     /// <summary>
-    /// Information about a definedValue that is required by the rendering engine.
-    /// This information will be cached by the engine
+    /// Represents a compiled lava template that is available for re-use.
+    /// This information will be cached by the engine.
     /// </summary>
+    [RockObsolete( "1.13" )]
+    [Obsolete( "Use the LavaService object to manage the LavaCache for web applications." )]
     public class LavaTemplateCache : ItemCache<LavaTemplateCache>
     {
         #region Constructors

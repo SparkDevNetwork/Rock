@@ -16,6 +16,8 @@
 //
 using System;
 
+using Rock.Financial;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -880,6 +882,21 @@ namespace Rock.SystemGuid
         /// Gift count 90 days - Integer
         /// </summary>
         public const string PERSON_GIVING_90_DAYS_COUNT = "356B8F0B-AA54-4F44-8513-F8A5FF592F18";
+
+        /// <summary>
+        /// Giving Journey - Current <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_CURRENT_GIVING_JOURNEY_STAGE = "13C55AEA-6D88-4470-B3AE-EE5138F044DF";
+
+        /// <summary>
+        /// Giving Journey - Previous <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_PREVIOUS_GIVING_JOURNEY_STAGE = "B35CE867-6017-484E-9EC7-AEB93CD4B2D8";
+
+        /// <summary>
+        /// Giving Journey - Change Date of <see cref="GivingJourneyStage">Giving Journey Stage</see>
+        /// </summary>
+        public const string PERSON_GIVING_GIVING_JOURNEY_STAGE_CHANGE_DATE = "8FFE3554-43F2-40D8-8803-446559D2B1F7";
 
         #endregion Giving Analytics
 

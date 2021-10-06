@@ -40,7 +40,7 @@ namespace Rock.Utility
                 return forwardedHost;
             }
 
-            return context.Request.Url.Host;
+            return context.Request.UrlProxySafe().Host;
         }
 
         /// <summary>

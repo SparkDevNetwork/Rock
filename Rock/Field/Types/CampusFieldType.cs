@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.ViewModel.NonEntities;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,6 +38,7 @@ namespace Rock.Field.Types
     {
         #region Configuration
 
+        private const string CLIENT_VALUES = "values";
         private const string INCLUDE_INACTIVE_KEY = "includeInactive";
         private const string FILTER_CAMPUS_TYPES_KEY = "filterCampusTypes";
         private const string FILTER_CAMPUS_STATUS_KEY = "filterCampusStatus";
@@ -55,6 +57,24 @@ namespace Rock.Field.Types
             configKeys.Add( FILTER_CAMPUS_STATUS_KEY );
             configKeys.Add( SELECTABLE_CAMPUSES_KEY );
             return configKeys;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetClientConfigurationValues( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var clientValues = GetListSource( configurationValues )
+                    .Select( kvp => new ListItemViewModel
+                    {
+                        Value = kvp.Key,
+                        Text = kvp.Value
+                    } )
+                    .ToList()
+                    .ToCamelCaseJson( false, true );
+
+            return new Dictionary<string, string>
+            {
+                [CLIENT_VALUES] = clientValues
+            };
         }
 
         /// <summary>
@@ -240,9 +260,54 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the list source.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        private Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var allCampuses = CampusCache.All();
+
+            if ( configurationValues == null )
+            {
+                return allCampuses.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+            }
+
+            bool includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+            List<int> campusTypesFilter = configurationValues.ContainsKey( FILTER_CAMPUS_TYPES_KEY ) ? configurationValues[FILTER_CAMPUS_TYPES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> campusStatusFilter = configurationValues.ContainsKey( FILTER_CAMPUS_STATUS_KEY ) ? configurationValues[FILTER_CAMPUS_STATUS_KEY].Value.SplitDelimitedValues( false ).AsIntegerList() : null;
+            List<int> selectableCampuses = configurationValues.ContainsKey( SELECTABLE_CAMPUSES_KEY ) && configurationValues[SELECTABLE_CAMPUSES_KEY].Value.IsNotNullOrWhiteSpace()
+                ? configurationValues[SELECTABLE_CAMPUSES_KEY].Value.SplitDelimitedValues( false ).AsIntegerList()
+                : null;
+
+            var campusList = allCampuses
+                .Where( c => ( !c.IsActive.HasValue || c.IsActive.Value || includeInactive )
+                    && campusTypesFilter.ContainsOrEmpty( c.CampusTypeValueId ?? -1 )
+                    && campusStatusFilter.ContainsOrEmpty( c.CampusStatusValueId ?? -1 )
+                    && selectableCampuses.ContainsOrEmpty( c.Id ) )
+                .ToList();
+
+            return campusList.ToDictionary( c => c.Guid.ToString(), c => c.Name );
+        }
+
         #endregion
 
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
+            var campus = CampusCache.Get( value.AsGuid() );
+
+            return campus?.Name ?? string.Empty;
+        }
 
         /// <summary>
         /// Returns the formatted selected campus. If there is only one campus then nothing is returned.
@@ -254,19 +319,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = value;
-            
-            // Change the formatted value from GUID to Campus.Name
-            if ( value.IsNotNullOrWhiteSpace() )
-            {
-                var campus = CampusCache.Get( value.AsGuid() );
-                if ( campus != null )
-                {
-                    formattedValue = campus.Name;
-                }
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return GetTextValue( value, configurationValues );
         }
 
         #endregion

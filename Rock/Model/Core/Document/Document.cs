@@ -172,19 +172,6 @@ namespace Rock.Model
             return this.Name;
         }
 
-        /// <summary>
-        /// A parent authority.  If a user is not specifically allowed or denied access to
-        /// this object, Rock will check the default authorization on the current type, and
-        /// then the authorization on the Rock.Security.GlobalDefault entity
-        /// </summary>
-        public override Security.ISecured ParentAuthority
-        {
-            get
-            {
-                return this.DocumentType != null ? this.DocumentType : base.ParentAuthority;
-            }
-        }
-
         #endregion Public Methods
     }
 

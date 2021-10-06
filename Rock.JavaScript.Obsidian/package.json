@@ -1,0 +1,45 @@
+{
+  "private": true,
+  "description": "Project for all Rock Obsidian UI functionality.",
+  "scripts": {
+    "build": "npm run build-core && npm run build-framework && npm run copy",
+    "build-framework": "tsc --build Framework",
+    "build-core": "webpack --no-color",
+    "precopy": "node cleanDistForRelease.js",
+    "copy": "npm run copy-webforms",
+    "copy-webforms": "npm run copy-webforms-core && npm run copy-webforms-framework",
+    "copy-webforms-core": "copyfiles -u 1 \"dist/obsidian-core.*\" \"dist/obsidian-vendor.*\" \"../RockWeb/Obsidian/\"",
+    "copy-webforms-framework": "copyfiles -u 2 \"dist/Framework/**/*\" -e \"dist/Framework/tsconfig.tsbuildinfo\" \"../RockWeb/Obsidian/\"",
+    "copy-webforms-types": "copyfiles -u 1 \"Framework/**/*.d.ts\" \"../RockWeb/Obsidian/\"",
+    "clean": "rimraf dist",
+    "test": "ts-mocha --paths -p Framework/Tests/tsconfig.json 'Framework/Tests/**/*.spec.ts'"
+  },
+  "devDependencies": {
+    "@types/luxon": "^2.0.3",
+    "@types/mocha": "^8.2.3",
+    "@types/node": "^14.14.7",
+    "@types/systemjs": "^6.1.1",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "copyfiles": "^2.4.1",
+    "eol": "^0.9.1",
+    "eslint": "^7.32.0",
+    "mocha": "^8.4.0",
+    "rimraf": "^3.0.2",
+    "terser-webpack-plugin": "^5.1.4",
+    "ts-loader": "^9.1.2",
+    "ts-mocha": "8.0.0",
+    "typescript": "^4.0.5",
+    "webpack": "^5.45.1",
+    "webpack-cli": "^4.7.0",
+    "yup": "^0.32.9"
+  },
+  "dependencies": {
+    "axios": "^0.21.0",
+    "luxon": "^2.0.2",
+    "mitt": "^2.1.0",
+    "systemjs": " ^6.8.3",
+    "vee-validate": "^4.2.2",
+    "vue": "^3.0.7"
+  }
+}

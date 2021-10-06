@@ -243,8 +243,8 @@ a.aspNetDisabled {
 
 dl:not(.dl-horizontal) {
   dt {
-    margin-top: 16px;
-    margin-bottom: 2px;
+    margin-top: @description-term-margin-top;
+    margin-bottom: @description-term-margin-bottom;
     font-weight: @font-weight-bold;
 
     &:first-child {
@@ -307,6 +307,11 @@ dl:not(.dl-horizontal) {
     margin-right: 6px;
   }
 
+  // Nested form controls get too much margin
+  .input-group > .form-control {
+    margin-right: 0;
+  }
+
   & > span {
     float: left;
     margin: 8px 6px 0 0;
@@ -334,6 +339,11 @@ dl:not(.dl-horizontal) {
     margin-top: -6px;
     margin-bottom: -6px;
   }
+
+  .picker-daterange .input-group {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
 }
 
 // 4. Control Specific Styling
@@ -359,8 +369,9 @@ dl:not(.dl-horizontal) {
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: center;
     height: @input-height-base;
-    margin: -(@padding-base-vertical + 1) -(@padding-base-horizontal + 1);
+    margin: -(@input-padding-y + 1) -(@input-padding-x + 1);
     border-radius: @input-border-radius;
 
     &:focus {
@@ -441,6 +452,8 @@ dl:not(.dl-horizontal) {
 
 /* SK Add margin in ListItems */
 .list-items-rows .controls-row {
+  display: flex;
+  align-items: center;
   margin-bottom: 6px;
 }
 

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModel.NonEntities;
+
 namespace Rock.ViewModel
 {
     /// <summary>
@@ -30,6 +32,6 @@ namespace Rock.ViewModel
         /// <value>
         /// The attributes.
         /// </value>
-        Dictionary<string, AttributeValueViewModel> Attributes { get; set; }
+        Dictionary<string, ClientAttributeValueViewModel> Attributes { get; set; }
     }
 }

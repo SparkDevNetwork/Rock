@@ -23,6 +23,7 @@ using System.Text;
 using System.Web;
 using System.Web.Security;
 
+using Rock.Bus.Message;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -169,6 +170,7 @@ namespace Rock.Security
         private static void AddOrUpdate( Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> authorizations )
         {
             RockCache.AddOrUpdate( CACHE_KEY, authorizations );
+            AuthorizationCacheWasUpdatedMessage.Publish( CACHE_KEY );
         }
 
         private static Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> LoadAuthorizations()
@@ -909,7 +911,7 @@ namespace Rock.Security
 
             // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
             // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.Url.Scheme == "https" ? ";Secure" : string.Empty;
+            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
 
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
             string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";

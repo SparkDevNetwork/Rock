@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 using Rock.Web.UI.Controls;
 
@@ -29,6 +30,12 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return NumberRangeEditor.FormatDelimitedValues( value, "G" ) ?? value;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary> 
@@ -39,8 +46,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = NumberRangeEditor.FormatDelimitedValues( value, "G" ) ?? value;
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return !condensed
+                ? GetTextValue( value, configurationValues )
+                : GetCondensedTextValue( value, configurationValues );
         }
 
         #endregion

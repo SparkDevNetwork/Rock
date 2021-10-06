@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -83,10 +84,13 @@ namespace DotLiquid
 #else
 					outputString = string.Join(string.Empty, ((IEnumerable)output).Cast<object>());
 #endif
-				else if (output is bool)
-					outputString = output.ToString().ToLower();
-				else
-					outputString = output.ToString();
+                else if (output is bool)
+                    outputString = output.ToString().ToLower();
+                else if (output is DateTimeOffset dto)
+                    // Change the default output for a DateTimeOffset to omit the timezone offset.
+                    outputString = dto.ToString( "G" );
+                else
+                    outputString = output.ToString();
 				result.Write(outputString);
 			}
 		}

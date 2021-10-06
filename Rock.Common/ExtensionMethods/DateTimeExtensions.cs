@@ -359,7 +359,7 @@ namespace Rock
         /// <returns></returns>
         public static DateTime StartOfMonth( this DateTime dt )
         {
-            return new DateTime( dt.Year, dt.Month, 1 );
+            return new DateTime( dt.Year, dt.Month, 1, 0, 0, 0, dt.Kind );
         }
 
         /// <summary>

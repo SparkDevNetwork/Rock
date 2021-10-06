@@ -146,7 +146,7 @@ namespace Rock.Model
 
             if ( HttpContext.Current != null && HttpContext.Current.Request != null )
             {
-                string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
+                string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri );
 
                 // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
                 Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );

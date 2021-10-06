@@ -17,7 +17,9 @@
 
 using System;
 using System.Threading.Tasks;
+
 using MassTransit;
+
 using Rock.Logging;
 using Rock.Model;
 
@@ -40,8 +42,11 @@ namespace Rock.Bus.Faults
         /// <returns></returns>
         public Task ConsumeFault<T>( ConsumeContext<T> context, TimeSpan duration, string consumerType, Exception exception ) where T : class
         {
-            ExceptionLogService.LogException( exception );
-            return LogFault( context, consumerType, exception );
+            var errorMessage = $"A ConsumeFault occurred in the {consumerType}. Original Message: {context.Message}. Exception: {exception}";
+            ExceptionLogService.LogException( new BusException( errorMessage, exception ) );
+
+            RockLogger.Log.Error( RockLogDomains.Bus, "A ConsumeFault occurred in the @consumerType. Original Message: @originalMessage Exception: @exception", consumerType, context.Message, exception );
+            return RockMessageBus.GetCompletedTask();
         }
 
         /// <summary>
@@ -85,22 +90,10 @@ namespace Rock.Bus.Faults
         /// <returns></returns>
         public Task ReceiveFault( ReceiveContext context, Exception exception )
         {
-            ExceptionLogService.LogException( exception );
-            RockLogger.Log.Error( RockLogDomains.Core, "A Receive Fault occurred Context: @context Exception: @exception", context, exception );
-            return RockMessageBus.GetCompletedTask();
-        }
+            var errorMessage = $"A ReceiveFault occurred. Context: {context}. Exception {exception}";
+            ExceptionLogService.LogException( new BusException( errorMessage, exception ) );
 
-        /// <summary>
-        /// Logs the fault.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="context">The context.</param>
-        /// <param name="consumerType">Type of the consumer.</param>
-        /// <param name="exception">The exception.</param>
-        /// <returns></returns>
-        private Task LogFault<T>( ConsumeContext<T> context, string consumerType, Exception exception ) where T : class
-        {
-            RockLogger.Log.Error( RockLogDomains.Core, "A Receive Fault occurred in the @cusumerType Original Message: @originalMessage Exception: @exception", consumerType, context.Message, exception );
+            RockLogger.Log.Error( RockLogDomains.Bus, "A ReceiveFault occurred Context: @context Exception: @exception", context, exception );
             return RockMessageBus.GetCompletedTask();
         }
     }

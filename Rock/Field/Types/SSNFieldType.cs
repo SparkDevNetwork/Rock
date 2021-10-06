@@ -31,6 +31,19 @@ namespace Rock.Field.Types
 
         #region Formatting
 
+        /// <inheritdoc/>
+        public override string GetTextValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string ssn = UnencryptAndClean( value );
+
+            if ( ssn.Length == 9 )
+            {
+                return string.Format( "xxx-xx-{0}", ssn.Substring( 5, 4 ) );
+            }
+
+            return string.Empty;
+        }
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -41,15 +54,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            string formattedValue = string.Empty;
-
-            string ssn = UnencryptAndClean( value );
-            if ( ssn.Length == 9 )
-            {
-                formattedValue = string.Format( "xxx-xx-{0}", ssn.Substring( 5, 4 ) );
-            }
-
-            return base.FormatValue( parentControl, formattedValue, configurationValues, condensed );
+            return GetTextValue( value, configurationValues );
         }
 
         /// <summary>
@@ -67,6 +72,25 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetClientValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            // Return the masked value so we aren't sending the full value.
+            return GetTextValue( value, configurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetClientEditValue( string value, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return UnencryptAndClean( value );
+        }
+
+        /// <inheritdoc/>
+        public override string GetValueFromClient( string clientValue, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            return Security.Encryption.EncryptString( clientValue );
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value

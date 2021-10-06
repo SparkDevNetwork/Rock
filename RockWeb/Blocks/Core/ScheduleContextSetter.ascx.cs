@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Core
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "ScheduleId", scheduleId.ToString() );
-                    Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
+                    Response.Redirect( string.Format( "{0}?{1}", Request.UrlProxySafe().AbsolutePath, queryString ), false );
                 }
                 else
                 {

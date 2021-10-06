@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true,
+    "module": "CommonJS",
+    "baseUrl": ".."
+  },
+  "include": ["**/*.spec.ts"],
+  "exclude": ["**/*.spec.ignored.ts"]
+}

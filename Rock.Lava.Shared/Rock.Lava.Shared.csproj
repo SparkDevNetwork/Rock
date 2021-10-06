@@ -57,6 +57,7 @@
     <Compile Include="Core\ILavaBlock.cs" />
     <Compile Include="Core\LavaDataDictionary.cs" />
     <Compile Include="Core\LavaEngineConfigurationOptions.cs" />
+    <Compile Include="Core\LavaInterruptException.cs" />
     <Compile Include="Core\LavaException.cs" />
     <Compile Include="Core\LavaHiddenAttribute.cs" />
     <Compile Include="Core\LavaVisibleAttribute.cs" />

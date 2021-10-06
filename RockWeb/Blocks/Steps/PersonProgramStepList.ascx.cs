@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -198,6 +199,7 @@ namespace RockWeb.Blocks.Steps
 
             gStepList.DataKeyNames = new[] { "id" };
             gStepList.GridRebind += gStepList_GridRebind;
+            gStepList.RowDataBound += gStepList_RowDataBound;
 
             var campusField = gStepList.ColumnsOfType<CampusField>().First();
             if ( campusField != null )
@@ -237,6 +239,16 @@ namespace RockWeb.Blocks.Steps
 
             RenderStepsPerRow();
             DisplayStepTerm();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
             RenderViewMode();
         }
 
@@ -260,6 +272,29 @@ namespace RockWeb.Blocks.Steps
         private void gStepList_GridRebind( object sender, GridRebindEventArgs e )
         {
             RenderGridView();
+        }
+
+        /// <summary>
+        /// Handle the rebind event for the step list grid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void gStepList_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
+
+            // Allow Edit if authorized to edit the block or the Step Type.
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || stepGridRowViewModel.Step.StepType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+            var deleteFieldColumn = gStepList.ColumnsOfType<DeleteField>().FirstOrDefault();
+            if ( deleteFieldColumn != null )
+            {
+                deleteFieldColumn.Visible = canEditBlock;
+            }
         }
 
         /// <summary>
@@ -454,7 +489,11 @@ namespace RockWeb.Blocks.Steps
         {
             var stepId = e.CommandArgument.ToStringSafe().AsInteger();
             DeleteStep( stepId );
-            RenderCardView();
+
+            // Redirect the browser to reload the page so that the POST data associated with this request is cleared from the cache.
+            // This prevents the delete operation from being repeated if the page is reloaded, which is usually accompanied by
+            // an unwanted postback alert dialog.
+            Response.Redirect( Request.Url.ToString(), false );
         }
 
         /// <summary>

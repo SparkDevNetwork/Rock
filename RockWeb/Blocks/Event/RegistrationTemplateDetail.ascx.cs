@@ -22,9 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Newtonsoft.Json;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -35,7 +33,6 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
@@ -824,6 +821,7 @@ The logged-in person's information will be used to complete the registrar inform
                 var newDiscountState = new List<RegistrationTemplateDiscount>();
                 var newFeeState = new List<RegistrationTemplateFee>();
                 var newAttributeState = new List<Attribute>();
+                var newRegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
 
                 foreach ( var form in FormState )
                 {
@@ -919,11 +917,32 @@ The logged-in person's information will be used to complete the registrar inform
                     newAttributeState.Add( newAttribute );
                 }
 
+                foreach ( var registrationTemplatePlacement in RegistrationTemplatePlacementState )
+                {
+                    var newRegistrationTemplatePlacement = registrationTemplatePlacement.Clone( false );
+                    newRegistrationTemplatePlacement.Id = 0;
+                    newRegistrationTemplatePlacement.Guid = Guid.NewGuid();
+                    newRegistrationTemplatePlacementState.Add( newRegistrationTemplatePlacement );
+
+                    // Find the existing Guid in the list of group ids and update it.
+                    if (RegistrationTemplatePlacementGuidGroupIdsState.ContainsKey(registrationTemplatePlacement.Guid))
+                    {
+                        // Remove the old Guid and then replace it with the new Guid in the GuidGroupIds State.
+                        var intList = new List<int>();
+                        if (RegistrationTemplatePlacementGuidGroupIdsState.TryGetValue( registrationTemplatePlacement.Guid, out intList ))
+                        {
+                            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( newRegistrationTemplatePlacement.Guid, intList );
+                            RegistrationTemplatePlacementGuidGroupIdsState.Remove( registrationTemplatePlacement.Guid );
+                        }
+                    }
+                }
+
                 FormState = newFormState;
                 FormFieldsState = newFormFieldsState;
                 DiscountState = newDiscountState;
                 FeeState = newFeeState;
                 RegistrationAttributesState = newAttributeState;
+                RegistrationTemplatePlacementState = newRegistrationTemplatePlacementState;
 
                 hfRegistrationTemplateId.Value = newRegistrationTemplate.Id.ToString();
                 ShowEditDetails( newRegistrationTemplate, rockContext );
@@ -979,6 +998,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.RegistrarOption = ddlRegistrarOption.SelectedValueAsEnum<RegistrarOption>();
 
             registrationTemplate.RegistrationWorkflowTypeId = wtpRegistrationWorkflow.SelectedValueAsInt();
+            registrationTemplate.RegistrantWorkflowTypeId = wtpRegistrantWorkflow.SelectedValueAsInt();
             registrationTemplate.Notify = notify;
             registrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             registrationTemplate.LoginRequired = cbLoginRequired.Checked;
@@ -1454,20 +1474,20 @@ The logged-in person's information will be used to complete the registrar inform
                 int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page
+                    // Canceling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page.
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
-                    // Cancelling on Add.  Return to Grid
+                    // Canceling on Add.  Return to Grid.
                     NavigateToParentPage();
                 }
             }
             else
             {
-                // Cancelling on Edit.  Return to Details
+                // Canceling on Edit.  Return to Details.
                 RegistrationTemplateService service = new RegistrationTemplateService( new RockContext() );
                 RegistrationTemplate item = service.Get( int.Parse( hfRegistrationTemplateId.Value ) );
                 ShowReadonlyDetails( item );
@@ -1632,7 +1652,7 @@ The logged-in person's information will be used to complete the registrar inform
             {
                 /*
                   SK - 11 Oct 2020
-                  On Field Delete, we need to also remove all the exisiting reference of current field in filter rule list
+                  On Field Delete, we need to also remove all the existing references of current field in filter rule list.
                 */
                 var newFormFieldsWithRules = FormFieldsState[e.FormGuid]
                     .Where( a => a.FieldVisibilityRules.RuleList.Any()
@@ -1646,6 +1666,7 @@ The logged-in person's information will be used to complete the registrar inform
                         .RemoveAll( a => a.ComparedToFormFieldGuid.HasValue
                         && a.ComparedToFormFieldGuid.Value == e.FormFieldGuid );
                 }
+
                 FormFieldsState[e.FormGuid].RemoveEntity( e.FormFieldGuid );
             }
 
@@ -2517,6 +2538,7 @@ The logged-in person's information will be used to complete the registrar inform
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             wtpRegistrationWorkflow.SetValue( registrationTemplate.RegistrationWorkflowTypeId );
+            wtpRegistrantWorkflow.SetValue( registrationTemplate.RegistrantWorkflowTypeId );
             ddlRegistrarOption.SetValue( registrationTemplate.RegistrarOption.ConvertToInt() );
 
             foreach ( ListItem li in cblNotify.Items )
@@ -2920,13 +2942,16 @@ The logged-in person's information will be used to complete the registrar inform
 
                 fvreFieldVisibilityRulesEditor.ValidationGroup = dlgFieldFilter.ValidationGroup;
                 fvreFieldVisibilityRulesEditor.FieldName = formField.ToString();
-                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary( rtff => rtff.Guid, rtff => new FieldVisibilityRuleField
-                {
-                    Guid = rtff.Guid,
-                    Attribute = rtff.Attribute,
-                    PersonFieldType = rtff.PersonFieldType,
-                    FieldSource = rtff.FieldSource
-                } );
+
+                fvreFieldVisibilityRulesEditor.ComparableFields = otherFormFields.ToDictionary(
+                    rtff => rtff.Guid,
+                    rtff => new FieldVisibilityRuleField
+                    {
+                        Guid = rtff.Guid,
+                        Attribute = rtff.Attribute,
+                        PersonFieldType = rtff.PersonFieldType,
+                        FieldSource = rtff.FieldSource
+                    } );
                 fvreFieldVisibilityRulesEditor.SetFieldVisibilityRules( formField.FieldVisibilityRules );
             }
 
@@ -3925,7 +3950,6 @@ The logged-in person's information will be used to complete the registrar inform
             var selectedGroupId = gpPlacementConfigurationAddSharedGroup.GroupId;
             if ( selectedGroupId.HasValue )
             {
-
                 GroupTypeCache groupType = null;
                 if ( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.HasValue )
                 {
@@ -3948,7 +3972,6 @@ The logged-in person's information will be used to complete the registrar inform
                     return;
                 }
 
-
                 if ( !sharedGroupIds.Contains( selectedGroupId.Value ) )
                 {
                     sharedGroupIds.Add( selectedGroupId.Value );
@@ -3968,7 +3991,6 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
         {
-
             pnlPlacementConfigurationAddSharedGroup.Visible = false;
         }
 
