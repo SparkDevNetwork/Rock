@@ -296,8 +296,6 @@ namespace Rock.Field
             set => ComparedToFormFieldGuid = value;
         }
 
-        private Guid? comparedToRegistrationTemplateFormFieldGuid;
-
         /// <summary>
         /// Gets or sets the unique identifier.
         /// </summary>
