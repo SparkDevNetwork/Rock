@@ -274,6 +274,31 @@ namespace Rock.Field
         public Guid? ComparedToFormFieldGuid { get; set; }
 
         /// <summary>
+        /// Obsolete. Use <see cref="ComparedToFormFieldGuid" /> instead.
+        /// </summary>
+        /// <value>The compared to registration template form field unique identifier.</value>
+        [DataMember]
+        [Obsolete( "Use ComparedToFormFieldGuid Instead" )]
+        [RockObsolete( "12.5" )]
+        public Guid? ComparedToRegistrationTemplateFormFieldGuid
+        {
+            /* 2021-10-06 MDP
+              
+               A Data Migration takes care of moving the data to the ComparedToFormFieldGuid field,
+               so it'll be safe to remove the ComparedToRegistrationTemplateFormFieldGuid property
+               when we delete the obsoleted ComparedToRegistrationTemplateFormFieldGuid field.
+
+               We'll keep the ComparedToRegistrationTemplateFormFieldGuid, but mark it obsolete just in
+               case plugin developers are using this field.
+            */
+
+            get => ComparedToFormFieldGuid;
+            set => ComparedToFormFieldGuid = value;
+        }
+
+        private Guid? comparedToRegistrationTemplateFormFieldGuid;
+
+        /// <summary>
         /// Gets or sets the unique identifier.
         /// </summary>
         /// <value>
