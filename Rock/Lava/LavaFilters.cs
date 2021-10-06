@@ -3599,6 +3599,139 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        public static List<Model.Step> Steps( ILavaRenderContext context, object input, string stepProgram = "All", string stepStatus = "All", string stepType = "All" )
+        {
+            var person = GetPerson( input, context );
+
+            if ( person == null )
+            {
+                return new List<Step>();
+            }
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var stepsQuery = GetPersonSteps( rockContext, person, stepProgram, stepStatus, stepType );
+
+            return stepsQuery.ToList();
+        }
+
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        internal static IQueryable<Model.Step> GetPersonSteps( RockContext rockContext, Person person, string stepProgram = null, string stepStatus = null, string stepType = null )
+        {
+            // Get Person from context.
+            if ( person == null )
+            {
+                return null;
+            }
+
+            // Get base Steps query.
+            var stepQuery = new StepService( rockContext )
+                .Queryable( "Campus,StepStatus,StepType" )
+                .Where( s => s.PersonAlias.PersonId == person.Id );
+
+            // Filter by: Step Program.
+            // The identifier can be either an Id or a Guid.
+            stepProgram = stepProgram ?? string.Empty;
+            stepProgram = stepProgram.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepProgram )
+                 && stepProgram != "all" )
+            {
+                var stepProgramId = stepProgram.AsIntegerOrNull();
+
+                if ( stepProgramId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepType.StepProgramId == stepProgramId.Value );
+                }
+                else
+                {
+                    var stepProgramGuid = stepProgram.AsGuidOrNull();
+
+                    if ( stepProgramGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.StepProgram != null && s.StepType.StepProgram.Guid == stepProgramGuid.Value );
+                    }
+                }
+
+                // Step Program Identifier is invalid.
+            }
+
+            // Filter by: Step Type.
+            // The identifier can be either an Id or a Guid.
+            stepType = stepType ?? string.Empty;
+            stepType = stepType.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepType )
+                 && stepType != "all" )
+            {
+                var stepTypeId = stepType.AsIntegerOrNull();
+
+                if ( stepTypeId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepTypeId == stepTypeId.Value );
+                }
+                else
+                {
+                    var stepTypeGuid = stepType.AsGuidOrNull();
+
+                    if ( stepTypeGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepType != null && s.StepType.Guid == stepTypeGuid.Value );
+                    }
+                }
+
+                // Step Type Identifier is invalid.
+            }
+
+            // Filter by: Step Status
+            stepStatus = stepStatus ?? string.Empty;
+            stepStatus = stepStatus.Trim().ToLower();
+
+            if ( !string.IsNullOrWhiteSpace( stepStatus )
+                 && stepStatus != "all" )
+            {
+                var stepStatusId = stepStatus.AsIntegerOrNull();
+
+                if ( stepStatusId.HasValue )
+                {
+                    stepQuery = stepQuery.Where( s => s.StepStatusId == stepStatusId.Value );
+                }
+                else
+                {
+                    var stepStatusGuid = stepStatus.AsGuidOrNull();
+
+                    if ( stepStatusGuid.HasValue )
+                    {
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Guid == stepStatusGuid.Value );
+                    }
+                    else
+                    {
+                        // Name
+                        stepQuery = stepQuery.Where( s => s.StepStatus != null && s.StepStatus.Name == stepStatus );
+                    }
+                }
+            }
+
+            return stepQuery;
+        }
+
         #endregion Person Filters
 
         #region Group Filters

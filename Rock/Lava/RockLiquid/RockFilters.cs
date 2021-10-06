@@ -3932,6 +3932,30 @@ namespace Rock.Lava
             }
         }
 
+        /// <summary>
+        /// Gets Steps associated with a specified person.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="stepProgram">The step program identifier, expressed as an Id or Guid.</param>
+        /// <param name="stepStatus">The step status, expressed as an Id, Guid, or Name.</param>
+        /// <param name="stepType">The step type identifier, expressed as an Id or Guid.</param>
+        /// <returns></returns>
+        public static List<Model.Step> Steps( object input, string stepProgram = "All", string stepStatus = "All", string stepType = "All" )
+        {
+            var person = GetPerson( input );
+
+            if ( person == null )
+            {
+                return new List<Step>();
+            }
+
+            var rockContext = new RockContext();
+
+            var stepsQuery = LavaFilters.GetPersonSteps( rockContext, person, stepProgram, stepStatus, stepType );
+
+            return stepsQuery.ToList();
+        }
+
         #endregion Person Filters
 
         #region Group Filters
