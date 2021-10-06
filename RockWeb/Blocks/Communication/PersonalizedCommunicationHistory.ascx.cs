@@ -164,7 +164,7 @@ namespace RockWeb.Blocks.Communication
                                 <div class='row'>
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
                                         <span class='control-label d-block text-muted'>Sent As</span>
-                                        <span class='d-block text-lg font-weight-bold'>{{ Communication.CommunicationType | Humanize | Capitalize }}</span>
+                                        <span class='d-block text-lg font-weight-bold'>{{ Communication.CommunicationType | AsString | Humanize | Capitalize }}</span>
                                     </div>
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
                                         <span class='control-label d-block text-muted'>Recipients</span>
@@ -190,7 +190,7 @@ namespace RockWeb.Blocks.Communication
                                             <dd>
                                                 {% for segment in Communication.Detail.CommunicationSegments %}
                                                     {% if ListSegmentDetailUrlTemplate != empty %}
-                                                        <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'{0}',segment.Id }}"">{{ segment.Name }}</a><br>
+                                                        <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@segmentId',segment.Id }}"">{{ segment.Name }}</a><br>
                                                     {% else %}
                                                         {{ segment.Name }}<br>
                                                     {% endif %}
@@ -564,7 +564,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            lLava.Text = GetCommunicationItemHeaderHtml( up, communication, false );
+            lLava.Text = GetCommunicationListItemHtml( up, communication, false );
         }
 
         /// <summary>
@@ -1026,7 +1026,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private string GetCommunicationItemHeaderHtml( Control rowContainerControl, CommunicationListItem item, bool includeDetailInfo )
+        private string GetCommunicationListItemHtml( Control rowContainerControl, CommunicationListItem item, bool includeDetailInfo )
         {
             if ( includeDetailInfo )
             {
@@ -1039,7 +1039,7 @@ namespace RockWeb.Blocks.Communication
 
             // Add Page Links.
             AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={ item.Id }" );
-            AddMergeFieldForPageLink( mergeValues, "ListSegmentDetailUrlTemplate", LinkedPageUrl( AttributeKey.CommunicationSegmentDetailPage ), "DataViewId={0}" );
+            AddMergeFieldForPageLink( mergeValues, "ListSegmentDetailUrlTemplate", LinkedPageUrl( AttributeKey.CommunicationSegmentDetailPage ), "DataViewId=@segmentId" );
 
             if ( includeDetailInfo )
             {
@@ -1208,7 +1208,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( lr != null )
                 {
-                    var lavaHeader = GetCommunicationItemHeaderHtml( ctlContainer, communicationItem, true );
+                    var lavaHeader = GetCommunicationListItemHtml( ctlContainer, communicationItem, true );
 
                     lr.Text = lavaHeader;
 
