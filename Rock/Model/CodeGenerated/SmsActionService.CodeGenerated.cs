@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// ConnectionStatus Service class
+    /// SmsAction Service class
     /// </summary>
-    public partial class ConnectionStatusService : Service<ConnectionStatus>
+    public partial class SmsActionService : Service<SmsAction>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectionStatusService"/> class
+        /// Initializes a new instance of the <see cref="SmsActionService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public ConnectionStatusService(RockContext context) : base(context)
+        public SmsActionService(RockContext context) : base(context)
         {
         }
 
@@ -51,24 +51,18 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( ConnectionStatus item, out string errorMessage )
+        public bool CanDelete( SmsAction item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.ConnectionStatusId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", ConnectionStatus.FriendlyTypeName, ConnectionRequest.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
     /// <summary>
-    /// ConnectionStatus View Model Helper
+    /// SmsAction View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( ConnectionStatus ) )]
-    public partial class ConnectionStatusViewModelHelper : ViewModelHelper<ConnectionStatus, Rock.ViewModel.ConnectionStatusViewModel>
+    [DefaultViewModelHelper( typeof( SmsAction ) )]
+    public partial class SmsActionViewModelHelper : ViewModelHelper<SmsAction, Rock.ViewModel.SmsActionViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,26 +71,23 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.ConnectionStatusViewModel CreateViewModel( ConnectionStatus model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.SmsActionViewModel CreateViewModel( SmsAction model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.ConnectionStatusViewModel
+            var viewModel = new Rock.ViewModel.SmsActionViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                AutoInactivateState = model.AutoInactivateState,
-                ConnectionTypeId = model.ConnectionTypeId,
-                Description = model.Description,
-                HighlightColor = model.HighlightColor,
+                ContinueAfterProcessing = model.ContinueAfterProcessing,
                 IsActive = model.IsActive,
-                IsCritical = model.IsCritical,
-                IsDefault = model.IsDefault,
                 Name = model.Name,
                 Order = model.Order,
+                SmsActionComponentEntityTypeId = model.SmsActionComponentEntityTypeId,
+                SmsPipelineId = model.SmsPipelineId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -113,36 +104,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class ConnectionStatusExtensionMethods
+    public static partial class SmsActionExtensionMethods
     {
         /// <summary>
-        /// Clones this ConnectionStatus object to a new ConnectionStatus object
+        /// Clones this SmsAction object to a new SmsAction object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static ConnectionStatus Clone( this ConnectionStatus source, bool deepCopy )
+        public static SmsAction Clone( this SmsAction source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as ConnectionStatus;
+                return source.Clone() as SmsAction;
             }
             else
             {
-                var target = new ConnectionStatus();
+                var target = new SmsAction();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this ConnectionStatus object to a new ConnectionStatus object with default values for the properties in the Entity and Model base classes.
+        /// Clones this SmsAction object to a new SmsAction object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static ConnectionStatus CloneWithoutIdentity( this ConnectionStatus source )
+        public static SmsAction CloneWithoutIdentity( this SmsAction source )
         {
-            var target = new ConnectionStatus();
+            var target = new SmsAction();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -159,24 +150,21 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another ConnectionStatus object to this ConnectionStatus object
+        /// Copies the properties from another SmsAction object to this SmsAction object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this ConnectionStatus target, ConnectionStatus source )
+        public static void CopyPropertiesFrom( this SmsAction target, SmsAction source )
         {
             target.Id = source.Id;
-            target.AutoInactivateState = source.AutoInactivateState;
-            target.ConnectionTypeId = source.ConnectionTypeId;
-            target.Description = source.Description;
+            target.ContinueAfterProcessing = source.ContinueAfterProcessing;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HighlightColor = source.HighlightColor;
             target.IsActive = source.IsActive;
-            target.IsCritical = source.IsCritical;
-            target.IsDefault = source.IsDefault;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;
+            target.SmsPipelineId = source.SmsPipelineId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -192,9 +180,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.ConnectionStatusViewModel ToViewModel( this ConnectionStatus model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.SmsActionViewModel ToViewModel( this SmsAction model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new ConnectionStatusViewModelHelper();
+            var helper = new SmsActionViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

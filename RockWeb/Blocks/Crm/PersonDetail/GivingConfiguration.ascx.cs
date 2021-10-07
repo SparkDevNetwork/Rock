@@ -243,6 +243,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var lScheduledTransactionExpiration = e.Item.FindControl( "lScheduledTransactionExpiration" ) as Literal;
             var lScheduledTransactionSavedAccountName = e.Item.FindControl( "lScheduledTransactionSavedAccountName" ) as Literal;
             var lScheduledTransactionStatusHtml = e.Item.FindControl( "lScheduledTransactionStatusHtml" ) as Literal;
+            var pnlCreditCardInfo = e.Item.FindControl( "pnlScheduledTransactionCreditCardInfo" ) as Panel;
+            var lOtherCurrencyTypeInfo = e.Item.FindControl( "lScheduledTransactionOtherCurrencyTypeInfo" ) as Literal;
 
             string creditCardType = null;
             string accountNumberMasked = financialPaymentDetail?.AccountNumberMasked;
@@ -251,17 +253,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
             }
 
-            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+            
+
+            if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
-                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+                {
+                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                    lScheduledTransactionCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                }
+                else
+                {
+                    lScheduledTransactionCardTypeLast4.Text = creditCardType;
+                }
+
+                lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
             {
-                lScheduledTransactionCardTypeLast4.Text = creditCardType;
+                pnlCreditCardInfo.Visible = false;
+                lOtherCurrencyTypeInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
             }
-
-            lScheduledTransactionExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
 
             if ( financialPaymentDetail?.FinancialPersonSavedAccount != null )
             {
@@ -401,6 +417,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             var lSavedAccountName = e.Item.FindControl( "lSavedAccountName" ) as Literal;
+
+            var pnlCreditCardInfo = e.Item.FindControl( "pnlSavedAccountCreditCardInfo" ) as Panel;
+            var lOtherCurrencyTypeInfo = e.Item.FindControl( "lSavedAccountOtherCurrencyTypeInfo" ) as Literal;
+
             var lSavedAccountCardTypeLast4 = e.Item.FindControl( "lSavedAccountCardTypeLast4" ) as Literal;
             var lSavedAccountExpiration = e.Item.FindControl( "lSavedAccountExpiration" ) as Literal;
             var lSavedAccountInUseStatusHtml = e.Item.FindControl( "lSavedAccountInUseStatusHtml" ) as Literal;
@@ -416,17 +436,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 creditCardType = DefinedValueCache.GetValue( financialPaymentDetail.CreditCardTypeValueId.Value );
             }
 
-            if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+            var currencyTypeIdCreditCard = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
+
+            if ( financialPaymentDetail?.CurrencyTypeValueId == currencyTypeIdCreditCard )
             {
-                var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
-                lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                pnlCreditCardInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Visible = false;
+
+                if ( accountNumberMasked.IsNotNullOrWhiteSpace() && accountNumberMasked.Length >= 4 )
+                {
+                    var last4 = accountNumberMasked.Substring( accountNumberMasked.Length - 4 );
+                    lSavedAccountCardTypeLast4.Text = $"{creditCardType} - {last4}";
+                }
+                else
+                {
+                    lSavedAccountCardTypeLast4.Text = creditCardType;
+                }
+
+                lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
             }
             else
             {
-                lSavedAccountCardTypeLast4.Text = creditCardType;
+                pnlCreditCardInfo.Visible = false;
+                lOtherCurrencyTypeInfo.Visible = true;
+                lOtherCurrencyTypeInfo.Text = financialPaymentDetail?.CurrencyTypeValue?.Value;
             }
-
-            lSavedAccountExpiration.Text = $"Exp: {financialPaymentDetail.ExpirationDate}";
 
             var cardIsExpired = financialPaymentDetail.CardExpirationDate.HasValue && financialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now;
 

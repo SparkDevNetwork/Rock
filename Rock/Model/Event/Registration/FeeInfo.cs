@@ -31,7 +31,7 @@ namespace Rock.Model
         /// The option.
         /// </value>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use RegistrationTemplateFeeItemId + FeeLabel instead" )]
+        [Obsolete( "Use RegistrationTemplateFeeItemId + FeeLabel instead", true )]
         public string Option
         {
             get => this.FeeLabel;
@@ -128,7 +128,7 @@ namespace Rock.Model
         /// <param name="quantity">The quantity.</param>
         /// <param name="cost">The cost.</param>
         [RockObsolete( "1.9" )]
-        [Obsolete( "Use other FeeInfo constructor" )]
+        [Obsolete( "Use other FeeInfo constructor", true )]
         public FeeInfo( string option, int quantity, decimal cost )
             : this()
         {

@@ -31,15 +31,15 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// RegistrationTemplateFee Service class
+    /// ConnectionStatusAutomation Service class
     /// </summary>
-    public partial class RegistrationTemplateFeeService : Service<RegistrationTemplateFee>
+    public partial class ConnectionStatusAutomationService : Service<ConnectionStatusAutomation>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="RegistrationTemplateFeeService"/> class
+        /// Initializes a new instance of the <see cref="ConnectionStatusAutomationService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public RegistrationTemplateFeeService(RockContext context) : base(context)
+        public ConnectionStatusAutomationService(RockContext context) : base(context)
         {
         }
 
@@ -51,24 +51,18 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( RegistrationTemplateFee item, out string errorMessage )
+        public bool CanDelete( ConnectionStatusAutomation item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<RegistrationRegistrantFee>( Context ).Queryable().Any( a => a.RegistrationTemplateFeeId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplateFee.FriendlyTypeName, RegistrationRegistrantFee.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
     /// <summary>
-    /// RegistrationTemplateFee View Model Helper
+    /// ConnectionStatusAutomation View Model Helper
     /// </summary>
-    [DefaultViewModelHelper( typeof( RegistrationTemplateFee ) )]
-    public partial class RegistrationTemplateFeeViewModelHelper : ViewModelHelper<RegistrationTemplateFee, Rock.ViewModel.RegistrationTemplateFeeViewModel>
+    [DefaultViewModelHelper( typeof( ConnectionStatusAutomation ) )]
+    public partial class ConnectionStatusAutomationViewModelHelper : ViewModelHelper<ConnectionStatusAutomation, Rock.ViewModel.ConnectionStatusAutomationViewModel>
     {
         /// <summary>
         /// Converts the model to a view model.
@@ -77,26 +71,22 @@ namespace Rock.Model
         /// <param name="currentPerson">The current person.</param>
         /// <param name="loadAttributes">if set to <c>true</c> [load attributes].</param>
         /// <returns></returns>
-        public override Rock.ViewModel.RegistrationTemplateFeeViewModel CreateViewModel( RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = true )
+        public override Rock.ViewModel.ConnectionStatusAutomationViewModel CreateViewModel( ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = true )
         {
             if ( model == null )
             {
                 return default;
             }
 
-            var viewModel = new Rock.ViewModel.RegistrationTemplateFeeViewModel
+            var viewModel = new Rock.ViewModel.ConnectionStatusAutomationViewModel
             {
                 Id = model.Id,
                 Guid = model.Guid,
-                AllowMultiple = model.AllowMultiple,
-                DiscountApplies = model.DiscountApplies,
-                FeeType = ( int ) model.FeeType,
-                HideWhenNoneRemaining = model.HideWhenNoneRemaining,
-                IsActive = model.IsActive,
-                IsRequired = model.IsRequired,
-                Name = model.Name,
-                Order = model.Order,
-                RegistrationTemplateId = model.RegistrationTemplateId,
+                AutomationName = model.AutomationName,
+                DataViewId = model.DataViewId,
+                DestinationStatusId = model.DestinationStatusId,
+                GroupRequirementsFilter = ( int ) model.GroupRequirementsFilter,
+                SourceStatusId = model.SourceStatusId,
                 CreatedDateTime = model.CreatedDateTime,
                 ModifiedDateTime = model.ModifiedDateTime,
                 CreatedByPersonAliasId = model.CreatedByPersonAliasId,
@@ -113,36 +103,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class RegistrationTemplateFeeExtensionMethods
+    public static partial class ConnectionStatusAutomationExtensionMethods
     {
         /// <summary>
-        /// Clones this RegistrationTemplateFee object to a new RegistrationTemplateFee object
+        /// Clones this ConnectionStatusAutomation object to a new ConnectionStatusAutomation object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static RegistrationTemplateFee Clone( this RegistrationTemplateFee source, bool deepCopy )
+        public static ConnectionStatusAutomation Clone( this ConnectionStatusAutomation source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as RegistrationTemplateFee;
+                return source.Clone() as ConnectionStatusAutomation;
             }
             else
             {
-                var target = new RegistrationTemplateFee();
+                var target = new ConnectionStatusAutomation();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this RegistrationTemplateFee object to a new RegistrationTemplateFee object with default values for the properties in the Entity and Model base classes.
+        /// Clones this ConnectionStatusAutomation object to a new ConnectionStatusAutomation object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static RegistrationTemplateFee CloneWithoutIdentity( this RegistrationTemplateFee source )
+        public static ConnectionStatusAutomation CloneWithoutIdentity( this ConnectionStatusAutomation source )
         {
-            var target = new RegistrationTemplateFee();
+            var target = new ConnectionStatusAutomation();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -159,27 +149,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another RegistrationTemplateFee object to this RegistrationTemplateFee object
+        /// Copies the properties from another ConnectionStatusAutomation object to this ConnectionStatusAutomation object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this RegistrationTemplateFee target, RegistrationTemplateFee source )
+        public static void CopyPropertiesFrom( this ConnectionStatusAutomation target, ConnectionStatusAutomation source )
         {
             target.Id = source.Id;
-            target.AllowMultiple = source.AllowMultiple;
-            #pragma warning disable 612, 618
-            target.CostValue = source.CostValue;
-            #pragma warning restore 612, 618
-            target.DiscountApplies = source.DiscountApplies;
-            target.FeeType = source.FeeType;
+            target.AutomationName = source.AutomationName;
+            target.DataViewId = source.DataViewId;
+            target.DestinationStatusId = source.DestinationStatusId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HideWhenNoneRemaining = source.HideWhenNoneRemaining;
-            target.IsActive = source.IsActive;
-            target.IsRequired = source.IsRequired;
-            target.Name = source.Name;
-            target.Order = source.Order;
-            target.RegistrationTemplateId = source.RegistrationTemplateId;
+            target.GroupRequirementsFilter = source.GroupRequirementsFilter;
+            target.SourceStatusId = source.SourceStatusId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -195,9 +178,9 @@ namespace Rock.Model
         /// <param name="model">The entity.</param>
         /// <param name="currentPerson" >The currentPerson.</param>
         /// <param name="loadAttributes" >Load attributes?</param>
-        public static Rock.ViewModel.RegistrationTemplateFeeViewModel ToViewModel( this RegistrationTemplateFee model, Person currentPerson = null, bool loadAttributes = false )
+        public static Rock.ViewModel.ConnectionStatusAutomationViewModel ToViewModel( this ConnectionStatusAutomation model, Person currentPerson = null, bool loadAttributes = false )
         {
-            var helper = new RegistrationTemplateFeeViewModelHelper();
+            var helper = new ConnectionStatusAutomationViewModelHelper();
             var viewModel = helper.CreateViewModel( model, currentPerson, loadAttributes );
             return viewModel;
         }

@@ -241,9 +241,18 @@ textarea,
 
 .label.btn-label {
   padding: @label-padding;
-  color: @btn-default-color !important;
+  color: @btn-default-color;
   background: @btn-default-bg;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
   box-shadow: inset 0 0 0 1px @btn-default-border;
+}
+
+.label-group {
+  .label:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 }
 
 .nav-tabs {

@@ -546,6 +546,17 @@ namespace RockWeb.Blocks.Finance
             public const string Transfer = "Transfer";
         }
 
+        private static class ViewStateKey
+        {
+            public const string GroupLocationId = "GroupLocationId";
+            public const string SelectedAccountsJSON = "SelectedAccountsJSON";
+            public const string AvailableAccountsJSON = "AvailableAccountsJSON";
+            public const string TransactionCode = "TransactionCode";
+            public const string CreditCardTypeValueId = "CreditCardTypeValueId";
+            public const string ScheduleId = "ScheduleId";
+            public const string DisplayPhone = "DisplayPhone";
+            public const string PersonId = "PersonId";
+        }
         #endregion Block Keys
 
         #region Fields
@@ -584,8 +595,8 @@ namespace RockWeb.Blocks.Finance
         /// </value>
         protected int? GroupLocationId
         {
-            get { return ViewState["GroupLocationId"] as int?; }
-            set { ViewState["GroupLocationId"] = value; }
+            get { return ViewState[ViewStateKey.GroupLocationId] as int?; }
+            set { ViewState[ViewStateKey.GroupLocationId] = value; }
         }
 
         /// <summary>
@@ -596,8 +607,8 @@ namespace RockWeb.Blocks.Finance
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["SelectedAccountsJSON"] = SelectedAccounts.ToJson();
-            ViewState["AvailableAccountsJSON"] = AvailableAccounts.ToJson();
+            ViewState[ViewStateKey.SelectedAccountsJSON] = SelectedAccounts.ToJson();
+            ViewState[ViewStateKey.AvailableAccountsJSON] = AvailableAccounts.ToJson();
             return base.SaveViewState();
         }
 
@@ -608,8 +619,8 @@ namespace RockWeb.Blocks.Finance
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-            AvailableAccounts = ( ViewState["AvailableAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
-            SelectedAccounts = ( ViewState["SelectedAccountsJSON"] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            AvailableAccounts = (ViewState[ViewStateKey.AvailableAccountsJSON] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
+            SelectedAccounts = (ViewState[ViewStateKey.SelectedAccountsJSON] as string ).FromJsonOrNull<List<AccountItem>>() ?? new List<AccountItem>();
         }
 
         /// <summary>
@@ -628,8 +639,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected string TransactionCode
         {
-            get { return ViewState["TransactionCode"] as string ?? string.Empty; }
-            set { ViewState["TransactionCode"] = value; }
+            get { return ViewState[ViewStateKey.TransactionCode] as string ?? string.Empty; }
+            set { ViewState[ViewStateKey.TransactionCode] = value; }
         }
 
         /// <summary>
@@ -637,8 +648,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected int? CreditCardTypeValueId
         {
-            get { return ViewState["CreditCardTypeValueId"] as int?; }
-            set { ViewState["CreditCardTypeValueId"] = value; }
+            get { return ViewState[ViewStateKey.CreditCardTypeValueId] as int?; }
+            set { ViewState[ViewStateKey.CreditCardTypeValueId] = value; }
         }
 
         /// <summary>
@@ -646,8 +657,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected int? ScheduleId
         {
-            get { return ViewState["ScheduleId"] as int?; }
-            set { ViewState["ScheduleId"] = value; }
+            get { return ViewState[ViewStateKey.ScheduleId] as int?; }
+            set { ViewState[ViewStateKey.ScheduleId] = value; }
         }
 
         // The URL for the Step-2 Iframe Url
@@ -655,8 +666,19 @@ namespace RockWeb.Blocks.Finance
 
         protected bool DisplayPhone
         {
-            get { return ViewState["DisplayPhone"].ToString().AsBoolean(); }
-            set { ViewState["DisplayPhone"] = value; }
+            get { return ViewState[ViewStateKey.DisplayPhone].ToString().AsBoolean(); }
+            set { ViewState[ViewStateKey.DisplayPhone] = value; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether is configured for partial postbacks. If partial postbacks disabled we'll need to not add history points.
+        /// </summary>
+        protected bool PartialPostbacksAllowed
+        {
+            get
+            {
+                return ScriptManager.GetCurrent( this.Page ).EnablePartialRendering;
+            }
         }
         #endregion
 
@@ -1086,7 +1108,11 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( ProcessStep1( out errorMessage ) )
                     {
-                        this.AddHistory( "GivingDetail", "1", null );
+                        if ( this.PartialPostbacksAllowed )
+                        {
+                            this.AddHistory( "GivingDetail", "1", null );
+                        }
+
                         if ( rblSavedAccount.Items.Count > 0 && ( rblSavedAccount.SelectedValueAsId() ?? 0 ) > 0 )
                         {
                             hfStep2AutoSubmit.Value = "true";
@@ -1102,7 +1128,11 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    this.AddHistory( "GivingDetail", "1", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "1", null );
+                    }
+
                     SetPage( 3 );
                     pnlConfirmation.Focus();
                 }
@@ -1120,7 +1150,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnStep2PaymentPrev_Click( object sender, EventArgs e )
         {
-            this.AddHistory( "GivingDetail", "2", null );
+            if ( this.PartialPostbacksAllowed )
+            {
+                this.AddHistory( "GivingDetail", "2", null );
+            }
+
             SetPage( 1 );
             pnlSelection.Focus();
         }
@@ -1165,7 +1199,11 @@ namespace RockWeb.Blocks.Finance
                 string resultQueryString = hfStep2ReturnQueryString.Value;
                 if ( ProcessStep3( resultQueryString, out errorMessage ) )
                 {
-                    this.AddHistory( "GivingDetail", "3", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "3", null );
+                    }
+
                     SetPage( 4 );
                     pnlSuccess.Focus();
                 }
@@ -1178,7 +1216,11 @@ namespace RockWeb.Blocks.Finance
             {
                 if ( ProcessConfirmation( out errorMessage ) )
                 {
-                    this.AddHistory( "GivingDetail", "2", null );
+                    if ( this.PartialPostbacksAllowed )
+                    {
+                        this.AddHistory( "GivingDetail", "2", null );
+                    }
+
                     SetPage( 4 );
                     pnlSuccess.Focus();
                 }
@@ -2141,7 +2183,7 @@ namespace RockWeb.Blocks.Finance
 
             Group familyGroup = null;
 
-            int personId = ViewState["PersonId"] as int? ?? 0;
+            int personId = ViewState[ViewStateKey.PersonId] as int? ?? 0;
             if ( personId == 0 && _targetPerson != null )
             {
                 personId = _targetPerson.Id;
@@ -2193,7 +2235,7 @@ namespace RockWeb.Blocks.Finance
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
 
-                    ViewState["PersonId"] = person != null ? person.Id : 0;
+                    ViewState[ViewStateKey.PersonId] = person != null ? person.Id : 0;
                 }
             }
 

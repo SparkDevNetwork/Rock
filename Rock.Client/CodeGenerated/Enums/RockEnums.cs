@@ -429,6 +429,15 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum GroupRequirementsFilter
+    {
+        Ignore = 0x0,
+        MustMeet = 0x1,
+        DoesNotMeet = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
         GroupMembers = 0x0,
@@ -471,16 +480,6 @@ namespace Rock.Client.Enums
         StepAdded = 0x11,
         StepStatusModify = 0x12,
         StepCampusModify = 0x13,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum IconCssWeight
-    {
-        Regular = 0x0,
-        Solid = 0x1,
-        Light = 0x2,
-        Thin = 0x3,
     }
 
     /// <summary>
@@ -692,7 +691,7 @@ namespace Rock.Client.Enums
         GroupMemberAttribute = 0x2,
         RegistrantAttribute = 0x4,
 
-        [Obsolete( "Use RegistrantAttribute instead", false )]
+        [Obsolete( "Use RegistrantAttribute instead", true )]
         RegistrationAttribute = 0x4,
     }
 

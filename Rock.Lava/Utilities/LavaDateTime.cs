@@ -43,7 +43,7 @@ namespace Rock.Lava
         {
             get
             {
-                return new DateTimeOffset( TimeZoneInfo.ConvertTime( DateTime.UtcNow, RockDateTime.OrgTimeZoneInfo ), RockDateTime.OrgTimeZoneInfo.BaseUtcOffset );
+                return TimeZoneInfo.ConvertTime( DateTimeOffset.UtcNow, RockDateTime.OrgTimeZoneInfo );
             }
         }
 

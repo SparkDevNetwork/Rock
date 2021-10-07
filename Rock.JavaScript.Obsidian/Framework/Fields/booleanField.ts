@@ -20,7 +20,7 @@ import { ClientAttributeValue, ClientEditableAttributeValue } from "../ViewModel
 import { asBooleanOrNull } from "../Services/boolean";
 
 export const enum ConfigurationValueKey {
-    BooleanControlType = "booleanControlType",
+    BooleanControlType = "BooleanControlType",
     FalseText = "falsetext",
     TrueText = "truetext"
 }

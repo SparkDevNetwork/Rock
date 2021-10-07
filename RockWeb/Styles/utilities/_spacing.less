@@ -256,6 +256,11 @@
   margin-left: @grid-gutter-width * @spacing-xl !important;
 }
 
+.mx--panel-body {
+  margin-left: -@panel-body-padding;
+  margin-right: -@panel-body-padding;
+}
+
 
 .util-mix-spacing(@breakpoint:"base") {
   .setInfix(@bp) when (@bp = "base") {

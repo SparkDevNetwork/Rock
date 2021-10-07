@@ -25,7 +25,7 @@ namespace Rock.Tests.Integration.Jobs
         /// The description.
         /// </value>
         /// <exception cref="NotImplementedException"></exception>
-        public string Description => throw new NotImplementedException();
+        public string Description => "Test Job Description";
 
         /// <summary>
         /// Gets the type of the job.

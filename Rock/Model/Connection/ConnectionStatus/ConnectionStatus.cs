@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -139,6 +140,20 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual ConnectionType ConnectionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection containing the <see cref="Rock.Model.ConnectionStatusAutomation">ConnectionStatusAutomations</see> who are associated with the Connection Status.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.ConnectionStatusAutomation">ConnectionStatusAutomations</see> who are associated with the Connection Status.
+        /// </value>
+        public virtual ICollection<ConnectionStatusAutomation> ConnectionStatusAutomations
+        {
+            get { return _connectionStatusAutomations; }
+            set { _connectionStatusAutomations = value; }
+        }
+
+        private ICollection<ConnectionStatusAutomation> _connectionStatusAutomations;
 
         #endregion
 

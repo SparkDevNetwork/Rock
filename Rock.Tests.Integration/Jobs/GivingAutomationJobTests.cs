@@ -2858,31 +2858,6 @@ namespace Rock.Tests.Integration.Jobs
             AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE );
             var lastClassified = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_LAST_CLASSIFICATION_DATE ).AsDateTime();
             Assert.AreEqual( context.Now, lastClassified );
-
-            // 90 day count
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_90_DAYS_COUNT );
-            var ninetyDayCount = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_90_DAYS_COUNT ).AsIntegerOrNull();
-            Assert.AreEqual( 12, ninetyDayCount );
-
-            // Annual day count
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS_COUNT );
-            var annualCount = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS_COUNT ).AsIntegerOrNull();
-            Assert.AreEqual( 47, annualCount );
-
-            // Annual sum
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS );
-            var annualSum = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_12_MONTHS ).AsDecimalOrNull();
-            Assert.AreEqual( 46 * 500m + 100000m, annualSum );
-
-            // 90 day sum
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_90_DAYS );
-            var ninetyDaySum = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_90_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 11 * 500m + 100000m, ninetyDaySum );
-
-            // Prior 90 day sum
-            AssertPeopleHaveSameAttributeValue( people, SystemGuid.Attribute.PERSON_GIVING_PRIOR_90_DAYS );
-            var priorNinetyDaySum = GetAttributeValue( firstPerson, SystemGuid.Attribute.PERSON_GIVING_PRIOR_90_DAYS ).AsDecimalOrNull();
-            Assert.AreEqual( 13 * 500m, priorNinetyDaySum );
         }
 
         /// <summary>

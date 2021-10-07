@@ -1032,7 +1032,7 @@ namespace RockWeb.Blocks.Connection
                 ddlRequestModalViewModeTransferModeOpportunity.Items.Clear();
                 var opportunities = GetConnectionOpportunities();
 
-                foreach ( var opportunity in opportunities.OrderBy( o => o.Name ) )
+                foreach ( var opportunity in opportunities.OrderBy( o => o.Order ).ThenBy( o => o.Name ) )
                 {
                     ddlRequestModalViewModeTransferModeOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     hasOriginalOpportunity |= opportunity.Id == originalTargetOpportunityId;
@@ -4664,8 +4664,8 @@ namespace RockWeb.Blocks.Connection
                 .Where( co =>
                     co.IsActive &&
                     connectionTypeIds.Contains( co.ConnectionTypeId ) )
-                .OrderBy( co => co.PublicName )
-                .ThenBy( co => co.Id );
+                .OrderBy( co => co.Order )
+                .ThenBy( co => co.Name );
 
             _connectionOpportunity = ConnectionOpportunityId.HasValue ?
                 query.FirstOrDefault( co => co.Id == ConnectionOpportunityId.Value ) :
@@ -4714,6 +4714,8 @@ namespace RockWeb.Blocks.Connection
                         DaysUntilRequestIdle = ct.DaysUntilRequestIdle,
                         Order = ct.Order,
                         ConnectionOpportunities = ct.ConnectionOpportunities
+                            .OrderBy( co => co.Order )
+                            .ThenBy( co => co.Name )
                             .Where( co => co.IsActive )
                             .Select( co => new ConnectionOpportunityViewModel
                             {
@@ -4724,11 +4726,9 @@ namespace RockWeb.Blocks.Connection
                                 PhotoId = co.PhotoId,
                                 Description = co.Description,
                                 ConnectionTypeName = ct.Name,
+                                Order = co.Order,
                                 ConnectionOpportunityCampusIds = co.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList()
-                            } )
-                            .ToList()
-                            .OrderBy( co => co.PublicName )
-                            .ThenBy( co => co.Id )
+                            } ).OrderBy( o => o.Order ).ThenBy( o => o.Name )
                             .ToList()
                     } )
                     .ToList()
@@ -5096,7 +5096,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( requirementsResults != null )
                 {
-                    // Ignore notapplicable requirements
+                    // Ignore the NotApplicable requirements.
                     requirementsResults = requirementsResults.Where( r => r.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable );
                 }
             }
@@ -5395,6 +5395,11 @@ namespace RockWeb.Blocks.Connection
                     return ConnectionOpportunity.GetPhotoUrl( PhotoId );
                 }
             }
+
+            /// <summary>
+            /// Gets or sets the Order.
+            /// </summary>
+            public int Order { get; set; }
         }
 
         /// <summary>

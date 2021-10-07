@@ -739,6 +739,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<ConnectionStatusAutomation>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionStatusAutomation.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<ConnectionStatusAutomation>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionStatusAutomation.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ConnectionType>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, ConnectionType.FriendlyTypeName );

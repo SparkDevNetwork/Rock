@@ -195,22 +195,22 @@ namespace Rock.Financial
 
                 switch ( givingIdGivingJourneyStage )
                 {
-                    case GivingJourneyStage.FormerGiver:
+                    case GivingJourneyStage.Former:
                         formerGiverGivingIds.Add( givingId );
                         break;
-                    case GivingJourneyStage.LapsedGiver:
+                    case GivingJourneyStage.Lapsed:
                         lapsedGiverGivingIds.Add( givingId );
                         break;
-                    case GivingJourneyStage.NewGiver:
+                    case GivingJourneyStage.New:
                         newGiverGivingIds.Add( givingId );
                         break;
-                    case GivingJourneyStage.OccasionalGiver:
+                    case GivingJourneyStage.Occasional:
                         occasionalGiverGivingIds.Add( givingId );
                         break;
-                    case GivingJourneyStage.ConsistentGiver:
+                    case GivingJourneyStage.Consistent:
                         consistentGiverGivingIds.Add( givingId );
                         break;
-                    case GivingJourneyStage.NonGiver:
+                    case GivingJourneyStage.None:
                         // Shouldn't happen since we are only looking at people with transactions, and we have already
                         // figured out the non-givers
                         break;
@@ -251,12 +251,12 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                     k => k.Key,
                     v => v.Select( p => p.PersonId ).ToList() );
 
-            UpdateJourneyStageAttributeValuesForGivingId( formerGiverGivingIds, GivingJourneyStage.FormerGiver );
-            UpdateJourneyStageAttributeValuesForGivingId( lapsedGiverGivingIds, GivingJourneyStage.LapsedGiver );
-            UpdateJourneyStageAttributeValuesForGivingId( newGiverGivingIds, GivingJourneyStage.NewGiver );
-            UpdateJourneyStageAttributeValuesForGivingId( occasionalGiverGivingIds, GivingJourneyStage.OccasionalGiver );
-            UpdateJourneyStageAttributeValuesForGivingId( consistentGiverGivingIds, GivingJourneyStage.ConsistentGiver );
-            UpdateJourneyStageAttributeValuesForGivingId( nonGiverGivingIdsList, GivingJourneyStage.NonGiver );
+            UpdateJourneyStageAttributeValuesForGivingId( formerGiverGivingIds, GivingJourneyStage.Former );
+            UpdateJourneyStageAttributeValuesForGivingId( lapsedGiverGivingIds, GivingJourneyStage.Lapsed );
+            UpdateJourneyStageAttributeValuesForGivingId( newGiverGivingIds, GivingJourneyStage.New );
+            UpdateJourneyStageAttributeValuesForGivingId( occasionalGiverGivingIds, GivingJourneyStage.Occasional );
+            UpdateJourneyStageAttributeValuesForGivingId( consistentGiverGivingIds, GivingJourneyStage.Consistent );
+            UpdateJourneyStageAttributeValuesForGivingId( nonGiverGivingIdsList, GivingJourneyStage.None );
             UpdateJourneyStageAttributeValuesForGivingId( noneOfTheAboveGiverGivingIds, null );
         }
 
@@ -271,7 +271,7 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
         {
             if ( !transactionDateList.Any() )
             {
-                return GivingJourneyStage.NonGiver;
+                return GivingJourneyStage.None;
             }
 
             var mostRecentTransactionDateTime = transactionDateList.Max();
@@ -285,23 +285,23 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
 
             if ( IsFormerGiver( givingJourneySettings, medianDaysBetween, daysSinceMostRecentTransaction ) )
             {
-                givingIdGivingJourneyStage = GivingJourneyStage.FormerGiver;
+                givingIdGivingJourneyStage = GivingJourneyStage.Former;
             }
             else if ( IsLapsedGiver( givingJourneySettings, medianDaysBetween, daysSinceMostRecentTransaction ) )
             {
-                givingIdGivingJourneyStage = GivingJourneyStage.LapsedGiver;
+                givingIdGivingJourneyStage = GivingJourneyStage.Lapsed;
             }
             else if ( IsNewGiver( givingJourneySettings, transactionDateList.Count, daysSinceFirstTransaction ) )
             {
-                givingIdGivingJourneyStage = GivingJourneyStage.NewGiver;
+                givingIdGivingJourneyStage = GivingJourneyStage.New;
             }
             else if ( IsOccasionalGiver( givingJourneySettings, medianDaysBetween ) )
             {
-                givingIdGivingJourneyStage = GivingJourneyStage.OccasionalGiver;
+                givingIdGivingJourneyStage = GivingJourneyStage.Occasional;
             }
             else if ( IsConsistentGiver( givingJourneySettings, medianDaysBetween ) )
             {
-                givingIdGivingJourneyStage = GivingJourneyStage.ConsistentGiver;
+                givingIdGivingJourneyStage = GivingJourneyStage.Consistent;
             }
             else
             {
@@ -650,11 +650,11 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
                 this.ProgressPosition = progressPosition;
                 if ( givingJourneyStage.HasValue )
                 {
-                    this.ProgressMessage = $"Updating {givingJourneyStage.ConvertToString()}: {ProgressPosition}/{ProgressMax}";
+                    this.ProgressMessage = $"Updating people with journey stage: {givingJourneyStage.ConvertToString()} ( {ProgressPosition}/{ProgressMax} )";
                 }
                 else
                 {
-                    this.ProgressMessage = $"Updating un-classified: {ProgressPosition}/{ProgressMax}";
+                    this.ProgressMessage = $"Updating people with un-classified journey stage: {ProgressPosition}/{ProgressMax}";
                 }
             }
 
@@ -704,31 +704,31 @@ NoneOfTheAboveCount: {noneOfTheAboveGiverGivingIds.Count}
         /// <summary>
         /// Non-Giver
         /// </summary>
-        NonGiver = 0,
+        None = 0,
 
         /// <summary>
         /// New giver.
         /// </summary>
-        NewGiver = 1,
+        New = 1,
 
         /// <summary>
         /// Occasional giver
         /// </summary>
-        OccasionalGiver = 2,
+        Occasional = 2,
 
         /// <summary>
         /// Consistent giver
         /// </summary>
-        ConsistentGiver = 3,
+        Consistent = 3,
 
         /// <summary>
         /// Lapsed giver
         /// </summary>
-        LapsedGiver = 4,
+        Lapsed = 4,
 
         /// <summary>
         /// Former giver
         /// </summary>
-        FormerGiver = 5
+        Former = 5
     }
 }
