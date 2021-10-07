@@ -147,6 +147,8 @@ namespace RockWeb.Blocks.Communication
                         <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Pending Approval, Scheduled for {{ Communication.SendDateTime | Date:'dd-MM-yyyy' }} at {{ Communication.SendDateTime | Date:'hh:mmtt' }}'>Pending</span>
                     {% elseif Communication.CommunicationStatus == 'Denied' %}
                         <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Approval Declined'>Pending</span>
+                    {% elseif Communication.CommunicationStatus == 'Draft' %}
+                        <span class='label label-default'>Pending</span>
                     {% endif %}
                 {% else %}
                     <span class='label label-default'>{{ Communication.RecipientStatus }}</span>
@@ -164,7 +166,9 @@ namespace RockWeb.Blocks.Communication
                                 <div class='row'>
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
                                         <span class='control-label d-block text-muted'>Sent As</span>
-                                        <span class='d-block text-lg font-weight-bold'>{{ Communication.CommunicationType | AsString | Humanize | Capitalize }}</span>
+                                        <span class='d-block text-lg font-weight-bold'>
+                                        {% if Communication.AllowRecipientPreference %}Recipient Preference{% else %}{{ Communication.CommunicationType | AsString | Humanize | Capitalize }}{% endif %}
+                                        </span>
                                     </div>
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
                                         <span class='control-label d-block text-muted'>Recipients</span>
@@ -798,9 +802,12 @@ namespace RockWeb.Blocks.Communication
                         Id = ciGroup.Communication.Id,
                         CommunicationType = ciGroup.Communication.CommunicationType,
                         CommunicationStatus = ciGroup.Communication.Status,
-                        Title = string.IsNullOrEmpty( ciGroup.Communication.Subject ) ? ( string.IsNullOrEmpty( ciGroup.Communication.PushTitle ) ? ciGroup.Communication.Name : ciGroup.Communication.PushTitle ) : ciGroup.Communication.Subject,
+                        Title = ciGroup.Communication.CommunicationType == CommunicationType.Email ? ciGroup.Communication.Subject
+                            : ciGroup.Communication.CommunicationType == CommunicationType.SMS ? ciGroup.Communication.SMSMessage.Substring( 0, 100 )
+                            : ciGroup.Communication.CommunicationType == CommunicationType.PushNotification ? ciGroup.Communication.PushTitle
+                            : ciGroup.Communication.Name,
                         CreatedDateTime = ciGroup.Communication.CreatedDateTime,
-                        SendDateTime = ciGroup.Communication.SendDateTime,
+                        SendDateTime = ciGroup.Communication.SendDateTime ?? ciGroup.Communication.FutureSendDateTime,
                         Sender = ciGroup.Communication.SenderPersonAlias != null ? ciGroup.Communication.SenderPersonAlias.Person : null,
                         RecipientStatus = ciGroup.Recipient.Status,
                         RecipientStatusNote = ciGroup.Recipient.StatusNote,
@@ -940,9 +947,12 @@ namespace RockWeb.Blocks.Communication
                         Id = ciGroup.Communication.Id,
                         CommunicationType = ciGroup.Communication.CommunicationType,
                         CommunicationStatus = ciGroup.Communication.Status,
-                        Title = string.IsNullOrEmpty( ciGroup.Communication.Subject ) ? ( string.IsNullOrEmpty( ciGroup.Communication.PushTitle ) ? ciGroup.Communication.Name : ciGroup.Communication.PushTitle ) : ciGroup.Communication.Subject,
+                        Title = ciGroup.Communication.CommunicationType == CommunicationType.Email ? ciGroup.Communication.Subject
+                            : ciGroup.Communication.CommunicationType == CommunicationType.SMS ? ciGroup.Communication.SMSMessage.Substring( 0, 100 )
+                            : ciGroup.Communication.CommunicationType == CommunicationType.PushNotification ? ciGroup.Communication.PushTitle
+                            : ciGroup.Communication.Name,
                         CreatedDateTime = ciGroup.Communication.CreatedDateTime,
-                        SendDateTime = ciGroup.Communication.SendDateTime,
+                        SendDateTime = ciGroup.Communication.SendDateTime ?? ciGroup.Communication.FutureSendDateTime,
                         Sender = ciGroup.Communication.SenderPersonAlias != null ? ciGroup.Communication.SenderPersonAlias.Person : null,
                         RecipientStatus = ciGroup.Recipient.Status,
                         RecipientStatusNote = ciGroup.Recipient.StatusNote,
@@ -1105,6 +1115,8 @@ namespace RockWeb.Blocks.Communication
             foreach ( var item in itemsWithRecipientPreference )
             {
                 item.CommunicationType = _mediumEntityIdToCommunicationTypeMap.GetValueOrDefault( item.InternalCommunicationMediumId.GetValueOrDefault(), CommunicationType.Email );
+
+                item.AllowRecipientPreference = true;
             }
         }
 
@@ -1135,7 +1147,7 @@ namespace RockWeb.Blocks.Communication
             if ( info.CommunicationType == CommunicationType.SMS )
             {
                 info.Detail.SenderName = info.Detail.InternalSenderSmsName;
-                info.Detail.SenderAddress = info.Detail.InternalSenderSmsNumber;
+                info.Detail.SenderAddress = PhoneNumber.FormattedNumber( string.Empty, info.Detail.InternalSenderSmsNumber );
             }
             else if ( info.CommunicationType == CommunicationType.Email )
             {
@@ -1270,7 +1282,7 @@ namespace RockWeb.Blocks.Communication
             public string RowId { get; set; }
 
             /// <summary>
-            /// The identifier of the Communication.
+            /// The identifier of the communication.
             /// </summary>
             public int Id { get; set; }
 
@@ -1278,6 +1290,11 @@ namespace RockWeb.Blocks.Communication
             /// The type of communication.
             /// </summary>
             public CommunicationType CommunicationType { get; set; }
+
+            /// <summary>
+            /// Indicates if this communication was configured to send to the preferred medium for each recipient.
+            /// </summary>
+            public bool AllowRecipientPreference { get; set; }
 
             /// <summary>
             /// The date and time on which this communication was or will be sent.
