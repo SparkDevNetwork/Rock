@@ -228,12 +228,12 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
+            base.LoadViewState( savedState );
+
             if ( HydrateObjects() )
             {
                 BuildWorkflowActionForm( false );
             }
-
-            base.LoadViewState( savedState );
         }
 
         /// <summary>
