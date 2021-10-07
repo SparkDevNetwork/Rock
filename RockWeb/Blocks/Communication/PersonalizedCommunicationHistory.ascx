@@ -133,9 +133,6 @@
 </style>
 <asp:UpdatePanel ID="upPanel" runat="server" ChildrenAsTriggers="false" UpdateMode="Conditional">
     <%-- Block updating is set to conditional to prevent unwanted page refreshes during postback when fetching a communication detail panel. --%>
-    <Triggers>
-        <asp:AsyncPostBackTrigger ControlID="rFilter" />
-    </Triggers>
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">

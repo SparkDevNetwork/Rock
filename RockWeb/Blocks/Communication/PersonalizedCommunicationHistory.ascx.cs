@@ -768,6 +768,8 @@ namespace RockWeb.Blocks.Communication
             gCommunication.DataSource = items;
 
             gCommunication.DataBind();
+
+            upPanel.Update();
         }
 
         private void InitializeDataBindingServices()
