@@ -914,12 +914,19 @@ namespace Rock.Model
     public enum SiteType
     {
         /// <summary>
+        /// Websites
         /// </summary>
         Web,
 
         /// <summary>
+        /// Mobile applications
         /// </summary>
-        Mobile
+        Mobile,
+
+        /// <summary>
+        /// TV Apps
+        /// </summary>
+        Tv
     }
 
     #endregion
