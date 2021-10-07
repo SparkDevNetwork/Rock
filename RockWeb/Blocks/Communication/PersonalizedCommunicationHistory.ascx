@@ -43,12 +43,12 @@
         }
 
     .communication-grid .table {
-        background-color: white;
+        background-color: #fff;
         margin-bottom: 0px;
     }
 
     .communication-grid .table-striped tbody tr {
-        background-color: white;
+        background-color: #fff;
     }
 
     .communication-grid .grid-select-cell {
@@ -67,11 +67,6 @@
 
     .communication-grid .grid-table th {
         padding: 0px;
-    }
-
-    /* Needed to negate the empty Label element added by the Literal control. */
-    .communication-grid .control-label {
-        display: none;
     }
 
     .grid-table {
@@ -164,14 +159,22 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <Rock:PersonPicker ID="ppCreatedBy" runat="server" Label="Created By" EnableSelfSelection="true" />
-                                        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Communication Template" EnhanceForLongLists="true" />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:DateRangePicker ID="drpDates" runat="server" Label="Sent Date Range" />
-                                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                                     </div>
                                     <div class="col-md-4">
                                         <Rock:RockDropDownList ID="ddlSystemCommunicationType" runat="server" Label="System Communication Type" EnhanceForLongLists="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <Rock:RockDropDownList ID="ddlTemplate" runat="server" Label="Communication Template" EnhanceForLongLists="true" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+                                    </div>
+                                    <div class="col-md-4">
                                         <Rock:RockDropDownList ID="ddlBulk" runat="server" Label="Bulk Message" />
                                     </div>
                                 </div>
@@ -181,15 +184,14 @@
 
                     <div class="communication-grid">
                         <Rock:Grid CssClass="communication-grid" ID="gCommunication" runat="server" AllowSorting="false" PageSizes="50,100"
-                            RowClickEnabled="false"
-                            ShowHeader="false">
+                            RowClickEnabled="false">
                             <Columns>
-                                <Rock:RockTemplateField>
+                                <Rock:RockTemplateField ItemStyle-CssClass="p-0">
                                     <ItemTemplate>
                                         <asp:HiddenField ID="showDetail" runat="server" />
                                         <asp:UpdatePanel runat="server" ID="upCommunicationItem" UpdateMode="Conditional">
                                             <ContentTemplate>
-                                                <Rock:RockLiteral ID="lCommunicationDetailRow" runat="server" Label=""></Rock:RockLiteral>
+                                                <asp:Literal ID="lCommunicationDetailRow" runat="server"></asp:Literal>
                                             </ContentTemplate>
                                         </asp:UpdatePanel>
                                     </ItemTemplate>

@@ -105,57 +105,64 @@ namespace RockWeb.Blocks.Communication
         <tr class='communication-item'>
             <td class='d-none d-sm-table-cell w-1 align-middle pr-0'>
                 <div class='avatar avatar-lg avatar-icon'>
-                    {% if Communication.CommunicationType == 'Email' %}
+                {% case Communication.CommunicationType %}
+                    {% when 'Email' %}
                         <i class='fa fa-envelope'></i>
-                    {% elseif Communication.CommunicationType == 'SMS' %}
+                    {% when 'SMS' %}
                         <i class='fa fa-comment-alt'></i>
-                    {% elseif Communication.CommunicationType == 'PushNotification' %}
+                    {% when 'PushNotification' %}
                         <i class='fa fa-mobile-alt'></i>
                     {% else %}
                         <i class='fa fa-question-circle'></i>
-                    {% endif %}
+                {% endcase %}
                 </div>
             </td>
             <td class='leading-snug'>
                 <span class='d-block mb-1'>{{ Communication.Title }}</span>
                 <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName }}</span>
                 {% capture moreHtml %}<i class=&quot;fa fa-xs fa-chevron-right&quot;></i> More{% endcapture %}
-                {% capture lessHtml %}<i class=&quot;fa fa-xs fa-chevron-up&quot;></i> Less{% endcapture %}
-                {% if HasDetail == true %}
+                {% capture lessHtml %}<i class=&quot;fa fa-xs fa-chevron-down&quot;></i> Less{% endcapture %}
+                {% if HasDetail %}
                     <a href='#' class='text-xs py-2 px-0' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return false;"">{{ lessHtml | HtmlDecode }}</a>
                 {% else %}
                     <a href=""{{ ShowDetailPostBackEventReference }}"" class='text-xs py-2 px-0' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return true;"">{{ moreHtml | HtmlDecode }}</a>
                 {% endif %}
             </td>
             <td class='w-1 align-middle text-right d-none d-sm-table-cell'>
-                <span class='badge badge-info' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientTotal }} recipients'>{{ Communication.RecipientTotal }}</span>
+                <span class='badge badge-info' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientTotal }} {{ 'Recipient' | PluralizeForQuantity:Communication.RecipientTotal }}'>{{ Communication.RecipientTotal }}</span>
             </td>
             <td class='w-1 text-right'>
-                <span class='d-block text-sm text-muted mb-1 text-nowrap'>{{ Communication.SendDateTimeDescription }}</span>
-                {% if Communication.RecipientStatus == 'Delivered' %}
-                    <span class='label label-info' data-toggle='tooltip' data-placement='top' title='Sent on {{ Communication.SendDateTime | Date:'dd-MM-yyyy' }} at {{ Communication.SendDateTime | Date:'hh:mmtt' }}'>Delivered</span>
-                {% elseif Communication.RecipientStatus == 'Failed' %}
+                <span class='d-block text-sm text-muted mb-1 text-nowrap' title='{{ Communication.SendDateTime }}'>{{ Communication.SendDateTime | HumanizeDateTime | SentenceCase }}</span>
+                {% case Communication.RecipientStatus %}
+                {% when 'Delivered' %}
+                    <span class='label label-info' data-toggle='tooltip' data-placement='top' title='Sent on {{ Communication.SendDateTime | Date:'sd' }} at {{ Communication.SendDateTime | Date:'st' }}'>Delivered</span>
+                {% when 'Failed' %}
                     <span class='label label-danger' data-toggle='tooltip' data-placement='top' title='{{ Communication.RecipientStatusNote }}'>Failed</span>
-                {% elseif Communication.RecipientStatus == 'Cancelled' %}
+                {% when 'Cancelled' %}
                     <span class='label label-warning'>Cancelled</span>
-                {% elseif Communication.RecipientStatus == 'Opened' %}
+                {% when 'Opened' %}
                     <span class='label label-success'>Interacted</span>
-                {% elseif Communication.RecipientStatus == 'Pending' %}
-                    {% if Communication.CommunicationStatus == 'Approved' %}
-                        <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Scheduled for {{ Communication.SendDateTime | Date:'dd-MM-yyyy' }} at {{ Communication.SendDateTime | Date:'hh:mmtt' }}'>Pending</span>
-                    {% elseif Communication.CommunicationStatus == 'PendingApproval' %}
-                        <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Pending Approval, Scheduled for {{ Communication.SendDateTime | Date:'dd-MM-yyyy' }} at {{ Communication.SendDateTime | Date:'hh:mmtt' }}'>Pending</span>
-                    {% elseif Communication.CommunicationStatus == 'Denied' %}
+                {% when 'Pending' %}
+                    {% case Communication.CommunicationStatus %}
+                    {% when 'Approved' %}
+                        {% if Communication.SendDateTime != '' %}
+                            <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Now sending'>Sending</span>
+                        {% else %}
+                            <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Scheduled for {{ Communication.SendDateTime | Date:'sd' }} at {{ Communication.SendDateTime | Date:'st' }}'>Pending</span>
+                        {% endif %}
+                    {% when 'PendingApproval' %}
+                        <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Pending Approval, Scheduled for {{ Communication.SendDateTime | Date:'sd' }} at {{ Communication.SendDateTime | Date:'st' }}'>Pending</span>
+                    {% when 'Denied' %}
                         <span class='label label-default' data-toggle='tooltip' data-placement='top' title='Approval Declined'>Pending</span>
-                    {% elseif Communication.CommunicationStatus == 'Draft' %}
+                    {% when 'Draft' %}
                         <span class='label label-default'>Pending</span>
-                    {% endif %}
+                    {% endcase %}
                 {% else %}
                     <span class='label label-default'>{{ Communication.RecipientStatus }}</span>
-                {% endif %}
+                {% endcase %}
             </td>
         </tr>
-        {% if HasDetail == true %}
+        {% if HasDetail %}
             <tr class='communication-details'>
                 <td class='d-none d-sm-table-cell border-0 py-0'></td>
                 <td class='border-0 py-0' colspan='3'>
@@ -171,43 +178,43 @@ namespace RockWeb.Blocks.Communication
                                         </span>
                                     </div>
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
-                                        <span class='control-label d-block text-muted'>Recipients</span>
+                                        <span class='control-label d-block text-muted'>{{ 'Recipient' | PluralizeForQuantity:Communication.RecipientTotal }}</span>
                                         <span class='d-block text-lg font-weight-bold'>{{ Communication.RecipientTotal }}</span>
                                     </div>
+                                    {% if Communication.Detail.PersonalInteractionCount > 0 %}
                                     <div class='col-xs-6 col-md-4 leading-snug mb-4'>
-                                        {% if Communication.Detail.PersonalInteractionCount > 0 %}
-                                            <span class='control-label d-block text-muted'>Activity Count</span>
-                                            <span class='d-block text-lg font-weight-bold'>{{ Communication.Detail.PersonalInteractionCount }}</span>
-                                        {% endif %}
+                                        <span class='control-label d-block text-muted'>Activity Count</span>
+                                        <span class='d-block text-lg font-weight-bold'>{{ Communication.Detail.PersonalInteractionCount }}</span>
                                     </div>
+                                    {% endif %}
                                 </div>
                                 <dl>
                                     {% if Communication.Detail.CommunicationListName != empty %}
                                         <dt>Communication List</dt>
                                         {% if ListDetailUrl != empty %}
-                                            <a href=""{{ ListDetailUrl }}"">{{ Communication.Detail.CommunicationListName }}</a></dd>
+                                            <dd><a href=""{{ ListDetailUrl }}"">{{ Communication.Detail.CommunicationListName }}</a></dd>
                                         {% else %}
                                             <dd>{{ Communication.Detail.CommunicationListName }}</dd>
                                         {% endif %}
-                                        {% if Communication.Detail.CommunicationSegments != empty %}
-                                            <dt>Segments ({{ Communication.Detail.CommunicationSegmentInclusionType }})</dt>
-                                            <dd>
-                                                {% for segment in Communication.Detail.CommunicationSegments %}
-                                                    {% if ListSegmentDetailUrlTemplate != empty %}
-                                                        <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@segmentId',segment.Id }}"">{{ segment.Name }}</a><br>
-                                                    {% else %}
-                                                        {{ segment.Name }}<br>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </dd>
-                                            {% if Communication.Detail.CommunicationTemplateName != empty %}
-                                                <dt>Communication Template</dt>
-                                                {% if TemplateDetailUrl != empty %}
-                                                    <dd><a href=""{{ TemplateDetailUrl }}"">{{ Communication.Detail.CommunicationTemplateName }}</a></dd>
+                                    {% endif %}
+                                    {% if Communication.Detail.CommunicationSegments != empty %}
+                                        <dt>Segments ({{ Communication.Detail.CommunicationSegmentInclusionType }})</dt>
+                                        <dd>
+                                            {% for segment in Communication.Detail.CommunicationSegments %}
+                                                {% if ListSegmentDetailUrlTemplate != empty %}
+                                                    <a href=""{{ ListSegmentDetailUrlTemplate | Replace:'@SegmentId',segment.Id }}"">{{ segment.Name }}</a><br>
                                                 {% else %}
-                                                    <dd>{{ Communication.Detail.CommunicationTemplateName }}</dd>
+                                                    {{ segment.Name }}<br>
                                                 {% endif %}
-                                            {% endif %}
+                                            {% endfor %}
+                                        </dd>
+                                    {% endif %}
+                                    {% if Communication.Detail.CommunicationTemplateName != empty %}
+                                        <dt>Communication Template</dt>
+                                        {% if TemplateDetailUrl != empty %}
+                                            <dd><a href=""{{ TemplateDetailUrl }}"">{{ Communication.Detail.CommunicationTemplateName }}</a></dd>
+                                        {% else %}
+                                            <dd>{{ Communication.Detail.CommunicationTemplateName }}</dd>
                                         {% endif %}
                                     {% endif %}
                                 </dl>
@@ -251,8 +258,8 @@ namespace RockWeb.Blocks.Communication
                                     </div>
                                 {% else %}
                                     <div class='card communication-preview'>
-                                        <div class='card-heading'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='text-muted'>{{ Communication.Detail.SenderEmail }}</span> </div>
-                                        <div class='card-heading'>{{ Communication.Title }}</div>
+                                        <div class='card-heading' title='Message From'><span class='font-weight-semibold'>{{ Communication.Detail.SenderName }}</span> <span class='text-muted'>{{ Communication.Detail.SenderAddress }}</span> </div>
+                                        <div class='card-heading' title='Message Subject'>{{ Communication.Title }}</div>
                                         <div class='card-body p-0 position-relative' style='background:#FCFCFC'>
                                             {% if Communication.ViewDetailIsAllowed and DetailUrl != empty %}
                                                 <div class='d-flex justify-content-center align-items-center position-absolute inset-0 z-10'>
@@ -293,7 +300,7 @@ namespace RockWeb.Blocks.Communication
                                                     {% endif %}
                                                 </td>
                                                 <td>{{ item.DeviceDescription }}</td>
-                                                <td class='w-1 text-nowrap'>{{ item.DateTime | Date:'dd/MM/yyyy hh:mm tt' }}</td>
+                                                <td class='w-1 text-nowrap'>{{ item.DateTime | Date }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -346,6 +353,7 @@ namespace RockWeb.Blocks.Communication
             gCommunication.DataKeyNames = new string[] { "Id" };
 
             gCommunication.AllowCustomPaging = true;
+            gCommunication.ShowHeader = false;
             gCommunication.Actions.ShowAdd = false;
             gCommunication.Actions.ShowExcelExport = false;
             gCommunication.Actions.ShowMergeTemplate = false;
@@ -527,7 +535,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            var lDetail = e.Row.FindControl( "lCommunicationDetailRow" ) as RockLiteral;
+            var lDetail = e.Row.FindControl( "lCommunicationDetailRow" ) as Literal;
 
             if ( lDetail == null )
             {
@@ -561,7 +569,7 @@ namespace RockWeb.Blocks.Communication
 
             var up = e.Row.FindControl( "upCommunicationItem" );
 
-            var lLava = e.Row.FindControl( ctlName ) as RockLiteral;
+            var lLava = e.Row.FindControl( ctlName ) as Literal;
 
             if ( lLava == null )
             {
@@ -729,7 +737,7 @@ namespace RockWeb.Blocks.Communication
                 isBulk = false;
             }
 
-            /* 
+            /*
              * Retrieving list items can be an expensive process for large data sets, particularly as we need to check the View permissions for the current user.
              * To ensure this process is scalable, we identify the candidate Communication records for the current page and then retrieve only
              * the extended data set for those records.
@@ -839,7 +847,7 @@ namespace RockWeb.Blocks.Communication
         /// <returns></returns>
         private IQueryable<Rock.Model.Communication> GetCommunicationQuery( RockContext rockContext, int personId, string subject, CommunicationType? communicationType, int? createdByPersonId, CommunicationRecipientStatus? communicationStatus, DateTime? startDate, DateTime? endDate, int? systemCommunicationTypeId, int? communicationTemplateId, bool? isBulkCommunication )
         {
-            // Get the base query, excludings items that are current being processed.
+            // Get the base query, excluding items that are current being processed.
             var qryCommunications = new CommunicationService( rockContext ).Queryable().Where( c => c.Status != CommunicationStatus.Transient );
 
             // Apply Filter: Subject
@@ -1216,7 +1224,7 @@ namespace RockWeb.Blocks.Communication
 
                 var ctlName = GetCommunicationDetailControlId( communicationId.Value );
 
-                var lr = FindControlRecursive( ctlContainer, "lCommunicationDetailRow" ) as RockLiteral;
+                var lr = FindControlRecursive( ctlContainer, "lCommunicationDetailRow" ) as Literal;
 
                 if ( lr != null )
                 {
@@ -1300,17 +1308,6 @@ namespace RockWeb.Blocks.Communication
             /// The date and time on which this communication was or will be sent.
             /// </summary>
             public DateTime? SendDateTime { get; set; }
-
-            /// <summary>
-            /// A friendly description of the date and time this communication was or will be sent.
-            /// </summary>
-            public string SendDateTimeDescription
-            {
-                get
-                {
-                    return Humanizer.DateHumanizeExtensions.Humanize( SendDateTime );
-                }
-            }
 
             /// <summary>
             /// A descriptive title for the communication.
