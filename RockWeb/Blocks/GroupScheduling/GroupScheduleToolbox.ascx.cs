@@ -1687,7 +1687,7 @@ $('#{0}').tooltip();
             }
             else if ( personScheduleSignup.MaxScheduled )
             {
-                cbSignupSchedule.Text += " (filled)";
+                cbSignupSchedule.Text += " <span class='text-muted small'>(filled)</span>";
             }
             
 
