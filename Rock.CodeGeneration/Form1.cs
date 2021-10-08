@@ -934,6 +934,9 @@ namespace Rock.ViewModel
             StringBuilder sb;
             FileInfo file;
 
+            progressBar1.Maximum = types.Count();
+            progressBar1.Value = 0;
+
             foreach ( var type in types )
             {
                 var values = type.GetFields( BindingFlags.Static | BindingFlags.Public )
@@ -990,6 +993,8 @@ namespace Rock.ViewModel
 
                 file = new FileInfo( Path.Combine( rootFolder, "CodeGenerated", $"{camelName}.d.ts" ) );
                 WriteFile( file, sb );
+
+                progressBar1.Value++;
             }
 
             // Generate the index file.

@@ -873,6 +873,7 @@ namespace Rock.Client.Enums
     {
         Web = 0x0,
         Mobile = 0x1,
+        Tv = 0x2,
     }
 
     /// <summary>
