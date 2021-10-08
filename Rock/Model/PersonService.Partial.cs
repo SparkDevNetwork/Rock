@@ -605,7 +605,7 @@ namespace Rock.Model
             /// </summary>
             /// <param name="query">The person match query.</param>
             /// <param name="person">The person summary.</param>
-            /// <param name="accountProtectionProfilesForDuplicateDetectionToIgnore">The account protection profiles for duplicate detection to ignore.</param>
+            /// <param name="accountProtectionProfilesForDuplicateDetectionToIgnore">The account protection profiles that should never be considered a match.</param>
             public PersonMatchResult( PersonMatchQuery query, PersonSummary person, List<AccountProtectionProfile> accountProtectionProfilesForDuplicateDetectionToIgnore )
             {
                 PersonId = person.Id;
@@ -617,7 +617,10 @@ namespace Rock.Model
                 EmailSearchSpecified = query.Email.IsNotNullOrWhiteSpace();
                 PrimaryEmailMatched = query.Email.IsNotNullOrWhiteSpace() && person.Email.IsNotNullOrWhiteSpace() && person.Email.Equals( query.Email, StringComparison.CurrentCultureIgnoreCase );
 
-                MatchingAllowedForAccountProtectionProfile = accountProtectionProfilesForDuplicateDetectionToIgnore.Contains( person.AccountProtectionProfile );
+                // Only allow this record as a potentional match if their AccountProtectionProfile allows matching. If
+                // accountProtectionProfilesForDuplicateDetectionToIgnore contains the AccountProtectionProfile, then
+                // never consider this record as a potentional match
+                MatchingDisabledForAccountProtectionProfile = accountProtectionProfilesForDuplicateDetectionToIgnore.Contains( person.AccountProtectionProfile );
 
                 if ( query.BirthDate.HasValue && person.BirthDate.HasValue )
                 {
@@ -650,7 +653,7 @@ namespace Rock.Model
 
             public bool BirthDateYearMatched { get; set; }
 
-            public bool MatchingAllowedForAccountProtectionProfile { get; set; }
+            public bool MatchingDisabledForAccountProtectionProfile { get; set; }
 
             public bool MeetsMinimumConfidence
             {
@@ -680,7 +683,7 @@ namespace Rock.Model
 
                     */
 
-                    if ( MatchingAllowedForAccountProtectionProfile )
+                    if ( MatchingDisabledForAccountProtectionProfile )
                     {
 
                         return false;
