@@ -1364,13 +1364,54 @@ namespace RockWeb.Blocks.WorkFlow
         private static Person CreateOrUpdatePersonFromPersonEditor( int? existingPersonId, Group limitMatchToFamily, PersonBasicEditor personEditor, RockContext rockContext )
         {
             var personService = new PersonService( rockContext );
-            Person personEntryPerson = null;
             if ( existingPersonId.HasValue )
             {
-                // Update Person from personEditor
-                personEntryPerson = personService.Get( existingPersonId.Value );
-                personEditor.UpdatePerson( personEntryPerson, rockContext );
-                return personEntryPerson;
+                var existingPerson = personService.Get( existingPersonId.Value );
+                var firstNameMatchesExistingFirstOrNickName = personEditor.FirstName.Equals( existingPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                    || personEditor.FirstName.Equals( existingPerson.NickName, StringComparison.OrdinalIgnoreCase );
+                var lastNameMatchesExistingLastName = personEditor.LastName.Equals( existingPerson.LastName, StringComparison.OrdinalIgnoreCase );
+                bool useExistingPerson;
+                if ( firstNameMatchesExistingFirstOrNickName && lastNameMatchesExistingLastName )
+                {
+                    // if the existing person (the one that was used to auto-fill the fields) has the same FirstName and LastName as what is in the PersonEditor,
+                    // then we can safely assume they mean to update the existing person
+                    useExistingPerson = true;
+                }
+                else
+                {
+                    /*  10-07-2021 MDP
+
+                    Special Logic if AutoFill CurrentPerson is enabled, but the Person Name fields were changed:
+
+                    If the existing person (the one that used to auto-fill the fields) changed the FirstName or LastName PersonEditor,
+                    then then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
+                    be added to Ted Decker's family. PersonEntry isn't smart enough to figure that out and isn't intended to be a family editor. Here are a few examples
+                    to clarify what this means:
+
+                    Example 1: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Noah Decker, then we'll see if we have enough to make a match
+                    to the existing Noah Decker. Howver, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
+
+                    Example 2: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to NewBaby Decker, we'll have to do the same thing as Example 1
+                    even though Ted might be thinking he is adding his new baby to the family. So NewBaby Decker will probably be a new person in a new family.
+
+                    Example 3: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Bob Smith (Ted's Neighbor), we also do the same thing as Example 1. However,
+                    in this case, we are mostly doing what Ted expected to happen.
+
+                    Summary. PersonEntry is not a family editor, it just collects data to match or create a person (and spouse if enabled).
+
+                    Note: The logic for Spouse entry is slightly different. See notes below...
+
+                    */
+
+                    useExistingPerson = false;
+                }
+
+                if ( useExistingPerson )
+                {
+                    // Update Person from personEditor
+                    personEditor.UpdatePerson( existingPerson, rockContext );
+                    return existingPerson;
+                }
             }
 
             // Match or Create Person from personEditor
@@ -1382,7 +1423,7 @@ namespace RockWeb.Blocks.WorkFlow
             };
 
             bool updatePrimaryEmail = false;
-            personEntryPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
+            var matchedPerson = personService.FindPerson( personMatchQuery, updatePrimaryEmail );
 
             /*
             2020-11-06 MDP
@@ -1424,26 +1465,33 @@ namespace RockWeb.Blocks.WorkFlow
 
              */
 
-            if ( personEntryPerson != null && limitMatchToFamily != null )
+            if ( matchedPerson != null && limitMatchToFamily != null )
             {
-                if ( personEntryPerson.PrimaryFamilyId != limitMatchToFamily.Id )
+                if ( matchedPerson.PrimaryFamilyId != limitMatchToFamily.Id )
                 {
-                    personEntryPerson = null;
+                    matchedPerson = null;
                 }
             }
 
-            if ( personEntryPerson != null )
+            if ( matchedPerson != null )
             {
+                // If we are using a matched person let the PersonEditor which PersonId we are editing
+                personEditor.SetPersonId( matchedPerson.Id );
+
                 // if a match was found, update that person
-                personEditor.UpdatePerson( personEntryPerson, rockContext );
+                personEditor.UpdatePerson( matchedPerson, rockContext );
+                return matchedPerson;
             }
             else
             {
-                personEntryPerson = new Person();
-                personEditor.UpdatePerson( personEntryPerson, rockContext );
-            }
+                var newPerson = new Person();
 
-            return personEntryPerson;
+                // If we are using a matched person let the PersonEditor know we are editing a new person (personId = 0)
+                personEditor.SetPersonId( newPerson.Id );
+
+                personEditor.UpdatePerson( newPerson, rockContext );
+                return newPerson;
+            }
         }
 
         /// <summary>
